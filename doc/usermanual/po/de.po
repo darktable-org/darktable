@@ -37,11 +37,15 @@ msgstr ""
 =======
 "POT-Creation-Date: 2019-12-03 17:22+0100\n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2019-12-03 17:57+0100\n"
 >>>>>>> Translations provided by Wolfgang Arndt included
 =======
 "PO-Revision-Date: 2019-12-05 20:32+0100\n"
 >>>>>>> Translations provided by Wolfgang Arndt included
+=======
+"PO-Revision-Date: 2019-12-09 16:03+0100\n"
+>>>>>>> split-toning translated into the German word <<Teiltonung>>
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -13953,7 +13957,7 @@ msgstr ""
 =======
 "Dies ist ein ziemlich stark bearbeitetes Originalbild: zuerst wurde <link "
 "linkend=\"monochrome\"><emphasis>Monochrome</emphasis></link>, dann blaues "
-"<link linkend=\"splittoning\"><emphasis>Split-Toning</emphasis></link> "
+"<link linkend=\"splittoning\"><emphasis>Teiltonung</emphasis></link> "
 "angewendet. Leider fehlt dem Bild der Pep in den Details und es ist ein wenig "
 "unscharf..."
 
@@ -32546,7 +32550,7 @@ msgstr "Ausgangssättigung"
 "Balance zu dämpfen um schwierige Bilder leichter bearbeiten zu können. Wenn "
 "Sie das Bild vollständig entsättigen, entsteht ein leuchtdichtebasiertes "
 "monochromes Bild, das als Luminanzmaske verwendet werden kann, um Farbfilter "
-"mit den Farbbalance-Einstellungen wie Split-Toning oder Sepia-Effekt zu "
+"mit den Farbbalance-Einstellungen wie Teiltonung oder Sepia-Effekt zu "
 "erstellen (dann sollten Sie vielleicht Mischmodi verwenden)."
 >>>>>>> Translations provided by Wolfgang Arndt included
 
@@ -33696,6 +33700,7 @@ msgid ""
 "reading see the Wikipedia article on the <ulink url=\"http://en.wikipedia."
 "org/wiki/Bayer_filter\">Bayer filter</ulink>."
 msgstr ""
+<<<<<<< HEAD
 "Eine detaillierte Beschreibung würde den Rahmen dieses Handbuches sprengen. "
 "Kurz gesagt, die Sensorzellen einer Digitalkamera sind nur in der Lage "
 "unterschiedliche Helligkeitsstufen, nicht aber unterschiedliche Farben zu "
@@ -33736,6 +33741,12 @@ msgstr ""
 "darktable standardmäßig PPG. VNG4 liefert die weichsten Ergebnisse der drei "
 "Algorithmen, aber wenn Sie \"Labyrinth\"-Artefakte sehen, versuchen Sie es "
 "mit VNG4, um sie zu eliminieren."
+=======
+"Für die Teiltonung bewegen Sie den weißen Punkt auf den gewünschten "
+"Highlight-Ton und wählen Sie dann einen Farbton für Schatten mit dem dunklen "
+"Punkt. Für eine einfache globale Tönung setzen Sie beide Punkte auf die "
+"gleiche Farbe."
+>>>>>>> split-toning translated into the German word <<Teiltonung>>
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -62461,12 +62472,12 @@ msgstr "Beispielbild mit benutzerdefiniertem Rahmen."
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19239(para)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19371(para)
 msgid "Splittoning"
-msgstr "Split-Toning"
+msgstr "Teiltonung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17502(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17506(primary)
 msgid "splittoning"
-msgstr "Split-Toning"
+msgstr "Teiltonung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17519(entry)
 msgid ""
@@ -62476,11 +62487,11 @@ msgid ""
 "where a splittoning effect is applied with blue in shadows and a yellowish "
 "color in highlights."
 msgstr ""
-"Der original Split-Toning-Effekt erzeugt einen geradlinigen Einfärbeffekt, "
+"Teiltonung erzeugt einen zweifarbigen geradlinigen Einfärbeffekt, "
 "bei dem die Schatten und Spitzlichter durch zwei unterschiedliche Farben "
-"repräsentiert werden. Im folgenden Beispiel können Sie ein schwarz/weiß-Bild "
-"sehen, sowie eines, bei dem ein Split-Toning-Effekt mit blauen Schatten und "
-"gelblichen Farben in den Spitzlichtern benutzt wurde."
+"repräsentiert werden. Das folgenden Beispiel zeigt ein schwarz/weiß-Bild bei"
+" dem mit dem Teiltonung-Modul die Schatten blau und die Spitzlichter gelb"
+" hervorgehoben wurde."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17534(para)
 msgid ""
@@ -62492,8 +62503,9 @@ msgid ""
 "highlights and leave a gap in the mid-tones, which remain untouched by the "
 "effect."
 msgstr ""
-"Im Vergleich zum traditionellen Splittoning hat unser Modul mehr Parameter, "
-"um sein Verhalten zu beeinflussen. Wir haben den Parameter <quote>balance</"
+"Im Vergleich zur traditionellen Teiltonung hat das darktable Modul mehr"
+" Parameter, "
+"um das Verhalten zu beeinflussen. Es besitzt den Parameter <quote>balance</"
 "quote>, der den 50% Grauwert in Ihrem Bild - nach Ihrer Wahl - mehr zu den "
 "Schatten oder mehr zu den Lichtern ausgleicht. Zusätzlich können Sie mit dem "
 "Parameter <quote>compression</quote> die Tonung in den Schatten und Lichtern "
@@ -62508,11 +62520,12 @@ msgid ""
 "linkend=\"monochrome\"/>) to make the image black and white before playing "
 "around with splittoning effect."
 msgstr ""
-"Das Splittoning-Modul wandelt Bilder nicht in Schwarzweiß um und verfügt über "
-"begrenzte Vorteile bei Farbbildern. Wenn Sie also traditionelles Splittoning "
-"machen wollen, verwenden Sie das Modul emphasis>monochrome</emphasis> (siehe "
-"<xref linkend=\"monochrome\"/>), um das Bild schwarz-weiß zu machen, bevor "
-"Sie mit Splittoning-Effekt herumspielen."
+"Das Modul Teiltonung wandelt Bilder nicht in Schwarzweiß um und verfügt über "
+"begrenzte Vorteile bei Farbbildern. Wenn Sie eine traditionelles Teiltonung"
+" erzielen wollen, verwenden Sie das Modul emphasis>monochrome</emphasis>"
+" (siehe "
+"<xref linkend=\"monochrome\"/>), um das Bild schwarz-weiß zu machen, bevor"
+" Sie mit dem Teiltonung-Modul herumspielen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17557(title)
 msgid "shadows and highlights color"
@@ -62526,7 +62539,7 @@ msgid ""
 "offers you a choice of commonly used colors, or allows to define a color in "
 "RGB color space."
 msgstr ""
-"Diese Regler dienen dazu, die Farbe des Split-Toning-Effekts einzustellen. "
+"Diese Regler dienen dazu, die Farbe des Teiltonung-Effekts einzustellen. "
 "Sie können die gewünschte Farbe und Sättigung sowohl für die Schatten als "
 "auch für die Spitzlichter wählen. Alternativ können Sie auf die Farbvorschau "
 "klicken um einen normalen Farbauswahldialog zu bekommen."
@@ -62561,10 +62574,10 @@ msgid ""
 msgstr ""
 "Die Komprimierung ist eine Prozentangabe des absoluten Helligkeitsumfangs, "
 "der nicht vom Einfärben betroffen ist. Standardmäßig sind dies 33%, was nicht "
-"dem Standardverhalten eines traditionellen Split-Tonings entspricht – dies "
+"dem Standardverhalten eines traditionellen Teiltonung entspricht – dies "
 "wären 0% Kompression. Die Wahl von 33% als Ausgangswert soll Sie zum "
-"Experimentieren  mit den Parametern und den Erweiterungen der Split-Toning-"
-"Methode anregen …"
+"Experimentieren  mit den Parametern und den Erweiterungen der Teiltonung-"
+"Methode anregen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17602(entry)
 msgid "Original black and white image."
@@ -63752,7 +63765,7 @@ msgstr "Vorgehen"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19184(para)
 msgid "This procedure uses tone curve, channel mixer and splittoning modules."
 msgstr ""
-"Dieses Vorgehen nutzt Farbkurve, Kanalmixer und das Split-Toning-Modul."
+"Dieses Vorgehen nutzt die Module Farbkurve, Kanalmixer und das Teiltonung."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19190(para)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19318(para)
@@ -63832,7 +63845,7 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19250(para)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19384(para)
 msgid "Enable the splittoning module"
-msgstr "Aktivieren Sie das Splittoning-Modul."
+msgstr "Aktivieren Sie das Teiltonung-Modul."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19254(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
@@ -63856,7 +63869,7 @@ msgid ""
 "Use the balance slider to tune the splittoning effect. This differs on every "
 "image due to it's exposure, motive etc."
 msgstr ""
-"Verwenden Sie den Balance-Schieberegler, um den Splittoning-Effekt "
+"Verwenden Sie den Balance-Schieberegler, um den Teiltonung-Effekt "
 "einzustellen. Dies unterscheidet sich bei jedem Bild durch Belichtung, Motiv "
 "etc."
 
@@ -63876,8 +63889,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19312(para)
 msgid "This procedure uses monochrome, channel mixer and splittoning modules."
-msgstr ""
-"Dieses Vorgehen nutzt Monochrome, Kanalmixer und das Split-Toning-Modul."
+msgstr "Dieses Vorgehen nutzt Monochrome, Kanalmixer und das Teiltonung-Modul."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19322(para)
 msgid ""
