@@ -173,7 +173,7 @@
         pictures easier to process.
         When you desaturate entirely the image, it creates a luminance-based monochrome
         picture that can be used as a luminance mask, to create color filters with the
-        color balance settings, like Split Toning or sepia effect
+        color balance settings, like split-toning or sepia effect
         (you might want to use blending modes then).
       </para>
     </sect5>
