@@ -2586,7 +2586,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int path_encircles_roi = 0;
 
   // we get buffers for all points
-  float *points = NULL, *border = NULL, *cpoints = NULL;
+  float *points = NULL, *border = NULL;
   int points_count, border_count;
   if(!_path_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                               &border, &border_count, 0) || (points_count <= 2))
@@ -2699,10 +2699,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     float xx = points[i * 2];
     float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
+    xmin = MIN(xx, xmin);
+    xmax = MAX(xx, xmax);
+    ymin = MIN(yy, ymin);
+    ymax = MAX(yy, ymax);
   }
   for(int i = nb_corner * 3; i < border_count; i++)
   {
@@ -2714,10 +2714,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       i = yy - 1;
       continue;
     }
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
+    xmin = MIN(xx, xmin);
+    xmax = MAX(xx, xmax);
+    ymin = MIN(yy, ymin);
+    ymax = MAX(yy, ymax);
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
@@ -2729,7 +2729,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(path_in_roi)
   {
     // second copy of path which we can modify when cropping to roi
-    cpoints = malloc(2 * points_count * sizeof(float));
+    float *cpoints = malloc(2 * points_count * sizeof(float));
     if(cpoints == NULL)
     {
       free(points);
@@ -2805,15 +2805,24 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
       // we fill the inside plain
       // we don't need to deal with parts of shape outside of roi
-      xmin = fmaxf(xmin, 0);
-      xmax = fminf(xmax, width - 1);
-      ymin = fmaxf(ymin, 0);
-      ymax = fminf(ymax, height - 1);
+      const int xxmin = MAX(xmin, 0);
+      const int xxmax = MIN(xmax, width - 1);
+      const int yymin = MAX(ymin, 0);
+      const int yymax = MIN(ymax, height - 1);
 
-      for(int yy = ymin; yy <= ymax; yy++)
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(xxmin, xxmax, yymin, yymax) \
+  shared(buffer)
+#else
+#pragma omp parallel for shared(buffer)
+#endif
+#endif
+      for(int yy = yymin; yy <= yymax; yy++)
       {
         int state = 0;
-        for(int xx = xmin; xx <= xmax; xx++)
+        for(int xx = xxmin; xx <= xxmax; xx++)
         {
           size_t index = (size_t)yy * width + xx;
           float v = buffer[index];
@@ -2833,6 +2842,15 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // deal with feather if it does not lie outside of roi
   if(!path_encircles_roi)
   {
+    int *dpoints = malloc(4 * border_count * sizeof(int));
+    if(dpoints == NULL)
+    {
+      free(points);
+      free(border);
+      return 0;
+    }
+
+    int dindex = 0;
     int p0[2], p1[2];
     float pf1[2];
     int last0[2] = { -100, -100 };
@@ -2868,13 +2886,32 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       // and we draw the falloff
       if(last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
       {
-        _path_falloff_roi(buffer, p0, p1, width, height);
+        dpoints[dindex] = p0[0];
+        dpoints[dindex + 1] = p0[1];
+        dpoints[dindex + 2] = p1[0];
+        dpoints[dindex + 3] = p1[1];
+        dindex += 4;
+
         last0[0] = p0[0];
         last0[1] = p0[1];
         last1[0] = p1[0];
         last1[1] = p1[1];
       }
     }
+
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(dpoints, dindex) \
+  shared(buffer)
+#else
+#pragma omp parallel for shared(buffer)
+#endif
+#endif
+    for(int n = 0; n < dindex; n += 4)
+      _path_falloff_roi(buffer, dpoints + n, dpoints + n + 2, width, height);
+
+    free(dpoints);
 
     if(darktable.unmuted & DT_DEBUG_PERF)
       dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
