@@ -186,6 +186,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
+
+  dt_accel_path_global(path, sizeof(path), "overlay focus peaking");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_focus_peaking);
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -225,6 +228,22 @@ static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObje
 {
   dt_ctl_switch_mode();
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
+}
+
+static gboolean _focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                               guint keyval, GdkModifierType modifier, gpointer data)
+{
+  // Set focus peaking hidden by default
+  gint visible = FALSE;
+
+  // Get the current parameter if defined
+  if(dt_conf_key_exists("ui/show_focus_peaking")) visible = dt_conf_get_bool("ui/show_focus_peaking");
+
+  // Inverse the current parameter and save it
+  visible = !visible;
+  dt_conf_set_bool("ui/show_focus_peaking", visible);
+  darktable.gui->show_focus_peaking = visible;
   return TRUE;
 }
 
@@ -1081,6 +1100,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // key accelerator that enables scrolling of side panels
   gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
 
+  // Init focus peaking
+  gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
   // Initializing widgets
   init_widgets(gui);
 
@@ -1225,6 +1247,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // toggle view of header
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
+
+  // toggle focus peaking everywhere
+  dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle focus peaking",
+                          g_cclosure_new(G_CALLBACK(_focuspeaking_switch_key_accel_callback), NULL, NULL));
 
   // View-switch
   dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
