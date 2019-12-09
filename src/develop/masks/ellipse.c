@@ -1626,7 +1626,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   const int px = roi->x;
   const int py = roi->y;
   const float iscale = 1.0f / roi->scale;
-  const int mesh = 4;
+  const int mesh = CLAMP((10.0f*roi->scale + 2.0f) / 3.0f, 1, 4);
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
@@ -1636,7 +1636,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(iscale, mh, mw, py, px, mesh) \
+  dt_omp_firstprivate(iscale) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1693,33 +1693,39 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     alpha = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
   }
 
+  const float a2 = a * a;
+  const float b2 = b * b;
+  const float ta2 = ta * ta;
+  const float tb2 = tb * tb;
+  const float al = alpha;
+
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(center, mh, mw) \
-  shared(points, a, b, ta, tb, alpha)
+  dt_omp_firstprivate(center) \
+  shared(points)
 #else
-#pragma omp parallel for shared(points, a, b, ta, tb, alpha)
+#pragma omp parallel for shared(points)
 #endif
 #endif
   for(int i = 0; i < mh; i++)
     for(int j = 0; j < mw; j++)
     {
-      size_t index = (size_t)i * mw + j;
-      float x = points[index * 2] - center[0];
-      float y = points[index * 2 + 1] - center[1];
-      float v = atan2(y, x) - alpha;
-      float cosv = cos(v);
-      float sinv = sin(v);
-      float radius2 = a * a * b * b / (a * a * sinv * sinv + b * b * cosv * cosv);
-      float total2 = ta * ta * tb * tb / (ta * ta * sinv * sinv + tb * tb * cosv * cosv);
+      const size_t index = (size_t)i * mw + j;
+      const float x = points[index * 2] - center[0];
+      const float y = points[index * 2 + 1] - center[1];
+      const float v = atan2(y, x) - al;
+      const float cosv2 = cos(v) * cos(v);
+      const float sinv2 = sin(v) * sin(v);
+      const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
+      const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
       float l2 = x * x + y * y;
 
       if(l2 < radius2)
         points[index * 2] = 1.0f;
       else if(l2 < total2)
       {
-        float f = (total2 - l2) / (total2 - radius2);
+        const float f = (total2 - l2) / (total2 - radius2);
         points[index * 2] = f * f;
       }
       else
@@ -1730,10 +1736,10 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, mw, w, mesh) \
-  shared(points, buffer)
+  dt_omp_firstprivate(points) \
+  shared(buffer)
 #else
-#pragma omp parallel for shared(points, buffer)
+#pragma omp parallel for shared(buffer)
 #endif
 #endif
   for(int j = 0; j < h; j++)
