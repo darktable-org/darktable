@@ -34,6 +34,7 @@ making a backup is strongly advised.
   with several themes:
 
      - darktable                : the default theme
+     - darktable-icons          : the default theme with icons
 
      - darktable-elegant-darker : more condensed fonts
                                   best experience with Roboto font installed
@@ -95,6 +96,21 @@ making a backup is strongly advised.
   processing of the image. DO NOT USE THIS FEATURE unless you understand the
   reason behind the default ordering, and have a specific reason for changing it.
   The default order is still the correct order for most purposes.
+
+  The history stack has been changed to list all mandatory modules. They
+  were previously hidden but always active as necessary for processing
+  images. You cannot remove them by compressing history or selecting
+  one as a stating point to edit an image. The mandatory modules have
+  a specific icon to identify them easily. There is seven of them,
+  some are for RAW only and some are generic:
+
+          - raw black/white point
+          - white balance
+          - highlight reconstruction
+          - demosaic
+          - input color profile
+          - output color profile
+          - gamma
 
 - The 'color zones' module now shows a histogram based on the chosen ‘select
   by’ channel, and if the color picker is in 'select area' mode, the range within
@@ -238,7 +254,7 @@ making a backup is strongly advised.
   available shortcuts and mouse actions available in the current
   context.
 
-- A zoom & pan feature has been added to lighttable full preview..
+- A zoom & pan feature has been added to lighttable full preview.
 
 ## Bug fixes
 
@@ -310,7 +326,6 @@ making a backup is strongly advised.
 - Widespread performance tuning, most affected decompressors:
   * Sony ARW2
   * Panasonic V5
-  * Samsung V1
   * Phase One
   * Nikon
   * Pentax
