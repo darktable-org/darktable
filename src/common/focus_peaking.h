@@ -53,7 +53,8 @@ static inline float laplacian(const float *const image, const size_t index[8])
   // then again over the diagonal directions, and average both.
   const float l1 = hypotf(image[index[4]] - image[index[3]], image[index[6]] - image[index[1]]);
   const float l2 = hypotf(image[index[7]] - image[index[0]], image[index[5]] - image[index[2]]);
-  return (l1 + l2) / 2.0f;
+  const float div = fabsf(image[index[3]] + image[index[4]] + image[index[1]] + image[index[6]] - 4.0f * image[index[3] + 1]) + 5e-1;
+  return logf(1.0f + (l1 + l2) / (2.0f * div));
 }
 
 #ifdef _OPENMP
@@ -112,7 +113,7 @@ schedule(static) collapse(2) aligned(image, luma:64)
   interpolate_bilinear(luma, buf_width, buf_height, luma_ds, buf_width_ds, buf_height_ds, 1);
 
   // Prefilter noise
-  fast_surface_blur(luma_ds, buf_width_ds, buf_height_ds, 4, 0.0001f, 2, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma_ds, buf_width_ds, buf_height_ds, 8, 0.001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
 
   // Compute the gradients magnitudes
 #ifdef _OPENMP
@@ -127,6 +128,9 @@ schedule(static) collapse(2) aligned(luma_ds, luma:64)
       get_indices(i, j, buf_width_ds, buf_height_ds, index);
       luma[i * buf_width_ds + j] = laplacian(luma_ds, index);
     }
+
+  // Postfilter to join isolated dots and draw lines
+  fast_surface_blur(luma, buf_width_ds, buf_height_ds, 1, 0.001f, 1, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
 
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
@@ -160,9 +164,9 @@ schedule(static) collapse(2) aligned(focus_peaking, luma_ds, luma:64) reduction(
   interpolate_bilinear(luma, buf_width_ds, buf_height_ds, luma_ds, buf_width, buf_height, 1);
 
   // Set the sharpness thresholds
-  const float six_sigma = TV_sum + 5.0f * sigma;
+  const float six_sigma = TV_sum + 6.0f * sigma;
   const float four_sigma = TV_sum + 4.0f * sigma;
-  const float two_sigma = TV_sum + 3.0f * sigma;
+  const float two_sigma = TV_sum + 2.0f * sigma;
 
   sigma *= sigma;
 
