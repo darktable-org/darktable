@@ -238,8 +238,6 @@ void *dt_control_expose(void *voidptr)
 
   // look up some colors once
   GdkRGBA bg_color = lookup_color(context, "bg_color");
-  GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
-  GdkRGBA fg_color = lookup_color(context, "fg_color");
 
   gdk_cairo_set_source_rgba(cr, &bg_color);
   cairo_save(cr);
@@ -280,14 +278,14 @@ void *dt_control_expose(void *voidptr)
       cairo_line_to(cr, xc - wd, yc + rad);
       if(k == 0)
       {
-        gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
         cairo_fill_preserve(cr);
       }
       cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
       cairo_stroke(cr);
       rad += .5f;
     }
-    gdk_cairo_set_source_rgba(cr, &fg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
     cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
@@ -310,9 +308,9 @@ void *dt_control_expose(void *voidptr)
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
     cairo_set_line_width(cr, 2.0);
-    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
     cairo_stroke_preserve(cr);
-    gdk_cairo_set_source_rgba(cr, &fg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
     cairo_fill(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);

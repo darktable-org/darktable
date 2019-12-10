@@ -2285,7 +2285,6 @@ void dt_gui_load_theme(const char *theme)
   } init[DT_GUI_COLOR_LAST] = {
     [DT_GUI_COLOR_DARKROOM_BG] = { "darkroom_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
-    [DT_GUI_COLOR_DARKROOM_FONT] = { "darkroom_bg_font_color", { .7, .7, .7, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_FONT] = { "lighttable_bg_font_color", { .7, .7, .7, 1.0 } },
@@ -2308,6 +2307,8 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER]
     = { "culling_filmstrip_selected_border_color", { 0.1, 0.1, 0.1, 1.0 } },
     [DT_GUI_COLOR_PREVIEW_HOVER_BORDER] = { "preview_hover_border_color", { 0.9, 0.9, 0.9, 1.0 } },
+    [DT_GUI_COLOR_LOG_BG] = { "log_bg_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_LOG_FG] = { "log_fg_color", { 0.6, 0.6, 0.6, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table
