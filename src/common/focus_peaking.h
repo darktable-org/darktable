@@ -53,8 +53,13 @@ static inline float laplacian(const float *const image, const size_t index[8])
   // then again over the diagonal directions, and average both.
   const float l1 = hypotf(image[index[4]] - image[index[3]], image[index[6]] - image[index[1]]);
   const float l2 = hypotf(image[index[7]] - image[index[0]], image[index[5]] - image[index[2]]);
-  const float div = fabsf(image[index[3]] + image[index[4]] + image[index[1]] + image[index[6]] - 4.0f * image[index[3] + 1]) + 5e-1;
-  return logf(1.0f + (l1 + l2) / (2.0f * div));
+  //const float div = fabsf(image[index[3]] + image[index[4]] + image[index[1]] + image[index[6]] - 4.0f * image[index[3] + 1]) + 1.0f;
+
+  // we assume the gradients follow an hyper-laplacian distributions in natural images,
+  // which is baked by some examples the litterature, but is still very hacky
+  // https://www.sciencedirect.com/science/article/pii/S0165168415004168
+  // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.154.539&rep=rep1&type=pdf
+  return (l1 + l2) / 2.0f;
 }
 
 #ifdef _OPENMP
@@ -98,7 +103,7 @@ schedule(static) collapse(2) aligned(image, luma:64)
       const size_t index_RGB = index * 4;
 
       // remove gamma 2.2 and take the square is equivalent to this:
-      const float exponent = 2.0f / 2.2f;
+      const float exponent = 2.0f * 2.2f;
 
       luma[index] = sqrtf( powf(uint8_to_float(image[index_RGB]), exponent) +
                            powf(uint8_to_float(image[index_RGB + 1]), exponent) +
@@ -113,7 +118,7 @@ schedule(static) collapse(2) aligned(image, luma:64)
   interpolate_bilinear(luma, buf_width, buf_height, luma_ds, buf_width_ds, buf_height_ds, 1);
 
   // Prefilter noise
-  fast_surface_blur(luma_ds, buf_width_ds, buf_height_ds, 8, 0.001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma_ds, buf_width_ds, buf_height_ds, 4, 0.001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
 
   // Compute the gradients magnitudes
 #ifdef _OPENMP
@@ -130,7 +135,7 @@ schedule(static) collapse(2) aligned(luma_ds, luma:64)
     }
 
   // Postfilter to join isolated dots and draw lines
-  fast_surface_blur(luma, buf_width_ds, buf_height_ds, 1, 0.001f, 1, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma, buf_width_ds, buf_height_ds, 8, 0.0001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
 
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
@@ -146,7 +151,8 @@ schedule(static) collapse(2) aligned(luma:64) reduction(+:TV_sum)
 
   TV_sum /= (float)(buf_height_ds - 2) * (float)(buf_width_ds - 2);
 
-  // Compute the gradient standard deviation
+  // Compute the predicator of the hyper-laplacian distribution
+  // (similar to the standard deviation if we had a gaussian distribution)
   float sigma = 0.0f;
 
 #ifdef _OPENMP
@@ -156,19 +162,17 @@ schedule(static) collapse(2) aligned(focus_peaking, luma_ds, luma:64) reduction(
 #endif
   for(size_t i = 2; i < buf_height_ds - 2; ++i)
     for(size_t j = 2; j < buf_width_ds - 2; ++j)
-       sigma += sqf(luma[i * buf_width_ds + j] - TV_sum);
+       sigma += fabsf(luma[i * buf_width_ds + j] - TV_sum);
 
-  sigma = sqrtf(sigma / ((float)(buf_height_ds - 4) * (float)(buf_width_ds - 4)));
+  sigma /= (float)(buf_height_ds - 4) * (float)(buf_width_ds - 4);
 
   // Upscale focus peaking mask
   interpolate_bilinear(luma, buf_width_ds, buf_height_ds, luma_ds, buf_width, buf_height, 1);
 
   // Set the sharpness thresholds
-  const float six_sigma = TV_sum + 6.0f * sigma;
-  const float four_sigma = TV_sum + 4.0f * sigma;
-  const float two_sigma = TV_sum + 2.0f * sigma;
-
-  sigma *= sigma;
+  const float six_sigma = TV_sum + 10.0f * sigma;
+  const float four_sigma = TV_sum + 7.5f * sigma;
+  const float two_sigma = TV_sum + 5.0f * sigma;
 
   // Prepare the focus-peaking image overlay
 #ifdef _OPENMP
@@ -280,7 +284,7 @@ schedule(static) collapse(2) aligned(focus_peaking:64)
                                                                  cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, buf_width));
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_source_surface(cr, surface, 0.0, 0.0);
-  cairo_pattern_set_filter(cairo_get_source (cr), CAIRO_FILTER_FAST);
+  cairo_pattern_set_filter(cairo_get_source (cr), CAIRO_FILTER_BEST);
   cairo_fill(cr);
   cairo_restore(cr);
 
