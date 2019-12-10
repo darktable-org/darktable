@@ -304,7 +304,7 @@ void *dt_control_expose(void *voidptr)
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("working.."), -1);
+    pango_layout_set_text(layout, _("working..."), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
