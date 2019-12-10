@@ -262,31 +262,21 @@ void *dt_control_expose(void *voidptr)
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
+    const float pad = DT_PIXEL_APPLY_DPI(10.0f), xc = width / 2.0;
     const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = MIN(pad + ink.width * .5f, width * .5f - pad);
     float rad = DT_PIXEL_APPLY_DPI(14);
     // ellipsze the text if it does not fit on the screen
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * wd * 2.0f));
-    cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
-    for(int k = 0; k < 5; k++)
-    {
-      cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
-      cairo_line_to(cr, xc + wd, yc - rad);
-      cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
-      cairo_line_to(cr, xc - wd, yc + rad);
-      if(k == 0)
-      {
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
-        cairo_fill_preserve(cr);
-      }
-      cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
-      cairo_stroke(cr);
-      rad += .5f;
-    }
+    cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
+    cairo_line_to(cr, xc + wd, yc - rad);
+    cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
+    cairo_line_to(cr, xc - wd, yc + rad);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_fill(cr);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
-    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
+    cairo_move_to(cr, xc - wd + pad, yc - ink.height * 0.5);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
