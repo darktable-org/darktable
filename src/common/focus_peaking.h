@@ -110,46 +110,43 @@ schedule(static) collapse(2) aligned(image, luma:64)
                            powf(uint8_to_float(image[index_RGB + 2]), exponent) );
     }
 
-  // Downscale image
-  const size_t buf_width_ds = buf_width / 2;
-  const size_t buf_height_ds = buf_height / 2;
-  float *const restrict luma_ds =  dt_alloc_sse_ps(buf_width * buf_height);
-  box_average(luma, buf_width, buf_height, 1, 1);
-  interpolate_bilinear(luma, buf_width, buf_height, luma_ds, buf_width_ds, buf_height_ds, 1);
-
   // Prefilter noise
-  fast_surface_blur(luma_ds, buf_width_ds, buf_height_ds, 4, 0.001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma, buf_width, buf_height, 8, 0.01f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
 
   // Compute the gradients magnitudes
+  float *const restrict luma_ds =  dt_alloc_sse_ps(buf_width * buf_height);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luma, luma_ds, buf_height_ds, buf_width_ds) \
+dt_omp_firstprivate(luma, luma_ds, buf_height, buf_width) \
 schedule(static) collapse(2) aligned(luma_ds, luma:64)
 #endif
-  for(size_t i = 1; i < buf_height_ds - 1; ++i)
-    for(size_t j = 1; j < buf_width_ds - 1; ++j)
+  for(size_t i = 1; i < buf_height - 1; ++i)
+    for(size_t j = 1; j < buf_width - 1; ++j)
     {
       size_t index[8];
-      get_indices(i, j, buf_width_ds, buf_height_ds, index);
-      luma[i * buf_width_ds + j] = laplacian(luma_ds, index);
+      get_indices(i, j, buf_width, buf_height, index);
+      luma_ds[i * buf_width + j] = laplacian(luma, index);
     }
 
   // Postfilter to join isolated dots and draw lines
-  fast_surface_blur(luma, buf_width_ds, buf_height_ds, 8, 0.0001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma_ds, buf_width, buf_height, 12, 0.0001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+
+  // Anti-aliasing filter
+  box_average(luma_ds, buf_width, buf_height, 1, 1);
 
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luma, buf_height_ds, buf_width_ds) \
-schedule(static) collapse(2) aligned(luma:64) reduction(+:TV_sum)
+dt_omp_firstprivate(luma_ds, buf_height, buf_width) \
+schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
 #endif
-  for(size_t i = 1; i < buf_height_ds - 1; ++i)
-    for(size_t j = 1; j < buf_width_ds - 1; ++j)
-      TV_sum += luma[i * buf_width_ds + j];
+  for(size_t i = 1; i < buf_height - 1; ++i)
+    for(size_t j = 1; j < buf_width - 1; ++j)
+      TV_sum += luma_ds[i * buf_width + j];
 
-  TV_sum /= (float)(buf_height_ds - 2) * (float)(buf_width_ds - 2);
+  TV_sum /= (float)(buf_height - 2) * (float)(buf_width - 2);
 
   // Compute the predicator of the hyper-laplacian distribution
   // (similar to the standard deviation if we had a gaussian distribution)
@@ -157,21 +154,18 @@ schedule(static) collapse(2) aligned(luma:64) reduction(+:TV_sum)
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(focus_peaking, luma, luma_ds, buf_height_ds, buf_width_ds, TV_sum) \
-schedule(static) collapse(2) aligned(focus_peaking, luma_ds, luma:64) reduction(+:sigma)
+dt_omp_firstprivate(focus_peaking, luma_ds, buf_height, buf_width, TV_sum) \
+schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma)
 #endif
-  for(size_t i = 2; i < buf_height_ds - 2; ++i)
-    for(size_t j = 2; j < buf_width_ds - 2; ++j)
-       sigma += fabsf(luma[i * buf_width_ds + j] - TV_sum);
+  for(size_t i = 1; i < buf_height - 1; ++i)
+    for(size_t j = 1; j < buf_width - 1; ++j)
+       sigma += fabsf(luma_ds[i * buf_width + j] - TV_sum);
 
-  sigma /= (float)(buf_height_ds - 4) * (float)(buf_width_ds - 4);
-
-  // Upscale focus peaking mask
-  interpolate_bilinear(luma, buf_width_ds, buf_height_ds, luma_ds, buf_width, buf_height, 1);
+  sigma /= (float)(buf_height - 2) * (float)(buf_width - 2);
 
   // Set the sharpness thresholds
-  const float six_sigma = TV_sum + 10.0f * sigma;
-  const float four_sigma = TV_sum + 7.5f * sigma;
+  const float six_sigma = TV_sum + 15.0f * sigma;
+  const float four_sigma = TV_sum + 10.0f * sigma;
   const float two_sigma = TV_sum + 5.0f * sigma;
 
   // Prepare the focus-peaking image overlay
