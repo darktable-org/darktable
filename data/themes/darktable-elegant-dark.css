@@ -72,12 +72,15 @@
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_20;
 @define-color menu_bg_color @grey_20;
+@define-color log_bg_color @grey_50;
+@define-color log_fg_color @grey_80;
 
 /* Views */
 @define-color darkroom_bg_color @grey_60;
 @define-color darkroom_preview_bg_color @grey_50;
 @define-color lighttable_bg_color @grey_60;
 @define-color lighttable_preview_bg_color @grey_50;
+@define-color lighttable_bg_font_color @grey_85;
 @define-color print_bg_color @grey_60;
 
 /* Lighttable and film-strip */
