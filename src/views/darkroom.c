@@ -190,13 +190,6 @@ static cairo_status_t write_snapshot_data(void *closure, const unsigned char *da
   return CAIRO_STATUS_SUCCESS;
 }
 
-static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
-{
-  GdkRGBA color, fallback = { 1.0, 0.0, 0.0, 1.0 };
-  if(!gtk_style_context_lookup_color(context, name, &color)) color = fallback;
-  return color;
-}
-
 void expose(
     dt_view_t *self,
     cairo_t *cri,
@@ -347,10 +340,6 @@ void expose(
     cairo_paint(cr);
 
     // waiting message
-    GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-    GtkStyleContext *context = gtk_widget_get_style_context(widget);
-    GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
-    GdkRGBA fg_color = lookup_color(context, "fg_color");
     PangoRectangle ink;
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
@@ -366,9 +355,9 @@ void expose(
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
     cairo_set_line_width(cr, 2.0);
-    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
     cairo_stroke_preserve(cr);
-    gdk_cairo_set_source_rgba(cr, &fg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
     cairo_fill(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);
