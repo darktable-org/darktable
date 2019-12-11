@@ -65,13 +65,13 @@ static inline float laplacian(const float *const image, const size_t index[8])
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void get_indices(const size_t i, const size_t j, const size_t width, const size_t height, size_t index[8])
+static inline void get_indices(const size_t i, const size_t j, const size_t width, const size_t height, const size_t delta, size_t index[8])
 {
-  const size_t upper_line = (i - 1) * width;
-  const size_t center_line = upper_line + width;
-  const size_t lower_line = center_line + width;
-  const size_t left_row = j - 1;
-  const size_t right_row = j + 1;
+  const size_t upper_line = (i - delta) * width;
+  const size_t center_line = i * width;
+  const size_t lower_line = (i + delta) * width;
+  const size_t left_row = j - delta;
+  const size_t right_row = j + delta;
 
   index[0] = upper_line + left_row;       // north west
   index[1] = upper_line + j;              // north
@@ -111,7 +111,7 @@ schedule(static) collapse(2) aligned(image, luma:64)
     }
 
   // Prefilter noise
-  fast_surface_blur(luma, buf_width, buf_height, 8, 0.01f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
+  fast_surface_blur(luma, buf_width, buf_height, 12, 0.00001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 1.0f);
 
   // Compute the gradients magnitudes
   float *const restrict luma_ds =  dt_alloc_sse_ps(buf_width * buf_height);
@@ -120,19 +120,26 @@ schedule(static) collapse(2) aligned(image, luma:64)
 dt_omp_firstprivate(luma, luma_ds, buf_height, buf_width) \
 schedule(static) collapse(2) aligned(luma_ds, luma:64)
 #endif
-  for(size_t i = 1; i < buf_height - 1; ++i)
-    for(size_t j = 1; j < buf_width - 1; ++j)
+  for(size_t i = 2; i < buf_height - 2; ++i)
+    for(size_t j = 2; j < buf_width - 2; ++j)
     {
-      size_t index[8];
-      get_indices(i, j, buf_width, buf_height, index);
-      luma_ds[i * buf_width + j] = laplacian(luma, index);
+      size_t index_close[8];
+      get_indices(i, j, buf_width, buf_height, 1, index_close);
+
+      size_t index_far[8];
+      get_indices(i, j, buf_width, buf_height, 2, index_far);
+
+      // Computing the gradient on the closest neighbours gives us the rate of variation, but doesn't say if we are
+      // looking at local contrast or optical sharpness.
+      // so we compute again the gradient on neighbours a bit further.
+      // if both gradients have the same magnitude, it means we have no sharpness but just a big step in intensity,
+      // aka local contrast. If the closest is higher than the farthest, is means we have indeed a sharp something,
+      // either noise or edge. To mitigate that, we just subtract half the farthest gradient but add a noise threshold
+      luma_ds[i * buf_width + j] = laplacian(luma, index_close) - 0.67f * (laplacian(luma, index_far) - 0.00390625f);
     }
 
-  // Postfilter to join isolated dots and draw lines
-  fast_surface_blur(luma_ds, buf_width, buf_height, 12, 0.0001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 0.0f);
-
-  // Anti-aliasing filter
-  box_average(luma_ds, buf_width, buf_height, 1, 1);
+  // Anti-aliasing
+  box_average(luma_ds, buf_width, buf_height, 1, 2);
 
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;
@@ -142,11 +149,11 @@ schedule(static) collapse(2) aligned(luma_ds, luma:64)
 dt_omp_firstprivate(luma_ds, buf_height, buf_width) \
 schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
 #endif
-  for(size_t i = 1; i < buf_height - 1; ++i)
-    for(size_t j = 1; j < buf_width - 1; ++j)
+  for(size_t i = 2; i < buf_height - 2; ++i)
+    for(size_t j = 2; j < buf_width - 2; ++j)
       TV_sum += luma_ds[i * buf_width + j];
 
-  TV_sum /= (float)(buf_height - 2) * (float)(buf_width - 2);
+  TV_sum /= (float)(buf_height - 4) * (float)(buf_width - 4);
 
   // Compute the predicator of the hyper-laplacian distribution
   // (similar to the standard deviation if we had a gaussian distribution)
@@ -157,16 +164,19 @@ schedule(static) collapse(2) aligned(luma_ds:64) reduction(+:TV_sum)
 dt_omp_firstprivate(focus_peaking, luma_ds, buf_height, buf_width, TV_sum) \
 schedule(static) collapse(2) aligned(focus_peaking, luma_ds:64) reduction(+:sigma)
 #endif
-  for(size_t i = 1; i < buf_height - 1; ++i)
-    for(size_t j = 1; j < buf_width - 1; ++j)
+  for(size_t i = 2; i < buf_height - 2; ++i)
+    for(size_t j = 2; j < buf_width - 2; ++j)
        sigma += fabsf(luma_ds[i * buf_width + j] - TV_sum);
 
-  sigma /= (float)(buf_height - 2) * (float)(buf_width - 2);
+  sigma /= (float)(buf_height - 4) * (float)(buf_width - 4);
 
   // Set the sharpness thresholds
-  const float six_sigma = TV_sum + 15.0f * sigma;
-  const float four_sigma = TV_sum + 10.0f * sigma;
-  const float two_sigma = TV_sum + 5.0f * sigma;
+  const float six_sigma = TV_sum + 10.0f * sigma;
+  const float four_sigma = TV_sum + 5.0f * sigma;
+  const float two_sigma = TV_sum + 2.5f * sigma;
+
+  // Postfilter to connect isolated dots and draw lines
+  fast_surface_blur(luma_ds, buf_width, buf_height, 12, 0.00001f, 4, DT_GF_BLENDING_LINEAR, 1, 0.0f, exp2f(-8.0f), 1.0f);
 
   // Prepare the focus-peaking image overlay
 #ifdef _OPENMP
