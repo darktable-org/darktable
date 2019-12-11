@@ -1722,6 +1722,37 @@ void dt_ui_notify_user()
   }
 }
 
+static void _ui_init_panel_size(GtkWidget *widget)
+{
+  if(!darktable.view_manager) return;
+  // conf entry to store the new size
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+  // in lighttable, we store panels width per layout
+  char lay[32] = "";
+  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+  }
+
+  if(strcmp(gtk_widget_get_name(widget), "right") == 0)
+  {
+    g_snprintf(key, sizeof(key), "%s/ui/%sright_panel_size", cv->module_name, lay);
+  }
+  else
+  {
+    g_snprintf(key, sizeof(key), "%s/ui/%sleft_panel_size", cv->module_name, lay);
+  }
+
+  // we store and apply the new value
+  int s = 350; // default panel size
+  if(dt_conf_key_exists(key)) s = CLAMP(dt_conf_get_int(key), DT_PIXEL_APPLY_DPI(150), DT_PIXEL_APPLY_DPI(500));
+  gtk_widget_set_size_request(widget, s, -1);
+}
+
 void dt_ui_restore_panels(dt_ui_t *ui)
 {
   /* restore visible state of panels for current view */
@@ -1736,6 +1767,10 @@ void dt_ui_restore_panels(dt_ui_t *ui)
     else
       g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
+
+  /* restore left & right panel size */
+  _ui_init_panel_size(ui->panels[DT_UI_PANEL_LEFT]);
+  _ui_init_panel_size(ui->panels[DT_UI_PANEL_RIGHT]);
 
   /* restore from a previous collapse all panel state if enabled */
   g_snprintf(key, sizeof(key), "%s/ui/%spanel_collaps_state", cv->module_name, lay);
@@ -2003,15 +2038,35 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, g
 #endif
 
     gtk_widget_get_size_request(widget, &sx, &sy);
+
+    // conf entry to store the new size
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    char key[512];
+    // in lighttable, we store panels width per layout
+    char lay[32] = "";
+    if(g_strcmp0(cv->module_name, "lighttable") == 0)
+    {
+      if(dt_view_lighttable_preview_state(darktable.view_manager))
+        g_snprintf(lay, sizeof(lay), "preview/");
+      else
+        g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    }
+
     if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
     {
-      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(500));
+      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), DT_PIXEL_APPLY_DPI(150),
+                 DT_PIXEL_APPLY_DPI(500));
+      g_snprintf(key, sizeof(key), "%s/ui/%sright_panel_size", cv->module_name, lay);
     }
     else
     {
-      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(500));
+      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), DT_PIXEL_APPLY_DPI(150),
+                 DT_PIXEL_APPLY_DPI(500));
+      g_snprintf(key, sizeof(key), "%s/ui/%sleft_panel_size", cv->module_name, lay);
     }
-    // dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
+
+    // we store and apply the new value
+    dt_conf_set_int(key, sx);
     gtk_widget_set_size_request(widget, sx, -1);
 
     return TRUE;
@@ -2027,8 +2082,8 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   darktable.gui->widgets.panel_handle_dragging = FALSE;
   widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
   gtk_widget_set_name(widget, "left");
+  _ui_init_panel_size(widget);
 
   GtkWidget *over = gtk_overlay_new();
   gtk_container_add(GTK_CONTAINER(over), widget);
@@ -2068,8 +2123,8 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   darktable.gui->widgets.panel_handle_dragging = FALSE;
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
   gtk_widget_set_name(widget, "right");
+  _ui_init_panel_size(widget);
 
   GtkWidget *over = gtk_overlay_new();
   gtk_container_add(GTK_CONTAINER(over), widget);
