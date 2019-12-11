@@ -252,7 +252,10 @@ box *
   background-color: @border_color;
   min-width: 20px;
 }
-
+#resize-border
+{
+  background-color: #ff0000;
+}
 #left
 {
   /* left sidebar */
