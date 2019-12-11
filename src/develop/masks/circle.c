@@ -921,43 +921,160 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                   dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
-  double start2 = dt_get_wtime();
+  double start1 = dt_get_wtime();
+  double start2 = start1;
 
-  // we get the circle values
+  // we get the circle parameters
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
+  const float center[2] = { circle->center[0] * wi, circle->center[1] * hi };
+  const float radius2 = circle->radius * MIN(wi, hi) * circle->radius * MIN(wi, hi);
+  const float total = (circle->radius + circle->border) * MIN(wi, hi);
+  const float total2 = total * total;
 
-  // we create a buffer of mesh points for later interpolation. mainly in order to reduce memory footprint
+  // we create a buffer of grid points for later interpolation: higher speed and reduced memory footprint;
+  // we match size of buffer to bounding box around the shape
   const int w = roi->width;
   const int h = roi->height;
   const int px = roi->x;
   const int py = roi->y;
   const float iscale = 1.0f / roi->scale;
-  const int mesh = CLAMP((10.0f*roi->scale + 2.0f) / 3.0f, 1, 4);
-  const int mw = (w + mesh - 1) / mesh + 1;
-  const int mh = (h + mesh - 1) / mesh + 1;
+  const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4); // scale dependent resolution
+  const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
+  const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  float *points = malloc((size_t)mw * mh * 2 * sizeof(float));
-  if(points == NULL) return 0;
+  // initialize output buffer with zero
+  memset(buffer, 0, (size_t)w * h * sizeof(float));
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle init took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we look at the outer circle of the shape - no effects outside of this circle;
+  // we need many points as we do not know how the circle might get distorted in the pixelpipe
+  const size_t circpts = dt_masks_roundup(MIN(360, 2 * M_PI * total2), 8);
+  float *circ = malloc(circpts * 2 * sizeof(float));
+  if(circ == NULL) return 0;
 
 #ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  shared(circ)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
+  for(int n = 0; n < circpts / 8; n++)
+  {
+    const float phi = (2.0f * M_PI * n) / circpts;
+    const float x = total * cos(phi);
+    const float y = total * sin(phi);
+    const float cx = center[0];
+    const float cy = center[1];
+    const int index_x = 2 * n * 8;
+    const int index_y = 2 * n * 8 + 1;
+    // take advantage of symmetry
+    circ[index_x] = cx + x;
+    circ[index_y] = cy + y;
+    circ[index_x + 2] = cx + x;
+    circ[index_y + 2] = cy - y;
+    circ[index_x + 4] = cx - x;
+    circ[index_y + 4] = cy + y;
+    circ[index_x + 6] = cx - x;
+    circ[index_y + 6] = cy - y;
+    circ[index_x + 8] = cx + y;
+    circ[index_y + 8] = cy + x;
+    circ[index_x + 10] = cx + y;
+    circ[index_y + 10] = cy - x;
+    circ[index_x + 12] = cx - y;
+    circ[index_y + 12] = cy + x;
+    circ[index_x + 14] = cx - y;
+    circ[index_y + 14] = cy - x;
+  }
+
+  // we transform the outer circle from input image coordinates to current point in pixelpipe
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, circ,
+                                        circpts))
+  {
+    free(circ);
+    return 0;
+  }
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle outline took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we get the min/max values ...
+  float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
+  for(int n = 0; n < circpts; n++)
+  {
+    // just in case that transform throws surprising values
+    if(!(isnormal(circ[2 * n]) && isnormal(circ[2 * n + 1]))) continue;
+
+    xmin = MIN(xmin, circ[2 * n]);
+    xmax = MAX(xmax, circ[2 * n]);
+    ymin = MIN(ymin, circ[2 * n + 1]);
+    ymax = MAX(ymax, circ[2 * n + 1]);
+  }
+
+#if 0
+  printf("xmin %f, xmax %f, ymin %f, ymax %f\n", xmin, xmax, ymin, ymax);
+  printf("wi %d, hi %d, iscale %f\n", wi, hi, iscale);
+  printf("w %d, h %d, px %d, py %d\n", w, h, px, py);
+#endif
+
+  // ... and calculate the bounding box with a bit of reserve
+  const int bbxm = CLAMP((int)floorf(xmin / iscale - px) / grid - 1, 0, gw - 1);
+  const int bbXM = CLAMP((int)ceilf(xmax / iscale - px) / grid + 2, 0, gw - 1);
+  const int bbym = CLAMP((int)floorf(ymin / iscale - py) / grid - 1, 0, gh - 1);
+  const int bbYM = CLAMP((int)ceilf(ymax / iscale - py) / grid + 2, 0, gh - 1);
+  const int bbw = bbXM - bbxm + 1;
+  const int bbh = bbYM - bbym + 1;
+
+#if 0
+  printf("bbxm %d, bbXM %d, bbym %d, bbYM %d\n", bbxm, bbXM, bbym, bbYM);
+  printf("gw %d, gh %d, bbw %d, bbh %d\n", gw, gh, bbw, bbh);
+#endif
+
+  free(circ);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle bounding box took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // check if there is anything to do at all;
+  // only if width and height of bounding box is 2 or greater the shape lies inside of roi and requires action
+  if(bbw <= 1 || bbh <= 1)
+    return 1;
+
+
+  float *points = malloc((size_t)bbw * bbh * 2 * sizeof(float));
+  if(points == NULL) return 0;
+
+  // we populate the grid points in module coordinates
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   shared(points)
+#else
+#pragma omp parallel for shared(points)
 #endif
-  for(int j = 0; j < mh; j++)
-    for(int i = 0; i < mw; i++)
+#endif
+  for(int j = bbym; j <= bbYM; j++)
+    for(int i = bbxm; i <= bbXM; i++)
     {
-      size_t index = (size_t)j * mw + i;
-      points[index * 2] = (mesh * i + px) * iscale;
-      points[index * 2 + 1] = (mesh * j + py) * iscale;
+      const size_t index = (size_t)(j - bbym) * bbw + i - bbxm;
+      points[index * 2] = (grid * i + px) * iscale;
+      points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] circle draw took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle grid took %0.04f sec\n", form->name, dt_get_wtime() - start2);
   start2 = dt_get_wtime();
 
-  // we back transform all these points
+  // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
-                                        (size_t)mw * mh))
+                                        (size_t)bbw * bbh))
   {
     free(points);
     return 0;
@@ -968,13 +1085,9 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
              dt_get_wtime() - start2);
   start2 = dt_get_wtime();
 
-  // we populate the buffer
-  const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
-  const float center[2] = { circle->center[0] * wi, circle->center[1] * hi };
-  const float radius2 = circle->radius * MIN(wi, hi) * circle->radius * MIN(wi, hi);
-  const float total2 = (circle->radius + circle->border) * MIN(wi, hi) * (circle->radius + circle->border)
-                       * MIN(wi, hi);
 
+  // we calculate the mask values at the transformed points;
+  // for results: re-use the points array
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
@@ -984,53 +1097,65 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 #pragma omp parallel for shared(points)
 #endif
 #endif
-  for(int i = 0; i < mh; i++)
-    for(int j = 0; j < mw; j++)
+  for(int j = 0; j < bbh; j++)
+    for(int i = 0; i < bbw; i++)
     {
-      size_t index = (size_t)i * mw + j;
-      float x = points[index * 2];
-      float y = points[index * 2 + 1];
-      float l2 = (x - center[0]) * (x - center[0]) + (y - center[1]) * (y - center[1]);
+      const size_t index = (size_t)j * bbw + i;
+      const float x = points[index * 2];
+      const float y = points[index * 2 + 1];
+      const float l2 = (x - center[0]) * (x - center[0]) + (y - center[1]) * (y - center[1]);
       if(l2 < radius2)
         points[index * 2] = 1.0f;
       else if(l2 < total2)
       {
-        float f = (total2 - l2) / (total2 - radius2);
+        const float f = (total2 - l2) / (total2 - radius2);
         points[index * 2] = f * f;
       }
       else
         points[index * 2] = 0.0f;
     }
 
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle draw took %0.04f sec\n", form->name,
+             dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
 
-// we fill the output buffer by interpolation
+  // we fill the pre-initialized output buffer by interpolation;
+  // we only need to take the contents of our bounding box into account
+  const int endx = MIN(w, bbXM * grid);
+  const int endy = MIN(h, bbYM * grid);
 #ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(points) \
   shared(buffer)
+#else
+#pragma omp parallel for shared(buffer)
 #endif
-  for(int j = 0; j < h; j++)
+#endif
+  for(int j = bbym * grid; j < endy; j++)
   {
-    int jj = j % mesh;
-    int mj = j / mesh;
-    for(int i = 0; i < w; i++)
+    const int jj = j % grid;
+    const int mj = j / grid - bbym;
+    for(int i = bbxm * grid; i < endx; i++)
     {
-      int ii = i % mesh;
-      int mi = i / mesh;
-      size_t mindex = (size_t)mj * mw + mi;
+      const int ii = i % grid;
+      const int mi = i / grid - bbxm;
+      const size_t mindex = (size_t)mj * bbw + mi;
       buffer[(size_t)j * w + i]
-          = (points[mindex * 2] * (mesh - ii) * (mesh - jj) + points[(mindex + 1) * 2] * ii * (mesh - jj)
-             + points[(mindex + mw) * 2] * (mesh - ii) * jj + points[(mindex + mw + 1) * 2] * ii * jj)
-            / (mesh * mesh);
+          = (points[mindex * 2] * (grid - ii) * (grid - jj) + points[(mindex + 1) * 2] * ii * (grid - jj)
+             + points[(mindex + bbw) * 2] * (grid - ii) * jj + points[(mindex + bbw + 1) * 2] * ii * jj)
+            / (grid * grid);
     }
   }
 
   free(points);
 
-
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle total render took %0.04f sec\n", form->name, dt_get_wtime() - start1);
 
   return 1;
 }
