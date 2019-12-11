@@ -41,7 +41,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
       "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
       "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
-      "raw_maximum FROM main.images WHERE id = ?1",
+      "raw_maximum, aspect_ratio FROM main.images WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -101,6 +101,10 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->raw_black_level = sqlite3_column_int(stmt, 25);
     for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
     img->raw_white_point = sqlite3_column_int(stmt, 26);
+    if(sqlite3_column_type(stmt, 27) == SQLITE_FLOAT)
+      img->aspect_ratio = sqlite3_column_double(stmt, 27);
+    else
+      img->aspect_ratio = 0.0;
 
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
