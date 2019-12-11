@@ -203,6 +203,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib_for_views(self, views, NC_("accel", "color green"), GDK_KEY_F3, 0);
   dt_accel_register_lib_for_views(self, views, NC_("accel", "color blue"), GDK_KEY_F4, 0);
   dt_accel_register_lib_for_views(self, views, NC_("accel", "color purple"), GDK_KEY_F5, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "clear color labels"), 0, 0);
 
   /* setup selection accelerators */
   dt_accel_register_lib_for_views(self, views, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
@@ -272,6 +273,9 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib(
       self, "color purple",
       g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL));
+  dt_accel_connect_lib(
+      self, "clear color labels",
+      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(5), NULL));
 
   // Selection accels
   dt_accel_connect_lib(self, "select all", g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
@@ -518,7 +522,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
           int offset = 0;
           if(mouse_over_id == strip->activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-          dt_ratings_apply_to_image_or_group(mouse_over_id, strip->image_over);
+          dt_ratings_apply(mouse_over_id, strip->image_over, TRUE, TRUE, TRUE);
 
           if(mouse_over_id == strip->activated_image)
             if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
@@ -982,7 +986,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_ratings_apply_to_image_or_group(image_id, num);
+      dt_ratings_apply(image_id, num, TRUE, TRUE, TRUE);
 
       dt_collection_update_query(darktable.collection); // update the counter and selection
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all

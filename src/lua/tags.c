@@ -190,7 +190,7 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_attach_from_gui(tagid, imgid);
+  dt_tag_attach_from_gui(tagid, imgid, TRUE, TRUE);
   dt_image_synch_xmp(imgid);
   return 0;
 }
@@ -209,7 +209,7 @@ int dt_lua_tag_detach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_detach(tagid, imgid);
+  dt_tag_detach(tagid, imgid, TRUE, TRUE);
   dt_image_synch_xmp(imgid);
   return 0;
 }

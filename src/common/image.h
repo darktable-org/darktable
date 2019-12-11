@@ -264,11 +264,9 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 void dt_image_reset_final_size(const int32_t imgid);
 /** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on);
 /** get image location lon/lat */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
-/** set image location lon/lat/ele */
-void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */

@@ -20,9 +20,10 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "gui/gtk.h"
 
 /** add an image to a group */
-void dt_grouping_add_to_group(int group_id, int image_id)
+void dt_grouping_add_to_group(const int group_id, const int image_id)
 {
   // remove from old group
   dt_grouping_remove_from_group(image_id);
@@ -33,7 +34,7 @@ void dt_grouping_add_to_group(int group_id, int image_id)
 }
 
 /** remove an image from a group */
-int dt_grouping_remove_from_group(int image_id)
+int dt_grouping_remove_from_group(const int image_id)
 {
   sqlite3_stmt *stmt;
   int new_group_id = -1;
@@ -79,7 +80,7 @@ int dt_grouping_remove_from_group(int image_id)
 }
 
 /** make an image the representative of the group it is in */
-int dt_grouping_change_representative(int image_id)
+int dt_grouping_change_representative(const int image_id)
 {
   sqlite3_stmt *stmt;
 
@@ -100,6 +101,70 @@ int dt_grouping_change_representative(int image_id)
   sqlite3_finalize(stmt);
 
   return image_id;
+}
+
+/** get images of the group */
+GList *dt_grouping_get_group_images(const int imgid)
+{
+  GList *imgs = NULL;
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(image)
+  {
+    const int img_group_id = image->group_id;
+    dt_image_cache_read_release(darktable.image_cache, image);
+    if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int image_id = sqlite3_column_int(stmt, 0);
+        imgs = g_list_append(imgs, GINT_TO_POINTER(image_id));
+      }
+      sqlite3_finalize(stmt);
+    }
+    else imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  }
+  return imgs;
+}
+
+/** get images of the group */
+void dt_grouping_add_grouped_images(GList **images)
+{
+  if(!*images) return;
+  GList *gimgs = NULL;
+  GList *imgs = *images;
+  while(imgs)
+  {
+    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, GPOINTER_TO_INT(imgs->data), 'r');
+    if(image)
+    {
+      const int img_group_id = image->group_id;
+      dt_image_cache_read_release(darktable.image_cache, image);
+      if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
+
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          const int image_id = sqlite3_column_int(stmt, 0);
+          if(image_id != GPOINTER_TO_INT(imgs->data))
+            gimgs = g_list_append(gimgs, GINT_TO_POINTER(image_id));
+        }
+        sqlite3_finalize(stmt);
+      }
+    }
+    imgs = g_list_next(imgs);
+  }
+
+  if(gimgs)
+    imgs = g_list_concat(*images, gimgs);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

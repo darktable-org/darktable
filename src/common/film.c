@@ -499,8 +499,6 @@ void dt_film_remove(const int id)
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
 
-  dt_tag_update_used_tags();
-
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
