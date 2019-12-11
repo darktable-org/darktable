@@ -4468,7 +4468,6 @@ static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  printf("_lighttable_redo_callback\n");
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 

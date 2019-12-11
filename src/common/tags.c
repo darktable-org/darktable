@@ -140,7 +140,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       GList *before = (action == DT_ACTION_UNDO) ? undotags->after : undotags->before;
       GList *after = (action == DT_ACTION_UNDO) ? undotags->before : undotags->after;
       _pop_undo_execute(undotags->imgid, before, after);
-      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(tags->imgid));
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undotags->imgid));
       list = g_list_next(list);
     }
 

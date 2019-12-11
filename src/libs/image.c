@@ -51,7 +51,7 @@ typedef struct dt_lib_image_t
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button, *delete_button, *create_hdr_button,
       *duplicate_button, *reset_button, *move_button, *copy_button, *group_button, *ungroup_button,
       *cache_button, *uncache_button, *refresh_button,
-      *copy_metadata_button, *paste_metadata_button, *add_metadata_button, *clear_metadata_button,
+      *copy_metadata_button, *replace_metadata_button, *merge_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   int imageid;
 } dt_lib_image_t;
@@ -206,8 +206,8 @@ static int _get_source_image(void)
 
 typedef enum dt_metadata_actions_t
 {
-  DT_MA_PASTE = 0,
-  DT_MA_ADD,
+  DT_MA_REPLACE = 0,
+  DT_MA_MERGE,
   DT_MA_CLEAR
 } dt_metadata_actions_t;
 
@@ -238,12 +238,12 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(colors_flag)
   {
     const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
-    dt_colorlabels_set_labels(img, colors, TRUE, TRUE);
+    dt_colorlabels_set_labels(img, colors, action != DT_MA_MERGE, TRUE, TRUE);
   }
   if(dtmetadata_flag)
   {
     GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
-    dt_metadata_set_list_id(img, metadata, action != DT_MA_ADD, TRUE, TRUE);
+    dt_metadata_set_list_id(img, metadata, action != DT_MA_MERGE, TRUE, TRUE);
     g_list_free_full(metadata, g_free);
   }
   if(geotag_flag)
@@ -259,7 +259,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(dttag_flag)
   {
     GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid);
-    dt_tag_set_tags(tags, img, action != DT_MA_ADD, TRUE, TRUE);
+    dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
     g_list_free(tags);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
@@ -279,19 +279,19 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
   d->imageid = _get_source_image();
   if(d->imageid)
   {
-    gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
-    gtk_widget_set_sensitive(d->add_metadata_button, TRUE);
+    gtk_widget_set_sensitive(d->replace_metadata_button, TRUE);
+    gtk_widget_set_sensitive(d->merge_metadata_button, TRUE);
   }
 }
 
-static void paste_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void replace_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  _execute_metadata(self, DT_MA_PASTE);
+  _execute_metadata(self, DT_MA_REPLACE);
 }
 
-static void add_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void merge_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  _execute_metadata(self, DT_MA_ADD);
+  _execute_metadata(self, DT_MA_MERGE);
 }
 
 static void clear_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -461,21 +461,21 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(copy_metadata_callback), self);
 
-  button = gtk_button_new_with_label(_("paste"));
+  button = gtk_button_new_with_label(_("merge"));
   ellipsize_button(button);
-  d->paste_metadata_button = button;
+  d->merge_metadata_button = button;
   gtk_widget_set_sensitive(button, FALSE);
-  gtk_widget_set_tooltip_text(button, _("paste selected metadata to selected images (clears previous dt metadata and tags on selected images)"));
+  gtk_widget_set_tooltip_text(button, _("merge selected metadata on selected images (doesn\'t clear previous dt metadata and tags on selected images)"));
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(paste_metadata_callback), self);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(merge_metadata_callback), self);
 
-  button = gtk_button_new_with_label(_("add"));
+  button = gtk_button_new_with_label(_("replace"));
   ellipsize_button(button);
-  d->add_metadata_button = button;
+  d->replace_metadata_button = button;
   gtk_widget_set_sensitive(button, FALSE);
-  gtk_widget_set_tooltip_text(button, _("add selected metadata to selected images (doesn\'t clear previous dt metadata and tags on selected images)"));
+  gtk_widget_set_tooltip_text(button, _("replace selected metadata on selected images (clears previous dt metadata and tags on selected images)"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(add_metadata_callback), self);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(replace_metadata_callback), self);
 
   button = gtk_button_new_with_label(_("clear"));
   ellipsize_button(button);
@@ -528,7 +528,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   d->imageid = 0;
-  gtk_widget_set_sensitive(d->paste_metadata_button, FALSE);
+  gtk_widget_set_sensitive(d->replace_metadata_button, FALSE);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -554,8 +554,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "add metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "merge metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
@@ -579,8 +579,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
   dt_accel_connect_button_lib(self, "refresh exif", d->refresh_button);
   dt_accel_connect_button_lib(self, "copy metadata", d->copy_metadata_button);
-  dt_accel_connect_button_lib(self, "paste metadata", d->paste_metadata_button);
-  dt_accel_connect_button_lib(self, "add metadata", d->add_metadata_button);
+  dt_accel_connect_button_lib(self, "replace metadata", d->replace_metadata_button);
+  dt_accel_connect_button_lib(self, "merge metadata", d->merge_metadata_button);
   dt_accel_connect_button_lib(self, "clear metadata", d->clear_metadata_button);
   // Grouping keys
   dt_accel_connect_button_lib(self, "group", d->group_button);

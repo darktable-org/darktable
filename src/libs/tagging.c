@@ -2834,7 +2834,7 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
   {
     const int imgsel = dt_control_get_mouse_over_id();
 
-    dt_tag_attach_string_list(d->last_tag, imgsel);
+    dt_tag_attach_string_list(d->last_tag, imgsel, TRUE, TRUE);
     dt_image_synch_xmp(imgsel);
     init_treeview(self, 0);
     init_treeview(self, 1);
