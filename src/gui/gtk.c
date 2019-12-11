@@ -1945,14 +1945,111 @@ static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
   return w;
 }
 
+static void _panel_resize_callback(GtkWidget *w, GtkAllocation *allocation, void *user_data)
+{
+  GtkWidget *handle = (GtkWidget *)user_data;
+  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), allocation->height);
+}
+static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  if(e->button == 1)
+  {
+    if(e->type == GDK_BUTTON_PRESS)
+    {
+      /* store current  mousepointer position */
+#if GTK_CHECK_VERSION(3, 20, 0)
+      gdk_window_get_device_position(e->window,
+                                     gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(
+                                         gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
+                                     &darktable.gui->widgets.panel_handle_x,
+                                     &darktable.gui->widgets.panel_handle_y, 0);
+#else
+      gdk_window_get_device_position(
+          gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),
+          gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(
+              gdk_window_get_display(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
+          &darktable.gui->widgets.panel_handle_x, &darktable.gui->widgets.panel_handle_y, NULL);
+#endif
+
+      darktable.gui->widgets.panel_handle_dragging = TRUE;
+    }
+    else if(e->type == GDK_BUTTON_RELEASE)
+      darktable.gui->widgets.panel_handle_dragging = FALSE;
+  }
+  return TRUE;
+}
+static gboolean _panel_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY) ? GDK_SB_H_DOUBLE_ARROW : GDK_LEFT_PTR);
+  return TRUE;
+}
+static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  GtkWidget *widget = (GtkWidget *)user_data;
+  if(darktable.gui->widgets.panel_handle_dragging)
+  {
+    gint x, y, sx, sy;
+#if GTK_CHECK_VERSION(3, 20, 0)
+    gdk_window_get_device_position(e->window,
+                                   gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(
+                                       gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
+                                   &x, &y, 0);
+#else
+    gdk_window_get_device_position(
+        gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),
+        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(
+            gdk_window_get_display(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
+        &x, &y, NULL);
+#endif
+
+    gtk_widget_get_size_request(widget, &sx, &sy);
+    if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
+    {
+      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(500));
+    }
+    else
+    {
+      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(500));
+    }
+    // dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
+    gtk_widget_set_size_request(widget, sx, -1);
+
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
+  darktable.gui->widgets.panel_handle_dragging = FALSE;
   widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
+  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
   gtk_widget_set_name(widget, "left");
-  gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
+
+  GtkWidget *over = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(over), widget);
+  // we add a transparent overlay over the modules margins to resize the panel
+  GtkWidget *handle = gtk_drawing_area_new();
+  gtk_widget_set_halign(handle, GTK_ALIGN_END);
+  gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
+  gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
+  gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                    | GDK_POINTER_MOTION_HINT_MASK);
+  gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-left");
+  g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
+  g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
+  gtk_widget_show(handle);
+
+  gtk_grid_attach(GTK_GRID(container), over, 1, 1, 1, 1);
 
   /* add top,center,bottom*/
   container = widget;
@@ -1969,9 +2066,31 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
+  darktable.gui->widgets.panel_handle_dragging = FALSE;
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
+  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
   gtk_widget_set_name(widget, "right");
-  gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
+
+  GtkWidget *over = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(over), widget);
+  // we add a transparent overlay over the modules margins to resize the panel
+  GtkWidget *handle = gtk_drawing_area_new();
+  gtk_widget_set_halign(handle, GTK_ALIGN_START);
+  gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
+  gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
+  gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                    | GDK_POINTER_MOTION_HINT_MASK);
+  gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-right");
+  g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
+  g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
+  gtk_widget_show(handle);
+
+  gtk_grid_attach(GTK_GRID(container), over, 3, 1, 1, 1);
 
   /* add top,center,bottom*/
   container = widget;
