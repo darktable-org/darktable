@@ -80,7 +80,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       const uint8_t before = (action == DT_ACTION_UNDO) ? undocolorlabels->after : undocolorlabels->before;
       const uint8_t after = (action == DT_ACTION_UNDO) ? undocolorlabels->before : undocolorlabels->after;
       _pop_undo_execute(undocolorlabels->imgid, before, after);
-      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(clabels->imgid));
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undocolorlabels->imgid));
       list = g_list_next(list);
     }
     dt_collection_hint_message(darktable.collection);
@@ -128,6 +128,7 @@ void dt_colorlabels_remove_label(const int imgid, const int color)
 typedef enum dt_colorlabels_actions_t
 {
   DT_CA_SET = 0,
+  DT_CA_ADD,
   DT_CA_TOGGLE
 } dt_colorlabels_actions_t;
 
@@ -145,6 +146,9 @@ static void _colorlabels_execute(GList *imgs, const int labels, GList **undo, co
     {
       case DT_CA_SET:
         after = labels;
+        break;
+      case DT_CA_ADD:
+        after = before | labels;
         break;
       case DT_CA_TOGGLE:
         after = (before & labels) ? before & (~labels) : before | labels;
@@ -169,7 +173,7 @@ static void _colorlabels_execute(GList *imgs, const int labels, GList **undo, co
   }
 }
 
-void dt_colorlabels_set_labels(const int imgid, const int labels, const gboolean undo_on, const gboolean group_on)
+void dt_colorlabels_set_labels(const int imgid, const int labels, const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
 {
   GList *imgs = NULL;
   if(imgid == -1)
@@ -182,7 +186,7 @@ void dt_colorlabels_set_labels(const int imgid, const int labels, const gboolean
     if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
-    _colorlabels_execute(imgs, labels, &undo, undo_on, DT_CA_SET);
+    _colorlabels_execute(imgs, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
     g_list_free(imgs);
     if(undo_on)
@@ -260,7 +264,7 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *
         break;
       case 5:
       default: // remove all selected
-        dt_colorlabels_set_labels(selected, 0, TRUE, TRUE);
+        dt_colorlabels_set_labels(selected, 0, TRUE, TRUE, TRUE);
         break;
     }
 
