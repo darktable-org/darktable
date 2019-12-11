@@ -475,6 +475,15 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   free(a);
 }
 
+static inline
+int dt_masks_roundup(int num, int mult)
+{
+  const int rem = num % mult;
+
+  return (rem == 0) ? num : num + mult - rem;
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
