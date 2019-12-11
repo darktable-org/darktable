@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-10 10:33-0600\n"
-"PO-Revision-Date: 2019-12-10 10:32-0600\n"
+"POT-Creation-Date: 2019-12-11 00:28-0600\n"
+"PO-Revision-Date: 2019-12-11 01:04-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1179,7 +1179,7 @@ msgstr "Carpeta raíz del lut 3D"
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
 #: ../src/libs/styles.c:300 ../src/lua/preferences.c:631
 msgid "select directory"
-msgstr "seleccionar directorio"
+msgstr "Seleccionar directorio"
 
 #: ../build/src/preferences_gen.h:4063
 msgid ""
@@ -3012,11 +3012,11 @@ msgstr "%s: módulo '%s' versión incoincidente: %d != %d"
 
 #: ../src/develop/imageop.c:1022
 msgid "new instance"
-msgstr "nueva instancia"
+msgstr "módulo nuevo"
 
 #: ../src/develop/imageop.c:1028
 msgid "duplicate instance"
-msgstr "duplicar instancia"
+msgstr "duplicar módulo"
 
 #: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1170
 msgid "move up"
@@ -3085,8 +3085,8 @@ msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
 msgstr ""
-"Acciones para múltiples instancias\n"
-"Pulse el botón central para crear instancias nuevas"
+"Gestión de acciones para el módulo\n"
+"Pulse el botón central para crear un módulo nuevo"
 
 #: ../src/develop/imageop.c:1984 ../src/libs/lib.c:984
 msgid "reset parameters"
@@ -3104,8 +3104,8 @@ msgid ""
 "middle-click to apply on new instance"
 msgstr ""
 "Preajustes\n"
-"Pulse el botón central sobre el preajuste para establecerlo en una instancia "
-"nueva"
+"Pulse el botón central sobre el preajuste para establecerlo en un módulo "
+"nuevo"
 
 #: ../src/develop/lightroom.c:1072
 msgid "cannot find lightroom XMP!"
@@ -4640,9 +4640,9 @@ msgid ""
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
 "example: 210 mm x 2.97 cm"
 msgstr ""
-"formato de papel del pdf\n"
-"bien sea uno de la lista o \"<width> [unit] x <height> <unit>\n"
-"ejemplo: 210 mm x 2.97 cm"
+"Formato del papel del pdf\n"
+"Bien sea uno de la lista o \"<width> [unit] x <height> <unit>\n"
+"Ejemplo: 210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:621
 msgid "page orientation"
@@ -4651,7 +4651,7 @@ msgstr "orientación de la página"
 #: ../src/imageio/format/pdf.c:622 ../src/iop/borders.c:1025
 #: ../src/libs/print_settings.c:1280
 msgid "portrait"
-msgstr "retrato"
+msgstr "vertical"
 
 #: ../src/imageio/format/pdf.c:623 ../src/iop/borders.c:1026
 #: ../src/libs/print_settings.c:1281
@@ -4660,7 +4660,7 @@ msgstr "horizontal"
 
 #: ../src/imageio/format/pdf.c:626
 msgid "paper orientation of the pdf"
-msgstr "orientación de la página del pdf"
+msgstr "Orientación de la página del pdf"
 
 #. border
 #: ../src/imageio/format/pdf.c:631
@@ -4673,9 +4673,9 @@ msgid ""
 "format: size + unit\n"
 "examples: 10 mm, 1 inch"
 msgstr ""
-"espacio vacío alrededor del pdf\n"
-"formato: tamaño + unidad\n"
-"ejemplos: 10 mm, 1 in"
+"Espacio en blanco alrededor del pdf\n"
+"Formato: tamaño + unidad\n"
+"Ejemplos: 10 mm, 1 in"
 
 #. dpi
 #: ../src/imageio/format/pdf.c:653
@@ -4684,7 +4684,7 @@ msgstr "ppp"
 
 #: ../src/imageio/format/pdf.c:661
 msgid "dpi of the images inside the pdf"
-msgstr "ppp de las imágenes dentro del pdf"
+msgstr "PPP de las imágenes dentro del pdf"
 
 #: ../src/imageio/format/pdf.c:668
 msgid "rotate images"
@@ -4695,8 +4695,8 @@ msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
 msgstr ""
-"las imágenes pueden ser rotadas para igualar la orientación del pdf y así, "
-"desperdiciar menos espacio al imprimir"
+"Las imágenes pueden ser rotadas para igualar la orientación del pdf y así, "
+"reducir el desperdicio de espacio al imprimir"
 
 #: ../src/imageio/format/pdf.c:680
 msgid "TODO: pages"
@@ -4714,7 +4714,7 @@ msgstr "hoja de contactos"
 #. g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
 #: ../src/imageio/format/pdf.c:686
 msgid "what pages should be added to the pdf"
-msgstr "las páginas que deberían ser agregadas al pdf"
+msgstr "Las páginas que deberían ser agregadas al pdf"
 
 #: ../src/imageio/format/pdf.c:693
 msgid "embed icc profiles"
@@ -4722,7 +4722,7 @@ msgstr "incrustar perfiles icc"
 
 #: ../src/imageio/format/pdf.c:698
 msgid "images can be tagged with their icc profile"
-msgstr "las imágenes pueden ser etiquetadas con su perfil icc"
+msgstr "Las imágenes pueden ser etiquetadas con su perfil icc"
 
 #: ../src/imageio/format/pdf.c:704 ../src/imageio/format/png.c:526
 #: ../src/imageio/format/tiff.c:472
@@ -4731,12 +4731,12 @@ msgstr "profundidad de bit"
 
 #: ../src/imageio/format/pdf.c:714
 msgid "bits per channel of the embedded images"
-msgstr "bits por canal de las imágenes incrustadas"
+msgstr "Bits por canal de las imágenes incrustadas"
 
 #: ../src/imageio/format/pdf.c:720 ../src/imageio/format/png.c:540
 #: ../src/imageio/format/tiff.c:487 ../src/iop/graduatednd.c:1226
 msgid "compression"
-msgstr "con compresión"
+msgstr "compresión"
 
 #: ../src/imageio/format/pdf.c:721 ../src/imageio/format/tiff.c:488
 msgid "uncompressed"
@@ -4752,9 +4752,9 @@ msgid ""
 "uncompressed -- fast but big files\n"
 "deflate -- smaller files but slower"
 msgstr ""
-"método utilizado para la compresión de la imagen\n"
-"sin compresión -- rápido con archivos grandes \n"
-"deflación -- más lento con archivos pequeños"
+"Método utilizado para la compresión de la imagen\n"
+"Sin comprimir: es rápido pero resulta en archivos grandes \n"
+"Deflación: es lento pero resulta en archivos pequeños"
 
 #: ../src/imageio/format/pdf.c:733
 msgid "image mode"
@@ -4778,9 +4778,9 @@ msgid ""
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxen"
 msgstr ""
-"normal -- solo coloca las imágenes en el pdf\n"
-"borrador -- las imágenes son reemplazadas por cajas\n"
-"depurar -- solo muestra el contorno de las cajas delimitadas"
+"Normal: Solo coloca las imágenes en el pdf\n"
+"Borrador: Las imágenes son reemplazadas por cajas\n"
+"Depurar: Solo muestra el contorno de las cajas delimitadas"
 
 #: ../src/imageio/format/pfm.c:119
 msgid "PFM (float)"
@@ -4877,8 +4877,8 @@ msgid ""
 "variables support bash like string manipulation\n"
 "recognized variables:"
 msgstr ""
-"ingrese la ruta donde exportar las imágenes\n"
-"variables soportan bash como cadenas de manipulacion\n"
+"Ingrese la ruta destino para exportar las imágenes\n"
+"Las variables admiten bash como la manipulación de cadenas\n"
 "variables reconocidas:"
 
 #: ../src/imageio/storage/disk.c:199
@@ -4959,20 +4959,20 @@ msgid ""
 "have to login into your facebook account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"paso 1: una nueva ventana o pestaña de su navegador se ha cargado. debe "
-"entrar en su cuenta de facebook y autorizar a darktable a subir las fotos "
-"antes de continuar."
+"Paso 1: Se cargará una nueva ventana o pestaña del navegador. Debe ingresar "
+"en su cuenta de facebook y antes de continuar, autorice que darktable pueda "
+"subir las fotos."
 
 #: ../src/imageio/storage/facebook.c:624
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
-"paso 2: pegue su url en el navegador y haga clic en el botón Aceptar una vez "
+"Paso 2: Pegue la URL en el navegador y haga clic en el botón Aceptar una vez "
 "listo."
 
 #: ../src/imageio/storage/facebook.c:630 ../src/imageio/storage/facebook.c:725
 msgid "facebook authentication"
-msgstr "autenticación Facebook"
+msgstr "Autenticación en Facebook"
 
 #: ../src/imageio/storage/facebook.c:638
 msgid "URL:"
@@ -4980,19 +4980,19 @@ msgstr "URL:"
 
 #: ../src/imageio/storage/facebook.c:660
 msgid "please enter the validation URL"
-msgstr "por favor, ingrese la url de validación"
+msgstr "Ingrese la URL de validación"
 
 #: ../src/imageio/storage/facebook.c:670
 msgid "the given URL is not valid, it should look like: "
-msgstr "la url dada no es válida, debería ser similar a: "
+msgstr "La URL dada no es válida, debería ser similar a: "
 
 #: ../src/imageio/storage/facebook.c:701
 msgid "authentication successful"
-msgstr "autenticación exitosa"
+msgstr "Autenticación exitosa"
 
 #: ../src/imageio/storage/facebook.c:705
 msgid "authentication failed"
-msgstr "fallo de autenticación"
+msgstr "Fallo de autenticación"
 
 #: ../src/imageio/storage/facebook.c:718
 msgid ""
@@ -5000,9 +5000,9 @@ msgid ""
 "login into your facebook account there and authorize darktable to upload "
 "photos before continuing."
 msgstr ""
-"una nueva ventana o pestaña de su navegador se ha cargado. debe entrar en su "
-"cuenta de facebook y allí, autorizar a darktable a subir las fotos antes de "
-"continuar."
+"Se cargará una nueva ventana o pestaña del navegador. Debe ingresar en su "
+"cuenta de facebook y antes de continuar, autorice que darktable pueda subir "
+"las fotos."
 
 #: ../src/imageio/storage/facebook.c:851
 #: ../src/imageio/storage/googlephoto.c:943
@@ -5099,7 +5099,7 @@ msgstr[1] "%d/%d exportados al álbum web de facebook"
 #: ../src/imageio/storage/flickr.c:116
 #, c-format
 msgid "flickr authentication: %s"
-msgstr "autenticación flickr: %s"
+msgstr "Autenticación en flickr: %s"
 
 #: ../src/imageio/storage/flickr.c:197
 msgid ""
@@ -5107,13 +5107,13 @@ msgid ""
 "have to login into your flickr account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"paso 1: una nueva ventana o pestaña de su navegador debe estar cargada. debe "
-"entrar en su cuenta flickr y autorizar a darktable a subir las fotos antes "
-"de continuar."
+"Paso 1: Se cargará una nueva ventana o pestaña del navegador. Debe ingresar "
+"en su cuenta de flickr y antes de continuar, autorice que darktable pueda "
+"subir las fotos."
 
 #: ../src/imageio/storage/flickr.c:199
 msgid "step 2: click the OK button once you are done."
-msgstr "paso 2: clic en el botón Aceptar una vez terminado."
+msgstr "Paso 2: Una vez terminado, pulse el botón Aceptar."
 
 #: ../src/imageio/storage/flickr.c:204
 msgid "flickr authentication"
@@ -5138,7 +5138,7 @@ msgstr "autenticado"
 #. Add standard action
 #: ../src/imageio/storage/flickr.c:392
 msgid "without album"
-msgstr "sin album"
+msgstr "sin álbum"
 
 #: ../src/imageio/storage/flickr.c:468
 msgid "flickr user"
@@ -5146,7 +5146,7 @@ msgstr "usuario"
 
 #: ../src/imageio/storage/flickr.c:482
 msgid "flickr login"
-msgstr "acceso a Flickr"
+msgstr "Acceso a Flickr"
 
 #: ../src/imageio/storage/flickr.c:496 ../src/imageio/storage/piwigo.c:825
 msgid "visible to"
@@ -5175,11 +5175,11 @@ msgstr "álbumes"
 
 #: ../src/imageio/storage/flickr.c:515 ../src/imageio/storage/piwigo.c:844
 msgid "refresh album list"
-msgstr "refrescar lista de album"
+msgstr "Actualizar lista de álbumes"
 
 #: ../src/imageio/storage/flickr.c:536
 msgid "my new photoset"
-msgstr "mi nuevo photoset"
+msgstr "mi nuevo álbum de fotos"
 
 #: ../src/imageio/storage/flickr.c:551
 msgid "exported from darktable"
@@ -5191,7 +5191,7 @@ msgstr "pulse el botón acceder para empezar"
 
 #: ../src/imageio/storage/flickr.c:670
 msgid "could not upload to flickr!"
-msgstr "no se puede subir a flickr!"
+msgstr "No se pudo cargar a flickr"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/flickr.c:721
@@ -5216,29 +5216,29 @@ msgid ""
 "have to login into your google account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"paso 1: una nueva ventana o pestaña de su navegador se habrá cargado. debe "
-"entrar en su cuenta de google y autorizar a darktable a subir las fotos "
-"antes de continuar."
+"Paso 1: Se cargará una nueva ventana o pestaña del navegador. Debe ingresar "
+"en su cuenta de Google y antes de continuar, autorice que darktable pueda "
+"subir las fotos."
 
 #: ../src/imageio/storage/googlephoto.c:765
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
 msgstr ""
-"paso 2: copie el código de verificación mostrado en su navegador y haga clic "
-"en el botón Aceptar una vez listo."
+"Paso 2: Copie el código de verificación mostrado en el navegador y una vez "
+"listo, pulse el botón Aceptar."
 
 #: ../src/imageio/storage/googlephoto.c:771
 msgid "google authentication"
-msgstr "autenticación google fotos"
+msgstr "Autenticación google fotos"
 
 #: ../src/imageio/storage/googlephoto.c:779
 msgid "verification code:"
-msgstr "código de verificación:"
+msgstr "Código de verificación:"
 
 #: ../src/imageio/storage/googlephoto.c:802
 msgid "please enter the verification code"
-msgstr "por favor, ingrese el código de verificación"
+msgstr "Ingrese el código de verificación"
 
 #: ../src/imageio/storage/googlephoto.c:1221
 msgid "google photos"
@@ -5246,28 +5246,28 @@ msgstr "google fotos"
 
 #: ../src/imageio/storage/googlephoto.c:1407
 msgid "unable to export to google photos album"
-msgstr "no se pudo exportar la foto al álbum google fotos"
+msgstr "No se pudo exportar la foto al álbum de Google Fotos"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/googlephoto.c:1420
 #, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
-msgstr[0] "%d/%d exportado al álbum google photos"
-msgstr[1] "%d/%d exportados al álbum google+"
+msgstr[0] "%d/%d exportado al álbum Google Fotos"
+msgstr[1] "%d/%d exportados al álbum de Google Fotos"
 
 #: ../src/imageio/storage/latex.c:71
 msgid "LaTeX book template"
-msgstr "Plantilla de libro LaTeX"
+msgstr "plantilla de libro LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:194
 msgid "enter the title of the book"
-msgstr "introduzca el título del libro"
+msgstr "Introduzca el título del libro"
 
 #: ../src/imageio/storage/piwigo.c:478
 msgid "not authenticated, cannot reach server"
-msgstr "no autenticado, no se pudo conectar con el servidor"
+msgstr "No autenticado, no se pudo conectar con el servidor"
 
 #: ../src/imageio/storage/piwigo.c:589
 msgid "---"
@@ -5275,7 +5275,7 @@ msgstr "(---)"
 
 #: ../src/imageio/storage/piwigo.c:630
 msgid "cannot refresh albums"
-msgstr "no se pudo refrescar lista de albums"
+msgstr "No se puedieron actualizar los álbumes"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
@@ -5295,9 +5295,9 @@ msgid ""
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
-"el nombre del servidor\n"
-"el protocolo por defecto es https\n"
-"especificar http:// si no es un servidor seguro"
+"Nombre del servidor\n"
+"El protocolo por defecto es https\n"
+"Si no es un servidor seguro, especificar con http:// "
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
@@ -5309,7 +5309,7 @@ msgstr "contraseña"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr "loguearse en piiwigo"
+msgstr "Iniciar sesión en Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:827
 msgid "contacts"
@@ -6813,11 +6813,11 @@ msgstr "controles de realce/gamma/incremento vistos como en editores de video"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (2nd instance)"
-msgstr "división de tono verde azulado  (2ª instancia)"
+msgstr "división de tono verde azulado (módulo 2º)"
 
 #: ../src/iop/colorbalance.c:278
 msgid "split-toning teal-orange (1st instance)"
-msgstr "división de tono verde azulado  (1ª instancia)"
+msgstr "división de tono verde azulado (módulo 1º)"
 
 #: ../src/iop/colorbalance.c:282
 msgid "generic film"
@@ -7809,11 +7809,11 @@ msgstr "reducción de ruido (perfilado)"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/denoiseprofile.c:553
 msgid "chroma (use on 1st instance)"
-msgstr "crominancia (uso en 1ª instancia)"
+msgstr "crominancia (usar en un 1er módulo)"
 
 #: ../src/iop/denoiseprofile.c:556
 msgid "luma (use on 2nd instance)"
-msgstr "luma (uso en 2ª instancia)"
+msgstr "luma (usar en un 2º módulo)"
 
 #: ../src/iop/denoiseprofile.c:3014
 #, c-format
@@ -7893,9 +7893,9 @@ msgid ""
 msgstr ""
 "Adapta la reducción de ruido de acuerdo con los\n"
 "coeficientes de balance de blancos.\n"
-"Habilitar en la primera instancia\n"
+"Habilitar en un primer módulo\n"
 "para una mejor reducción de ruido.\n"
-"Deshabilitar si en una instancia anterior\n"
+"Deshabilitar si en un módulo previo del mismo\n"
 "se ha utilizado con el modo de fusión de color."
 
 #: ../src/iop/denoiseprofile.c:4036
@@ -12047,7 +12047,7 @@ msgstr "anexar"
 
 #: ../src/libs/copy_history.c:353
 msgid "how to handle existing history"
-msgstr "Cómo tratar al historial existente"
+msgstr "Manera de gestionar al historial existente"
 
 #: ../src/libs/copy_history.c:359
 msgid "load sidecar file..."
@@ -12112,11 +12112,11 @@ msgstr "duplicados existentes"
 
 #: ../src/libs/duplicate.c:490
 msgid "create a 'virgin' duplicate of the image without any development"
-msgstr "crear un duplicado 'virgen' de la imagen sin ningún revelado"
+msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 
 #: ../src/libs/duplicate.c:494
 msgid "create a duplicate of the image with same history stack"
-msgstr "crear un duplicado de la imagen con la misma  historia"
+msgstr "Crear un duplicado de la imagen con la misma  historia"
 
 #: ../src/libs/export.c:71
 msgid "export selected"
@@ -12151,16 +12151,16 @@ msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
 msgstr ""
-"anchura máxima\n"
-"use 0 para no redimensionar"
+"Anchura máxima\n"
+"Use 0 para no redimensionar"
 
 #: ../src/libs/export.c:608
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
 msgstr ""
-"altura máxima\n"
-"use 0 para no redimensionar"
+"Altura máxima\n"
+"Use 0 para no redimensionar"
 
 #: ../src/libs/export.c:615
 msgid "max size"
@@ -12190,7 +12190,7 @@ msgstr "configuración de la imagen"
 #: ../src/libs/export.c:660 ../src/libs/print_settings.c:1442
 #, c-format
 msgid "output ICC profiles in %s or %s"
-msgstr "perfiles de salida ICC en %s o %s"
+msgstr "Perfiles de salida ICC en %s o %s"
 
 #: ../src/libs/export.c:680 ../src/libs/print_settings.c:1467
 msgid "style"
@@ -12198,7 +12198,7 @@ msgstr "estilo"
 
 #: ../src/libs/export.c:683
 msgid "temporary style to use while exporting"
-msgstr "estilo temporal para ser aplicado al exportar"
+msgstr "Estilo temporal para ser aplicado al exportar"
 
 #: ../src/libs/export.c:692 ../src/libs/print_settings.c:1512
 msgid "replace history"
@@ -12211,7 +12211,7 @@ msgstr "incorporar al historial"
 #: ../src/libs/export.c:698 ../src/libs/print_settings.c:1520
 msgid ""
 "whether the style items are appended to the history or replacing the history"
-msgstr "los elementos del estilo se anexan al historial o los reemplazan"
+msgstr "Los elementos del estilo se anexan al historial o se reemplazan"
 
 #. Export button
 #: ../src/libs/export.c:716
@@ -12220,11 +12220,11 @@ msgstr "exportar"
 
 #: ../src/libs/export.c:718
 msgid "export with current settings"
-msgstr "exportar con la configuración actual"
+msgstr "Exportar con la configuración actual"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr "editar los detalles de exportación de metadatos"
+msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12268,7 +12268,7 @@ msgstr "información Exif"
 
 #: ../src/libs/export_metadata.c:250
 msgid "export exif metadata"
-msgstr "exportar metadatos Exif"
+msgstr "Exportar metadatos Exif"
 
 #: ../src/libs/export_metadata.c:252
 msgid "metadata"
@@ -12276,7 +12276,7 @@ msgstr "metadatos"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr "exportar metadatos xmp de dt (desde el módulo editor de metadatos)"
+msgstr "Exportar metadatos xmp de dt (desde el módulo editor de metadatos)"
 
 #: ../src/libs/export_metadata.c:263
 msgid "only embedded"
@@ -12303,11 +12303,11 @@ msgstr "geoetiquetas"
 
 #: ../src/libs/export_metadata.c:271
 msgid "export geo tags"
-msgstr "exportar geoetiquetas"
+msgstr "Exportar geoetiquetas"
 
 #: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr "exportar etiquetas (a Xmp.dc.Subject)"
+msgstr "Exportar etiquetas (a Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:281
 msgid "private tags"
@@ -12315,7 +12315,7 @@ msgstr "etiquetas privadas"
 
 #: ../src/libs/export_metadata.c:282
 msgid "export private tags"
-msgstr "exportar etiquetas privadas"
+msgstr "Exportar etiquetas privadas"
 
 #: ../src/libs/export_metadata.c:284
 msgid "synonyms"
@@ -12323,7 +12323,7 @@ msgstr "sinónimos"
 
 #: ../src/libs/export_metadata.c:285
 msgid "export tags synonyms"
-msgstr "exportar etiquetas sinónimos"
+msgstr "Exportar las etiquetas que son sinónimos"
 
 #: ../src/libs/export_metadata.c:287
 msgid "omit hierarchy"
@@ -12343,7 +12343,7 @@ msgstr "etiquetas jerárquicas"
 
 #: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr "exportar etiquetas jerárquicas (a Xmp.lr.Hierarchical)"
+msgstr "Exportar etiquetas jerárquicas (a Xmp.lr.Hierarchical)"
 
 #: ../src/libs/export_metadata.c:294
 msgid "develop history"
@@ -12354,7 +12354,7 @@ msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
-"exportar datos de desarrollo de dt (para restauración en caso de pérdida de "
+"Exportar datos de desarrollo de dt (para restauración en caso de pérdida de "
 "base de datos o archivo xmp)"
 
 #: ../src/libs/export_metadata.c:302
@@ -12382,20 +12382,20 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
-"Lista de metadatos calculados\n"
+"Lista de metadatos calculados.\n"
 "Si la fórmula está vacía, los metadatos correspondientes se eliminan del "
-"archivo exportado\n"
+"archivo exportado.\n"
 "De lo contrario, los metadatos correspondientes se calculan y se agregan al "
 "archivo exportado\n"
 "Pulse en la celda de fórmula para editarla. Variables reconocidas:"
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr "Agregar una etiqueta de metadatos de salida"
+msgstr "Agregar etiqueta de metadatos de salida"
 
 #: ../src/libs/export_metadata.c:383
 msgid "delete metadata tag"
-msgstr "eliminar etiqueta de los metadatos"
+msgstr "Eliminar etiqueta de los metadatos"
 
 #: ../src/libs/geotagging.c:411
 msgid ""
@@ -12435,16 +12435,16 @@ msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
 msgstr ""
-"compensación horaria\n"
-"formato: [+-]?[[hh:]mm:]ss"
+"Compensación horaria\n"
+"Formato: [+-]?[[hh:]mm:]ss"
 
 #: ../src/libs/geotagging.c:802
 msgid "calculate the time offset from an image"
-msgstr "calcular la compensación horaria desde una imagen"
+msgstr "Calcular la compensación horaria desde una imagen"
 
 #: ../src/libs/geotagging.c:807
 msgid "apply time offset to selected images"
-msgstr "establecer la compensación horaria en las imágenes seleccionadas"
+msgstr "Establecer la compensación horaria en las imágenes seleccionadas"
 
 #. gpx
 #: ../src/libs/geotagging.c:815
@@ -12454,7 +12454,7 @@ msgstr "adjuntar archivo gpx de seguimiento..."
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
-"abrir archivo gpx y actualizar la ubicación de las imágenes seleccionadas"
+"Abrir archivo GPX y actualizar la ubicación de las imágenes seleccionadas"
 
 #: ../src/libs/histogram.c:48
 msgid "histogram"
@@ -12571,11 +12571,11 @@ msgstr "mover..."
 
 #: ../src/libs/image.c:200
 msgid "move to other folder"
-msgstr "mover a otra carpeta"
+msgstr "Mover a otra carpeta"
 
 #: ../src/libs/image.c:207
 msgid "copy to other folder"
-msgstr "copiar a otra carpeta"
+msgstr "Copiar a otra carpeta"
 
 #: ../src/libs/image.c:212
 msgid "create HDR"
@@ -12584,7 +12584,7 @@ msgstr "crear HDR"
 #: ../src/libs/image.c:217
 msgid "create a high dynamic range image from selected shots"
 msgstr ""
-"crear una imagen de rango dinámico amplio a partir de las imágenes "
+"Crear una imagen de rango dinámico amplio a partir de las imágenes "
 "seleccionadas"
 
 #: ../src/libs/image.c:219
@@ -12594,15 +12594,15 @@ msgstr "duplicar"
 #: ../src/libs/image.c:222
 msgid "add a duplicate to the collection, including its history stack"
 msgstr ""
-"añadir un duplicado a la colección, incluyendo el historial de acciones"
+"Añadir un duplicado a la colección, incluyendo el historial de acciones"
 
 #: ../src/libs/image.c:229
 msgid "rotate selected images 90 degrees CCW"
-msgstr "rotar imágenes seleccionadas 90 grados en sentido antihorario"
+msgstr "Rotar imágenes seleccionadas 90 grados en sentido antihorario"
 
 #: ../src/libs/image.c:235
 msgid "rotate selected images 90 degrees CW"
-msgstr "rotar imágenes seleccionadas 90 grados en sentido horario"
+msgstr "Rotar imágenes seleccionadas 90 grados en sentido horario"
 
 #: ../src/libs/image.c:239
 msgid "reset rotation"
@@ -12610,7 +12610,7 @@ msgstr "restaurar rotación"
 
 #: ../src/libs/image.c:242
 msgid "reset rotation to EXIF data"
-msgstr "restaurar rotación según los datos Exif"
+msgstr "Restaurar rotación según los datos Exif"
 
 #: ../src/libs/image.c:247
 msgid "copy locally"
@@ -12618,7 +12618,7 @@ msgstr "copiar localmente"
 
 #: ../src/libs/image.c:250
 msgid "copy the image locally"
-msgstr "copiar imagen localmente"
+msgstr "Copiar la imagen localmente"
 
 #: ../src/libs/image.c:254
 msgid "resync local copy"
@@ -12626,7 +12626,7 @@ msgstr "sincronizar copia local"
 
 #: ../src/libs/image.c:257
 msgid "synchronize the image's XMP and remove the local copy"
-msgstr "sincronizar el XMP de la imagen y remover la copia local"
+msgstr "Sincronizar el XMP de la imagen y remover la copia local"
 
 #. DT_COLLECTION_SORT_COLOR
 #: ../src/libs/image.c:262 ../src/libs/tools/filter.c:152
@@ -12635,7 +12635,7 @@ msgstr "agrupar"
 
 #: ../src/libs/image.c:265
 msgid "add selected images to expanded group or create a new one"
-msgstr "agregue las imagenes seleccionadas al grupo expandido o cree uno nuevo"
+msgstr "Agregar las imágenes seleccionadas al grupo actual o crear uno nuevo"
 
 #: ../src/libs/image.c:269
 msgid "ungroup"
@@ -12643,12 +12643,12 @@ msgstr "desagrupar"
 
 #: ../src/libs/image.c:272
 msgid "remove selected images from the group"
-msgstr "eliminar imagenes seleccionadas del grupo"
+msgstr "Eliminar las imágenes seleccionadas del grupo"
 
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
 msgstr ""
-"actualizar la información de la imagen para que coincida con los cambios del "
+"Actualizar la información de la imagen para que coincida con los cambios del "
 "archivo"
 
 #: ../src/libs/image.c:302
@@ -12763,7 +12763,7 @@ msgstr "captura"
 #. No supported devices is detected lets notice user..
 #: ../src/libs/import.c:266
 msgid "no supported devices found"
-msgstr "no se encuentran dispositivos soportados"
+msgstr "no se encontraron dispositivos compatibles"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:430
@@ -12800,7 +12800,7 @@ msgstr "imagen..."
 
 #: ../src/libs/import.c:986
 msgid "select one or more images to import"
-msgstr "seleccionar una o más imágenes a importar"
+msgstr "Seleccionar una o más imágenes para importar"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
@@ -12809,7 +12809,7 @@ msgstr "carpeta..."
 
 #: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
-msgstr "seleccionar una carpeta para importar como carrete"
+msgstr "Seleccionar una carpeta para importar como carrete"
 
 #. add the rescan button
 #: ../src/libs/import.c:1006
@@ -12818,7 +12818,7 @@ msgstr "buscar dispositivos"
 
 #: ../src/libs/import.c:1010
 msgid "scan for newly attached devices"
-msgstr "buscar nuevos dispositivos conectados"
+msgstr "Buscar nuevos dispositivos conectados"
 
 #: ../src/libs/lib.c:226
 #, c-format
@@ -13097,11 +13097,11 @@ msgstr "eliminar"
 
 #: ../src/libs/metadata.c:395
 msgid "remove metadata from selected images"
-msgstr "eliminar metadatos de todas las imágenes seleccionadas"
+msgstr "Eliminar los metadatos de todas las imágenes seleccionadas"
 
 #: ../src/libs/metadata.c:401
 msgid "write metadata for selected images"
-msgstr "escribir metadatos de las imágenes seleccionadas"
+msgstr "Establecer los metadatos en las imágenes seleccionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:439
@@ -13720,7 +13720,7 @@ msgstr " pero no "
 
 #: ../src/libs/select.c:104
 msgid "select all images in current collection"
-msgstr "seleccionar todas las imágenes en la colección actual"
+msgstr "Seleccionar todas las imágenes en la colección actual"
 
 #: ../src/libs/select.c:108
 msgid "select none"
@@ -13728,7 +13728,7 @@ msgstr "deseleccionar todo"
 
 #: ../src/libs/select.c:111
 msgid "clear selection"
-msgstr "limpiar selección"
+msgstr "Despejar selección"
 
 #: ../src/libs/select.c:116
 msgid "invert selection"
@@ -13739,7 +13739,7 @@ msgid ""
 "select unselected images\n"
 "in current collection"
 msgstr ""
-"seleccionar las imágenes no seleccionadas\n"
+"Seleccionar las imágenes previamente no seleccionadas\n"
 "en la colección actual"
 
 #: ../src/libs/select.c:123
@@ -13751,7 +13751,7 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"seleccionar todas las imágenes que pertenezcan al mismo\n"
+"Seleccionar todas las imágenes que pertenezcan al mismo\n"
 "carrete que las imágenes seleccionadas"
 
 #: ../src/libs/select.c:131
@@ -13763,7 +13763,7 @@ msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"seleccionar las imágenes no procesadas en\n"
+"Seleccionar las imágenes no procesadas en\n"
 "la colección actual"
 
 #. setup selection accelerators
@@ -13871,7 +13871,7 @@ msgstr "crear duplicado"
 
 #: ../src/libs/styles.c:437
 msgid "creates a duplicate of the image before applying style"
-msgstr "crea un duplicado de la imagen antes de aplicar el estilo"
+msgstr "Crear un duplicado de la imagen antes de aplicar el estilo"
 
 #. create
 #: ../src/libs/styles.c:445
@@ -13881,7 +13881,7 @@ msgstr "crear..."
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
 msgstr ""
-"crear estilos a partir del historial de acciones de las imágenes "
+"Crear estilos a partir del historial de acciones de las imágenes "
 "seleccionadas"
 
 #. edit
@@ -13891,11 +13891,11 @@ msgstr "editar..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
-msgstr "editar el estilo seleccionado en la lista inferior"
+msgstr "Editar el estilo seleccionado en la lista inferior"
 
 #: ../src/libs/styles.c:461
 msgid "deletes the selected style in list above"
-msgstr "borrar el estilo seleccionado en la lista anterior"
+msgstr "Borrar el estilo seleccionado en la lista anterior"
 
 #. import button
 #: ../src/libs/styles.c:465 ../src/libs/tagging.c:2692
@@ -13905,11 +13905,11 @@ msgstr "importar..."
 
 #: ../src/libs/styles.c:467
 msgid "import style from a style file"
-msgstr "importar el estilo desde un fichero"
+msgstr "Importar el estilo desde un fichero"
 
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
-msgstr "exportar el estilo seleccionado a un fichero"
+msgstr "Exportar el estilo seleccionado a un fichero"
 
 #: ../src/libs/tagging.c:96
 msgid "tagging"
@@ -13937,11 +13937,11 @@ msgstr "etiqueta"
 
 #: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
-msgstr "añadir etiqueta a todas las imágenes"
+msgstr "Añadir etiqueta a todas las imágenes"
 
 #: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1914
 msgid "detach tag"
-msgstr "quitar etiqueta"
+msgstr "eliminar etiqueta"
 
 #: ../src/libs/tagging.c:1162
 msgid "delete tag?"
@@ -13962,16 +13962,16 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"¿desea borrar la etiqueta `%s'?\n"
+"¿Desea borrar la etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta"
 msgstr[1] ""
-"¿desea borrar las etiqueta `%s'?\n"
+"¿Desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
 #: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
-msgstr "etiqueta %s eliminada"
+msgstr "Etiqueta %s eliminada"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1926
 msgid "delete branch"
@@ -14124,11 +14124,11 @@ msgstr "Selecciona un archivo de palabras clave"
 
 #: ../src/libs/tagging.c:2128
 msgid "_import"
-msgstr "_import"
+msgstr "_importar"
 
 #: ../src/libs/tagging.c:2142
 msgid "error importing tags"
-msgstr "error importando etiquetas"
+msgstr "Error al importar etiquetas"
 
 #: ../src/libs/tagging.c:2144
 #, c-format
@@ -14137,15 +14137,15 @@ msgstr "%zd etiquetas importadas"
 
 #: ../src/libs/tagging.c:2166
 msgid "Select file to export to"
-msgstr "Seleccione el archivo a exportar"
+msgstr "Seleccione el archivo para exportar"
 
 #: ../src/libs/tagging.c:2169
 msgid "_export"
-msgstr "_export"
+msgstr "_exportar"
 
 #: ../src/libs/tagging.c:2184
 msgid "error exporting tags"
-msgstr "error exportando etiquetas"
+msgstr "Error al exportar etiquetas"
 
 #: ../src/libs/tagging.c:2186
 #, c-format
@@ -14159,9 +14159,9 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"etiquetas adjuntas, \n"
+"Etiquetas adjuntas, \n"
 "para añadir pulse dos veces\n"
-"pulse clic derecho para mostrar más opciones\n"
+"Pulse clic derecho para mostrar más opciones\n"
 "Ctrl+rueda del ratón para cambiar el tamaño de la ventana"
 
 #: ../src/libs/tagging.c:2555
@@ -14170,35 +14170,35 @@ msgstr "añadir"
 
 #: ../src/libs/tagging.c:2558
 msgid "attach tag to all selected images"
-msgstr "añadir etiqueta a todas las imágenes seleccionadas"
+msgstr "Añadir etiqueta a todas las imágenes seleccionadas"
 
 #: ../src/libs/tagging.c:2563
 msgid "detach"
-msgstr "quitar"
+msgstr "eliminar"
 
 #: ../src/libs/tagging.c:2566
 msgid "detach tag from all selected images"
-msgstr "quitar etiquetas de todas las imágenes seleccionadas"
+msgstr "Eliminar etiquetas de todas las imágenes seleccionadas"
 
 #: ../src/libs/tagging.c:2573
 msgid "toggle list with / without hierarchy"
-msgstr "alternar lista (con jerarquía o sin jerarquía)"
+msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
 #: ../src/libs/tagging.c:2581
 msgid "toggle sort by name or by count"
-msgstr "Alternar entre ordenar por nombre u ordenar por recuento"
+msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
 #: ../src/libs/tagging.c:2591
 msgid "toggle show or not darktable tags"
-msgstr "Alternar entre mostrar u ocultar etiquetas de darktable"
+msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
 #: ../src/libs/tagging.c:2607
 msgid "enter tag name"
-msgstr "introducir nombre de etiqueta"
+msgstr "Introducir el nombre de la etiqueta"
 
 #: ../src/libs/tagging.c:2617
 msgid "clear entry"
-msgstr "borrar texto"
+msgstr "Borrar texto"
 
 #: ../src/libs/tagging.c:2669
 msgid ""
@@ -14221,12 +14221,12 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"crea una nueva etiqueta con el\n"
+"Crear una nueva etiqueta con el\n"
 "nombre designado"
 
 #: ../src/libs/tagging.c:2695
 msgid "import tags from a Lightroom keyword file"
-msgstr "importar etiquetas desde el archivo Lightroom"
+msgstr "Importar etiquetas desde el archivo Lightroom"
 
 #: ../src/libs/tagging.c:2700
 msgctxt "verb"
@@ -14235,15 +14235,15 @@ msgstr "exportar..."
 
 #: ../src/libs/tagging.c:2703
 msgid "export all tags to a Lightroom keyword file"
-msgstr "exportar todas las etiquetas al archivo Lightroom"
+msgstr "Exportar todas las etiquetas al archivo Lightroom"
 
 #: ../src/libs/tagging.c:2710
 msgid "toggle list / tree view"
-msgstr "alternar vista (de lista o de árbol)"
+msgstr "Conmutar vista (de lista o de árbol)"
 
 #: ../src/libs/tagging.c:2718
 msgid "toggle list with / without suggestion"
-msgstr "Alternar entre lista con o sin sugerencia"
+msgstr "Cambiar entre lista con o sin sugerencia"
 
 #: ../src/libs/tagging.c:2823
 msgid ""
@@ -14538,7 +14538,7 @@ msgstr "información de imagen"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
-msgstr "mesa de luz con acercamiento"
+msgstr "mesa de luz con ampliación"
 
 #: ../src/libs/tools/lighttable.c:141
 msgid "file manager"
@@ -14956,7 +14956,7 @@ msgstr "cambiar a mesa de luz"
 
 #: ../src/views/darkroom.c:3331 ../src/views/lighttable.c:4597
 msgid "zoom in the image"
-msgstr "acercamiento en la imagen"
+msgstr "Ampliación en la imagen"
 
 #: ../src/views/darkroom.c:3337
 msgid "unbounded zoom in the image"
