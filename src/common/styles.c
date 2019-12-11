@@ -763,8 +763,8 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     guint tagid = 0;
     gchar ntag[512] = { 0 };
     g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", name);
-    if(dt_tag_new(ntag, &tagid)) dt_tag_attach_from_gui(tagid, newimgid);
-    if(dt_tag_new("darktable|changed", &tagid)) dt_tag_attach_from_gui(tagid, newimgid);
+    if(dt_tag_new(ntag, &tagid)) dt_tag_attach_from_gui(tagid, newimgid, FALSE, FALSE);
+    if(dt_tag_new("darktable|changed", &tagid)) dt_tag_attach_from_gui(tagid, newimgid, FALSE, FALSE);
 
     /* if current image in develop reload history */
     if(dt_dev_is_current_image(darktable.develop, newimgid))

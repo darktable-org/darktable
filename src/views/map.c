@@ -1198,7 +1198,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
-
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
@@ -1217,10 +1216,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 
 static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation)
 {
-  if(set_elevation)
-    dt_image_set_location_and_elevation(imgid, geoloc);
-  else
-    dt_image_set_location(imgid, geoloc);
+  dt_image_set_location(imgid, geoloc, FALSE, FALSE);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
@@ -1243,7 +1239,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
 
   geotag->after.longitude = longitude;
   geotag->after.latitude = latitude;
-  geotag->after.elevation = 0.0;
+  geotag->after.elevation = NAN;
 
   dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t)geotag, _pop_undo, free);
 

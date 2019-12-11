@@ -252,7 +252,7 @@ static int creator_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.creator", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.creator", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -276,7 +276,7 @@ static int publisher_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.publisher", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.publisher", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -300,7 +300,7 @@ static int title_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -324,7 +324,7 @@ static int description_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.description", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.description", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -348,7 +348,7 @@ static int rights_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
