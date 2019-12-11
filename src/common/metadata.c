@@ -146,7 +146,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       GList *before = (action == DT_ACTION_UNDO) ? undometadata->after : undometadata->before;
       GList *after = (action == DT_ACTION_UNDO) ? undometadata->before : undometadata->after;
       _pop_undo_execute(undometadata->imgid, before, after);
-      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(metadata->imgid));
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undometadata->imgid));
       list = g_list_next(list);
     }
 
