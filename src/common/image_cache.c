@@ -219,43 +219,51 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       uint32_t u;
   } flip;
   if(img->id <= 0) return;
+  if(!img->aspect_ratio || img->aspect_ratio < .0001)
+  {
+    if(img->orientation < ORIENTATION_SWAP_XY)
+      img->aspect_ratio = (float )img->width / (float )img->height;
+    else
+      img->aspect_ratio = (float )img->height / (float )img->width;
+  }
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "UPDATE main.images SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5, "
-      "lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10, "
-      "focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14, "
-      "crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18, longitude = ?19, "
-      "latitude = ?20, altitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
-      "raw_maximum = ?25 WHERE id = ?26",
+      "UPDATE main.images SET width = ?1, height = ?2, aspect_ratio = ROUND(?3,1), filename = ?4, maker = ?5, model = ?6, "
+      "lens = ?7, exposure = ?8, aperture = ?9, iso = ?10, focal_length = ?11, "
+      "focus_distance = ?12, film_id = ?13, datetime_taken = ?14, flags = ?15, "
+      "crop = ?16, orientation = ?17, raw_parameters = ?18, group_id = ?19, longitude = ?20, "
+      "latitude = ?21, altitude = ?22, color_matrix = ?23, colorspace = ?24, raw_black = ?25, "
+      "raw_maximum = ?26 WHERE id = ?27",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->filename, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_maker, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_model, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, img->exif_lens, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_exposure);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_aperture);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_iso);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_focal_length);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focus_distance);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, img->film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, img->exif_datetime_taken, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->flags);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15, img->exif_crop);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, img->orientation);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 3, img->aspect_ratio);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->filename, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_maker, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, img->exif_model, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 7, img->exif_lens, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_exposure);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_aperture);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_iso);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focal_length);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, img->exif_focus_distance);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 14, img->exif_datetime_taken, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->flags);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 16, img->exif_crop);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->orientation);
   flip.s = img->legacy_flip;
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, flip.u);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, img->group_id);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->geoloc.longitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->geoloc.latitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->geoloc.elevation);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 22, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->colorspace);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->raw_black_level);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, flip.u);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 19, img->group_id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->geoloc.longitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->geoloc.latitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 22, img->geoloc.elevation);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 23, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->colorspace);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_black_level);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, img->raw_white_point);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 27, img->id);
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
