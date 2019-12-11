@@ -183,6 +183,7 @@ void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_un
     {
       _history_snapshot_undo_restore(hist->imgid, hist->after, hist->after_history_end);
     }
-    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(hist->imgid));
+  // in principle undo() routine should add imgid to imgs list to make _undo_do_undo_redo() refresh XMP file for each of them
+  // in this case the update of XMP file is done by the normal image (re)development process.
   }
 }
