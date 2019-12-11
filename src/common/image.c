@@ -1249,6 +1249,7 @@ void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
   img->final_width = img->final_height = 0;
+  img->aspect_ratio = 0.0;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;
