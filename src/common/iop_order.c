@@ -590,13 +590,13 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     }
     else
     {
-      if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
+      fprintf(stderr, "[_ioppr_insert_iop_before] module %s doesn't exist in iop order list\n", op_next);
     }
     if(found)
     {
       // set the iop_order
       iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
-//      if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
+//      if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
       iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
@@ -604,7 +604,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
   }
   else
   {
-     if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists on iop order list\n", op_new);
+     fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists in iop order list\n", op_new);
   }
   *_iop_order_list = iop_order_list;
 }
@@ -629,9 +629,8 @@ static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list
   }
   if(prior_next == NULL)
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,
-        "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
-        op_prev, op_new);
+    fprintf(stderr, "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
+            op_prev, op_new);
   }
   else
     _ioppr_insert_iop_before(&iop_order_list, history_list, op_new, prior_next->operation, check_history);
@@ -677,7 +676,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
   }
   else
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_move_iop_before] current module %s don't exists on iop order list\n", op_current);
+    fprintf(stderr, "[_ioppr_move_iop_before] current module %s doesn't exist in iop order list\n", op_current);
   }
   // search for the previous and next one
   if(found)
@@ -708,11 +707,11 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
    // VERY noisy so disable now
-   //    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
+   //    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
+    fprintf(stderr, "[_ioppr_move_iop_before] next module %s doesn't exist in iop order list\n", op_next);
   }
   *_iop_order_list = iop_order_list;
 }
@@ -738,9 +737,8 @@ static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_curren
   }
   if(prior_next == NULL)
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,
-        "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
-        op_prev, op_current);
+    fprintf(stderr, "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
+            op_prev, op_current);
   }
   else
     _ioppr_move_iop_before(&iop_order_list, op_current, prior_next->operation, dont_move);
@@ -763,7 +761,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 
   if(old_version != version)
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list to version %i\n", version);
+    fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", version);
   }
 
   if(_version && *_version == 0 && old_version > 0) *_version = old_version;
@@ -776,7 +774,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 // if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 {
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
   GList *iop_list = *_iop_list;
 
   GList *modules = g_list_first(iop_list);
@@ -794,14 +792,14 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
       mod->iop_order = DBL_MAX;
     }
 
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  db: %14.11f   xmp %8.4f   %16s",mod->iop_order,mod->iop_order,mod->op);
+    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  db: %14.11f   xmp %8.4f   %16s",mod->iop_order,mod->iop_order,mod->op);
     modules = g_list_next(modules);
   }
   // we need to set the right order
   iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
 }
 
 // returns the first dt_dev_history_item_t on history_list where hist->module == mod
@@ -890,9 +888,9 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            if (DT_IOP_ORDER_INFO) fprintf(stderr,
-                "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
-                mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+            fprintf(stderr,
+                    "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                    mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
         else
@@ -903,9 +901,9 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        if (DT_IOP_ORDER_INFO) fprintf(stderr,
-            "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
-            mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+        fprintf(stderr,
+                "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
 
@@ -953,7 +951,7 @@ void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList
     if(mod->multi_priority == 0 && mod->iop_order == DBL_MAX)
     {
       mod->iop_order = dt_ioppr_get_iop_order(iop_order_list, mod->op);
-      if((mod->iop_order == DBL_MAX) && (DT_IOP_ORDER_INFO))
+      if(mod->iop_order == DBL_MAX)
         fprintf(stderr, "[dt_ioppr_legacy_iop_order] can't find iop_order for module %s\n", mod->op);
     }
 
@@ -984,7 +982,7 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
     if(entry == NULL)
     {
       iop_order_missing = 1;
-      if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
+      fprintf(stderr, "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
     }
     modules = g_list_next(modules);
   }
@@ -1601,15 +1599,15 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   // get the number of known iops
   const int valid_iops = g_list_length (current_iop_list);
 
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
   {
-    fprintf(stderr,"\n*** checking for %i known iops ***\n",valid_iops);
+    fprintf(stderr,"\n*** checking for %d known iops ***\n", valid_iops);
 
     GList *iops_order = g_list_last(current_iop_list);
     while(iops_order)
     {
       dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
-      fprintf(stderr,"  %s, %f\n",order_entry->operation,order_entry->iop_order);
+      fprintf(stderr, "  %s, %f\n", order_entry->operation,order_entry->iop_order);
       iops_order = g_list_previous(iops_order);
     }
   }
