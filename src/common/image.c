@@ -126,7 +126,7 @@ int dt_image_is_monochrome(const dt_image_t *img)
 int dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
    return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME) );
-} 
+}
 
 int dt_image_is_rawprepare_supported(const dt_image_t *img)
 {
@@ -362,7 +362,7 @@ static void _set_location(const int imgid, const dt_image_geoloc_t *geoloc)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action)
+void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_LT_GEOTAG)
   {
@@ -375,6 +375,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
 
       _set_location(undogeotag->imgid, geoloc);
 
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undogeotag->imgid));
       list = g_list_next(list);
     }
 
