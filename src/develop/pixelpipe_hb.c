@@ -2857,7 +2857,7 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
   if(source_iter)
   {
     const dt_dev_pixelpipe_iop_t *source_piece = (dt_dev_pixelpipe_iop_t *)source_iter->data;
-    if(source_piece)
+    if(source_piece && source_piece->enabled) // there might be stale masks from disabled modules left over. don't use those!
     {
       raster_mask = g_hash_table_lookup(source_piece->raster_masks, GINT_TO_POINTER(raster_mask_id));
       if(raster_mask)
