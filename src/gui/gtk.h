@@ -42,6 +42,9 @@ typedef struct dt_gui_widgets_t
   GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
   GtkGrid *panel_right;
 
+  /* resize of left/right panels */
+  gboolean panel_handle_dragging;
+  int panel_handle_x, panel_handle_y;
 } dt_gui_widgets_t;
 
 typedef struct dt_gui_scrollbars_t
