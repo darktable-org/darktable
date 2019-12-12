@@ -175,7 +175,6 @@ void init_key_accels(dt_iop_module_so_t *self)
 
   dt_accel_register_iop(self, FALSE, NC_("accel", "find camera"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "find lens"), 0, (GdkModifierType)0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "auto scale"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "camera model"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "lens model"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "select corrections"), 0, (GdkModifierType)0);
@@ -185,15 +184,15 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_button_iop(self, "find lens", GTK_WIDGET(g->find_lens_button));
-  dt_accel_connect_button_iop(self, "lens model", GTK_WIDGET(g->lens_model));
-  dt_accel_connect_button_iop(self, "camera model", GTK_WIDGET(g->camera_model));
   dt_accel_connect_button_iop(self, "find camera", GTK_WIDGET(g->find_camera_button));
+  dt_accel_connect_button_iop(self, "find lens", GTK_WIDGET(g->find_lens_button));
+  dt_accel_connect_button_iop(self, "camera model", GTK_WIDGET(g->camera_model));
+  dt_accel_connect_button_iop(self, "lens model", GTK_WIDGET(g->lens_model));
   dt_accel_connect_button_iop(self, "select corrections", GTK_WIDGET(g->modflags));
 
   dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "tca R", GTK_WIDGET(g->tca_r));
-  dt_accel_connect_slider_iop(self, "tca B", GTK_WIDGET(g->tca_b));
+  dt_accel_connect_slider_iop(self, "TCA R", GTK_WIDGET(g->tca_r));
+  dt_accel_connect_slider_iop(self, "TCA B", GTK_WIDGET(g->tca_b));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

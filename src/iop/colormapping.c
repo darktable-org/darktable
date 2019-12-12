@@ -161,6 +161,10 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "number of clusters"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "color dominance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram equalization"));
+  
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as source"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as target"), 0, 0);
 }
@@ -168,6 +172,10 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "number of clusters", GTK_WIDGET(g->clusters));
+  dt_accel_connect_slider_iop(self, "color dominance", GTK_WIDGET(g->dominance));
+  dt_accel_connect_slider_iop(self, "histogram equalization", GTK_WIDGET(g->equalization));
 
   dt_accel_connect_button_iop(self, "acquire as source", g->acquire_source_button);
   dt_accel_connect_button_iop(self, "acquire as target", g->acquire_target_button);

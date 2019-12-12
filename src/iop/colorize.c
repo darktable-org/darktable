@@ -124,6 +124,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "source mix"));
 }
@@ -132,6 +134,8 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
 
+  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->gslider1));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->gslider2));
   dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
