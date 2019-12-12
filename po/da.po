@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-09 09:56+0100\n"
-"PO-Revision-Date: 2019-12-12 23:32+0100\n"
+"PO-Revision-Date: 2019-12-12 23:58+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -77,7 +77,7 @@ msgstr "ignorér JPEG-billeder under import af filmruller"
 #: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "dobbeltklik for at nulstille til \"%s\""
+msgstr "dobbeltklik for at nulstille til “%s”"
 
 #: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
 #: ../build/src/preferences_gen.h:2294 ../build/src/preferences_gen.h:2391
@@ -133,7 +133,7 @@ msgstr "indledende bedømmelse under importering"
 #: ../build/src/preferences_gen.h:3897 ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "dobbeltklik for at nulstille til \"%d\""
+msgstr "dobbeltklik for at nulstille til “%d”"
 
 #: ../build/src/preferences_gen.h:2268
 msgid "initial star rating for all images when importing a filmroll"
@@ -952,7 +952,7 @@ msgstr ""
 "cachede miniaturebilleder igen. det er dog sikkert at slette disse manuelt, "
 "hvis du vil. lysbordets ydelse vil øges betydeligt under større mængder "
 "browsing. for at generere alle miniaturebilleder for hele din samling "
-"offline, kan du køre \"darktable-generate-cache\"."
+"offline, kan du køre “darktable-generate-cache”."
 
 #: ../build/src/preferences_gen.h:3805
 msgid "enable disk backend for full preview cache"
@@ -1344,7 +1344,7 @@ msgstr ""
 #: ../src/cli/main.c:342
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "ukendt endelse \".%s\""
+msgstr "ukendt endelse “.%s”"
 
 #: ../src/cli/main.c:351
 msgid "failed to get parameters from format module, aborting export ..."
@@ -1521,7 +1521,7 @@ msgstr "BRG (til test)"
 #: ../src/common/cups_print.c:408
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "fil \"%s\" til udskrift ikke fundet for billede %d på \"%s\""
+msgstr "fil “%s” til udskrift ikke fundet for billede %d på “%s”"
 
 #: ../src/common/cups_print.c:427
 msgid "failed to create temporary file for printing options"
@@ -1545,22 +1545,22 @@ msgstr "udskriver “%s” på “%s”"
 #: ../src/common/darktable.c:230
 #, c-format
 msgid "found strange path `%s'"
-msgstr "fandt uregelmæssig sti \"%s\""
+msgstr "fandt uregelmæssig sti “%s”"
 
 #: ../src/common/darktable.c:247
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "fejl under indlæsning af mappe \"%s\""
+msgstr "fejl under indlæsning af mappe “%s”"
 
 #: ../src/common/darktable.c:270
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "fil \"%s\" har ukendt format!"
+msgstr "fil “%s” har ukendt format!"
 
 #: ../src/common/darktable.c:283 ../src/libs/import.c:825
 #, c-format
 msgid "error loading file `%s'"
-msgstr "fejl under indlæsning af fil \"%s\""
+msgstr "fejl under indlæsning af fil “%s”"
 
 #: ../src/common/darktable.c:802
 msgid "darktable - run performance configuration?"
@@ -1822,7 +1822,7 @@ msgstr[1] "%d lokale kopier er synkroniseret"
 #: ../src/common/imageio.c:637 ../src/common/mipmap_cache.c:1060
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "billede \"%s\" er ikke tilgængeligt!"
+msgstr "billede “%s” er ikke tilgængeligt!"
 
 #: ../src/common/imageio.c:655
 #, c-format
@@ -1846,7 +1846,7 @@ msgstr "eksport"
 #: ../src/common/imageio.c:666
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "kan ikke finde stilen \"%s\" for anvendelse under eksport."
+msgstr "kan ikke finde stilen “%s” for anvendelse under eksport."
 
 #: ../src/common/import_session.c:272
 msgid ""
@@ -1868,7 +1868,7 @@ msgstr "generisk poissonian"
 #: ../src/common/noiseprofiles.c:62
 #, c-format
 msgid "noiseprofile file `%s' is not valid"
-msgstr "støjprofil-fil \"%s\" er ikke gyldig"
+msgstr "støjprofil-fil “%s” er ikke gyldig"
 
 #: ../src/common/opencl.c:786
 msgid ""
@@ -1950,7 +1950,7 @@ msgstr "ingen billeder valgt til anvendelse af bedømmelse"
 #: ../src/common/styles.c:188
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "stil ved navn \"%s\" eksisterer allerede"
+msgstr "stil ved navn “%s” eksisterer allerede"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:314 ../src/common/styles.c:318
@@ -1965,7 +1965,7 @@ msgstr "stile/anvend %s"
 #: ../src/common/styles.c:404 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "stil ved navn \"%s\" succesfuldt oprettet"
+msgstr "stil ved navn “%s” succesfuldt oprettet"
 
 #. fail :(
 #: ../src/common/styles.c:503 ../src/common/styles.c:521
@@ -2111,7 +2111,7 @@ msgstr[1] "kombinerer %d billeder"
 #: ../src/control/jobs/control_jobs.c:510
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "skrev kombineret HDR \"%s\""
+msgstr "skrev kombineret HDR “%s”"
 
 #: ../src/control/jobs/control_jobs.c:536
 #, c-format
@@ -2256,7 +2256,7 @@ msgstr[1] "eksporterer %d billeder til %s"
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "billede \"%s\" er i øjeblikket utilgængeligt"
+msgstr "billede “%s” er i øjeblikket utilgængeligt"
 
 #: ../src/control/jobs/control_jobs.c:1498
 msgid "merge hdr image"
@@ -2375,7 +2375,7 @@ msgstr "genindlæs exif"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"hentning af parametre fra opbevaringsmodulet \"%s\" mislykkedes, eksport "
+"hentning af parametre fra opbevaringsmodulet “%s” mislykkedes, eksport "
 "afbrydes…"
 
 #: ../src/control/jobs/control_jobs.c:1829
@@ -2431,7 +2431,7 @@ msgstr "importér billede"
 #: ../src/develop/blend.c:2826 ../src/develop/blend.c:3142
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "sprang blending i modulet \"%s\" over: roi passer ikke sammen"
+msgstr "sprang blending i modulet “%s” over: roi passer ikke sammen"
 
 #: ../src/develop/blend.c:2862 ../src/develop/blend.c:3177
 msgid "could not allocate buffer for blending"
@@ -2566,7 +2566,7 @@ msgstr "invertér alle kanalers polariteter"
 
 #: ../src/develop/blend_gui.c:1536 ../src/develop/blend_gui.c:1540
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr "skift polaritet. ses bedst ved at slå \"vis maske\" til"
+msgstr "skift polaritet. ses bedst ved at slå “vis maske” til"
 
 #: ../src/develop/blend_gui.c:1549
 msgid "output"
@@ -2969,7 +2969,7 @@ msgstr "maskenuance"
 #: ../src/develop/develop.c:1674
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: modulet \"%s\" versionsuoverensstemmelse: %d != %d"
+msgstr "%s: modulet “%s” versionsuoverensstemmelse: %d != %d"
 
 #: ../src/develop/imageop.c:1022
 msgid "new instance"
@@ -3077,7 +3077,7 @@ msgstr "kan ikke finde lightroom-XMP!"
 #: ../src/develop/lightroom.c:1146
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "\"%s\" er ikke en lightroom-XMP!"
+msgstr "“%s” er ikke en lightroom-XMP!"
 
 #. tags
 #: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
@@ -3282,7 +3282,8 @@ msgstr ""
 #, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"rul for at sætte hårdhed, ctrl+rul for at sætte figurens uigennemsigtighed (%d%%)"
+"rul for at sætte hårdhed, ctrl+rul for at sætte figurens uigennemsigtighed ("
+"%d%%)"
 
 #: ../src/develop/masks/masks.c:368
 msgid "scroll to set brush size"
@@ -3347,7 +3348,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"fliselægning for modulet \"%s\" mislykkedes. output kan være mangelfuldt."
+"fliselægning for modulet “%s” mislykkedes. output kan være mangelfuldt."
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
@@ -3483,12 +3484,12 @@ msgstr "opretter cache-mapper\n"
 #: ../src/generate-cache/main.c:55
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "opretter cache-mappe \"%s\"\n"
+msgstr "opretter cache-mappe “%s”\n"
 
 #: ../src/generate-cache/main.c:58
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "kunne ikke oprette mappe \"%s\"!\n"
+msgstr "kunne ikke oprette mappe “%s”!\n"
 
 #: ../src/generate-cache/main.c:82
 #, c-format
@@ -4216,7 +4217,7 @@ msgstr "accelerationskonflikt"
 #: ../src/gui/preferences.c:1115 ../src/gui/presets.c:182 ../src/libs/lib.c:340
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "vil du virkelig slette forudindstillingen \"%s\"?"
+msgstr "vil du virkelig slette forudindstillingen “%s”?"
 
 #: ../src/gui/preferences.c:1119 ../src/gui/presets.c:186 ../src/libs/lib.c:344
 msgid "delete preset?"
@@ -4259,7 +4260,7 @@ msgstr "importering af forudindstilling mislykkedes"
 #: ../src/gui/preferences.c:1384 ../src/gui/presets.c:385
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "redigér \"%s\" for modulet \"%s\""
+msgstr "redigér “%s” for modulet “%s”"
 
 #: ../src/gui/preferences.c:1407 ../src/gui/presets.c:408 ../src/libs/lib.c:252
 msgid "description or further information"
@@ -4366,7 +4367,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"forudindstilling \"%s\" eksisterer allerede.\n"
+"forudindstilling “%s” eksisterer allerede.\n"
 "vil du overskrive?"
 
 #: ../src/gui/presets.c:259 ../src/libs/lib.c:154
@@ -4559,7 +4560,7 @@ msgstr "ugyldig rammestørrelse; bruger 0"
 #: ../src/imageio/storage/piwigo.c:969
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "kunne ikke eksportere til fil \"%s\"!"
+msgstr "kunne ikke eksportere til fil “%s”!"
 
 #: ../src/imageio/format/pdf.c:412
 msgid "PDF"
@@ -4855,12 +4856,12 @@ msgstr "spring over"
 #: ../src/imageio/storage/latex.c:273
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "kunne ikke oprette mappe \"%s\"!"
+msgstr "kunne ikke oprette mappe “%s”!"
 
 #: ../src/imageio/storage/disk.c:288
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "kunne ikke skrive til mappe \"%s\"!"
+msgstr "kunne ikke skrive til mappe “%s”!"
 
 #: ../src/imageio/storage/disk.c:318
 #, c-format
@@ -6544,7 +6545,7 @@ msgstr "beskær og rotér"
 
 #: ../src/iop/clipping.c:1595
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "ugyldig format for forhold. det skal være \"nummer:nummer\""
+msgstr "ugyldig format for forhold. det skal være “tal:tal”"
 
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:2005
 msgid "full"
@@ -6626,7 +6627,7 @@ msgstr "ISO 216, DIN 476, A4"
 
 #: ../src/iop/clipping.c:2028
 msgid "3:2, 4x6, 35mm"
-msgstr "3:\", 4×6, 35 mm"
+msgstr "3:2, 4×6, 35 mm"
 
 #: ../src/iop/clipping.c:2029
 msgid "16:10, 8x5"
@@ -6663,7 +6664,7 @@ msgstr "3:1, panoramisk"
 #: ../src/iop/clipping.c:2069 ../src/iop/clipping.c:2081
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "ugyldigt format for forhold for \"%s\". det skal være \"tal:tal\""
+msgstr "ugyldigt format for forhold for “%s”. det skal være “tal:tal”"
 
 #: ../src/iop/clipping.c:2128
 msgid ""
@@ -7144,7 +7145,7 @@ msgstr ""
 #: ../src/iop/colorin.c:1583
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "farvematricen \"%s\" ikke fundet!"
+msgstr "farvematricen “%s” ikke fundet!"
 
 #: ../src/iop/colorin.c:1618
 msgid "input profile could not be generated!"
@@ -7359,7 +7360,7 @@ msgstr "inkonsekvent output"
 
 #: ../src/iop/colorreconstruction.c:673
 msgid "module `color reconstruction' failed"
-msgstr "modulet \"farverekonstruktion\" mislykkedes"
+msgstr "modulet “farverekonstruktion” mislykkedes"
 
 #: ../src/iop/colorreconstruction.c:1374 ../src/iop/shadhi.c:869
 #: ../src/iop/tonemap.cc:305
@@ -7620,7 +7621,7 @@ msgstr "grænseværdi for kanter"
 #: ../src/iop/demosaic.c:4918
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "farvematricen \"%s\" ikke fundet for 4bayer-billede!"
+msgstr "farvematricen “%s” ikke fundet for 4bayer-billede!"
 
 #: ../src/iop/demosaic.c:5122 ../src/iop/demosaic.c:5131
 #: ../src/iop/dither.c:803 ../src/iop/highlights.c:1079
@@ -7934,7 +7935,7 @@ msgid ""
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
 "metode, der bruges til støjfjernelse. non-local means virker bedst til "
-"\"lysskarpheds\"-blending, wavelets virker bedst til \"farve\"-blending"
+"“lysskarpheds”-blending, wavelets virker bedst til “farve”-blending"
 
 #: ../src/iop/denoiseprofile.c:4087
 msgid ""
@@ -8134,7 +8135,7 @@ msgstr "standard for magic lantern"
 #: ../src/iop/rawoverexposed.c:288
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "indlæsning af raw-buffer fra billede \"%s\" mislykkedes"
+msgstr "indlæsning af raw-buffer fra billede “%s” mislykkedes"
 
 #: ../src/iop/exposure.c:808 ../src/iop/exposure.c:887
 #: ../src/iop/exposure.c:926
@@ -9021,7 +9022,7 @@ msgstr ""
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "farvematricen \"%s\" ikke fundet for 4bayer-billede"
+msgstr "farvematricen “%s” ikke fundet for 4bayer-billede"
 
 #: ../src/iop/invert.c:114
 msgid "invert"
@@ -10651,13 +10652,12 @@ msgstr "spot"
 #: ../src/iop/temperature.c:962
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "farvematricen \"%s\" ikke fundet for billede"
+msgstr "farvematricen “%s” ikke fundet for billede"
 
 #: ../src/iop/temperature.c:986
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
-msgstr ""
-"læsning af kameraets information om hvidbalance fra \"%s\" mislykkedes!"
+msgstr "læsning af kameraets information om hvidbalance fra “%s” mislykkedes!"
 
 #: ../src/iop/temperature.c:1369
 msgid "magenta"
@@ -11673,7 +11673,7 @@ msgstr ""
 #: ../src/libs/collect.c:1621 ../src/libs/collect.c:2041
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "indtast din forespørgsel; brug \"%\" som jokertegn"
+msgstr "indtast din forespørgsel; brug “%” som jokertegn"
 
 #: ../src/libs/collect.c:1953
 msgid "narrow down search"
@@ -11825,7 +11825,7 @@ msgstr "XMP metadatafil"
 #: ../src/libs/copy_history.c:105
 #, c-format
 msgid "error loading file '%s'"
-msgstr "fejl under indlæsning af fil \"%s\""
+msgstr "fejl under indlæsning af fil “%s”"
 
 #: ../src/libs/copy_history.c:166
 #, c-format
@@ -12630,7 +12630,7 @@ msgstr "importér mappe"
 #: ../src/libs/import.c:226
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "enhed \"%s\" forbundet på port \"%s\"."
+msgstr "enhed “%s” forbundet på port “%s”."
 
 #: ../src/libs/import.c:236
 msgid "import from camera"
@@ -12702,7 +12702,7 @@ msgstr "skan for nyligt forbundne enheder"
 #: ../src/libs/lib.c:226
 #, c-format
 msgid "edit `%s'"
-msgstr "redigér \"%s\""
+msgstr "redigér “%s”"
 
 #: ../src/libs/lib.c:504
 msgid "nothing to save"
@@ -13221,7 +13221,7 @@ msgstr "vis kun aktive moduler"
 
 #: ../src/libs/modulegroups.c:188
 msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr "vis kun dine favoritmoduler (valgt i \"flere moduler\" herunder)"
+msgstr "vis kun dine favoritmoduler (valgt i “flere moduler” herunder)"
 
 #: ../src/libs/modulegroups.c:194
 msgid "basic group"
@@ -13380,7 +13380,7 @@ msgstr "bearbejder “%s” for “%s”"
 #: ../src/libs/print_settings.c:279
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "kan ikke åbne printerprofil \"%s\""
+msgstr "kan ikke åbne printerprofil “%s”"
 
 #: ../src/libs/print_settings.c:288
 #, c-format
@@ -13390,7 +13390,7 @@ msgstr "fejl under indlæsning af outputprofil for billede %d"
 #: ../src/libs/print_settings.c:296
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "kan ikke anvende printerprofil \"%s\""
+msgstr "kan ikke anvende printerprofil “%s”"
 
 #: ../src/libs/print_settings.c:316
 msgid "failed to create temporary pdf for printing"
@@ -13784,7 +13784,7 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"vil du virkelig slette mærket \"%s\"?\n"
+"vil du virkelig slette mærket “%s”?\n"
 "%d billede har dette mærke!"
 msgstr[1] ""
 "vil du virkelig slette mærket \"%s\"?\n"
@@ -14448,7 +14448,7 @@ msgstr "vælg fil"
 #: ../src/lua/preferences.c:724
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "dobbeltklik for at nulstille til \"%f\""
+msgstr "dobbeltklik for at nulstille til “%f”"
 
 #: ../src/lua/preferences.c:800
 msgid "lua options"
@@ -14470,7 +14470,7 @@ msgstr ""
 #: ../src/views/darkroom.c:1042
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "anvendte stil \"%s\" på aktuelt billede"
+msgstr "anvendte stil “%s” på aktuelt billede"
 
 #: ../src/views/darkroom.c:1154
 msgid "no styles have been created yet"
@@ -15069,7 +15069,7 @@ msgstr "tethering"
 #: ../src/views/tethering.c:149
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "ny session startet \"%s\""
+msgstr "ny session startet “%s”"
 
 #: ../src/views/tethering.c:251
 msgid "no camera with tethering support available for use..."
