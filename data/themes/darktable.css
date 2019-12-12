@@ -116,7 +116,7 @@
 @define-color tooltip_bg_color @grey_05;
 @define-color tooltip_fg_color @grey_70;
 @define-color really_dark_bg_color @grey_05;
-@define-color log_bg_color @grey_35;
+@define-color log_bg_color @grey_25;
 @define-color log_fg_color @grey_65;
 
 /* Views */

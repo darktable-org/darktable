@@ -72,7 +72,7 @@
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_20;
 @define-color menu_bg_color @grey_20;
-@define-color log_bg_color @grey_50;
+@define-color log_bg_color @grey_40;
 @define-color log_fg_color @grey_80;
 
 /* Views */
