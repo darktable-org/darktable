@@ -163,6 +163,9 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -171,6 +174,9 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->gslider1));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->gslider2));
 }
 
 static inline float f(const float t, const float c, const float x)
