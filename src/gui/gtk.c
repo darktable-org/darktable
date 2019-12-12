@@ -266,14 +266,8 @@ static gboolean _toggle_left_panel_accel_callback(GtkAccelGroup *accel_group,
                                                 GdkModifierType modifier, gpointer data)
 {
   dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  char key[512];
-
-  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
-           _ui_panel_config_names[DT_UI_PANEL_LEFT]);
-  const gboolean state = dt_conf_get_bool(key);
+  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_LEFT);
   dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !state, TRUE);
-  dt_conf_set_bool(key, !state);
 
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 
@@ -285,14 +279,8 @@ static gboolean _toggle_right_panel_accel_callback(GtkAccelGroup *accel_group,
                                                 GdkModifierType modifier, gpointer data)
 {
   dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  char key[512];
-
-  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
-             _ui_panel_config_names[DT_UI_PANEL_RIGHT]);
-  const gboolean state = dt_conf_get_bool(key);
+  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_RIGHT);
   dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !state, TRUE);
-  dt_conf_set_bool(key, !state);
 
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 
@@ -304,14 +292,8 @@ static gboolean _toggle_top_panel_accel_callback(GtkAccelGroup *accel_group,
                                                 GdkModifierType modifier, gpointer data)
 {
   dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  char key[512];
-
-  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
-             _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
-  const gboolean state = dt_conf_get_bool(key);
+  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_TOP);
   dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, !state, TRUE);
-  dt_conf_set_bool(key, !state);
 
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 
@@ -323,14 +305,8 @@ static gboolean _toggle_bottom_panel_accel_callback(GtkAccelGroup *accel_group,
                                                 GdkModifierType modifier, gpointer data)
 {
   dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  char key[512];
-
-  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
-             _ui_panel_config_names[DT_UI_PANEL_CENTER_BOTTOM]);
-  const gboolean state = dt_conf_get_bool(key);
+  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_BOTTOM);
   dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, !state, TRUE);
-  dt_conf_set_bool(key, !state);
 
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 
@@ -407,8 +383,6 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
     }
     break;
   }
-
-  gtk_widget_queue_draw(w);
 
   return TRUE;
 }
@@ -1881,6 +1855,16 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     gtk_widget_hide(over_panel);
   }
 
+  // force redraw of the border (to be sure the arrow in the right direction)
+  if(p == DT_UI_PANEL_TOP || p == DT_UI_PANEL_CENTER_TOP)
+    gtk_widget_queue_draw(ui->borders[DT_UI_BORDER_TOP]);
+  else if(p == DT_UI_PANEL_BOTTOM || p == DT_UI_PANEL_CENTER_BOTTOM)
+    gtk_widget_queue_draw(ui->borders[DT_UI_BORDER_BOTTOM]);
+  else if(p == DT_UI_PANEL_LEFT)
+    gtk_widget_queue_draw(ui->borders[DT_UI_BORDER_LEFT]);
+  else if(p == DT_UI_PANEL_RIGHT)
+    gtk_widget_queue_draw(ui->borders[DT_UI_BORDER_RIGHT]);
+
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 }
 
@@ -2031,7 +2015,6 @@ static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, g
         dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
       else
         dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
-      gtk_widget_queue_draw(w);
     }
   }
   return TRUE;
