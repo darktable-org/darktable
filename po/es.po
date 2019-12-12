@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-11 00:28-0600\n"
-"PO-Revision-Date: 2019-12-11 01:04-0600\n"
+"POT-Creation-Date: 2019-12-11 17:38-0600\n"
+"PO-Revision-Date: 2019-12-11 21:31-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1644,7 +1644,7 @@ msgid "darktable - error locking database"
 msgstr "Error en darktable al bloquear la base de datos"
 
 #: ../src/common/database.c:1673 ../src/common/database.c:1844
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "close darktable"
 msgstr "cerrar darktable"
 
@@ -1694,7 +1694,7 @@ msgstr "actualizar la base de datos"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2059 ../src/common/database.c:2137
+#: ../src/common/database.c:2063 ../src/common/database.c:2141
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1713,11 +1713,11 @@ msgstr ""
 "¿Desea cerrar manualmente darktable para reiniciar\n"
 "desde el respaldo la base de datos o comenzar con una nueva?"
 
-#: ../src/common/database.c:2069 ../src/common/database.c:2147
+#: ../src/common/database.c:2073 ../src/common/database.c:2151
 msgid "darktable - error opening database"
 msgstr "Error en darktable al abrir la base de datos"
 
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "delete database"
 msgstr "borrar base de datos"
 
@@ -1886,7 +1886,7 @@ msgstr ""
 "no se pudo expandir a un nombre único de archivo. revise la configuración de "
 "importación."
 
-#: ../src/common/iop_order.c:1897
+#: ../src/common/iop_order.c:1895
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
@@ -2006,7 +2006,7 @@ msgstr "el estilo nombrado '%s' ha sido creado correctamente"
 #: ../src/common/styles.c:503 ../src/common/styles.c:521
 #: ../src/views/darkroom.c:548 ../src/views/print.c:248
 msgid "no image selected!"
-msgstr "no hay imagen seleccionada"
+msgstr "No hay imagen seleccionada"
 
 #: ../src/common/styles.c:612
 #, c-format
@@ -3853,7 +3853,7 @@ msgstr "alejar"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr "Mostrar la ventana de atajos"
+msgstr "mostrar la ventana de atajos"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
@@ -6737,7 +6737,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2164 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
-msgstr "mostrar lineas guía para ayudar a componer su fotografía"
+msgstr "Mostrar lineas guía para ayudar a componer su fotografía"
 
 #: ../src/iop/clipping.c:2168 ../src/iop/clipping.c:2173
 #: ../src/libs/live_view.c:379
@@ -11575,10 +11575,10 @@ msgid ""
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
-"zonas de luminosidad\n"
-"use la rueda del ratón para cambiar el número de zonas\n"
-"pulsación izquierda en un borde crea un marcador\n"
-"pulsación derecha sobre un marcador lo borra"
+"Zonas de luminosidad\n"
+"Use la rueda del ratón para cambiar el número de zonas\n"
+"Pulsación izquierda en un borde crea un marcador\n"
+"Pulsación derecha sobre un marcador lo borra"
 
 #: ../src/libs/backgroundjobs.c:53
 msgid "background jobs"
@@ -11595,11 +11595,11 @@ msgstr "capturar imagen(es)"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
-msgstr "activar vista de propiedades sobre la imagen"
+msgstr "Activar la vista de propiedades sobre la imagen"
 
 #: ../src/libs/camera.c:213
 msgid "connection with camera lost, exiting tethering mode"
-msgstr "perdida la conexión con la cámara, saliendo del modo de captura"
+msgstr "Se perdió la conexión con la cámara, saliendo del modo de captura"
 
 #: ../src/libs/camera.c:358
 msgid "battery"
@@ -11620,19 +11620,19 @@ msgstr "modos"
 
 #: ../src/libs/camera.c:436
 msgid "timer (s)"
-msgstr "temporizador (es)"
+msgstr "temporizador(es)"
 
 #: ../src/libs/camera.c:437
 msgid "count"
-msgstr "contar"
+msgstr "disparo secuencial"
 
 #: ../src/libs/camera.c:438
 msgid "brackets"
-msgstr "horquillado"
+msgstr "ahorquillado"
 
 #: ../src/libs/camera.c:439
 msgid "bkt. steps"
-msgstr "pasos"
+msgstr "incrementos"
 
 #: ../src/libs/camera.c:475
 msgid "capture image(s)"
@@ -11640,19 +11640,19 @@ msgstr "capturar imagen(es)"
 
 #: ../src/libs/camera.c:478
 msgid "toggle delayed capture mode"
-msgstr "activar modo de captura con retraso"
+msgstr "Activar modo de captura con retraso"
 
 #: ../src/libs/camera.c:479
 msgid "toggle sequenced capture mode"
-msgstr "activar modo de captura secuenciado"
+msgstr "Activar modo de captura secuenciado"
 
 #: ../src/libs/camera.c:480
 msgid "toggle bracketed capture mode"
-msgstr "activar modo de captura horquillado"
+msgstr "Activar modo de captura horquillado"
 
 #: ../src/libs/camera.c:481
 msgid "the count of seconds before actually doing a capture"
-msgstr "cuanta atrás de segundos antes de hacer una captura"
+msgstr "Cuenta regresiva en segundos antes de hacer una captura"
 
 #: ../src/libs/camera.c:483
 msgid ""
@@ -11660,15 +11660,15 @@ msgid ""
 "you can use this in conjunction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
-"la cantidad de imágenes a capturar en una secuencia,\n"
-"puede utilizar esto en conjunción con el modo diferido para crear secuencias "
-"stop-motion."
+"Número de disparos en secuencia.\n"
+"Puede utilizarse en conjunto con el modo diferido para crear animación "
+"cuadro por cuadro"
 
 #: ../src/libs/camera.c:486
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
-msgstr "cantidad de tomas en el horquillado, cantidad = (posiciones*2)+1."
+msgstr "Cantidad de capturas en el ahorquillado; cantidad = (posiciones*2)+1."
 
 #: ../src/libs/camera.c:488
 msgid ""
@@ -11676,9 +11676,9 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"la cantidad de pasos por toma, los pasos son configurables en la cámara y "
-"habitualmente son tres pasos por parada\n"
-"en otras palabras, 3 pasos son 1EV de exposición entre tomas."
+"Número de incrementos por toma. Los incrememtos son configurables en la "
+"cámara y normalmente son tres incrementos por paso.\n"
+"Es decir, 3 incrementos son 1EV de exposición de diferencia entre disparos."
 
 #. user specified properties
 #: ../src/libs/camera.c:517
@@ -11695,7 +11695,7 @@ msgstr "propiedades"
 
 #: ../src/libs/camera.c:543
 msgid "add user property"
-msgstr "añadir propiedades usuario"
+msgstr "añadir propiedades del usuario"
 
 #: ../src/libs/camera.c:567
 msgid "program"
@@ -11707,7 +11707,7 @@ msgstr "modo de enfoque"
 
 #: ../src/libs/camera.c:583
 msgid "shutterspeed2"
-msgstr "velocidad de disparo2"
+msgstr "velocidad de disparo 2"
 
 #: ../src/libs/camera.c:585
 msgid "shutterspeed"
@@ -11782,7 +11782,7 @@ msgstr ""
 #: ../src/libs/collect.c:1621 ../src/libs/collect.c:2041
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "teclee su ruta, use '%'  como comodín"
+msgstr "Escriba la ruta, use '%' como comodín"
 
 #: ../src/libs/collect.c:1953
 msgid "narrow down search"
@@ -12664,12 +12664,12 @@ msgstr "borrar físicamente del disco o enviar a la papelera"
 #: ../src/libs/image.c:304
 msgctxt "accel"
 msgid "move to other folder"
-msgstr "Mover a otra carpeta"
+msgstr "mover a otra carpeta"
 
 #: ../src/libs/image.c:305
 msgctxt "accel"
 msgid "copy to other folder"
-msgstr "Copiar a otra carpeta"
+msgstr "copiar a otra carpeta"
 
 #: ../src/libs/image.c:306
 msgctxt "accel"
@@ -12699,12 +12699,12 @@ msgstr "restablecer rotación"
 #: ../src/libs/image.c:311
 msgctxt "accel"
 msgid "copy the image locally"
-msgstr "Copiar imagen localmente"
+msgstr "copiar imagen localmente"
 
 #: ../src/libs/image.c:312
 msgctxt "accel"
 msgid "resync the local copy"
-msgstr "Resincronizar copia local"
+msgstr "resincronizar copia local"
 
 #: ../src/libs/image.c:313
 msgctxt "accel"
@@ -12836,12 +12836,12 @@ msgstr "visualización en vivo"
 #: ../src/libs/live_view.c:166
 msgctxt "accel"
 msgid "toggle live view"
-msgstr "Activar visualización en vivo"
+msgstr "activar visualización en vivo"
 
 #: ../src/libs/live_view.c:167
 msgctxt "accel"
 msgid "zoom live view"
-msgstr "zoom en la visualización en vivo"
+msgstr "ampliación en la visualización en vivo"
 
 #: ../src/libs/live_view.c:170
 msgctxt "accel"
@@ -12870,23 +12870,23 @@ msgstr "alejar el foco (pasos grandes)"
 
 #: ../src/libs/live_view.c:293
 msgid "toggle live view"
-msgstr "activar visualización en vivo"
+msgstr "Activar la visualización en vivo"
 
 #: ../src/libs/live_view.c:294
 msgid "zoom live view"
-msgstr "zoom en visualización en vivo"
+msgstr "Zoom en la visualización en vivo"
 
 #: ../src/libs/live_view.c:295
 msgid "rotate 90 degrees ccw"
-msgstr "rotar 90 grados en sentido antihorario"
+msgstr "Rotar 90 grados en sentido antihorario"
 
 #: ../src/libs/live_view.c:296
 msgid "rotate 90 degrees cw"
-msgstr "rotar 90 grados en sentido horario"
+msgstr "Rotar 90 grados en sentido horario"
 
 #: ../src/libs/live_view.c:297
 msgid "flip live view horizontally"
-msgstr "voltear horizontalmente en la visualización en vivo"
+msgstr "Voltear horizontalmente en la visualización en vivo"
 
 #: ../src/libs/live_view.c:323
 msgid "move focus point in (big steps)"
@@ -12906,7 +12906,7 @@ msgstr "alejar el foco (pasos grandes)"
 
 #: ../src/libs/live_view.c:383
 msgid "overlay"
-msgstr "solapar"
+msgstr "superponer"
 
 #: ../src/libs/live_view.c:385
 msgid "selected image"
@@ -12915,11 +12915,11 @@ msgstr "imagen seleccionada"
 #. DT_COLLECTION_SORT_RATING
 #: ../src/libs/live_view.c:386 ../src/libs/tools/filter.c:150
 msgid "id"
-msgstr "id"
+msgstr "id."
 
 #: ../src/libs/live_view.c:387
 msgid "overlay another image over the live view"
-msgstr "superponer otra imagen sobre la visualización en vivo"
+msgstr "Superponer otra imagen sobre la visualización en vivo"
 
 #: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:100
 msgid "image id"
@@ -12927,7 +12927,7 @@ msgstr "imagen"
 
 #: ../src/libs/live_view.c:396
 msgid "enter image id of the overlay manually"
-msgstr "introduzca el id. de la imagen para superponer manualmente"
+msgstr "Introduzca el id. de la imagen para superponer manualmente"
 
 #: ../src/libs/live_view.c:407
 msgid "overlay mode"
@@ -13019,15 +13019,15 @@ msgstr "mostrar OSD"
 
 #: ../src/libs/map_settings.c:95
 msgid "toggle the visibility of the map overlays"
-msgstr "cambiar la visibilidad del mapa superpuesto"
+msgstr "Cambiar la visibilidad del mapa superpuesto"
 
 #: ../src/libs/map_settings.c:103
 msgid "map source"
-msgstr "fuente de mapa"
+msgstr "procedencia del mapa"
 
 #: ../src/libs/map_settings.c:109
 msgid "select the source of the map. some entries might not work"
-msgstr "seleccionar la fuente del mapa. algunas entradas podrían no funcionar"
+msgstr "Elegir la fuente del mapa. Algunas entradas podrían no funcionar"
 
 #: ../src/libs/masks.c:246
 #, c-format
@@ -13339,33 +13339,32 @@ msgstr "grupos de módulos"
 
 #: ../src/libs/modulegroups.c:181
 msgid "show only active modules"
-msgstr "mostrar solo los módulos activos"
+msgstr "Mostrar únicamente los módulos activos"
 
 #: ../src/libs/modulegroups.c:188
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr ""
-"muestra solamente sus módulos favoritos (seleccionados abajo en `mas "
-"módulos' )"
+"Mostrar únicamente los módulos favoritos (previa selección en 'mas módulos')"
 
 #: ../src/libs/modulegroups.c:194
 msgid "basic group"
-msgstr "grupo básico"
+msgstr "Grupo básico"
 
 #: ../src/libs/modulegroups.c:200
 msgid "tone group"
-msgstr "grupo tono"
+msgstr "Grupo tono"
 
 #: ../src/libs/modulegroups.c:206
 msgid "color group"
-msgstr "grupo color"
+msgstr "Grupo color"
 
 #: ../src/libs/modulegroups.c:212
 msgid "correction group"
-msgstr "grupo corrección"
+msgstr "Grupo corrección"
 
 #: ../src/libs/modulegroups.c:218
 msgid "effects group"
-msgstr "grupo efectos"
+msgstr "Grupo efectos"
 
 #. search box
 #: ../src/libs/modulegroups.c:230
@@ -13374,11 +13373,11 @@ msgstr "buscar módulo"
 
 #: ../src/libs/modulegroups.c:237
 msgid "search modules by name or tag"
-msgstr "buscar módulos por nombre o etiqueta"
+msgstr "Buscar módulos por nombre o etiqueta"
 
 #: ../src/libs/modulegroups.c:244
 msgid "clear text"
-msgstr "borrar texto"
+msgstr "Borrar texto"
 
 #: ../src/libs/modulelist.c:58
 msgid "more modules"
@@ -13550,44 +13549,44 @@ msgstr "ajustes de impresión"
 #: ../src/libs/print_settings.c:237 ../src/libs/print_settings.c:435
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "procesando `%s' para el módulo `%s'"
+msgstr "Procesando `%s' para el módulo `%s'"
 
 #: ../src/libs/print_settings.c:279
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "no se puede abrir el perfil de la impresora `%s'"
+msgstr "No se puede abrir el perfil de la impresora `%s'"
 
 #: ../src/libs/print_settings.c:288
 #, c-format
 msgid "error getting output profile for image %d"
-msgstr "error obteniendo el perfil de salida para la imagen %d"
+msgstr "Error al obtener el perfil de salida para la imagen %d"
 
 #: ../src/libs/print_settings.c:296
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "no se puede establecer el perfil de la impresora `%s'"
+msgstr "No se puede establecer el perfil de la impresora `%s'"
 
 #: ../src/libs/print_settings.c:316
 msgid "failed to create temporary pdf for printing"
-msgstr "fallo al crear carpeta %s, de importado, abortada importación"
+msgstr "Hubo un fallo al crear el archivo temporal pdf para imprimir"
 
 #: ../src/libs/print_settings.c:390
 msgid "cannot print until a picture is selected"
-msgstr "no se puede imprimir hasta que una imagen sea seleccionada"
+msgstr "No se puede imprimir hasta que una imagen sea seleccionada"
 
 #: ../src/libs/print_settings.c:395
 msgid "cannot print until a printer is selected"
-msgstr "no se puede imprimir hasta que una impresora sea seleccionada"
+msgstr "No se puede imprimir hasta que una impresora sea seleccionada"
 
 #: ../src/libs/print_settings.c:400
 msgid "cannot print until a paper is selected"
-msgstr "no se puede imprimir hasta que un papel sea seleccionado"
+msgstr "No se puede imprimir hasta que un papel sea seleccionado"
 
 #. in this case no need to release from cache what we couldn't get
 #: ../src/libs/print_settings.c:427
 #, c-format
 msgid "cannot get image %d for printing"
-msgstr "no se puede obtener la imagen %d para imprimirla"
+msgstr "No se puede obtener la imagen %d para imprimirla"
 
 #: ../src/libs/print_settings.c:694
 #, c-format
@@ -13609,7 +13608,7 @@ msgstr "gestión de color en el controlador de la impresora"
 #: ../src/libs/print_settings.c:1229
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "perfiles ICC de impresora en %s o %s"
+msgstr "Perfiles ICC de la impresora en %s o %s"
 
 #: ../src/libs/print_settings.c:1251
 msgid "black point compensation"
@@ -13618,7 +13617,7 @@ msgstr "compensación de punto negro"
 #: ../src/libs/print_settings.c:1259
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
-"activa la compensación de punto negro al establecer el perfil de la impresora"
+"Activa la compensación de punto negro al establecer el perfil de la impresora"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/libs/print_settings.c:1265
@@ -13644,21 +13643,21 @@ msgid ""
 " > 1 means that the image is upscaled\n"
 " a too large value may result in poor print quality"
 msgstr ""
-"factor de escala de la imagen desde los PPP nativos de la impresora:\n"
-" < 1 significa que ha sido redimensionado a un tamaño inferior (mejor "
+"Factor de escala de la imagen desde los PPP nativos de la impresora:\n"
+" menor a 1 significa que ha sido redimensionado a un tamaño inferior (mejor "
 "calidad)\n"
-" > 1 significa que ha sido redimensionado a un tamaño mayor\n"
-"un valor muy grande puede resultar en una calidad de impresión pobre"
+" mayor a 1 significa que ha sido redimensionado a un tamaño mayor\n"
+"Un valor muy grande puede resultar en una calidad de impresión pobre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1333
 msgid "top margin"
-msgstr "margen superior"
+msgstr "Margen superior"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1337
 msgid "left margin"
-msgstr "margen izquierdo"
+msgstr "Margen izquierdo"
 
 #: ../src/libs/print_settings.c:1340
 msgid "lock"
@@ -13666,21 +13665,21 @@ msgstr "bloquear"
 
 #: ../src/libs/print_settings.c:1341
 msgid "change all margins uniformly"
-msgstr "cambiar los margenes uniformemente"
+msgstr "Cambiar los margenes uniformemente"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1345
 msgid "right margin"
-msgstr "margen derecho"
+msgstr "Margen derecho"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1349
 msgid "bottom margin"
-msgstr "margen inferior"
+msgstr "Margen inferior"
 
 #: ../src/libs/print_settings.c:1491
 msgid "temporary style to use while printing"
-msgstr "estilo temporal para ser aplicado al imprimir"
+msgstr "Estilo para ser aplicado solo al imprimir"
 
 #. Print button
 #: ../src/libs/print_settings.c:1528
@@ -13689,7 +13688,7 @@ msgstr "imprimir"
 
 #: ../src/libs/print_settings.c:1530
 msgid "print with current settings"
-msgstr "imprimir con la configuración actual"
+msgstr "Imprimir con la configuración actual"
 
 #: ../src/libs/print_settings.c:1997
 msgctxt "accel"
@@ -14575,12 +14574,12 @@ msgstr "cambiar a modo de selección"
 #: ../src/libs/tools/lighttable.c:218
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr "cambiar el modo dinámico de selección"
+msgstr "cambiar a modo dinámico de selección"
 
 #: ../src/libs/tools/lighttable.c:219
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "cambiar el modo de zoom de selección"
+msgstr "cambiar a modo de ampliación de selección"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -14659,15 +14658,15 @@ msgstr "no se han creado estilos todavia"
 
 #: ../src/views/darkroom.c:1787
 msgid "quick access to presets of your favorites"
-msgstr "acceso rápido a los preajustes de tus módulos favoritos"
+msgstr "Acceso rápido a los preajustes de los módulos favoritos"
 
 #: ../src/views/darkroom.c:1796
 msgid "quick access for applying any of your styles"
-msgstr "acceso rápido para aplicar cualquiera de tus estilos"
+msgstr "Acceso rápido para utilizar cualquiera de los estilos"
 
 #: ../src/views/darkroom.c:1809
 msgid "display a second darkroom image window"
-msgstr "mostrar la imagen en cuarto oscuro en una segunda"
+msgstr "Abrir en otra ventana la vista previa de la imagen del cuarto oscuro"
 
 #: ../src/views/darkroom.c:1821
 msgid ""
@@ -14839,17 +14838,17 @@ msgstr "activar o desactivar la tira de imágenes"
 #: ../src/views/darkroom.c:3181
 msgctxt "accel"
 msgid "zoom close-up"
-msgstr "zoom acercar"
+msgstr "ampliar imagen"
 
 #: ../src/views/darkroom.c:3182
 msgctxt "accel"
 msgid "zoom fill"
-msgstr "zoom rellenar"
+msgstr "ampliar imagen hasta rellenar"
 
 #: ../src/views/darkroom.c:3183
 msgctxt "accel"
 msgid "zoom fit"
-msgstr "zoom ajustar"
+msgstr "ampliar imagen a ventana"
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:3189
@@ -14866,7 +14865,7 @@ msgstr "imagen anterior"
 #: ../src/views/darkroom.c:3193
 msgctxt "accel"
 msgid "raw overexposed"
-msgstr "Imagen virgen sobreexpuesta"
+msgstr "imagen virgen sobreexpuesta"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3196
@@ -14942,7 +14941,7 @@ msgstr "rehacer"
 #: ../src/views/darkroom.c:3224
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
-msgstr "Habilitar panoramización y ampliación mientras se editan las máscaras"
+msgstr "habilitar ampliación y panorama mientras se editan las máscaras"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:3227
@@ -14956,15 +14955,15 @@ msgstr "cambiar a mesa de luz"
 
 #: ../src/views/darkroom.c:3331 ../src/views/lighttable.c:4597
 msgid "zoom in the image"
-msgstr "Ampliación en la imagen"
+msgstr "ampliar la imagen"
 
 #: ../src/views/darkroom.c:3337
 msgid "unbounded zoom in the image"
-msgstr "Zoom ilimitado en la imagen"
+msgstr "ampliar y reducir la vista de la imagen"
 
 #: ../src/views/darkroom.c:3342
 msgid "zoom to 100% 200% and back"
-msgstr "Amplía de 100% a 200% y viceversa"
+msgstr "ampliar a 100% y a 200% cíclicamente"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] expand module without closing others"
@@ -14985,23 +14984,23 @@ msgstr "buen caballero"
 
 #: ../src/views/lighttable.c:1135 ../src/views/slideshow.c:372
 msgid "there are no images in this collection"
-msgstr "no hay imágenes en esta colección"
+msgstr "sin imágenes en la colección presente"
 
 #: ../src/views/lighttable.c:1139
 msgid "if you have not imported any images yet"
-msgstr "si no ha importado ninguna imagen aún"
+msgstr "si aún no se ha importado alguna imagen"
 
 #: ../src/views/lighttable.c:1143
 msgid "you can do so in the import module"
-msgstr "puede hacerlo en el módulo importar"
+msgstr "puede hacerse con el módulo importar"
 
 #: ../src/views/lighttable.c:1151
 msgid "try to relax the filter settings in the top panel"
-msgstr "intente relajar las condiciones del filtro en el panel superior"
+msgstr "pruebe con condiciones de filtro más flexibles, en el panel superior"
 
 #: ../src/views/lighttable.c:1160
 msgid "or add images in the collection module in the left panel"
-msgstr "o agregue imágenes en el módulo de colección en el panel izquierdo"
+msgstr "o agregue imágenes con el módulo de recolección en el panel izquierdo"
 
 #: ../src/views/lighttable.c:3281
 #, c-format
@@ -15106,7 +15105,7 @@ msgstr "vista previa rápida"
 #: ../src/views/lighttable.c:4444
 msgctxt "accel"
 msgid "preview with focus detection"
-msgstr "vista previa rápida con detección de foco"
+msgstr "vista previa rápida con detección de enfoque"
 
 #: ../src/views/lighttable.c:4445
 msgctxt "accel"
@@ -15116,7 +15115,7 @@ msgstr "vista previa"
 #: ../src/views/lighttable.c:4446
 msgctxt "accel"
 msgid "sticky preview with focus detection"
-msgstr "vista previa con detección de foco"
+msgstr "vista previa con detección de enfoque"
 
 #. zoom for full preview
 #: ../src/views/lighttable.c:4454
@@ -15133,11 +15132,11 @@ msgstr "vista previa del ajuste del zoom"
 #: ../src/views/lighttable.c:4458
 msgctxt "accel"
 msgid "toggle timeline"
-msgstr "alternar línea de tiempo"
+msgstr "activar línea de tiempo"
 
 #: ../src/views/lighttable.c:4584
 msgid "open image in darkroom"
-msgstr "Abrir imagen en el cuarto oscuro"
+msgstr "abrir imagen en el cuarto oscuro"
 
 #: ../src/views/lighttable.c:4591
 msgid "switch to next/previous image"
@@ -15149,7 +15148,7 @@ msgstr "desplazarse por la colección"
 
 #: ../src/views/lighttable.c:4610
 msgid "change number of images per row"
-msgstr "Cambiar el número de imágenes por fila"
+msgstr "cambiar el número de imágenes por fila"
 
 #: ../src/views/lighttable.c:4618
 msgid "change image order"
@@ -15189,7 +15188,7 @@ msgstr "mapa"
 
 #: ../src/views/map.c:1405
 msgid "[on image] open in darkroom"
-msgstr "[en la imagen] Abrir en el cuarto oscuro"
+msgstr "[en la imagen] abrir en el cuarto oscuro"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
@@ -15270,27 +15269,27 @@ msgstr "Clic medio"
 
 #: ../src/views/view.c:2152
 msgid "Scroll"
-msgstr "Desplazar"
+msgstr "Desplazamiento"
 
 #: ../src/views/view.c:2155
 msgid "Left double-click"
-msgstr "doble clic izquierdo"
+msgstr "Doble clic izquierdo"
 
 #: ../src/views/view.c:2158
 msgid "Right double-click"
-msgstr "doble clic derecho"
+msgstr "Doble clic derecho"
 
 #: ../src/views/view.c:2161
 msgid "Drag and drop"
-msgstr "Arrastrar y soltar"
+msgstr "Arrastrar y Soltar"
 
 #: ../src/views/view.c:2164
 msgid "Left click+Drag"
-msgstr "Clic izquierdo+arrastrar"
+msgstr "Clic izquierdo + arrastrar"
 
 #: ../src/views/view.c:2167
 msgid "Right click+Drag"
-msgstr "Clic derecho+arrastrar"
+msgstr "Clic derecho + arrastrar"
 
 #: ../src/views/view.c:2191
 msgid "darktable - accels window"
