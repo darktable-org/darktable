@@ -1749,7 +1749,8 @@ static void _ui_init_panel_size(GtkWidget *widget)
 
   // we store and apply the new value
   int s = 350; // default panel size
-  if(dt_conf_key_exists(key)) s = CLAMP(dt_conf_get_int(key), DT_PIXEL_APPLY_DPI(150), DT_PIXEL_APPLY_DPI(500));
+  if(dt_conf_key_exists(key))
+    s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
   gtk_widget_set_size_request(widget, s, -1);
 }
 
@@ -2054,14 +2055,14 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, g
 
     if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
     {
-      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), DT_PIXEL_APPLY_DPI(150),
-                 DT_PIXEL_APPLY_DPI(500));
+      sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), dt_conf_get_int("min_panel_width"),
+                 dt_conf_get_int("max_panel_width"));
       g_snprintf(key, sizeof(key), "%s/ui/%sright_panel_size", cv->module_name, lay);
     }
     else
     {
-      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), DT_PIXEL_APPLY_DPI(150),
-                 DT_PIXEL_APPLY_DPI(500));
+      sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), dt_conf_get_int("min_panel_width"),
+                 dt_conf_get_int("max_panel_width"));
       g_snprintf(key, sizeof(key), "%s/ui/%sleft_panel_size", cv->module_name, lay);
     }
 
