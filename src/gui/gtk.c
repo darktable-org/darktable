@@ -1866,10 +1866,20 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     dt_conf_set_bool(key, show);
   }
 
+  // for left and right sides, panels are onside a gtkoverlay
+  GtkWidget *over_panel = NULL;
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT) over_panel = gtk_widget_get_parent(ui->panels[p]);
+
   if(show)
+  {
     gtk_widget_show(ui->panels[p]);
+    if(over_panel) gtk_widget_show(over_panel);
+  }
   else
+  {
     gtk_widget_hide(ui->panels[p]);
+    gtk_widget_hide(over_panel);
+  }
 
   dt_view_lighttable_force_expose_all(darktable.view_manager);
 }
@@ -2010,7 +2020,19 @@ static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, g
       darktable.gui->widgets.panel_handle_dragging = TRUE;
     }
     else if(e->type == GDK_BUTTON_RELEASE)
+    {
       darktable.gui->widgets.panel_handle_dragging = FALSE;
+    }
+    else if(e->type == GDK_2BUTTON_PRESS)
+    {
+      darktable.gui->widgets.panel_handle_dragging = FALSE;
+      // we hide the panel
+      if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
+      else
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
+      gtk_widget_queue_draw(w);
+    }
   }
   return TRUE;
 }
