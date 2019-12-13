@@ -200,6 +200,9 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
 
+  // darkroom border size
+  int32_t border_size;
+
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
@@ -269,6 +272,13 @@ typedef struct dt_develop_t
     dt_dev_rawoverexposed_colorscheme_t colorscheme;
     float threshold;
   } rawoverexposed;
+
+  // ISO 12646-compliant colour assessment conditions
+  struct
+  {
+    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
+    gboolean enabled;
+  } iso_12646;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct

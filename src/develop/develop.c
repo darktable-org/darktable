@@ -127,6 +127,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->proxy.exposure = NULL;
 
+  dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
   dev->rawoverexposed.colorscheme = dt_conf_get_int("darkroom/ui/rawoverexposed/colorscheme");
@@ -136,6 +138,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
+
+  dev->iso_12646.enabled = FALSE;
 
   dev->second_window.zoom = DT_ZOOM_FIT;
   dev->second_window.closeup = 0;
@@ -704,7 +708,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 {
   // fixed border on every side
-  const int tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->border_size;
   wd -= 2*tb;
   ht -= 2*tb;
   if(dev->width != wd || dev->height != ht)

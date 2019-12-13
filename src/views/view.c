@@ -1333,7 +1333,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       if(zoom == 1 && !image_only)
       {
-        const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+        const int32_t tb = darktable.develop->border_size;
         scale = fminf((width - 2 * tb) / (float)buf_wd, (height - 2 * tb) / (float)buf_ht) * fz;
       }
       else
@@ -1370,7 +1370,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         int h = height;
         if(zoom == 1 && !image_only)
         {
-          const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+          const int32_t tb = darktable.develop->border_size;
           w -= 2 * tb;
           h -= 2 * tb;
         }
