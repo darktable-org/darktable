@@ -1160,6 +1160,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
+
       const size_t index = (size_t)j * gw + i;
       points[index * 2] = (grid * i + px) * iscale;
       points[index * 2 + 1] = (grid * j + py) * iscale;
