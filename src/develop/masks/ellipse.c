@@ -1612,51 +1612,188 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
 }
 
 
+static inline float fast_atan2(float y, float x)
+{
+    float r, s, t, c, q;
+    const float ax = ABS(x);
+    const float ay = ABS(y);
+    const float mx = MAX(ay, ax);
+    const float mn = MIN(ay, ax);
+    const float a = mn / mx;
+
+    s = a * a;
+    c = s * a;
+    q = s * s;
+    r =  0.024840285f * q + 0.18681418f;
+    t = -0.094097948f * q - 0.33213072f;
+    r = r * s + t;
+    r = r * c + a;
+
+    r = ay > ax ? 1.57079632679489661923f - r : r;
+    r = x < 0 ? 3.14159265358979323846f - r : r;
+    r = y < 0 ? -r : r;
+    r = isnormal(r) ? r : 0.0f;
+    return r;
+}
+
+
 static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                    dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
-  double start2 = dt_get_wtime();
+  double start1 = dt_get_wtime();
+  double start2 = start1;
 
-  // we get the ellipse values
+  // we get the ellipse parameters
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
+  const float center[2] = { ellipse->center[0] * wi, ellipse->center[1] * hi };
+  const float radius[2] = { ellipse->radius[0] * MIN(wi, hi), ellipse->radius[1] * MIN(wi, hi) };
+  const float total[2] = { (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wi, hi),
+                           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wi, hi) };
 
-  // we create a buffer of mesh points for later interpolation. mainly in order to reduce memory footprint
+  const float a = radius[0];
+  const float b = radius[1];
+  const float ta = total[0];
+  const float tb = total[1];
+  const float alpha = (ellipse->rotation / 180.0f) * M_PI;
+  const float cosa = cosf(alpha);
+  const float sina = sinf(alpha);
+
+  const float a2 = a * a;
+  const float b2 = b * b;
+  const float ta2 = ta * ta;
+  const float tb2 = tb * tb;
+
+  // we create a buffer of grid points for later interpolation: higher speed and reduced memory footprint;
+  // we match size of buffer to bounding box around the shape
   const int w = roi->width;
   const int h = roi->height;
   const int px = roi->x;
   const int py = roi->y;
   const float iscale = 1.0f / roi->scale;
-  const int mesh = CLAMP((10.0f*roi->scale + 2.0f) / 3.0f, 1, 4);
-  const int mw = (w + mesh - 1) / mesh + 1;
-  const int mh = (h + mesh - 1) / mesh + 1;
+  const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4); // scale dependent resolution
+  const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
+  const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  float *points = malloc((size_t)mw * mh * 2 * sizeof(float));
-  if(points == NULL) return 0;
+  // initialize output buffer with zero
+  memset(buffer, 0, (size_t)w * h * sizeof(float));
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse init took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we look at the outer line of the shape - no effects outside of this ellipse;
+  // we need many points as we do not know how the ellipse might get distorted in the pixelpipe
+  const float lambda = (ta - tb) / (ta + tb);
+  const int l = (int)(M_PI * (ta + tb) * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
+  const size_t ellpts = MIN(360, l);
+  float *ell = malloc(ellpts * 2 * sizeof(float));
+  if(ell == NULL) return 0;
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(iscale) \
+  shared(ell)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
+  for(int n = 0; n < ellpts; n++)
+  {
+    const float phi = (2.0f * M_PI * n) / ellpts;
+    const float cosp = cosf(phi);
+    const float sinp = sinf(phi);
+    ell[2 * n] = center[0] + ta * cosa * cosp - tb * sina * sinp;
+    ell[2 * n + 1] = center[1] + ta * sina * cosp + tb * cosa * sinp;
+  }
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse outline took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we transform the outline from input image coordinates to current position in pixelpipe
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, ell,
+                                        ellpts))
+  {
+    free(ell);
+    return 0;
+  }
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse outline transform took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we get the min/max values ...
+  float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
+  for(int n = 0; n < ellpts; n++)
+  {
+    // just in case that transform throws surprising values
+    if(!(isnormal(ell[2 * n]) && isnormal(ell[2 * n + 1]))) continue;
+
+    xmin = MIN(xmin, ell[2 * n]);
+    xmax = MAX(xmax, ell[2 * n]);
+    ymin = MIN(ymin, ell[2 * n + 1]);
+    ymax = MAX(ymax, ell[2 * n + 1]);
+  }
+
+#if 0
+  printf("xmin %f, xmax %f, ymin %f, ymax %f\n", xmin, xmax, ymin, ymax);
+  printf("wi %d, hi %d, iscale %f\n", wi, hi, iscale);
+  printf("w %d, h %d, px %d, py %d\n", w, h, px, py);
+#endif
+
+  // ... and calculate the bounding box with a bit of reserve
+  const int bbxm = CLAMP((int)floorf(xmin / iscale - px) / grid - 1, 0, gw - 1);
+  const int bbXM = CLAMP((int)ceilf(xmax / iscale - px) / grid + 2, 0, gw - 1);
+  const int bbym = CLAMP((int)floorf(ymin / iscale - py) / grid - 1, 0, gh - 1);
+  const int bbYM = CLAMP((int)ceilf(ymax / iscale - py) / grid + 2, 0, gh - 1);
+  const int bbw = bbXM - bbxm + 1;
+  const int bbh = bbYM - bbym + 1;
+
+#if 0
+  printf("bbxm %d, bbXM %d, bbym %d, bbYM %d\n", bbxm, bbXM, bbym, bbYM);
+  printf("gw %d, gh %d, bbw %d, bbh %d\n", gw, gh, bbw, bbh);
+#endif
+
+  free(ell);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse bounding box took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // check if there is anything to do at all;
+  // only if width and height of bounding box is 2 or greater the shape lies inside of roi and requires action
+  if(bbw <= 1 || bbh <= 1)
+    return 1;
+
+
+  float *points = malloc((size_t)bbw * bbh * 2 * sizeof(float));
+  if(points == NULL) return 0;
+
+  // we populate the grid points in module coordinates
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
 #endif
-  for(int j = 0; j < mh; j++)
-    for(int i = 0; i < mw; i++)
+  for(int j = bbym; j <= bbYM; j++)
+    for(int i = bbxm; i <= bbXM; i++)
     {
-      size_t index = (size_t)j * mw + i;
-      points[index * 2] = (mesh * i + px) * iscale;
-      points[index * 2 + 1] = (mesh * j + py) * iscale;
+      const size_t index = (size_t)(j - bbym) * bbw + i - bbxm;
+      points[index * 2] = (grid * i + px) * iscale;
+      points[index * 2 + 1] = (grid * j + py) * iscale;
     }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse draw took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse grid took %0.04f sec\n", form->name, dt_get_wtime() - start2);
   start2 = dt_get_wtime();
 
-  // we back transform all these points
+  // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
-                                        (size_t)mw * mh))
+                                        (size_t)bbw * bbh))
   {
     free(points);
     return 0;
@@ -1667,38 +1804,9 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
              dt_get_wtime() - start2);
   start2 = dt_get_wtime();
 
-  // we populate the buffer
-  const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
-  const float center[2] = { ellipse->center[0] * wi, ellipse->center[1] * hi };
-  const float radius[2] = { ellipse->radius[0] * MIN(wi, hi), ellipse->radius[1] * MIN(wi, hi) };
-  const float total[2] = { (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wi, hi),
-                           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wi, hi) };
 
-  float a, b, ta, tb, alpha;
-
-  if(radius[0] >= radius[1])
-  {
-    a = radius[0];
-    b = radius[1];
-    ta = total[0];
-    tb = total[1];
-    alpha = (ellipse->rotation / 180.0f) * M_PI;
-  }
-  else
-  {
-    a = radius[1];
-    b = radius[0];
-    ta = total[1];
-    tb = total[0];
-    alpha = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
-  }
-
-  const float a2 = a * a;
-  const float b2 = b * b;
-  const float ta2 = ta * ta;
-  const float tb2 = tb * tb;
-  const float al = alpha;
-
+  // we calculate the mask values at the transformed points;
+  // for results: re-use the points array
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
@@ -1708,15 +1816,16 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 #pragma omp parallel for shared(points)
 #endif
 #endif
-  for(int i = 0; i < mh; i++)
-    for(int j = 0; j < mw; j++)
+  for(int j = 0; j < bbh; j++)
+    for(int i = 0; i < bbw; i++)
     {
-      const size_t index = (size_t)i * mw + j;
+      const size_t index = (size_t)j * bbw + i;
       const float x = points[index * 2] - center[0];
       const float y = points[index * 2 + 1] - center[1];
-      const float v = atan2(y, x) - al;
-      const float cosv2 = cos(v) * cos(v);
-      const float sinv2 = sin(v) * sin(v);
+      const float v = fast_atan2(y, x) - alpha;
+      const float sinv = sinf(v);
+      const float sinv2 = sinv * sinv;
+      const float cosv2 = 1.0f - sinv2;
       const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
       const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
       float l2 = x * x + y * y;
@@ -1732,7 +1841,15 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
         points[index * 2] = 0.0f;
     }
 
-// we fill the output buffer by interpolation
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse draw took %0.04f sec\n", form->name,
+             dt_get_wtime() - start2);
+  start2 = dt_get_wtime();
+
+  // we fill the pre-initialized output buffer by interpolation;
+  // we only need to take the contents of our bounding box into account
+  const int endx = MIN(w, bbXM * grid);
+  const int endy = MIN(h, bbYM * grid);
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
@@ -1742,32 +1859,32 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 #pragma omp parallel for shared(buffer)
 #endif
 #endif
-  for(int j = 0; j < h; j++)
+  for(int j = bbym * grid; j < endy; j++)
   {
-    int jj = j % mesh;
-    int mj = j / mesh;
-    for(int i = 0; i < w; i++)
+    const int jj = j % grid;
+    const int mj = j / grid - bbym;
+    for(int i = bbxm * grid; i < endx; i++)
     {
-      int ii = i % mesh;
-      int mi = i / mesh;
-      size_t mindex = (size_t)mj * mw + mi;
+      const int ii = i % grid;
+      const int mi = i / grid - bbxm;
+      const size_t mindex = (size_t)mj * bbw + mi;
       buffer[(size_t)j * w + i]
-          = (points[mindex * 2] * (mesh - ii) * (mesh - jj) + points[(mindex + 1) * 2] * ii * (mesh - jj)
-             + points[(mindex + mw) * 2] * (mesh - ii) * jj + points[(mindex + mw + 1) * 2] * ii * jj)
-            / (mesh * mesh);
+          = (points[mindex * 2] * (grid - ii) * (grid - jj) + points[(mindex + 1) * 2] * ii * (grid - jj)
+             + points[(mindex + bbw) * 2] * (grid - ii) * jj + points[(mindex + bbw + 1) * 2] * ii * jj)
+            / (grid * grid);
     }
   }
 
   free(points);
 
-
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse total render took %0.04f sec\n", form->name, dt_get_wtime() - start1);
 
   return 1;
 }
-
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
