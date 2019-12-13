@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-11 17:38-0600\n"
-"PO-Revision-Date: 2019-12-11 21:31-0600\n"
+"POT-Creation-Date: 2019-12-13 14:52-0600\n"
+"PO-Revision-Date: 2019-12-13 14:49-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -407,7 +407,7 @@ msgstr "Parte inferior"
 #: ../build/src/preferences_gen.h:2624
 msgctxt "preferences"
 msgid "hidden"
-msgstr "oculto"
+msgstr "Oculto"
 
 #: ../build/src/preferences_gen.h:2649
 msgid "show search module text entry"
@@ -686,17 +686,17 @@ msgstr "Mostrar barras de desplazamiento para la vista central"
 #: ../build/src/preferences_gen.h:3224
 msgctxt "preferences"
 msgid "no scrollbars"
-msgstr "sin barras de desplazamiento"
+msgstr "Sin barras de desplazamiento"
 
 #: ../build/src/preferences_gen.h:3229 ../build/src/preferences_gen.h:3249
 msgctxt "preferences"
 msgid "lighttable"
-msgstr "mesa de luz"
+msgstr "Mesa de luz"
 
 #: ../build/src/preferences_gen.h:3234
 msgctxt "preferences"
 msgid "lighttable + darkroom"
-msgstr "mesa de luz y cuarto oscuro"
+msgstr "Mesa de luz y cuarto oscuro"
 
 #: ../build/src/preferences_gen.h:3252
 msgid "defines where scrollbars should be displayed"
@@ -721,12 +721,12 @@ msgstr "Método para obtener el perfil del monitor"
 #: ../build/src/preferences_gen.h:3291 ../build/src/preferences_gen.h:3316
 msgctxt "preferences"
 msgid "all"
-msgstr "todas"
+msgstr "Todas"
 
 #: ../build/src/preferences_gen.h:3296
 msgctxt "preferences"
 msgid "xatom"
-msgstr "xatom"
+msgstr "XAtom"
 
 #: ../build/src/preferences_gen.h:3301
 msgctxt "preferences"
@@ -788,22 +788,22 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3421
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "La interpolación cromática para alejar en el modo de cuarto oscuro"
+msgstr "Interpolación cromática usada para ampliar en el modo de cuarto oscuro"
 
 #: ../build/src/preferences_gen.h:3432
 msgctxt "preferences"
 msgid "always bilinear (fast)"
-msgstr "siempre bilineal (rápido)"
+msgstr "Siempre bilineal (rápido)"
 
 #: ../build/src/preferences_gen.h:3437 ../build/src/preferences_gen.h:3457
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
-msgstr "la mayoría de PPG (razonable)"
+msgstr "Como máximo PPG (aceptable)"
 
 #: ../build/src/preferences_gen.h:3442
 msgctxt "preferences"
 msgid "full (possibly slow)"
-msgstr "completo (posiblemente lento)"
+msgstr "Completo (posiblemente lento)"
 
 #: ../build/src/preferences_gen.h:3460
 msgid ""
@@ -812,11 +812,11 @@ msgid ""
 "below, full will use exactly the settings for full-size export. X-Trans "
 "sensors use VNG rather than PPG as middle ground."
 msgstr ""
-"La interpolación cromática elegida cuando no se ve en escala 1:1 en el modo "
-"de cuarto oscuro: bilineal es más rápido, pero no es tan nítido. La opción "
-"de en medio utiliza PPG + el especificado de abajo. El completo usará las "
-"propiedades exactas para exportar en tamaño completo. Los sensores X-trans "
-"usan VNG en vez de PPG."
+"Indica la interpolación cromática usada, cuando en el modo de cuarto oscuro "
+"no está en escala 1:1: bilineal es más rápido, pero sin tanta nitidez. La "
+"opción intermedia utiliza PPG + el que se elija en la opción de abajo. El "
+"completo usará las propiedades especificadas para exportar en tamaño "
+"completo. Los sensores X-trans usan VNG en vez de PPG."
 
 #: ../build/src/preferences_gen.h:3468
 msgid "pixel interpolator"
@@ -825,22 +825,22 @@ msgstr "Interpolador de píxel"
 #: ../build/src/preferences_gen.h:3479
 msgctxt "preferences"
 msgid "bilinear"
-msgstr "bilineal"
+msgstr "Bilineal"
 
 #: ../build/src/preferences_gen.h:3484
 msgctxt "preferences"
 msgid "bicubic"
-msgstr "bicúbico"
+msgstr "Bicúbico"
 
 #: ../build/src/preferences_gen.h:3489
 msgctxt "preferences"
 msgid "lanczos2"
-msgstr "lanczos2"
+msgstr "Lanczos2"
 
 #: ../build/src/preferences_gen.h:3494 ../build/src/preferences_gen.h:3509
 msgctxt "preferences"
 msgid "lanczos3"
-msgstr "lanczos3"
+msgstr "Lanczos3"
 
 #: ../build/src/preferences_gen.h:3512
 msgid ""
@@ -909,7 +909,7 @@ msgstr "Guarda las etiquetas xmp en formato comprimido"
 #: ../build/src/preferences_gen.h:3630 ../build/src/preferences_gen.h:3645
 msgctxt "preferences"
 msgid "only large entries"
-msgstr "solo entradas largas"
+msgstr "Solo entradas extensas"
 
 #: ../build/src/preferences_gen.h:3648
 msgid ""
@@ -1072,7 +1072,7 @@ msgstr "por defecto"
 #: ../build/src/preferences_gen.h:3880
 msgctxt "preferences"
 msgid "multiple GPUs"
-msgstr "múltiples GPUs"
+msgstr "Múltiples GPUs"
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
 #: ../build/src/preferences_gen.h:3885
@@ -1133,28 +1133,29 @@ msgstr "Respaldo de almacenamiento de contraseñas para usar"
 #: ../build/src/preferences_gen.h:3979 ../build/src/preferences_gen.h:4011
 msgctxt "preferences"
 msgid "auto"
-msgstr "auto"
+msgstr "Automático"
 
 #: ../build/src/preferences_gen.h:3984
 msgctxt "preferences"
 msgid "none"
-msgstr "ninguna"
+msgstr "Ninguna"
 
 #: ../build/src/preferences_gen.h:3989
 msgctxt "preferences"
 msgid "libsecret"
-msgstr "libsecret"
+msgstr "Libsecret"
 
 #: ../build/src/preferences_gen.h:3995
 msgctxt "preferences"
 msgid "kwallet"
-msgstr "kwallet"
+msgstr "Kwallet"
 
 #: ../build/src/preferences_gen.h:4014
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
-"la interfaz para almacenamiento de claves: auto, ninguno, libsecret, kwallet"
+"Interfaz para almacenamiento de claves: automático, ninguno, Libsecret, "
+"Kwallet"
 
 #: ../build/src/preferences_gen.h:4022
 msgid "executable for playing audio files"
@@ -1341,7 +1342,7 @@ msgstr "Error: no se puede abrir el archivo %s"
 #: ../src/cli/main.c:293
 #, c-format
 msgid "no images to export, aborting\n"
-msgstr "No hay imágenes que exportar. Abortando la operación\n"
+msgstr "No hay imágenes que exportar. Abortando la operación...\n"
 
 #: ../src/cli/main.c:307
 #, c-format
@@ -1902,12 +1903,12 @@ msgstr "distribución de poisson"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "archivo de perfil de ruido `%s' no es válido"
 
-#: ../src/common/opencl.c:787
+#: ../src/common/opencl.c:789
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "desactivado debido a una aceleración lenta de GPU vía opencl."
 
-#: ../src/common/opencl.c:794
+#: ../src/common/opencl.c:796
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
@@ -1915,14 +1916,14 @@ msgstr ""
 "configurado en consecuencia."
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
-#: ../src/common/opencl.c:801
+#: ../src/common/opencl.c:803
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "GPU muy rápido detectado - el perfil de control de opencl ha sido "
 "configurado en consecuencia."
 
-#: ../src/common/opencl.c:808
+#: ../src/common/opencl.c:810
 msgid "opencl scheduling profile set to default."
 msgstr "el perfil de control para opencl ha sido configurado a predeterminado."
 
@@ -2073,7 +2074,7 @@ msgstr "fue encontrado el archivo asociado actualizado xmp"
 
 #: ../src/control/crawler.c:365
 msgid "_close"
-msgstr "_cerrar"
+msgstr "_Cerrar"
 
 #: ../src/control/crawler.c:380 ../src/libs/select.c:101
 msgid "select all"
@@ -2126,7 +2127,7 @@ msgstr "importar imágenes desde la cámara"
 
 #: ../src/control/jobs/control_jobs.c:148
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr "falló al crear el carrete para el directorio de destino, abortando..."
+msgstr "Falló al crear el carrete para el directorio de destino, abortando..."
 
 #: ../src/control/jobs/control_jobs.c:346
 msgid "exposure bracketing only works on raw images."
@@ -2277,55 +2278,55 @@ msgstr[1] "Actualizando información para %d imágenes"
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "exportando %d imagen.."
-msgstr[1] "exportando %d imágenes.."
+msgstr[0] "Exportando %d imagen.."
+msgstr[1] "Exportando %d imágenes.."
 
 #: ../src/control/jobs/control_jobs.c:1356
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
-msgstr[0] "exportando %d imagen a %s"
-msgstr[1] "exportando %d imágenes a %s"
+msgstr[0] "Exportando %d imagen a %s"
+msgstr[1] "Exportando %d imágenes a %s"
 
 #: ../src/control/jobs/control_jobs.c:1408 ../src/views/darkroom.c:561
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "imagen `%s' no esta disponible actualmente"
+msgstr "La imagen `%s' no esta disponible actualmente"
 
 #: ../src/control/jobs/control_jobs.c:1498
 msgid "merge hdr image"
-msgstr "fusionar imagen hdr"
+msgstr "Fusionar imagen hdr"
 
 #: ../src/control/jobs/control_jobs.c:1512
 msgid "duplicate images"
-msgstr "duplicate images"
+msgstr "Duplicar imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1519
 msgid "flip images"
-msgstr "invertir imágenes"
+msgstr "Invertir imágenes"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1526
 msgid "remove images"
-msgstr "eliminar imágenes"
+msgstr "Eliminar imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1548
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
 "do you really want to remove %d selected images from the collection?"
-msgstr[0] "¿desea eliminar %d imagen seleccionada de la colección?"
-msgstr[1] "¿desea eliminar %d imágenes seleccionadas de la colección?"
+msgstr[0] "¿Desea eliminar %d imagen seleccionada de la colección?"
+msgstr[1] "¿Desea eliminar %d imágenes seleccionadas de la colección?"
 
 #: ../src/control/jobs/control_jobs.c:1555
 msgid "remove images?"
-msgstr "¿eliminar las imágenes?"
+msgstr "¿Eliminar las imágenes?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1571
 msgid "delete images"
-msgstr "borrar imágenes"
+msgstr "Borrar imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1595
 #, c-format
@@ -2339,20 +2340,20 @@ msgstr[1] "¿Desea realmente enviar a la papelera %d imágenes seleccionadas?"
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
-msgstr[0] "¿desea borrar FISICAMENTE %d imagen seleccionada del disco?"
-msgstr[1] "¿desea borrar FISICAMENTE %d imágenes seleccionadas del disco?"
+msgstr[0] "¿Desea borrar FÍSICAMENTE del disco %d imagen seleccionada?"
+msgstr[1] "¿Desea borrar FISICAMENTE del disco %d imágenes seleccionadas?"
 
 #: ../src/control/jobs/control_jobs.c:1604
 msgid "trash images?"
-msgstr "¿eliminar imágenes?"
+msgstr "¿Eliminar imágenes?"
 
 #: ../src/control/jobs/control_jobs.c:1604
 msgid "delete images?"
-msgstr "¿borrar las imágenes?"
+msgstr "¿Borrar las imágenes?"
 
 #: ../src/control/jobs/control_jobs.c:1625
 msgid "move images"
-msgstr "mover imágenes"
+msgstr "Mover imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1630
 #: ../src/control/jobs/control_jobs.c:1690
@@ -2368,34 +2369,35 @@ msgid_plural ""
 "do you really want to physically move %d selected images to %s?\n"
 "(all unselected duplicates will be moved along)"
 msgstr[0] ""
-"¿desea mover físicamente %d imagen seleccionada a %s?\n"
-" ?(todos los duplicados no seleccionados se moverán en conjunto)"
+"¿Desea mover físicamente %d imagen seleccionada a %s?\n"
+" (todos los duplicados no seleccionados se moverán en conjunto)"
 msgstr[1] ""
-"¿desea mover físicamente %d imagenes seleccionadas a %s?\n"
-" ?(todos los duplicados no seleccionados se moverán en conjunto)"
+"¿Desea mover físicamente %d imágenes seleccionadas a %s?\n"
+" (todos los duplicados no seleccionados se moverán en conjunto)"
 
 #: ../src/control/jobs/control_jobs.c:1660
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "¿mover las imágenes?"
-msgstr[1] "¿mover las imágenes?"
+msgstr[0] "¿Mover las imágenes?"
+msgstr[1] "¿Mover las imágenes?"
 
 #: ../src/control/jobs/control_jobs.c:1685
 msgid "copy images"
-msgstr "copiar imágenes"
+msgstr "Copiar imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1711
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
-msgstr[0] "¿realmente desea copiar FISICAMENTE %d imagen seleccionada a %s ?"
+msgstr[0] ""
+"¿Desea copiar realmente de manera física %d imagen seleccionada a %s ?"
 msgstr[1] ""
-"¿realmente desea copiar FISICAMENTE %d imagenes seleccionadas a %s ?"
+"¿Desea copiar realmente de manera física %d imágenes seleccionadas a %s ?"
 
 #: ../src/control/jobs/control_jobs.c:1717
 msgid "copy image?"
 msgid_plural "copy images?"
-msgstr[0] "¿copiar imagen?"
+msgstr[0] "¿Copiar imagen?"
 msgstr[1] "¿copiar imagenes?"
 
 #: ../src/control/jobs/control_jobs.c:1737
@@ -2411,8 +2413,8 @@ msgstr "actualizar Exif"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"fallo al obtener parámetros del modulo de almacenamiento`%s', abortando "
-"exportado..."
+"Hubo un fallo al obtener parámetros del modulo de almacenamiento`%s'. "
+"Abortando la operación..."
 
 #: ../src/control/jobs/control_jobs.c:1829
 msgid "export images"
@@ -2422,19 +2424,19 @@ msgstr "exportar imágenes"
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
-msgstr[0] "aplicando intervalo de tiempo a %d imagen"
-msgstr[1] "aplicando intervalo de tiempo a %d imagenes"
+msgstr[0] "Añadiendo intervalo de tiempo a %d imagen"
+msgstr[1] "Añadiendo intervalo de tiempo a %d imagenes"
 
 #: ../src/control/jobs/control_jobs.c:1869
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
-msgstr[0] "agregado intervalo de tiempo a %d imagen"
-msgstr[1] "agregado intervalo de tiempo a %d imágenes"
+msgstr[0] "Intervalo de tiempo añadido a %d imagen"
+msgstr[1] "Intervalo de tiempo añadido a %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1908 ../src/libs/geotagging.c:781
 msgid "time offset"
-msgstr "compensación de hora"
+msgstr "compensación horaria"
 
 #: ../src/control/jobs/control_jobs.c:1932 ../src/libs/copy_history.c:366
 msgid "write sidecar files"
@@ -2446,19 +2448,19 @@ msgstr "importar imágenes"
 
 #: ../src/control/jobs/film_jobs.c:145
 msgid "no supported images were found to be imported"
-msgstr "no se encontraron imágenes soportadas para ser importadas"
+msgstr "No se encontraron imágenes compatibles para importar"
 
 #: ../src/control/jobs/film_jobs.c:199
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
-msgstr[0] "importando %d imagen"
-msgstr[1] "importando %d imágenes"
+msgstr[0] "Importando %d imagen"
+msgstr[1] "Importando %d imágenes"
 
 #: ../src/control/jobs/image_jobs.c:75
 #, c-format
 msgid "importing image %s"
-msgstr "importando imagen %s"
+msgstr "Importando imagen %s"
 
 #: ../src/control/jobs/image_jobs.c:109 ../src/libs/import.c:759
 msgid "import image"
@@ -2467,7 +2469,7 @@ msgstr "importar imagen"
 #: ../src/develop/blend.c:2826 ../src/develop/blend.c:3142
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "mezclado omitido en módulo '%s': roi's no coincide"
+msgstr "Se omitió la fusión en el módulo '%s': parámetros incompatibles"
 
 #: ../src/develop/blend.c:2862 ../src/develop/blend.c:3177
 msgid "could not allocate buffer for blending"
@@ -2556,11 +2558,10 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"ajustes realizados por entradas recibidas por este módulo:\n"
-"* rango definido por marcadores superiores: mezclar completamente\n"
-"* rango definido por marcadores inferiores: ningún tipo de mezclado\n"
-"* rango entre marcadores superiores/inferiores adyacentes: mezclar "
-"gradualmente"
+"Ajuste basado en la entrada para este módulo:\n"
+"* rango definido por marcadores superiores: mezcla todo\n"
+"* rango definido por marcadores inferiores: ningún tipo de mezcla\n"
+"* rango entre marcadores superiores/inferiores adyacentes: mezcla gradual"
 
 #: ../src/develop/blend_gui.c:1294
 msgid ""
@@ -2569,11 +2570,10 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"ajustes basados en salidas sin mezclas para este módulo:\n"
-"* rango definido por marcadores superiores: mezclar completamente\n"
-"* rango definido por marcadores inferiores: ningún tipo de mezclado\n"
-"* rango entre marcadores superiores/inferiores adyacentes: mezclar "
-"gradualmente"
+"Ajuste basado en la salida sin mezcla de este módulo:\n"
+"* rango definido por marcadores superiores: mezcla todo\n"
+"* rango definido por marcadores inferiores: no hay mezcla\n"
+"* rango entre marcadores superiores/inferiores adyacentes: mezcla gradual"
 
 #: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2288
 #: ../src/iop/tonecurve.c:1342
@@ -2581,7 +2581,7 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
 msgstr ""
-"Seleccionar el color de la interfaz gráfica desde la imagen\n"
+"Elegir el color desde la imagen\n"
 "Ctrl+clic para seleccionar un área"
 
 #: ../src/develop/blend_gui.c:1448
@@ -4845,10 +4845,10 @@ msgid ""
 "photo   : outdoor photograph, with natural lighting\n"
 "graphic : discrete tone image (graph, map-tile etc)"
 msgstr ""
-"indicios relacionados con la imagen para el codificador.\n"
-"imagen: imagen digital, como retrato, disparo interno\n"
-"foto      : fotografía de exteriores, con iluminación natural\n"
-"gráfico : tono discreto de la imagen (gráfico, patron, etc)"
+"Indicios relacionados con la imagen para el codificador.\n"
+"Imagen: imagen digital, toma interior, como el retrato\n"
+"Foto   : fotografía de exteriores, con iluminación natural\n"
+"Gráfico : tono discreto de la imagen (gráfico, patrón, etc)"
 
 #: ../src/imageio/format/webp.c:353
 msgid "default"
@@ -6115,7 +6115,7 @@ msgstr "detalle"
 
 #: ../src/iop/bilat.c:539
 msgid "changes the local contrast"
-msgstr "cambios al contraste local"
+msgstr "Cambia el contraste local"
 
 #: ../src/iop/bilat.c:542 ../src/iop/grain.c:630
 msgid "coarseness"
@@ -6138,7 +6138,7 @@ msgstr "luces"
 
 #: ../src/iop/bilat.c:555
 msgid "changes the local contrast of highlights"
-msgstr "cambios al contraste local de las luces"
+msgstr "Cambia el contraste local de las luces"
 
 #: ../src/iop/bilat.c:559 ../src/iop/shadhi.c:842 ../src/iop/splittoning.c:661
 msgid "shadows"
@@ -6146,7 +6146,7 @@ msgstr "sombras"
 
 #: ../src/iop/bilat.c:560
 msgid "changes the local contrast of shadows"
-msgstr "cambios al contraste local de las sombras"
+msgstr "Cambia el contraste local de las sombras"
 
 #: ../src/iop/bilat.c:565
 msgid "midtone range"
@@ -6158,9 +6158,9 @@ msgid ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 msgstr ""
-"define que cuenta como tonos medios. mejor para mejor compresión del rango "
-"dinámico (reduce las sombras y contraste de las luces altas), mayor para un "
-"contraste local mas poderoso"
+"Define lo que cuenta como tonos medios. Disminuir para una mejor compresión "
+"del rango dinámico (reduce las sombras y el contraste de las luces), "
+"aumentar para obtener un contraste local más potente."
 
 #: ../src/iop/bilateral.cc:69
 msgid "denoise (bilateral filter)"
@@ -14024,7 +14024,7 @@ msgstr "sinónimos:"
 #: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1587
 #: ../src/libs/tagging.c:1776
 msgid "empty tag is not allowed, aborting"
-msgstr "No se permite una etiqueta en blanco, abortando"
+msgstr "No se permite una etiqueta en blanco. Abortando."
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
@@ -14056,7 +14056,7 @@ msgstr ""
 #: ../src/libs/tagging.c:1627
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando"
+msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando."
 
 #: ../src/libs/tagging.c:1735
 msgid "rename path?"
@@ -14069,7 +14069,7 @@ msgstr "Ruta seleccionada: %s "
 
 #: ../src/libs/tagging.c:1778
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando"
+msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando."
 
 #: ../src/libs/tagging.c:1804
 #, c-format
@@ -14123,7 +14123,7 @@ msgstr "Selecciona un archivo de palabras clave"
 
 #: ../src/libs/tagging.c:2128
 msgid "_import"
-msgstr "_importar"
+msgstr "_Importar"
 
 #: ../src/libs/tagging.c:2142
 msgid "error importing tags"
@@ -14506,11 +14506,11 @@ msgstr "¿Desea acceder al manual de usuario en línea?"
 
 #: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
-msgstr "url de ayuda abierta en el navegador"
+msgstr "URL de ayuda abierta en el navegador"
 
 #: ../src/libs/tools/global_toolbox.c:282
 msgid "there is no help available for this element"
-msgstr "no hay ayuda disponible para este elemento"
+msgstr "Sin ayuda disponible para este elemento"
 
 #: ../src/libs/tools/global_toolbox.c:324
 msgctxt "accel"
@@ -14529,7 +14529,7 @@ msgstr "mostrar info superpuesta"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
-msgstr "tip"
+msgstr "Pista"
 
 #: ../src/libs/tools/image_infos.c:40
 msgid "image infos"
