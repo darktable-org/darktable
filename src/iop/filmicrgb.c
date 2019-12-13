@@ -1250,18 +1250,18 @@ void init(dt_iop_module_t *module)
   dt_iop_filmicrgb_params_t tmp
     = (dt_iop_filmicrgb_params_t){
                                  .grey_point_source   = 9.225, // source grey
-                                 .black_point_source  = -4.0f,  // source black
-                                 .white_point_source  = 4.0f,  // source white
-                                 .security_factor     = 16.0f,
-                                 .grey_point_target   = 18.45, // target grey
+                                 .black_point_source  = -10.55f,  // source black
+                                 .white_point_source  = 3.45f,  // source white
+                                 .security_factor     = 0.0f,
+                                 .grey_point_target   = 18.45f, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
-                                 .output_power        = 2.44,  // target power (~ gamma)
-                                 .latitude            = 30.0f,  // intent latitude
-                                 .contrast            = 1.4,  // intent contrast
-                                 .saturation          = 0.0,   // intent saturation
-                                 .balance             = 20.0f, // balance shadows/highlights
-                                 .preserve_color      = DT_FILMIC_METHOD_MAX_RGB // run the saturated variant
+                                 .output_power        = 5.98f,  // target power (~ gamma)
+                                 .latitude            = 45.0f,  // intent latitude
+                                 .contrast            = 1.30f,  // intent contrast
+                                 .saturation          = 5.0f,   // intent saturation
+                                 .balance             = 12.0f, // balance shadows/highlights
+                                 .preserve_color      = DT_FILMIC_METHOD_POWER_NORM // run the saturated variant
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
@@ -1601,7 +1601,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->white_point_target), "value-changed", G_CALLBACK(white_point_target_callback), self);
 
   // power/gamma slider
-  g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 5.0, 0.1, p->output_power, 2);
+  g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 10.0, 0.1, p->output_power, 2);
   dt_bauhaus_widget_set_label(g->output_power, NULL, _("target power transfer function"));
   gtk_box_pack_start(GTK_BOX(page3), g->output_power, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function\nof the display or color space.\n"
