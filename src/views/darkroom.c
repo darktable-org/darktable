@@ -201,12 +201,11 @@ void expose(
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_save(cri);
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  int32_t tb = dev->border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
-
-  dt_develop_t *dev = (dt_develop_t *)self->data;
 
   if(dev->gui_synch && !dev->image_loading)
   {
@@ -286,11 +285,21 @@ void expose(
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
-    if(dev->full_preview)
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
     else
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    {
+      if(dev->full_preview)
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+      else
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
     cairo_paint(cr);
+
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
     if(closeup)
     {
@@ -298,9 +307,18 @@ void expose(
       cairo_scale(cr, scale, scale);
       cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
     }
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, -tb / 3, -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -315,8 +333,27 @@ void expose(
     const float wd = dev->preview_pipe->output_backbuf_width;
     const float ht = dev->preview_pipe->output_backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
+    else
+    {
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
+
     cairo_paint(cr);
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, 2 * tb / 3, 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
@@ -325,10 +362,10 @@ void expose(
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
-    cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
+
+    cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -1185,6 +1222,39 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 }
 
 /* overexposed */
+static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->iso_12646.enabled = !d->iso_12646.enabled;
+
+  if(d->iso_12646.enabled)
+  {
+    // Reset window size
+    d->width += 2 * d->border_size;
+    d->height += 2 * d->border_size;
+
+    // Set new borders size
+    d->border_size = 0.125 * d->width;
+
+    // Reconfigure UI and pipe dimentions
+    dt_dev_configure(d, d->width, d->height);
+  }
+  else
+  {
+    // Reset window size
+    d->width += 2 * d->border_size;
+    d->height += 2 * d->border_size;
+
+    // Reset border size from config
+    d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+
+    // Reconfigure UI and pipe dimentions
+    dt_dev_configure(d, d->width, d->height);
+  }
+  dt_dev_reprocess_center(d);
+}
+
+/* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
@@ -1811,6 +1881,14 @@ void gui_init(dt_view_t *self)
 
   const int panel_width = dt_conf_get_int("panel_width");
   const int dialog_width = panel_width > 350 ? panel_width : 350;
+
+  /* Enable ISO 12646-compliant colour assessment conditions */
+  dev->iso_12646.button
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(dev->iso_12646.button,
+                              _("toggle ISO 12646 colour assessment conditions"));
+  g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
   /* create rawoverexposed popup tool */
   {
@@ -2674,10 +2752,10 @@ void mouse_enter(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -2757,10 +2835,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = darktable.develop;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = darktable.develop;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -2787,10 +2865,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -2888,10 +2966,10 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;

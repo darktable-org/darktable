@@ -1655,6 +1655,45 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_stroke(cr);
 }
 
+
+void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  const gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  float line_width = 0.1;
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, line_width);
+
+  // glass
+  cairo_arc_negative(cr, 0.5, 0.33, 0.4, 1., M_PI - 1.);
+  cairo_close_path(cr);
+
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+  else
+  {
+    cairo_stroke(cr);
+    cairo_arc(cr, 0.5, 0.33, 0.2, -M_PI / 3., -M_PI / 6.);
+    cairo_stroke(cr);
+  }
+
+  // screw
+  cairo_move_to(cr, 0.33, 0.33 + 0.36 + 1.5 * line_width);
+  cairo_line_to(cr, 0.67, 0.33 + 0.36 + 1.5 * line_width);
+  cairo_stroke(cr);
+
+  // nib
+  cairo_arc(cr, 0.5, 0.33 + 0.36 + 1.5 * 1.75 * line_width, 2.0 * line_width, 0, M_PI);
+  cairo_fill(cr);
+}
+
+
 void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   const float alpha = (flags & CPF_ACTIVE ? 1.0 : 0.4);
