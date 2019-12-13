@@ -1660,7 +1660,7 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   const gint s = w < h ? w : h;
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
-  cairo_scale(cr, s, s);
+  cairo_scale(cr, 0.9 * s, 0.9 * s);
 
   float line_width = 0.1;
 
@@ -1668,7 +1668,7 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   cairo_set_line_width(cr, line_width);
 
   // glass
-  cairo_arc_negative(cr, 0.5, 0.33, 0.4, 1., M_PI - 1.);
+  cairo_arc_negative(cr, 0.5, 0.38, 0.4, 1., M_PI - 1.);
   cairo_close_path(cr);
 
   if(flags & CPF_ACTIVE)
@@ -1679,17 +1679,17 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   else
   {
     cairo_stroke(cr);
-    cairo_arc(cr, 0.5, 0.33, 0.2, -M_PI / 3., -M_PI / 6.);
+    cairo_arc(cr, 0.5, 0.38, 0.2, -M_PI / 3., -M_PI / 6.);
     cairo_stroke(cr);
   }
 
   // screw
-  cairo_move_to(cr, 0.33, 0.33 + 0.36 + 1.5 * line_width);
-  cairo_line_to(cr, 0.67, 0.33 + 0.36 + 1.5 * line_width);
+  cairo_move_to(cr, 0.33, 0.38 + 0.36 + 1.5 * line_width);
+  cairo_line_to(cr, 0.67, 0.38 + 0.36 + 1.5 * line_width);
   cairo_stroke(cr);
 
   // nib
-  cairo_arc(cr, 0.5, 0.33 + 0.36 + 1.5 * 1.75 * line_width, 2.0 * line_width, 0, M_PI);
+  cairo_arc(cr, 0.5, 0.38 + 0.36 + 1.5 * 1.75 * line_width, 2.0 * line_width, 0, M_PI);
   cairo_fill(cr);
 }
 
