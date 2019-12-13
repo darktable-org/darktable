@@ -2341,7 +2341,7 @@ msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
 msgstr[0] "¿Desea borrar FÍSICAMENTE del disco %d imagen seleccionada?"
-msgstr[1] "¿Desea borrar FISICAMENTE del disco %d imágenes seleccionadas?"
+msgstr[1] "¿Desea borrar FÍSICAMENTE del disco %d imágenes seleccionadas?"
 
 #: ../src/control/jobs/control_jobs.c:1604
 msgid "trash images?"
