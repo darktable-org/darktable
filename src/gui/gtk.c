@@ -261,62 +261,8 @@ static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-static gboolean _toggle_left_panel_accel_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
+static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
 {
-  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_LEFT);
-  dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !state, TRUE);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-
-  return TRUE;
-}
-
-static gboolean _toggle_right_panel_accel_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
-{
-  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_RIGHT);
-  dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !state, TRUE);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-
-  return TRUE;
-}
-
-static gboolean _toggle_top_panel_accel_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
-{
-  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_TOP);
-  dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, !state, TRUE);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-
-  return TRUE;
-}
-
-static gboolean _toggle_bottom_panel_accel_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
-{
-  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
-  const gboolean state = dt_ui_panel_visible(ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, !state, TRUE);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-
-  return TRUE;
-}
-
-
-static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
-{
-  dt_ui_t *ui = (dt_ui_t *)user_data;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   char key[512];
   // in lighttable, we store panels states per layout
@@ -329,10 +275,9 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
       g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
 
-  int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "border"));
-  switch(which)
+  switch(border)
   {
-    case 0: // left border
+    case DT_UI_BORDER_LEFT: // left border
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_LEFT]);
@@ -340,7 +285,7 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
     }
     break;
 
-    case 1: // right border
+    case DT_UI_BORDER_RIGHT: // right border
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_RIGHT]);
@@ -348,7 +293,7 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
     }
     break;
 
-    case 2: // top border
+    case DT_UI_BORDER_TOP: // top border
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
@@ -361,7 +306,7 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
     }
     break;
 
-    case 4: // bottom border
+    case DT_UI_BORDER_BOTTOM: // bottom border
     default:
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
@@ -370,19 +315,35 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_BOTTOM]);
       const gboolean show_b = dt_conf_get_bool(key);
-      // all visible => toolbar hidden => all hidden => all visible
+      // all visible => toolbar hidden => all hidden => toolbar visible => all visible
       if(show_cb && show_b)
         dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
       else if(!show_cb && show_b)
         dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
-      else
-      {
+      else if(!show_cb && !show_b)
         dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, TRUE, TRUE);
+      else
         dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, TRUE, TRUE);
-      }
     }
     break;
   }
+}
+
+static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_ui_border_t border = (dt_ui_border_t)GPOINTER_TO_INT(data);
+  _panel_toggle(border, darktable.gui->ui);
+
+  return TRUE;
+}
+
+static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
+{
+  dt_ui_t *ui = (dt_ui_t *)user_data;
+  int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "border"));
+
+  _panel_toggle(which, ui);
 
   return TRUE;
 }
@@ -1148,22 +1109,22 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(0));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(0));
+  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(DT_UI_BORDER_LEFT));
   widget = darktable.gui->widgets.right_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(1));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(1));
+  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(DT_UI_BORDER_RIGHT));
   widget = darktable.gui->widgets.top_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(2));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(2));
+  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(DT_UI_BORDER_TOP));
   widget = darktable.gui->widgets.bottom_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(3));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(3));
+  g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(DT_UI_BORDER_BOTTOM));
   dt_gui_presets_init();
 
   widget = dt_ui_center(darktable.gui->ui);
@@ -1233,20 +1194,20 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
 
   dt_accel_register_global(NC_("accel", "toggle left panel"), GDK_KEY_L, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle left panel",
-                          g_cclosure_new(G_CALLBACK(_toggle_left_panel_accel_callback), NULL, NULL));
+  dt_accel_connect_global("toggle left panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+                                                              GINT_TO_POINTER(DT_UI_BORDER_LEFT), NULL));
 
   dt_accel_register_global(NC_("accel", "toggle right panel"), GDK_KEY_R, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle right panel",
-                          g_cclosure_new(G_CALLBACK(_toggle_right_panel_accel_callback), NULL, NULL));
+  dt_accel_connect_global("toggle right panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+                                                               GINT_TO_POINTER(DT_UI_BORDER_RIGHT), NULL));
 
   dt_accel_register_global(NC_("accel", "toggle top panel"), GDK_KEY_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle top panel",
-                          g_cclosure_new(G_CALLBACK(_toggle_top_panel_accel_callback), NULL, NULL));
+  dt_accel_connect_global("toggle top panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+                                                             GINT_TO_POINTER(DT_UI_BORDER_TOP), NULL));
 
   dt_accel_register_global(NC_("accel", "toggle bottom panel"), GDK_KEY_B, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle bottom panel",
-                          g_cclosure_new(G_CALLBACK(_toggle_bottom_panel_accel_callback), NULL, NULL));
+  dt_accel_connect_global("toggle bottom panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+                                                                GINT_TO_POINTER(DT_UI_BORDER_BOTTOM), NULL));
 
   // toggle view of header
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
