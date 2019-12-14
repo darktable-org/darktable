@@ -803,7 +803,7 @@ msgstr "Como máximo PPG (aceptable)"
 #: ../build/src/preferences_gen.h:3442
 msgctxt "preferences"
 msgid "full (possibly slow)"
-msgstr "Completo (posiblemente lento)"
+msgstr "Modo completo (posiblemente lento)"
 
 #: ../build/src/preferences_gen.h:3460
 msgid ""
@@ -814,9 +814,9 @@ msgid ""
 msgstr ""
 "Indica la interpolación cromática usada, cuando en el modo de cuarto oscuro "
 "no está en escala 1:1: bilineal es más rápido, pero sin tanta nitidez. La "
-"opción intermedia utiliza PPG + el que se elija en la opción de abajo. El "
-"completo usará las propiedades especificadas para exportar en tamaño "
-"completo. Los sensores X-trans usan VNG en vez de PPG."
+"opción intermedia utiliza PPG + el que se elija en la opción de abajo. El modo"
+"completo tomará los valores desde la configuración de exportación para "
+"el tamaño final. Los sensores X-trans usan VNG en vez de PPG."
 
 #: ../build/src/preferences_gen.h:3468
 msgid "pixel interpolator"
