@@ -393,8 +393,8 @@ static inline int pseudo_solve(float *const restrict A,
     return valid;
   }
 
-  float *const restrict A_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
-  float *const restrict y_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
+  float *const restrict A_square = dt_alloc_sse_ps(n * n);
+  float *const restrict y_square = dt_alloc_sse_ps(n);
 
   if(!A_square || !y_square)
   {
