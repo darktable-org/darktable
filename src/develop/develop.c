@@ -60,6 +60,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
   dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->preview2_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
+  dev->timeout_handle = 0;
   dev->gui_leaving = 0;
   dev->gui_synch = 0;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
@@ -191,6 +192,13 @@ void dt_dev_cleanup(dt_develop_t *dev)
     free(dev->allprofile_info->data);
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
+
+  if(dev->timeout_handle)
+  {
+    g_source_remove(dev->timeout_handle);
+    dev->timeout_handle = 0;
+  }
+
   dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
@@ -906,6 +914,21 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
   _dev_add_history_item_ext(dev, module, enable, no_image, FALSE);
 }
 
+static gboolean _dt_dev_add_history_item_postponed(gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  dev->timeout_handle = 0;
+
+  /* signal that history has changed */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  /* redraw */
+  dt_control_queue_redraw_center();
+
+  return FALSE;
+}
+
+
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
@@ -948,11 +971,15 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    const int average_delay = MAX(dev->average_delay, MAX(dev->preview_average_delay, dev->preview2_average_delay));
 
-    /* redraw */
-    dt_control_queue_redraw_center();
+    const int delay = CLAMP(average_delay * 2, 10, 1000);  // requires finetuning
+
+    printf("average_delay %d, preview_average_delay %d, preview2_average_delay %d, delay %d\n", average_delay, dev->preview_average_delay, dev->preview2_average_delay, delay);
+
+    if(!dev->timeout_handle)
+      dev->timeout_handle = g_timeout_add(delay, _dt_dev_add_history_item_postponed, dev);
+
   }
 }
 

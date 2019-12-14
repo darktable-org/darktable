@@ -139,6 +139,7 @@ typedef struct dt_develop_t
   uint32_t average_delay;
   uint32_t preview_average_delay;
   uint32_t preview2_average_delay;
+  uint32_t timeout_handle;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
