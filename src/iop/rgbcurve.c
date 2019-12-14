@@ -95,6 +95,7 @@ typedef struct dt_iop_rgbcurve_gui_data_t
   rgbcurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
+  int timeout_handle;
   float draw_ys[DT_IOP_RGBCURVE_RES];
   float draw_min_ys[DT_IOP_RGBCURVE_RES];
   float draw_max_ys[DT_IOP_RGBCURVE_RES];
@@ -689,6 +690,17 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  g->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
@@ -719,15 +731,18 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   const float new_x = CLAMP(curve[g->selected].x + dx, 0.0f, 1.0f);
   const float new_y = CLAMP(curve[g->selected].y + dy, 0.0f, 1.0f);
 
+  gtk_widget_queue_draw(widget);
+
   if(_sanity_check(new_x, g->selected, p->curve_num_nodes[ch], p->curve_nodes[ch]))
   {
     curve[g->selected].x = new_x;
     curve[g->selected].y = new_y;
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
 
-  gtk_widget_queue_draw(widget);
+    if(!g->timeout_handle)
+      g->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+  }
 
   return TRUE;
 }
@@ -1514,6 +1529,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->channel = DT_IOP_RGBCURVE_R;
+  g->timeout_handle = 0;
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1669,6 +1685,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   g_object_unref(g->sizegroup);
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++) dt_draw_curve_destroy(g->minmax_curve[k]);
+
+  if(g->timeout_handle) g_source_remove(g->timeout_handle);
 
   free(self->gui_data);
   self->gui_data = NULL;
