@@ -79,6 +79,13 @@ static const cmsCIExyYTRIPLE Adobe_Primaries = {
   {0.1500, 0.0600, 1.0}  // blue
 };
 
+// D65:
+static const cmsCIExyYTRIPLE P3_Primaries = {
+  {0.680, 0.320, 1.0}, // red
+  {0.265, 0.690, 1.0}, // green
+  {0.150, 0.060, 1.0}  // blue
+};
+
 // https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space
 // D50:
 static const cmsCIExyYTRIPLE ProPhoto_Primaries = {
@@ -745,6 +752,54 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   return profile;
 }
 
+static cmsHPROFILE dt_colorspaces_create_pq_rec2020_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("PQ Rec2020 RGB", "PQ Rec2020 RGB",
+                                             &D65xyY, &Rec2020_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_hlg_rec2020_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("HLG Rec2020 RGB", "HLG Rec2020 RGB",
+                                             &D65xyY, &Rec2020_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_pq_p3_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("PQ P3 RGB", "PQ P3 RGB",
+                                             &D65xyY, &P3_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("HLG P3 RGB", "HLG P3 RGB",
+                                             &D65xyY, &P3_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
 static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
@@ -1391,6 +1446,26 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020, dt_colorspaces_create_linear_rec2020_rgb_profile(),
                                      _("linear Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_PQ_REC2020, dt_colorspaces_create_pq_rec2020_rgb_profile(),
+                                     _("PQ Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_HLG_REC2020, dt_colorspaces_create_hlg_rec2020_rgb_profile(),
+                                     _("HLG Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_PQ_P3, dt_colorspaces_create_pq_p3_rgb_profile(),
+                                     _("PQ P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_HLG_P3, dt_colorspaces_create_hlg_p3_rgb_profile(),
+                                     _("HLG P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
