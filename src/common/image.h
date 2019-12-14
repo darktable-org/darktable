@@ -264,6 +264,8 @@ void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
+/** set the raw image aspect ratio */
+void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
