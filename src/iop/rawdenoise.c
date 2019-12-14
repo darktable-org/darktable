@@ -70,6 +70,7 @@ typedef struct dt_iop_rawdenoise_gui_data_t
   dt_iop_rawdenoise_params_t drag_params;
   int dragging;
   int x_move;
+  int timeout_handle;
   dt_iop_rawdenoise_channel_t channel;
   float draw_xs[DT_IOP_RAWDENOISE_RES], draw_ys[DT_IOP_RAWDENOISE_RES];
   float draw_min_xs[DT_IOP_RAWDENOISE_RES], draw_min_ys[DT_IOP_RAWDENOISE_RES];
@@ -848,6 +849,17 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -866,13 +878,17 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
     {
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else
   {
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(
@@ -1007,6 +1023,7 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
+  c->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1058,6 +1075,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }
