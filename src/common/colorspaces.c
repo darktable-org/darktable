@@ -363,6 +363,37 @@ static double _PQ_fct(double x)
   return copysign(res, sign);
 }
 
+// https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2100-2-201807-I!!PDF-F.pdf
+// Hybrid Log-Gamma
+static double _HLG_fct(double x)
+{
+  static const double Beta  = 0.04;
+  static const double A     = 0.17883277;
+  static const double RA    = 1.0 / A;
+  static const double B     = 1.0 - 4.0 * A;
+  static const double C     = 0.5599107295; // 0,5 –aln(4a)
+
+  double e = MAX(x * (1.0 - Beta) + Beta, 0.0);
+
+  if (e == 0.0) return 0.0;
+
+  const double sign = e;
+  e = fabs(e);
+
+  double res = 0.0;
+
+  if (e <= 0.5)
+  {
+    res = e * e / 3.0;
+  }
+  else
+  {
+    res = (exp((e - C) * RA) + B) / 12.0;
+  }
+
+  return copysign(res, sign);
+}
+
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
