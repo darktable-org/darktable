@@ -394,6 +394,22 @@ static double _HLG_fct(double x)
   return copysign(res, sign);
 }
 
+static cmsToneCurve* _colorspaces_create_transfer(int32_t size, double (*fct)(double))
+{
+  float *values = g_malloc(size * sizeof(float));
+
+  for (int32_t i = 0; i < size; ++i)
+  {
+    const double x = (float)i / (size - 1);
+    const double y = MIN(fct(x), 1.0f);
+    values[i] = (float)y;
+  }
+
+  cmsToneCurve* result = cmsBuildTabulatedToneCurveFloat(NULL, size, values);
+  g_free(values);
+  return result;
+}
+
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
