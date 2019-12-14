@@ -1780,7 +1780,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *text_color = default_color_assign();
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  const GtkStateFlags state = gtk_widget_get_state_flags(widget);
   gtk_style_context_get_color(context, state, text_color);
   gtk_render_background(context, cr, 0, 0, width, height + INNER_PADDING);
   gtk_style_context_get_color(context, state, fg_color);
