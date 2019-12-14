@@ -1121,28 +1121,6 @@ void hsl2rgb(float rgb[3], float h, float s, float l)
   rgb[2] = hue2rgb(m1, m2, h - (1.0 / 3.0));
 }
 
-static const char *_profile_names[]
-    = { "",         // 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-        N_("sRGB"), // this is only used in error messages, no need for the (...) description
-        N_("Adobe RGB (compatible)"),
-        N_("linear Rec709 RGB"),
-        N_("linear Rec2020 RGB"),
-        N_("linear XYZ"),
-        N_("Lab"),
-        N_("linear infrared BGR"),
-        N_("system display profile"),
-        N_("embedded ICC profile"),
-        N_("embedded matrix"),
-        N_("standard color matrix"),
-        N_("enhanced color matrix"),
-        N_("vendor color matrix"),
-        N_("alternate color matrix"),
-        N_("BRG (experimental)"),
-        N_("export profile"),
-        N_("softproof profile"),
-        N_("work profile"),
-        N_("system display profile") };
-
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
                                                        cmsHPROFILE profile, const char *name, int in_pos,
                                                        int out_pos, int display_pos, int category_pos,
@@ -1613,14 +1591,69 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   free(self);
 }
 
-const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename)
+const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
+                                    const char *filename)
 {
-  if(type == DT_COLORSPACE_NONE)
+  switch (type) {
+  case DT_COLORSPACE_NONE:
     return NULL;
-  else if(type != DT_COLORSPACE_FILE)
-    return _(_profile_names[type]);
-  else
+  case DT_COLORSPACE_FILE:
     return filename;
+  case DT_COLORSPACE_SRGB:
+    return N_("sRGB");
+  case DT_COLORSPACE_ADOBERGB:
+    return N_("Adobe RGB (compatible)");
+  case DT_COLORSPACE_LIN_REC709:
+    return N_("linear Rec709 RGB");
+  case DT_COLORSPACE_LIN_REC2020:
+    return N_("linear Rec2020 RGB");
+  case DT_COLORSPACE_XYZ:
+    return N_("linear XYZ");
+  case DT_COLORSPACE_LAB:
+    return N_("Lab");
+  case DT_COLORSPACE_INFRARED:
+    return N_("linear infrared BGR");
+  case DT_COLORSPACE_DISPLAY:
+    return N_("system display profile");
+  case DT_COLORSPACE_EMBEDDED_ICC:
+    return N_("embedded ICC profile");
+  case DT_COLORSPACE_EMBEDDED_MATRIX:
+    return N_("embedded matrix");
+  case DT_COLORSPACE_STANDARD_MATRIX:
+    return N_("standard color matrix");
+  case DT_COLORSPACE_ENHANCED_MATRIX:
+    return N_("enhanced color matrix");
+  case DT_COLORSPACE_VENDOR_MATRIX:
+    return N_("vendor color matrix");
+  case DT_COLORSPACE_ALTERNATE_MATRIX:
+    return N_("alternate color matrix");
+  case DT_COLORSPACE_BRG:
+    return N_("BRG (experimental)");
+  case DT_COLORSPACE_EXPORT:
+    return N_("export profile");
+  case DT_COLORSPACE_SOFTPROOF:
+    return N_("softproof profile");
+  case DT_COLORSPACE_WORK:
+    return N_("work profile");
+  case DT_COLORSPACE_DISPLAY2:
+    return N_("system display profile");
+  case DT_COLORSPACE_REC709:
+    return N_("gamma22 Rec709");
+  case DT_COLORSPACE_PROPHOTO_RGB:
+    return N_("ProPhoto RGB");
+  case DT_COLORSPACE_PQ_REC2020:
+    return N_("PQ Rec2020");
+  case DT_COLORSPACE_HLG_REC2020:
+    return N_("HLG Rec2020");
+  case DT_COLORSPACE_PQ_P3:
+    return N_("PQ P3");
+  case DT_COLORSPACE_HLG_P3:
+    return N_("HLG P3");
+  case DT_COLORSPACE_LAST:
+    break;
+  }
+
+  return NULL;
 }
 
 #ifdef USE_COLORDGTK
