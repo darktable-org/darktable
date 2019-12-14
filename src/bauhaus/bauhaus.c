@@ -274,9 +274,8 @@ static gboolean dt_bauhaus_window_button_press(GtkWidget *widget, GdkEventMotion
       || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current), GTK_STATE_FLAG_NORMAL, FALSE);
     dt_bauhaus_hide_popup();
-    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                               GTK_STATE_FLAG_NORMAL, FALSE);
     return TRUE;
   }
   // make sure to propagate the event further
