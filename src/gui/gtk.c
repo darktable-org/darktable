@@ -297,12 +297,19 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
-      gboolean show = !dt_conf_get_bool(key);
-      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, show, TRUE);
-
-      /* special case show header */
-      g_snprintf(key, sizeof(key), "%s/ui/%sshow_header", cv->module_name, lay);
-      if(dt_conf_get_bool(key)) dt_ui_panel_show(ui, DT_UI_PANEL_TOP, show, TRUE);
+      const gboolean show_ct = dt_conf_get_bool(key);
+      g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
+                 _ui_panel_config_names[DT_UI_PANEL_TOP]);
+      const gboolean show_t = dt_conf_get_bool(key);
+      // all visible => toolbar hidden => all hidden => toolbar visible => all visible
+      if(show_ct && show_t)
+        dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, FALSE, TRUE);
+      else if(!show_ct && show_t)
+        dt_ui_panel_show(ui, DT_UI_PANEL_TOP, FALSE, TRUE);
+      else if(!show_ct && !show_t)
+        dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, TRUE, TRUE);
+      else
+        dt_ui_panel_show(ui, DT_UI_PANEL_TOP, TRUE, TRUE);
     }
     break;
 
@@ -1640,6 +1647,24 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
 
   /* store new state */
   dt_conf_set_int(key, state);
+}
+
+void dt_ui_toggle_header(struct dt_ui_t *ui)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+  // in lighttable, we store panels states per layout
+  char lay[32] = "";
+  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+  }
+
+  g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay, _ui_panel_config_names[DT_UI_PANEL_TOP]);
+  dt_ui_panel_show(ui, DT_UI_PANEL_TOP, !dt_conf_get_bool(key), TRUE);
 }
 
 void dt_ui_notify_user()
