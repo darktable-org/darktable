@@ -514,7 +514,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_set_aspect_ratio(imgid);
+      dt_image_set_raw_aspect_ratio(imgid);
 
       if(dt_get_wtime() - start > MAX_TIME)
       {
