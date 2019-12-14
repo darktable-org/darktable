@@ -276,7 +276,7 @@ static gboolean dt_bauhaus_window_button_press(GtkWidget *widget, GdkEventMotion
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
     dt_bauhaus_hide_popup();
     gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_NORMAL, FALSE);
+                               GTK_STATE_FLAG_NORMAL, FALSE);
     return TRUE;
   }
   // make sure to propagate the event further
@@ -442,7 +442,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
       dt_bauhaus_combobox_set(GTK_WIDGET(darktable.bauhaus->current), d->defpos);
       dt_bauhaus_widget_reject(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_FOCUSED, FALSE);
+                                 GTK_STATE_FLAG_FOCUSED, FALSE);
     }
     else
     {
@@ -451,7 +451,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
       darktable.bauhaus->end_mouse_y = event->y;
       dt_bauhaus_widget_accept(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_FOCUSED, FALSE);
+                                 GTK_STATE_FLAG_FOCUSED, FALSE);
     }
   }
   else
