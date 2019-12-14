@@ -971,15 +971,31 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    const int average_delay = MAX(dev->average_delay, MAX(dev->preview_average_delay, dev->preview2_average_delay));
+    if(dt_pthread_mutex_trylock(&dev->pipe_mutex) == 0)
+    {
+      /* full pixelpipe not busy -> direct action */
 
-    const int delay = CLAMP(average_delay * 2, 10, 1000);  // requires finetuning
+      dt_pthread_mutex_unlock(&dev->pipe_mutex);
 
-    printf("average_delay %d, preview_average_delay %d, preview2_average_delay %d, delay %d\n", average_delay, dev->preview_average_delay, dev->preview2_average_delay, delay);
+      /* signal that history has changed */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
-    if(!dev->timeout_handle)
-      dev->timeout_handle = g_timeout_add(delay, _dt_dev_add_history_item_postponed, dev);
+      /* redraw */
+      dt_control_queue_redraw_center();
+    }
+    else
+    {
+      /* full pixelpipe busy -> delayed action */
 
+      const int average_delay = MAX(dev->average_delay, MAX(dev->preview_average_delay, dev->preview2_average_delay));
+
+      const int delay = CLAMP(average_delay * 2, 10, 1000);  // requires finetuning
+
+      printf("average_delay %d, preview_average_delay %d, preview2_average_delay %d, delay %d\n", average_delay, dev->preview_average_delay, dev->preview2_average_delay, delay);
+
+      if(!dev->timeout_handle)
+        dev->timeout_handle = g_timeout_add(delay, _dt_dev_add_history_item_postponed, dev);
+    }
   }
 }
 
