@@ -100,6 +100,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   int selected;
   int dragging;
   int x_move;
+  int timeout_handle;
   GtkWidget *colorpicker;
   GtkWidget *colorpicker_set_values;
   GtkWidget *chk_edit_by_area;
@@ -1398,6 +1399,17 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
@@ -1430,6 +1442,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   const float new_x = CLAMP(curve[c->selected].x + dx, 0.0f, 1.0f);
   const float new_y = CLAMP(curve[c->selected].y + dy, 0.0f, 1.0f);
 
+  gtk_widget_queue_draw(widget);
+
   if(_sanity_check(new_x, c->selected, p->curve_num_nodes[ch], p->curve[ch]))
   {
     curve[c->selected].x = new_x;
@@ -1449,10 +1463,11 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
       }
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
 
-  gtk_widget_queue_draw(widget);
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+  }
 
   return TRUE;
 }
@@ -2247,6 +2262,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
+  c->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -2409,6 +2425,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
 
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }
