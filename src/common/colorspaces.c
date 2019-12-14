@@ -341,6 +341,28 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   return profile;
 }
 
+// https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2100-2-201807-I!!PDF-F.pdf
+// Perceptual Quantization / SMPTE standard ST.2084
+static double _PQ_fct(double x)
+{
+  static const double M1 = 2610.0 / 16384.0;
+  static const double M2 = (2523.0 / 4096.0) * 128.0;
+  static const double C1 = 3424.0 / 4096.0;
+  static const double C2 = (2413.0 / 4096.0) * 32.0;
+  static const double C3 = (2392.0 / 4096.0) * 32.0;
+
+  if (x == 0.0) return 0.0;
+  const double sign = x;
+  x = fabs(x);
+
+  const double xpo = pow(x, 1.0 / M2);
+  const double num = MAX(xpo - C1, 0.0);
+  const double den = C2 - C3 * xpo;
+  const double res = pow(num / den, 1.0 / M1);
+
+  return copysign(res, sign);
+}
+
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
