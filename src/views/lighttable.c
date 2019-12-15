@@ -2581,43 +2581,33 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If more than one image is selected, iterate over these. */
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
-    int sel_group_count = 0;
-    int current_group = -1;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-        &stmt, NULL);
-    while (sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      uint32_t imgid  = sqlite3_column_int(stmt, 0);
-      const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if (image->group_id != current_group)
-      {
-        sel_group_count++;
-        current_group = image->group_id;
-      }
-      dt_image_cache_read_release(darktable.image_cache, image);
-    }
+    int sel_count = 0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT count(*) FROM memory.collected_images AS col, main.selected_images as sel "
+                                "WHERE col.imgid=sel.imgid",
+                                -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] selected group: %d\n", sel_group_count);
 
     /* How many images to preload in advance. */
     int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
     gboolean preload = preload_num > 0;
     preload_num = CLAMPS(preload_num, 1, 99999);
 
-    gchar *stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
-                                         "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                                         (sel_group_count <= 1) ?
+    gchar *stmt_string
+        = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
+                          "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
+                          (sel_count <= 1) ?
                                            /* We want to operate on the currently collected images,
                                             * so there's no need to match against the selection */
-                                           "" :
+                              ""
+                                           :
                                            /* Limit the matches to the current selection */
-                                           "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
-                                         (offset >= 0) ? ">" : "<",
-                                         lib->full_preview_rowid,
-                                         /* Direction of our navigation -- when showing for the first time,
-                                          * i.e. when offset == 0, assume forward navigation */
-                                         (offset >= 0) ? "ASC" : "DESC",
-                                         preload_num);
+                              "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
+                          (offset >= 0) ? ">" : "<", lib->full_preview_rowid,
+                          /* Direction of our navigation -- when showing for the first time,
+                           * i.e. when offset == 0, assume forward navigation */
+                          (offset >= 0) ? "ASC" : "DESC", preload_num);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
@@ -3430,8 +3420,10 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   sqlite3_stmt *stmt;
   int nb_sel = 0;
   uint32_t imgid_sel = -1;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
+                              "WHERE col.imgid=sel.imgid",
+                              -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     nb_sel++;
