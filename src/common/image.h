@@ -264,12 +264,14 @@ void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
-/** set the raw image aspect ratio */
-void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid);
+/** set the image raw aspect ratio */
+void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
+/** set the image final/cropped aspect ratio if different from stored*/
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio);
 /** reset the image final/cropped aspect ratio to 0.0 */
 void dt_image_reset_aspect_ratio(const int32_t imgid);
 /** returns the orientation bits of the image from exif. */

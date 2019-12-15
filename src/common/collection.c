@@ -500,7 +500,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 
   if (params->sort == DT_COLLECTION_SORT_ASPECT_RATIO)
   {
-    const float MAX_TIME = 5.0;
+    const float MAX_TIME = 7.0;
     const gchar *where_ext = dt_collection_get_extended_where(collection, -1);
     gchar *query = NULL;
     sqlite3_stmt *stmt = NULL;
