@@ -1317,7 +1317,13 @@ static void reset_mix(dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   reset_mix(self);
+  if(c->timeout_handle)
+  {
+    g_source_remove(c->timeout_handle);
+    c->timeout_handle = 0;
+  }
   gtk_widget_queue_draw(self->widget);
 }
 

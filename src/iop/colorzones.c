@@ -2415,6 +2415,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
   dt_bauhaus_combobox_set(g->mode, p->mode);
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
   gtk_widget_queue_draw(self->widget);
 }
 

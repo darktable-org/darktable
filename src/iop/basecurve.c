@@ -1422,6 +1422,13 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(g->exposure_bias, FALSE);
   }
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
+
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
