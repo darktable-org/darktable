@@ -382,6 +382,7 @@ return_label:
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_HDR;
     img->loader = loader;
   }
@@ -527,6 +528,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_TIFF;
     return ret;
@@ -538,6 +540,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_PNG;
@@ -552,6 +555,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_J2K;
     return ret;
@@ -564,6 +568,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_PNM;
@@ -966,6 +971,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
     img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_GM;
