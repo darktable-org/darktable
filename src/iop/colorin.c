@@ -542,7 +542,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   cl_int err = -999;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -894,7 +894,7 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
                             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -1002,7 +1002,7 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
                           void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -1286,7 +1286,7 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                  const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -1400,7 +1400,7 @@ static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -1577,7 +1577,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     if(isnan(cam_xyz[0]))
     {
-      if(dt_image_is_raw(&pipe->image) && !dt_image_is_monochrome(&pipe->image))
+      if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
         fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
@@ -1890,8 +1890,8 @@ void reload_defaults(dt_iop_module_t *module)
 
   if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if (img->flags & DT_IMAGE_MONOCHROME)
+    tmp.type = DT_COLORSPACE_LIN_REC709;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
@@ -1900,6 +1900,8 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
+  else if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
