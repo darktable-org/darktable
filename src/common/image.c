@@ -581,30 +581,12 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_image_set_flip(imgid, orientation);
 }
 
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
-{
-  if (aspect_ratio > .0f)
-  {
-    /* fetch image from cache */
-    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-
-    /* set image aspect_ratio */
-    image->aspect_ratio = aspect_ratio;
-
-    /* store */
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-
-
-    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
-  }
-}
-
 void dt_image_set_raw_aspect_ratio(const int32_t imgid)
 {
+  /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  /* set image aspect_ratio */
+  /* set image aspect ratio */
   if(image->orientation < ORIENTATION_SWAP_XY)
     image->aspect_ratio = (float )image->width / (float )image->height;
   else
@@ -613,6 +595,49 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
+  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+}
+
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
+{
+  if (aspect_ratio > .0f)
+  {
+    /* fetch image from cache */
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+    /* set image aspect ratio */
+    image->aspect_ratio = aspect_ratio;
+
+    /* store */
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+}
+
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio)
+{
+  if (aspect_ratio > .0f)
+  {
+    /* fetch image from cache */
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+
+    /* set image aspect ratio */
+    if(fabs(image->aspect_ratio - aspect_ratio) > 0.1)
+    {
+      dt_image_cache_read_release(darktable.image_cache, image);
+      dt_image_t *wimage = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      wimage->aspect_ratio = aspect_ratio;
+      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_SAFE);
+    }
+    else
+      dt_image_cache_read_release(darktable.image_cache, image);
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
 }
 
 void dt_image_reset_aspect_ratio(const int32_t imgid)
@@ -620,8 +645,8 @@ void dt_image_reset_aspect_ratio(const int32_t imgid)
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  /* set image aspect_ratio */
-  image->aspect_ratio = 0.0;
+  /* set image aspect ratio */
+  image->aspect_ratio = 0.f;
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -1264,7 +1289,7 @@ void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
   img->final_width = img->final_height = 0;
-  img->aspect_ratio = 0.0;
+  img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;
