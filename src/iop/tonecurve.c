@@ -852,6 +852,12 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(g->logbase, FALSE);
   }
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
