@@ -237,7 +237,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw histogram
-  if(hist_max > 0.0f)
+  if(hist_max > 0.0f && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
