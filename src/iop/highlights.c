@@ -1038,7 +1038,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // only on for raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&(module->dev->image_storage)))
     module->default_enabled = 1;
   else
     {

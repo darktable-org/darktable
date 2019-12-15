@@ -687,7 +687,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
-  if(!dt_image_is_raw(&piece->pipe->image) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
+  if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -721,7 +721,7 @@ void reload_defaults(dt_iop_module_t *self)
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
                                      .raw_white_point = image->raw_white_point };
 
-  self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+  self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
 
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
@@ -751,7 +751,7 @@ void init(dt_iop_module_t *self)
     // are upgraded and temporary modules are constructed for this, with a 0x0 dev
     // pointer. i suppose the can be solved more elegantly on the other side.
     const dt_image_t *const image = &(self->dev->image_storage);
-    self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+    self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
   }
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;
