@@ -2275,7 +2275,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 void dt_view_accels_hide(dt_view_manager_t *vm)
 {
   if(vm->accels_window.window && vm->accels_window.sticky) return;
-  gtk_widget_destroy(vm->accels_window.window);
+  if(vm->accels_window.window) gtk_widget_destroy(vm->accels_window.window);
   vm->accels_window.window = NULL;
 }
 
