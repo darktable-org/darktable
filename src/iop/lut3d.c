@@ -1077,6 +1077,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
       dt_control_log(_("Select file outside Lut root folder is not allowed"));
     }
     g_free(filepath);
+    gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
   }
   g_free(lutfolder);
   gtk_widget_destroy(filechooser);
@@ -1095,11 +1096,13 @@ void gui_update(dt_iop_module_t *self)
   if (!lutfolder[0])
   {
     gtk_widget_set_sensitive(g->hbox, FALSE);
+    gtk_widget_set_sensitive(g->filepath, FALSE);
     dt_bauhaus_combobox_clear(g->filepath);
   }
   else
   {
     gtk_widget_set_sensitive(g->hbox, TRUE);
+    gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
     update_filepath_combobox(g, p->filepath, lutfolder);
   }
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
