@@ -159,6 +159,12 @@ static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPos
   return TRUE;
 }
 
+void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
