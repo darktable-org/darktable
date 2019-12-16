@@ -152,6 +152,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
+  int timeout_handle;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
@@ -851,6 +852,12 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(g->logbase, FALSE);
   }
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1173,6 +1180,17 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   }
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -1205,8 +1223,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   dt_iop_tonecurve_sanity_check(self, widget);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
+
+  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+  if(!c->timeout_handle)
+    c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
 
   return TRUE;
 }
@@ -1302,6 +1324,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
   c->semilog = 0;
+  c->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1441,6 +1464,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }
