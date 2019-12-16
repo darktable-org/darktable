@@ -44,9 +44,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lut3d_params_t)
 typedef enum dt_iop_lut3d_colorspace_t
 {
   DT_IOP_SRGB = 0,
-  DT_IOP_REC709 = 1,
-  DT_IOP_LIN_REC709 = 2,
-  DT_IOP_LIN_REC2020 = 3,
+  DT_IOP_ARGB,
+  DT_IOP_REC709,
+  DT_IOP_LIN_REC709,
+  DT_IOP_LIN_REC2020,
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -691,6 +692,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int colorspace
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
@@ -769,6 +771,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int colorspace
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
@@ -1134,6 +1137,7 @@ void gui_init(dt_iop_module_t *self)
   g->colorspace = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
   dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("Adobe RGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("gamma rec709 RGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("linear rec709 RGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("linear rec2020 RGB"));
