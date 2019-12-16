@@ -594,9 +594,6 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-
-  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
