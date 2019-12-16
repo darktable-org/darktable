@@ -1512,6 +1512,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
+  dt_gui_key_accel_block_on_focus_disconnect(g->text);
   g->watermarks_filenames = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
