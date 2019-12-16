@@ -95,23 +95,20 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
     g->dev_processed[k] = (cl_mem *)calloc(max_levels, sizeof(cl_mem *));
 
   g->num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
-  const int max_supp = 1<<(g->num_levels-1);
-  const int paddwd = width  + 2*max_supp;
-  const int paddht = height + 2*max_supp;
-
-  const size_t bwidth = ROUNDUPWD(paddwd);
-  const size_t bheight = ROUNDUPWD(paddht);
+  g->max_supp = 1<<(g->num_levels-1);
+  g->bwidth = ROUNDUPWD(width  + 2*g->max_supp);
+  g->bheight = ROUNDUPHT(height + 2*g->max_supp);
 
   // get intermediate vector buffers with read-write access
   for(int l=0;l<g->num_levels;l++)
   {
-    g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
+    g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
     if(!g->dev_padded[l]) goto error;
-    g->dev_output[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
+    g->dev_output[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
     if(!g->dev_output[l]) goto error;
     for(int k=0;k<num_gamma;k++)
     {
-      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
+      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
       if(!g->dev_processed[k][l]) goto error;
     }
   }
@@ -129,26 +126,23 @@ cl_int dt_local_laplacian_cl(
     cl_mem input,               // input buffer in some Labx or yuvx format
     cl_mem output)              // output buffer with colour
 {
-  const int max_supp = 1<<(b->num_levels-1);
-  const int wd2 = 2*max_supp + b->width;
-  const int ht2 = 2*max_supp + b->height;
   cl_int err = -666;
 
-  size_t sizes_pad[] = { ROUNDUPWD(wd2), ROUNDUPHT(ht2), 1 };
+  size_t sizes_pad[] = { ROUNDUPWD(b->bwidth), ROUNDUPHT(b->bheight), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 0, sizeof(cl_mem), (void *)&input);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), (void *)&b->dev_padded[0]);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 2, sizeof(int), (void *)&b->width);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 3, sizeof(int), (void *)&b->height);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 4, sizeof(int), (void *)&max_supp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 5, sizeof(int), (void *)&wd2);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 6, sizeof(int), (void *)&ht2);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 4, sizeof(int), (void *)&b->max_supp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 5, sizeof(int), (void *)&b->bwidth);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 6, sizeof(int), (void *)&b->bheight);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_pad_input, sizes_pad);
   if(err != CL_SUCCESS) goto error;
 
   // create gauss pyramid of padded input, write coarse directly to output
   for(int l=1;l<b->num_levels;l++)
   {
-    const int wd = dl(wd2, l), ht = dl(ht2, l);
+    const int wd = dl(b->bwidth, l), ht = dl(b->bheight, l);
     size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_padded[l-1]);
     if(l == b->num_levels-1)
@@ -171,15 +165,15 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 4, sizeof(float), (void *)&b->shadows);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 5, sizeof(float), (void *)&b->highlights);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 6, sizeof(float), (void *)&b->clarity);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 7, sizeof(int), (void *)&wd2);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 8, sizeof(int), (void *)&ht2);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 7, sizeof(int), (void *)&b->bwidth);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 8, sizeof(int), (void *)&b->bheight);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_process_curve, sizes_pad);
     if(err != CL_SUCCESS) goto error;
 
     // create gaussian pyramids
     for(int l=1;l<b->num_levels;l++)
     {
-      const int wd = dl(wd2, l), ht = dl(ht2, l);
+      const int wd = dl(b->bwidth, l), ht = dl(b->bheight, l);
       size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_processed[k][l-1]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_processed[k][l]);
@@ -193,7 +187,7 @@ cl_int dt_local_laplacian_cl(
   // assemble output pyramid coarse to fine
   for(int l=b->num_levels-2;l >= 0; l--)
   {
-    const int pw = dl(wd2,l), ph = dl(ht2,l);
+    const int pw = dl(b->bwidth,l), ph = dl(b->bheight,l);
     size_t sizes[] = { ROUNDUPWD(pw), ROUNDUPHT(ph), 1 };
     // this is so dumb:
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), (void *)&b->dev_padded[l]);
@@ -226,7 +220,7 @@ cl_int dt_local_laplacian_cl(
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 0, sizeof(cl_mem), (void *)&input);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 1, sizeof(cl_mem), (void *)&b->dev_output[0]);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 2, sizeof(cl_mem), (void *)&output);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 3, sizeof(int), (void *)&max_supp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 3, sizeof(int), (void *)&b->max_supp);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 4, sizeof(int), (void *)&b->width);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 5, sizeof(int), (void *)&b->height);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_write_back, sizes);
