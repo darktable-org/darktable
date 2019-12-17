@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 2.6</title>
+  <title>darktable 3.0</title>
 
   <bookinfo>
 
@@ -127,10 +127,10 @@
                 user manual
               </entry>
               <entry>
-                2.6.0
+                3.0.0
               </entry>
               <entry>
-                December 2018
+                December 2019
               </entry>
             </row>
             <row>
@@ -138,10 +138,10 @@
                 darktable
               </entry>
               <entry>
-                2.6
+                3.0
               </entry>
               <entry>
-                December 2018
+                December 2019
               </entry>
             </row>
           </tbody>
