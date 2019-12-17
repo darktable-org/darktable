@@ -1015,6 +1015,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(grid, gh, gw, px, py) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1060,6 +1061,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, offset, hwscale, normf, steepness) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1091,7 +1093,8 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  shared(points, buffer)
+  dt_omp_firstprivate(h, w, gw, grid) \
+  shared(buffer, points)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif
@@ -1146,6 +1149,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(iscale, gh, gw, py, px, grid) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1193,6 +1197,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, offset, hwscale, normf, steepness) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1217,8 +1222,8 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(points) \
-  shared(buffer)
+  dt_omp_firstprivate(h, w, grid, gw) \
+  shared(buffer, points)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif

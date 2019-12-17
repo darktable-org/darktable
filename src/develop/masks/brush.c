@@ -2863,8 +2863,8 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(points, border, border_count, payload) \
-  shared(buffer)
+  dt_omp_firstprivate(nb_corner, border_count, width, height) \
+  shared(buffer, points, border, payload)
 #else
 #pragma omp parallel for shared(buffer)
 #endif

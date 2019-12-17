@@ -2902,8 +2902,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(dpoints, dindex) \
-  shared(buffer)
+  dt_omp_firstprivate(width, height, dindex) \
+  shared(buffer, dpoints)
 #else
 #pragma omp parallel for shared(buffer)
 #endif
