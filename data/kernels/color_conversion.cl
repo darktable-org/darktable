@@ -58,7 +58,7 @@ inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut, const
       const float l2 = read_imagef(lut, sampleri, p2).x;
       return l1 * (1.0f - f) + l2 * f;
     }
-    else return unbounded_coeffs[1] * native_powr(x*unbounded_coeffs[0], unbounded_coeffs[2]);
+    else return unbounded_coeffs[1] * powr(x*unbounded_coeffs[0], unbounded_coeffs[2]);
   }
   else return x;
 }
@@ -82,7 +82,7 @@ inline float lookup_unbounded(read_only image2d_t lut, const float x, constant f
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * powr(x*a[0], a[2]);
   }
   else return x;
 }

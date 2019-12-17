@@ -447,7 +447,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, constant float
       // two-sided extrapolation (with inverted x-axis for left side)
       const float xx = (x >= ar) ? x : 1.0f - x;
       constant float *aa = (x >= ar) ? a : a + 3;
-      return aa[1] * native_powr(xx*aa[0], aa[2]);
+      return aa[1] * powr(xx*aa[0], aa[2]);
     }
   }
   else return x;
@@ -471,7 +471,7 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
       const float l2 = read_imagef(lut, sampleri, p2).x;
       return l1 * (1.0f - f) + l2 * f;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * powr(x*a[0], a[2]);
   }
   else return x;
 }
@@ -751,7 +751,7 @@ interpolation_func_lanczos(float width, float t)
 {
   float ta = fabs(t);
 
-  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI_F*t)*native_sin(M_PI_F*t/width)/(M_PI_F*M_PI_F*t*t));
+  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*sin(M_PI_F*t)*native_sin(M_PI_F*t/width)/(M_PI_F*M_PI_F*t*t));
 
   return r;
 }
@@ -1943,7 +1943,7 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   }
   select = clamp(select, 0.f, 1.f);
 
-  LCh.x *= native_powr(2.0f, 4.0f * (lookup(table_L, select) - .5f));
+  LCh.x *= powr(2.0f, 4.0f * (lookup(table_L, select) - .5f));
   LCh.y *= 2.f * lookup(table_C, select);
   LCh.z += lookup(table_h, select) - .5f;
 

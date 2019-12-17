@@ -24,8 +24,8 @@ float4
 weight(const float4 c1, const float4 c2, const float sharpen)
 {
   // native_exp is faster than the cpu floating point aliasing hack:
-  const float wc = native_exp(-((c1.y - c2.y)*(c1.y - c2.y) + (c1.z - c2.z)*(c1.z - c2.z)) * sharpen);
-  const float wl = native_exp(- (c1.x - c2.x)*(c1.x - c2.x) * sharpen);
+  const float wc = exp(-((c1.y - c2.y)*(c1.y - c2.y) + (c1.z - c2.z)*(c1.z - c2.z)) * sharpen);
+  const float wl = exp(- (c1.x - c2.x)*(c1.x - c2.x) * sharpen);
   return (float4)(wl, wc, wc, 1.0f);
 }
 

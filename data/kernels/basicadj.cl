@@ -21,7 +21,7 @@
 
 float get_gamma(const float x, const float gamma)
 {
-  return native_powr(x, gamma);
+  return powr(x, gamma);
 }
 
 float get_lut_gamma(const float x, const float gamma, read_only image2d_t lut)
@@ -40,7 +40,7 @@ float get_lut_gamma(const float x, const float gamma, read_only image2d_t lut)
 
 float get_contrast(const float x, const float contrast, const float middle_grey, const float inv_middle_grey)
 {
-  return native_powr(x * inv_middle_grey, contrast) * middle_grey;
+  return powr(x * inv_middle_grey, contrast) * middle_grey;
 }
 
 float get_lut_contrast(const float x, const float contrast, const float middle_grey, const float inv_middle_grey, read_only image2d_t lut)
@@ -144,7 +144,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
     const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
     if(lum > 0.f)
     {
-      const float contrast_lum = native_powr(lum / middle_grey, contrast) * middle_grey;
+      const float contrast_lum = powr(lum / middle_grey, contrast) * middle_grey;
       ratio = contrast_lum / lum;
     }
 

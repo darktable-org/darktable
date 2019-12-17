@@ -72,7 +72,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     // Log profile
     maxRGB = maxRGB / grey;
     maxRGB = (maxRGB < noise) ? noise : maxRGB;
-    maxRGB = (native_log2(maxRGB) - shadows_range) / dynamic_range;
+    maxRGB = (log2(maxRGB) - shadows_range) / dynamic_range;
     maxRGB = clamp(maxRGB, 0.0f, 1.0f);
 
     const float index = maxRGB;
@@ -92,7 +92,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     // Log profile
     o = o / grey;
     o = (o < noise) ? noise : o;
-    o = (native_log2(o) - shadows4) / dynamic4;
+    o = (log2(o) - shadows4) / dynamic4;
     o = clamp(o, (float4)0.0f, (float4)1.0f);
 
     const float index = prophotorgb_to_XYZ(o).y;
@@ -113,7 +113,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
 
   // Apply the transfer function of the display
   const float4 power4 = power;
-  o = native_powr(o, power4);
+  o = powr(o, power4);
 
   i.xyz = prophotorgb_to_Lab(o).xyz;
 
@@ -126,8 +126,8 @@ inline float filmic_desaturate(const float x, const float sigma_toe, const float
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
 
-  const float key_toe = native_exp(-0.5f * radius_toe * radius_toe / sigma_toe);
-  const float key_shoulder = native_exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
+  const float key_toe = exp(-0.5f * radius_toe * radius_toe / sigma_toe);
+  const float key_shoulder = exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
 
   return 1.0f - clamp((key_toe + key_shoulder) / saturation, 0.0f, 1.0f);
 }
@@ -174,14 +174,14 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
   const float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float4 o;
 
-  const float4 noise4 = native_powr(2.0f, -16.0f);
+  const float4 noise4 = powr(2.0f, -16.0f);
   const float4 dynamic4 = dynamic_range;
   const float4 blacks4 = black_exposure;
   const float4 grey4 = grey_value;
 
   // Log tonemapping
   o = (i < noise4) ? noise4 : i;
-  o = (native_log2(o / grey4) - blacks4) / dynamic4;
+  o = (log2(o / grey4) - blacks4) / dynamic4;
   o = clamp(o, noise4, (float4)1.0f);
 
   // Selective desaturation of extreme luminances
@@ -195,7 +195,7 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
   o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max);
 
   // Output power
-  o = native_powr(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+  o = powr(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
 
   // Copy alpha layer and save
   o.w = i.w;
@@ -255,7 +255,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 
   const float4 i = read_imagef(in, sampleri, (int2)(x, y));
 
-  const float noise = native_powr(2.0f, -16.0f);
+  const float noise = powr(2.0f, -16.0f);
 
   float norm = get_pixel_norm(i, variant, profile_info, lut, use_work_profile);
   norm =  (norm < noise) ? noise : norm;
@@ -268,7 +268,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
   if(min_ratios < 0.0f) o -= (float4)min_ratios;
 
   // Log tonemapping
-  norm = (native_log2(norm / grey_value) - black_exposure) / dynamic_range;
+  norm = (log2(norm / grey_value) - black_exposure) / dynamic_range;
   norm = clamp(norm, noise, 1.0f);
 
   // Selective desaturation of extreme luminances
@@ -282,7 +282,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
   norm = filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max);
 
   // Output power
-  norm = native_powr(clamp(norm, 0.0f, 1.0f), output_power);
+  norm = powr(clamp(norm, 0.0f, 1.0f), output_power);
 
   // Copy alpha layer and save
   o *= norm;

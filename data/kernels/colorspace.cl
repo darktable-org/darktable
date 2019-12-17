@@ -44,7 +44,7 @@ inline float4 lab_f(float4 x)
 {
   const float4 epsilon = 216.0f / 24389.0f;
   const float4 kappa = 24389.0f / 27.0f;
-  return (x > epsilon) ? native_powr(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
+  return (x > epsilon) ? powr(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
 }
 
 

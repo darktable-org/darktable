@@ -24,8 +24,8 @@
    is needed to have read-write access to some buffers which openCL does not offer for image object. */
 
 
-kernel void 
-gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height, 
+kernel void
+gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                       unsigned int blocksize, local float4 *buffer)
 {
   unsigned int x = get_global_id(0);
@@ -50,8 +50,8 @@ gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width,
 }
 
 
-kernel void 
-gaussian_transpose_1c(global float *in, global float *out, unsigned int width, unsigned int height, 
+kernel void
+gaussian_transpose_1c(global float *in, global float *out, unsigned int width, unsigned int height,
                       unsigned int blocksize, local float *buffer)
 {
   unsigned int x = get_global_id(0);
@@ -76,7 +76,7 @@ gaussian_transpose_1c(global float *in, global float *out, unsigned int width, u
 }
 
 
-kernel void 
+kernel void
 gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn, const float4 Labmax, const float4 Labmin)
@@ -100,7 +100,7 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
   yb = xp * coefp;
   yp = yb;
 
- 
+
   for(int y=0; y<height; y++)
   {
     const int idx = mad24((unsigned int)y, width, x);
@@ -130,9 +130,9 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
     xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
-    xa = xn; 
-    xn = xc; 
-    ya = yn; 
+    xa = xn;
+    xn = xc;
+    ya = yn;
     yn = yc;
 
     out[idx] += yc;
@@ -140,7 +140,7 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
   }
 }
 
-kernel void 
+kernel void
 gaussian_column_1c(global float *in, global float *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn, const float Labmax, const float Labmin)
@@ -164,7 +164,7 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
   yb = xp * coefp;
   yp = yb;
 
- 
+
   for(int y=0; y<height; y++)
   {
     const int idx = mad24((unsigned int)y, width, x);
@@ -194,9 +194,9 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
     xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
-    xa = xn; 
-    xn = xc; 
-    ya = yn; 
+    xa = xn;
+    xn = xc;
+    ya = yn;
     yn = yc;
 
     out[idx] += yc;
@@ -219,14 +219,14 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * powr(x*a[0], a[2]);
   }
   else return x;
 }
 
 
-kernel void 
-lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
+kernel void
+lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
             read_only image2d_t ctable, global float *ca, read_only image2d_t ltable, global float *la, const int unbound)
 {
   const unsigned int x = get_global_id(0);
@@ -307,11 +307,11 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
 #define UNBOUND_HIGHLIGHTS_A   (UNBOUND_A << 3)   /* 16 */
 #define UNBOUND_HIGHLIGHTS_B   (UNBOUND_B << 3)   /* 32 */
 
-kernel void 
-shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out, 
-                       unsigned int width, unsigned int height, 
+kernel void
+shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out,
+                       unsigned int width, unsigned int height,
                        const float shadows, const float highlights, const float compress,
-                       const float shadows_ccorrect, const float highlights_ccorrect, 
+                       const float shadows_ccorrect, const float highlights_ccorrect,
                        const unsigned int flags, const int unbound_mask, const float low_approximation,
                        const float whitepoint)
 {
