@@ -1855,7 +1855,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy) \
+  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy, w) \
   shared(buffer, points)
 #else
 #pragma omp parallel for shared(buffer)
