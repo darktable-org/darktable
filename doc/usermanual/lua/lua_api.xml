@@ -7915,7 +7915,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>DT_LIGHTTABLE_LAYOUT_FIRST</para></listitem>
 <listitem><para>DT_LIGHTTABLE_LAYOUT_ZOOMABLE</para></listitem>
 <listitem><para>DT_LIGHTTABLE_LAYOUT_FILEMANAGER</para></listitem>
-<listitem><para>DT_LIGHTTABLE_LAYOUT_EXPOSE</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_CULLING</para></listitem>
 <listitem><para>DT_LIGHTTABLE_LAYOUT_LAST</para></listitem>
 </itemizedlist>
 </para></listitem>
