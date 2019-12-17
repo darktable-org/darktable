@@ -2037,56 +2037,69 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
 static void switch_cursors(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(g == NULL) return;
+  if(!g || !self->dev->gui_attached) return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
 
-  // if we are editing masks, do not display controls
-  if(!sanity_check(self) || in_mask_editing(self) || (self->blend_picker->module->request_color_pick))
+  // if we are editing masks or using colour-pickers, do not display controls
+  if(!sanity_check(self) || in_mask_editing(self) || (self->blend_picker && self->blend_picker->module->request_color_pick))
   {
     // display default cursor
+    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    dt_control_queue_redraw_center();
     g_object_unref(cursor);
+
     return;
   }
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled)
+  // check if module is enabled and shown in UI
+  dt_pthread_mutex_lock(&g->lock);
+  g->has_focus = (dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) && self->enabled);
+  dt_pthread_mutex_unlock(&g->lock);
+
+  if(!g->has_focus)
   {
     // if module lost focus or is disabled
     // do nothing and let the app decide
-    dt_pthread_mutex_lock(&g->lock);
-    g->has_focus = FALSE;
-    dt_pthread_mutex_unlock(&g->lock);
+    return;
   }
-  else if( (self->dev->pipe->processing) ||
+  else if( ((self->dev->pipe->processing) ||
           (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
-          (self->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY) )
+          (self->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)) && g->cursor_valid)
   {
-    // display waiting cursor while pipe reprocess or will soon
-    cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "wait");
+    // if pipe is busy or dirty but cursor is on preview,
+    // display waiting cursor while pipe reprocesses
+    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "wait");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
+
     dt_control_queue_redraw_center();
   }
-  else if(g->cursor_valid && !self->dev->pipe->processing) // seems reduntand but is not
+  else if(g->cursor_valid && !self->dev->pipe->processing)
   {
-    // hide GTK cursor because we display ours
-    dt_pthread_mutex_lock(&g->lock);
-    g->has_focus = TRUE;
-    dt_pthread_mutex_unlock(&g->lock);
-
+    // if pipe is clean and idle and cursor is on preview,
+    // hide GTK cursor because we display our custom one
     dt_control_change_cursor(GDK_BLANK_CURSOR);
+    dt_control_queue_redraw_center();
+  }
+  else if(!g->cursor_valid)
+  {
+    // if module is active and opened but cursor is out of the preview,
+    // display default cursor
+    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
+
     dt_control_queue_redraw_center();
   }
   else
   {
-    // display default cursor
+    // in any other situation where module has focus,
+    // reset the cursor but don't launch a redraw
+    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    dt_control_queue_redraw_center();
+    g_object_unref(cursor);
   }
-
-  g_object_unref(cursor);
 }
 
 
