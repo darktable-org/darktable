@@ -959,6 +959,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(circpts, center, total) \
   shared(circ)
 #else
 #pragma omp parallel for shared(points)
@@ -1055,6 +1056,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(iscale, bbxm, bbym, bbXM, bbYM, bbw, px, py, grid) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1091,7 +1093,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(center) \
+  dt_omp_firstprivate(bbh, bbw, center, radius2, total2) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1127,8 +1129,8 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(points) \
-  shared(buffer)
+  dt_omp_firstprivate(grid, bbxm, bbym, bbw, endx, endy) \
+  shared(buffer, points)
 #else
 #pragma omp parallel for shared(buffer)
 #endif
