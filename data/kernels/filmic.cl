@@ -21,7 +21,7 @@
 // In case the OpenCL driver doesn't have a dot method
 inline float vdot(const float4 vec1, const float4 vec2)
 {
-  return vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2] + vec1[3] * vec2[3];
+    return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
 }
 
 typedef enum dt_iop_filmicrgb_methods_type_t
