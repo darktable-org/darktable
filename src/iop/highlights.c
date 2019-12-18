@@ -60,6 +60,8 @@ typedef struct dt_iop_highlights_gui_data_t
 {
   GtkWidget *clip;
   GtkWidget *mode;
+  GtkWidget *box_raw;
+  GtkWidget *label_non_raw;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -1026,6 +1028,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
   dt_bauhaus_slider_set(g->clip, p->clip);
   dt_bauhaus_combobox_set(g->mode, p->mode);
+  if(!self->hide_enable_button)
+  {
+    gtk_widget_show(g->box_raw);
+    gtk_widget_hide(g->label_non_raw);
+  }
+  else
+  {
+    gtk_widget_hide(g->box_raw);
+    gtk_widget_show(g->label_non_raw);
+  }
+
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1076,8 +1089,11 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
+  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   g->mode = dt_bauhaus_combobox_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->mode, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("method"));
   dt_bauhaus_combobox_add(g->mode, _("clip highlights"));
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
@@ -1088,7 +1104,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
                                          "magenta highlights (you shouldn't ever need to touch this)"));
   dt_bauhaus_widget_set_label(g->clip, NULL, _("clipping threshold"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+
+  g->label_non_raw = gtk_label_new(_("highlight reconstruction\nonly works for raw images."));
+  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
 
 
   g_signal_connect(G_OBJECT(g->clip), "value-changed", G_CALLBACK(clip_callback), self);
