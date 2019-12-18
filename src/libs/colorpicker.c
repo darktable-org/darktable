@@ -185,7 +185,7 @@ static void _update_picker_output(dt_lib_module_t *self)
                  (int)round(data->rgb.blue  * 255.f));
         break;
       case 1: // Lab
-        snprintf(tooltip, sizeof(text), "%5.02f   %5.02f   %5.02f", lab[0], lab[1], lab[2]);
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
         snprintf(text, sizeof(text), "%.02f %.02f %.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
         break;
     }
@@ -302,8 +302,8 @@ static void _update_samples_output(dt_lib_module_t *self)
 
       case 1:
         // Lab
-        snprintf(tooltip, sizeof(text), "%5.02f   %5.02f   %5.02f", lab[0], lab[1], lab[2]);
-        snprintf(text, sizeof(text), "%5.02f %5.02f %5.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
+        snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
         break;
     }
     gtk_label_set_text(GTK_LABEL(sample->output_label), text);
@@ -409,7 +409,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_widget_set_name(sample->output_label, "live-sample-data");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label, TRUE, TRUE, 0);
 
-  sample->delete_button = gtk_button_new_with_label(_("remove"));
+  sample->delete_button = gtk_button_new_with_label(_("X"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
