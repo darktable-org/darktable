@@ -1110,7 +1110,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   const int max_rows = 1 + (int)((height) / ht + .5);
   lib->max_rows = max_rows;
-  lib->visible_rows = height / ht;
+  lib->visible_rows = MAX(1, height / ht);
   const int max_cols = iir;
 
   int id;
