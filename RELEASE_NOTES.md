@@ -256,6 +256,11 @@ making a backup is strongly advised.
 
 - A zoom & pan feature has been added to lighttable full preview.
 
+- The base-curve module is now using luminance color preservation by
+  default. This can give slightly less saturated pictures compared to
+  the previous version where no color preservation was made. But it
+  will generally avoid color shift.
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It
