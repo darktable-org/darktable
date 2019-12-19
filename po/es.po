@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-19 04:29-0600\n"
+"POT-Creation-Date: 2019-12-19 11:20-0600\n"
 "PO-Revision-Date: 2019-12-19 03:33-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -9633,7 +9633,7 @@ msgstr "2º orden"
 
 #: ../src/iop/lowpass.c:677
 msgid "filter order of gaussian blur"
-msgstr "orden del filtro gausiano"
+msgstr "orden del filtro gaussiano"
 
 #: ../src/iop/lowpass.c:688
 msgctxt "lowpass"
@@ -9646,7 +9646,7 @@ msgstr "suavizar con"
 
 #: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2937 ../src/iop/shadhi.c:836
 msgid "gaussian"
-msgstr "gausiano"
+msgstr "gaussiano"
 
 #: ../src/iop/lowpass.c:694 ../src/iop/shadhi.c:837
 msgid "bilateral filter"
@@ -9654,7 +9654,7 @@ msgstr "reducción de ruido (filtro bilateral)"
 
 #: ../src/iop/lowpass.c:701
 msgid "radius of gaussian/bilateral blur"
-msgstr "radio del desenfoque gausiano/bilateral"
+msgstr "radio del desenfoque gaussiano/bilateral"
 
 #: ../src/iop/lowpass.c:702
 msgid "contrast of lowpass filter"
