@@ -3,17 +3,17 @@
     <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
     %darktable_dtd;
     ]>
-<sect3 status="final" id="filmic">
+<sect3 status="draft" id="filmic">
 
-  <title>Filmic</title>
+  <title>Filmic rgb</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>filmic</secondary>
+    <secondary>filmic rgb</secondary>
   </indexterm>
 
   <indexterm>
-    <primary>filmic</primary>
+    <primary>filmic rgb</primary>
   </indexterm>
 
   <sect4>
@@ -42,12 +42,22 @@
                 sensor data, it can be used with any image in replacement of the base curve
                 module. A full tutorial with examples and comments on the results can be found
                 on
-                <ulink url="https://eng.aurelienpierre.com/2018/11/30/filmic-darktable-and-the-quest-of-the-hdr-tone-mapping/"><emphasis>its
+                <ulink
+                  url="https://eng.aurelienpierre.com/2018/11/30/filmic-darktable-and-the-quest-of-the-hdr-tone-mapping/"
+                    ><emphasis>its
                 developer's website</emphasis></ulink>.
+              </para>
+
+              <para>
+                Filmic rgb is the successor of the filmic module provided in Darkroom 2.6. While
+                the underlying principles did not change much, users of the previous version
+                should not expect a 1:1 translation of their workflow, and may find
+                <xref linkend="filmic-rgb-for-26-users"/> useful.
               </para>
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/filmic.png" scalefit="1" width="80%" align="center" />
+              <graphic fileref="darkroom/modules/images/filmic.png" scalefit="1" width="80%"
+                align="center"/>
             </entry>
           </row>
         </tbody>
@@ -59,6 +69,9 @@
   <sect4>
 
     <title>Prerequisites</title>
+
+<!-- IHU - my understanding is that the prerequisites don't change much, except for the 
+      exposure settings - which I modified. Is that correct? -->
 
     <para>
       In order to get the best out of filmic, images need some preparation:
@@ -75,12 +88,14 @@
         </para></listitem>
 
         <listitem><para>
-          In darktable's exposure module, correct the black level and the exposure value to
-          avoid any clipping. It is especially important to avoid negative pixels values (in
-          black areas), because they will be clipped in filmic. For some cameras models (Canon,
-          mainly), rawspeed, the raw decoding library of darktable, may set an exaggerated black
-          level, resulting in crushed blacks and negative values. If so, brighten the blacks by
-          setting a negative black level value in the exposure module.
+          In the <xref linkend="exposure">Exposure</xref> module, push the exposure until the
+          midtones are clear enough. Do not worry about losing the highlights: they will be
+          recovered as part of the filmic processing. However, it is important to avoid negative
+          pixels in black areas: the computations done by filmic will result in unpredictable
+          results in this case. For some cameras models (Canon, mainly), rawspeed, the raw
+          decoding library of darktable, may set an exaggerated black level, resulting in
+          crushed blacks and negative values. If so, brighten the blacks by setting a negative
+          black level value in the exposure module.
         </para></listitem>
 
         <listitem><para>
@@ -108,48 +123,61 @@
     <title>Usage</title>
 
     <para>
-      There are 4 steps in the filmic process:
+      The filmic rgb module aims at mapping the photographed scene dynamic range to the
+      (smaller) image dynamic range, and finally to the (even smaller) screen dynamic range.
+      This mapping is defined in three steps, each handled in a separate tab in the interface:
       <itemizedlist>
 
         <listitem><para>
-          Apply a logarithmic shaper to the RGB signal, to raise the midtones luminance in the
-          same way human eyes and film respond to lightness. This is similar to what
-          <emphasis>unbreak input profile</emphasis> does in its logarithmic mode.
+          The
+          <guilabel>scene</guilabel>
+          tab contains the <quote>input</quote> settings of the scene: what constitutes middle
+          grey, white and black in the photographed scene.
         </para></listitem>
 
         <listitem><para>
-          Apply an S-shaped parametric curve to enhance the contrast and remap the grey value to
-          the middle grey of the display. This is similar to what the base curve or tone curve
-          modules do.
+          The
+          <guilabel>look</guilabel>
+          tab contains the parameters of the mapping applied to the input parameters defined in
+          the
+          <guilabel>scene</guilabel>
+          tab. Notably, this part of the module applies an S-shaped parametric curve to enhance
+          the contrast and remap the grey value to the middle grey of the display. This is
+          similar to what the base curve or tone curve modules do.
         </para></listitem>
 
         <listitem><para>
-          Apply a selective desaturation on extreme luminance values so that shadows degrade
-          progressively toward pure black and highlights degrade progressively toward pure
-          white.
-        </para></listitem>
-
-        <listitem><para>
-          Apply an inverse gamma transfer function to linearize the output for the display
-          gamma. Having a gamma correction applied on top of logarithmically encoded data would
-          result in a double-up, with the luminance raised twice.
+          The
+          <guilabel>display</guilabel>
+          tab defined the output settings to map the transformed image to the display. In
+          typical use cases, this tab should only be used very rarely.
         </para></listitem>
 
       </itemizedlist>
     </para>
 
     <para>
-      The sliders' ranges of filmic are limited to usual and safe values, but values are allowed
-      out of these ranges by clicking on the sliders with the right button and inputting values
-      on the keyboard. Filmic has no neutral parameters resulting in a no-operation: as soon as
-      the module is enabled, the image is always at least slightly affected. The default
-      parameters are tuned to have minimal impact on most pictures.
+      The sliders' ranges of filmic rgb are limited to usual and safe values, but values are
+      allowed out of these ranges by clicking on the sliders with the right button and inputting
+      values on the keyboard. Filmic has no neutral parameters resulting in a no-operation: as
+      soon as the module is enabled, the image is always at least slightly affected.
+    </para>
+
+    <para>
+      The curves at the top of the module are read-only and serve as a guide for the operations
+      performed on the sliders. The bright curve is the tone mapping curve, where the abscissa
+      represents the scene exposure, and the ordinate represents the display exposure. The dark
+      curve is the desaturation curve, representing the percentage of saturation as function of
+      the scene exposure.
     </para>
 
     <sect5>
-      <title>Middle-grey luminance</title>
+      <title>Middle-grey luminance (<guilabel>Scene</guilabel> tab)</title>
+<!-- IHU - okay, I'm not clear on color spaces. My understanding is that filmic
+        worked on XYZ and filmic rgb works on RGB - is that true? does that sentence make sense?
+        :) -->
       <para>
-        The middle-grey luminance is the luminance in XYZ space of the scene referred 18% grey.
+        The middle-grey luminance is the luminance in RGB space of the scene referred 18% grey.
         Its color picker tool reads the average luminance over the drawn area. If you happen to
         have a grey card or a color chart (IT8 chart or colorchecker) shot in the scene lighting
         conditions, then the grey color picker tool can be used to quickly sample the luminance
@@ -158,14 +186,13 @@
       </para>
       <para>
         This setting has an effect on the picture that is analogous to a lightness correction.
-        Values close to 100% will not compress the highlights but will fail to recover shadows.
-        Values close to 0% will recover greatly the shadows but will compress the highlights
-        more harshely and result in local-contrast losses. The standard middle-grey value for
-        linearly encoded camera RGB is 18%. Good values of grey are usually the average
-        luminance of the whole picture or of the subject. Values much higher than 18% will make
-        the filmic S curve difficult to control. In studio and indoors (low dynamic range
-        scenes), proper grey values will be found between 15-18%. In high dynamic range scenes
-        (landscapes, back-lit portraits), proper grey values will lie between 1.25 and 9%.
+        Values close to 100% do not compress the highlights but fail to recover shadows. Values
+        close to 0% recover greatly the shadows but compress the highlights more harshly and
+        result in local-contrast losses. The standard middle-grey value for linearly encoded
+        camera RGB is 18%. Good values of grey are usually the average luminance of the whole
+        picture or of the subject. In studio and indoors (low dynamic range scenes), proper grey
+        values are found between 15-18%. In high dynamic range scenes (landscapes, back-lit
+        portraits), proper grey values lie between 1.25 and 9%.
       </para>
       <para>
         When modifying the middle-grey luminance, the white and black exposures are
@@ -177,12 +204,12 @@
     </sect5>
 
     <sect5>
-      <title>White relative exposure</title>
+      <title>White relative exposure (<guilabel>Scene</guilabel> tab)</title>
       <para>
         The white relative exposure is the number of stops (EV) between pure white and the
         middle grey. It is the right bound of the dynamic range. It should be adjusted to avoid
         highlight clipping. The white exposure color picker tool reads the maximum luminance in
-        XYZ space over the drawn area, assumes it is pure white, and sets the white exposure
+        RGB space over the drawn area, assumes it is pure white, and sets the white exposure
         parameter to remap the reading to 100% luminance.
       </para>
       <para>
@@ -192,63 +219,73 @@
     </sect5>
 
     <sect5>
-      <title>Black relative exposure</title>
+      <title>Black relative exposure (<guilabel>Scene</guilabel> tab)</title>
       <para>
         The black relative exposure is the number of stops (EV) between pure black and the
         middle grey. It is the left bound of the dynamic range. The black exposure color-picker
-        tool reads the minimum luminance in XYZ space over the drawn area, assumes it is pure
+        tool reads the minimum luminance in RGB space over the drawn area, assumes it is pure
         black, and sets the black exposure parameter to remap the minimum reading to 0%
         luminance. The black color picker measurement is very sensitive to noise, and cannot
         identify if the minimum luminance is pure black (actual data) or just noise. It works
         better on low ISO pictures and with high quality demosaicing. When the color picker puts
         the black exposure at -16EV, it is a sign that the measure failed and you need to adjust
         it manually.
+<!-- IHU is that still a thing? -->
       </para>
       <para>
         The black relative exposure allows you to choose how far you want to recover lowlights.
-        On the contrary to the white exposure it will not be possible to completely avoid
-        clipping blacks. When the black exposure is very low, the filmic S curve becomes very
-        difficult to control and the final contrast is often faded. Every camera sensor has a
-        maximum physical dynamic range for each ISO value (you can find them measured on
-        <ulink url="https://www.dxomark.com/"><emphasis>DXOmark</emphasis></ulink> or
-        <ulink url="https://www.dpreview.com/"><emphasis>DPreview</emphasis></ulink>), the
-        software dynamic range in filmic (dynamic range = white exposure - black exposure)
+        Contrarily to the white exposure, it is not always possible to completely avoid clipping
+        blacks. Every camera sensor has a maximum physical dynamic range for each ISO value (you
+        can find them measured on
+        <ulink url="https://www.dxomark.com/"
+            ><emphasis>DXOmark</emphasis></ulink>
+        or
+        <ulink url="https://www.dpreview.com/"
+            ><emphasis>DPreview</emphasis></ulink>),
+        the software dynamic range in filmic (dynamic range = white exposure - black exposure)
         should generally not be greater than the physical dynamic range of the sensor (10-14EV
-        in most cases). For better control of the filmic S curve, the black exposure should be
-        kept close to the white exposure in absolute value (and ideally greater, in absolute
-        value), so the dynamic range is almost centered in 0EV. Another guide to validate the
-        black exposure value is the S curve should always go through the center of the graph
-        display (it will not when challenging parameter are set). Notice that the dynamic range
-        of the scene can be lower than the camera's one, especially indoors.
+        in most cases). Note that the dynamic range of the scene can be lower than the camera's
+        one, especially indoors.
       </para>
+<!-- IHU my understanding is that the control of the S-curve is not an issue anymore
+        because of the new spline - which allows more leeway there, and hence the caveats
+        disappear. Correct? -->
     </sect5>
 
     <sect5>
-      <title>Safety factor and auto-tune</title>
+      <title>Dynamic range scaling and auto-tune (<guilabel>Scene</guilabel> tab)</title>
       <para>
-        The auto-tune color picker combines all three color pickers above, and will allow to set
-        the grey, white and black exposures all at once, using the average of the drawn region
-        as the grey estimation, the maximum as the white, and the minimum as the black. This
-        gives good results in landscape photography but usually fails for portraits and indoor
-        scenes.
+        The auto-tune color picker combines all three color pickers above, and allows to set the
+        grey, white and black exposures all at once, using the average of the drawn region as
+        the grey estimation, the maximum as the white, and the minimum as the black. This gives
+        good results in landscape photography but usually fails for portraits and indoor scenes.
       </para>
       <para>
         When no true white and no true black are available on the scene, the maximum and minimum
-        XYZ values read on the image are not valid assumptions anymore, so the safety factor
-        will allow you to shrink or enlarge symmetrically the detected dynamic range and the
-        current parameters. This works with all color pickers.
+        RGB values read on the image are not valid assumptions anymore, so the dynamic range
+        scaling symmetrically shrinks or enlarges the detected dynamic range and the current
+        parameters. This works with all color pickers, and adjusts the current values of white
+        and black relative exposures.
       </para>
     </sect5>
 
     <sect5>
-      <title>Contrast</title>
+      <title>Contrast (<guilabel>Look</guilabel> tab)</title>
       <para>
-        The filmic S curve is created from the user parameters, by computing the position of
+        The filmic rgb S-curve is created from the user parameters, by computing the position of
         virtual nodes and interpolating them, similarly to the tone curve module (but here, the
-        nodes cannot be moved manually). While this allow a quicker curve parametrization, not
-        all the combinations of parameter deliver good curves, and the graph display will give a
-        diagnostic interface. Good curves are either graceful S with a linear central portion
-        and curved extremities, or lines following the diagonal of the graph.
+        nodes cannot be moved manually). The filmic rgb S-curve is split into three parts: a
+        middle linear part, and two extremities that move smoothly from the slope of the middle
+        part to the ends of the exposure range.
+      </para>
+      <para>
+        The
+        <guilabel>contrast</guilabel>
+        slider controls the slope of the middle part of the curve. While this allow a quicker
+        curve parametrization, not all the combinations of parameter deliver good curves, and
+        the graph display will give a diagnostic interface. Good curves are either graceful S
+        with a linear central portion and curved extremities, or lines following the diagonal of
+        the graph.
       </para>
       <para>
         The contrast parameter drives the slope of the central part of the curve. The larger the
