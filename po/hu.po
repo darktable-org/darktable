@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-04 22:57+0100\n"
-"PO-Revision-Date: 2019-12-17 22:04+0100\n"
+"PO-Revision-Date: 2019-12-20 00:36+0100\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -372,18 +372,16 @@ msgstr ""
 "paraméteres maszkon."
 
 #: ../build/src/preferences_gen.h:2642
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "kép készítési helyének formázása"
+msgstr "kép információs sáv sablonja"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
 msgstr "az összes használható címkéhez lásd a kézikönyvet."
 
 #: ../build/src/preferences_gen.h:2666
-#, fuzzy
 msgid "position of the image infos line"
-msgstr "a pdf-be ágyazott képek felbontása"
+msgstr "kép információs sáv pozíciója"
 
 #: ../build/src/preferences_gen.h:2677
 msgctxt "preferences"
@@ -705,6 +703,8 @@ msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
 msgstr ""
+"meghatározza, hogy a panel görgetősávok mindig láthatók kell legyenek vagy "
+"csak a kontextus függvényében. (újraindítást igényel)"
 
 #: ../build/src/preferences_gen.h:3353
 msgid "method to use for getting the display profile"
@@ -735,7 +735,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3421
 msgid "core options"
-msgstr "általános beállítások"
+msgstr "fő beállítások"
 
 #: ../build/src/preferences_gen.h:3424 ../src/imageio/format/j2k.c:652
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
@@ -866,6 +866,9 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
+"ez a hozzáadott élesítés nem javasolt aluláteresztő szűrő nélküli "
+"kameráknál. az az alapértelmezés, hogy nem ad hozzá élesítés automatikusan, "
+"mivel a legújabb kamerákban nincs aluláteresztő szűrő. (újraindítást igényel)"
 
 #: ../build/src/preferences_gen.h:3652
 msgid "xmp"
@@ -952,12 +955,10 @@ msgstr ""
 "ehhez a \"darktable-generate-cache\" parancsot kell futtatni."
 
 #: ../build/src/preferences_gen.h:3805
-#, fuzzy
 msgid "enable disk backend for full preview cache"
-msgstr "bélyegkép gyorsítótár engedélyezése a lemezen"
+msgstr "lemez háttértár engedélyezése teljes előnézet gyorsítótárhoz"
 
 #: ../build/src/preferences_gen.h:3817
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -965,13 +966,12 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
-"ha engedélyezve van, bélyegképeket ír a lemezre (.cache/darktable/), amikor "
-"azok kikerülnek a memória gyorsítótárból. megjegyzendő, hogy ez sok "
+"ha engedélyezve van, előnézeti képeket ír a lemezre (.cache/darktable/), "
+"amikor azok kikerülnek a memória gyorsítótárból. megjegyzendő, hogy ez sok "
 "tárhelyet igényel (több gigabájtnyi 20 kilobájtos kép), amik sosem lesznek "
-"törölve. ennek ellenére kézzel bármikor biztonságosan törölhetőek.  "
-"böngészésnél az átvilágító nézet teljesítményét jelentős mértékben növeli. a "
-"teljes gyűjteményhez offline módon is elkészíthető a bélyegkép gyorsítótár, "
-"ehhez a \"darktable-generate-cache\" parancsot kell futtatni."
+"törölve. ennek ellenére kézzel bármikor biztonságosan törölhetőek. az "
+"átvilágító nézetben a teljes méretű előnézetbe nagyítás teljesítményét "
+"jelentős mértékben növeli."
 
 #: ../build/src/preferences_gen.h:3825
 msgid "number of background threads"
@@ -1063,7 +1063,6 @@ msgid "very fast GPU"
 msgstr "nagyon gyors GPU"
 
 #: ../build/src/preferences_gen.h:3975
-#, fuzzy
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1071,32 +1070,32 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"meghatározza az előnézet és a teljes pixelcsővezeték feladatok ütemezését az "
-"OpenCL-t használó rendszereken. alapértelmezett- a GPU dolgozza fel a teljes "
-"és a CPU az előnézet csövet (állítható a konfigurációs paraméterekben); több "
-"GPU - mindkét pixelcsővezetéket párhuzamosan dolgozza fel két külön GPU; "
-"nagyon gyors GPU - mindkét pixelcsővezetéket a GPU dolgozza fel egymás után."
+"meghatározza az előnézet és a teljes méret pixelfeldolgozási sor "
+"feladatainak ütemezését az OpenCL-t használó rendszereken. alapértelmezett - "
+"a GPU dolgozza fel a teljes és a CPU az előnézet sorát (állítható a "
+"konfigurációs paraméterekben); több GPU - mindkét pixelsort párhuzamosan "
+"dolgozza fel két külön GPU; nagyon gyors GPU - mindkét pixelsort a GPU "
+"dolgozza fel egymás után."
 
 #: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
 msgstr "hierarchia kihagyása az egyszerű címkelistában"
 
 #: ../build/src/preferences_gen.h:4012
-#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"képek exportálásakor a hierarchikus címkék is belekerülnek egyszerű, nem "
+"XMP fájl készítésekor a hierarchikus címkék is belekerülnek egyszerű, nem "
 "hierarchikus listaként, hogy láthatóak legyenek más programokban. ha ez az "
 "opció engedélyezve van, a darktable csak az utolsó szintet teszi bele, és a "
-"többit mellőri. például a „foo|bar|baz” egyszerűen „baz” lesz."
+"többit mellőzi. például a „foo|bar|baz” egyszerűen „baz” lesz."
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
-msgstr ""
+msgstr "bevitel kiegészítés letiltása"
 
 #: ../build/src/preferences_gen.h:4032
 msgid ""
@@ -1104,6 +1103,9 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
+"a bevitel kiegészítés annak hasznos, aki csak billentyűzetről visz be "
+"címkéket. másoknak a kiegészítés zavaró lehet. a darktable újraindítását "
+"igényli."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -1149,9 +1151,8 @@ msgstr ""
 "fényképező jegyzetként rögzít a képekhez"
 
 #: ../build/src/preferences_gen.h:4118
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "mozgatás más könyvtárba"
+msgstr "3D lut gyökérkönyvtár"
 
 #: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
@@ -1167,6 +1168,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
+"ez a könyvtár (és alkönyvtárai) tartalmazzák a lut3d modul által használt "
+"Lut fájlokat. a darktable újraindítását igényli."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1241,12 +1244,12 @@ msgstr "Képek nyomtatása"
 #: ../src/bauhaus/bauhaus.c:2266
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2268
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1485,9 +1488,8 @@ msgstr "BRG (kísérleti)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:883
-#, fuzzy
 msgid "export profile"
-msgstr "kimeneti profil"
+msgstr "profil exportálása"
 
 #: ../src/common/colorspaces.c:984 ../src/common/colorspaces.c:1250
 #: ../src/views/darkroom.c:2006
@@ -1496,9 +1498,8 @@ msgstr "softproof profil"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:985 ../src/common/colorspaces.c:1243
-#, fuzzy
 msgid "work profile"
-msgstr "profil"
+msgstr "munka profil"
 
 #: ../src/common/colorspaces.c:1265
 msgid "sRGB (e.g. JPG)"
@@ -1509,14 +1510,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (web színek)"
 
 #: ../src/common/colorspaces.c:1283
-#, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "lineáris Rec709 RGB"
+msgstr "gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1293
-#, fuzzy
 msgid "linear prophoto RGB"
-msgstr "lineáris rész"
+msgstr "lineáris fotó RGB"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
@@ -1653,15 +1652,19 @@ msgid ""
 "\n"
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
+"az adatbázis sémát frissíteni kell\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
+"szeretné folytatni, vagy most kilép, hogy biztonsági mentést készítsen\n"
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
 msgstr "darktable – séma migráció"
 
 #: ../src/common/database.c:1783
-#, fuzzy
 msgid "upgrade database"
-msgstr "adatbázis törlése"
+msgstr "adatbázis frissítése"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
@@ -1695,6 +1698,8 @@ msgstr "adatbázis törlése"
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
+"a gyors irányított szűrő nem tudott memóriát lefoglalni, ellenőrizze a RAM "
+"beállításokat"
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -1765,34 +1770,34 @@ msgid "orphaned image"
 msgstr "elárvult kép"
 
 #: ../src/common/image.c:1455
-#, fuzzy, c-format
+#, c-format
 msgid "cannot access local copy `%s'"
-msgstr "nem hozható létre helyi másolat."
+msgstr "nem érhető el a helyi másolat „%s”"
 
 #: ../src/common/image.c:1461
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write local copy `%s'"
-msgstr "nem hozható létre helyi másolat."
+msgstr "nem írható a helyi másolat „%s”"
 
 #: ../src/common/image.c:1468
-#, fuzzy, c-format
+#, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "%d kép helyi másolatának eltávolítása"
+msgstr "kép helyi másolatának mozgatása sikertelen „%s” -> „%s”"
 
 #: ../src/common/image.c:1484
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr ""
+msgstr "nem sikerült áthelyezni „%s”: fájl nem található"
 
 #: ../src/common/image.c:1494
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr ""
+msgstr "nem sikerült áthelyezni „%s” -> „%s”: fájl létezik"
 
 #: ../src/common/image.c:1498
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "„%s” kép nyomtatása nem sikerült a(z) „%s” nyomtatón"
+msgstr "nem sikerült áthelyezni „%s” -> „%s”"
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
@@ -1851,10 +1856,10 @@ msgstr ""
 "ellenőrizze az importálási munkamenet beállításokat."
 
 #: ../src/common/iop_order.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
-"a nem támogatott bemeneti profil lineáris Rec709 RGB-vel lett helyettesítve!"
+"a nem támogatott %s bemeneti profil Rec2020 RGB-vel lett helyettesítve!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1924,7 +1929,7 @@ msgstr "legal"
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
-"a GNOME Kulcstartó jelszótároló többé nem támogatott. állítson be egy másikat"
+"GNOME Kulcstartó jelszótároló többé nem támogatott. állítson be egy másikat"
 
 #: ../src/common/ratings.c:128 ../src/common/ratings.c:149
 #, c-format
@@ -1971,9 +1976,9 @@ msgid "no image selected!"
 msgstr "nincs kijelölt kép!"
 
 #: ../src/common/styles.c:612
-#, fuzzy, c-format
+#, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "%s: „%s” modul verzió eltér: %d != %d"
+msgstr "„%s” modul verziója eltér: %d != %d"
 
 #: ../src/common/styles.c:1007
 #, c-format
@@ -2010,7 +2015,7 @@ msgstr "feldolgozás…"
 #: ../src/control/control.c:685
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
-msgstr ""
+msgstr "görgessen <b>%s</b> módosításához %s modulban"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
@@ -2147,9 +2152,8 @@ msgid "physically delete"
 msgstr "törlés fizikailag"
 
 #: ../src/control/jobs/control_jobs.c:755
-#, fuzzy
 msgid "physically delete all files"
-msgstr "végleges törlés a lemezről"
+msgstr "összes fájl végleges törlése"
 
 #: ../src/control/jobs/control_jobs.c:757
 msgid "only remove from the collection"
@@ -2231,11 +2235,11 @@ msgstr[0] "%d kép helyi másolatának eltávolítása"
 msgstr[1] "%d kép helyi másolatának eltávolítása"
 
 #: ../src/control/jobs/control_jobs.c:1287
-#, fuzzy, c-format
+#, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "%d kép kukába helyezése"
-msgstr[1] "%d kép kukába helyezése"
+msgstr[0] "%d kép információinak frissítése"
+msgstr[1] "%d kép információinak frissítése"
 
 #: ../src/control/jobs/control_jobs.c:1354
 #, c-format
@@ -2538,11 +2542,12 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1512 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1342
-#, fuzzy
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
-msgstr "színmintavétel a képről"
+msgstr ""
+"GUI szín mintavételezése képről\n"
+"ctrl+klikk területet jelöl ki"
 
 #: ../src/develop/blend_gui.c:1516
 msgid ""
@@ -2550,6 +2555,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"tartomány beállítása a kép egy területe alapján\n"
+"klikk+húzás a bemeneti kép használatához\n"
+"ctrl+klikk+húzás a kimeneti kép használatához"
 
 #: ../src/develop/blend_gui.c:1520
 msgid "reset blend mask settings"
@@ -2647,9 +2655,8 @@ msgid "raster mask"
 msgstr "raszter maszk"
 
 #: ../src/develop/blend_gui.c:1913
-#, fuzzy
 msgid "toggle polarity of raster mask"
-msgstr "rajzolt maszk polaritásának váltása"
+msgstr "raszter maszk polaritásának váltása"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:2201 ../src/libs/live_view.c:408
@@ -3107,79 +3114,75 @@ msgstr[1] "%s importálva"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[ALAKZAT] alakzat eltávolítása"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[ÚTVONAL készítés] íves pont hozzáadása"
 
 #: ../src/develop/masks/masks.c:170
-#, fuzzy
 msgid "[PATH creation] add a sharp node"
-msgstr "ctrl+klikk: csúcsos pont hozzáadása"
+msgstr "[ÚTVONAL készítés] csúcsos pont hozzáadása"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[ÚTVONAL készítés] útvonalrajzolás befejezése"
 
 #: ../src/develop/masks/masks.c:181
-#, fuzzy
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "ctrl+klikk: váltás íves és csúcsos pont között"
+msgstr "[ÚTVONAL ponton] váltás íves és csúcsos pont között"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[ÚTVONAL ponton] pont eltávolítása"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[ÚTVONAL lágy peremen] görbület viszaállítása"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
-msgstr ""
+msgstr "[ÚTVONAL szakaszon] pont hozzáadása"
 
 #: ../src/develop/masks/masks.c:202
 msgid "[PATH] change size"
-msgstr ""
+msgstr "[ÚTVONAL] méret módosítása"
 
 #: ../src/develop/masks/masks.c:208
 msgid "[PATH] change opacity"
-msgstr ""
+msgstr "[ÚTVONAL] átlátszóság módosítása"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[ÚTVONAL] lágy perem méretének módosítása"
 
 #: ../src/develop/masks/masks.c:221
-#, fuzzy
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "az alakzat forgatásához mozgassa"
+msgstr "[ÁTMENET sarokponton] alakzat forgatása"
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 msgid "[GRADIENT creation] set rotation"
-msgstr "forgatás visszaállítása"
+msgstr "[ÁTMENET létrehozás] forgatása beállítása"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
-msgstr ""
+msgstr "[ÁTMENET] kompresszió módosítása"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change opacity"
-msgstr ""
+msgstr "[ÁTMENET] átlátszóság módosítása"
 
 #: ../src/develop/masks/masks.c:244
 msgid "[ELLIPSE] change size"
-msgstr ""
+msgstr "[ELLIPSZIS] méret módosítása"
 
 #: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change opacity"
-msgstr ""
+msgstr "[ELLIPSZIS] átlátszóság módosítása"
 
 #: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] switch feathering mode"
-msgstr ""
+msgstr "[ELLIPSZIS] lágy perem mód váltása"
 
 #: ../src/develop/masks/masks.c:262
 msgid "[ELLIPSE] rotate shape"
@@ -3187,31 +3190,31 @@ msgstr "[ELLIPSZIS] alakzat forgatása"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
-msgstr ""
+msgstr "[ECSET készítés] méret módosítása"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change hardness"
-msgstr ""
+msgstr "[ECSET készítés] keménység módosítása"
 
 #: ../src/develop/masks/masks.c:281
 msgid "[BRUSH] change opacity"
-msgstr ""
+msgstr "[ECSET] átlátszóság módosítása"
 
 #: ../src/develop/masks/masks.c:286
 msgid "[BRUSH] change hardness"
-msgstr ""
+msgstr "[ECSET] keménység módosítása"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr ""
+msgstr "[KÖR] méret módosítása"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
-msgstr ""
+msgstr "[KÖR] átlátszóság módosítása"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[KÖR] lágy perem méretének módosítása"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3230,57 +3233,59 @@ msgid "ctrl+click to add a node"
 msgstr "ctrl+klikk: pont hozzáadása"
 
 #: ../src/develop/masks/masks.c:339 ../src/develop/masks/masks.c:377
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"görgetéssel állítható a méret, shift+görgetéssel a perem mérete,\n"
-"ctrl+görgetés az alakzat átlátszóságát állítja"
+"shift+görgetéssel állítható a lágy perem mérete, ctrl+görgetés az "
+"átlátszóságot állítja (%d%%)"
 
 #: ../src/develop/masks/masks.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "ctrl+görgetés: alakzat átlátszóságának beállítása"
+msgstr "ctrl+görgetés: alakzat átlátszóságának beállítása (%d%%)"
 
 #: ../src/develop/masks/masks.c:346
 msgid "move to rotate shape"
 msgstr "az alakzat forgatásához mozgassa"
 
 #: ../src/develop/masks/masks.c:352 ../src/develop/masks/masks.c:374
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
 "görgetéssel állítható a méret, shift+görgetéssel a perem mérete,\n"
-"ctrl+görgetés az alakzat átlátszóságát állítja"
+"ctrl+görgetés az alakzat átlátszóságát állítja (%d%%)"
 
 #: ../src/develop/masks/masks.c:354
 msgid "ctrl+click to rotate"
 msgstr "ctrl+klikk: forgatás"
 
 #: ../src/develop/masks/masks.c:357
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"shift+klikk: perem mód váltás, ctrl+görgetés: alakzat átlátszósága,\n"
-"shift+görgetés: lágy perem sugara, ctrl+klikk: forgatás"
+"shift+klikk: perem mód váltás, ctrl+klikk: forgatás\n"
+"shift+görgetés: lágy perem sugara, ctrl+görgetés: alakzat átlátszósága (%d"
+"%%),"
 
 #: ../src/develop/masks/masks.c:363
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
 "görgetés az ecsetméretet, shift+görgetés a keménységet,\n"
-"ctrl+görgetés az alakzat átlátszóságát állítja"
+"ctrl+görgetés az alakzat átlátszóságát állítja (%d%%)"
 
 #: ../src/develop/masks/masks.c:366
-#, fuzzy, c-format
+#, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
-msgstr "görgetés a keménységet, ctrl+görgetés az alakzat átlátszóságát állítja"
+msgstr ""
+"görgetés a keménységet, ctrl+görgetés az alakzat átlátszóságát állítja (%d%%)"
 
 #: ../src/develop/masks/masks.c:368
 msgid "scroll to set brush size"
@@ -3759,30 +3764,27 @@ msgstr "oldalsáv ki/be"
 #: ../src/gui/gtk.c:1257
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
-msgstr ""
+msgstr "panel összecsukás vezérlőelemek ki/be"
 
 #: ../src/gui/gtk.c:1261
-#, fuzzy
 msgctxt "accel"
 msgid "toggle left panel"
-msgstr "élőkép váltása"
+msgstr "bal panel ki/be"
 
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "toggle right panel"
-msgstr "fejléc ki/be"
+msgstr "jobb panel ki/be"
 
 #: ../src/gui/gtk.c:1269
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top panel"
-msgstr "fejléc ki/be"
+msgstr "felső panel ki/be"
 
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "alsó panel ki/be"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1278
@@ -3811,7 +3813,7 @@ msgstr "kicsinyítés"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr ""
+msgstr "gyorsbillentyű ablak megjelenítése"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
@@ -3835,15 +3837,15 @@ msgstr "$(VERSION) - duplikáció verzió"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
-msgstr "$(SEQUENCE) - szekvenciaszám"
+msgstr "$(SEQUENCE) - sorszám"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) - maximum kép exportálási szélesség"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - maximum kép exportálási magasság"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3930,9 +3932,8 @@ msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - cím a metaadatokból"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(CREATOR) - alkotó a metaadatokból"
+msgstr "$(DESCRIPTION) - leírás a metaadatokból"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
@@ -3948,15 +3949,15 @@ msgstr "$(RIGHTS) -  szerzői jog a metaadatokból"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - engedélyezve volt-e az OpenCL"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
+msgstr "$(CATEGORY0(category)) - a hierarchikus címkék 0. szintjének alcímkéje"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr ""
+msgstr "$(TAGS) - címkék a metaadat beállításoknak megfelelően"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
@@ -3975,13 +3976,12 @@ msgid "number of vertical guide lines"
 msgstr "függőleges segédvonalak száma"
 
 #: ../src/gui/guides.c:122
-#, fuzzy
 msgid "subdivisions"
-msgstr "nappali látvány"
+msgstr "felosztások"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
-msgstr ""
+msgstr "felosztások száma rács téglalaponként"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
@@ -4105,9 +4105,8 @@ msgid "theme"
 msgstr "téma"
 
 #: ../src/gui/preferences.c:277
-#, fuzzy
 msgid "set the theme for the user interface"
-msgstr "weboldal címének megadása"
+msgstr "a felhasználói felület témájának beállítása"
 
 #: ../src/gui/preferences.c:288
 msgid "darktable preferences"
@@ -4203,19 +4202,19 @@ msgid "press key combination to remap..."
 msgstr "a hozzárendeléshez nyomjon egy billentyűkombinációt…"
 
 #: ../src/gui/preferences.c:1020
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s accel is already mapped to\n"
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"„%s” tárolt beállítás már létezik.\n"
-"biztosan felülírja?"
+"%s gyorsbillentyű már hozzá van rendelve ehhez:\n"
+"%s.\n"
+"biztosan lecseréli?"
 
 #: ../src/gui/preferences.c:1026
-#, fuzzy
 msgid "accel conflict"
-msgstr "ütközés esetén"
+msgstr "gyorsbillentyű ütközés"
 
 #: ../src/gui/preferences.c:1115 ../src/gui/presets.c:182 ../src/libs/lib.c:340
 #, c-format
@@ -4253,14 +4252,12 @@ msgstr ""
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1265
-#, fuzzy
 msgid "select preset to import"
-msgstr "importálandó fájl kiválasztása"
+msgstr "importálandó tárolt beállítás kiválasztása"
 
 #: ../src/gui/preferences.c:1284
-#, fuzzy
 msgid "failed to import preset"
-msgstr "importálandó fájl kiválasztása"
+msgstr "nem sikerült importálni a tárolt beállítást"
 
 #: ../src/gui/preferences.c:1384 ../src/gui/presets.c:385
 #, c-format
@@ -4346,9 +4343,9 @@ msgid "_select as output destination"
 msgstr "_kiválasztás kimeneti célpontként"
 
 #: ../src/gui/preferences.c:1628
-#, fuzzy, c-format
+#, c-format
 msgid "preset %s was successfully saved"
-msgstr "%s stílus sikeresen elmentve"
+msgstr "%s tárolt beállítás sikeresen elmentve"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:218 ../src/gui/presets.c:637 ../src/gui/presets.c:644
@@ -4873,8 +4870,8 @@ msgstr "„%s” könyvtárba nem lehet írni!"
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d/%d, „%s” kihagyása"
+msgstr[1] "%d/%d, „%s” kihagyása"
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:362
@@ -4891,6 +4888,9 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
+"ön most felülírás módban készül exportálni, ez felülírja a meglévő képeket\n"
+"\n"
+"biztosan szeretné folytatni?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -5168,23 +5168,22 @@ msgstr "weboldal címének megadása"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/googlephoto.c:762
-#, fuzzy
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"első lépés: a böngészőjében egy új fül, vagy ablak nyílt meg. itt "
-"jelentkezzen be a google+ fiókjába és engedélyezze a darktable számára a "
-"fotó feltöltést, mielőtt folytatná."
+"1. lépés: a böngészőjében egy új fül, vagy ablak nyílt meg. itt jelentkezzen "
+"be a google fiókjába és engedélyezze a darktable számára a fotó feltöltést, "
+"mielőtt folytatná."
 
 #: ../src/imageio/storage/googlephoto.c:765
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
 msgstr ""
-"második lépés: illessze be a böngészőben megjelenő igazoló kódot, majd "
-"kattintson az OK gombra, ha kész van."
+"2. lépés: illessze be a böngészőben megjelenő igazoló kódot, majd kattintson "
+"az OK gombra, ha kész van."
 
 #: ../src/imageio/storage/googlephoto.c:771
 msgid "google authentication"
@@ -5203,17 +5202,16 @@ msgid "google photos"
 msgstr "google fotók"
 
 #: ../src/imageio/storage/googlephoto.c:1407
-#, fuzzy
 msgid "unable to export to google photos album"
-msgstr "nem lehet fotót exportálni google+ albumba"
+msgstr "nem lehet exportálni google fotók albumba"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/googlephoto.c:1420
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
-msgstr[0] "%d/%d exportálva a google+ albumba"
-msgstr[1] "%d/%d exportálva a google+ albumba"
+msgstr[0] "%d/%d exportálva a google fotók albumba"
+msgstr[1] "%d/%d exportálva a google fotók albumba"
 
 #: ../src/imageio/storage/latex.c:71
 msgid "LaTeX book template"
@@ -5225,31 +5223,28 @@ msgid "enter the title of the book"
 msgstr "könyv címének megadása"
 
 #: ../src/imageio/storage/piwigo.c:478
-#, fuzzy
 msgid "not authenticated, cannot reach server"
-msgstr "nincs hitelesítve"
+msgstr "nincs hitelesítve, nem lehet elérni a szervert"
 
 #: ../src/imageio/storage/piwigo.c:589
 msgid "---"
-msgstr ""
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:630
-#, fuzzy
 msgid "cannot refresh albums"
-msgstr "album lista frissítése"
+msgstr "album nem frissíthető"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
-msgstr ""
+msgstr "piwigo"
 
 #: ../src/imageio/storage/piwigo.c:748
-#, fuzzy
 msgid "accounts"
-msgstr "darabszám"
+msgstr "fiókok"
 
 #: ../src/imageio/storage/piwigo.c:765
 msgid "server"
-msgstr ""
+msgstr "szerver"
 
 #: ../src/imageio/storage/piwigo.c:769
 msgid ""
@@ -5257,6 +5252,9 @@ msgid ""
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
+"a szervernév\n"
+"alapértelmezett protokoll a https\n"
+"ha nem biztonságos a szerver, így adja meg: http://"
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
@@ -5268,12 +5266,11 @@ msgstr "jelszó"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr ""
+msgstr "piwigo bejelentkezés"
 
 #: ../src/imageio/storage/piwigo.c:827
-#, fuzzy
 msgid "contacts"
-msgstr "kontaktlap"
+msgstr "névjegyek"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:838
@@ -5281,33 +5278,30 @@ msgid "album"
 msgstr "album"
 
 #: ../src/imageio/storage/piwigo.c:863
-#, fuzzy
 msgid "new album"
-msgstr "új album készítése"
+msgstr "új album"
 
 #. parent album list
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:871
-#, fuzzy
 msgid "parent album"
-msgstr "új album készítése"
+msgstr "szülő album"
 
 #: ../src/imageio/storage/piwigo.c:988
 msgid "cannot create a new piwigo album!"
 msgstr "nem lehet új piwigo albumot készíteni!"
 
 #: ../src/imageio/storage/piwigo.c:997
-#, fuzzy
 msgid "could not upload to piwigo!"
-msgstr "nem lehet feltölteni flickr-re!"
+msgstr "nem lehet feltölteni piwigo-ra!"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/piwigo.c:1026
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportálva a flickr webalbumba"
-msgstr[1] "%d/%d exportálva a flickr webalbumba"
+msgstr[0] "%d/%d exportálva a piwigo webalbumba"
+msgstr[1] "%d/%d exportálva a piwigo webalbumba"
 
 #: ../src/iop/ashift.c:112
 msgid "perspective correction"
@@ -5551,27 +5545,26 @@ msgstr "szerkezeti vonalak láthatóságának váltása"
 #: ../src/iop/ashift.c:5051
 #, c-format
 msgid "[%s on segment] select segment"
-msgstr ""
+msgstr "[%s szakaszon] szakasz kijelölése"
 
 #: ../src/iop/ashift.c:5056
 #, c-format
 msgid "[%s on segment] unselect segment"
-msgstr ""
+msgstr "[%s szakaszon] szakasz kijelölésének megszüntetése"
 
 #: ../src/iop/ashift.c:5062
 #, c-format
 msgid "[%s] select all segments from zone"
-msgstr ""
+msgstr "[%s] zóna összes szakaszának kijelölése"
 
 #: ../src/iop/ashift.c:5068
 #, c-format
 msgid "[%s] unselect all segments from zone"
-msgstr ""
+msgstr "[%s] zóna összes szakaszának kijelölésének megszűntetése"
 
 #: ../src/iop/atrous.c:117
-#, fuzzy
 msgid "contrast equalizer"
-msgstr "kontraszt forgáspont"
+msgstr "kontraszt equalizer"
 
 #: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
 msgctxt "accel"
@@ -5610,43 +5603,43 @@ msgstr "tisztaság"
 
 #: ../src/iop/atrous.c:1171
 msgid "deblur: large blur, strength 4"
-msgstr ""
+msgstr "élesítés: nagy bemozdulás, 4-es erősség"
 
 #: ../src/iop/atrous.c:1187
 msgid "deblur: large blur, strength 3"
-msgstr ""
+msgstr "élesítés: nagy bemozdulás, 3-as erősség"
 
 #: ../src/iop/atrous.c:1201
 msgid "deblur: medium blur, strength 3"
-msgstr ""
+msgstr "élesítés: közepes bemozdulás, 3-as erősség"
 
 #: ../src/iop/atrous.c:1214
 msgid "deblur: fine blur, strength 3"
-msgstr ""
+msgstr "élesítés: finom bemozdulás, 3-as erősség"
 
 #: ../src/iop/atrous.c:1231
 msgid "deblur: large blur, strength 2"
-msgstr ""
+msgstr "élesítés: nagy bemozdulás, 2-es erősség"
 
 #: ../src/iop/atrous.c:1245
 msgid "deblur: medium blur, strength 2"
-msgstr ""
+msgstr "élesítés: közepes bemozdulás, 2-es erősség"
 
 #: ../src/iop/atrous.c:1258
 msgid "deblur: fine blur, strength 2"
-msgstr ""
+msgstr "élesítés: finom bemozdulás, 2-es erősség"
 
 #: ../src/iop/atrous.c:1275
 msgid "deblur: large blur, strength 1"
-msgstr ""
+msgstr "élesítés: nagy bemozdulás, 1-es erősség"
 
 #: ../src/iop/atrous.c:1289
 msgid "deblur: medium blur, strength 1"
-msgstr ""
+msgstr "élesítés: közepes bemozdulás, 1-es erősség"
 
 #: ../src/iop/atrous.c:1302
 msgid "deblur: fine blur, strength 1"
-msgstr ""
+msgstr "élesítés: finom bemozdulás, 1-es erősség"
 
 #: ../src/iop/atrous.c:1599 ../src/iop/denoiseprofile.c:3719
 #: ../src/iop/rawdenoise.c:815
@@ -5831,9 +5824,8 @@ msgstr ""
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
 #: ../src/iop/rgbcurve.c:1619 ../src/iop/rgblevels.c:1118
 #: ../src/iop/tonecurve.c:1394
-#, fuzzy
 msgid "preserve colors"
-msgstr "szegélyszín"
+msgstr "színek megőrzése"
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basecurve.c:2155
 #: ../src/iop/basicadj.c:709 ../src/iop/clipping.c:1696
@@ -5851,47 +5843,44 @@ msgstr "nincs"
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
-#, fuzzy
 msgid "luminance"
-msgstr "fekete fénysűrűség"
+msgstr "fénysűrűség"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
 #: ../src/iop/filmicrgb.c:1559 ../src/iop/rgbcurve.c:1622
 #: ../src/iop/rgblevels.c:1121 ../src/iop/tonecurve.c:1397
 msgid "max RGB"
-msgstr ""
+msgstr "max RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
-#, fuzzy
 msgid "average RGB"
-msgstr "átlagolás"
+msgstr "átlagos RGB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
 msgid "sum RGB"
-msgstr ""
+msgstr "összeg RGB"
 
 #: ../src/iop/basecurve.c:2147 ../src/iop/basicadj.c:714
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1124
 #: ../src/iop/tonecurve.c:1400
 msgid "norm RGB"
-msgstr ""
+msgstr "norm RGB"
 
 #: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1401
-#, fuzzy
 msgid "basic power"
-msgstr "alap csoport"
+msgstr ""
 
 #: ../src/iop/basecurve.c:2150 ../src/iop/basicadj.c:717
 #: ../src/iop/rgbcurve.c:1628 ../src/iop/rgblevels.c:1127
 #: ../src/iop/tonecurve.c:1403
 msgid "method to preserve colors when applying contrast"
-msgstr ""
+msgstr "a kontraszt alkalmazásakor használt színmegőrző módszer"
 
 #: ../src/iop/basecurve.c:2154
 msgid "fusion"
@@ -5934,14 +5923,12 @@ msgid "exposure bias"
 msgstr "expozíció eltolás"
 
 #: ../src/iop/basicadj.c:92
-#, fuzzy
 msgid "basic adjustments"
-msgstr "kontraszt állítás"
+msgstr "alap igazítások"
 
 #: ../src/iop/basicadj.c:675 ../src/iop/exposure.c:898
-#, fuzzy
 msgid "black level correction"
-msgstr "feketeszint %i"
+msgstr "feketeszint korrekció"
 
 #: ../src/iop/basicadj.c:677
 msgid ""
@@ -5950,20 +5937,22 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives"
 msgstr ""
+"szabályozza a feketeszintet, hogy ne legyenek vágva a negatív RGB értékek.\n"
+"soha ne használja ezt a több fekete sűrűség hozzáadására!\n"
+"ha jól van beállítva, levágja a gamut feketeközeli színeit\n"
+"az RGB érték negatívba tolásával"
 
 #: ../src/iop/basicadj.c:689 ../src/iop/exposure.c:886
 msgid "adjust the exposure correction"
 msgstr "expozíció korrekció állítása"
 
 #: ../src/iop/basicadj.c:695
-#, fuzzy
 msgid "highlight compression"
-msgstr "csúcsfény rekonstrukció"
+msgstr "csúcsfény kompresszió"
 
 #: ../src/iop/basicadj.c:696
-#, fuzzy
 msgid "highlight compression adjustment"
-msgstr "csúcsfény színkorrekció"
+msgstr "csúcsfény kompresszió állítás"
 
 #: ../src/iop/basicadj.c:702 ../src/iop/bilat.c:548 ../src/iop/colisa.c:381
 #: ../src/iop/colorbalance.c:2421 ../src/iop/colorbalance.c:2423
@@ -5977,14 +5966,12 @@ msgid "contrast adjustment"
 msgstr "kontraszt állítás"
 
 #: ../src/iop/basicadj.c:721
-#, fuzzy
 msgid "middle grey"
-msgstr "középszürke fénysűrűség"
+msgstr "középszürke"
 
 #: ../src/iop/basicadj.c:723
-#, fuzzy
 msgid "middle grey adjustment"
-msgstr "középszürke cél"
+msgstr "középszürke állítás"
 
 #: ../src/iop/basicadj.c:735 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2920
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
@@ -6008,13 +5995,12 @@ msgid "saturation"
 msgstr "telítettség"
 
 #: ../src/iop/basicadj.c:742
-#, fuzzy
 msgid "saturation adjustment"
 msgstr "színtelítettség állítás"
 
 #: ../src/iop/basicadj.c:749
 msgid "apply auto exposure based on the entire image"
-msgstr ""
+msgstr "automatikus expozíció alkalmazása a teljes kép alapján"
 
 #: ../src/iop/basicadj.c:757
 msgid ""
@@ -6022,14 +6008,18 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"automatikus expozíció alkalmazása egy felhasználó által megadott terület "
+"alapján\n"
+"kattintson és húzza a kijelölést\n"
+"jobb kattintással megszakíthatja"
 
 #: ../src/iop/basicadj.c:767
 msgid "clip"
-msgstr ""
+msgstr "vágás"
 
 #: ../src/iop/basicadj.c:768
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr ""
+msgstr "automatikus expozíció számítás vágási értékének állítása"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -6488,7 +6478,7 @@ msgstr "színes tárgyak erősítése"
 
 #: ../src/iop/channelmixer.c:521
 msgid "B/W luminance-based"
-msgstr ""
+msgstr "fekete-fehér fénysűrűség alapú"
 
 #: ../src/iop/channelmixer.c:526
 msgid "B/W artifacts boost"
@@ -6504,40 +6494,42 @@ msgstr "fekete-fehér, kék tárgyak visszavétele"
 
 #: ../src/iop/channelmixer.c:542
 msgid "B/W Ilford Delta 100-400"
-msgstr ""
+msgstr "fekete-fehér Ilford Delta 100-400"
 
 #: ../src/iop/channelmixer.c:548
 msgid "B/W Ilford Delta 3200"
-msgstr ""
+msgstr "fekete-fehér Ilford Delta 3200"
 
 #: ../src/iop/channelmixer.c:554
 msgid "B/W Ilford FP4"
-msgstr ""
+msgstr "fekete-fehér Ilford FP4"
 
 #: ../src/iop/channelmixer.c:560
 msgid "B/W Ilford HP5"
-msgstr ""
+msgstr "fekete-fehér Ilford HP5"
 
 #: ../src/iop/channelmixer.c:566
 msgid "B/W Ilford SFX"
-msgstr ""
+msgstr "fekete-fehér Ilford SFX"
 
 #: ../src/iop/channelmixer.c:572
 msgid "B/W Kodak T-Max 100"
-msgstr ""
+msgstr "fekete-fehér Kodak T-Max 100"
 
 #: ../src/iop/channelmixer.c:578
 msgid "B/W Kodak T-max 400"
-msgstr ""
+msgstr "fekete-fehér Kodak T-max 400"
 
 #: ../src/iop/channelmixer.c:584
 msgid "B/W Kodak Tri-X 400"
-msgstr ""
+msgstr "fekete-fehér Kodak Tri-X 400"
 
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
 msgstr ""
+"a Choleski dekompozíció nem tudott memóriát lefoglalni, ellenőrizze a RAM "
+"beállításokat"
 
 #: ../src/iop/clahe.c:339 ../src/iop/sharpen.c:793
 msgid "amount"
@@ -6715,17 +6707,17 @@ msgstr "szög"
 #: ../src/iop/clipping.c:3246
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s szegélyeken]  vágás"
 
 #: ../src/iop/clipping.c:3252
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s szegélyeken]  vágás oldalarány megtartással"
 
 #: ../src/iop/clipping.c:3257
 #, c-format
 msgid "[%s] define/rotate horizon"
-msgstr ""
+msgstr "[%s] horizont definiálása/forgatása"
 
 #: ../src/iop/colisa.c:78
 msgid "contrast brightness saturation"
@@ -6772,21 +6764,20 @@ msgid "split-toning teal-orange (1st instance)"
 msgstr "tónusfelosztás kékeszöld-narancs (1. példa)"
 
 #: ../src/iop/colorbalance.c:282
-#, fuzzy
 msgid "generic film"
-msgstr "általános"
+msgstr "általános film"
 
 #: ../src/iop/colorbalance.c:286
 msgid "similar to Kodak Portra"
-msgstr ""
+msgstr "Kodak Portra-hoz hasonló"
 
 #: ../src/iop/colorbalance.c:290
 msgid "similar to Kodak Ektar"
-msgstr ""
+msgstr "Kodak Ektarhoz hasonló"
 
 #: ../src/iop/colorbalance.c:294
 msgid "similar to Kodachrome"
-msgstr ""
+msgstr "Kodachrome-hoz hasonló"
 
 #: ../src/iop/colorbalance.c:301 ../src/iop/exposure.c:127
 #: ../src/iop/profile_gamma.c:126
@@ -6995,19 +6986,19 @@ msgstr "Fuji Astia emuláció"
 
 #: ../src/iop/colorchecker.c:311
 msgid "Fuji Classic Chrome emulation"
-msgstr ""
+msgstr "Fuji Classic Chrome emuláció"
 
 #: ../src/iop/colorchecker.c:323
 msgid "Fuji Monochrome emulation"
-msgstr ""
+msgstr "Fuji Monochrome emuláció"
 
 #: ../src/iop/colorchecker.c:335
 msgid "Fuji Provia emulation"
-msgstr ""
+msgstr "Fuji Provia emuláció"
 
 #: ../src/iop/colorchecker.c:347
 msgid "Fuji Velvia emulation"
-msgstr ""
+msgstr "Fuji Velvia emuláció"
 
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1361
 #, c-format
@@ -7151,6 +7142,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
+"nem sikerült kivonni a mátrixot a(z) „%s” színtérből, helyettesítve lesz "
+"Rec2020 RGB-vel!"
 
 #: ../src/iop/colorin.c:1583
 #, c-format
@@ -7167,14 +7160,12 @@ msgstr ""
 "a nem támogatott bemeneti profil lineáris Rec709 RGB-vel lett helyettesítve!"
 
 #: ../src/iop/colorin.c:2071
-#, fuzzy
 msgid "input profile"
-msgstr "kimeneti profil"
+msgstr "bemeneti profil"
 
 #: ../src/iop/colorin.c:2075
-#, fuzzy
 msgid "working profile"
-msgstr "meleg szűrő"
+msgstr "munka profil"
 
 #: ../src/iop/colorin.c:2085 ../src/iop/colorin.c:2096
 #: ../src/iop/colorout.c:894
@@ -7494,21 +7485,23 @@ msgid ""
 "ctrl+click to create a positive curve\n"
 "shift+click to create a negative curve"
 msgstr ""
+"görbe létrehozása a kép egy területe alapján\n"
+"kattintással lapos görbét hoz létre\n"
+"ctrl+klikk pozitív görbét hoz létre\n"
+"shift+klikk negatív görbét hoz létre"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2306
-#, fuzzy
 msgid "edit by area"
-msgstr "stílus szerkesztése"
+msgstr "szerkesztés terület alapján"
 
 #: ../src/iop/colorzones.c:2308
 msgid "edit the curve nodes by area"
-msgstr ""
+msgstr "a görbe pontjainak szerkesztése terület alapján"
 
 #: ../src/iop/colorzones.c:2315
-#, fuzzy
 msgid "display selection"
-msgstr "kijelölés törlése"
+msgstr "kijelölés megjelenítése"
 
 #: ../src/iop/colorzones.c:2324
 msgid "select by"
@@ -7520,17 +7513,16 @@ msgstr ""
 "kiválasztási kritérium megadása, ez lesz a grafikon vízszintes tengelye"
 
 #: ../src/iop/colorzones.c:2333
-#, fuzzy
 msgid "process mode"
-msgstr "fókuszmód"
+msgstr "feldolgozási mód"
 
 #: ../src/iop/colorzones.c:2335
 msgid "strong"
-msgstr ""
+msgstr "erős"
 
 #: ../src/iop/colorzones.c:2337
 msgid "choose between a smoother or stronger effect"
-msgstr ""
+msgstr "választhat lágyabb és erősebb hatás között"
 
 #: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1598
 #: ../src/iop/tonecurve.c:1382
@@ -7605,7 +7597,7 @@ msgstr ""
 "telítettséget, vagy nem tömörít eléggé\n"
 "- helyi átlag: lassabb, mert a közeli pixeleket referenciaként használva "
 "jobban megőrzi a telítettséget, mint a globális átlag, így figyelembe tudja "
-"venni a telítettlenséget, ha szükséges\n"
+"venni a telítetlenséget, ha szükséges\n"
 "- statikus: gyors, csak egy statikus küszöböt használ"
 
 #: ../src/iop/defringe.c:471
@@ -7775,7 +7767,7 @@ msgstr "interpolálva: ISO %d és %d"
 
 #: ../src/iop/denoiseprofile.c:3456 ../src/iop/denoiseprofile.c:4080
 msgid "compute variance"
-msgstr ""
+msgstr "variancia számítás"
 
 #: ../src/iop/denoiseprofile.c:3938
 msgid ""
@@ -7783,36 +7775,36 @@ msgid ""
 "uniform image if you want to\n"
 "estimate the noise variance."
 msgstr ""
+"csak teljesen egységes\n"
+"képnél használja, ha\n"
+"zaj varianciát szeretne becsülni."
 
 #: ../src/iop/denoiseprofile.c:3945
 msgid "variance red: "
-msgstr ""
+msgstr "vörös variancia: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3948
-#, fuzzy
 msgid "variance computed on the red channel"
-msgstr "vörös csatorna elrejtése"
+msgstr "vörös csatornán számított variancia"
 
 #: ../src/iop/denoiseprofile.c:3953
 msgid "variance green: "
-msgstr ""
+msgstr "zöld variancia: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3956
-#, fuzzy
 msgid "variance computed on the green channel"
-msgstr "zöld csatorna elrejtése"
+msgstr "zöld csatornán számított variancia"
 
 #: ../src/iop/denoiseprofile.c:3961
 msgid "variance blue: "
-msgstr ""
+msgstr "kék variancia: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3964
-#, fuzzy
 msgid "variance computed on the blue channel"
-msgstr "kék csatorna elrejtése"
+msgstr "kék csatornán számított variancia"
 
 #: ../src/iop/denoiseprofile.c:3975 ../src/iop/rawdenoise.c:989
 msgid "R"
@@ -7827,9 +7819,8 @@ msgid "B"
 msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4013
-#, fuzzy
 msgid "whitebalance-adaptive transform"
-msgstr "fehéregyensúly letiltva ennél a kameránál"
+msgstr "fehéregyensúlyhoz igazodó transzformáció"
 
 #: ../src/iop/denoiseprofile.c:4015
 msgid ""
@@ -7840,10 +7831,16 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
+"zajszűrés igazítása a fehéregyensúly \n"
+"együtthatójának megfelelően.\n"
+"az első példányon engedélyezve kell legyen\n"
+"a jobb zajszűrés érdekében.\n"
+"le kell tiltani ha egy korábbi példány\n"
+"a színkeverés móddal volt használva."
 
 #: ../src/iop/denoiseprofile.c:4035
 msgid "fix various bugs in algorithm"
-msgstr ""
+msgstr "különféle hibák javítása az algoritmusban"
 
 #: ../src/iop/denoiseprofile.c:4037
 msgid ""
@@ -7857,10 +7854,19 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
+"hibák javítása az Anscombe-transzformábióban\n"
+"amik wavelet módban a zöld csatorna\n"
+" alulsimtottságát eredményezik, kombinálva \n"
+"a fehéregyensúly együtthatók rossz használatával,\n"
+"és egy hiba a nem helyi átlag normalizálásban, \n"
+"ami megnövelt foltméretnél alulsimítottságot eredményez.\n"
+"az opciót engedélyezve megváltozik a kapott zajszűrés.\n"
+" egyszer engedélyezve többet nem tud\n"
+" visszaváltani a régi algoritmusra."
 
 #: ../src/iop/denoiseprofile.c:4048
 msgid "upgrade profiled transform"
-msgstr ""
+msgstr "profilozott transzformáció frissítése"
 
 #: ../src/iop/denoiseprofile.c:4050
 msgid ""
@@ -7869,6 +7875,10 @@ msgid ""
 "it is more flexible but could give small\n"
 "differences in the images already processed."
 msgstr ""
+"a variancia stabilizáló algoritmus frissítése.\n"
+"az új algoritmus kiterjeszti a jelenlegit.\n"
+"sokkal rugalmasabb, de a már feldolgozott\n"
+"képeken kisebb eltéréseket eredményezhet."
 
 #: ../src/iop/denoiseprofile.c:4061 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
@@ -7885,48 +7895,43 @@ msgstr "keresési sugár"
 
 #: ../src/iop/denoiseprofile.c:4067
 msgid "scattering (coarse-grain noise)"
-msgstr ""
+msgstr "szóródás (durva szemcséjű zaj)"
 
 #: ../src/iop/denoiseprofile.c:4068
 msgid "central pixel weight (details)"
-msgstr ""
+msgstr "középső pixel súly (részletek)"
 
 #: ../src/iop/denoiseprofile.c:4070
-#, fuzzy
 msgid "adjust autoset parameters"
-msgstr "paraméterek visszaállítása"
+msgstr "automatika paramétereinek hangolása"
 
 #: ../src/iop/denoiseprofile.c:4071
-#, fuzzy
 msgid "preserve shadows"
-msgstr "árnyékok korrigálása"
+msgstr "árnyékok megőrzése"
 
 #: ../src/iop/denoiseprofile.c:4072
-#, fuzzy
 msgid "bias correction"
-msgstr "lencsekorrekció"
+msgstr "eltoláskorrekció"
 
 #: ../src/iop/denoiseprofile.c:4073
 msgid "non-local means"
-msgstr "nem-helyi középérték"
+msgstr "nem-helyi átlag"
 
 #: ../src/iop/denoiseprofile.c:4074
-#, fuzzy
 msgid "non-local means auto"
-msgstr "nem-helyi középérték"
+msgstr "nem-helyi átlag, auto"
 
 #: ../src/iop/denoiseprofile.c:4075
 msgid "wavelets"
 msgstr "waveletek"
 
 #: ../src/iop/denoiseprofile.c:4076
-#, fuzzy
 msgid "wavelets auto"
-msgstr "waveletek"
+msgstr "waveletek, auto"
 
 #: ../src/iop/denoiseprofile.c:4082
 msgid "profile used for variance stabilization"
-msgstr "szórás stabilizáláshoz használt profil"
+msgstr "szórásnégyzet (variancia) stabilizáláshoz használt profil"
 
 #: ../src/iop/denoiseprofile.c:4083
 msgid ""
@@ -7944,6 +7949,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"foltok illeszkedésének sugara.\n"
+"növelje az élességért az erős éleken, és a jobb zajszűrésért a sima "
+"felületeken.\n"
+"ha a részletek túl vannak simítva, csökkentse az értékét, vagy növelje a "
+"részletek csúszkát."
 
 #: ../src/iop/denoiseprofile.c:4089
 msgid ""
@@ -7960,6 +7970,8 @@ msgid ""
 "scattering of the neighbourhood to search patches in. increase for better "
 "coarse-grain noise reduction. does not affect execution time."
 msgstr ""
+"a szomszédokon belüli foltkeresés szóródása. növelje a durva szemcséjű zaj "
+"jobb szűréséhez. nem befolyásolja a végrehajtási időt."
 
 #: ../src/iop/denoiseprofile.c:4093
 msgid ""
@@ -7968,10 +7980,14 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
+"növeli a folt középső pixelének súlyát\n"
+"a foltok összehasonlításakor.\n"
+"a részletek visszanyerésére használható,\n"
+"ha a folt mérete egész nagy."
 
 #: ../src/iop/denoiseprofile.c:4097
 msgid "finetune denoising strength"
-msgstr "zajszűrés erősség finomhangolása"
+msgstr "zajszűrési erősség finomhangolása"
 
 #: ../src/iop/denoiseprofile.c:4098
 msgid ""
@@ -7980,6 +7996,10 @@ msgid ""
 "or if chroma noise remains.\n"
 "this can happen if your picture is underexposed."
 msgstr ""
+"szabályozza a paraméterek automatikus beállításának módját.\n"
+"növelje ha az árnyékok nincsenek eléggé zajszűrve,\n"
+"vagy ha színzaj maradt.\n"
+"ez akkor történhet meg, ha a kép alulexponált."
 
 #: ../src/iop/denoiseprofile.c:4102
 msgid ""
@@ -7987,6 +8007,9 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image.\n"
 msgstr ""
+"árnyékok zajszűrésének finomhangolása.\n"
+"csökkentse a kép sötét területeinek\n"
+"agresszívabb zajszűréséhez.\n"
 
 #: ../src/iop/denoiseprofile.c:4105
 msgid ""
@@ -7994,6 +8017,9 @@ msgid ""
 "decrease if shadows are too purple.\n"
 "increase if shadows are too green."
 msgstr ""
+"korrigálja a színvetítést, színelváltozást az árnyékos részeken.\n"
+"csökkentse, ha az árnyékok túl lilák.\n"
+"növelje, ha az árnyékok túl zöldek."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1166
 msgid "dithering"
@@ -8136,6 +8162,10 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
+"szabályozza a feketeszintet, hogy ne legyenek vágva a negatív RGB értékek.\n"
+"soha ne használja ezt a több fekete sűrűség hozzáadására!\n"
+"ha rosszul van beállítva, levágja a gamut fekete-közeli színeit\n"
+"az RGB érték negatívba tolásával."
 
 #: ../src/iop/exposure.c:903
 msgid ""
@@ -8184,31 +8214,31 @@ msgstr "filmszerű"
 
 #: ../src/iop/filmic.c:311
 msgid "09 EV (low-key)"
-msgstr ""
+msgstr "09 FÉ (low-key)"
 
 #: ../src/iop/filmic.c:318
 msgid "10 EV (indoors)"
-msgstr ""
+msgstr "10 FÉ (beltér)"
 
 #: ../src/iop/filmic.c:325
 msgid "11 EV (dim outdoors)"
-msgstr ""
+msgstr "11 FÉ (halvány kültér)"
 
 #: ../src/iop/filmic.c:332
 msgid "12 EV (outdoors)"
-msgstr ""
+msgstr "12 FÉ (kültér)"
 
 #: ../src/iop/filmic.c:339
 msgid "13 EV (bright outdoors)"
-msgstr ""
+msgstr "13 FÉ (fényes kültér)"
 
 #: ../src/iop/filmic.c:346
 msgid "14 EV (backlighting)"
-msgstr ""
+msgstr "14 FÉ (ellenfény)"
 
 #: ../src/iop/filmic.c:353
 msgid "15 EV (sunset)"
-msgstr ""
+msgstr "15 FÉ (naplemente)"
 
 #: ../src/iop/filmic.c:360
 msgid "16 EV (HDR)"
@@ -8221,6 +8251,7 @@ msgstr "18 EV (HDR++)"
 #: ../src/iop/filmic.c:1681
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
+"csak olvasható grafikon, használja a lenti paramétereket a pontok állítására"
 
 #: ../src/iop/filmic.c:1685
 msgid "logarithmic shaper"
@@ -8243,14 +8274,14 @@ msgid "white relative exposure"
 msgstr "fehér relatív expozíció"
 
 #: ../src/iop/filmic.c:1706 ../src/iop/filmicrgb.c:1462
-#, fuzzy
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
-"a középszürke és tiszta fehér közti blendék száma\n"
-"ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
+"a középszürke és tiszta fehér közti blendék száma.\n"
+"ez megfelel egy fénymérő által a helyszínen mutatott értéknek.\n"
+"állítsa be, hogy elkerülje a levágást"
 
 #: ../src/iop/filmic.c:1717 ../src/iop/filmicrgb.c:1473
 #: ../src/iop/profile_gamma.c:910
@@ -8258,28 +8289,28 @@ msgid "black relative exposure"
 msgstr "fekete relatív expozíció"
 
 #: ../src/iop/filmic.c:1720 ../src/iop/filmicrgb.c:1476
-#, fuzzy
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "increase to get more contrast.\n"
 "decrease to recover more details in low-lights."
 msgstr ""
-"a középszürke és tiszta fekete közti blendék száma\n"
-"ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
+"a középszürke és tiszta fekete közti blendék száma.\n"
+"ez megfelel egy fénymérő által a helyszínen mutatott értéknek.\n"
+"növelje a nagyobb kontrasztért.\n"
+"csökkentse a sötét területek részleteinek visszaállításához."
 
 #: ../src/iop/filmic.c:1730 ../src/iop/profile_gamma.c:934
 msgid "safety factor"
 msgstr "biztonsági tényező"
 
 #: ../src/iop/filmic.c:1733
-#, fuzzy
 msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
-"bővítés vagy zsugorítás a számított dinamikatartományhoz\n"
-"a „szintek automatikus hangolásával” összefüggésben hasznos"
+"a számított dinamikatartomány bővítése vagy zsugorítása.\n"
+"a „szintek automatikus hangolásával” összefüggésben hasznos."
 
 #: ../src/iop/filmic.c:1739 ../src/iop/filmicrgb.c:1496
 #: ../src/iop/profile_gamma.c:942
@@ -8293,17 +8324,22 @@ msgid ""
 "works better for landscapes and evenly-lit pictures\n"
 "but fails for high-keys and low-keys."
 msgstr ""
+"próbálja optimalizálni a beállításokat némi találgatással.\n"
+"illeszti a fénysűrűség tartományt a hisztogram határain belül.\n"
+"jobban működik tájképeknél és egyenletesen megvilágított képeknél,\n"
+"de megbukik a high-key és low-key fotókon."
 
 #: ../src/iop/filmic.c:1749
 msgid "filmic S curve"
-msgstr "filmszerű S-görbe"
+msgstr "filmes S-görbe"
 
 #: ../src/iop/filmic.c:1756 ../src/iop/filmicrgb.c:1515
-#, fuzzy
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
-msgstr "a görbe lineáris részének lejtése"
+msgstr ""
+"a görbe lineáris részének lejtése\n"
+"főként a középtónusokat érinti"
 
 #. geotagging
 #: ../src/iop/filmic.c:1763 ../src/iop/filmicrgb.c:1522
@@ -8312,14 +8348,14 @@ msgid "latitude"
 msgstr "szélesség"
 
 #: ../src/iop/filmic.c:1766
-#, fuzzy
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
 "this has no effect on mid-tones."
 msgstr ""
-"linearitási tartomány a görbe közepén\n"
-"növelje a nagyobb kontraszthoz a szélsőséges fénysűrűségeknél"
+"linearitási tartomány szélessége a görbe közepén.\n"
+"növelje a nagyobb kontraszthoz szélsőséges fénysűrűségeknél.\n"
+"nincs hatással a középtónusokra."
 
 #: ../src/iop/filmic.c:1773 ../src/iop/filmicrgb.c:1534
 msgid "shadows/highlights balance"
@@ -8332,6 +8368,10 @@ msgid ""
 "use it if you need to protect the details\n"
 "at one extremity of the histogram."
 msgstr ""
+"csúsztatja a kiterjedést a lejtő mentén,\n"
+"hogy több teret adjon az árnyékoknak és csúcsfényeknek.\n"
+"használja, ha több részletre van szüksége\n"
+"a hisztogram egyik szélénél."
 
 #: ../src/iop/filmic.c:1782
 msgid "global saturation"
@@ -8343,6 +8383,9 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
+"globálisan telítetlenné teszi modul bemenetét.\n"
+"100% alá kell állítsa az értékét,\n"
+"ha a színtelítettség megőrzése be van kapcsolva."
 
 #: ../src/iop/filmic.c:1792 ../src/iop/filmicrgb.c:1545
 msgid "extreme luminance saturation"
@@ -8354,6 +8397,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
+"telítetlenné teszi a modul kimenetét,\n"
+"különösen extrém fénysűrűségnél.\n"
+"csökkentse, ha az árnyékok vagy csúcsfények túltelítettek."
 
 #: ../src/iop/filmic.c:1806 ../src/libs/export.c:669
 #: ../src/libs/print_settings.c:1238 ../src/libs/print_settings.c:1451
@@ -8385,15 +8431,14 @@ msgid "preserve the chrominance"
 msgstr "színesség megőrzése"
 
 #: ../src/iop/filmic.c:1818
-#, fuzzy
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
 "you need to manually tune the saturation when using this mode."
 msgstr ""
 "biztosítsa az eredeti színek megőrzését\n"
-"túltelített színeket eredményezhet és erősíti a lencse kromatikus "
-"aberrációját"
+"felerősítheti a kromatikus aberrációt.\n"
+"ezt a módot használva kézzel kell beállítania a telítettséget."
 
 #: ../src/iop/filmic.c:1828
 msgid "destination/display"
@@ -8440,13 +8485,13 @@ msgid "target gamma"
 msgstr "cél gamma"
 
 #: ../src/iop/filmic.c:1873 ../src/iop/filmicrgb.c:1599
-#, fuzzy
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"a cél megjelenítő vagy színtér energiája, vagy gamma értéke.\n"
+"a cél megjelenítő vagy színtér átviteli függvényének\n"
+"energiája, vagy gamma értéke.\n"
 "ne állítsa el hacsak nem tudja mit csinál."
 
 #: ../src/iop/filmicrgb.c:192
@@ -8471,11 +8516,11 @@ msgstr "13 FÉ dinamikatartomány"
 
 #: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
-msgstr ""
+msgstr "15 FÉ (ellenfény)"
 
 #: ../src/iop/filmicrgb.c:263
 msgid "17 EV (HDR)"
-msgstr ""
+msgstr "17 FÉ (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
 msgctxt "accel"
@@ -8493,10 +8538,9 @@ msgid "middle grey luminance"
 msgstr "középszürke fénysűrűség"
 
 #: ../src/iop/filmicrgb.c:271
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic range scaling"
-msgstr "dinamikatartomány"
+msgstr "dinamikatartomány skálázás"
 
 #: ../src/iop/filmicrgb.c:273
 msgctxt "accel"
@@ -8506,13 +8550,12 @@ msgstr "szélesség"
 #: ../src/iop/filmicrgb.c:274
 msgctxt "accel"
 msgid "shadows highlights balance"
-msgstr ""
+msgstr "árnyék - csúcsfény egyensúly"
 
 #: ../src/iop/filmicrgb.c:275
-#, fuzzy
 msgctxt "accel"
 msgid "extreme luminance saturation"
-msgstr "globális telítettség beállítása"
+msgstr "extrém fénysűrűség telítettség"
 
 #: ../src/iop/filmicrgb.c:1420
 msgid ""
@@ -8520,14 +8563,18 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve\n"
 msgstr ""
+"csak olvasható grafikon, használja a lenti paramétereket a pontok "
+"állítására.\n"
+"a világos görbe a filmes tónusleképezés görbéje.\n"
+"a világos görbe a telítetlenség görbéje.\n"
 
 #: ../src/iop/filmicrgb.c:1432
 msgid "scene"
-msgstr ""
+msgstr "jelenet"
 
 #: ../src/iop/filmicrgb.c:1433
 msgid "look"
-msgstr ""
+msgstr "kinézet"
 
 #: ../src/iop/filmicrgb.c:1434
 msgid "display"
@@ -8539,6 +8586,9 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"állítsa a kép tárgyának átlagos fénysűrűségének illesztéséhez.\n"
+"az itt beírt érték később 18,45%-ra lesz leképezve.\n"
+"csökkentse az értéket az általános fényerő növeléséhez."
 
 #: ../src/iop/filmicrgb.c:1461 ../src/iop/filmicrgb.c:1475
 #: ../src/iop/toneequal.c:3056 ../src/iop/toneequal.c:3062
@@ -8555,13 +8605,12 @@ msgid "dynamic range scaling"
 msgstr "dinamikatartomány skálázás"
 
 #: ../src/iop/filmicrgb.c:1490
-#, fuzzy
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
-"bővítés vagy zsugorítás a számított dinamikatartományhoz\n"
-"a „szintek automatikus hangolásával” összefüggésben hasznos"
+"szimmetrikusan bővítse vagy zsugorítsa a számított dinamikatartományhoz.\n"
+"extrém fénysűrűségnél biztonságos keretet tud adni."
 
 #: ../src/iop/filmicrgb.c:1501
 msgid ""
@@ -8572,6 +8621,12 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
+"próbálja optimalizálni a beállításokat némi statisztikai feltételezéssel.\n"
+"illeszti a fénysűrűség tartományt a hisztogram határain belül.\n"
+"jobban működik tájképeknél és egyenletesen megvilágított képeknél,\n"
+"de megbukik a high-key és low-key és magas ISO-jú fotókon.\n"
+"ez nem egy mesterséges intelligencia, csak egy sima találgatás.\n"
+"a használata előtt győződjön meg arról, hogy megérti feltételezéseit."
 
 #: ../src/iop/filmicrgb.c:1525
 msgid ""
@@ -8581,6 +8636,13 @@ msgid ""
 "decrease otherwise. no desaturation happens in the latitude range.\n"
 "this has no effect on mid-tones."
 msgstr ""
+"linearitási tartomány szélessége a görbe közepén,\n"
+"a dinamikatartomány százalékaként (fekete és fehér expozíció).\n"
+"növelje a nagyobb kontraszthoz és kisebb telítetlenséghez szélsőséges "
+"fénysűrűségeknél.\n"
+"egyébként csökkentse. nem jelenik meg telítetlenség a szélesség "
+"tartományon.\n"
+"nincs hatással a középtónusokra."
 
 #: ../src/iop/filmicrgb.c:1549
 msgid ""
@@ -8588,6 +8650,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "increase if shadows and/or highlights are under-saturated."
 msgstr ""
+"telítetlenné teszi a modul kimenetét,\n"
+"különösen extrém fénysűrűségnél.\n"
+"növelje, ha az árnyékok vagy csúcsfények nem elég telítettek."
 
 #: ../src/iop/filmicrgb.c:1557
 msgid "preserve chrominance"
@@ -8599,22 +8664,21 @@ msgstr "Y fénysűrűség"
 
 #: ../src/iop/filmicrgb.c:1561 ../src/iop/toneequal.c:3147
 msgid "RGB power norm"
-msgstr ""
+msgstr "RGB hatvány norma"
 
 #: ../src/iop/filmicrgb.c:1562
-#, fuzzy
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere.\n"
 msgstr ""
-"biztosítsa az eredeti színek megőrzését\n"
-"túltelített színeket eredményezhet és erősíti a lencse kromatikus "
-"aberrációját"
+"biztosítja az eredeti színek megőrzését\n"
+"felerősítheti a kromatikus aberrációt,\n"
+"ezért győződjön meg arról, hogy máshol megfelelően korrigálva van.\n"
 
 #: ../src/iop/filmicrgb.c:1597
 msgid "target power transfer function"
-msgstr ""
+msgstr "cél hatvány átviteli függvény"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -8762,7 +8826,7 @@ msgstr "barna ND4 (lágy)"
 
 #: ../src/iop/graduatednd.c:143
 msgid "graduated density"
-msgstr "átmenetes denzitás"
+msgstr "denzitásátmenet"
 
 #: ../src/iop/graduatednd.c:164
 msgctxt "accel"
@@ -8772,7 +8836,7 @@ msgstr "denzitás"
 #: ../src/iop/graduatednd.c:165
 msgctxt "accel"
 msgid "compression"
-msgstr "tömörség"
+msgstr "kompresszió"
 
 #: ../src/iop/graduatednd.c:1219
 msgid "density"
@@ -8804,22 +8868,22 @@ msgstr "telítettség tónus kiválasztása"
 #: ../src/iop/graduatednd.c:1295
 #, c-format
 msgid "[%s on nodes] change line rotation"
-msgstr ""
+msgstr "[%s pontokon] vonal forgatás módosítása"
 
 #: ../src/iop/graduatednd.c:1300
 #, c-format
 msgid "[%s on line] move line"
-msgstr ""
+msgstr "[%s vonalon] vonal mozgatása"
 
 #: ../src/iop/graduatednd.c:1306
 #, c-format
 msgid "[%s on line] change density"
-msgstr ""
+msgstr "[%s vonalon] denzitás módosítása"
 
 #: ../src/iop/graduatednd.c:1312
 #, c-format
 msgid "[%s on line] change compression"
-msgstr ""
+msgstr "[%s vonalon] kompresszió módosítása"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
@@ -9529,7 +9593,7 @@ msgstr "melyik szűrőt használjuk az elmosáshoz"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
-msgstr ""
+msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:355
 #, c-format
@@ -9539,61 +9603,58 @@ msgstr "érvénytelen png fejléc innen %s"
 #: ../src/iop/lut3d.c:363
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr ""
+msgstr "%d png bitmélység nem támogatott"
 
 #: ../src/iop/lut3d.c:375
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr ""
+msgstr "érvénytelen szint a png fájlban %d %d"
 
 #: ../src/iop/lut3d.c:390 ../src/iop/lut3d.c:407
-#, fuzzy
 msgid "error - allocating buffer for png lut"
-msgstr "nem sikerült a keveréshez puffert lefoglalni"
+msgstr "hiba - puffert lefoglalása png lut-hoz"
 
 #: ../src/iop/lut3d.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "error - could not read png image %s"
-msgstr "„%s” fájl betöltése nem sikerült"
+msgstr "hiba - nem sikerült olvasni a png képet %s"
 
 #: ../src/iop/lut3d.c:573
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "hiba: fájl nem nyitható meg: %s"
+msgstr "hiba - érvénytelen kocka fájl: %s"
 
 #: ../src/iop/lut3d.c:589
 msgid "DOMAIN MIN <> 0.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MIN <> 0.0 nem támogatott"
 
 #: ../src/iop/lut3d.c:600
 msgid "DOMAIN MAX <> 1.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MAX <> 1.0 nem támogatott"
 
 #: ../src/iop/lut3d.c:609
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "1D kocka lut nem támogatott"
 
 #: ../src/iop/lut3d.c:623
-#, fuzzy
 msgid "error - allocating buffer for cube lut"
-msgstr "nem sikerült a keveréshez puffert lefoglalni"
+msgstr "hiba - puffert lefoglalása kocka lut-hoz"
 
 #: ../src/iop/lut3d.c:634
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "hiba - kocka lut mérete nincs definiálva"
 
 #: ../src/iop/lut3d.c:651
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "hiba - kocka lut sorok száma nem stimmel"
 
 #: ../src/iop/lut3d.c:1009
 msgid "Lut root folder not defined"
-msgstr ""
+msgstr "Lut gyökérkönyvtár nincs definiálva"
 
 #: ../src/iop/lut3d.c:1015
-#, fuzzy
 msgid "select lut file"
-msgstr "fájl kiválasztása"
+msgstr "lut fájl kiválasztása"
 
 #: ../src/iop/lut3d.c:1016
 msgid "_select"
@@ -9601,11 +9662,11 @@ msgstr "_kijelölés"
 
 #: ../src/iop/lut3d.c:1033
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "hald cluts (png)"
 
 #: ../src/iop/lut3d.c:1040
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "3D lut (kocka)"
 
 #: ../src/iop/lut3d.c:1046 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
@@ -9615,11 +9676,11 @@ msgstr "összes fájl"
 
 #: ../src/iop/lut3d.c:1061
 msgid "Select file outside Lut root folder is not allowed"
-msgstr ""
+msgstr "Lut gyökérkönyvtáron kívüli fájl kiválasztása nem engedélyezett"
 
 #: ../src/iop/lut3d.c:1105
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "válasszon egy png (haldclut) vagy egy kocka fájlt"
 
 #: ../src/iop/lut3d.c:1112
 msgid ""
@@ -9628,27 +9689,30 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"a fájl útvonal (a lut könyvtárhoz képest) el lett mentve a képpel (és nem a "
+"lut adat maga)\n"
+"VIGYÁZAT: a lut könyvtár a lut fájl választása előtt be kell legyen állítva "
+"a beállítások / vegyes alatt"
 
 #: ../src/iop/lut3d.c:1119
-#, fuzzy
 msgid "application color space"
-msgstr "színtér"
+msgstr "alkalmazás színtér"
 
 #: ../src/iop/lut3d.c:1121
 msgid "REC.709"
-msgstr ""
+msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1122
 msgid "lin sRGB/REC.709"
-msgstr ""
+msgstr "lin sRGB/REC.709"
 
 #: ../src/iop/lut3d.c:1123
 msgid "lin prophoto RGB"
-msgstr ""
+msgstr "lin prophoto RGB"
 
 #: ../src/iop/lut3d.c:1125
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "válasszon színteret, amiben a LUT alkalmazva lesz"
 
 #: ../src/iop/lut3d.c:1129
 msgid "interpolation"
@@ -9656,21 +9720,19 @@ msgstr "interpoláció"
 
 #: ../src/iop/lut3d.c:1130
 msgid "tetrahedral"
-msgstr ""
+msgstr "tetraéderes"
 
 #: ../src/iop/lut3d.c:1131
 msgid "trilinear"
 msgstr "trilineáris"
 
 #: ../src/iop/lut3d.c:1132
-#, fuzzy
 msgid "pyramid"
-msgstr "panoráma"
+msgstr "piramis"
 
 #: ../src/iop/lut3d.c:1134
-#, fuzzy
 msgid "select the interpolation method"
-msgstr "interpolációs mód"
+msgstr "válasszon interpolációs módszert"
 
 #: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
 msgid "mask manager"
@@ -9773,7 +9835,7 @@ msgstr "08 FÉ dinamikatartomány (általános)"
 
 #: ../src/iop/profile_gamma.c:863
 msgid "tone mapping method"
-msgstr "tónustérképezés módszere"
+msgstr "tónusleképezés módszere"
 
 #: ../src/iop/profile_gamma.c:878
 msgid "linear part"
@@ -9948,11 +10010,12 @@ msgid "width of fill-light area defined in zones"
 msgstr "a derítőfény területe zónákban megadva"
 
 #: ../src/iop/relight.c:382
-#, fuzzy
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
-msgstr "a derítőfény központjának megadása"
+msgstr ""
+"a derítőfény központjának megadása\n"
+"ctrl+klikk a terület kijelölése"
 
 #: ../src/iop/relight.c:397
 msgid "toggle tool for picking median lightness in image"
@@ -10195,7 +10258,7 @@ msgstr "rgb görbe"
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
 #: ../src/iop/tonemap.cc:299
 msgid "contrast compression"
-msgstr "kontraszt kompenzáció"
+msgstr "kontraszt kompresszió"
 
 #: ../src/iop/rgbcurve.c:216 ../src/iop/tonecurve.c:552
 msgid "gamma 1.0 (linear)"
@@ -10243,13 +10306,12 @@ msgid "RGB, independent channels"
 msgstr "RGB, független csatornák"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1016
-#, fuzzy
 msgid "choose between linked and independent channels."
 msgstr "Lab, független csatornák"
 
 #: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1023
 msgid "  R  "
-msgstr ""
+msgstr "  R  "
 
 #: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1026
 msgid "curve nodes for r channel"
@@ -10257,7 +10319,7 @@ msgstr "„r” csatorna görbepontjai"
 
 #: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1028
 msgid "  G  "
-msgstr ""
+msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1031
 msgid "curve nodes for g channel"
@@ -10265,7 +10327,7 @@ msgstr "„L” csatorna görbepontjai"
 
 #: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1033
 msgid "  B  "
-msgstr ""
+msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1036
 msgid "curve nodes for b channel"
@@ -10277,7 +10339,7 @@ msgstr "színmintavétel a képről"
 
 #: ../src/iop/rgbcurve.c:1611 ../src/iop/rgbcurve.c:1613
 msgid "compensate middle grey"
-msgstr ""
+msgstr "középszürke kompenzálása"
 
 #: ../src/iop/rgblevels.c:108
 msgid "rgb levels"
@@ -10289,6 +10351,10 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"szintek automatikus alkalmazása a felhasználó által meghatározott régió "
+"alapján\n"
+"kattintson és húzza a kijelölést\n"
+"jobb kattintással megszakítható"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -10300,11 +10366,10 @@ msgid "automatic pixel rotation"
 msgstr "automatikus pixelforgatás"
 
 #: ../src/iop/rotatepixels.c:358
-#, fuzzy
 msgid "automatic pixel rotation only works for the sensors that need it."
 msgstr ""
-"az automatikus pixelforgatás\n"
-"csak akkor működik, ha a szenzor fajtája szükségessé teszi."
+"az automatikus pixelforgatás csak azoknál az érzékelőknél működik, amikkel "
+"szükség van rá."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -10316,11 +10381,10 @@ msgid "automatic pixel scaling"
 msgstr "automatikus pixelméretezés"
 
 #: ../src/iop/scalepixels.c:275
-#, fuzzy
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr ""
-"az automatikus pixelméretezés\n"
-"csak akkor működik, ha a szenzor fajtája szükségessé teszi."
+"az automatikus pixelméretezés csak azoknál az érzékelőknél működik, amikkel "
+"szükség van rá."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -10752,80 +10816,75 @@ msgstr ""
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "szűrő diffúzió"
 
 #: ../src/iop/toneequal.c:320
-#, fuzzy
 msgctxt "accel"
 msgid "smoothing diameter"
-msgstr "hideg szűrő"
+msgstr "lágyítási átmérő"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement or feathering"
-msgstr ""
+msgstr "élfinomítás vagy lágy perem"
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
 msgctxt "accel"
 msgid "mask quantization"
-msgstr "hisztogram kiegyenlítés"
+msgstr "maszk kvantálás"
 
 #: ../src/iop/toneequal.c:323
-#, fuzzy
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "feketepont kompenzáció"
+msgstr "maszk expozíció kompenzáció"
 
 #: ../src/iop/toneequal.c:324
-#, fuzzy
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "kontraszt kompenzáció"
+msgstr "maszk kontraszt kompenzáció"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
-#, fuzzy
 msgid "mask blending : none"
-msgstr "válassz keverési módot"
+msgstr "maszk keverési mód: nincs"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
-msgstr ""
+msgstr "maszk keverési mód: tájkép"
 
 #: ../src/iop/toneequal.c:436
 msgid "mask blending : all purposes"
-msgstr ""
+msgstr "maszk keverési mód: minden célra"
 
 #: ../src/iop/toneequal.c:444
 msgid "mask blending : isolated subjects"
-msgstr ""
+msgstr "maszk keverési mód: izolált tárgy"
 
 #: ../src/iop/toneequal.c:465
-#, fuzzy
 msgid "compress shadows/highlights : soft"
-msgstr "árnyékok–csúcsfények kiegyenlítése"
+msgstr "árnyékok–csúcsfények kompressziója: gyenge"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights : strong"
-msgstr ""
-"a hatás tömörítése az árnyékokra és csúcsfényekre,\n"
-"vagyis a középtónusok megőrzése"
+msgstr "árnyékok–csúcsfények kompressziója: erős"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
-msgstr ""
+msgstr "újrafényelés: kitöltés"
 
 #: ../src/iop/toneequal.c:554
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
 msgstr ""
+"a tónus equalizer később kell legyen a feldolgozási sorban, int a torzítás – "
+"letiltva"
 
 #: ../src/iop/toneequal.c:828 ../src/iop/toneequal.c:949
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
+"a tónus equalizer nem tudott memóriát lefoglalni, ellenőrizze a RAM "
+"beállításokat"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:850
@@ -10833,85 +10892,82 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
+"a tónus equalizer be/ki pufferei rosszul igazítottak, kérem jelentse a hibát "
+"a fejlesztőknek"
 
 #: ../src/iop/toneequal.c:1776 ../src/iop/toneequal.c:2149
 msgid "the interpolation is unstable, decrease the curve smoothing"
-msgstr ""
+msgstr "az interpoláció instabil, csökkentse a görbe smítását"
 
 #: ../src/iop/toneequal.c:1861 ../src/iop/toneequal.c:1921
 msgid "wait for the preview to finish recomputing"
-msgstr ""
+msgstr "várakozás az előnézet újraszámolásának befejezésére"
 
 #: ../src/iop/toneequal.c:2154
 msgid "some parameters are out-of-bounds"
-msgstr ""
+msgstr "néhány paraméter kívül esik a határokon"
 
 #. Build text object
 #: ../src/iop/toneequal.c:2419
 #, c-format
 msgid "%+.1f EV"
-msgstr ""
+msgstr "%+.1f FÉ"
 
 #: ../src/iop/toneequal.c:3041
-#, fuzzy
 msgid "simple"
-msgstr "mintapont felvétele"
+msgstr "egyszerű"
 
 #: ../src/iop/toneequal.c:3042
-#, fuzzy
 msgid "advanced"
-msgstr "balansz"
+msgstr "haladó"
 
 #: ../src/iop/toneequal.c:3043
-#, fuzzy
 msgid "masking"
-msgstr "maszk kezelő"
+msgstr "maszkolás"
 
 #: ../src/iop/toneequal.c:3057
 msgid "-8 EV"
-msgstr ""
+msgstr "-8 FÉ"
 
 #: ../src/iop/toneequal.c:3063
 msgid "-7 EV"
-msgstr ""
+msgstr "-7 FÉ"
 
 #: ../src/iop/toneequal.c:3069
 msgid "-6 EV"
-msgstr ""
+msgstr "-6 FÉ"
 
 #: ../src/iop/toneequal.c:3075
 msgid "-5 EV"
-msgstr ""
+msgstr "-5 FÉ"
 
 #: ../src/iop/toneequal.c:3081
 msgid "-4 EV"
-msgstr ""
+msgstr "-4 FÉ"
 
 #: ../src/iop/toneequal.c:3087
 msgid "-3 EV"
-msgstr ""
+msgstr "-3 FÉ"
 
 #: ../src/iop/toneequal.c:3093
 msgid "-2 EV"
-msgstr ""
+msgstr "-2 FÉ"
 
 #: ../src/iop/toneequal.c:3099
 msgid "-1 EV"
-msgstr ""
+msgstr "-1 FÉ"
 
 #: ../src/iop/toneequal.c:3105
 msgid "+0 EV"
-msgstr ""
+msgstr "+0 FÉ"
 
 #: ../src/iop/toneequal.c:3123
-#, fuzzy
 msgid "double-click to reset the curve"
 msgstr "dupla kattintással alaphelyzetbe állítja a görbét"
 
 #: ../src/iop/toneequal.c:3130
-#, fuzzy
 msgid "curve smoothing"
-msgstr "színsimítás"
+msgstr "görbesimítás"
 
 #: ../src/iop/toneequal.c:3131
 msgid ""
@@ -10920,56 +10976,58 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"pozitív értékek progresszívebb tónusátvitelt eredményeznek,\n"
+"de a görbe néhány beállításnál elkezdhet oszcillálni.\n"
+"negatív értékek kiküszöbölik az oszcillációt és erőteljesebben viselkednek,\n"
+"de brutális tónusátvitelt és a lokális kontraszt károsodását okozhatják."
 
 #: ../src/iop/toneequal.c:3140
 msgid "luminance estimator"
-msgstr ""
+msgstr "fénysűrűség becslő"
 
 #: ../src/iop/toneequal.c:3142
 msgid "RGB average"
 msgstr "RGB átlag"
 
 #: ../src/iop/toneequal.c:3143
-#, fuzzy
 msgid "HSL lightness"
-msgstr "HSV fényesség"
+msgstr "HSL fényesség"
 
 #: ../src/iop/toneequal.c:3144
 msgid "HSV value / RGB max"
-msgstr ""
+msgstr "HSV érték / RGB max"
 
 #: ../src/iop/toneequal.c:3145
 msgid "RGB sum"
-msgstr ""
+msgstr "RGB összeg"
 
 #: ../src/iop/toneequal.c:3146
 msgid "RGB euclidean norm"
-msgstr ""
+msgstr "RGB euklideszi norma"
 
 #: ../src/iop/toneequal.c:3148
 msgid "RGB geometric mean"
-msgstr ""
+msgstr "RGB mértani közép"
 
 #: ../src/iop/toneequal.c:3149
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
+"nézze meg a maszk előnézetét és válassza ki azt a becslési módot,\n"
+"ami magasabb kontrasztot ad a világosítandó és égetendő területek között"
 
 #: ../src/iop/toneequal.c:3155
-#, fuzzy
 msgid "preserve details"
-msgstr "tárolt beállítások"
+msgstr "részletek megőrzése"
 
 #: ../src/iop/toneequal.c:3158
-#, fuzzy
 msgid "averaged guided filter"
-msgstr "vörös szűrő"
+msgstr "átlagolt irányított szűrő"
 
 #: ../src/iop/toneequal.c:3159
-#, fuzzy
 msgid "guided filter"
-msgstr "vörös szűrő"
+msgstr "irányított szűrő"
 
 #: ../src/iop/toneequal.c:3160
 msgid ""
@@ -10978,21 +11036,27 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
+"”nincs” hat a globális és lokális kontrasztra (biztonságos ha csak hozzáad "
+"kontrasztot)\n"
+"”irányított szűrő” csak a globális kontrasztra van hatással és próbálja "
+"megőrizni a lokális kontrasztot\n"
+"”átlagolt irányított szűrő” egy mértani átlaga a másik két módszernek"
 
 #: ../src/iop/toneequal.c:3167
 msgid "filter diffusion"
-msgstr ""
+msgstr "szűrő diffúzió"
 
 #: ../src/iop/toneequal.c:3168
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"az alkalmazandó irányított szűrő meneteinek száma.\n"
+"segít a szűrőnek szórni az éleken a sebesség árán"
 
 #: ../src/iop/toneequal.c:3176
-#, fuzzy
 msgid "smoothing diameter"
-msgstr "hideg szűrő"
+msgstr "lágyítási átmérő"
 
 #: ../src/iop/toneequal.c:3177
 msgid ""
@@ -11000,10 +11064,13 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
+"homályosság átmérője a legnagyobb kép méretének százalékában.\n"
+"figyelem: a paraméter nagy értékei lelassíthatják a sötétkamra\n"
+"előnézetét profilozott zajszűrés használatakor."
 
 #: ../src/iop/toneequal.c:3185
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "élfinomítás/lágy perem"
 
 #: ../src/iop/toneequal.c:3186
 msgid ""
@@ -11013,10 +11080,15 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
+"a perem pontossága:\n"
+"magasabb érték az élek közelebbi követésére kényszeríti a maszkot,\n"
+"de kiürítheti a simítás hatását.\n"
+"alacsonyabb érték simább átmenetet és jobb simítást ad,\n"
+"de pontatlanabb élkövetést és holdudvarhatást eredményezhet"
 
 #: ../src/iop/toneequal.c:3194
 msgid "mask post-processing"
-msgstr ""
+msgstr "maszk utófeldolgozás"
 
 #: ../src/iop/toneequal.c:3200
 msgid ""
@@ -11024,11 +11096,13 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
+"maszk hisztogram tartomány az első és utolsó tizedesek közt.\n"
+"a középső vonal mutatja az átlagot, a narancs sáv a szélsőértéknél jelenik "
+"meg ha vágás történik."
 
 #: ../src/iop/toneequal.c:3205
-#, fuzzy
 msgid "mask quantization"
-msgstr "hisztogram kiegyenlítés"
+msgstr "maszk kvantálás"
 
 #: ../src/iop/toneequal.c:3207
 msgid ""
@@ -11036,11 +11110,14 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 letiltja a kvantálást.\n"
+"magasabb értékek poszterizálják a fénysűrűség maszkot segítve az "
+"irányítást.\n"
+"darabonként sima területet eredményez magas perem érték használatakor"
 
 #: ../src/iop/toneequal.c:3215
-#, fuzzy
 msgid "mask exposure compensation"
-msgstr "feketepont kompenzáció"
+msgstr "maszk expozíció kompenzáció"
 
 #: ../src/iop/toneequal.c:3217
 msgid ""
@@ -11048,11 +11125,14 @@ msgid ""
 "for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
+"használja ezt a maszk átlagos expozíciójának csúsztatására a csatorna "
+"mentén\n"
+"az expozíció korrekció jobb szabályozásért az elérhető pontokkal.\n"
+"a pipetta automatikusan szabályozza az átlagos expozíciót -4 FÉ-nél."
 
 #: ../src/iop/toneequal.c:3229
-#, fuzzy
 msgid "mask contrast compensation"
-msgstr "kontraszt kompenzáció"
+msgstr "maszk kontraszt kompenzáció"
 
 #: ../src/iop/toneequal.c:3231
 msgid ""
@@ -11061,20 +11141,24 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
+"használja az irányított szűrő átlagoló hatásának ellensúlyozására\n"
+"és tágítja a kontrasztot -4 FÉ körül.\n"
+"ez lehetővé teszi az expozíciós hisztogram kiterjedését több csatorna "
+"fölött\n"
+"az expozíció korrekció jobb kontrollálhatósága érdekében."
 
 #: ../src/iop/toneequal.c:3244 ../src/iop/toneequal.c:3248
-#, fuzzy
 msgid "display exposure mask"
-msgstr "maszkok megjelenítése"
+msgstr "expozíciós maszk megjelenítése"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
-msgstr "tónustérképezés"
+msgstr "tónusleképezés"
 
 #: ../src/iop/tonemap.cc:94
 msgctxt "accel"
 msgid "contrast compression"
-msgstr "kontraszt kompenzáció"
+msgstr "kontraszt kompresszió"
 
 #: ../src/iop/velvia.c:83
 msgid "velvia"
@@ -11231,17 +11315,17 @@ msgstr "véletlen mértékű zajt ad hozzá, elkerülendő a sávosodást"
 #: ../src/iop/vignette.c:1222
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s ponton] peremsötétedés / lágy perem módosítása"
 
 #: ../src/iop/vignette.c:1228
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
-msgstr ""
+msgstr "[%s ponton] peremsötétedés / lágy perem módosítása megőrizve az arányt"
 
 #: ../src/iop/vignette.c:1234
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s középen] peremsötétedés mozgatása"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -11293,7 +11377,6 @@ msgid "select watermark color"
 msgstr "vízjel színének kiválasztása"
 
 #: ../src/iop/watermark.c:1390
-#, fuzzy
 msgid "pick color from image"
 msgstr "színmintavétel a képről"
 
@@ -11766,11 +11849,15 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
+"1 képnek nincs előzmény tömörítése.\n"
+"lás a címkét: darktable|problem|history-compress."
 msgstr[1] ""
+"%d képnek nincs előzmény tömörítése.\n"
+"lás a címkét: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
-msgstr ""
+msgstr "előzménytömörítés figyelmeztetés"
 
 #: ../src/libs/copy_history.c:220
 #, c-format
@@ -12038,7 +12125,7 @@ msgstr "exportálás a jelenlegi beállításokkal"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "metaadat exportálás részleteinek szerkesztése"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12060,11 +12147,12 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
+"elérhető címkék listája. a kijelölt hozzáadásához kattintson a „hozzáad” "
+"gombra vagy duplán a címkére"
 
 #: ../src/libs/export_metadata.c:231
-#, fuzzy
 msgid "edit metadata exportation"
-msgstr "metaadat szerkesztő"
+msgstr "metaadat exportálás szerkesztése"
 
 #: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
 #: ../src/libs/tagging.c:1516
@@ -12089,7 +12177,7 @@ msgstr "metaadat"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr ""
+msgstr "dt xmp metaadat exportálása (a metaadat szerkesztő modulból)"
 
 #: ../src/libs/export_metadata.c:263
 msgid "only embedded"
@@ -12103,20 +12191,24 @@ msgid ""
 "if remote storage doesn't understand dt xmp metadata, you can use calculated "
 "metadata instead"
 msgstr ""
+"alapértelmezésben az interfész a képen kívül néhány (korlátozott) metaadatot "
+"is küld a külső tárolóra.\n"
+"ennek elkerülésére és hogy a képbe be legyen ágyazva a dt xmp metaadat, "
+"pipálja ezt ki.\n"
+"ha a külső tároló nem tudja értelmezni a dt xmp metaadatot, használhat "
+"helyette kalkulált metadaatot"
 
 #: ../src/libs/export_metadata.c:270
-#, fuzzy
 msgid "geo tags"
-msgstr "címkék exportálása"
+msgstr "geotagek"
 
 #: ../src/libs/export_metadata.c:271
-#, fuzzy
 msgid "export geo tags"
-msgstr "címkék exportálása"
+msgstr "geotagek exportálása"
 
 #: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr ""
+msgstr "címkék exportálása (ide: Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:281
 msgid "private tags"
@@ -12143,6 +12235,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
+"a hierarchikus címkéknek csak az utolsó része lesz benne. hasznos lehet, ha "
+"nincsenek használva kategóriák"
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
@@ -12150,23 +12244,23 @@ msgstr "hierarchikus címkék"
 
 #: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr ""
+msgstr "hierarchikus címkék exportálása (ide: Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:294
-#, fuzzy
 msgid "develop history"
-msgstr "előzmények másolása"
+msgstr "kidolgozási előzmény"
 
 #: ../src/libs/export_metadata.c:295
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
+"dt kidolgozási adatok exportálása (biztonsági mentés céljából ha elveszne az "
+"adatbázis vagy az xmp fájl)"
 
 #: ../src/libs/export_metadata.c:302
-#, fuzzy
 msgid "per metadata settings"
-msgstr "nyomtatási beállítások"
+msgstr "metaadatonkénti beállítások"
 
 #: ../src/libs/export_metadata.c:312
 msgid "list of available tags"
@@ -12174,7 +12268,7 @@ msgstr "elérhető címkék listája"
 
 #: ../src/libs/export_metadata.c:315
 msgid "redefined tag"
-msgstr ""
+msgstr "újradefiniált címke"
 
 #: ../src/libs/export_metadata.c:320
 msgid "formula"
@@ -12189,10 +12283,15 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
+"kalkulált metaadatok listája\n"
+"ha a képlet üres az adott metaadat el lesz távolítva az exportált fájlból\n"
+"egyébként az adott metaadat ki lesz számolva és beleírva az exportált "
+"fájlba\n"
+"a képlet szerkesztéséhez kattintson a cellára. a felismert változók:"
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr ""
+msgstr "kimeneti metaadat címke hozzáadása"
 
 #: ../src/libs/export_metadata.c:383
 msgid "delete metadata tag"
@@ -12445,7 +12544,7 @@ msgstr "a kijelölt képek eltávolítása a csoportból"
 
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
-msgstr ""
+msgstr "kép információk frissítése, hogy megfeleljen a fájl változásainak"
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -13284,7 +13383,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr ""
+msgstr "navigációs bélyegkép elrejtése"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1396
@@ -13713,9 +13812,8 @@ msgid "tag %s removed"
 msgstr "%s címke eltávolítva"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1926
-#, fuzzy
 msgid "delete branch"
-msgstr "törli a címkét?"
+msgstr "ág törlése"
 
 #: ../src/libs/tagging.c:1273
 #, c-format
@@ -13748,7 +13846,7 @@ msgstr "név: "
 #: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
-msgstr ""
+msgstr "hozzáadás ehhez: „%s” "
 
 #: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1557
 msgid "category"
@@ -13769,7 +13867,7 @@ msgstr "üres címke nem megengedett, megszakítás"
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "a „|” karakter nem használható címke létrehozásánál. megszakítás."
 
 #: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
@@ -13783,19 +13881,22 @@ msgstr "címke szerkesztése"
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> címke lesz frissítve."
+msgstr[1] "<u>%d</u> címke lesz frissítve."
 
 #: ../src/libs/tagging.c:1589
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
+"a „|” karakter nem használható címke átnevezésénél.\n"
+"a hierarchia módosításához ehelyett használja az útvonal módosítását. "
+"megszakítva."
 
 #: ../src/libs/tagging.c:1627
-#, fuzzy, c-format
+#, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr "már létezik stílus „%s” néven"
+msgstr "legalább egy új címkenév (%s) már létezik. megszakítás"
 
 #: ../src/libs/tagging.c:1735
 msgid "rename path?"
@@ -13809,6 +13910,7 @@ msgstr "kiválasztott útvonal: %s "
 #: ../src/libs/tagging.c:1778
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
+"a „|” karakter rossz helyen van, üres címke nem engedélyezett. megszakítás"
 
 #: ../src/libs/tagging.c:1804
 #, c-format
@@ -13833,21 +13935,19 @@ msgstr "címke szerkesztése…"
 
 #: ../src/libs/tagging.c:1945
 msgid "rename path..."
-msgstr "útvonal átnevezése…"
+msgstr "útvonal módosítása…"
 
 #: ../src/libs/tagging.c:1952
-#, fuzzy
 msgid "copy to entry"
-msgstr "előzmények másolása"
+msgstr "másolás a beviteli mezőbe"
 
 #: ../src/libs/tagging.c:1976
-#, fuzzy
 msgid "go to tag collection"
-msgstr "eltávolítás a gyűjteményből"
+msgstr "címke gyűjtemény megnyitása"
 
 #: ../src/libs/tagging.c:1982
 msgid "go back to work"
-msgstr ""
+msgstr "vissza a munkához"
 
 #: ../src/libs/tagging.c:2098
 #, c-format
@@ -13899,6 +13999,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"hozzárendelt címkék,\n"
+"dupla klikkel leválasztás,\n"
+"jobb klikkel egyéb műveletek a hozzárendelt címkével,\n"
+"ctrl-görgetéssel ablak átméretezése"
 
 #: ../src/libs/tagging.c:2555
 msgid "attach"
@@ -13918,24 +14022,23 @@ msgstr "címke eltávolítása a kijelölt képekről"
 
 #: ../src/libs/tagging.c:2573
 msgid "toggle list with / without hierarchy"
-msgstr ""
+msgstr "listanézet váltása hierarchiával/nélkül"
 
 #: ../src/libs/tagging.c:2581
 msgid "toggle sort by name or by count"
-msgstr ""
+msgstr "rendezés név / darabszám szerint váltása"
 
 #: ../src/libs/tagging.c:2591
 msgid "toggle show or not darktable tags"
-msgstr ""
+msgstr "darktable címkék megjelenítése/elrejtése"
 
 #: ../src/libs/tagging.c:2607
 msgid "enter tag name"
 msgstr "címkenév megadása"
 
 #: ../src/libs/tagging.c:2617
-#, fuzzy
 msgid "clear entry"
-msgstr "törlés"
+msgstr "beviteli mező törlés"
 
 #: ../src/libs/tagging.c:2669
 msgid ""
@@ -13944,6 +14047,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"címke szótár,\n"
+"dupla klikkel hozzárendelés,\n"
+"jobb klikkel egyéb műveletek a kiválasztott címkével,\n"
+"ctrl-görgetéssel ablak átméretezése"
 
 #: ../src/libs/tagging.c:2684
 msgid "new"
@@ -13974,12 +14081,14 @@ msgstr "lista / fa nézet váltása"
 
 #: ../src/libs/tagging.c:2718
 msgid "toggle list with / without suggestion"
-msgstr ""
+msgstr "listanézet váltása javaslattal/nélkül"
 
 #: ../src/libs/tagging.c:2823
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
+"címke gyorsbillentyű nem aktív a címke fanézetben. kérem, váltson "
+"listanézetre"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -14186,7 +14295,7 @@ msgstr "egyéni rendezés"
 #. DT_COLLECTION_SORT_ASPECT_RATIO
 #: ../src/libs/tools/filter.c:158
 msgid "shuffle"
-msgstr ""
+msgstr "összekevert"
 
 #: ../src/libs/tools/global_toolbox.c:52
 msgid "preferences"
@@ -14220,9 +14329,8 @@ msgid "show global preferences"
 msgstr "globális beállítások megjelenítése"
 
 #: ../src/libs/tools/global_toolbox.c:232
-#, fuzzy
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr "szeretné megnyitni a https://www.darktable.org/ oldalt?"
+msgstr "szeretné megnyitni ahttps://darktable.gitlab.io/doc/ oldalt?"
 
 #: ../src/libs/tools/global_toolbox.c:237
 msgid "access the online usermanual?"
@@ -14517,18 +14625,16 @@ msgid "display intent"
 msgstr "megjelenítési cél"
 
 #: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4898
-#, fuzzy
 msgid "preview display intent"
-msgstr "megjelenítési cél"
+msgstr "előnézet megjelenítési cél"
 
 #: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4906
 msgid "display profile"
 msgstr "kijelzőprofil"
 
 #: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4910
-#, fuzzy
 msgid "preview display profile"
-msgstr "kijelzőprofil beállítása"
+msgstr "kijelzőprofil előnézete"
 
 #: ../src/views/darkroom.c:2009
 msgid "histogram profile"
@@ -14540,9 +14646,9 @@ msgid "display ICC profiles in %s or %s"
 msgstr "kijelző ICC profilok itt: %s vagy itt: %s"
 
 #: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4943
-#, fuzzy, c-format
+#, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "kijelző ICC profilok itt: %s vagy itt: %s"
+msgstr "kijelző ICC profilok előézete itt: %s vagy itt: %s"
 
 #: ../src/views/darkroom.c:2069
 #, c-format
@@ -14550,9 +14656,9 @@ msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC profilok itt: %s vagy itt: %s"
 
 #: ../src/views/darkroom.c:2072
-#, fuzzy, c-format
+#, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "softproof ICC profilok itt: %s vagy itt: %s"
+msgstr "hisztogram és színpipetta ICC profilok itt: %s vagy itt: %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
@@ -14687,11 +14793,11 @@ msgstr "belenagyítás a képbe"
 
 #: ../src/views/darkroom.c:3331
 msgid "unbounded zoom in the image"
-msgstr ""
+msgstr "korlátlan belenagyítás a képbe"
 
 #: ../src/views/darkroom.c:3336
 msgid "zoom to 100% 200% and back"
-msgstr ""
+msgstr "nagyítás 100%-ra 200%-ra és vissza"
 
 #: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
@@ -14753,9 +14859,9 @@ msgid "you have reached the end of your collection"
 msgstr "a gyűjtemény végére ért"
 
 #: ../src/views/lighttable.c:3623
-#, fuzzy, c-format
+#, c-format
 msgid "zooming is limited to %d images"
-msgstr "%d csillagos értékelés alkalmazása %d képre"
+msgstr "a nagyítás korlátozva van %d képre"
 
 #: ../src/views/lighttable.c:4399
 msgctxt "accel"
@@ -14852,10 +14958,9 @@ msgid "preview zoom 100%"
 msgstr "előnézet zoom 100%"
 
 #: ../src/views/lighttable.c:4439
-#, fuzzy
 msgctxt "accel"
 msgid "preview zoom fit"
-msgstr "zoom képernyőhöz igazítás"
+msgstr "előnézet zoom képernyőhöz igazítás"
 
 #. timeline
 #: ../src/views/lighttable.c:4442
@@ -14864,57 +14969,48 @@ msgid "toggle timeline"
 msgstr "idővonal ki/be kapcsolása"
 
 #: ../src/views/lighttable.c:4568
-#, fuzzy
 msgid "open image in darkroom"
-msgstr "keret a kép köré sötétkamra módban"
+msgstr "kép megnyitása sötétkamrában"
 
 #: ../src/views/lighttable.c:4575
 msgid "switch to next/previous image"
 msgstr "váltás a követező/előző képre"
 
 #: ../src/views/lighttable.c:4588 ../src/views/lighttable.c:4610
-#, fuzzy
 msgid "scroll the collection"
-msgstr "eltávolítás a gyűjteményből"
+msgstr "gyűjtemény görgetése"
 
 #: ../src/views/lighttable.c:4594
-#, fuzzy
 msgid "change number of images per row"
-msgstr "a térképre kirajzolt képek maximális száma"
+msgstr "soronkénti képek számának módosítása"
 
 #: ../src/views/lighttable.c:4602
-#, fuzzy
 msgid "change image order"
-msgstr "kép rávetítések elrejtése"
+msgstr "képsorrend módosítása"
 
 #: ../src/views/lighttable.c:4616
-#, fuzzy
 msgid "zoom all the images"
-msgstr "képek forgatása"
+msgstr "összes kép nagyítása"
 
 #: ../src/views/lighttable.c:4621
-#, fuzzy
 msgid "pan inside all the images"
-msgstr "képek törlése"
+msgstr "pásztázás az összes képen"
 
 #: ../src/views/lighttable.c:4627
-#, fuzzy
 msgid "zoom current image"
-msgstr "képek készítése"
+msgstr "aktuális kép zoomolása"
 
 #: ../src/views/lighttable.c:4633
-#, fuzzy
 msgid "pan inside current image"
-msgstr "„%s” stílus alkalmazva a jelenlegi képen"
+msgstr "pásztázás az aktuális képen"
 
 #: ../src/views/lighttable.c:4640
-#, fuzzy
 msgid "zoom the main view"
-msgstr "élőkép nagyítása"
+msgstr "fő nézet nagyítása"
 
 #: ../src/views/lighttable.c:4645
 msgid "pan inside the main view"
-msgstr "pásztázás a fő ablakban"
+msgstr "pásztázás a fő nézetben"
 
 #: ../src/views/lighttable.c:4866
 msgid "set display profile"
@@ -14925,18 +15021,16 @@ msgid "map"
 msgstr "térkép"
 
 #: ../src/views/map.c:1405
-#, fuzzy
 msgid "[on image] open in darkroom"
-msgstr "keret a kép köré sötétkamra módban"
+msgstr "[a képen] megnyitás sötétkamrában"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
 msgstr "térkép zoomolása"
 
 #: ../src/views/map.c:1415
-#, fuzzy
 msgid "move image location"
-msgstr "kép műveletek"
+msgstr "kép helyének áthelyezése"
 
 #: ../src/views/print.c:50
 msgctxt "view"
@@ -14954,20 +15048,19 @@ msgstr "diavetítés"
 
 #: ../src/views/slideshow.c:441
 msgid "waiting to start slideshow"
-msgstr ""
+msgstr "várakozás a diavetítés indítására"
 
 #: ../src/views/slideshow.c:559 ../src/views/slideshow.c:577
 #: ../src/views/slideshow.c:583
-#, fuzzy
 msgid "slideshow paused"
-msgstr "diavetítés nézet"
+msgstr "diavetítés szünetel"
 
 #: ../src/views/slideshow.c:566 ../src/views/slideshow.c:572
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "diavetítés késleltetés beállítva %d másodpercre"
+msgstr[1] "diavetítés késleltetés beállítva %d másodpercre"
 
 #: ../src/views/slideshow.c:599
 msgctxt "accel"
@@ -14975,14 +15068,12 @@ msgid "start and stop"
 msgstr "indítás és leállítás"
 
 #: ../src/views/slideshow.c:613
-#, fuzzy
 msgid "go to next image"
-msgstr "ugrás a következő fájlra"
+msgstr "váltás a következő képre"
 
 #: ../src/views/slideshow.c:618
-#, fuzzy
 msgid "go to previous image"
-msgstr "kimeneti kép"
+msgstr "váltás az előző képre"
 
 #: ../src/views/tethering.c:93
 msgid "tethering"
@@ -14999,15 +15090,15 @@ msgstr "nem áll rendelkezésre tetheringet támogató fényképező…"
 
 #: ../src/views/view.c:2143
 msgid "Left click"
-msgstr ""
+msgstr "Bal kattintás"
 
 #: ../src/views/view.c:2146
 msgid "Right click"
-msgstr ""
+msgstr "Jobb kattintás"
 
 #: ../src/views/view.c:2149
 msgid "Middle click"
-msgstr ""
+msgstr "Középső kattintás"
 
 #: ../src/views/view.c:2152
 msgid "Scroll"
@@ -15023,38 +15114,36 @@ msgstr "Jobb dupla kattintás"
 
 #: ../src/views/view.c:2161
 msgid "Drag and drop"
-msgstr ""
+msgstr "Fogd és vidd"
 
 #: ../src/views/view.c:2164
 msgid "Left click+Drag"
-msgstr ""
+msgstr "Bal kattintás + húzás"
 
 #: ../src/views/view.c:2167
 msgid "Right click+Drag"
-msgstr ""
+msgstr "Jobb kattintás + húzás"
 
 #: ../src/views/view.c:2191
-#, fuzzy
 msgid "darktable - accels window"
-msgstr "darktable » %s"
+msgstr "darktable - gyorbillentyű ablak"
 
 #: ../src/views/view.c:2247
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
+"váltás klasszikus ablakra, ami nyitva marad billentyű felengedés után is."
 
 #: ../src/views/view.c:2360
-#, fuzzy
 msgid "+Scroll"
-msgstr "görgetés felfelé"
+msgstr "+Görgetés"
 
 #: ../src/views/view.c:2375
-#, fuzzy
 msgid "mouse actions"
-msgstr "korrekciók"
+msgstr "egérműveletek"
 
 #: ../src/views/view.c:2413
 msgid "Accel"
-msgstr ""
+msgstr "gyorsbillentyű"
 
 #: ../src/views/view.c:2415
 msgid "Action"
