@@ -854,6 +854,12 @@ int dt_image_altered(const uint32_t imgid)
     if(!strcmp(op, "sharpen") && dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
+    if(!strcmp(op, "rawprepare")) continue;
+    if(!strcmp(op, "colorin")) continue;
+    if(!strcmp(op, "colorout")) continue;
+    if(!strcmp(op, "gamma")) continue;
+    if(!strcmp(op, "demosaic")) continue;
+    if(!strcmp(op, "temperature")) continue;
     altered = 1;
     break;
   }
