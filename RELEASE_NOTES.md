@@ -95,14 +95,15 @@ making a backup is strongly advised.
   for creating a more convenient GUI layout, but for changing the actual
   processing of the image. DO NOT USE THIS FEATURE unless you understand the
   reason behind the default ordering, and have a specific reason for changing it.
-  The default order is still the correct order for most purposes.
+  The default order is still the correct order for most purposes. Also note that
+  styles will always apply the default ordering; creating a style based on modules
+  which have had their order changed will NOT recreate this changed order when
+  applied, and therefore may not give the expected result.  
 
-  The history stack has been changed to list all mandatory modules. They
-  were previously hidden but always active as necessary for processing
-  images. You cannot remove them by compressing history or selecting
-  one as a stating point to edit an image. The mandatory modules have
-  a specific icon to identify them easily. There is seven of them,
-  some are for RAW only and some are generic:
+- The history stack will now always show mandatory modules which were previously
+  hidden. They are always active as necessary for processing images, and are not
+  removed by compressing history or by selecting one as a stating point for editing.
+  These seven modules (some are RAW-only) have a specific icon to identify them easily:
 
           - raw black/white point
           - white balance
