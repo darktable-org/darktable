@@ -252,7 +252,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   const int wt = piece->iwidth;
   const int ht = piece->iheight;
-  float *buf = malloc((size_t)ht * wt * sizeof(float));
+  float *buf = dt_alloc_align(64, (size_t)ht * wt * sizeof(float));
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -274,7 +274,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   }
 
   // we free the old buffer
-  free(*buffer);
+  dt_free_align(*buffer);
   (*buffer) = buf;
 
   // we return correct values for positions;
@@ -342,7 +342,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = malloc(sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_alloc_align(64, sizeof(float) * (r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
@@ -429,7 +429,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   free(px);
   free(h);
   free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
+  for(int i = 0; i < nb; i++) dt_free_align(bufs[i]);
   free(bufs);
   return 1;
 
@@ -441,7 +441,7 @@ error:
   free(px);
   free(h);
   free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
+  for(int i = 0; i < nb; i++) dt_free_align(bufs[i]);
   free(bufs);
   return 0;
 }
