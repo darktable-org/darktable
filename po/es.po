@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-19 11:20-0600\n"
-"PO-Revision-Date: 2019-12-19 03:33-0600\n"
+"PO-Revision-Date: 2019-12-19 20:31-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -4493,7 +4493,7 @@ msgstr "actualizar"
 
 #: ../src/gui/styles_dialog.c:465
 msgid "can't create style out of unaltered image"
-msgstr "no se puede crear el estilo de una imagen sin alterar"
+msgstr "No se puede crear el estilo de una imagen no editada"
 
 #: ../src/imageio/format/copy.c:124
 msgid "copy"
@@ -9670,7 +9670,7 @@ msgstr "saturación del filtro de paso bajo"
 
 #: ../src/iop/lowpass.c:705
 msgid "which filter to use for blurring"
-msgstr "que filtro usar para desenfoque"
+msgstr "Filtro que se usará para el desenfoque"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
@@ -9720,7 +9720,7 @@ msgstr "DOMINIO MÁX <> 0.0 no es compatible"
 
 #: ../src/iop/lut3d.c:617
 msgid "1D cube lut is not supported"
-msgstr "El cubo lut 1D no es compatible"
+msgstr "El cubo LUT 1D no es compatible"
 
 #: ../src/iop/lut3d.c:639
 msgid "error - allocating buffer for cube lut"
@@ -9762,7 +9762,7 @@ msgstr "todos los archivos"
 
 #: ../src/iop/lut3d.c:1077
 msgid "Select file outside Lut root folder is not allowed"
-msgstr "No se permite seleccionar el archivo fuera de la carpeta raíz de LUT"
+msgstr "No es posible seleccionar el archivo fuera de la carpeta raíz de LUT"
 
 #: ../src/iop/lut3d.c:1124
 msgid "select a png (haldclut) or a cube file"
@@ -9798,7 +9798,7 @@ msgstr "RGB lineal Rec2020"
 
 #: ../src/iop/lut3d.c:1144
 msgid "select the color space in which the LUT has to be applied"
-msgstr "Seleccione el espacio de color en el que se debe aplicar el LUT"
+msgstr "Seleccionar el espacio de color en el que se debe aplicar el LUT"
 
 #: ../src/iop/lut3d.c:1148
 msgid "interpolation"
@@ -9818,7 +9818,7 @@ msgstr "pirámide"
 
 #: ../src/iop/lut3d.c:1153
 msgid "select the interpolation method"
-msgstr "elija el método de interpolación"
+msgstr "eligir el método de interpolación"
 
 #: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
 msgid "mask manager"
@@ -10038,7 +10038,7 @@ msgstr "cortar del borde inferior"
 #: ../src/iop/rawprepare.c:97
 msgctxt "modulename"
 msgid "raw black/white point"
-msgstr "negro puro/punto blanco"
+msgstr "negro puro / punto blanco"
 
 #: ../src/iop/rawprepare.c:124
 msgid "passthrough"
@@ -10065,16 +10065,16 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"corrección de negro puro/punto blanco\n"
-"solo trabaja para los sensores que lo necesiten."
+"Corrección de negro puro / punto blanco\n"
+"Funciona solo con los sensores que lo necesiten."
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "luz de relleno de 0.25EV con 4 zonas"
+msgstr "luz de relleno de 0.25 EV con 4 zonas"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "incrementar sombras -0.25EV con 4 zonas"
+msgstr "incrementar sombras a -0.25 EV con 4 zonas"
 
 #: ../src/iop/relight.c:90
 msgid "fill light"
@@ -10087,29 +10087,29 @@ msgstr "ancho"
 
 #: ../src/iop/relight.c:361
 msgid "the fill-light in EV"
-msgstr "la luz de relleno en EV"
+msgstr "La luz de relleno en EV"
 
 #: ../src/iop/relight.c:366 ../src/libs/metadata_view.c:120
 #: ../src/libs/print_settings.c:1304
 msgid "width"
-msgstr "ancho"
+msgstr "amplitud"
 
 #: ../src/iop/relight.c:368
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "ancho del área de luz de relleno definida en zonas"
+msgstr "Amplitud del área de luz de relleno delimitado por zonas"
 
 #: ../src/iop/relight.c:379
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
 msgstr ""
-"seleccionar el centro de la luz de relleno\n"
+"Elegir el centro de la luz de relleno\n"
 "Ctrl+clic para seleccionar un área"
 
 #: ../src/iop/relight.c:394
 msgid "toggle tool for picking median lightness in image"
-msgstr "activar herramienta para escoger la luz media en la imagen"
+msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 
 #: ../src/iop/retouch.c:193
 msgid "retouch"
@@ -11224,7 +11224,7 @@ msgstr ""
 "canales\n"
 "y lograr un mejor control de la corrección de exposición con los nodos "
 "disponibles.\n"
-"El cuentagotas ajustará automáticamente la exposición promedio a -4EV."
+"El cuentagotas ajustará automáticamente la exposición promedio a -4 EV."
 
 #: ../src/iop/toneequal.c:3402
 msgid "mask contrast compensation"
@@ -11238,7 +11238,7 @@ msgid ""
 "for a better control of the exposure correction."
 msgstr ""
 "Úsese para contrarrestar el efecto promedio del filtro guiado\n"
-"y dilatar el contraste de la máscara alrededor de -4EV\n"
+"y dilatar el contraste de la máscara alrededor de -4 EV\n"
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
@@ -11678,7 +11678,7 @@ msgid ""
 msgstr ""
 "Número de incrementos por toma. Los incrememtos son configurables en la "
 "cámara y normalmente son tres incrementos por paso.\n"
-"Es decir, 3 incrementos son 1EV de exposición de diferencia entre disparos."
+"Es decir, 3 incrementos son 1 EV de exposición de diferencia entre disparos."
 
 #. user specified properties
 #: ../src/libs/camera.c:517
