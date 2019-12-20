@@ -811,8 +811,9 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
 
   // buffer allocations
-  *points = calloc(2 * (l + 3), sizeof(float));
+  *points = dt_alloc_align(64, 2 * (l + 3) * sizeof(float));
   if(*points == NULL) return 0;
+  memset(*points, 0, 2 * (l + 3) * sizeof(float));
   *points_count = l + 3;
 
   // we set the anchor point
@@ -846,7 +847,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   if(dt_dev_distort_transform(dev, *points, l + 3)) return 1;
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
   return 0;
@@ -884,7 +885,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   if(r1 && r2 && points_count1 > 4 && points_count2 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
+    *points = dt_alloc_align(64, 2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
     for(int i = 3; i < points_count1; i++)
@@ -907,7 +908,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r1 && points_count1 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count1 - 3)) * sizeof(float));
+    *points = dt_alloc_align(64, 2 * ((points_count1 - 3)) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
     for(int i = 3; i < points_count1; i++)
@@ -922,7 +923,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r2 && points_count2 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count2 - 3)) * sizeof(float));
+    *points = dt_alloc_align(64, 2 * ((points_count2 - 3)) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
@@ -937,8 +938,8 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   }
 
 end:
-  free(points1);
-  free(points2);
+  dt_free_align(points1);
+  dt_free_align(points2);
 
   return res;
 }
@@ -1009,7 +1010,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = malloc(gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align(64, gw * gh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1036,7 +1037,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, (size_t)gw * gh))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -1082,12 +1083,13 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   // we allocate the buffer
-  *buffer = calloc(w * h, sizeof(float));
+  *buffer = dt_alloc_align(64, w * h * sizeof(float));
   if(*buffer == NULL)
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
+  memset(*buffer, 0, w * h * sizeof(float));
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
@@ -1114,7 +1116,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
   }
 
-  free(points);
+  dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
@@ -1143,7 +1145,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = malloc((size_t)gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align(64, (size_t)gw * gh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1172,7 +1174,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
                                         (size_t)gw * gh))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -1244,7 +1246,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
     }
   }
 
-  free(points);
+  dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,

@@ -720,7 +720,12 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   int l = MAX(100, (int)(2.0 * M_PI * r));
 
   // buffer allocations
-  *points = calloc(2 * (l + 1), sizeof(float));
+  *points = dt_alloc_align(64, 2 * (l + 1) * sizeof(float));
+  if(*points == NULL)
+  {
+    *points_count = 0;
+    return 0;
+  }
   *points_count = l + 1;
 
   // now we set the points
@@ -737,7 +742,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   if(dt_dev_distort_transform(dev, *points, l + 1)) return 1;
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
   return 0;
@@ -753,7 +758,9 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   float r = (circle->radius + circle->border) * MIN(wd, ht);
   int l = (int)(2.0 * M_PI * r);
   // buffer allocations
-  float *points = calloc(2 * (l + 1), sizeof(float));
+  float *points = dt_alloc_align(64, 2 * (l + 1) * sizeof(float));
+  if(points == NULL)
+    return 0;
 
   // now we set the points
   points[0] = form->source[0] * wd;
@@ -768,7 +775,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 1))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -783,7 +790,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free_align(points);
   // and we set values
   *posx = xmin;
   *posy = ymin;
@@ -802,7 +809,9 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   float r = (circle->radius + circle->border) * MIN(wd, ht);
   int l = (int)(2.0 * M_PI * r);
   // buffer allocations
-  float *points = calloc(2 * (l + 1), sizeof(float));
+  float *points = dt_alloc_align(64, 2 * (l + 1) * sizeof(float));
+  if(points == NULL)
+    return 0;
 
   // now we set the points
   points[0] = circle->center[0] * wd;
@@ -817,7 +826,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 1))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -832,7 +841,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free_align(points);
 
   // and we set values
   *posx = xmin;
@@ -859,7 +868,10 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 
   // we create a buffer of points with all points in the area
   int w = *width, h = *height;
-  float *points = malloc(w * h * 2 * sizeof(float));
+  float *points = dt_alloc_align(64, w * h * 2 * sizeof(float));
+  if(points == NULL)
+    return 0;
+
   for(int i = 0; i < h; i++)
     for(int j = 0; j < w; j++)
     {
@@ -874,7 +886,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, w * h))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -884,7 +896,12 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc(w * h, sizeof(float));
+  *buffer = dt_alloc_align(64, w * h * sizeof(float));
+  if(*buffer == NULL)
+  {
+    dt_free_align(points);
+    return 0;
+  }
 
   // we populate the buffer
   int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
@@ -908,7 +925,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
       else
         (*buffer)[i * w + j] = 0.0f;
     }
-  free(points);
+  dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
@@ -953,7 +970,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   // we look at the outer circle of the shape - no effects outside of this circle;
   // we need many points as we do not know how the circle might get distorted in the pixelpipe
   const size_t circpts = dt_masks_roundup(MIN(360, 2 * M_PI * total2), 8);
-  float *circ = malloc(circpts * 2 * sizeof(float));
+  float *circ = dt_alloc_align(64, circpts * 2 * sizeof(float));
   if(circ == NULL) return 0;
 
 #ifdef _OPENMP
@@ -997,7 +1014,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, circ,
                                         circpts))
   {
-    free(circ);
+    dt_free_align(circ);
     return 0;
   }
 
@@ -1037,7 +1054,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   printf("gw %d, gh %d, bbw %d, bbh %d\n", gw, gh, bbw, bbh);
 #endif
 
-  free(circ);
+  dt_free_align(circ);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle bounding box took %0.04f sec\n", form->name, dt_get_wtime() - start2);
@@ -1049,7 +1066,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     return 1;
 
 
-  float *points = malloc((size_t)bbw * bbh * 2 * sizeof(float));
+  float *points = dt_alloc_align(64, (size_t)bbw * bbh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates
@@ -1078,7 +1095,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
                                         (size_t)bbw * bbh))
   {
-    free(points);
+    dt_free_align(points);
     return 0;
   }
 
@@ -1151,7 +1168,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     }
   }
 
-  free(points);
+  dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
