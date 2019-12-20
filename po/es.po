@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-19 04:29-0600\n"
-"PO-Revision-Date: 2019-12-19 03:33-0600\n"
+"POT-Creation-Date: 2019-12-19 11:20-0600\n"
+"PO-Revision-Date: 2019-12-19 20:31-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -245,7 +245,7 @@ msgstr "Desplegar solo un módulo a la vez en la mesa de luz"
 #: ../build/src/preferences_gen.h:2361
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"Esta opción alterna el comportamiento del Máyus+clic en el modo de mesa de "
+"Esta opción alterna el comportamiento del Máyus+Clic en el modo de mesa de "
 "luz"
 
 #: ../build/src/preferences_gen.h:2369
@@ -449,7 +449,7 @@ msgstr "VERDADERO"
 #: ../build/src/preferences_gen.h:2707
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Esta opción alterna el funcionamiento de Mayús+clic en el modo de cuarto "
+"Esta opción alterna el funcionamiento de Mayús+Clic en el modo de cuarto "
 "oscuro"
 
 #: ../build/src/preferences_gen.h:2715
@@ -676,7 +676,7 @@ msgid ""
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
 "Cuando esté activado, use la rueda del ratón para desplazarse por los "
-"módulos del panel lateral. Use Ctrl + Alt para que con la rueda del ratón se "
+"módulos del panel lateral. Use Ctrl+Alt para que con la rueda del ratón se "
 "introduzcan datos. Cuando está desactivado, este comportamiento se invierte."
 
 #: ../build/src/preferences_gen.h:3213
@@ -2582,7 +2582,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "Elegir el color desde la imagen\n"
-"Ctrl+clic para seleccionar un área"
+"Ctrl+Clic para seleccionar un área"
 
 #: ../src/develop/blend_gui.c:1448
 msgid ""
@@ -2591,8 +2591,8 @@ msgid ""
 "ctrl+click + drag to use the output image"
 msgstr ""
 "Determinar el rango basado en un área de la imagen\n"
-"Clic+arrastrar para usar la imagen de entrada\n"
-"Ctrl+clic+arrastrar para usar la imagen de salida"
+"Pulsar y arrastrar para usar la imagen de entrada\n"
+"Ctrl+Clic+Arrastrar para usar la imagen de salida"
 
 #: ../src/develop/blend_gui.c:1452
 msgid "reset blend mask settings"
@@ -2992,8 +2992,8 @@ msgid ""
 "to display channel. hover over parametric mask slider to select channel for "
 "display"
 msgstr ""
-"Mostrar la máscara o el canal de color. Ctrl+clic para mostrar la máscara, "
-"Mayús+clic para mostrar el canal. Pase el puntero por encima del control "
+"Mostrar la máscara o el canal de color. Ctrl+Clic para mostrar la máscara, "
+"Mayús+Clic para mostrar el canal. Pase el puntero por encima del control "
 "deslizante para seleccionar el canal a mostrar"
 
 #: ../src/develop/blend_gui.c:2535
@@ -3253,11 +3253,11 @@ msgstr "[CÍRCULO] cambiar área de difuminado"
 
 #: ../src/develop/masks/masks.c:340
 msgid "ctrl+click to add a sharp node"
-msgstr "Ctrl+clic para agregar nodo de enfoque"
+msgstr "Ctrl+Clic para agregar nodo de enfoque"
 
 #: ../src/develop/masks/masks.c:342
 msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "Ctrl+clic para cambiar nodo de suavizado/enfoque"
+msgstr "Ctrl+Clic para cambiar nodo de suavizado/enfoque"
 
 #: ../src/develop/masks/masks.c:344
 msgid "right-click to reset curvature"
@@ -3265,20 +3265,20 @@ msgstr "pulsación derecha para reiniciar curvatura"
 
 #: ../src/develop/masks/masks.c:346
 msgid "ctrl+click to add a node"
-msgstr "Ctrl+clic para agregar un nodo"
+msgstr "Ctrl+Clic para agregar un nodo"
 
 #: ../src/develop/masks/masks.c:348 ../src/develop/masks/masks.c:386
 #, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"Mayús+rueda del ratón ajusta difuminado, \n"
-"Ctrl+rueda del ratón ajusta opacidad (%d%%)"
+"Mayús+Rueda del Ratón ajusta difuminado, \n"
+"Ctrl+Rueda del Ratón ajusta opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:353
 #, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "Ctrl+rueda del ratón para ajustar la opacidad de la figura (%d%%)"
+msgstr "Ctrl+Rueda del Ratón para ajustar la opacidad de la figura (%d%%)"
 
 #: ../src/develop/masks/masks.c:355
 msgid "move to rotate shape"
@@ -3290,13 +3290,13 @@ msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"rueda del ratón para ajustar el tamaño, Mayús+rueda del ratón para ajustar "
+"Rueda del ratón para ajustar el tamaño, Mayús+Rueda del Ratón para ajustar "
 "la dureza,\n"
-"Ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
+"Ctrl+Rueda del Ratón para ajustar la opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:363
 msgid "ctrl+click to rotate"
-msgstr "Ctrl+clic para rotar"
+msgstr "Ctrl+Clic para rotar"
 
 #: ../src/develop/masks/masks.c:366
 #, c-format
@@ -3304,9 +3304,9 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"Mayús+clic para cambiar el difuminado, Ctrl+clic para rotar\n"
-"Mayús+rueda del ratón cambia el área de difuminado,\n"
-"Ctrl+rueda del ratón cambia la opacidad de la figura (%d%%)"
+"Mayús+Clic para cambiar el difuminado, Ctrl+Clic para rotar\n"
+"Mayús+Rueda del Ratón cambia el área de difuminado,\n"
+"Ctrl+Rueda del Ratón cambia la opacidad de la figura (%d%%)"
 
 #: ../src/develop/masks/masks.c:372
 #, c-format
@@ -3314,20 +3314,20 @@ msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
-"rueda del ratón para ajustar el tamaño del pincel, Mayús+rueda del ratón "
+"Rueda del ratón para ajustar el tamaño del pincel, Mayús+Rueda del Ratón "
 "para ajustar la dureza,\n"
-"Ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
+"Ctrl+Rueda del Ratón para ajustar la opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:375
 #, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"Rueda del ratón ajusta la dureza, Ctrl+rueda del ratón ajusta la opacidad de "
+"Rueda del ratón ajusta la dureza, Ctrl+Rueda del Ratón ajusta la opacidad de "
 "la forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:377
 msgid "scroll to set brush size"
-msgstr "rueda del ratón para ajustar tamaño del pincel"
+msgstr "Rueda del ratón para ajustar tamaño del pincel"
 
 #: ../src/develop/masks/masks.c:539
 #, c-format
@@ -4493,7 +4493,7 @@ msgstr "actualizar"
 
 #: ../src/gui/styles_dialog.c:465
 msgid "can't create style out of unaltered image"
-msgstr "no se puede crear el estilo de una imagen sin alterar"
+msgstr "No se puede crear el estilo de una imagen no editada"
 
 #: ../src/imageio/format/copy.c:124
 msgid "copy"
@@ -5542,8 +5542,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "corrección automática para distorsiones verticales de la perspectiva\n"
-"Ctrl+clic para corregir solo la rotación\n"
-"Mayús+clic para corregir la desviación del lente"
+"Ctrl+Clic para corregir solo la rotación\n"
+"Mayús+Clic para corregir la desviación del lente"
 
 #: ../src/iop/ashift.c:4989
 msgid ""
@@ -5552,8 +5552,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "corrección automática para distorsiones horizontales de la perspectiva\n"
-"Ctrl+clic para solo corregir la rotación\n"
-"Mayús+clic para solo corregir la desviación del lente"
+"Ctrl+Clic para solo corregir la rotación\n"
+"Mayús+Clic para solo corregir la desviación del lente"
 
 #: ../src/iop/ashift.c:4992
 msgid ""
@@ -5566,9 +5566,9 @@ msgstr ""
 "corrección automática para distorsiones verticales y horizontales de la "
 "perspectiva; corregir rotación, desviación del lente en ambas direcciones, y "
 "corte\n"
-"Ctrl+clic para solo corregir la rotación\n"
-"Mayús+clic para solo corregir la desviación del lente\n"
-"Ctrl+Mayús+clic para ajustar la rotación y el corte del lente"
+"Ctrl+Clic para solo corregir la rotación\n"
+"Mayús+Clic para solo corregir la desviación del lente\n"
+"Ctrl+Mayús+Clic para ajustar la rotación y el corte del lente"
 
 #: ../src/iop/ashift.c:4998
 msgid ""
@@ -5578,9 +5578,9 @@ msgid ""
 "ctrl-shift-click for a combination of both methods"
 msgstr ""
 "analizar la estructura lineal en la imagen\n"
-"Ctrl+clic para mejoras adicionales del borde\n"
-"Mayús+clic para mejoras adicionales en el detalle\n"
-"Ctrl+Mayús+clic para una combinación de ambos métodos"
+"Ctrl+Clic para mejoras adicionales del borde\n"
+"Mayús+Clic para mejoras adicionales en el detalle\n"
+"Ctrl+Mayús+Clic para una combinación de ambos métodos"
 
 #: ../src/iop/ashift.c:5002
 msgid "remove line structure information"
@@ -7076,7 +7076,7 @@ msgstr ""
 "Pulse para seleccionar un parche\n"
 "Doble pulsado para reiniciarlo\n"
 "Pulsado derecho para borrarlo\n"
-"Mayús+clic para reemplazar el parche por el color de la selección"
+"Mayús+Clic para reemplazar el parche por el color de la selección"
 
 #: ../src/iop/colorchecker.c:1359
 msgid "patch"
@@ -7545,8 +7545,8 @@ msgid ""
 msgstr ""
 "Crea una curva basada en un área de la imagen\n"
 "Pulse una vez para crear una curva plana\n"
-"Use Ctrl+clic para crear una curva positiva\n"
-"Use Mayús+clic para crear una curva negativa"
+"Use Ctrl+Clic para crear una curva positiva\n"
+"Use Mayús+Clic para crear una curva negativa"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2323
@@ -9424,7 +9424,7 @@ msgid ""
 msgstr ""
 "Pulse y arrastre para agregar el punto\n"
 "Rueda del ratón para cambiar el tamaño\n"
-"Mayús+rueda del ratón para cambiar la fuerza. Ctrl+rueda del ratón para "
+"Mayús+Rueda del Ratón para cambiar la fuerza. Ctrl+Rueda del Ratón para "
 "cambiar la dirección"
 
 #: ../src/iop/liquify.c:3496
@@ -9435,7 +9435,7 @@ msgid ""
 msgstr ""
 "Pulsar para agregar una línea\n"
 "Rueda del ratón para cambiar el tamaño\n"
-"Mayús+rueda del ratón para cambiar la fuerza. Ctrl+rueda del ratón para "
+"Mayús+Rueda del Ratón para cambiar la fuerza. Ctrl+Rueda del Ratón para "
 "cambiar la dirección"
 
 #: ../src/iop/liquify.c:3500
@@ -9446,7 +9446,7 @@ msgid ""
 msgstr ""
 "Pulsar para añadir curva\n"
 "Rueda del ratón para cambiar tamaño \n"
-"Mayús+rueda del ratón para cambiar intensidad. Ctrl+rueda del ratón para "
+"Mayús+Rueda del Ratón para cambiar intensidad. Ctrl+Rueda del Ratón para "
 "cambiar dirección"
 
 #: ../src/iop/liquify.c:3503
@@ -9486,16 +9486,16 @@ msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
 msgstr ""
-"Ctrl+clic: agregar nodo - clic derecho: eliminar ruta\n"
-"Ctrl+alt+clic: alternar línea/curva"
+"Ctrl+Clic: agregar nodo; Clic derecho: eliminar ruta\n"
+"Ctrl+Alt+Clic: alternar línea/curva"
 
 #: ../src/iop/liquify.c:3609
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"Clic + arrastrar para mover. Clic: mostrar/ocultar control de difuminado\n"
-"Ctrl+clic: suavizado automático, cúspide, suavizado, simétrico. Clic derecho "
+"Clic+Arrastrar para mover. Pulsado: mostrar/ocultar control de difuminado\n"
+"Ctrl+Clic: suavizado automático, cúspide, suavizado, simétrico. Clic derecho "
 "para eliminar"
 
 #: ../src/iop/liquify.c:3612 ../src/iop/liquify.c:3613
@@ -9520,7 +9520,7 @@ msgid ""
 "ctrl-click: linear, grow, and shrink"
 msgstr ""
 "Arrastre para ajustar la fuerza del deformado\n"
-"Ctrl+clic : lineal, aumentar y encoger"
+"Ctrl+Clic : lineal, aumentar y encoger"
 
 #: ../src/iop/liquify.c:3635
 msgctxt "accel"
@@ -9633,7 +9633,7 @@ msgstr "2º orden"
 
 #: ../src/iop/lowpass.c:677
 msgid "filter order of gaussian blur"
-msgstr "orden del filtro gausiano"
+msgstr "orden del filtro gaussiano"
 
 #: ../src/iop/lowpass.c:688
 msgctxt "lowpass"
@@ -9646,7 +9646,7 @@ msgstr "suavizar con"
 
 #: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2937 ../src/iop/shadhi.c:836
 msgid "gaussian"
-msgstr "gausiano"
+msgstr "gaussiano"
 
 #: ../src/iop/lowpass.c:694 ../src/iop/shadhi.c:837
 msgid "bilateral filter"
@@ -9654,7 +9654,7 @@ msgstr "reducción de ruido (filtro bilateral)"
 
 #: ../src/iop/lowpass.c:701
 msgid "radius of gaussian/bilateral blur"
-msgstr "radio del desenfoque gausiano/bilateral"
+msgstr "radio del desenfoque gaussiano/bilateral"
 
 #: ../src/iop/lowpass.c:702
 msgid "contrast of lowpass filter"
@@ -9670,7 +9670,7 @@ msgstr "saturación del filtro de paso bajo"
 
 #: ../src/iop/lowpass.c:705
 msgid "which filter to use for blurring"
-msgstr "que filtro usar para desenfoque"
+msgstr "Filtro que se usará para el desenfoque"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
@@ -9720,7 +9720,7 @@ msgstr "DOMINIO MÁX <> 0.0 no es compatible"
 
 #: ../src/iop/lut3d.c:617
 msgid "1D cube lut is not supported"
-msgstr "El cubo lut 1D no es compatible"
+msgstr "El cubo LUT 1D no es compatible"
 
 #: ../src/iop/lut3d.c:639
 msgid "error - allocating buffer for cube lut"
@@ -9762,7 +9762,7 @@ msgstr "todos los archivos"
 
 #: ../src/iop/lut3d.c:1077
 msgid "Select file outside Lut root folder is not allowed"
-msgstr "No se permite seleccionar el archivo fuera de la carpeta raíz de LUT"
+msgstr "No es posible seleccionar el archivo fuera de la carpeta raíz de LUT"
 
 #: ../src/iop/lut3d.c:1124
 msgid "select a png (haldclut) or a cube file"
@@ -9798,7 +9798,7 @@ msgstr "RGB lineal Rec2020"
 
 #: ../src/iop/lut3d.c:1144
 msgid "select the color space in which the LUT has to be applied"
-msgstr "Seleccione el espacio de color en el que se debe aplicar el LUT"
+msgstr "Seleccionar el espacio de color en el que se debe aplicar el LUT"
 
 #: ../src/iop/lut3d.c:1148
 msgid "interpolation"
@@ -9818,7 +9818,7 @@ msgstr "pirámide"
 
 #: ../src/iop/lut3d.c:1153
 msgid "select the interpolation method"
-msgstr "elija el método de interpolación"
+msgstr "eligir el método de interpolación"
 
 #: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
 msgid "mask manager"
@@ -10038,7 +10038,7 @@ msgstr "cortar del borde inferior"
 #: ../src/iop/rawprepare.c:97
 msgctxt "modulename"
 msgid "raw black/white point"
-msgstr "negro puro/punto blanco"
+msgstr "negro puro / punto blanco"
 
 #: ../src/iop/rawprepare.c:124
 msgid "passthrough"
@@ -10065,16 +10065,16 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"corrección de negro puro/punto blanco\n"
-"solo trabaja para los sensores que lo necesiten."
+"Corrección de negro puro / punto blanco\n"
+"Funciona solo con los sensores que lo necesiten."
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "luz de relleno de 0.25EV con 4 zonas"
+msgstr "luz de relleno de 0.25 EV con 4 zonas"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "incrementar sombras -0.25EV con 4 zonas"
+msgstr "incrementar sombras a -0.25 EV con 4 zonas"
 
 #: ../src/iop/relight.c:90
 msgid "fill light"
@@ -10087,29 +10087,29 @@ msgstr "ancho"
 
 #: ../src/iop/relight.c:361
 msgid "the fill-light in EV"
-msgstr "la luz de relleno en EV"
+msgstr "La luz de relleno en EV"
 
 #: ../src/iop/relight.c:366 ../src/libs/metadata_view.c:120
 #: ../src/libs/print_settings.c:1304
 msgid "width"
-msgstr "ancho"
+msgstr "amplitud"
 
 #: ../src/iop/relight.c:368
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "ancho del área de luz de relleno definida en zonas"
+msgstr "Amplitud del área de luz de relleno delimitado por zonas"
 
 #: ../src/iop/relight.c:379
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
 msgstr ""
-"seleccionar el centro de la luz de relleno\n"
-"Ctrl+clic para seleccionar un área"
+"Elegir el centro de la luz de relleno\n"
+"Ctrl+Clic para seleccionar un área"
 
 #: ../src/iop/relight.c:394
 msgid "toggle tool for picking median lightness in image"
-msgstr "activar herramienta para escoger la luz media en la imagen"
+msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 
 #: ../src/iop/retouch.c:193
 msgid "retouch"
@@ -11224,7 +11224,7 @@ msgstr ""
 "canales\n"
 "y lograr un mejor control de la corrección de exposición con los nodos "
 "disponibles.\n"
-"El cuentagotas ajustará automáticamente la exposición promedio a -4EV."
+"El cuentagotas ajustará automáticamente la exposición promedio a -4 EV."
 
 #: ../src/iop/toneequal.c:3402
 msgid "mask contrast compensation"
@@ -11238,7 +11238,7 @@ msgid ""
 "for a better control of the exposure correction."
 msgstr ""
 "Úsese para contrarrestar el efecto promedio del filtro guiado\n"
-"y dilatar el contraste de la máscara alrededor de -4EV\n"
+"y dilatar el contraste de la máscara alrededor de -4 EV\n"
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
@@ -11678,7 +11678,7 @@ msgid ""
 msgstr ""
 "Número de incrementos por toma. Los incrememtos son configurables en la "
 "cámara y normalmente son tres incrementos por paso.\n"
-"Es decir, 3 incrementos son 1EV de exposición de diferencia entre disparos."
+"Es decir, 3 incrementos son 1 EV de exposición de diferencia entre disparos."
 
 #. user specified properties
 #: ../src/libs/camera.c:517
@@ -14164,7 +14164,7 @@ msgstr ""
 "Etiquetas adjuntas, \n"
 "para añadir pulse dos veces\n"
 "Pulse clic derecho para mostrar más opciones\n"
-"Ctrl+rueda del ratón para cambiar el tamaño de la ventana"
+"Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana"
 
 #: ../src/libs/tagging.c:2555
 msgid "attach"
@@ -14212,7 +14212,7 @@ msgstr ""
 "Diccionario de etiquetas,\n"
 "para añadir con doble pulsación,\n"
 "para más opciones con clic derecho en la etiqueta seleccionada,\n"
-"Ctrl+rueda del ratón para redimensionar la ventana"
+"Ctrl+Rueda del Ratón para redimensionar la ventana"
 
 #: ../src/libs/tagging.c:2684
 msgid "new"
