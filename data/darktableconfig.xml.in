@@ -15,11 +15,18 @@
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui">
-    <name>panel_width</name>
+  <dtconfig>
+    <name>min_panel_width</name>
     <type>int</type>
-    <default>350</default>
-    <shortdescription>width of the side panels in pixels</shortdescription>
+    <default>150</default>
+    <shortdescription>minimum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>max_panel_width</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
@@ -1204,7 +1211,7 @@
   <dtconfig>
     <name>lighttable/ui/preview/bottom_visible</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>show bottom panel in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -1241,6 +1248,20 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>show toolbar top panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/panels_collapse_controls</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show borders arrows in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/panel_collaps_state</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>panels collapsing state in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui" section="darkroom">
