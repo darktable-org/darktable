@@ -241,6 +241,10 @@ static gchar *_panels_get_view_path(char *suffixe)
     else
       g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
+  else if(g_strcmp0(cv->module_name, "darkroom") == 0)
+  {
+    g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
+  }
 
   return dt_util_dstrcat(NULL, "%s/ui/%s%s", cv->module_name, lay, suffixe);
 }
