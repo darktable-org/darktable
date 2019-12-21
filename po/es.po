@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-19 11:20-0600\n"
-"PO-Revision-Date: 2019-12-19 20:31-0600\n"
+"PO-Revision-Date: 2019-12-21 00:49-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1171,7 +1171,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4046
 msgid "3D lut root folder"
-msgstr "Carpeta raíz del lut 3D"
+msgstr "Carpeta raíz de LUT 3D"
 
 #: ../build/src/preferences_gen.h:4051 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1617
@@ -7443,12 +7443,12 @@ msgstr "colores saturados"
 #: ../src/iop/colorreconstruction.c:1410
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr ""
-"píxeles con valores de luminosidad por encima de este umbral son correctos"
+"Se corrigen los píxeles con valores de luminosidad por encima de este umbral"
 
 #: ../src/iop/colorreconstruction.c:1411
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr ""
-"límite de búsqueda de los colores de reemplazo en las dimensiones espaciales"
+"Límite de búsqueda de los colores de reemplazo en las dimensiones espaciales"
 
 #: ../src/iop/colorreconstruction.c:1412
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -7457,11 +7457,11 @@ msgstr ""
 
 #: ../src/iop/colorreconstruction.c:1413
 msgid "if and how to give precedence to specific replacement colors"
-msgstr "si y como dar prioridad a colores de reemplazo específicos"
+msgstr "Nivel y modo de prioridad a los colores específicos de reemplazo"
 
 #: ../src/iop/colorreconstruction.c:1414
 msgid "the hue tone which should be given precedence over other hue tones"
-msgstr "el tono que debe tener preferencia sobre los otros tonos"
+msgstr "Elegir el tono que debería tener mayor prioridad sobre los demás"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -9736,7 +9736,7 @@ msgstr "Error: el número de líneas del cubo LUT no es correcto"
 
 #: ../src/iop/lut3d.c:1025
 msgid "Lut root folder not defined"
-msgstr "Carpeta raíz de Lut no está definida"
+msgstr "Carpeta raíz de LUT no está definida"
 
 #: ../src/iop/lut3d.c:1031
 msgid "select lut file"
@@ -10529,35 +10529,35 @@ msgstr "reconstrucción de luces"
 
 #: ../src/iop/shadhi.c:866
 msgid "correct shadows"
-msgstr "corrección de sombras"
+msgstr "Corrección de sombras"
 
 #: ../src/iop/shadhi.c:867
 msgid "correct highlights"
-msgstr "corrección de luces"
+msgstr "Corrección de luces"
 
 #: ../src/iop/shadhi.c:868
 msgid "shift white point"
-msgstr "mover punto blanco"
+msgstr "Mover punto blanco"
 
 #: ../src/iop/shadhi.c:870
 msgid "filter to use for softening. bilateral avoids halos"
-msgstr "filtro de suavizado. bilateral evita los halos"
+msgstr "Filtro de suavizado. El bilateral evita los halos"
 
 #: ../src/iop/shadhi.c:871
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
-"comprimir el efecto en luces/sombras y\n"
-"preservar tonos medios"
+"Comprimir el efecto en luces/sombras\n"
+"preservando tonos medios"
 
 #: ../src/iop/shadhi.c:872
 msgid "adjust saturation of shadows"
-msgstr "ajuste de la saturación de sombras"
+msgstr "Adecuar la saturación de sombras"
 
 #: ../src/iop/shadhi.c:873
 msgid "adjust saturation of highlights"
-msgstr "ajuste de la saturación de luces"
+msgstr "Adecuar la saturación de luces"
 
 #: ../src/iop/sharpen.c:72
 msgctxt "modulename"
