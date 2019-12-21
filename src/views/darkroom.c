@@ -1225,6 +1225,8 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
+  if (!d->gui_attached) return;
+
   d->iso_12646.enabled = !d->iso_12646.enabled;
 
   if(d->iso_12646.enabled)
