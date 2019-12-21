@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-30 17:22+0900\n"
-"PO-Revision-Date: 2019-12-06 22:48+0900\n"
+"POT-Creation-Date: 2019-12-13 20:30+0900\n"
+"PO-Revision-Date: 2019-12-17 14:49+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -20,7 +20,7 @@ msgstr "バーチャルなライトテーブルとダークルーム"
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "デジタルカメラ画像の現像と整理"
+msgstr "デジタルカメラの画像を整理し現像します"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
@@ -1420,7 +1420,7 @@ msgid "linear XYZ"
 msgstr "線形 XYZ"
 
 #: ../src/common/colorspaces.c:1007 ../src/common/colorspaces.c:1338
-#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:620
+#: ../src/libs/colorpicker.c:600 ../src/libs/colorpicker.c:638
 msgid "Lab"
 msgstr "Lab"
 
@@ -1467,7 +1467,7 @@ msgid "export profile"
 msgstr "エクスポートプロファイル"
 
 #: ../src/common/colorspaces.c:1018 ../src/common/colorspaces.c:1286
-#: ../src/views/darkroom.c:2006
+#: ../src/views/darkroom.c:2012
 msgid "softproof profile"
 msgstr "ソフトプルーフ・プロファイル"
 
@@ -1592,7 +1592,7 @@ msgid "darktable - error locking database"
 msgstr "darktable - データベースのロック エラー"
 
 #: ../src/common/database.c:1673 ../src/common/database.c:1844
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "close darktable"
 msgstr "darktableを閉じる"
 
@@ -1642,7 +1642,7 @@ msgstr "データベースのアップグレード"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2059 ../src/common/database.c:2137
+#: ../src/common/database.c:2063 ../src/common/database.c:2141
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1661,11 +1661,11 @@ msgstr ""
 "バックアップからデータベースを手動で復元するためにdarktable終了しますか？\n"
 "または新しいファイルを使用して開始しますか？"
 
-#: ../src/common/database.c:2069 ../src/common/database.c:2147
+#: ../src/common/database.c:2073 ../src/common/database.c:2151
 msgid "darktable - error opening database"
 msgstr "darktable - データベース開始エラー"
 
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "delete database"
 msgstr "データベースを削除"
 
@@ -1705,7 +1705,7 @@ msgstr "他に貼り付ける前に、画像からの履歴をコピーする必
 
 #: ../src/common/history.c:860 ../src/common/history.c:863
 #: ../src/common/history.c:879 ../src/common/styles.c:918
-#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2453
+#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2464
 #: ../src/develop/develop.c:1897 ../src/iop/ashift.c:4858
 #: ../src/libs/live_view.c:437
 msgid "on"
@@ -1713,8 +1713,8 @@ msgstr "ON"
 
 #: ../src/common/history.c:860 ../src/common/history.c:863
 #: ../src/common/history.c:879 ../src/common/styles.c:918
-#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2200
-#: ../src/develop/blend_gui.c:2450 ../src/develop/develop.c:1897
+#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2211
+#: ../src/develop/blend_gui.c:2461 ../src/develop/develop.c:1897
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4857 ../src/iop/ashift.c:4863 ../src/iop/colorin.c:2109
 #: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
@@ -1833,7 +1833,7 @@ msgstr ""
 "セッション用の固有なファイル名に展開できませんでした。インポート・セッション"
 "の設定を確認してください"
 
-#: ../src/common/iop_order.c:1897
+#: ../src/common/iop_order.c:1895
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
@@ -1951,7 +1951,7 @@ msgstr "スタイル名 '%s' は正常に作成されました"
 
 #. fail :(
 #: ../src/common/styles.c:503 ../src/common/styles.c:521
-#: ../src/views/darkroom.c:542 ../src/views/print.c:248
+#: ../src/views/darkroom.c:548 ../src/views/print.c:248
 msgid "no image selected!"
 msgstr "画像が選択されていません！"
 
@@ -2234,7 +2234,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "%d の画像を %sにエクスポートしています"
 msgstr[1] "%d 枚の画像を %sにエクスポートしています"
 
-#: ../src/control/jobs/control_jobs.c:1408 ../src/views/darkroom.c:555
+#: ../src/control/jobs/control_jobs.c:1408 ../src/views/darkroom.c:561
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -2419,83 +2419,83 @@ msgstr "モジュール '%s' でブレンドをスキップ: roiが一致しま�
 msgid "could not allocate buffer for blending"
 msgstr "ブレンドにバッファを割り当てることができませんでした"
 
-#: ../src/develop/blend_gui.c:1276
+#: ../src/develop/blend_gui.c:1282
 msgid "sliders for L channel"
 msgstr "L チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1276
+#: ../src/develop/blend_gui.c:1282
 msgid "sliders for a channel"
 msgstr "a チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1276
+#: ../src/develop/blend_gui.c:1282
 msgid "sliders for b channel"
 msgstr "b チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1277
+#: ../src/develop/blend_gui.c:1283
 msgid "sliders for chroma channel (of LCh)"
 msgstr "彩度(LCh)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1277
+#: ../src/develop/blend_gui.c:1283
 msgid "sliders for hue channel (of LCh)"
 msgstr "色相(LCh)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:1278
+#: ../src/develop/blend_gui.c:1284
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:1280
+#: ../src/develop/blend_gui.c:1286
 msgid "sliders for gray value"
 msgstr "グレイ値のスライダー"
 
-#: ../src/develop/blend_gui.c:1280
+#: ../src/develop/blend_gui.c:1286
 msgid "sliders for red channel"
 msgstr "レッド・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1280
+#: ../src/develop/blend_gui.c:1286
 msgid "sliders for green channel"
 msgstr "グリーン・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1281
+#: ../src/develop/blend_gui.c:1287
 msgid "sliders for blue channel"
 msgstr "ブルー・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1281
+#: ../src/develop/blend_gui.c:1287
 msgid "sliders for hue channel (of HSL)"
 msgstr "色相(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1282
+#: ../src/develop/blend_gui.c:1288
 msgid "sliders for chroma channel (of HSL)"
 msgstr "彩度(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1282
+#: ../src/develop/blend_gui.c:1288
 msgid "sliders for value channel (of HSL)"
 msgstr "明度(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1284
+#: ../src/develop/blend_gui.c:1290
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2507,7 +2507,7 @@ msgstr ""
 "* 下の三角で定義された範囲：すべてブレンドしない\n"
 "* 隣接する上/下のマーカーの間の範囲：徐々にブレンド"
 
-#: ../src/develop/blend_gui.c:1288
+#: ../src/develop/blend_gui.c:1294
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2519,7 +2519,7 @@ msgstr ""
 "* 下の三角で定義された範囲：すべてブレンドしない\n"
 "* 隣接する上/下のマーカーの間の範囲：徐々にブレンド"
 
-#: ../src/develop/blend_gui.c:1438 ../src/iop/colorzones.c:2287
+#: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2288
 #: ../src/iop/tonecurve.c:1342
 msgid ""
 "pick GUI color from image\n"
@@ -2528,7 +2528,7 @@ msgstr ""
 "画像からGUIカラーを抽出\n"
 "Ctrl+クリックで領域を選択します"
 
-#: ../src/develop/blend_gui.c:1442
+#: ../src/develop/blend_gui.c:1448
 msgid ""
 "set the range based on an area from the image\n"
 "click+drag to use the input image\n"
@@ -2538,376 +2538,376 @@ msgstr ""
 "入力画像を使用するには クリック+ドラッグ\n"
 "出力画像を使用するには Ctrl+クリック+ドラッグ"
 
-#: ../src/develop/blend_gui.c:1446
+#: ../src/develop/blend_gui.c:1452
 msgid "reset blend mask settings"
 msgstr "ブレンドマスクの設定をリセット"
 
-#: ../src/develop/blend_gui.c:1449
+#: ../src/develop/blend_gui.c:1455
 msgid "invert all channel's polarities"
 msgstr "すべてのチャンネルの極性を反転"
 
-#: ../src/develop/blend_gui.c:1462 ../src/develop/blend_gui.c:1466
+#: ../src/develop/blend_gui.c:1468 ../src/develop/blend_gui.c:1472
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "「マスク表示」が見えやすくなるように、極性を切り替えます"
 
-#: ../src/develop/blend_gui.c:1475
+#: ../src/develop/blend_gui.c:1481
 msgid "output"
 msgstr "出力"
 
-#: ../src/develop/blend_gui.c:1486
+#: ../src/develop/blend_gui.c:1492
 msgid "input"
 msgstr "入力"
 
-#: ../src/develop/blend_gui.c:1497 ../src/develop/blend_gui.c:1498
+#: ../src/develop/blend_gui.c:1503 ../src/develop/blend_gui.c:1504
 msgid "double click to reset"
 msgstr "ダブルクリックでリセット"
 
-#: ../src/develop/blend_gui.c:1532 ../src/develop/blend_gui.c:2224
+#: ../src/develop/blend_gui.c:1538 ../src/develop/blend_gui.c:2235
 msgid "parametric mask"
 msgstr "パラメトリック マスク"
 
-#: ../src/develop/blend_gui.c:1569
+#: ../src/develop/blend_gui.c:1575
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d シェイプ 使用"
 msgstr[1] "%d シェイプ 使用"
 
-#: ../src/develop/blend_gui.c:1574 ../src/develop/blend_gui.c:1624
-#: ../src/develop/blend_gui.c:1718 ../src/develop/blend_gui.c:1830
+#: ../src/develop/blend_gui.c:1580 ../src/develop/blend_gui.c:1630
+#: ../src/develop/blend_gui.c:1724 ../src/develop/blend_gui.c:1836
 msgid "no mask used"
 msgstr "使用マスク なし"
 
-#: ../src/develop/blend_gui.c:1623 ../src/develop/blend_gui.c:1829
-#: ../src/develop/blend_gui.c:2257 ../src/develop/blend_gui.c:2418
-#: ../src/develop/blend_gui.c:2426 ../src/develop/blend_gui.c:2448
-#: ../src/develop/blend_gui.c:2481 ../src/develop/blend_gui.c:2489
-#: ../src/develop/blend_gui.c:2497 ../src/develop/blend_gui.c:2507
+#: ../src/develop/blend_gui.c:1629 ../src/develop/blend_gui.c:1835
+#: ../src/develop/blend_gui.c:2268 ../src/develop/blend_gui.c:2429
+#: ../src/develop/blend_gui.c:2437 ../src/develop/blend_gui.c:2459
+#: ../src/develop/blend_gui.c:2492 ../src/develop/blend_gui.c:2500
+#: ../src/develop/blend_gui.c:2508 ../src/develop/blend_gui.c:2518
 msgid "blend"
 msgstr "ブレンド"
 
-#: ../src/develop/blend_gui.c:1623 ../src/develop/blend_gui.c:1693
-#: ../src/develop/blend_gui.c:2215
+#: ../src/develop/blend_gui.c:1629 ../src/develop/blend_gui.c:1699
+#: ../src/develop/blend_gui.c:2226
 msgid "drawn mask"
 msgstr "描画マスク"
 
-#: ../src/develop/blend_gui.c:1635
+#: ../src/develop/blend_gui.c:1641
 msgid "show and edit mask elements"
 msgstr "マスク要素の表示と編集"
 
-#: ../src/develop/blend_gui.c:1641
+#: ../src/develop/blend_gui.c:1647
 msgid "toggle polarity of drawn mask"
 msgstr "描画マスクの反転切り替え"
 
-#: ../src/develop/blend_gui.c:1652 ../src/libs/masks.c:993
-#: ../src/libs/masks.c:1032 ../src/libs/masks.c:1643
+#: ../src/develop/blend_gui.c:1658 ../src/libs/masks.c:1009
+#: ../src/libs/masks.c:1049 ../src/libs/masks.c:1660
 msgid "add gradient"
 msgstr "グラデーションを追加"
 
-#: ../src/develop/blend_gui.c:1661 ../src/iop/retouch.c:2677
-#: ../src/iop/spots.c:666 ../src/libs/masks.c:989 ../src/libs/masks.c:1028
-#: ../src/libs/masks.c:1649
+#: ../src/develop/blend_gui.c:1667 ../src/iop/retouch.c:2677
+#: ../src/iop/spots.c:666 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
+#: ../src/libs/masks.c:1666
 msgid "add path"
 msgstr "パスを追加"
 
-#: ../src/develop/blend_gui.c:1670 ../src/iop/retouch.c:2684
-#: ../src/iop/spots.c:673 ../src/libs/masks.c:985 ../src/libs/masks.c:1024
-#: ../src/libs/masks.c:1656
+#: ../src/develop/blend_gui.c:1676 ../src/iop/retouch.c:2684
+#: ../src/iop/spots.c:673 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
+#: ../src/libs/masks.c:1673
 msgid "add ellipse"
 msgstr "楕円を追加"
 
-#: ../src/develop/blend_gui.c:1679 ../src/iop/retouch.c:2691
-#: ../src/iop/spots.c:680 ../src/libs/masks.c:981 ../src/libs/masks.c:1020
-#: ../src/libs/masks.c:1663
+#: ../src/develop/blend_gui.c:1685 ../src/iop/retouch.c:2691
+#: ../src/iop/spots.c:680 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
+#: ../src/libs/masks.c:1680
 msgid "add circle"
 msgstr "円を追加"
 
-#: ../src/develop/blend_gui.c:1688 ../src/iop/retouch.c:2671
-#: ../src/libs/masks.c:1016 ../src/libs/masks.c:1669
+#: ../src/develop/blend_gui.c:1694 ../src/iop/retouch.c:2671
+#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1686
 msgid "add brush"
 msgstr "ブラシを追加"
 
-#: ../src/develop/blend_gui.c:1829 ../src/develop/blend_gui.c:2245
+#: ../src/develop/blend_gui.c:1835 ../src/develop/blend_gui.c:2256
 msgid "raster mask"
 msgstr "ラスターマスク"
 
-#: ../src/develop/blend_gui.c:1839
+#: ../src/develop/blend_gui.c:1845
 msgid "toggle polarity of raster mask"
 msgstr "ラスターマスクの極性を切り替えます"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:2145 ../src/libs/live_view.c:408
+#: ../src/develop/blend_gui.c:2156 ../src/libs/live_view.c:408
 msgctxt "blendmode"
 msgid "normal"
 msgstr "標準"
 
-#: ../src/develop/blend_gui.c:2146
+#: ../src/develop/blend_gui.c:2157
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "正常範囲内"
 
-#: ../src/develop/blend_gui.c:2147 ../src/libs/live_view.c:417
+#: ../src/develop/blend_gui.c:2158 ../src/libs/live_view.c:417
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "比較 (明)"
 
-#: ../src/develop/blend_gui.c:2148 ../src/libs/live_view.c:416
+#: ../src/develop/blend_gui.c:2159 ../src/libs/live_view.c:416
 msgctxt "blendmode"
 msgid "darken"
 msgstr "比較 (暗)"
 
-#: ../src/develop/blend_gui.c:2149 ../src/libs/live_view.c:413
+#: ../src/develop/blend_gui.c:2160 ../src/libs/live_view.c:413
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "乗算"
 
-#: ../src/develop/blend_gui.c:2150
+#: ../src/develop/blend_gui.c:2161
 msgctxt "blendmode"
 msgid "average"
 msgstr "平均"
 
-#: ../src/develop/blend_gui.c:2151
+#: ../src/develop/blend_gui.c:2162
 msgctxt "blendmode"
 msgid "addition"
 msgstr "加算"
 
-#: ../src/develop/blend_gui.c:2152
+#: ../src/develop/blend_gui.c:2163
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "減算"
 
-#: ../src/develop/blend_gui.c:2153 ../src/libs/live_view.c:422
+#: ../src/develop/blend_gui.c:2164 ../src/libs/live_view.c:422
 msgctxt "blendmode"
 msgid "difference"
 msgstr "差の絶対値"
 
-#: ../src/develop/blend_gui.c:2154 ../src/libs/live_view.c:414
+#: ../src/develop/blend_gui.c:2165 ../src/libs/live_view.c:414
 msgctxt "blendmode"
 msgid "screen"
 msgstr "スクリーン"
 
-#: ../src/develop/blend_gui.c:2155 ../src/libs/live_view.c:415
+#: ../src/develop/blend_gui.c:2166 ../src/libs/live_view.c:415
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "オーバーレイ"
 
-#: ../src/develop/blend_gui.c:2156
+#: ../src/develop/blend_gui.c:2167
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "ソフトライト"
 
-#: ../src/develop/blend_gui.c:2157
+#: ../src/develop/blend_gui.c:2168
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "ハードライト"
 
-#: ../src/develop/blend_gui.c:2158
+#: ../src/develop/blend_gui.c:2169
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "ビビッドライト"
 
-#: ../src/develop/blend_gui.c:2159
+#: ../src/develop/blend_gui.c:2170
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "リニアライト"
 
-#: ../src/develop/blend_gui.c:2160
+#: ../src/develop/blend_gui.c:2171
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "ピンライト"
 
-#: ../src/develop/blend_gui.c:2161
+#: ../src/develop/blend_gui.c:2172
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "明度"
 
-#: ../src/develop/blend_gui.c:2162
+#: ../src/develop/blend_gui.c:2173
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "彩度"
 
-#: ../src/develop/blend_gui.c:2163
+#: ../src/develop/blend_gui.c:2174
 msgctxt "blendmode"
 msgid "hue"
 msgstr "色相"
 
-#: ../src/develop/blend_gui.c:2164
+#: ../src/develop/blend_gui.c:2175
 msgctxt "blendmode"
 msgid "color"
 msgstr "カラー"
 
-#: ../src/develop/blend_gui.c:2165
+#: ../src/develop/blend_gui.c:2176
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "カラー調整"
 
-#: ../src/develop/blend_gui.c:2167
+#: ../src/develop/blend_gui.c:2178
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lab 明度"
 
-#: ../src/develop/blend_gui.c:2169
+#: ../src/develop/blend_gui.c:2180
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Lab カラー"
 
-#: ../src/develop/blend_gui.c:2170
+#: ../src/develop/blend_gui.c:2181
 msgctxt "blendmode"
 msgid "Lab L-channel"
 msgstr "Lab L-チャンネル"
 
-#: ../src/develop/blend_gui.c:2172
+#: ../src/develop/blend_gui.c:2183
 msgctxt "blendmode"
 msgid "Lab a-channel"
 msgstr "Lab a-チャンネル"
 
-#: ../src/develop/blend_gui.c:2174
+#: ../src/develop/blend_gui.c:2185
 msgctxt "blendmode"
 msgid "Lab b-channel"
 msgstr "Lab b-チャンネル"
 
-#: ../src/develop/blend_gui.c:2176
+#: ../src/develop/blend_gui.c:2187
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "HSV 明度"
 
-#: ../src/develop/blend_gui.c:2178
+#: ../src/develop/blend_gui.c:2189
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "HSV カラー"
 
-#: ../src/develop/blend_gui.c:2179
+#: ../src/develop/blend_gui.c:2190
 msgctxt "blendmode"
 msgid "RGB red channel"
 msgstr "RGB レッド チャンネル"
 
-#: ../src/develop/blend_gui.c:2181
+#: ../src/develop/blend_gui.c:2192
 msgctxt "blendmode"
 msgid "RGB green channel"
 msgstr "RGB グリーン チャンネル"
 
-#: ../src/develop/blend_gui.c:2183
+#: ../src/develop/blend_gui.c:2194
 msgctxt "blendmode"
 msgid "RGB blue channel"
 msgstr "RGB ブルー チャンネル"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:2187
+#: ../src/develop/blend_gui.c:2198
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "差の絶対値 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2189
+#: ../src/develop/blend_gui.c:2200
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "反転 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2191
+#: ../src/develop/blend_gui.c:2202
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "標準 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2192
+#: ../src/develop/blend_gui.c:2203
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "範囲限定無し (非推奨)"
 
-#: ../src/develop/blend_gui.c:2207
+#: ../src/develop/blend_gui.c:2218
 msgid "uniformly"
 msgstr "均一"
 
 #. overlays and
-#: ../src/develop/blend_gui.c:2235
+#: ../src/develop/blend_gui.c:2246
 msgid "drawn & parametric mask"
 msgstr "描画 ＆ パラメトリック マスク"
 
-#: ../src/develop/blend_gui.c:2257
+#: ../src/develop/blend_gui.c:2268
 msgid "blend mode"
 msgstr "ブレンドモード"
 
-#: ../src/develop/blend_gui.c:2258
+#: ../src/develop/blend_gui.c:2269
 msgid "choose blending mode"
 msgstr "ブレンドモード選択"
 
-#: ../src/develop/blend_gui.c:2418 ../src/iop/watermark.c:1432
+#: ../src/develop/blend_gui.c:2429 ../src/iop/watermark.c:1432
 msgid "opacity"
 msgstr "不透明度"
 
-#: ../src/develop/blend_gui.c:2421
+#: ../src/develop/blend_gui.c:2432
 msgid "set the opacity of the blending"
 msgstr "ブレンドの不透明度を設定"
 
-#: ../src/develop/blend_gui.c:2426
+#: ../src/develop/blend_gui.c:2437
 msgid "combine masks"
 msgstr "マスク結合"
 
-#: ../src/develop/blend_gui.c:2428
+#: ../src/develop/blend_gui.c:2439
 msgid "exclusive"
 msgstr "排他"
 
-#: ../src/develop/blend_gui.c:2431
+#: ../src/develop/blend_gui.c:2442
 msgid "inclusive"
 msgstr "包含"
 
-#: ../src/develop/blend_gui.c:2434
+#: ../src/develop/blend_gui.c:2445
 msgid "exclusive & inverted"
 msgstr "排他 ＆ 反転"
 
-#: ../src/develop/blend_gui.c:2437
+#: ../src/develop/blend_gui.c:2448
 msgid "inclusive & inverted"
 msgstr "包含 ＆ 反転"
 
-#: ../src/develop/blend_gui.c:2442
+#: ../src/develop/blend_gui.c:2453
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr "個々の描画マスクとパラメトリック マスクの異なるチャンネルの結合方法"
 
-#: ../src/develop/blend_gui.c:2448
+#: ../src/develop/blend_gui.c:2459
 msgid "invert mask"
 msgstr "マスク反転"
 
-#: ../src/develop/blend_gui.c:2457
+#: ../src/develop/blend_gui.c:2468
 msgid "apply mask in normal or inverted mode"
 msgstr "標準または反転モードでマスク適用"
 
-#: ../src/develop/blend_gui.c:2463
+#: ../src/develop/blend_gui.c:2474
 msgid "feathering guide"
 msgstr "ぼかし ガイド"
 
-#: ../src/develop/blend_gui.c:2465
+#: ../src/develop/blend_gui.c:2476
 msgid "output image"
 msgstr "出力画像"
 
-#: ../src/develop/blend_gui.c:2469
+#: ../src/develop/blend_gui.c:2480
 msgid "input image"
 msgstr "入力画像"
 
-#: ../src/develop/blend_gui.c:2475
+#: ../src/develop/blend_gui.c:2486
 msgid "choose to guide mask by input or output image"
 msgstr "入力または出力画像でマスクのカイドを選択します"
 
-#: ../src/develop/blend_gui.c:2481
+#: ../src/develop/blend_gui.c:2492
 msgid "feathering radius"
 msgstr "ぼかし半径"
 
-#: ../src/develop/blend_gui.c:2483
+#: ../src/develop/blend_gui.c:2494
 msgid "spatial radius of feathering"
 msgstr "ぼかしの範囲"
 
-#: ../src/develop/blend_gui.c:2489
+#: ../src/develop/blend_gui.c:2500
 msgid "mask blur"
 msgstr "マスクのぼかし"
 
-#: ../src/develop/blend_gui.c:2491
+#: ../src/develop/blend_gui.c:2502
 msgid "radius for gaussian blur of blend mask"
 msgstr "ブレンドマスクのガウスぼかし半径"
 
-#: ../src/develop/blend_gui.c:2497 ../src/iop/retouch.c:2953
+#: ../src/develop/blend_gui.c:2508 ../src/iop/retouch.c:2953
 msgid "mask opacity"
 msgstr "マスクの不透明度"
 
-#: ../src/develop/blend_gui.c:2499
+#: ../src/develop/blend_gui.c:2510
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
@@ -2915,18 +2915,18 @@ msgstr ""
 "透明/不透明な領域に影響を与えずに、ブレンドマスクのトーンカーブをシフトとチル"
 "トで、輝度を調整します"
 
-#: ../src/develop/blend_gui.c:2507
+#: ../src/develop/blend_gui.c:2518
 msgid "mask contrast"
 msgstr "マスクのコントラスト"
 
-#: ../src/develop/blend_gui.c:2509
+#: ../src/develop/blend_gui.c:2520
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
 "ブレンドマスクのトーンカーブをコントラストを調整するために S のような形にしま"
 "す"
 
-#: ../src/develop/blend_gui.c:2516
+#: ../src/develop/blend_gui.c:2527
 msgid ""
 "display mask and/or color channel. ctrl-click to display mask, shift-click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -2936,11 +2936,11 @@ msgstr ""
 "クでチャンネル表示。パラメトリックマスク・スライダーの上にカーソルを置くと、"
 "表示するチャンネルが選択されます"
 
-#: ../src/develop/blend_gui.c:2524
+#: ../src/develop/blend_gui.c:2535
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "一時的にブレンドマスクをオフにします。アクティブなモジュールのみ"
 
-#: ../src/develop/blend_gui.c:2554
+#: ../src/develop/blend_gui.c:2565
 msgid "mask refinement"
 msgstr "マスク精緻化"
 
@@ -2957,11 +2957,11 @@ msgstr "新しいインスタンス"
 msgid "duplicate instance"
 msgstr "インスタンスを複製"
 
-#: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1153
+#: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "上へ移動"
 
-#: ../src/develop/imageop.c:1040 ../src/libs/masks.c:1156
+#: ../src/develop/imageop.c:1040 ../src/libs/masks.c:1173
 msgid "move down"
 msgstr "下へ移動"
 
@@ -2974,17 +2974,17 @@ msgstr "削除"
 msgid "rename"
 msgstr "名前の変更"
 
-#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1990
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:2010
 #, c-format
 msgid "%s is switched on"
 msgstr "%s 有効"
 
-#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1990
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:2010
 #, c-format
 msgid "%s is switched off"
 msgstr "%s 無効"
 
-#: ../src/develop/imageop.c:1407 ../src/gui/accelerators.c:686
+#: ../src/develop/imageop.c:1424 ../src/gui/accelerators.c:686
 #: ../src/gui/accelerators.c:771 ../src/gui/accelerators.c:953
 #: ../src/gui/accelerators.c:979 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
@@ -2993,33 +2993,33 @@ msgstr "%s 無効"
 msgid "preset"
 msgstr "プリセット"
 
-#: ../src/develop/imageop.c:1427
+#: ../src/develop/imageop.c:1444
 msgctxt "accel"
 msgid "fusion"
 msgstr "合成"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1432
+#: ../src/develop/imageop.c:1449
 msgctxt "accel"
 msgid "show module"
 msgstr "モジュールを表示"
 
-#: ../src/develop/imageop.c:1433
+#: ../src/develop/imageop.c:1450
 msgctxt "accel"
 msgid "enable module"
 msgstr "モジュールを有効"
 
-#: ../src/develop/imageop.c:1435 ../src/libs/lib.c:614
+#: ../src/develop/imageop.c:1452 ../src/libs/lib.c:614
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "モジュールのパラメータをリセット"
 
-#: ../src/develop/imageop.c:1436 ../src/libs/lib.c:618
+#: ../src/develop/imageop.c:1453 ../src/libs/lib.c:618
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "プリセット・メニューを表示"
 
-#: ../src/develop/imageop.c:1953
+#: ../src/develop/imageop.c:1973
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3027,17 +3027,17 @@ msgstr ""
 "マルチ・インスタンスの操作\n"
 "中クリックで新しいインスタンスが作成されます"
 
-#: ../src/develop/imageop.c:1964 ../src/libs/lib.c:984
+#: ../src/develop/imageop.c:1984 ../src/libs/lib.c:984
 msgid "reset parameters"
 msgstr "パラメータをリセット"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1972 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:484
 #: ../src/libs/lib.c:993
 msgid "presets"
 msgstr "プリセット"
 
-#: ../src/develop/imageop.c:1974
+#: ../src/develop/imageop.c:1994
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3189,23 +3189,23 @@ msgstr "[円] 不透明度を変更"
 msgid "[CIRCLE] change feather size"
 msgstr "[円] ぼかしサイズを変更"
 
-#: ../src/develop/masks/masks.c:331
+#: ../src/develop/masks/masks.c:340
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl+クリックでシェイプノードを追加"
 
-#: ../src/develop/masks/masks.c:333
+#: ../src/develop/masks/masks.c:342
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+クリックでノードのシャープ/スムースを切り替え"
 
-#: ../src/develop/masks/masks.c:335
+#: ../src/develop/masks/masks.c:344
 msgid "right-click to reset curvature"
 msgstr "右+クリックで湾曲をリセット"
 
-#: ../src/develop/masks/masks.c:337
+#: ../src/develop/masks/masks.c:346
 msgid "ctrl+click to add a node"
 msgstr "ctrl+クリックでノード追加"
 
-#: ../src/develop/masks/masks.c:339 ../src/develop/masks/masks.c:377
+#: ../src/develop/masks/masks.c:348 ../src/develop/masks/masks.c:386
 #, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
@@ -3213,16 +3213,16 @@ msgstr ""
 "Shift+クロールでぼかしサイズを設定、Ctrl+スクロールでシェイプの不透明度を設"
 "定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:344
+#: ../src/develop/masks/masks.c:353
 #, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
 msgstr "Ctrl+スクロールでシェイプの不透明度を設定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:346
+#: ../src/develop/masks/masks.c:355
 msgid "move to rotate shape"
 msgstr "シェイプを回転移動"
 
-#: ../src/develop/masks/masks.c:352 ../src/develop/masks/masks.c:374
+#: ../src/develop/masks/masks.c:361 ../src/develop/masks/masks.c:383
 #, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
@@ -3231,11 +3231,11 @@ msgstr ""
 "スクロールでサイズを設定、Shift+スクロールでぼかしのサイズを設定します\n"
 "Ctrl+スクロールでシェイプの不透明度を設定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:354
+#: ../src/develop/masks/masks.c:363
 msgid "ctrl+click to rotate"
 msgstr "ctrl+クリックで回転"
 
-#: ../src/develop/masks/masks.c:357
+#: ../src/develop/masks/masks.c:366
 #, c-format
 msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
@@ -3245,7 +3245,7 @@ msgstr ""
 "shift+スクロールでぼかしのサイズを設定、Ctrl+スクロールでシェイプの不透明度を"
 "設定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:363
+#: ../src/develop/masks/masks.c:372
 #, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
@@ -3254,59 +3254,59 @@ msgstr ""
 "スクロールでブラシサイズ設定, shift+スクロールで硬さ設定\n"
 "Ctrl+スクロールで不透明度を設定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:366
+#: ../src/develop/masks/masks.c:375
 #, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 msgstr "スクロールで硬さ設定、Ctrl+スクロールでシェイプの不透明度を設定 (%d%%)"
 
-#: ../src/develop/masks/masks.c:368
+#: ../src/develop/masks/masks.c:377
 msgid "scroll to set brush size"
 msgstr "スクロールでブラシサイズを設定"
 
-#: ../src/develop/masks/masks.c:530
+#: ../src/develop/masks/masks.c:539
 #, c-format
 msgid "circle #%d"
 msgstr "円 #%d"
 
-#: ../src/develop/masks/masks.c:532
+#: ../src/develop/masks/masks.c:541
 #, c-format
 msgid "path #%d"
 msgstr "パス #%d"
 
-#: ../src/develop/masks/masks.c:534
+#: ../src/develop/masks/masks.c:543
 #, c-format
 msgid "gradient #%d"
 msgstr "グラデーション #%d"
 
-#: ../src/develop/masks/masks.c:536
+#: ../src/develop/masks/masks.c:545
 #, c-format
 msgid "ellipse #%d"
 msgstr "楕円 #%d"
 
-#: ../src/develop/masks/masks.c:538
+#: ../src/develop/masks/masks.c:547
 #, c-format
 msgid "brush #%d"
 msgstr "ブラシ #%d"
 
-#: ../src/develop/masks/masks.c:606
+#: ../src/develop/masks/masks.c:615
 #, c-format
 msgid "copy of %s"
 msgstr "%s のコピー"
 
-#: ../src/develop/masks/masks.c:1316
+#: ../src/develop/masks/masks.c:1325
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: マスク・バージョンの不一致: %d != %d"
 
-#: ../src/develop/masks/masks.c:2059 ../src/libs/masks.c:1036
+#: ../src/develop/masks/masks.c:2078 ../src/libs/masks.c:1053
 msgid "add existing shape"
 msgstr "既存シェイプを追加"
 
-#: ../src/develop/masks/masks.c:2084
+#: ../src/develop/masks/masks.c:2103
 msgid "use same shapes as"
 msgstr "同じシェイプを使用"
 
-#: ../src/develop/masks/masks.c:2398
+#: ../src/develop/masks/masks.c:2414
 msgid "masks can not contain themselves"
 msgstr "マスクそのものを含めることはできません"
 
@@ -3431,7 +3431,7 @@ msgstr "夕日"
 msgid "underwater"
 msgstr "水中"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1903
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1909
 msgid "black & white"
 msgstr "ブラック & ホワイト"
 
@@ -3629,18 +3629,18 @@ msgid "comma separated list of tags"
 msgstr "タグのカンマ区切りリスト"
 
 #: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
-#: ../src/libs/import.c:565 ../src/libs/metadata.c:349
+#: ../src/libs/import.c:565 ../src/libs/metadata.c:355
 #: ../src/libs/metadata_view.c:128
 msgid "creator"
 msgstr "作成者"
 
 #: ../src/gui/camera_import_dialog.c:455 ../src/libs/collect.h:35
-#: ../src/libs/import.c:570 ../src/libs/metadata.c:350
+#: ../src/libs/import.c:570 ../src/libs/metadata.c:356
 msgid "publisher"
 msgstr "公開者"
 
 #: ../src/gui/camera_import_dialog.c:460 ../src/libs/collect.h:36
-#: ../src/libs/import.c:575 ../src/libs/metadata.c:351
+#: ../src/libs/import.c:575 ../src/libs/metadata.c:357
 msgid "rights"
 msgstr "著作権"
 
@@ -4406,7 +4406,7 @@ msgstr "新しいスタイルの名前を入力"
 
 #. DT_COLLECTION_SORT_TITLE
 #: ../src/gui/styles_dialog.c:313 ../src/libs/collect.h:35
-#: ../src/libs/metadata.c:348 ../src/libs/tools/filter.c:156
+#: ../src/libs/metadata.c:354 ../src/libs/tools/filter.c:156
 msgid "description"
 msgstr "説明"
 
@@ -4547,7 +4547,7 @@ msgstr "PDF"
 #: ../src/imageio/storage/flickr.c:530 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/googlephoto.c:1234 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:127
+#: ../src/libs/metadata.c:353 ../src/libs/metadata_view.c:127
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "タイトル"
@@ -5619,7 +5619,7 @@ msgid "contrasty"
 msgstr "コントラスト強"
 
 #: ../src/iop/atrous.c:1619 ../src/iop/atrous.c:1623
-#: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3736
+#: ../src/iop/colorzones.c:2335 ../src/iop/denoiseprofile.c:3736
 #: ../src/iop/rawdenoise.c:832
 msgid "smooth"
 msgstr "平滑化"
@@ -5666,12 +5666,12 @@ msgstr ""
 "各形状でエッジ・ハロを変更します\n"
 "輝度と彩度タブの結果に限り変更します"
 
-#: ../src/iop/atrous.c:1881 ../src/iop/colorzones.c:2342
+#: ../src/iop/atrous.c:1881 ../src/iop/colorzones.c:2343
 #: ../src/iop/soften.c:758
 msgid "mix"
 msgstr "合成"
 
-#: ../src/iop/atrous.c:1882 ../src/iop/colorzones.c:2343
+#: ../src/iop/atrous.c:1882 ../src/iop/colorzones.c:2344
 msgid "make effect stronger or weaker"
 msgstr "効果を強く、または弱くします"
 
@@ -5745,7 +5745,7 @@ msgstr "nokia 調"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2374
+#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2375
 #: ../src/iop/rgbcurve.c:1609 ../src/iop/tonecurve.c:1383
 msgid "cubic spline"
 msgstr "3次スプライン"
@@ -5953,8 +5953,8 @@ msgstr "明るさ調整"
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2519
 #: ../src/iop/colorbalance.c:2569 ../src/iop/colorbalance.c:2618
 #: ../src/iop/colorchecker.c:1390 ../src/iop/colorcorrection.c:294
-#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2263
-#: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1262
+#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2264
+#: ../src/iop/colorzones.c:2328 ../src/iop/graduatednd.c:1262
 #: ../src/iop/lowpass.c:689 ../src/iop/soften.c:743
 #: ../src/iop/splittoning.c:628 ../src/iop/vignette.c:1161
 msgid "saturation"
@@ -6001,7 +6001,7 @@ msgstr "ローカル ラプラシアン: 不整合な出力"
 #: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1523
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
-#: ../src/views/darkroom.c:1838
+#: ../src/views/darkroom.c:1844
 msgid "mode"
 msgstr "モード"
 
@@ -6387,15 +6387,15 @@ msgstr "変更先"
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorbalance.c:2506
 #: ../src/iop/colorbalance.c:2556 ../src/iop/colorbalance.c:2605
 #: ../src/iop/colorize.c:418 ../src/iop/colorreconstruction.c:1376
-#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2265
-#: ../src/iop/colorzones.c:2326 ../src/iop/graduatednd.c:1247
+#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2266
+#: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1247
 #: ../src/iop/splittoning.c:613
 msgid "hue"
 msgstr "色相"
 
 #: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1372
-#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2260
-#: ../src/iop/colorzones.c:2328
+#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2262
+#: ../src/iop/colorzones.c:2329
 msgid "lightness"
 msgstr "明度"
 
@@ -6653,27 +6653,27 @@ msgstr "水平に"
 msgid "vertically"
 msgstr "垂直に"
 
-#: ../src/iop/clipping.c:3224
+#: ../src/iop/clipping.c:3239
 msgctxt "accel"
 msgid "commit"
 msgstr "コミット"
 
-#: ../src/iop/clipping.c:3225
+#: ../src/iop/clipping.c:3240
 msgctxt "accel"
 msgid "angle"
 msgstr "角度"
 
-#: ../src/iop/clipping.c:3246
+#: ../src/iop/clipping.c:3261
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[ボーダーの %s] 切り抜き"
 
-#: ../src/iop/clipping.c:3252
+#: ../src/iop/clipping.c:3267
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[ボーダーの %s] 比率を維持して切り抜き"
 
-#: ../src/iop/clipping.c:3257
+#: ../src/iop/clipping.c:3272
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] 水平線の定義/回転"
@@ -7259,21 +7259,21 @@ msgstr "出力インテント"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1981 ../src/views/darkroom.c:1989
+#: ../src/views/darkroom.c:1987 ../src/views/darkroom.c:1995
 #: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
 msgid "perceptual"
 msgstr "知覚的"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:1990
+#: ../src/views/darkroom.c:1988 ../src/views/darkroom.c:1996
 #: ../src/views/lighttable.c:4909 ../src/views/lighttable.c:4917
 msgid "relative colorimetric"
 msgstr "相対的な色域を維持"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:1991
+#: ../src/views/darkroom.c:1989 ../src/views/darkroom.c:1997
 #: ../src/views/lighttable.c:4910 ../src/views/lighttable.c:4918
 msgctxt "rendering intent"
 msgid "saturation"
@@ -7281,7 +7281,7 @@ msgstr "彩度"
 
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1984 ../src/views/darkroom.c:1992
+#: ../src/views/darkroom.c:1990 ../src/views/darkroom.c:1998
 #: ../src/views/lighttable.c:4911 ../src/views/lighttable.c:4919
 msgid "absolute colorimetric"
 msgstr "絶対的な色域を維持"
@@ -7366,7 +7366,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "取り込む"
 
-#: ../src/iop/colortransfer.c:122 ../src/libs/metadata.c:310
+#: ../src/iop/colortransfer.c:122 ../src/libs/metadata.c:316
 msgctxt "accel"
 msgid "apply"
 msgstr "適用"
@@ -7393,7 +7393,7 @@ msgstr "取り込む"
 msgid "analyze this image"
 msgstr "この画像を分析します"
 
-#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:393
+#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:399
 msgid "apply"
 msgstr "適用"
 
@@ -7401,7 +7401,7 @@ msgstr "適用"
 msgid "apply previously analyzed image look to this image"
 msgstr "この画像に、以前に分析された画像の設定を適用します"
 
-#: ../src/iop/colorzones.c:134
+#: ../src/iop/colorzones.c:137
 msgid "color zones"
 msgstr "カラー ゾーン"
 
@@ -7425,12 +7425,12 @@ msgstr "自然な肌色トーン"
 msgid "black & white film"
 msgstr "モノクロフィルム"
 
-#: ../src/iop/colorzones.c:2068 ../src/iop/retouch.c:2238
+#: ../src/iop/colorzones.c:2071 ../src/iop/retouch.c:2238
 #: ../src/iop/toneequal.c:1956
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "ブレンドマスクが表示されているときは、マスクを表示できません"
 
-#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1555
+#: ../src/iop/colorzones.c:2276 ../src/iop/rgbcurve.c:1555
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7443,54 +7443,54 @@ msgstr ""
 "Shift+クリックで負の曲線を作成します"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2306
+#: ../src/iop/colorzones.c:2307
 msgid "edit by area"
 msgstr "領域で編集"
 
-#: ../src/iop/colorzones.c:2308
+#: ../src/iop/colorzones.c:2309
 msgid "edit the curve nodes by area"
 msgstr "領域ごとにカーブノードを編集します"
 
-#: ../src/iop/colorzones.c:2315
+#: ../src/iop/colorzones.c:2316
 msgid "display selection"
 msgstr "選択を表示"
 
-#: ../src/iop/colorzones.c:2324
+#: ../src/iop/colorzones.c:2325
 msgid "select by"
 msgstr "種類"
 
-#: ../src/iop/colorzones.c:2325
+#: ../src/iop/colorzones.c:2326
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "基準を選択、グラフの横軸となります"
 
-#: ../src/iop/colorzones.c:2333
+#: ../src/iop/colorzones.c:2334
 msgid "process mode"
 msgstr "プロセスモード"
 
-#: ../src/iop/colorzones.c:2335
+#: ../src/iop/colorzones.c:2336
 msgid "strong"
 msgstr "強"
 
-#: ../src/iop/colorzones.c:2337
+#: ../src/iop/colorzones.c:2338
 msgid "choose between a smoother or stronger effect"
 msgstr "より滑らかな効果またはより強い効果から選択します"
 
-#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1608
+#: ../src/iop/colorzones.c:2374 ../src/iop/rgbcurve.c:1608
 #: ../src/iop/tonecurve.c:1382
 msgid "interpolation method"
 msgstr "補間手法"
 
-#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1610
+#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1610
 #: ../src/iop/tonecurve.c:1384
 msgid "centripetal spline"
 msgstr "centripetal スプライン"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1611
+#: ../src/iop/colorzones.c:2377 ../src/iop/rgbcurve.c:1611
 #: ../src/iop/tonecurve.c:1385
 msgid "monotonic spline"
 msgstr "単調スプライン"
 
-#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1615
+#: ../src/iop/colorzones.c:2381 ../src/iop/rgbcurve.c:1615
 #: ../src/iop/tonecurve.c:1387
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -8107,7 +8107,7 @@ msgid ""
 msgstr "クリップされる明度の割合。カラーピッカーの切り替えで使用可能にします"
 
 #: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1090
-#: ../src/views/darkroom.c:1866
+#: ../src/views/darkroom.c:1872
 msgid "clipping threshold"
 msgstr "クリッピングのしきい値"
 
@@ -8311,7 +8311,7 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
-"グローバルなモジュールの入力を色飽和-低減します\n"
+"モジュールの入力を全体的に色飽和を低減します\n"
 "色度保持が有効になっている場合、この値を100％未満に設定する必要があります"
 
 #: ../src/iop/filmic.c:1792 ../src/iop/filmicrgb.c:1553
@@ -8324,7 +8324,7 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
-"特に極端な輝度での色飽和を低減します\n"
+"モジュールの出力を特に極端な輝度に対し色飽和を低減します\n"
 "シャドウやハイライトが色飽和しすぎている場合は値を下げます"
 
 #: ../src/iop/filmic.c:1806 ../src/libs/export.c:669
@@ -11690,53 +11690,53 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "サンプル追加"
 
-#: ../src/libs/colorpicker.c:378
+#: ../src/libs/colorpicker.c:396
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr "画面上で強調表示、クリックでサンプル固定"
 
 #. delete
-#: ../src/libs/colorpicker.c:394 ../src/libs/image.c:182
+#: ../src/libs/colorpicker.c:412 ../src/libs/image.c:182
 #: ../src/libs/styles.c:458
 msgid "remove"
 msgstr "除外"
 
-#: ../src/libs/colorpicker.c:500
+#: ../src/libs/colorpicker.c:518
 msgid "live samples"
 msgstr "ライブ・サンプル"
 
-#: ../src/libs/colorpicker.c:554
+#: ../src/libs/colorpicker.c:572
 msgid "point"
 msgstr "ポイント"
 
-#: ../src/libs/colorpicker.c:555
+#: ../src/libs/colorpicker.c:573
 msgid "area"
 msgstr "領域"
 
-#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:608
+#: ../src/libs/colorpicker.c:588 ../src/libs/colorpicker.c:626
 msgid "mean"
 msgstr "平均"
 
-#: ../src/libs/colorpicker.c:571 ../src/libs/colorpicker.c:609
+#: ../src/libs/colorpicker.c:589 ../src/libs/colorpicker.c:627
 msgid "min"
 msgstr "最小"
 
-#: ../src/libs/colorpicker.c:572 ../src/libs/colorpicker.c:610
+#: ../src/libs/colorpicker.c:590 ../src/libs/colorpicker.c:628
 msgid "max"
 msgstr "最大"
 
-#: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:619
+#: ../src/libs/colorpicker.c:599 ../src/libs/colorpicker.c:637
 msgid "RGB"
 msgstr "RGB"
 
-#: ../src/libs/colorpicker.c:594
+#: ../src/libs/colorpicker.c:612
 msgid "restrict histogram to selection"
 msgstr "選択でヒストグラムを制限"
 
-#: ../src/libs/colorpicker.c:627 ../src/libs/export_metadata.c:152
+#: ../src/libs/colorpicker.c:645 ../src/libs/export_metadata.c:152
 msgid "add"
 msgstr "追加"
 
-#: ../src/libs/colorpicker.c:636
+#: ../src/libs/colorpicker.c:654
 msgid "display sample areas on image"
 msgstr "画像のサンプル・エリア表示"
 
@@ -12042,7 +12042,7 @@ msgstr "メタデータのエクスポートの詳細を編集する"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3180
+#: ../src/views/darkroom.c:3186
 msgctxt "accel"
 msgid "export"
 msgstr "エクスポート"
@@ -12271,43 +12271,43 @@ msgstr "GPXファイルを解析し、選択された画像の位置を更新し
 msgid "histogram"
 msgstr "ヒストグラム"
 
-#: ../src/libs/histogram.c:341
+#: ../src/libs/histogram.c:351
 msgid "set histogram mode to linear"
 msgstr "ヒストグラムモードを線形に設定"
 
-#: ../src/libs/histogram.c:344
+#: ../src/libs/histogram.c:354
 msgid "set histogram mode to waveform"
 msgstr "ヒストグラムモードを波形に設定"
 
-#: ../src/libs/histogram.c:347
+#: ../src/libs/histogram.c:357
 msgid "set histogram mode to logarithmic"
 msgstr "ヒストグラム·モードを対数に設定"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:366
 msgid "click to hide red channel"
 msgstr "クリックでレッド・チャンネル非表示"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:366
 msgid "click to show red channel"
 msgstr "クリックでレッド・チャンネル表示"
 
-#: ../src/libs/histogram.c:361
+#: ../src/libs/histogram.c:371
 msgid "click to hide green channel"
 msgstr "クリックでグリーン・チャンネル非表示"
 
-#: ../src/libs/histogram.c:362
+#: ../src/libs/histogram.c:372
 msgid "click to show green channel"
 msgstr "クリックでグリーン・チャンネル表示"
 
-#: ../src/libs/histogram.c:367
+#: ../src/libs/histogram.c:377
 msgid "click to hide blue channel"
 msgstr "クリックでブルー・チャンネル非表示"
 
-#: ../src/libs/histogram.c:367
+#: ../src/libs/histogram.c:377
 msgid "click to show blue channel"
 msgstr "クリックでブルー・チャンネル表示"
 
-#: ../src/libs/histogram.c:372
+#: ../src/libs/histogram.c:382
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -12316,7 +12316,7 @@ msgstr ""
 "ダブルクリックでリセット"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:377 ../src/libs/histogram.c:546
+#: ../src/libs/histogram.c:387 ../src/libs/histogram.c:556
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -12324,7 +12324,7 @@ msgstr ""
 "ドラッグで露光量変更,\n"
 "ダブルクリックでリセット"
 
-#: ../src/libs/histogram.c:588
+#: ../src/libs/histogram.c:598
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "ヒストグラム非表示"
@@ -12836,52 +12836,52 @@ msgstr "マップ ソース"
 msgid "select the source of the map. some entries might not work"
 msgstr "マップソースを選択します。いくつかのエントリが動作しない場合があります"
 
-#: ../src/libs/masks.c:242
+#: ../src/libs/masks.c:246
 #, c-format
 msgid "group #%d"
 msgstr "グループ化 #%d"
 
-#: ../src/libs/masks.c:1106
+#: ../src/libs/masks.c:1123
 msgid "duplicate this shape"
 msgstr "このシェイプを複製"
 
-#: ../src/libs/masks.c:1110
+#: ../src/libs/masks.c:1127
 msgid "delete this shape"
 msgstr "このシェイプを削除"
 
-#: ../src/libs/masks.c:1116
+#: ../src/libs/masks.c:1133
 msgid "remove from group"
 msgstr "グループから除外"
 
-#: ../src/libs/masks.c:1124
+#: ../src/libs/masks.c:1141
 msgid "group the forms"
 msgstr "グループのフォーム"
 
-#: ../src/libs/masks.c:1133
+#: ../src/libs/masks.c:1150
 msgid "use inversed shape"
 msgstr "反転したシェイプを追加"
 
-#: ../src/libs/masks.c:1139
+#: ../src/libs/masks.c:1156
 msgid "mode : union"
 msgstr "モード : 結合"
 
-#: ../src/libs/masks.c:1142
+#: ../src/libs/masks.c:1159
 msgid "mode : intersection"
 msgstr "モード : 交差"
 
-#: ../src/libs/masks.c:1145
+#: ../src/libs/masks.c:1162
 msgid "mode : difference"
 msgstr "モード : 差分"
 
-#: ../src/libs/masks.c:1148
+#: ../src/libs/masks.c:1165
 msgid "mode : exclusion"
 msgstr "モード : 除外"
 
-#: ../src/libs/masks.c:1162
+#: ../src/libs/masks.c:1179
 msgid "cleanup unused shapes"
 msgstr "未使用の場合 シェイプを削除"
 
-#: ../src/libs/masks.c:1637
+#: ../src/libs/masks.c:1654
 msgid "created shapes"
 msgstr "シェイプ作成"
 
@@ -12893,77 +12893,77 @@ msgstr "メタデータ エディタ"
 msgid "<leave unchanged>"
 msgstr "<そのままにします>"
 
-#: ../src/libs/metadata.c:309
+#: ../src/libs/metadata.c:315
 msgctxt "accel"
 msgid "clear"
 msgstr "クリア"
 
-#: ../src/libs/metadata.c:387
+#: ../src/libs/metadata.c:393
 msgid "clear"
 msgstr "クリア"
 
-#: ../src/libs/metadata.c:389
+#: ../src/libs/metadata.c:395
 msgid "remove metadata from selected images"
 msgstr "選択した画像からメタデータを除外します"
 
-#: ../src/libs/metadata.c:395
+#: ../src/libs/metadata.c:401
 msgid "write metadata for selected images"
 msgstr "選択画像のメタデータを書き出します"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:433
+#: ../src/libs/metadata.c:439
 msgid "CC BY"
 msgstr "CC BY 表示"
 
-#: ../src/libs/metadata.c:433
+#: ../src/libs/metadata.c:439
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC BY)"
 
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:440
 msgid "CC BY-SA"
 msgstr "CC BY-SA 表示-継承"
 
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:440
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:441
 msgid "CC BY-ND"
 msgstr "CC BY-ND 表示-改変禁止"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:441
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:442
 msgid "CC BY-NC"
 msgstr "CC BY-NC 表示-非営利"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:442
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
-#: ../src/libs/metadata.c:437
+#: ../src/libs/metadata.c:443
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA 表示-非営利-継承"
 
-#: ../src/libs/metadata.c:438
+#: ../src/libs/metadata.c:444
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:439
+#: ../src/libs/metadata.c:445
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND 表示-非営利-改変禁止"
 
-#: ../src/libs/metadata.c:440
+#: ../src/libs/metadata.c:446
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:447
 msgid "all rights reserved"
 msgstr "all rights reserved"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:447
 msgid "all rights reserved."
 msgstr "all rights reserved."
 
@@ -14115,7 +14115,7 @@ msgstr "copyright (c) the authors 2009-%s"
 
 #: ../src/libs/tools/darktable.c:255
 msgid "organize and develop images from digital cameras"
-msgstr "デジタルカメラ画像の現像と整理"
+msgstr "デジタルカメラの画像を整理し現像します"
 
 #: ../src/libs/tools/darktable.c:270
 msgid "translator-credits"
@@ -14426,40 +14426,40 @@ msgstr "ダブルクリックで `%f' にリセット"
 msgid "lua options"
 msgstr "lua オプション"
 
-#: ../src/views/darkroom.c:487
+#: ../src/views/darkroom.c:493
 msgid "gamut check"
 msgstr "色域の確認"
 
-#: ../src/views/darkroom.c:487
+#: ../src/views/darkroom.c:493
 msgid "soft proof"
 msgstr "ソフトプルーフ"
 
-#: ../src/views/darkroom.c:1037
+#: ../src/views/darkroom.c:1043
 msgid "no userdefined presets for favorite modules were found"
 msgstr "「お気に入り」モジュールのユーザ定義プリセットが見つかりませんでした"
 
-#: ../src/views/darkroom.c:1042
+#: ../src/views/darkroom.c:1048
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "現在の画像にスタイル `%s' を適用します"
 
-#: ../src/views/darkroom.c:1154
+#: ../src/views/darkroom.c:1160
 msgid "no styles have been created yet"
 msgstr "スタイルはまだ作成されていません"
 
-#: ../src/views/darkroom.c:1781
+#: ../src/views/darkroom.c:1787
 msgid "quick access to presets of your favorites"
 msgstr "お気に入りのプリセットに素早くアクセスします"
 
-#: ../src/views/darkroom.c:1790
+#: ../src/views/darkroom.c:1796
 msgid "quick access for applying any of your styles"
 msgstr "スタイルの適用に素早くアクセスします"
 
-#: ../src/views/darkroom.c:1803
+#: ../src/views/darkroom.c:1809
 msgid "display a second darkroom image window"
 msgstr "2番目の darkroom 画像ウィンドウを表示します"
 
-#: ../src/views/darkroom.c:1815
+#: ../src/views/darkroom.c:1821
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -14467,47 +14467,47 @@ msgstr ""
 "RAWの露出オーバー表示の切り替え\n"
 "右クリックでオプション"
 
-#: ../src/views/darkroom.c:1839
+#: ../src/views/darkroom.c:1845
 msgid "mark with CFA color"
 msgstr "CFAカラーでマーク"
 
-#: ../src/views/darkroom.c:1840
+#: ../src/views/darkroom.c:1846
 msgid "mark with solid color"
 msgstr "単色でマーク"
 
-#: ../src/views/darkroom.c:1841
+#: ../src/views/darkroom.c:1847
 msgid "false color"
 msgstr "偽色"
 
-#: ../src/views/darkroom.c:1843
+#: ../src/views/darkroom.c:1849
 msgid "select how to mark the clipped pixels"
 msgstr "クリップされたピクセルをマークする方法を選択します"
 
-#: ../src/views/darkroom.c:1850 ../src/views/darkroom.c:1902
+#: ../src/views/darkroom.c:1856 ../src/views/darkroom.c:1908
 msgid "color scheme"
 msgstr "カラー設定"
 
-#: ../src/views/darkroom.c:1851
+#: ../src/views/darkroom.c:1857
 msgctxt "solidcolor"
 msgid "red"
 msgstr "レッド"
 
-#: ../src/views/darkroom.c:1852
+#: ../src/views/darkroom.c:1858
 msgctxt "solidcolor"
 msgid "green"
 msgstr "グリーン"
 
-#: ../src/views/darkroom.c:1853
+#: ../src/views/darkroom.c:1859
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "ブルー"
 
-#: ../src/views/darkroom.c:1854
+#: ../src/views/darkroom.c:1860
 msgctxt "solidcolor"
 msgid "black"
 msgstr "黒"
 
-#: ../src/views/darkroom.c:1858
+#: ../src/views/darkroom.c:1864
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -14515,7 +14515,7 @@ msgstr ""
 "露光オーバーを示す単色を選択します\n"
 "単色でマークのモードのみ使用されます"
 
-#: ../src/views/darkroom.c:1868
+#: ../src/views/darkroom.c:1874
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -14525,7 +14525,7 @@ msgstr ""
 "1.0 - 白レベル\n"
 "0.0 - 黒レベル"
 
-#: ../src/views/darkroom.c:1879
+#: ../src/views/darkroom.c:1885
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -14533,35 +14533,35 @@ msgstr ""
 "露光オーバー/アンダー表示の切り替え\n"
 "右クリックでオプション"
 
-#: ../src/views/darkroom.c:1904
+#: ../src/views/darkroom.c:1910
 msgid "red & blue"
 msgstr "レッド & ブルー"
 
-#: ../src/views/darkroom.c:1905
+#: ../src/views/darkroom.c:1911
 msgid "purple & green"
 msgstr "パープル & グリーン"
 
-#: ../src/views/darkroom.c:1907
+#: ../src/views/darkroom.c:1913
 msgid "select colors to indicate over/under exposure"
 msgstr "露光 オーバー/アンダー を示すカラーを選択"
 
-#: ../src/views/darkroom.c:1916
+#: ../src/views/darkroom.c:1922
 msgid "lower threshold"
 msgstr "しきい値の下限"
 
-#: ../src/views/darkroom.c:1917
+#: ../src/views/darkroom.c:1923
 msgid "threshold of what shall be considered underexposed"
 msgstr "露光アンダーと見なされる、しきい値"
 
-#: ../src/views/darkroom.c:1925
+#: ../src/views/darkroom.c:1931
 msgid "upper threshold"
 msgstr "しきい値の上限"
 
-#: ../src/views/darkroom.c:1926
+#: ../src/views/darkroom.c:1932
 msgid "threshold of what shall be considered overexposed"
 msgstr "露光オーバーと見なされる、しきい値"
 
-#: ../src/views/darkroom.c:1937
+#: ../src/views/darkroom.c:1943
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -14569,7 +14569,7 @@ msgstr ""
 "ソフトプルーフの切り替え\n"
 "右クリックでプロファイル・オプション"
 
-#: ../src/views/darkroom.c:1951
+#: ../src/views/darkroom.c:1957
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -14577,195 +14577,195 @@ msgstr ""
 "色域のチェックの切り替え\n"
 "右クリックでプロファイル・オプション"
 
-#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4906
+#: ../src/views/darkroom.c:1985 ../src/views/lighttable.c:4906
 msgid "display intent"
 msgstr "ディスプレイ・インテント"
 
-#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4914
+#: ../src/views/darkroom.c:1993 ../src/views/lighttable.c:4914
 msgid "preview display intent"
 msgstr "インテント プレビュー表示"
 
-#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4922
+#: ../src/views/darkroom.c:2013 ../src/views/lighttable.c:4922
 msgid "display profile"
 msgstr "ディスプレイ・プロファイル"
 
-#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4926
+#: ../src/views/darkroom.c:2014 ../src/views/lighttable.c:4926
 msgid "preview display profile"
 msgstr "ディスプレイプロファイルのプレビュー"
 
-#: ../src/views/darkroom.c:2009
+#: ../src/views/darkroom.c:2015
 msgid "histogram profile"
 msgstr "ヒストグラム プロファイル"
 
-#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4956
+#: ../src/views/darkroom.c:2069 ../src/views/lighttable.c:4956
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "%s のディスプレイICCプロファイル、または %s"
 
-#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4959
+#: ../src/views/darkroom.c:2072 ../src/views/lighttable.c:4959
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "ICCプロファイルを %s または %s でプレビュー表示"
 
-#: ../src/views/darkroom.c:2069
+#: ../src/views/darkroom.c:2075
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "%s のソフトプルーフICCプロファイル、または %s"
 
-#: ../src/views/darkroom.c:2072
+#: ../src/views/darkroom.c:2078
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "%s または %s のヒストグラムおよびカラーピッカーICCプロファイル"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3172 ../src/views/map.c:892 ../src/views/print.c:328
+#: ../src/views/darkroom.c:3178 ../src/views/map.c:892 ../src/views/print.c:328
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "フィルムストリップ切り換え"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3175
+#: ../src/views/darkroom.c:3181
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ズームアップ"
 
-#: ../src/views/darkroom.c:3176
+#: ../src/views/darkroom.c:3182
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ズーム フィル"
 
-#: ../src/views/darkroom.c:3177
+#: ../src/views/darkroom.c:3183
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ズーム フィット"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3183
+#: ../src/views/darkroom.c:3189
 msgctxt "accel"
 msgid "image forward"
 msgstr "次の画像"
 
-#: ../src/views/darkroom.c:3184
+#: ../src/views/darkroom.c:3190
 msgctxt "accel"
 msgid "image back"
 msgstr "前の画像"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3187
+#: ../src/views/darkroom.c:3193
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "RAW 露光オーバー"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3190
+#: ../src/views/darkroom.c:3196
 msgctxt "accel"
 msgid "overexposed"
 msgstr "露光オーバー"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3193
+#: ../src/views/darkroom.c:3199
 msgctxt "accel"
 msgid "softproof"
 msgstr "ソフトプルーフ"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3196
+#: ../src/views/darkroom.c:3202
 msgctxt "accel"
 msgid "gamut check"
 msgstr "色域の確認"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3199
+#: ../src/views/darkroom.c:3205
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "ブラシサイズを大きく"
 
-#: ../src/views/darkroom.c:3200
+#: ../src/views/darkroom.c:3206
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "ブラシサイズを小さく"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3203
+#: ../src/views/darkroom.c:3209
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "ブラシの硬さを増加"
 
-#: ../src/views/darkroom.c:3204
+#: ../src/views/darkroom.c:3210
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "ブラシの硬さを低減"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3207
+#: ../src/views/darkroom.c:3213
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "ブラシの不透明度を増加"
 
-#: ../src/views/darkroom.c:3208
+#: ../src/views/darkroom.c:3214
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "ブラシの不透明度を低下"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3211
+#: ../src/views/darkroom.c:3217
 msgctxt "accel"
 msgid "full preview"
 msgstr "フルプレビュー"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4450
+#: ../src/views/darkroom.c:3220 ../src/views/lighttable.c:4450
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "元に戻す"
 
-#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4451
+#: ../src/views/darkroom.c:3221 ../src/views/lighttable.c:4451
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "やり直す"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3218
+#: ../src/views/darkroom.c:3224
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "マスクを編集中にパン&ズームを許可"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3221
+#: ../src/views/darkroom.c:3227
 msgctxt "accel"
 msgid "search modules"
 msgstr "検索モジュール"
 
-#: ../src/views/darkroom.c:3320
+#: ../src/views/darkroom.c:3326
 msgid "switch to lighttable"
 msgstr "ライトテーブルに切り替え"
 
-#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4597
+#: ../src/views/darkroom.c:3331 ../src/views/lighttable.c:4597
 msgid "zoom in the image"
 msgstr "画像をズーム"
 
-#: ../src/views/darkroom.c:3331
+#: ../src/views/darkroom.c:3337
 msgid "unbounded zoom in the image"
 msgstr "画像の無制限ズーム"
 
-#: ../src/views/darkroom.c:3336
+#: ../src/views/darkroom.c:3342
 msgid "zoom to 100% 200% and back"
 msgstr "100％ 200％ にズームして戻ります"
 
-#: ../src/views/darkroom.c:3342
+#: ../src/views/darkroom.c:3348
 msgid "[modules] expand module without closing others"
 msgstr "[モジュール] 他を閉じずにモジュールを展開します"
 
-#: ../src/views/darkroom.c:3348
+#: ../src/views/darkroom.c:3354
 msgid "[modules] change module position in pipe"
 msgstr "[モジュール] パイプ内のモジュールの位置を変更"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
+#: ../src/views/darkroom.c:4056 ../src/views/darkroom.c:4074
 msgid "darktable - darkroom preview"
 msgstr "darktable - ダークルーム プレビュー"
 

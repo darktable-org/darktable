@@ -18,6 +18,12 @@
 
 #include "basic.cl"
 
+// In case the OpenCL driver doesn't have a dot method
+inline float vdot(const float4 vec1, const float4 vec2)
+{
+    return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
+}
+
 typedef enum dt_iop_filmicrgb_methods_type_t
 {
   DT_FILMIC_METHOD_NONE = 0,
@@ -136,7 +142,7 @@ inline float filmic_spline(const float x,
   const int latitude = (toe == shoulder); // == FALSE
   const float4 mask = { toe, shoulder, latitude, 0 };
   const float4 x4 = x;
-  return dot(mask, M1 + x4 * (M2 + x4 * (M3 + x4 * (M4 + x4 * M5))));
+  return vdot(mask, M1 + x4 * (M2 + x4 * (M3 + x4 * (M4 + x4 * M5))));
 }
 
 
@@ -205,7 +211,7 @@ inline float pixel_rgb_norm_power(const float4 pixel)
   const float4 RGB_square = RGB * RGB;
   const float4 RGB_cubic = RGB_square * RGB;
   const float4 ones = 1.0f;
-  return dot(RGB_cubic, ones) / dot(RGB_square, ones);
+  return vdot(RGB_cubic, ones) / vdot(RGB_square, ones);
 }
 
 
