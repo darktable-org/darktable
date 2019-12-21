@@ -1064,7 +1064,7 @@ delete_next_file:
   return 0;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs)
 {
   dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)item;
   GList *l;
@@ -1082,6 +1082,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t it
     dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)l->data;
     dt_image_set_location_and_elevation(imgid, geoloc);
 
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
     l = g_list_next(l);
   }
 }

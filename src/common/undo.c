@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/image.h"
 #include "common/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
@@ -32,7 +33,7 @@ typedef struct dt_undo_item_t
   dt_undo_data_t data;
   double ts;
   gboolean is_group;
-  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action);
+  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
@@ -75,7 +76,7 @@ static void _free_undo_data(void *p)
 
 static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
                          gboolean is_group,
-                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
+                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs),
                          void (*free_data)(gpointer data))
 {
   if(!self) return;
@@ -143,10 +144,15 @@ void dt_undo_end_group(dt_undo_t *self)
 }
 
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs),
                     void (*free_data)(gpointer data))
 {
   _undo_record(self, user_data, type, data, FALSE, undo, free_data);
+}
+
+gint _images_list_cmp(gconstpointer a, gconstpointer b)
+{
+  return GPOINTER_TO_INT(a) - GPOINTER_TO_INT(b);
 }
 
 static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_t action)
@@ -160,6 +166,7 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   GList **to   = action == DT_ACTION_UNDO ? &self->redo_list : &self->undo_list;
 
   GList *l = g_list_first(*from);
+  GList *imgs = NULL;
 
   // check for first item that is matching the given pattern
 
@@ -191,7 +198,7 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
           if(item->is_group)
             is_group = TRUE;
           else
-            item->undo(item->user_data, item->type, item->data, action);
+            item->undo(item->user_data, item->type, item->data, action, &imgs);
 
           //  add old position back into the TO list
           *to = g_list_prepend(*to, item);
@@ -215,7 +222,7 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
             in_group = !in_group;
           else
             //  callback with redo or redo data
-            item->undo(item->user_data, item->type, item->data, action);
+            item->undo(item->user_data, item->type, item->data, action, &imgs);
 
           //  add old position back into the TO list
           *to = g_list_prepend(*to, item);
@@ -230,6 +237,18 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
     l = g_list_next(l);
   }
   UNLOCK;
+  if(imgs)
+  {
+    imgs = g_list_sort(imgs, _images_list_cmp);
+    // remove duplicates
+    for(GList *img = imgs; img != NULL; img = img->next)
+      while(img->next && img->data == img->next->data)
+        imgs = g_list_delete_link(imgs, img->next);
+    // udpate xmp for updated images
+    for(GList *img = imgs; img != NULL; img = img->next)
+      dt_image_synch_xmp(GPOINTER_TO_INT(img->data));
+    g_list_free(imgs);
+  }
 
   dt_collection_update_query(darktable.collection);
 }

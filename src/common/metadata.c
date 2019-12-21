@@ -33,7 +33,7 @@ typedef struct dt_undo_metadata_t
 
 static void _metadata_set_xmp(int id, const gint keyid, const char *value, gboolean undo_actif);
 
-static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_METADATA)
   {
@@ -65,6 +65,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
         _metadata_set_xmp(metadata->imgid, metadata->keyid, metadata->value, FALSE);
       }
 
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(metadata->imgid));
       list = g_list_next(list);
     }
 
