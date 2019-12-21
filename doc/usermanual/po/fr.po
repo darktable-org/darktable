@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2019-12-03 15:43+0100\n"
-"PO-Revision-Date: 2019-11-28 18:53+0100\n"
+"POT-Creation-Date: 2019-12-21 15:14+0100\n"
+"PO-Revision-Date: 2019-12-21 15:19+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -16,8 +16,8 @@ msgstr ""
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
-msgid "darktable 2.6"
-msgstr "darktable 2.6"
+msgid "darktable 3.0"
+msgstr "darktable 3.0"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10(para)
 msgid "The founder of the darktable project is Johannes Hanika."
@@ -179,17 +179,17 @@ msgid ""
 "<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" "
 "rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry/><entry> version "
 "</entry><entry> date </entry></row><row><entry> user manual </entry><entry> "
-"2.6.0 </entry><entry> December 2018 </entry></row><row><entry> darktable </"
-"entry><entry> 2.6 </entry><entry> December 2018 </entry></row></tbody></"
+"3.0.0 </entry><entry> December 2019 </entry></row><row><entry> darktable </"
+"entry><entry> 3.0 </entry><entry> December 2019 </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
 "La version du manuel utilisateur et la version de darktable correspondante "
 "sont listées ci-dessous : <informaltable frame=\"none\" width=\"80%"
 "\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/"
 "><tbody><row><entry/><entry> version </entry><entry> date </entry></"
-"row><row><entry> manuel utilisateur </entry><entry> 2.6.0 </entry><entry> "
-"décembre 2018 </entry></row><row><entry> darktable </entry><entry> 2.6 </"
-"entry><entry> décembre 2018 </entry></row></tbody></tgroup></informaltable>"
+"row><row><entry> manuel utilisateur </entry><entry> 3.0.0 </entry><entry> "
+"décembre 2019 </entry></row><row><entry> darktable </entry><entry> 3.0 </"
+"entry><entry> décembre 2019 </entry></row></tbody></tgroup></informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:147(para)
 msgid ""
@@ -17353,11 +17353,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14053(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
