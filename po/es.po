@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-19 11:20-0600\n"
+"POT-Creation-Date: 2019-12-21 10:47+0100\n"
 "PO-Revision-Date: 2019-12-19 20:31-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -1797,52 +1797,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imágenes huérfanas"
 
-#: ../src/common/image.c:1455
+#: ../src/common/image.c:1461
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "No se puede acceder a la copia local `%s'"
 
-#: ../src/common/image.c:1461
+#: ../src/common/image.c:1467
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "No se puede escribir la copia local `%s'"
 
-#: ../src/common/image.c:1468
+#: ../src/common/image.c:1474
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error al mover la copia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1484
+#: ../src/common/image.c:1490
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error al mover `%s': no se encuentra el archivo"
 
-#: ../src/common/image.c:1494
+#: ../src/common/image.c:1500
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error al mover `%s' -> `%s': el archivo ya existe"
 
-#: ../src/common/image.c:1498
+#: ../src/common/image.c:1504
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error al mover `%s' -> `%s'"
 
-#: ../src/common/image.c:1755
+#: ../src/common/image.c:1761
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede crear cuando el archivo original no es accesible."
 
-#: ../src/common/image.c:1769
+#: ../src/common/image.c:1775
 msgid "cannot create local copy."
 msgstr "no se puede crear una copia local."
 
-#: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1841 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede eliminar el archivo original cuando no es "
 "accesible."
 
-#: ../src/common/image.c:2004
+#: ../src/common/image.c:2010
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"

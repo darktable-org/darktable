@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-10 19:29+0100\n"
+"POT-Creation-Date: 2019-12-21 10:47+0100\n"
 "PO-Revision-Date: 2019-12-14 23:12+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm2@gmail.com>\n"
@@ -1248,12 +1248,12 @@ msgstr "Mostra imatges en un mapa"
 msgid "Print your images"
 msgstr "Imprimeix imatges"
 
-#: ../src/bauhaus/bauhaus.c:2266
+#: ../src/bauhaus/bauhaus.c:2265
 #, c-format
 msgid "%s/%s: %s"
 msgstr "%s/%s: %s"
 
-#: ../src/bauhaus/bauhaus.c:2268
+#: ../src/bauhaus/bauhaus.c:2267
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
@@ -1431,7 +1431,7 @@ msgstr[1] "seleccionades %d imatges de %d de la col·lecció actual"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
 #: ../src/common/colorspaces.c:1002 ../src/iop/colorin.c:2110
-#: ../src/iop/lut3d.c:1136
+#: ../src/iop/lut3d.c:1139
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -1597,7 +1597,7 @@ msgstr ""
 #: ../src/common/darktable.c:807 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2012 ../src/iop/filmicrgb.c:1566
-#: ../src/iop/toneequal.c:3246 ../src/libs/export.c:628
+#: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "no"
@@ -1629,7 +1629,7 @@ msgid "darktable - error locking database"
 msgstr "darktable - error en blocar la base de dades"
 
 #: ../src/common/database.c:1673 ../src/common/database.c:1844
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "close darktable"
 msgstr "tanca el darktable"
 
@@ -1677,7 +1677,7 @@ msgstr "actualitza la base de dades"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2059 ../src/common/database.c:2137
+#: ../src/common/database.c:2063 ../src/common/database.c:2141
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1696,11 +1696,11 @@ msgstr ""
 "voleu tancar el darktable per restaurar-la manualment\n"
 "des d'una còpia de seguretat, o engegar amb una de nova?"
 
-#: ../src/common/database.c:2069 ../src/common/database.c:2147
+#: ../src/common/database.c:2073 ../src/common/database.c:2151
 msgid "darktable - error opening database"
 msgstr "darktable - error en obrir la base de dades"
 
-#: ../src/common/database.c:2070 ../src/common/database.c:2148
+#: ../src/common/database.c:2074 ../src/common/database.c:2152
 msgid "delete database"
 msgstr "esborrar la base de dades"
 
@@ -1780,51 +1780,51 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imatge òrfena"
 
-#: ../src/common/image.c:1455
+#: ../src/common/image.c:1461
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "no es pot accedir a la còpia local `%s'"
 
-#: ../src/common/image.c:1461
+#: ../src/common/image.c:1467
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "no es pot escriure la còpia local `%s'"
 
-#: ../src/common/image.c:1468
+#: ../src/common/image.c:1474
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "error en moure la còpia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1484
+#: ../src/common/image.c:1490
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "error en moure `%s': no s'ha trobat l'arxiu"
 
-#: ../src/common/image.c:1494
+#: ../src/common/image.c:1500
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "error en moure `%s' -> `%s': l'arxiu ja existeix"
 
-#: ../src/common/image.c:1498
+#: ../src/common/image.c:1504
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "error en moure `%s' -> `%s'"
 
-#: ../src/common/image.c:1755
+#: ../src/common/image.c:1761
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "no es pot crear una còpia local si el fitxer original no és accessible."
 
-#: ../src/common/image.c:1769
+#: ../src/common/image.c:1775
 msgid "cannot create local copy."
 msgstr "no es pot crear una còpia local."
 
-#: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1841 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "no es pot eliminar una còpia local si el fitxer original no és accessible."
 
-#: ../src/common/image.c:2004
+#: ../src/common/image.c:2010
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1868,7 +1868,7 @@ msgstr ""
 "no s'ha pogut expandir a un sol nom d'arxiu per sessió, reviseu els "
 "paràmetres de sessions d'importació."
 
-#: ../src/common/iop_order.c:1897
+#: ../src/common/iop_order.c:1895
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr "el perfil de treball no suportat %s s'ha substituït per Rec2020 RGB!\n"
@@ -1882,26 +1882,26 @@ msgstr "de Poisson genèric"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "l'arxiu de perfil de soroll `%s' no és vàlid"
 
-#: ../src/common/opencl.c:787
+#: ../src/common/opencl.c:789
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "a causa d'una GPU lenta, s'ha desactivat l'acceleració via opencl."
 
-#: ../src/common/opencl.c:794
+#: ../src/common/opencl.c:796
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "detectades múltiples GPUs - el perfil de planificació d'OpenCL s'ha ajustat "
 "conseqüentment."
 
-#: ../src/common/opencl.c:801
+#: ../src/common/opencl.c:803
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "detectada GPU molt ràpida - el perfil de planificació d'OpenCL s'ha ajustat "
 "conseqüentment."
 
-#: ../src/common/opencl.c:808
+#: ../src/common/opencl.c:810
 msgid "opencl scheduling profile set to default."
 msgstr "perfil de planificació d'OpenCL ajustat al valor per defecte."
 
@@ -2559,8 +2559,8 @@ msgstr ""
 "* rang per sota dels marcadors inferiors: sense mesclar\n"
 "* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
-#: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2288
-#: ../src/iop/tonecurve.c:1342
+#: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2304
+#: ../src/iop/tonecurve.c:1365
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
@@ -2869,7 +2869,7 @@ msgstr "mode de mescla"
 msgid "choose blending mode"
 msgstr "tria el mode de mescla"
 
-#: ../src/develop/blend_gui.c:2429 ../src/iop/watermark.c:1432
+#: ../src/develop/blend_gui.c:2429 ../src/iop/watermark.c:1431
 msgid "opacity"
 msgstr "opacitat"
 
@@ -3388,7 +3388,7 @@ msgstr "feu doble clic per tornar a valor inicial"
 #. *
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
-#: ../src/external/wb_presets.c:45 ../src/iop/lowlight.c:338
+#: ../src/external/wb_presets.c:45 ../src/iop/lowlight.c:344
 msgid "daylight"
 msgstr "llum de dia"
 
@@ -4023,7 +4023,7 @@ msgstr "espiral àuria"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
 #: ../src/iop/denoiseprofile.c:3974 ../src/iop/lens.cc:2307
-#: ../src/iop/rawdenoise.c:987 ../src/libs/tools/filter.c:125
+#: ../src/iop/rawdenoise.c:1007 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "totes"
 
@@ -5393,7 +5393,7 @@ msgid "vertical"
 msgstr "vertical"
 
 #: ../src/iop/ashift.c:4835 ../src/iop/graduatednd.c:1233
-#: ../src/iop/watermark.c:1439
+#: ../src/iop/watermark.c:1438
 msgid "rotation"
 msgstr "gir"
 
@@ -5586,144 +5586,144 @@ msgstr "[%s] selecciona tots els segments de la zona"
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] desmarca tots els segments de la zona"
 
-#: ../src/iop/atrous.c:117
+#: ../src/iop/atrous.c:118
 msgid "contrast equalizer"
 msgstr "equalitzador de contrast"
 
-#: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
+#: ../src/iop/atrous.c:138 ../src/iop/soften.c:108
 msgctxt "accel"
 msgid "mix"
 msgstr "mescla"
 
-#: ../src/iop/atrous.c:1068
+#: ../src/iop/atrous.c:1069
 msgctxt "eq_preset"
 msgid "coarse"
 msgstr "aspre"
 
-#: ../src/iop/atrous.c:1082
+#: ../src/iop/atrous.c:1083
 msgid "denoise & sharpen"
 msgstr "treu soroll i enfoca"
 
-#: ../src/iop/atrous.c:1096
+#: ../src/iop/atrous.c:1097
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "enfoca"
 
-#: ../src/iop/atrous.c:1110
+#: ../src/iop/atrous.c:1111
 msgid "denoise chroma"
 msgstr "treu soroll cromàtic"
 
-#: ../src/iop/atrous.c:1124 ../src/iop/equalizer.c:337
+#: ../src/iop/atrous.c:1125 ../src/iop/equalizer.c:337
 msgid "denoise"
 msgstr "treu soroll"
 
-#: ../src/iop/atrous.c:1139 ../src/iop/bloom.c:77
+#: ../src/iop/atrous.c:1140 ../src/iop/bloom.c:77
 msgid "bloom"
 msgstr "enlluerna (bloom)"
 
-#: ../src/iop/atrous.c:1153
+#: ../src/iop/atrous.c:1154
 msgid "clarity"
 msgstr "claredat"
 
-#: ../src/iop/atrous.c:1171
+#: ../src/iop/atrous.c:1172
 msgid "deblur: large blur, strength 4"
 msgstr "des-difumina: difuminat gros, força 4"
 
-#: ../src/iop/atrous.c:1187
+#: ../src/iop/atrous.c:1188
 msgid "deblur: large blur, strength 3"
 msgstr "des-difumina: difuminat gros, força 3"
 
-#: ../src/iop/atrous.c:1201
+#: ../src/iop/atrous.c:1202
 msgid "deblur: medium blur, strength 3"
 msgstr "des-difumina: difuminat mitjà, força 3"
 
-#: ../src/iop/atrous.c:1214
+#: ../src/iop/atrous.c:1215
 msgid "deblur: fine blur, strength 3"
 msgstr "des-difumina: difuminat fi, força 3"
 
-#: ../src/iop/atrous.c:1231
+#: ../src/iop/atrous.c:1232
 msgid "deblur: large blur, strength 2"
 msgstr "des-difumina: difuminat gros, força 2"
 
-#: ../src/iop/atrous.c:1245
+#: ../src/iop/atrous.c:1246
 msgid "deblur: medium blur, strength 2"
 msgstr "des-difumina: difuminat mitjà, força 2"
 
-#: ../src/iop/atrous.c:1258
+#: ../src/iop/atrous.c:1259
 msgid "deblur: fine blur, strength 2"
 msgstr "des-difumina: difuminat fi, força 2"
 
-#: ../src/iop/atrous.c:1275
+#: ../src/iop/atrous.c:1276
 msgid "deblur: large blur, strength 1"
 msgstr "des-difumina: difuminat gros, força 1"
 
-#: ../src/iop/atrous.c:1289
+#: ../src/iop/atrous.c:1290
 msgid "deblur: medium blur, strength 1"
 msgstr "des-difumina: difuminat mitjà, força 1"
 
-#: ../src/iop/atrous.c:1302
+#: ../src/iop/atrous.c:1303
 msgid "deblur: fine blur, strength 1"
 msgstr "des-difumina: difuminat fi, força 1"
 
-#: ../src/iop/atrous.c:1599 ../src/iop/denoiseprofile.c:3719
-#: ../src/iop/rawdenoise.c:815
+#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3719
+#: ../src/iop/rawdenoise.c:820
 msgid "coarse"
 msgstr "aspre"
 
-#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3727
-#: ../src/iop/rawdenoise.c:823
+#: ../src/iop/atrous.c:1613 ../src/iop/denoiseprofile.c:3727
+#: ../src/iop/rawdenoise.c:828
 msgid "fine"
 msgstr "fi"
 
-#: ../src/iop/atrous.c:1618
+#: ../src/iop/atrous.c:1625
 msgid "contrasty"
 msgstr "contrastat"
 
-#: ../src/iop/atrous.c:1619 ../src/iop/atrous.c:1623
-#: ../src/iop/colorzones.c:2335 ../src/iop/denoiseprofile.c:3736
-#: ../src/iop/rawdenoise.c:832
+#: ../src/iop/atrous.c:1626 ../src/iop/atrous.c:1630
+#: ../src/iop/colorzones.c:2351 ../src/iop/denoiseprofile.c:3736
+#: ../src/iop/rawdenoise.c:837
 msgid "smooth"
 msgstr "suau"
 
-#: ../src/iop/atrous.c:1624 ../src/iop/denoiseprofile.c:3741
-#: ../src/iop/rawdenoise.c:837
+#: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3741
+#: ../src/iop/rawdenoise.c:842
 msgid "noisy"
 msgstr "sorollós"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1627
+#: ../src/iop/atrous.c:1634
 msgid "bold"
 msgstr "marcat"
 
-#: ../src/iop/atrous.c:1628
+#: ../src/iop/atrous.c:1635
 msgid "dull"
 msgstr "fluix"
 
-#: ../src/iop/atrous.c:1842 ../src/iop/equalizer.c:395 ../src/iop/nlmeans.c:849
+#: ../src/iop/atrous.c:1866 ../src/iop/equalizer.c:395 ../src/iop/nlmeans.c:849
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1844
+#: ../src/iop/atrous.c:1868
 msgid "change lightness at each feature size"
 msgstr ""
 "canvia la lluminositat per les diferents\n"
 "dimensions dels detalls de la imatge"
 
-#: ../src/iop/atrous.c:1847 ../src/iop/equalizer.c:396 ../src/iop/nlmeans.c:851
+#: ../src/iop/atrous.c:1871 ../src/iop/equalizer.c:396 ../src/iop/nlmeans.c:851
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/atrous.c:1849
+#: ../src/iop/atrous.c:1873
 msgid "change color saturation at each feature size"
 msgstr ""
 "canvia la saturació per les diferents\n"
 "dimensions dels detalls de la imatge"
 
-#: ../src/iop/atrous.c:1851
+#: ../src/iop/atrous.c:1875
 msgid "edges"
 msgstr "vores"
 
-#: ../src/iop/atrous.c:1853
+#: ../src/iop/atrous.c:1877
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -5732,12 +5732,12 @@ msgstr ""
 "per les diferents dimensions dels detalls de la imatge\n"
 "només canvia resultat de les pestanyes luma i chroma"
 
-#: ../src/iop/atrous.c:1881 ../src/iop/colorzones.c:2343
+#: ../src/iop/atrous.c:1905 ../src/iop/colorzones.c:2359
 #: ../src/iop/soften.c:758
 msgid "mix"
 msgstr "mescla"
 
-#: ../src/iop/atrous.c:1882 ../src/iop/colorzones.c:2344
+#: ../src/iop/atrous.c:1906 ../src/iop/colorzones.c:2360
 msgid "make effect stronger or weaker"
 msgstr "fa l'efecte més fort o més feble"
 
@@ -5811,36 +5811,36 @@ msgstr "com un Nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2375
-#: ../src/iop/rgbcurve.c:1609 ../src/iop/tonecurve.c:1383
+#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2391
+#: ../src/iop/rgbcurve.c:1625 ../src/iop/tonecurve.c:1406
 msgid "cubic spline"
 msgstr "spline cúbic"
 
-#: ../src/iop/basecurve.c:326
+#: ../src/iop/basecurve.c:327
 msgid "base curve"
 msgstr "corba base"
 
-#: ../src/iop/basecurve.c:2127
+#: ../src/iop/basecurve.c:2151
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscissa: entrada, ordenada: sortida. actua en canals RGB"
 
-#: ../src/iop/basecurve.c:2132 ../src/iop/lens.cc:2442
-#: ../src/iop/tonecurve.c:1407 ../src/iop/vignette.c:1158
-#: ../src/iop/watermark.c:1436
+#: ../src/iop/basecurve.c:2156 ../src/iop/lens.cc:2442
+#: ../src/iop/tonecurve.c:1430 ../src/iop/vignette.c:1158
+#: ../src/iop/watermark.c:1435
 msgid "scale"
 msgstr "escala"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:2133 ../src/iop/filmic.c:1809
-#: ../src/iop/profile_gamma.c:876 ../src/iop/tonecurve.c:1408
+#: ../src/iop/basecurve.c:2157 ../src/iop/filmic.c:1809
+#: ../src/iop/profile_gamma.c:876 ../src/iop/tonecurve.c:1431
 msgid "linear"
 msgstr "lineal"
 
-#: ../src/iop/basecurve.c:2134 ../src/iop/profile_gamma.c:860
+#: ../src/iop/basecurve.c:2158 ../src/iop/profile_gamma.c:860
 msgid "logarithmic"
 msgstr "logarítmic"
 
-#: ../src/iop/basecurve.c:2135 ../src/iop/tonecurve.c:1410
+#: ../src/iop/basecurve.c:2159 ../src/iop/tonecurve.c:1433
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -5848,80 +5848,80 @@ msgstr ""
 "escala a emprar a la gràfica. L'escala logarítmica permet un control més "
 "precís a prop del negre"
 
-#: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
-#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1121
-#: ../src/iop/tonecurve.c:1394
+#: ../src/iop/basecurve.c:2165 ../src/iop/basicadj.c:708
+#: ../src/iop/rgbcurve.c:1645 ../src/iop/rgblevels.c:1121
+#: ../src/iop/tonecurve.c:1417
 msgid "preserve colors"
 msgstr "preserva colors"
 
-#: ../src/iop/basecurve.c:2142 ../src/iop/basecurve.c:2155
+#: ../src/iop/basecurve.c:2166 ../src/iop/basecurve.c:2179
 #: ../src/iop/basicadj.c:709 ../src/iop/clipping.c:1696
 #: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2002
 #: ../src/iop/clipping.c:2142 ../src/iop/clipping.c:2169
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2301
-#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1630
-#: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1395
+#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1646
+#: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1418
 #: ../src/libs/export.c:520 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
 #: ../src/libs/print_settings.c:1469
 msgid "none"
 msgstr "sense"
 
-#: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
-#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1123
-#: ../src/iop/tonecurve.c:1396
+#: ../src/iop/basecurve.c:2167 ../src/iop/basicadj.c:710
+#: ../src/iop/rgbcurve.c:1647 ../src/iop/rgblevels.c:1123
+#: ../src/iop/tonecurve.c:1419
 msgid "luminance"
 msgstr "luminància"
 
-#: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
-#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1632
-#: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1397
+#: ../src/iop/basecurve.c:2168 ../src/iop/basicadj.c:711
+#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1648
+#: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1420
 msgid "max RGB"
 msgstr "max RGB"
 
-#: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
-#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1125
-#: ../src/iop/tonecurve.c:1398
+#: ../src/iop/basecurve.c:2169 ../src/iop/basicadj.c:712
+#: ../src/iop/rgbcurve.c:1649 ../src/iop/rgblevels.c:1125
+#: ../src/iop/tonecurve.c:1421
 msgid "average RGB"
 msgstr "mitjana RGB"
 
-#: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
-#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1126
-#: ../src/iop/tonecurve.c:1399
+#: ../src/iop/basecurve.c:2170 ../src/iop/basicadj.c:713
+#: ../src/iop/rgbcurve.c:1650 ../src/iop/rgblevels.c:1126
+#: ../src/iop/tonecurve.c:1422
 msgid "sum RGB"
 msgstr "suma RGB"
 
-#: ../src/iop/basecurve.c:2147 ../src/iop/basicadj.c:714
-#: ../src/iop/rgbcurve.c:1635 ../src/iop/rgblevels.c:1127
-#: ../src/iop/tonecurve.c:1400
+#: ../src/iop/basecurve.c:2171 ../src/iop/basicadj.c:714
+#: ../src/iop/rgbcurve.c:1651 ../src/iop/rgblevels.c:1127
+#: ../src/iop/tonecurve.c:1423
 msgid "norm RGB"
 msgstr "norma RGB"
 
-#: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
-#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1128
-#: ../src/iop/tonecurve.c:1401
+#: ../src/iop/basecurve.c:2172 ../src/iop/basicadj.c:715
+#: ../src/iop/rgbcurve.c:1652 ../src/iop/rgblevels.c:1128
+#: ../src/iop/tonecurve.c:1424
 msgid "basic power"
 msgstr "bàsic potència"
 
-#: ../src/iop/basecurve.c:2150 ../src/iop/basicadj.c:717
-#: ../src/iop/rgbcurve.c:1638 ../src/iop/rgblevels.c:1130
-#: ../src/iop/tonecurve.c:1403
+#: ../src/iop/basecurve.c:2174 ../src/iop/basicadj.c:717
+#: ../src/iop/rgbcurve.c:1654 ../src/iop/rgblevels.c:1130
+#: ../src/iop/tonecurve.c:1426
 msgid "method to preserve colors when applying contrast"
 msgstr "mètode per preservar colors en aplicar contrast"
 
-#: ../src/iop/basecurve.c:2154
+#: ../src/iop/basecurve.c:2178
 msgid "fusion"
 msgstr "fusió"
 
-#: ../src/iop/basecurve.c:2156
+#: ../src/iop/basecurve.c:2180
 msgid "two exposures"
 msgstr "dues exposicions"
 
-#: ../src/iop/basecurve.c:2157
+#: ../src/iop/basecurve.c:2181
 msgid "three exposures"
 msgstr "tres exposicions"
 
-#: ../src/iop/basecurve.c:2158
+#: ../src/iop/basecurve.c:2182
 msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
@@ -5929,15 +5929,15 @@ msgstr ""
 "fusioneu aquesta imatge amb ella mateixa variant l'exposició, per comprimir "
 "l'alt rang dinàmic. Exposeu per les altes llums abans de fer-ho."
 
-#: ../src/iop/basecurve.c:2164
+#: ../src/iop/basecurve.c:2188
 msgid "how many stops to shift the individual exposures apart"
 msgstr "quants passos s'han de separar les exposicions individuals"
 
-#: ../src/iop/basecurve.c:2165
+#: ../src/iop/basecurve.c:2189
 msgid "exposure shift"
 msgstr "variació d'exposició"
 
-#: ../src/iop/basecurve.c:2175
+#: ../src/iop/basecurve.c:2199
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
@@ -5945,7 +5945,7 @@ msgstr ""
 "si s'ha de corregir l'exposició amunt o avall (-1: redueix altes llums, +1: "
 "redueix ombres)"
 
-#: ../src/iop/basecurve.c:2177
+#: ../src/iop/basecurve.c:2201
 msgid "exposure bias"
 msgstr "correcció d'exposició"
 
@@ -6021,8 +6021,8 @@ msgstr "ajustament de brillantor"
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2519
 #: ../src/iop/colorbalance.c:2569 ../src/iop/colorbalance.c:2618
 #: ../src/iop/colorchecker.c:1390 ../src/iop/colorcorrection.c:294
-#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2264
-#: ../src/iop/colorzones.c:2328 ../src/iop/graduatednd.c:1262
+#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2280
+#: ../src/iop/colorzones.c:2344 ../src/iop/graduatednd.c:1262
 #: ../src/iop/lowpass.c:689 ../src/iop/soften.c:743
 #: ../src/iop/splittoning.c:628 ../src/iop/vignette.c:1161
 msgid "saturation"
@@ -6066,7 +6066,7 @@ msgstr "filtre de Laplace local: resultat inconsistent"
 #: ../src/iop/bilat.c:527 ../src/iop/colorbalance.c:2367
 #: ../src/iop/denoiseprofile.c:4063 ../src/iop/exposure.c:866
 #: ../src/iop/lens.cc:2450 ../src/iop/levels.c:674
-#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1523
+#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1539
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
 #: ../src/views/darkroom.c:1844
@@ -6463,15 +6463,15 @@ msgstr "destinació"
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorbalance.c:2506
 #: ../src/iop/colorbalance.c:2556 ../src/iop/colorbalance.c:2605
 #: ../src/iop/colorize.c:418 ../src/iop/colorreconstruction.c:1376
-#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2266
-#: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1247
+#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2282
+#: ../src/iop/colorzones.c:2343 ../src/iop/graduatednd.c:1247
 #: ../src/iop/splittoning.c:613
 msgid "hue"
 msgstr "to"
 
 #: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1372
-#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2262
-#: ../src/iop/colorzones.c:2329
+#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2278
+#: ../src/iop/colorzones.c:2345
 msgid "lightness"
 msgstr "lluminositat"
 
@@ -7482,37 +7482,37 @@ msgstr "aplica"
 msgid "apply previously analyzed image look to this image"
 msgstr "aplica a aquesta imatge l'aspecte de la imatge abans analitzada"
 
-#: ../src/iop/colorzones.c:137
+#: ../src/iop/colorzones.c:138
 msgid "color zones"
 msgstr "zones de color"
 
-#: ../src/iop/colorzones.c:553
+#: ../src/iop/colorzones.c:554
 msgid "red black white"
 msgstr "vermell negre blanc"
 
-#: ../src/iop/colorzones.c:575
+#: ../src/iop/colorzones.c:576
 msgid "black white and skin tones"
 msgstr "negre blanc i tonalitats de pell"
 
-#: ../src/iop/colorzones.c:597
+#: ../src/iop/colorzones.c:598
 msgid "polarizing filter"
 msgstr "filtre de polarització"
 
-#: ../src/iop/colorzones.c:617
+#: ../src/iop/colorzones.c:618
 msgid "natural skin tones"
 msgstr "tonalitats naturals de pell"
 
-#: ../src/iop/colorzones.c:649
+#: ../src/iop/colorzones.c:650
 msgid "black & white film"
 msgstr "pel·lícula blanc i negre"
 
-#: ../src/iop/colorzones.c:2071 ../src/iop/retouch.c:2238
-#: ../src/iop/toneequal.c:1956
+#: ../src/iop/colorzones.c:2086 ../src/iop/retouch.c:2238
+#: ../src/iop/toneequal.c:2017
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "no es poden mostrar les màscares quan es visualitza la màscara de mescla"
 
-#: ../src/iop/colorzones.c:2276 ../src/iop/rgbcurve.c:1555
+#: ../src/iop/colorzones.c:2292 ../src/iop/rgbcurve.c:1571
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7525,55 +7525,55 @@ msgstr ""
 "majs+clic per crear una corba negativa"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2307
+#: ../src/iop/colorzones.c:2323
 msgid "edit by area"
 msgstr "edita per àrea"
 
-#: ../src/iop/colorzones.c:2309
+#: ../src/iop/colorzones.c:2325
 msgid "edit the curve nodes by area"
 msgstr "edita els nodes de la corba per àrea"
 
-#: ../src/iop/colorzones.c:2316
+#: ../src/iop/colorzones.c:2332
 msgid "display selection"
 msgstr "mostra la selecció"
 
-#: ../src/iop/colorzones.c:2325
+#: ../src/iop/colorzones.c:2341
 msgid "select by"
 msgstr "selecciona segons"
 
-#: ../src/iop/colorzones.c:2326
+#: ../src/iop/colorzones.c:2342
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "trieu el criteri de selecció, serà la abscissa de la gràfica"
 
-#: ../src/iop/colorzones.c:2334
+#: ../src/iop/colorzones.c:2350
 msgid "process mode"
 msgstr "mode de processat"
 
-#: ../src/iop/colorzones.c:2336
+#: ../src/iop/colorzones.c:2352
 msgid "strong"
 msgstr "fort"
 
-#: ../src/iop/colorzones.c:2338
+#: ../src/iop/colorzones.c:2354
 msgid "choose between a smoother or stronger effect"
 msgstr "tria entre un efecte més suau o més intens"
 
-#: ../src/iop/colorzones.c:2374 ../src/iop/rgbcurve.c:1608
-#: ../src/iop/tonecurve.c:1382
+#: ../src/iop/colorzones.c:2390 ../src/iop/rgbcurve.c:1624
+#: ../src/iop/tonecurve.c:1405
 msgid "interpolation method"
 msgstr "mètode d'interpolació"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1610
-#: ../src/iop/tonecurve.c:1384
+#: ../src/iop/colorzones.c:2392 ../src/iop/rgbcurve.c:1626
+#: ../src/iop/tonecurve.c:1407
 msgid "centripetal spline"
 msgstr "spline centrípet"
 
-#: ../src/iop/colorzones.c:2377 ../src/iop/rgbcurve.c:1611
-#: ../src/iop/tonecurve.c:1385
+#: ../src/iop/colorzones.c:2393 ../src/iop/rgbcurve.c:1627
+#: ../src/iop/tonecurve.c:1408
 msgid "monotonic spline"
 msgstr "spline monotònic"
 
-#: ../src/iop/colorzones.c:2381 ../src/iop/rgbcurve.c:1615
-#: ../src/iop/tonecurve.c:1387
+#: ../src/iop/colorzones.c:2397 ../src/iop/rgbcurve.c:1631
+#: ../src/iop/tonecurve.c:1410
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -7840,15 +7840,15 @@ msgstr "variància blau: "
 msgid "variance computed on the blue channel"
 msgstr "variància calculada al canal blau"
 
-#: ../src/iop/denoiseprofile.c:3976 ../src/iop/rawdenoise.c:989
+#: ../src/iop/denoiseprofile.c:3976 ../src/iop/rawdenoise.c:1009
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:3978 ../src/iop/rawdenoise.c:991
+#: ../src/iop/denoiseprofile.c:3978 ../src/iop/rawdenoise.c:1011
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:3980 ../src/iop/rawdenoise.c:993
+#: ../src/iop/denoiseprofile.c:3980 ../src/iop/rawdenoise.c:1013
 msgid "B"
 msgstr "B"
 
@@ -8623,11 +8623,11 @@ msgstr ""
 "reduïu el valor per augmentar la lluminositat general."
 
 #: ../src/iop/filmicrgb.c:1469 ../src/iop/filmicrgb.c:1483
-#: ../src/iop/toneequal.c:3145 ../src/iop/toneequal.c:3151
-#: ../src/iop/toneequal.c:3157 ../src/iop/toneequal.c:3163
-#: ../src/iop/toneequal.c:3169 ../src/iop/toneequal.c:3175
-#: ../src/iop/toneequal.c:3181 ../src/iop/toneequal.c:3187
-#: ../src/iop/toneequal.c:3193
+#: ../src/iop/toneequal.c:3229 ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3241 ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3253 ../src/iop/toneequal.c:3259
+#: ../src/iop/toneequal.c:3265 ../src/iop/toneequal.c:3271
+#: ../src/iop/toneequal.c:3277
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -8693,7 +8693,7 @@ msgstr "preserva la crominància"
 msgid "luminance Y"
 msgstr "luminància Y"
 
-#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3236
+#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3320
 msgid "RGB power norm"
 msgstr "RGB p-norma"
 
@@ -9495,68 +9495,68 @@ msgctxt "accel"
 msgid "node tool"
 msgstr "eina node"
 
-#: ../src/iop/lowlight.c:84
+#: ../src/iop/lowlight.c:85
 msgid "lowlight vision"
 msgstr "visió en llum feble"
 
-#: ../src/iop/lowlight.c:105
+#: ../src/iop/lowlight.c:106
 msgctxt "accel"
 msgid "blue shift"
 msgstr "desplaçament al blau"
 
-#: ../src/iop/lowlight.c:355
+#: ../src/iop/lowlight.c:361
 msgid "indoor bright"
 msgstr "interiors brillant"
 
-#: ../src/iop/lowlight.c:372
+#: ../src/iop/lowlight.c:378
 msgid "indoor dim"
 msgstr "interiors llum tènue"
 
-#: ../src/iop/lowlight.c:389
+#: ../src/iop/lowlight.c:395
 msgid "indoor dark"
 msgstr "interiors fosc"
 
-#: ../src/iop/lowlight.c:406
+#: ../src/iop/lowlight.c:412
 msgid "twilight"
 msgstr "llum crepuscular"
 
-#: ../src/iop/lowlight.c:423
+#: ../src/iop/lowlight.c:429
 msgid "night street lit"
 msgstr "carrer il·luminat de nit"
 
-#: ../src/iop/lowlight.c:440
+#: ../src/iop/lowlight.c:446
 msgid "night street"
 msgstr "carrer de nit"
 
-#: ../src/iop/lowlight.c:457
+#: ../src/iop/lowlight.c:463
 msgid "night street dark"
 msgstr "carrer fosc de nit"
 
-#: ../src/iop/lowlight.c:475
+#: ../src/iop/lowlight.c:481
 msgid "night"
 msgstr "nocturna"
 
-#: ../src/iop/lowlight.c:647
+#: ../src/iop/lowlight.c:653
 msgid "dark"
 msgstr "fosc"
 
-#: ../src/iop/lowlight.c:655
+#: ../src/iop/lowlight.c:661
 msgid "bright"
 msgstr "brillant"
 
-#: ../src/iop/lowlight.c:664
+#: ../src/iop/lowlight.c:670
 msgid "day vision"
 msgstr "visió diürna"
 
-#: ../src/iop/lowlight.c:669
+#: ../src/iop/lowlight.c:675
 msgid "night vision"
 msgstr "visió nocturna"
 
-#: ../src/iop/lowlight.c:863
+#: ../src/iop/lowlight.c:886
 msgid "blue shift"
 msgstr "desplaçament al blau"
 
-#: ../src/iop/lowlight.c:865
+#: ../src/iop/lowlight.c:888
 msgid "blueness in shadows"
 msgstr "dominant blava a les ombres"
 
@@ -9717,11 +9717,11 @@ msgstr "tots els fitxers"
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "No es permet triar un arxiu fora de la carpeta arrel LUT"
 
-#: ../src/iop/lut3d.c:1121
+#: ../src/iop/lut3d.c:1124
 msgid "select a png (haldclut) or a cube file"
 msgstr "trieu un arxiu png (haldclut) o cub"
 
-#: ../src/iop/lut3d.c:1128
+#: ../src/iop/lut3d.c:1131
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)\n"
@@ -9733,43 +9733,43 @@ msgstr ""
 "PRECAUCIÓ: la carpeta LUT s'ha d'establir a preferències/opcions primàries/"
 "miscel·lani abans de triar l'arxiu LUT"
 
-#: ../src/iop/lut3d.c:1135
+#: ../src/iop/lut3d.c:1138
 msgid "application color space"
 msgstr "espai de color de l'aplicació"
 
-#: ../src/iop/lut3d.c:1137
+#: ../src/iop/lut3d.c:1140
 msgid "gamma rec709 RGB"
 msgstr "gamma rec709 RGB"
 
-#: ../src/iop/lut3d.c:1138
+#: ../src/iop/lut3d.c:1141
 msgid "linear rec709 RGB"
 msgstr "lineal rec709 RGB"
 
-#: ../src/iop/lut3d.c:1139
+#: ../src/iop/lut3d.c:1142
 msgid "linear rec2020 RGB"
 msgstr "lineal rec2020 RGB"
 
-#: ../src/iop/lut3d.c:1141
+#: ../src/iop/lut3d.c:1144
 msgid "select the color space in which the LUT has to be applied"
 msgstr "trieu l'espai de color dins el qual s'ha d'aplicar la LUT"
 
-#: ../src/iop/lut3d.c:1145
+#: ../src/iop/lut3d.c:1148
 msgid "interpolation"
 msgstr "interpolació"
 
-#: ../src/iop/lut3d.c:1146
+#: ../src/iop/lut3d.c:1149
 msgid "tetrahedral"
 msgstr "tetrahèdrica"
 
-#: ../src/iop/lut3d.c:1147
+#: ../src/iop/lut3d.c:1150
 msgid "trilinear"
 msgstr "trilineal"
 
-#: ../src/iop/lut3d.c:1148
+#: ../src/iop/lut3d.c:1151
 msgid "pyramid"
 msgstr "piràmide"
 
-#: ../src/iop/lut3d.c:1150
+#: ../src/iop/lut3d.c:1153
 msgid "select the interpolation method"
 msgstr "trieu mètode d'interpolació"
 
@@ -9931,20 +9931,20 @@ msgstr ""
 msgid "make an optimization with some guessing"
 msgstr "optimitza fent algunes estimacions"
 
-#: ../src/iop/rawdenoise.c:123
+#: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
 msgstr "treu soroll de dades raw"
 
-#: ../src/iop/rawdenoise.c:143
+#: ../src/iop/rawdenoise.c:144
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "llindar de soroll"
 
-#: ../src/iop/rawdenoise.c:1032
+#: ../src/iop/rawdenoise.c:1053
 msgid "noise threshold"
 msgstr "llindar de soroll"
 
-#: ../src/iop/rawdenoise.c:1035
+#: ../src/iop/rawdenoise.c:1056
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -10186,7 +10186,7 @@ msgstr "mode d'emplenat"
 msgid "erase"
 msgstr "esborra"
 
-#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1383
+#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1382
 msgid "color"
 msgstr "color"
 
@@ -10295,93 +10295,93 @@ msgstr "continu afegeix pinzell"
 msgid "max scale is %i for this image size"
 msgstr "per a aquesta mida d'imatge l'escala màxima es %i"
 
-#: ../src/iop/rgbcurve.c:126
+#: ../src/iop/rgbcurve.c:127
 msgid "rgb curve"
 msgstr "corba rgb"
 
-#: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
+#: ../src/iop/rgbcurve.c:209 ../src/iop/tonecurve.c:545
 #: ../src/iop/tonemap.cc:299
 msgid "contrast compression"
 msgstr "compressió de contrast"
 
-#: ../src/iop/rgbcurve.c:216 ../src/iop/tonecurve.c:552
+#: ../src/iop/rgbcurve.c:217 ../src/iop/tonecurve.c:553
 msgid "gamma 1.0 (linear)"
 msgstr "gamma 1.0 (lineal)"
 
-#: ../src/iop/rgbcurve.c:225 ../src/iop/tonecurve.c:561
+#: ../src/iop/rgbcurve.c:226 ../src/iop/tonecurve.c:562
 msgid "contrast - med (linear)"
 msgstr "contrast- mitjà (lineal)"
 
-#: ../src/iop/rgbcurve.c:233 ../src/iop/tonecurve.c:569
+#: ../src/iop/rgbcurve.c:234 ../src/iop/tonecurve.c:570
 msgid "contrast - high (linear)"
 msgstr "contrast - alt (lineal)"
 
-#: ../src/iop/rgbcurve.c:246 ../src/iop/tonecurve.c:580
+#: ../src/iop/rgbcurve.c:247 ../src/iop/tonecurve.c:581
 msgid "contrast - med (gamma 2.2)"
 msgstr "contrast - mitjà (gamma 2.2)"
 
-#: ../src/iop/rgbcurve.c:258 ../src/iop/tonecurve.c:590
+#: ../src/iop/rgbcurve.c:259 ../src/iop/tonecurve.c:591
 msgid "contrast - high (gamma 2.2)"
 msgstr "contrast - alt (gamma 2.2)"
 
-#: ../src/iop/rgbcurve.c:269 ../src/iop/tonecurve.c:601
+#: ../src/iop/rgbcurve.c:270 ../src/iop/tonecurve.c:602
 msgid "gamma 2.0"
 msgstr "gamma 2.0"
 
-#: ../src/iop/rgbcurve.c:273 ../src/iop/tonecurve.c:605
+#: ../src/iop/rgbcurve.c:274 ../src/iop/tonecurve.c:606
 msgid "gamma 0.5"
 msgstr "gamma 0.5"
 
-#: ../src/iop/rgbcurve.c:277 ../src/iop/tonecurve.c:609
+#: ../src/iop/rgbcurve.c:278 ../src/iop/tonecurve.c:610
 msgid "logarithm (base 2)"
 msgstr "logaritme (base 2)"
 
-#: ../src/iop/rgbcurve.c:281 ../src/iop/tonecurve.c:613
+#: ../src/iop/rgbcurve.c:282 ../src/iop/tonecurve.c:614
 msgid "exponential (base 2)"
 msgstr "exponencial (base 2)"
 
-#: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
-#: ../src/iop/tonecurve.c:1314
+#: ../src/iop/rgbcurve.c:1540 ../src/iop/rgblevels.c:1021
+#: ../src/iop/tonecurve.c:1337
 msgid "RGB, linked channels"
 msgstr "RGB, canals enllaçats"
 
-#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1022
+#: ../src/iop/rgbcurve.c:1541 ../src/iop/rgblevels.c:1022
 msgid "RGB, independent channels"
 msgstr "RGB, canals independents"
 
-#: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
+#: ../src/iop/rgbcurve.c:1543 ../src/iop/rgblevels.c:1024
 msgid "choose between linked and independent channels."
 msgstr "tria entre canals vinculats o independents."
 
-#: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
+#: ../src/iop/rgbcurve.c:1550 ../src/iop/rgblevels.c:1031
 msgid "  R  "
 msgstr "  R  "
 
-#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
+#: ../src/iop/rgbcurve.c:1553 ../src/iop/rgblevels.c:1034
 msgid "curve nodes for r channel"
 msgstr "nodes de corba pel canal r"
 
-#: ../src/iop/rgbcurve.c:1539 ../src/iop/rgblevels.c:1036
+#: ../src/iop/rgbcurve.c:1555 ../src/iop/rgblevels.c:1036
 msgid "  G  "
 msgstr "  G  "
 
-#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1039
+#: ../src/iop/rgbcurve.c:1558 ../src/iop/rgblevels.c:1039
 msgid "curve nodes for g channel"
 msgstr "nodes de corba pel canal g"
 
-#: ../src/iop/rgbcurve.c:1544 ../src/iop/rgblevels.c:1041
+#: ../src/iop/rgbcurve.c:1560 ../src/iop/rgblevels.c:1041
 msgid "  B  "
 msgstr "  B  "
 
-#: ../src/iop/rgbcurve.c:1547 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1563 ../src/iop/rgblevels.c:1044
 msgid "curve nodes for b channel"
 msgstr "nodes de corba pel canal b"
 
-#: ../src/iop/rgbcurve.c:1567
+#: ../src/iop/rgbcurve.c:1583
 msgid "pick GUI color from image"
 msgstr "pren el color pel GUI de la imatge"
 
-#: ../src/iop/rgbcurve.c:1621 ../src/iop/rgbcurve.c:1623
+#: ../src/iop/rgbcurve.c:1637 ../src/iop/rgbcurve.c:1639
 msgid "compensate middle grey"
 msgstr "compensa el gris mitjà"
 
@@ -10432,12 +10432,12 @@ msgstr ""
 msgid "shadows and highlights"
 msgstr "llums i ombres"
 
-#: ../src/iop/shadhi.c:276 ../src/iop/toneequal.c:313
+#: ../src/iop/shadhi.c:276 ../src/iop/toneequal.c:314
 msgctxt "accel"
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:317
+#: ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "highlights"
 msgstr "altes llums"
@@ -10754,27 +10754,27 @@ msgstr "ajustament fi del balanç de blancs predefinit"
 msgid "white balance disabled for camera"
 msgstr "balanç de blancs desactivat per a la càmera"
 
-#: ../src/iop/tonecurve.c:189
+#: ../src/iop/tonecurve.c:190
 msgid "tone curve"
 msgstr "corba de tons"
 
-#: ../src/iop/tonecurve.c:1310
+#: ../src/iop/tonecurve.c:1333
 msgid "color space"
 msgstr "espai de color"
 
-#: ../src/iop/tonecurve.c:1311
+#: ../src/iop/tonecurve.c:1334
 msgid "Lab, linked channels"
 msgstr "Lab, canals enllaçats"
 
-#: ../src/iop/tonecurve.c:1312
+#: ../src/iop/tonecurve.c:1335
 msgid "Lab, independent channels"
 msgstr "Lab, canals independents"
 
-#: ../src/iop/tonecurve.c:1313
+#: ../src/iop/tonecurve.c:1336
 msgid "XYZ, linked channels"
 msgstr "ZXY, canals enllaçats"
 
-#: ../src/iop/tonecurve.c:1316
+#: ../src/iop/tonecurve.c:1339
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -10785,137 +10785,137 @@ msgstr ""
 "corba L. Auto XYZ és similar però aplica els canvis de saturació a l'espai "
 "XYZ."
 
-#: ../src/iop/tonecurve.c:1326
+#: ../src/iop/tonecurve.c:1349
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:1328
+#: ../src/iop/tonecurve.c:1351
 msgid "tonecurve for L channel"
 msgstr "corba pel canal L"
 
-#: ../src/iop/tonecurve.c:1330
+#: ../src/iop/tonecurve.c:1353
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1332
+#: ../src/iop/tonecurve.c:1355
 msgid "tonecurve for a channel"
 msgstr "corba pel canal a"
 
-#: ../src/iop/tonecurve.c:1334
+#: ../src/iop/tonecurve.c:1357
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1336
+#: ../src/iop/tonecurve.c:1359
 msgid "tonecurve for b channel"
 msgstr "corba pel canal b"
 
-#: ../src/iop/tonecurve.c:1409
+#: ../src/iop/tonecurve.c:1432
 msgid "log"
 msgstr "log"
 
-#: ../src/iop/tonecurve.c:1417
+#: ../src/iop/tonecurve.c:1440
 msgid "base of the logarithm"
 msgstr "base del logaritme"
 
-#: ../src/iop/toneequal.c:291
+#: ../src/iop/toneequal.c:292
 msgid "tone equalizer"
 msgstr "equalitzador de tons"
 
-#: ../src/iop/toneequal.c:311
+#: ../src/iop/toneequal.c:312
 msgctxt "accel"
 msgid "blacks"
 msgstr "negres"
 
-#: ../src/iop/toneequal.c:312
+#: ../src/iop/toneequal.c:313
 msgctxt "accel"
 msgid "deep shadows"
 msgstr "ombres profundes"
 
-#: ../src/iop/toneequal.c:314
+#: ../src/iop/toneequal.c:315
 msgctxt "accel"
 msgid "light shadows"
 msgstr "ombres lleugeres"
 
-#: ../src/iop/toneequal.c:315
+#: ../src/iop/toneequal.c:316
 msgctxt "accel"
 msgid "midtones"
 msgstr "tons mitjans"
 
-#: ../src/iop/toneequal.c:316
+#: ../src/iop/toneequal.c:317
 msgctxt "accel"
 msgid "dark highlights"
 msgstr "altes llums fosques"
 
-#: ../src/iop/toneequal.c:318
+#: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "whites"
 msgstr "blancs"
 
-#: ../src/iop/toneequal.c:319
+#: ../src/iop/toneequal.c:320
 msgctxt "accel"
 msgid "speculars"
 msgstr "especulars"
 
-#: ../src/iop/toneequal.c:320
+#: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "filter diffusion"
 msgstr "difusió del filtre"
 
-#: ../src/iop/toneequal.c:321
+#: ../src/iop/toneequal.c:322
 msgctxt "accel"
 msgid "smoothing diameter"
 msgstr "diàmetre de suavitzat"
 
-#: ../src/iop/toneequal.c:322
+#: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "edges refinement or feathering"
 msgstr "refinament o difuminat de vores"
 
-#: ../src/iop/toneequal.c:323
+#: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask quantization"
 msgstr "quantització de màscara"
 
-#: ../src/iop/toneequal.c:324
+#: ../src/iop/toneequal.c:325
 msgctxt "accel"
 msgid "mask exposure compensation"
 msgstr "compensació d'exposició de la màscara"
 
-#: ../src/iop/toneequal.c:325
+#: ../src/iop/toneequal.c:326
 msgctxt "accel"
 msgid "mask contrast compensation"
 msgstr "compensació de contrast de la màscara"
 
 #. No blending
-#: ../src/iop/toneequal.c:417
+#: ../src/iop/toneequal.c:418
 msgid "mask blending : none"
 msgstr "mescla de màscara : cap"
 
-#: ../src/iop/toneequal.c:429
+#: ../src/iop/toneequal.c:430
 msgid "mask blending : landscapes"
 msgstr "mescla de màscares: paisatges"
 
-#: ../src/iop/toneequal.c:437
+#: ../src/iop/toneequal.c:438
 msgid "mask blending : all purposes"
 msgstr "mescla de màscares: tots els usos"
 
-#: ../src/iop/toneequal.c:445
+#: ../src/iop/toneequal.c:446
 msgid "mask blending : isolated subjects"
 msgstr "mescla de màscares: objectes isolats"
 
-#: ../src/iop/toneequal.c:466
+#: ../src/iop/toneequal.c:467
 msgid "compress shadows/highlights : soft"
 msgstr "comprimeix llums/ombres : suau"
 
-#: ../src/iop/toneequal.c:485
+#: ../src/iop/toneequal.c:486
 msgid "compress shadows/highlights : strong"
 msgstr "comprimeix llums/ombres : fort"
 
-#: ../src/iop/toneequal.c:504
+#: ../src/iop/toneequal.c:505
 msgid "relight : fill-in"
 msgstr "il·lumina: reemplenat"
 
-#: ../src/iop/toneequal.c:555
+#: ../src/iop/toneequal.c:556
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
@@ -10923,14 +10923,14 @@ msgstr ""
 "l'equalitzador de tons ha d'anar, a la línia de processament, després dels "
 "mòduls de distorsió - desactivat"
 
-#: ../src/iop/toneequal.c:829 ../src/iop/toneequal.c:950
+#: ../src/iop/toneequal.c:830 ../src/iop/toneequal.c:951
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
 "l'equalitzador de tons no ha pogut reservar memòria, comproveu la vostra "
 "configuració de RAM"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:851
+#: ../src/iop/toneequal.c:852
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
@@ -10938,81 +10938,81 @@ msgstr ""
 "el buffer d'entrada/sortida de l'equalitzador de tons està mal alineat, si "
 "us plau, comuniqueu l'error als desenvolupadors"
 
-#: ../src/iop/toneequal.c:1766 ../src/iop/toneequal.c:2146
+#: ../src/iop/toneequal.c:1806 ../src/iop/toneequal.c:2223
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "la interpolació és inestable, reduïu el suavitzat de corba"
 
-#: ../src/iop/toneequal.c:1851 ../src/iop/toneequal.c:1911
+#: ../src/iop/toneequal.c:1906 ../src/iop/toneequal.c:1969
 msgid "wait for the preview to finish recomputing"
 msgstr "espereu a que es completi el càlcul per a la previsualització"
 
-#: ../src/iop/toneequal.c:2151
+#: ../src/iop/toneequal.c:2228
 msgid "some parameters are out-of-bounds"
 msgstr "alguns paràmetres són fora dels límits"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2426
+#: ../src/iop/toneequal.c:2503
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3215
 msgid "simple"
 msgstr "simple"
 
-#: ../src/iop/toneequal.c:3132
+#: ../src/iop/toneequal.c:3216
 msgid "advanced"
 msgstr "avançat"
 
-#: ../src/iop/toneequal.c:3133
+#: ../src/iop/toneequal.c:3217
 msgid "masking"
 msgstr "màscara"
 
-#: ../src/iop/toneequal.c:3146
+#: ../src/iop/toneequal.c:3230
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3152
+#: ../src/iop/toneequal.c:3236
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3242
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3248
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3170
+#: ../src/iop/toneequal.c:3254
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3176
+#: ../src/iop/toneequal.c:3260
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3182
+#: ../src/iop/toneequal.c:3266
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3272
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3194
+#: ../src/iop/toneequal.c:3278
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:3212
+#: ../src/iop/toneequal.c:3296
 msgid "double-click to reset the curve"
 msgstr "feu doble clic per reiniciar la corba"
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3303
 msgid "curve smoothing"
 msgstr "suavitzat de corba"
 
-#: ../src/iop/toneequal.c:3220
+#: ../src/iop/toneequal.c:3304
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -11025,35 +11025,35 @@ msgstr ""
 "però poden produir transicions de tons brutals i fer deteriorar el contrast "
 "local."
 
-#: ../src/iop/toneequal.c:3229
+#: ../src/iop/toneequal.c:3313
 msgid "luminance estimator"
 msgstr "estimador de luminància"
 
-#: ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3315
 msgid "RGB average"
 msgstr "Mitjana RGB"
 
-#: ../src/iop/toneequal.c:3232
+#: ../src/iop/toneequal.c:3316
 msgid "HSL lightness"
 msgstr "Lluminositat HSL"
 
-#: ../src/iop/toneequal.c:3233
+#: ../src/iop/toneequal.c:3317
 msgid "HSV value / RGB max"
 msgstr "HSV valor / RGB max"
 
-#: ../src/iop/toneequal.c:3234
+#: ../src/iop/toneequal.c:3318
 msgid "RGB sum"
 msgstr "RGB suma"
 
-#: ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3319
 msgid "RGB euclidean norm"
 msgstr "RGB norma euclidiana"
 
-#: ../src/iop/toneequal.c:3237
+#: ../src/iop/toneequal.c:3321
 msgid "RGB geometric mean"
 msgstr "RGB mitjana geomètrica"
 
-#: ../src/iop/toneequal.c:3238
+#: ../src/iop/toneequal.c:3322
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -11061,19 +11061,19 @@ msgstr ""
 "previsualitzeu la màscara i escolliu l'estimació que us doni\n"
 "més contrast entre les àrees a aclarir i les àrees a enfosquir"
 
-#: ../src/iop/toneequal.c:3244
+#: ../src/iop/toneequal.c:3328
 msgid "preserve details"
 msgstr "preserva detalls"
 
-#: ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3331
 msgid "averaged guided filter"
 msgstr "filtre guiat promitjat"
 
-#: ../src/iop/toneequal.c:3248
+#: ../src/iop/toneequal.c:3332
 msgid "guided filter"
 msgstr "filtre guiat"
 
-#: ../src/iop/toneequal.c:3249
+#: ../src/iop/toneequal.c:3333
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -11085,11 +11085,11 @@ msgstr ""
 "'filtre guiat' només afecta el contrast global i intenta preservar el local\n"
 "'filtre guiat promitjat' és una mitjana geomètrica d'ambdós mètodes"
 
-#: ../src/iop/toneequal.c:3256
+#: ../src/iop/toneequal.c:3340
 msgid "filter diffusion"
 msgstr "difusió del filtre"
 
-#: ../src/iop/toneequal.c:3257
+#: ../src/iop/toneequal.c:3341
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -11097,11 +11097,11 @@ msgstr ""
 "nombre de passades del filtre guiat\n"
 "ajuda a difuminar les vores del filtre a expenses de la rapidesa"
 
-#: ../src/iop/toneequal.c:3265
+#: ../src/iop/toneequal.c:3349
 msgid "smoothing diameter"
 msgstr "diàmetre de suavitzat"
 
-#: ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3350
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -11111,11 +11111,11 @@ msgstr ""
 "alerta: els valors molt grans poden fer molt lenta la previsualització de\n"
 "cambra fosca si s'empra treu soroll amb perfil."
 
-#: ../src/iop/toneequal.c:3274
+#: ../src/iop/toneequal.c:3358
 msgid "edges refinement/feathering"
 msgstr "refinament/difuminat de les vores"
 
-#: ../src/iop/toneequal.c:3275
+#: ../src/iop/toneequal.c:3359
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11129,11 +11129,11 @@ msgstr ""
 "valors inferiors donen gradients més suaus i millor suavitzat\n"
 "però poden dur a unions imprecises de vores i halos"
 
-#: ../src/iop/toneequal.c:3283
+#: ../src/iop/toneequal.c:3367
 msgid "mask post-processing"
 msgstr "post-processament de la màscara"
 
-#: ../src/iop/toneequal.c:3289
+#: ../src/iop/toneequal.c:3373
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11143,11 +11143,11 @@ msgstr ""
 "la línia central mostra la mitjana. Als extrems apareixen barres taronges si "
 "s'arriba al tall."
 
-#: ../src/iop/toneequal.c:3294
+#: ../src/iop/toneequal.c:3378
 msgid "mask quantization"
 msgstr "quantització de màscara"
 
-#: ../src/iop/toneequal.c:3296
+#: ../src/iop/toneequal.c:3380
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11157,11 +11157,11 @@ msgstr ""
 "valors superiors posteritzen la màscara de luminància per ajudar el guiatge\n"
 "produeixen àrees suaus quan s'empren valors de difuminat alts"
 
-#: ../src/iop/toneequal.c:3304
+#: ../src/iop/toneequal.c:3388
 msgid "mask exposure compensation"
 msgstr "compensació d'exposició de la màscara"
 
-#: ../src/iop/toneequal.c:3306
+#: ../src/iop/toneequal.c:3390
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -11172,11 +11172,11 @@ msgstr ""
 "disponibles.\n"
 "l'eina pren mostra autoajustarà l'exposició mitjana a -4EV."
 
-#: ../src/iop/toneequal.c:3318
+#: ../src/iop/toneequal.c:3402
 msgid "mask contrast compensation"
 msgstr "compensació de contrast de la màscara"
 
-#: ../src/iop/toneequal.c:3320
+#: ../src/iop/toneequal.c:3404
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -11188,7 +11188,7 @@ msgstr ""
 "això permet escampar l'histograma d'exposició sobre més canals\n"
 "per a un millor control de la correcció d'exposició."
 
-#: ../src/iop/toneequal.c:3333 ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3417 ../src/iop/toneequal.c:3421
 msgid "display exposure mask"
 msgstr "mostra màscara d'exposició"
 
@@ -11392,20 +11392,20 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "decalatge y"
 
-#: ../src/iop/watermark.c:1356
+#: ../src/iop/watermark.c:1355
 msgid "content"
 msgstr "contingut"
 
-#: ../src/iop/watermark.c:1363
+#: ../src/iop/watermark.c:1362
 msgid "marker"
 msgstr "plantilla"
 
-#: ../src/iop/watermark.c:1366
+#: ../src/iop/watermark.c:1365
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "Marques d'aigua SVG a %s/watermarks o %s/watermarks"
 
-#: ../src/iop/watermark.c:1385
+#: ../src/iop/watermark.c:1384
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -11413,20 +11413,20 @@ msgstr ""
 "color de la marca d'aigua , etiqueta:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1387
+#: ../src/iop/watermark.c:1386
 msgid "select watermark color"
 msgstr "tria color de marca d'aigua"
 
-#: ../src/iop/watermark.c:1390
+#: ../src/iop/watermark.c:1389
 msgid "pick color from image"
 msgstr "pren color de la imatge"
 
 #. Simple text
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1399
 msgid "text"
 msgstr "text"
 
-#: ../src/iop/watermark.c:1404
+#: ../src/iop/watermark.c:1403
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -11435,11 +11435,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1414
+#: ../src/iop/watermark.c:1413
 msgid "font"
 msgstr "tipus lletra"
 
-#: ../src/iop/watermark.c:1420
+#: ../src/iop/watermark.c:1419
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -11452,58 +11452,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1427 ../src/libs/camera.c:508
+#: ../src/iop/watermark.c:1426 ../src/libs/camera.c:508
 msgid "properties"
 msgstr "propietats"
 
-#: ../src/iop/watermark.c:1445
+#: ../src/iop/watermark.c:1444
 msgctxt "size"
 msgid "image"
 msgstr "imatge"
 
-#: ../src/iop/watermark.c:1446
+#: ../src/iop/watermark.c:1445
 msgid "larger border"
 msgstr "vora més amplia"
 
-#: ../src/iop/watermark.c:1447
+#: ../src/iop/watermark.c:1446
 msgid "smaller border"
 msgstr "vora més petita"
 
-#: ../src/iop/watermark.c:1449
+#: ../src/iop/watermark.c:1448
 msgid "scale on"
 msgstr "ajusta mida respecte a"
 
-#: ../src/iop/watermark.c:1450
+#: ../src/iop/watermark.c:1449
 msgid "size is relative to"
 msgstr "la mida és en relació a"
 
-#: ../src/iop/watermark.c:1453
+#: ../src/iop/watermark.c:1452
 msgid "position"
 msgstr "posició"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1456 ../src/libs/print_settings.c:1389
+#: ../src/iop/watermark.c:1455 ../src/libs/print_settings.c:1389
 msgid "alignment"
 msgstr "alineació"
 
-#: ../src/iop/watermark.c:1472
+#: ../src/iop/watermark.c:1471
 msgid "x offset"
 msgstr "decalatge x"
 
-#: ../src/iop/watermark.c:1475
+#: ../src/iop/watermark.c:1474
 msgid "y offset"
 msgstr "decalatge y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1480
+#: ../src/iop/watermark.c:1479
 msgid "the opacity of the watermark"
 msgstr "l'opacitat de la marca d'aigua"
 
-#: ../src/iop/watermark.c:1481
+#: ../src/iop/watermark.c:1480
 msgid "the scale of the watermark"
 msgstr "l'escala de la marca d'aigua"
 
-#: ../src/iop/watermark.c:1482
+#: ../src/iop/watermark.c:1481
 msgid "the rotation of the watermark"
 msgstr "l'orientació de la marca d'aigua"
 
@@ -11822,11 +11822,9 @@ msgstr "afegeix mostra"
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr "moveu-vos a una mostra d'altes llums, clic per fixar mostra"
 
-#. delete
-#: ../src/libs/colorpicker.c:412 ../src/libs/image.c:182
-#: ../src/libs/styles.c:458
-msgid "remove"
-msgstr "suprimeix"
+#: ../src/libs/colorpicker.c:412
+msgid "X"
+msgstr ""
 
 #: ../src/libs/colorpicker.c:518
 msgid "live samples"
@@ -12503,6 +12501,11 @@ msgstr "envia l'arxiu a la paperera"
 #: ../src/libs/image.c:152
 msgid "physically delete from disk"
 msgstr "elimineu físicament del disc"
+
+#. delete
+#: ../src/libs/image.c:182 ../src/libs/styles.c:458
+msgid "remove"
+msgstr "suprimeix"
 
 #: ../src/libs/image.c:185
 msgid "remove from the collection"
@@ -13275,45 +13278,45 @@ msgstr "vés al rodet"
 msgid "modulegroups"
 msgstr "grups de mòduls"
 
-#: ../src/libs/modulegroups.c:181
+#: ../src/libs/modulegroups.c:199
 msgid "show only active modules"
 msgstr "mostra només mòduls actius"
 
-#: ../src/libs/modulegroups.c:188
+#: ../src/libs/modulegroups.c:206
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr ""
 "mostra només els vostres mòduls preferits (triats a `més mòduls' a sota)"
 
-#: ../src/libs/modulegroups.c:194
+#: ../src/libs/modulegroups.c:212
 msgid "basic group"
 msgstr "grup bàsic"
 
-#: ../src/libs/modulegroups.c:200
+#: ../src/libs/modulegroups.c:218
 msgid "tone group"
 msgstr "grup de tonalitat"
 
-#: ../src/libs/modulegroups.c:206
+#: ../src/libs/modulegroups.c:224
 msgid "color group"
 msgstr "grup de color"
 
-#: ../src/libs/modulegroups.c:212
+#: ../src/libs/modulegroups.c:230
 msgid "correction group"
 msgstr "grup de correcció"
 
-#: ../src/libs/modulegroups.c:218
+#: ../src/libs/modulegroups.c:236
 msgid "effects group"
 msgstr "grup d'efectes"
 
 #. search box
-#: ../src/libs/modulegroups.c:230
+#: ../src/libs/modulegroups.c:248
 msgid "search module"
 msgstr "cerca mòdul"
 
-#: ../src/libs/modulegroups.c:237
+#: ../src/libs/modulegroups.c:254
 msgid "search modules by name or tag"
 msgstr "cerca mòduls per nom o etiqueta"
 
-#: ../src/libs/modulegroups.c:244
+#: ../src/libs/modulegroups.c:261
 msgid "clear text"
 msgstr "neteja text"
 

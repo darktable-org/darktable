@@ -98,7 +98,7 @@ making a backup is strongly advised.
   The default order is still the correct order for most purposes. Also note that
   styles will always apply the default ordering; creating a style based on modules
   which have had their order changed will NOT recreate this changed order when
-  applied, and therefore may not give the expected result.  
+  applied, and therefore may not give the expected result.
 
 - The history stack will now always show mandatory modules which were previously
   hidden. They are always active as necessary for processing images, and are not
@@ -405,25 +405,18 @@ making a backup is strongly advised.
 
 ## Translations
 
-- Afrikaans
-- Albanian
-- Chinese
+- Catalan
 - Czech
-- Dutch
-- European Spanish
-- Finnish
-- French
-- Galician
+- Danish
 - German
+- European Spanish
+- French
 - Hebrew
 - Hungarian
 - Italian
 - Japanese
-- Nepal
 - Norwegian Bokmål
+- Dutch
 - Polish
-- Portuguese
-- Romanian
 - Russian
 - Slovenian
-- Thai

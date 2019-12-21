@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-13 20:30+0900\n"
+"POT-Creation-Date: 2019-12-21 10:47+0100\n"
 "PO-Revision-Date: 2019-12-17 14:49+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
@@ -1213,12 +1213,12 @@ msgstr "マップ上に画像を表示"
 msgid "Print your images"
 msgstr "画像を印刷"
 
-#: ../src/bauhaus/bauhaus.c:2266
+#: ../src/bauhaus/bauhaus.c:2265
 #, c-format
 msgid "%s/%s: %s"
 msgstr "%s/%s: %s"
 
-#: ../src/bauhaus/bauhaus.c:2268
+#: ../src/bauhaus/bauhaus.c:2267
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
@@ -1395,7 +1395,7 @@ msgstr[1] "%d 枚の画像が %d 枚のコレクションの中から選択さ�
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
 #: ../src/common/colorspaces.c:1002 ../src/iop/colorin.c:2110
-#: ../src/iop/lut3d.c:1136
+#: ../src/iop/lut3d.c:1139
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -1561,7 +1561,7 @@ msgstr ""
 #: ../src/common/darktable.c:807 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2012 ../src/iop/filmicrgb.c:1566
-#: ../src/iop/toneequal.c:3246 ../src/libs/export.c:628
+#: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "いいえ"
@@ -1745,51 +1745,51 @@ msgstr ""
 msgid "orphaned image"
 msgstr "関連付けられていない画像"
 
-#: ../src/common/image.c:1455
+#: ../src/common/image.c:1461
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "ローカルコピー `%s' にアクセスできません"
 
-#: ../src/common/image.c:1461
+#: ../src/common/image.c:1467
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "ローカルコピー `%s' を書き込めません"
 
-#: ../src/common/image.c:1468
+#: ../src/common/image.c:1474
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "ローカルコピー `%s' -> `%s' の移動エラーです"
 
-#: ../src/common/image.c:1484
+#: ../src/common/image.c:1490
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "エラー `%s'の移動: ファイルが見つかりません"
 
-#: ../src/common/image.c:1494
+#: ../src/common/image.c:1500
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "エラー `%s' -> `%s'の移動: ファイルは既にあります"
 
-#: ../src/common/image.c:1498
+#: ../src/common/image.c:1504
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "`%s' -> `%s' の移動エラーです"
 
-#: ../src/common/image.c:1755
+#: ../src/common/image.c:1761
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "元のファイルにアクセスできない場合、ローカルコピーを作成することはできません"
 
-#: ../src/common/image.c:1769
+#: ../src/common/image.c:1775
 msgid "cannot create local copy."
 msgstr "ローカルコピーを作成できません"
 
-#: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1841 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "元のファイルにアクセスできない場合、ローカルコピーを削除することはできません"
 
-#: ../src/common/image.c:2004
+#: ../src/common/image.c:2010
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1849,27 +1849,27 @@ msgstr "汎用ポアソン"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "ノイズプロファイル `%s' は、有効ではありません"
 
-#: ../src/common/opencl.c:787
+#: ../src/common/opencl.c:789
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
 "OpenCLによるGPUハードウェアアクセラレーションが遅いため無効になっています"
 
-#: ../src/common/opencl.c:794
+#: ../src/common/opencl.c:796
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "マルチGPUが検出されました - OpenCLスケジューリング・プロファイルがそれに応じ"
 "て設定されます"
 
-#: ../src/common/opencl.c:801
+#: ../src/common/opencl.c:803
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "最速なGPUが検出されました - それに応じてOpenCLスケジューリング・プロファイル"
 "が設定されます"
 
-#: ../src/common/opencl.c:808
+#: ../src/common/opencl.c:810
 msgid "opencl scheduling profile set to default."
 msgstr "OpenCLスケジューリング・プロファイルはデフォルトに設定されます"
 
@@ -2519,8 +2519,8 @@ msgstr ""
 "* 下の三角で定義された範囲：すべてブレンドしない\n"
 "* 隣接する上/下のマーカーの間の範囲：徐々にブレンド"
 
-#: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2288
-#: ../src/iop/tonecurve.c:1342
+#: ../src/develop/blend_gui.c:1444 ../src/iop/colorzones.c:2304
+#: ../src/iop/tonecurve.c:1365
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
@@ -2829,7 +2829,7 @@ msgstr "ブレンドモード"
 msgid "choose blending mode"
 msgstr "ブレンドモード選択"
 
-#: ../src/develop/blend_gui.c:2429 ../src/iop/watermark.c:1432
+#: ../src/develop/blend_gui.c:2429 ../src/iop/watermark.c:1431
 msgid "opacity"
 msgstr "不透明度"
 
@@ -3341,7 +3341,7 @@ msgstr "ダブルクリックでリセット"
 #. *
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
-#: ../src/external/wb_presets.c:45 ../src/iop/lowlight.c:338
+#: ../src/external/wb_presets.c:45 ../src/iop/lowlight.c:344
 msgid "daylight"
 msgstr "太陽光"
 
@@ -3971,7 +3971,7 @@ msgstr "黄金螺旋"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
 #: ../src/iop/denoiseprofile.c:3974 ../src/iop/lens.cc:2307
-#: ../src/iop/rawdenoise.c:987 ../src/libs/tools/filter.c:125
+#: ../src/iop/rawdenoise.c:1007 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "すべて"
 
@@ -5335,7 +5335,7 @@ msgid "vertical"
 msgstr "垂直"
 
 #: ../src/iop/ashift.c:4835 ../src/iop/graduatednd.c:1233
-#: ../src/iop/watermark.c:1439
+#: ../src/iop/watermark.c:1438
 msgid "rotation"
 msgstr "回転"
 
@@ -5525,140 +5525,140 @@ msgstr "[%s] ゾーンからすべてのセグメントを選択します"
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] ゾーンからすべてのセグメントの選択を解除します"
 
-#: ../src/iop/atrous.c:117
+#: ../src/iop/atrous.c:118
 msgid "contrast equalizer"
 msgstr "コントラスト イコライザ"
 
-#: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
+#: ../src/iop/atrous.c:138 ../src/iop/soften.c:108
 msgctxt "accel"
 msgid "mix"
 msgstr "ミックス"
 
-#: ../src/iop/atrous.c:1068
+#: ../src/iop/atrous.c:1069
 msgctxt "eq_preset"
 msgid "coarse"
 msgstr "粗い"
 
-#: ../src/iop/atrous.c:1082
+#: ../src/iop/atrous.c:1083
 msgid "denoise & sharpen"
 msgstr "ノイズ低減＆シャープ化"
 
-#: ../src/iop/atrous.c:1096
+#: ../src/iop/atrous.c:1097
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "シャープ化"
 
-#: ../src/iop/atrous.c:1110
+#: ../src/iop/atrous.c:1111
 msgid "denoise chroma"
 msgstr "カラーノイズ低減"
 
-#: ../src/iop/atrous.c:1124 ../src/iop/equalizer.c:337
+#: ../src/iop/atrous.c:1125 ../src/iop/equalizer.c:337
 msgid "denoise"
 msgstr "ノイズ低減"
 
-#: ../src/iop/atrous.c:1139 ../src/iop/bloom.c:77
+#: ../src/iop/atrous.c:1140 ../src/iop/bloom.c:77
 msgid "bloom"
 msgstr "ブルーム"
 
-#: ../src/iop/atrous.c:1153
+#: ../src/iop/atrous.c:1154
 msgid "clarity"
 msgstr "明瞭化"
 
-#: ../src/iop/atrous.c:1171
+#: ../src/iop/atrous.c:1172
 msgid "deblur: large blur, strength 4"
 msgstr "ボケ除去: 大きなボケ, 強さ 4"
 
-#: ../src/iop/atrous.c:1187
+#: ../src/iop/atrous.c:1188
 msgid "deblur: large blur, strength 3"
 msgstr "ボケ除去: 大きなボケ, 強さ 3"
 
-#: ../src/iop/atrous.c:1201
+#: ../src/iop/atrous.c:1202
 msgid "deblur: medium blur, strength 3"
 msgstr "ボケ除去: 中程度のボケ, 強さ 3"
 
-#: ../src/iop/atrous.c:1214
+#: ../src/iop/atrous.c:1215
 msgid "deblur: fine blur, strength 3"
 msgstr "ボケ除去: 微細なボケ, 強さ 3"
 
-#: ../src/iop/atrous.c:1231
+#: ../src/iop/atrous.c:1232
 msgid "deblur: large blur, strength 2"
 msgstr "ボケ除去: 大きなボケ, 強さ 2"
 
-#: ../src/iop/atrous.c:1245
+#: ../src/iop/atrous.c:1246
 msgid "deblur: medium blur, strength 2"
 msgstr "ボケ除去: 中程度のボケ, 強さ 2"
 
-#: ../src/iop/atrous.c:1258
+#: ../src/iop/atrous.c:1259
 msgid "deblur: fine blur, strength 2"
 msgstr "ボケ除去: 微細なボケ, 強さ 2"
 
-#: ../src/iop/atrous.c:1275
+#: ../src/iop/atrous.c:1276
 msgid "deblur: large blur, strength 1"
 msgstr "ボケ除去: 大きなボケ, 強さ 1"
 
-#: ../src/iop/atrous.c:1289
+#: ../src/iop/atrous.c:1290
 msgid "deblur: medium blur, strength 1"
 msgstr "ボケ除去: 中程度のボケ, 強さ 1"
 
-#: ../src/iop/atrous.c:1302
+#: ../src/iop/atrous.c:1303
 msgid "deblur: fine blur, strength 1"
 msgstr "ボケ除去: 微細なボケ, 強さ 1"
 
-#: ../src/iop/atrous.c:1599 ../src/iop/denoiseprofile.c:3719
-#: ../src/iop/rawdenoise.c:815
+#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3719
+#: ../src/iop/rawdenoise.c:820
 msgid "coarse"
 msgstr "粗い"
 
-#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3727
-#: ../src/iop/rawdenoise.c:823
+#: ../src/iop/atrous.c:1613 ../src/iop/denoiseprofile.c:3727
+#: ../src/iop/rawdenoise.c:828
 msgid "fine"
 msgstr "細かい"
 
-#: ../src/iop/atrous.c:1618
+#: ../src/iop/atrous.c:1625
 msgid "contrasty"
 msgstr "コントラスト強"
 
-#: ../src/iop/atrous.c:1619 ../src/iop/atrous.c:1623
-#: ../src/iop/colorzones.c:2335 ../src/iop/denoiseprofile.c:3736
-#: ../src/iop/rawdenoise.c:832
+#: ../src/iop/atrous.c:1626 ../src/iop/atrous.c:1630
+#: ../src/iop/colorzones.c:2351 ../src/iop/denoiseprofile.c:3736
+#: ../src/iop/rawdenoise.c:837
 msgid "smooth"
 msgstr "平滑化"
 
-#: ../src/iop/atrous.c:1624 ../src/iop/denoiseprofile.c:3741
-#: ../src/iop/rawdenoise.c:837
+#: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3741
+#: ../src/iop/rawdenoise.c:842
 msgid "noisy"
 msgstr "ノイズ化"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1627
+#: ../src/iop/atrous.c:1634
 msgid "bold"
 msgstr "はっきり"
 
-#: ../src/iop/atrous.c:1628
+#: ../src/iop/atrous.c:1635
 msgid "dull"
 msgstr "ぼんやり"
 
-#: ../src/iop/atrous.c:1842 ../src/iop/equalizer.c:395 ../src/iop/nlmeans.c:849
+#: ../src/iop/atrous.c:1866 ../src/iop/equalizer.c:395 ../src/iop/nlmeans.c:849
 msgid "luma"
 msgstr "輝度"
 
-#: ../src/iop/atrous.c:1844
+#: ../src/iop/atrous.c:1868
 msgid "change lightness at each feature size"
 msgstr "各形状の明度を変更します"
 
-#: ../src/iop/atrous.c:1847 ../src/iop/equalizer.c:396 ../src/iop/nlmeans.c:851
+#: ../src/iop/atrous.c:1871 ../src/iop/equalizer.c:396 ../src/iop/nlmeans.c:851
 msgid "chroma"
 msgstr "彩度"
 
-#: ../src/iop/atrous.c:1849
+#: ../src/iop/atrous.c:1873
 msgid "change color saturation at each feature size"
 msgstr "各形状の彩度を変更します"
 
-#: ../src/iop/atrous.c:1851
+#: ../src/iop/atrous.c:1875
 msgid "edges"
 msgstr "エッジ"
 
-#: ../src/iop/atrous.c:1853
+#: ../src/iop/atrous.c:1877
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -5666,12 +5666,12 @@ msgstr ""
 "各形状でエッジ・ハロを変更します\n"
 "輝度と彩度タブの結果に限り変更します"
 
-#: ../src/iop/atrous.c:1881 ../src/iop/colorzones.c:2343
+#: ../src/iop/atrous.c:1905 ../src/iop/colorzones.c:2359
 #: ../src/iop/soften.c:758
 msgid "mix"
 msgstr "合成"
 
-#: ../src/iop/atrous.c:1882 ../src/iop/colorzones.c:2344
+#: ../src/iop/atrous.c:1906 ../src/iop/colorzones.c:2360
 msgid "make effect stronger or weaker"
 msgstr "効果を強く、または弱くします"
 
@@ -5745,116 +5745,116 @@ msgstr "nokia 調"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2375
-#: ../src/iop/rgbcurve.c:1609 ../src/iop/tonecurve.c:1383
+#: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2391
+#: ../src/iop/rgbcurve.c:1625 ../src/iop/tonecurve.c:1406
 msgid "cubic spline"
 msgstr "3次スプライン"
 
-#: ../src/iop/basecurve.c:326
+#: ../src/iop/basecurve.c:327
 msgid "base curve"
 msgstr "ベースカーブ"
 
-#: ../src/iop/basecurve.c:2127
+#: ../src/iop/basecurve.c:2151
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "横軸：入力、縦軸：出力 RGBチャンネル上で動作"
 
-#: ../src/iop/basecurve.c:2132 ../src/iop/lens.cc:2442
-#: ../src/iop/tonecurve.c:1407 ../src/iop/vignette.c:1158
-#: ../src/iop/watermark.c:1436
+#: ../src/iop/basecurve.c:2156 ../src/iop/lens.cc:2442
+#: ../src/iop/tonecurve.c:1430 ../src/iop/vignette.c:1158
+#: ../src/iop/watermark.c:1435
 msgid "scale"
 msgstr "スケール"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:2133 ../src/iop/filmic.c:1809
-#: ../src/iop/profile_gamma.c:876 ../src/iop/tonecurve.c:1408
+#: ../src/iop/basecurve.c:2157 ../src/iop/filmic.c:1809
+#: ../src/iop/profile_gamma.c:876 ../src/iop/tonecurve.c:1431
 msgid "linear"
 msgstr "線形"
 
-#: ../src/iop/basecurve.c:2134 ../src/iop/profile_gamma.c:860
+#: ../src/iop/basecurve.c:2158 ../src/iop/profile_gamma.c:860
 msgid "logarithmic"
 msgstr "対数"
 
-#: ../src/iop/basecurve.c:2135 ../src/iop/tonecurve.c:1410
+#: ../src/iop/basecurve.c:2159 ../src/iop/tonecurve.c:1433
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
 msgstr ""
 "グラフで使用するスケール。対数スケールを使うと黒付近をより精緻に制御できます"
 
-#: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
-#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1121
-#: ../src/iop/tonecurve.c:1394
+#: ../src/iop/basecurve.c:2165 ../src/iop/basicadj.c:708
+#: ../src/iop/rgbcurve.c:1645 ../src/iop/rgblevels.c:1121
+#: ../src/iop/tonecurve.c:1417
 msgid "preserve colors"
 msgstr "カラー保持"
 
-#: ../src/iop/basecurve.c:2142 ../src/iop/basecurve.c:2155
+#: ../src/iop/basecurve.c:2166 ../src/iop/basecurve.c:2179
 #: ../src/iop/basicadj.c:709 ../src/iop/clipping.c:1696
 #: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2002
 #: ../src/iop/clipping.c:2142 ../src/iop/clipping.c:2169
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2301
-#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1630
-#: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1395
+#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1646
+#: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1418
 #: ../src/libs/export.c:520 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
 #: ../src/libs/print_settings.c:1469
 msgid "none"
 msgstr "なし"
 
-#: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
-#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1123
-#: ../src/iop/tonecurve.c:1396
+#: ../src/iop/basecurve.c:2167 ../src/iop/basicadj.c:710
+#: ../src/iop/rgbcurve.c:1647 ../src/iop/rgblevels.c:1123
+#: ../src/iop/tonecurve.c:1419
 msgid "luminance"
 msgstr "輝度"
 
-#: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
-#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1632
-#: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1397
+#: ../src/iop/basecurve.c:2168 ../src/iop/basicadj.c:711
+#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1648
+#: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1420
 msgid "max RGB"
 msgstr "RGB 最大"
 
-#: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
-#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1125
-#: ../src/iop/tonecurve.c:1398
+#: ../src/iop/basecurve.c:2169 ../src/iop/basicadj.c:712
+#: ../src/iop/rgbcurve.c:1649 ../src/iop/rgblevels.c:1125
+#: ../src/iop/tonecurve.c:1421
 msgid "average RGB"
 msgstr "RGB 平均"
 
-#: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
-#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1126
-#: ../src/iop/tonecurve.c:1399
+#: ../src/iop/basecurve.c:2170 ../src/iop/basicadj.c:713
+#: ../src/iop/rgbcurve.c:1650 ../src/iop/rgblevels.c:1126
+#: ../src/iop/tonecurve.c:1422
 msgid "sum RGB"
 msgstr "RGB 合計"
 
-#: ../src/iop/basecurve.c:2147 ../src/iop/basicadj.c:714
-#: ../src/iop/rgbcurve.c:1635 ../src/iop/rgblevels.c:1127
-#: ../src/iop/tonecurve.c:1400
+#: ../src/iop/basecurve.c:2171 ../src/iop/basicadj.c:714
+#: ../src/iop/rgbcurve.c:1651 ../src/iop/rgblevels.c:1127
+#: ../src/iop/tonecurve.c:1423
 msgid "norm RGB"
 msgstr "RGB ノルム"
 
-#: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
-#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1128
-#: ../src/iop/tonecurve.c:1401
+#: ../src/iop/basecurve.c:2172 ../src/iop/basicadj.c:715
+#: ../src/iop/rgbcurve.c:1652 ../src/iop/rgblevels.c:1128
+#: ../src/iop/tonecurve.c:1424
 msgid "basic power"
 msgstr "冪乗"
 
-#: ../src/iop/basecurve.c:2150 ../src/iop/basicadj.c:717
-#: ../src/iop/rgbcurve.c:1638 ../src/iop/rgblevels.c:1130
-#: ../src/iop/tonecurve.c:1403
+#: ../src/iop/basecurve.c:2174 ../src/iop/basicadj.c:717
+#: ../src/iop/rgbcurve.c:1654 ../src/iop/rgblevels.c:1130
+#: ../src/iop/tonecurve.c:1426
 msgid "method to preserve colors when applying contrast"
 msgstr "コントラストを適用するときにカラーを保持する方法"
 
-#: ../src/iop/basecurve.c:2154
+#: ../src/iop/basecurve.c:2178
 msgid "fusion"
 msgstr "合成"
 
-#: ../src/iop/basecurve.c:2156
+#: ../src/iop/basecurve.c:2180
 msgid "two exposures"
 msgstr "2枚 露光"
 
-#: ../src/iop/basecurve.c:2157
+#: ../src/iop/basecurve.c:2181
 msgid "three exposures"
 msgstr "3枚 露光"
 
-#: ../src/iop/basecurve.c:2158
+#: ../src/iop/basecurve.c:2182
 msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
@@ -5862,22 +5862,22 @@ msgstr ""
 "ハイダイナミックレンジを圧縮するために、画像をそれ自体と異なる露光補正値と合"
 "成します。 使用前にハイライトを露光します"
 
-#: ../src/iop/basecurve.c:2164
+#: ../src/iop/basecurve.c:2188
 msgid "how many stops to shift the individual exposures apart"
 msgstr "個々の露光を個別にシフトする段数"
 
-#: ../src/iop/basecurve.c:2165
+#: ../src/iop/basecurve.c:2189
 msgid "exposure shift"
 msgstr "露光シフト"
 
-#: ../src/iop/basecurve.c:2175
+#: ../src/iop/basecurve.c:2199
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
 msgstr ""
 "露光オーバー/アンダーの傾き度合い (-1: ハイライト低減、+1: シャドウ低減)"
 
-#: ../src/iop/basecurve.c:2177
+#: ../src/iop/basecurve.c:2201
 msgid "exposure bias"
 msgstr "露光バイアス"
 
@@ -5953,8 +5953,8 @@ msgstr "明るさ調整"
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2519
 #: ../src/iop/colorbalance.c:2569 ../src/iop/colorbalance.c:2618
 #: ../src/iop/colorchecker.c:1390 ../src/iop/colorcorrection.c:294
-#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2264
-#: ../src/iop/colorzones.c:2328 ../src/iop/graduatednd.c:1262
+#: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2280
+#: ../src/iop/colorzones.c:2344 ../src/iop/graduatednd.c:1262
 #: ../src/iop/lowpass.c:689 ../src/iop/soften.c:743
 #: ../src/iop/splittoning.c:628 ../src/iop/vignette.c:1161
 msgid "saturation"
@@ -5998,7 +5998,7 @@ msgstr "ローカル ラプラシアン: 不整合な出力"
 #: ../src/iop/bilat.c:527 ../src/iop/colorbalance.c:2367
 #: ../src/iop/denoiseprofile.c:4063 ../src/iop/exposure.c:866
 #: ../src/iop/lens.cc:2450 ../src/iop/levels.c:674
-#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1523
+#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1539
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
 #: ../src/views/darkroom.c:1844
@@ -6387,15 +6387,15 @@ msgstr "変更先"
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorbalance.c:2506
 #: ../src/iop/colorbalance.c:2556 ../src/iop/colorbalance.c:2605
 #: ../src/iop/colorize.c:418 ../src/iop/colorreconstruction.c:1376
-#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2266
-#: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1247
+#: ../src/iop/colorreconstruction.c:1381 ../src/iop/colorzones.c:2282
+#: ../src/iop/colorzones.c:2343 ../src/iop/graduatednd.c:1247
 #: ../src/iop/splittoning.c:613
 msgid "hue"
 msgstr "色相"
 
 #: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1372
-#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2262
-#: ../src/iop/colorzones.c:2329
+#: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2278
+#: ../src/iop/colorzones.c:2345
 msgid "lightness"
 msgstr "明度"
 
@@ -7401,36 +7401,36 @@ msgstr "適用"
 msgid "apply previously analyzed image look to this image"
 msgstr "この画像に、以前に分析された画像の設定を適用します"
 
-#: ../src/iop/colorzones.c:137
+#: ../src/iop/colorzones.c:138
 msgid "color zones"
 msgstr "カラー ゾーン"
 
-#: ../src/iop/colorzones.c:553
+#: ../src/iop/colorzones.c:554
 msgid "red black white"
 msgstr "モノクロとレッド"
 
-#: ../src/iop/colorzones.c:575
+#: ../src/iop/colorzones.c:576
 msgid "black white and skin tones"
 msgstr "モノクロと肌色トーン"
 
-#: ../src/iop/colorzones.c:597
+#: ../src/iop/colorzones.c:598
 msgid "polarizing filter"
 msgstr "偏光フィルタ"
 
-#: ../src/iop/colorzones.c:617
+#: ../src/iop/colorzones.c:618
 msgid "natural skin tones"
 msgstr "自然な肌色トーン"
 
-#: ../src/iop/colorzones.c:649
+#: ../src/iop/colorzones.c:650
 msgid "black & white film"
 msgstr "モノクロフィルム"
 
-#: ../src/iop/colorzones.c:2071 ../src/iop/retouch.c:2238
-#: ../src/iop/toneequal.c:1956
+#: ../src/iop/colorzones.c:2086 ../src/iop/retouch.c:2238
+#: ../src/iop/toneequal.c:2017
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "ブレンドマスクが表示されているときは、マスクを表示できません"
 
-#: ../src/iop/colorzones.c:2276 ../src/iop/rgbcurve.c:1555
+#: ../src/iop/colorzones.c:2292 ../src/iop/rgbcurve.c:1571
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7443,55 +7443,55 @@ msgstr ""
 "Shift+クリックで負の曲線を作成します"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2307
+#: ../src/iop/colorzones.c:2323
 msgid "edit by area"
 msgstr "領域で編集"
 
-#: ../src/iop/colorzones.c:2309
+#: ../src/iop/colorzones.c:2325
 msgid "edit the curve nodes by area"
 msgstr "領域ごとにカーブノードを編集します"
 
-#: ../src/iop/colorzones.c:2316
+#: ../src/iop/colorzones.c:2332
 msgid "display selection"
 msgstr "選択を表示"
 
-#: ../src/iop/colorzones.c:2325
+#: ../src/iop/colorzones.c:2341
 msgid "select by"
 msgstr "種類"
 
-#: ../src/iop/colorzones.c:2326
+#: ../src/iop/colorzones.c:2342
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "基準を選択、グラフの横軸となります"
 
-#: ../src/iop/colorzones.c:2334
+#: ../src/iop/colorzones.c:2350
 msgid "process mode"
 msgstr "プロセスモード"
 
-#: ../src/iop/colorzones.c:2336
+#: ../src/iop/colorzones.c:2352
 msgid "strong"
 msgstr "強"
 
-#: ../src/iop/colorzones.c:2338
+#: ../src/iop/colorzones.c:2354
 msgid "choose between a smoother or stronger effect"
 msgstr "より滑らかな効果またはより強い効果から選択します"
 
-#: ../src/iop/colorzones.c:2374 ../src/iop/rgbcurve.c:1608
-#: ../src/iop/tonecurve.c:1382
+#: ../src/iop/colorzones.c:2390 ../src/iop/rgbcurve.c:1624
+#: ../src/iop/tonecurve.c:1405
 msgid "interpolation method"
 msgstr "補間手法"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1610
-#: ../src/iop/tonecurve.c:1384
+#: ../src/iop/colorzones.c:2392 ../src/iop/rgbcurve.c:1626
+#: ../src/iop/tonecurve.c:1407
 msgid "centripetal spline"
 msgstr "centripetal スプライン"
 
-#: ../src/iop/colorzones.c:2377 ../src/iop/rgbcurve.c:1611
-#: ../src/iop/tonecurve.c:1385
+#: ../src/iop/colorzones.c:2393 ../src/iop/rgbcurve.c:1627
+#: ../src/iop/tonecurve.c:1408
 msgid "monotonic spline"
 msgstr "単調スプライン"
 
-#: ../src/iop/colorzones.c:2381 ../src/iop/rgbcurve.c:1615
-#: ../src/iop/tonecurve.c:1387
+#: ../src/iop/colorzones.c:2397 ../src/iop/rgbcurve.c:1631
+#: ../src/iop/tonecurve.c:1410
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -7753,15 +7753,15 @@ msgstr "分散 ブルー: "
 msgid "variance computed on the blue channel"
 msgstr "ブルーチャンネルで算出された分散"
 
-#: ../src/iop/denoiseprofile.c:3976 ../src/iop/rawdenoise.c:989
+#: ../src/iop/denoiseprofile.c:3976 ../src/iop/rawdenoise.c:1009
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:3978 ../src/iop/rawdenoise.c:991
+#: ../src/iop/denoiseprofile.c:3978 ../src/iop/rawdenoise.c:1011
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:3980 ../src/iop/rawdenoise.c:993
+#: ../src/iop/denoiseprofile.c:3980 ../src/iop/rawdenoise.c:1013
 msgid "B"
 msgstr "B"
 
@@ -8515,11 +8515,11 @@ msgstr ""
 "値を小さくすると、全体の輝度が上がります"
 
 #: ../src/iop/filmicrgb.c:1469 ../src/iop/filmicrgb.c:1483
-#: ../src/iop/toneequal.c:3145 ../src/iop/toneequal.c:3151
-#: ../src/iop/toneequal.c:3157 ../src/iop/toneequal.c:3163
-#: ../src/iop/toneequal.c:3169 ../src/iop/toneequal.c:3175
-#: ../src/iop/toneequal.c:3181 ../src/iop/toneequal.c:3187
-#: ../src/iop/toneequal.c:3193
+#: ../src/iop/toneequal.c:3229 ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3241 ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3253 ../src/iop/toneequal.c:3259
+#: ../src/iop/toneequal.c:3265 ../src/iop/toneequal.c:3271
+#: ../src/iop/toneequal.c:3277
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -8583,7 +8583,7 @@ msgstr "色度を保持"
 msgid "luminance Y"
 msgstr "輝度 Y"
 
-#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3236
+#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3320
 msgid "RGB power norm"
 msgstr "RGB パワーノルム"
 
@@ -9382,68 +9382,68 @@ msgctxt "accel"
 msgid "node tool"
 msgstr "ノードツール"
 
-#: ../src/iop/lowlight.c:84
+#: ../src/iop/lowlight.c:85
 msgid "lowlight vision"
 msgstr "ローライト ヴィジョン"
 
-#: ../src/iop/lowlight.c:105
+#: ../src/iop/lowlight.c:106
 msgctxt "accel"
 msgid "blue shift"
 msgstr "ブルー シフト"
 
-#: ../src/iop/lowlight.c:355
+#: ../src/iop/lowlight.c:361
 msgid "indoor bright"
 msgstr "明るい屋内"
 
-#: ../src/iop/lowlight.c:372
+#: ../src/iop/lowlight.c:378
 msgid "indoor dim"
 msgstr "薄暗い屋内"
 
-#: ../src/iop/lowlight.c:389
+#: ../src/iop/lowlight.c:395
 msgid "indoor dark"
 msgstr "暗い屋内"
 
-#: ../src/iop/lowlight.c:406
+#: ../src/iop/lowlight.c:412
 msgid "twilight"
 msgstr "黄昏"
 
-#: ../src/iop/lowlight.c:423
+#: ../src/iop/lowlight.c:429
 msgid "night street lit"
 msgstr "薄明るい夜道"
 
-#: ../src/iop/lowlight.c:440
+#: ../src/iop/lowlight.c:446
 msgid "night street"
 msgstr "夜道"
 
-#: ../src/iop/lowlight.c:457
+#: ../src/iop/lowlight.c:463
 msgid "night street dark"
 msgstr "暗い夜道"
 
-#: ../src/iop/lowlight.c:475
+#: ../src/iop/lowlight.c:481
 msgid "night"
 msgstr "夜間"
 
-#: ../src/iop/lowlight.c:647
+#: ../src/iop/lowlight.c:653
 msgid "dark"
 msgstr "ダーク"
 
-#: ../src/iop/lowlight.c:655
+#: ../src/iop/lowlight.c:661
 msgid "bright"
 msgstr "ブライト"
 
-#: ../src/iop/lowlight.c:664
+#: ../src/iop/lowlight.c:670
 msgid "day vision"
 msgstr "デイビジョン"
 
-#: ../src/iop/lowlight.c:669
+#: ../src/iop/lowlight.c:675
 msgid "night vision"
 msgstr "ナイトビジョン"
 
-#: ../src/iop/lowlight.c:863
+#: ../src/iop/lowlight.c:886
 msgid "blue shift"
 msgstr "ブルー シフト"
 
-#: ../src/iop/lowlight.c:865
+#: ../src/iop/lowlight.c:888
 msgid "blueness in shadows"
 msgstr "シャドウの青味"
 
@@ -9604,11 +9604,11 @@ msgstr "すべてのファイル"
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "LUT ルートフォルダー外のファイルを選択することはできません"
 
-#: ../src/iop/lut3d.c:1121
+#: ../src/iop/lut3d.c:1124
 msgid "select a png (haldclut) or a cube file"
 msgstr "png (haldclut)または cube ファイルを選択します"
 
-#: ../src/iop/lut3d.c:1128
+#: ../src/iop/lut3d.c:1131
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)\n"
@@ -9620,43 +9620,43 @@ msgstr ""
 "注意：LUTファイルを選択する前に、LUTフォルダーを 設定/内部オプション/その他 "
 "で設定する必要があります"
 
-#: ../src/iop/lut3d.c:1135
+#: ../src/iop/lut3d.c:1138
 msgid "application color space"
 msgstr "アプリケーションの色空間"
 
-#: ../src/iop/lut3d.c:1137
+#: ../src/iop/lut3d.c:1140
 msgid "gamma rec709 RGB"
 msgstr "ガンマ Rec709 RGB"
 
-#: ../src/iop/lut3d.c:1138
+#: ../src/iop/lut3d.c:1141
 msgid "linear rec709 RGB"
 msgstr "linear Rec709 RGB"
 
-#: ../src/iop/lut3d.c:1139
+#: ../src/iop/lut3d.c:1142
 msgid "linear rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
-#: ../src/iop/lut3d.c:1141
+#: ../src/iop/lut3d.c:1144
 msgid "select the color space in which the LUT has to be applied"
 msgstr "LUTを適用する必要がある色空間を選択します"
 
-#: ../src/iop/lut3d.c:1145
+#: ../src/iop/lut3d.c:1148
 msgid "interpolation"
 msgstr "補間"
 
-#: ../src/iop/lut3d.c:1146
+#: ../src/iop/lut3d.c:1149
 msgid "tetrahedral"
 msgstr "tetrahedral"
 
-#: ../src/iop/lut3d.c:1147
+#: ../src/iop/lut3d.c:1150
 msgid "trilinear"
 msgstr "trilinear"
 
-#: ../src/iop/lut3d.c:1148
+#: ../src/iop/lut3d.c:1151
 msgid "pyramid"
 msgstr "pyramid"
 
-#: ../src/iop/lut3d.c:1150
+#: ../src/iop/lut3d.c:1153
 msgid "select the interpolation method"
 msgstr "補間方法を選択します"
 
@@ -9816,20 +9816,20 @@ msgstr ""
 msgid "make an optimization with some guessing"
 msgstr "推測し最適化を行います"
 
-#: ../src/iop/rawdenoise.c:123
+#: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
 msgstr "RAWノイズ低減"
 
-#: ../src/iop/rawdenoise.c:143
+#: ../src/iop/rawdenoise.c:144
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "ノイズ しきい値"
 
-#: ../src/iop/rawdenoise.c:1032
+#: ../src/iop/rawdenoise.c:1053
 msgid "noise threshold"
 msgstr "ノイズ しきい値"
 
-#: ../src/iop/rawdenoise.c:1035
+#: ../src/iop/rawdenoise.c:1056
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -10070,7 +10070,7 @@ msgstr "塗りつぶしモード"
 msgid "erase"
 msgstr "消去"
 
-#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1383
+#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1382
 msgid "color"
 msgstr "カラー"
 
@@ -10178,93 +10178,93 @@ msgstr "ブラシを連続して追加"
 msgid "max scale is %i for this image size"
 msgstr "この画像サイズの最大縮尺は %i です"
 
-#: ../src/iop/rgbcurve.c:126
+#: ../src/iop/rgbcurve.c:127
 msgid "rgb curve"
 msgstr "RGB カーブ"
 
-#: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
+#: ../src/iop/rgbcurve.c:209 ../src/iop/tonecurve.c:545
 #: ../src/iop/tonemap.cc:299
 msgid "contrast compression"
 msgstr "コントラスト圧縮"
 
-#: ../src/iop/rgbcurve.c:216 ../src/iop/tonecurve.c:552
+#: ../src/iop/rgbcurve.c:217 ../src/iop/tonecurve.c:553
 msgid "gamma 1.0 (linear)"
 msgstr "ガンマ 1.0 (線形)"
 
-#: ../src/iop/rgbcurve.c:225 ../src/iop/tonecurve.c:561
+#: ../src/iop/rgbcurve.c:226 ../src/iop/tonecurve.c:562
 msgid "contrast - med (linear)"
 msgstr "コントラスト - 中 (線形)"
 
-#: ../src/iop/rgbcurve.c:233 ../src/iop/tonecurve.c:569
+#: ../src/iop/rgbcurve.c:234 ../src/iop/tonecurve.c:570
 msgid "contrast - high (linear)"
 msgstr "コントラスト - 高 (線形)"
 
-#: ../src/iop/rgbcurve.c:246 ../src/iop/tonecurve.c:580
+#: ../src/iop/rgbcurve.c:247 ../src/iop/tonecurve.c:581
 msgid "contrast - med (gamma 2.2)"
 msgstr "コントラスト - 中 (ガンマ 2.2)"
 
-#: ../src/iop/rgbcurve.c:258 ../src/iop/tonecurve.c:590
+#: ../src/iop/rgbcurve.c:259 ../src/iop/tonecurve.c:591
 msgid "contrast - high (gamma 2.2)"
 msgstr "コントラスト - 高 (ガンマ 2.2)"
 
-#: ../src/iop/rgbcurve.c:269 ../src/iop/tonecurve.c:601
+#: ../src/iop/rgbcurve.c:270 ../src/iop/tonecurve.c:602
 msgid "gamma 2.0"
 msgstr "ガンマ 2.0"
 
-#: ../src/iop/rgbcurve.c:273 ../src/iop/tonecurve.c:605
+#: ../src/iop/rgbcurve.c:274 ../src/iop/tonecurve.c:606
 msgid "gamma 0.5"
 msgstr "ガンマ 0.5"
 
-#: ../src/iop/rgbcurve.c:277 ../src/iop/tonecurve.c:609
+#: ../src/iop/rgbcurve.c:278 ../src/iop/tonecurve.c:610
 msgid "logarithm (base 2)"
 msgstr "対数 (底 2)"
 
-#: ../src/iop/rgbcurve.c:281 ../src/iop/tonecurve.c:613
+#: ../src/iop/rgbcurve.c:282 ../src/iop/tonecurve.c:614
 msgid "exponential (base 2)"
 msgstr "指数 (底 2)"
 
-#: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
-#: ../src/iop/tonecurve.c:1314
+#: ../src/iop/rgbcurve.c:1540 ../src/iop/rgblevels.c:1021
+#: ../src/iop/tonecurve.c:1337
 msgid "RGB, linked channels"
 msgstr "RGB, 連結チャンネル"
 
-#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1022
+#: ../src/iop/rgbcurve.c:1541 ../src/iop/rgblevels.c:1022
 msgid "RGB, independent channels"
 msgstr "RGB, 独立チャンネル"
 
-#: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
+#: ../src/iop/rgbcurve.c:1543 ../src/iop/rgblevels.c:1024
 msgid "choose between linked and independent channels."
 msgstr "リンクされたチャンネルと独立したチャンネルを選択します"
 
-#: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
+#: ../src/iop/rgbcurve.c:1550 ../src/iop/rgblevels.c:1031
 msgid "  R  "
 msgstr "  R  "
 
-#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
+#: ../src/iop/rgbcurve.c:1553 ../src/iop/rgblevels.c:1034
 msgid "curve nodes for r channel"
 msgstr "r チャンネルのカーブノード"
 
-#: ../src/iop/rgbcurve.c:1539 ../src/iop/rgblevels.c:1036
+#: ../src/iop/rgbcurve.c:1555 ../src/iop/rgblevels.c:1036
 msgid "  G  "
 msgstr "  G  "
 
-#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1039
+#: ../src/iop/rgbcurve.c:1558 ../src/iop/rgblevels.c:1039
 msgid "curve nodes for g channel"
 msgstr "g チャンネルのカーブノード"
 
-#: ../src/iop/rgbcurve.c:1544 ../src/iop/rgblevels.c:1041
+#: ../src/iop/rgbcurve.c:1560 ../src/iop/rgblevels.c:1041
 msgid "  B  "
 msgstr "  B  "
 
-#: ../src/iop/rgbcurve.c:1547 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1563 ../src/iop/rgblevels.c:1044
 msgid "curve nodes for b channel"
 msgstr "bチャンネルのカーブノード"
 
-#: ../src/iop/rgbcurve.c:1567
+#: ../src/iop/rgbcurve.c:1583
 msgid "pick GUI color from image"
 msgstr "画像からGUIカラーを抽出"
 
-#: ../src/iop/rgbcurve.c:1621 ../src/iop/rgbcurve.c:1623
+#: ../src/iop/rgbcurve.c:1637 ../src/iop/rgbcurve.c:1639
 msgid "compensate middle grey"
 msgstr "中間グレイを補正"
 
@@ -10312,12 +10312,12 @@ msgstr "自動ピクセル拡大縮小は、それを必要とするセンセー
 msgid "shadows and highlights"
 msgstr "シャドウとハイライト"
 
-#: ../src/iop/shadhi.c:276 ../src/iop/toneequal.c:313
+#: ../src/iop/shadhi.c:276 ../src/iop/toneequal.c:314
 msgctxt "accel"
 msgid "shadows"
 msgstr "シャドウ"
 
-#: ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:317
+#: ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "highlights"
 msgstr "ハイライト"
@@ -10632,27 +10632,27 @@ msgstr "プリセット ホワイトバランスの微調整"
 msgid "white balance disabled for camera"
 msgstr "カメラのホワイトバランスが無効になります"
 
-#: ../src/iop/tonecurve.c:189
+#: ../src/iop/tonecurve.c:190
 msgid "tone curve"
 msgstr "トーンカーブ"
 
-#: ../src/iop/tonecurve.c:1310
+#: ../src/iop/tonecurve.c:1333
 msgid "color space"
 msgstr "色空間"
 
-#: ../src/iop/tonecurve.c:1311
+#: ../src/iop/tonecurve.c:1334
 msgid "Lab, linked channels"
 msgstr "Lab, 連結チャンネル"
 
-#: ../src/iop/tonecurve.c:1312
+#: ../src/iop/tonecurve.c:1335
 msgid "Lab, independent channels"
 msgstr "Lab, 独立チャンネル"
 
-#: ../src/iop/tonecurve.c:1313
+#: ../src/iop/tonecurve.c:1336
 msgid "XYZ, linked channels"
 msgstr "XYZ, 連結チャンネル"
 
-#: ../src/iop/tonecurve.c:1316
+#: ../src/iop/tonecurve.c:1339
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -10662,137 +10662,137 @@ msgstr ""
 "は、Lカーブのデータに基づいて調整されます。自動XYZに似ていますが、XYZ空間にお"
 "ける彩度の変更を適用します"
 
-#: ../src/iop/tonecurve.c:1326
+#: ../src/iop/tonecurve.c:1349
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:1328
+#: ../src/iop/tonecurve.c:1351
 msgid "tonecurve for L channel"
 msgstr "Lチャンネルのトーンカーブ"
 
-#: ../src/iop/tonecurve.c:1330
+#: ../src/iop/tonecurve.c:1353
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1332
+#: ../src/iop/tonecurve.c:1355
 msgid "tonecurve for a channel"
 msgstr "aチャンネルのトーンカーブ"
 
-#: ../src/iop/tonecurve.c:1334
+#: ../src/iop/tonecurve.c:1357
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1336
+#: ../src/iop/tonecurve.c:1359
 msgid "tonecurve for b channel"
 msgstr "bチャンネルのトーンカーブ"
 
-#: ../src/iop/tonecurve.c:1409
+#: ../src/iop/tonecurve.c:1432
 msgid "log"
 msgstr "対数"
 
-#: ../src/iop/tonecurve.c:1417
+#: ../src/iop/tonecurve.c:1440
 msgid "base of the logarithm"
 msgstr "対数の底"
 
-#: ../src/iop/toneequal.c:291
+#: ../src/iop/toneequal.c:292
 msgid "tone equalizer"
 msgstr "トーン イコライザ"
 
-#: ../src/iop/toneequal.c:311
+#: ../src/iop/toneequal.c:312
 msgctxt "accel"
 msgid "blacks"
 msgstr "黒"
 
-#: ../src/iop/toneequal.c:312
+#: ../src/iop/toneequal.c:313
 msgctxt "accel"
 msgid "deep shadows"
 msgstr "ディープ シャドウ"
 
-#: ../src/iop/toneequal.c:314
+#: ../src/iop/toneequal.c:315
 msgctxt "accel"
 msgid "light shadows"
 msgstr "ライト シャドウ"
 
-#: ../src/iop/toneequal.c:315
+#: ../src/iop/toneequal.c:316
 msgctxt "accel"
 msgid "midtones"
 msgstr "中間トーン"
 
-#: ../src/iop/toneequal.c:316
+#: ../src/iop/toneequal.c:317
 msgctxt "accel"
 msgid "dark highlights"
 msgstr "暗いハイライト"
 
-#: ../src/iop/toneequal.c:318
+#: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "whites"
 msgstr "白"
 
-#: ../src/iop/toneequal.c:319
+#: ../src/iop/toneequal.c:320
 msgctxt "accel"
 msgid "speculars"
 msgstr "鏡面"
 
-#: ../src/iop/toneequal.c:320
+#: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "filter diffusion"
 msgstr "フィルター拡散"
 
-#: ../src/iop/toneequal.c:321
+#: ../src/iop/toneequal.c:322
 msgctxt "accel"
 msgid "smoothing diameter"
 msgstr "平滑化 直径"
 
-#: ../src/iop/toneequal.c:322
+#: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "edges refinement or feathering"
 msgstr "エッジの精緻化 または ぼかし"
 
-#: ../src/iop/toneequal.c:323
+#: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask quantization"
 msgstr "マスク量子化"
 
-#: ../src/iop/toneequal.c:324
+#: ../src/iop/toneequal.c:325
 msgctxt "accel"
 msgid "mask exposure compensation"
 msgstr "マスク露光補正"
 
-#: ../src/iop/toneequal.c:325
+#: ../src/iop/toneequal.c:326
 msgctxt "accel"
 msgid "mask contrast compensation"
 msgstr "マスクコントラスト補正"
 
 #. No blending
-#: ../src/iop/toneequal.c:417
+#: ../src/iop/toneequal.c:418
 msgid "mask blending : none"
 msgstr "マスクブレンド : なし"
 
-#: ../src/iop/toneequal.c:429
+#: ../src/iop/toneequal.c:430
 msgid "mask blending : landscapes"
 msgstr "マスクブレンド : 風景"
 
-#: ../src/iop/toneequal.c:437
+#: ../src/iop/toneequal.c:438
 msgid "mask blending : all purposes"
 msgstr "マスクブレンド : 全ての目的"
 
-#: ../src/iop/toneequal.c:445
+#: ../src/iop/toneequal.c:446
 msgid "mask blending : isolated subjects"
 msgstr "マスクブレンド : 孤立した被写体"
 
-#: ../src/iop/toneequal.c:466
+#: ../src/iop/toneequal.c:467
 msgid "compress shadows/highlights : soft"
 msgstr "シャドウ-ハイライト 圧縮 : ソフト"
 
-#: ../src/iop/toneequal.c:485
+#: ../src/iop/toneequal.c:486
 msgid "compress shadows/highlights : strong"
 msgstr "シャドウ-ハイライト 圧縮 : 強"
 
-#: ../src/iop/toneequal.c:504
+#: ../src/iop/toneequal.c:505
 msgid "relight : fill-in"
 msgstr "ライト : フィルイン"
 
-#: ../src/iop/toneequal.c:555
+#: ../src/iop/toneequal.c:556
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
@@ -10800,14 +10800,14 @@ msgstr ""
 "トーンイコライザーは、パイプライン上で歪曲収差モジュールの後でなければなりま"
 "せん - 無効にされました"
 
-#: ../src/iop/toneequal.c:829 ../src/iop/toneequal.c:950
+#: ../src/iop/toneequal.c:830 ../src/iop/toneequal.c:951
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
 "トーンイコライザーがメモリの割り当てに失敗しました。RAMの設定を確認してくださ"
 "い"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:851
+#: ../src/iop/toneequal.c:852
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
@@ -10815,81 +10815,81 @@ msgstr ""
 "トーンイコライザーの入出力バッファーの調整が不適切です。バグを開発者に報告し"
 "てください"
 
-#: ../src/iop/toneequal.c:1766 ../src/iop/toneequal.c:2146
+#: ../src/iop/toneequal.c:1806 ../src/iop/toneequal.c:2223
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "補間が不安定な場合、曲線の平滑化を減らします"
 
-#: ../src/iop/toneequal.c:1851 ../src/iop/toneequal.c:1911
+#: ../src/iop/toneequal.c:1906 ../src/iop/toneequal.c:1969
 msgid "wait for the preview to finish recomputing"
 msgstr "プレビューが再計算を完了するまでお待ちください"
 
-#: ../src/iop/toneequal.c:2151
+#: ../src/iop/toneequal.c:2228
 msgid "some parameters are out-of-bounds"
 msgstr "一部のパラメーターは範囲外です"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2426
+#: ../src/iop/toneequal.c:2503
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3215
 msgid "simple"
 msgstr "シンプル"
 
-#: ../src/iop/toneequal.c:3132
+#: ../src/iop/toneequal.c:3216
 msgid "advanced"
 msgstr "アドバンス"
 
-#: ../src/iop/toneequal.c:3133
+#: ../src/iop/toneequal.c:3217
 msgid "masking"
 msgstr "マスク"
 
-#: ../src/iop/toneequal.c:3146
+#: ../src/iop/toneequal.c:3230
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3152
+#: ../src/iop/toneequal.c:3236
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3242
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3248
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3170
+#: ../src/iop/toneequal.c:3254
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3176
+#: ../src/iop/toneequal.c:3260
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3182
+#: ../src/iop/toneequal.c:3266
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3272
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3194
+#: ../src/iop/toneequal.c:3278
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:3212
+#: ../src/iop/toneequal.c:3296
 msgid "double-click to reset the curve"
 msgstr "ダブルクリックでカーブをリセット"
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3303
 msgid "curve smoothing"
 msgstr "カーブの平滑化"
 
-#: ../src/iop/toneequal.c:3220
+#: ../src/iop/toneequal.c:3304
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -10901,35 +10901,35 @@ msgstr ""
 "負の値は、揺れを回避し、動作はより堅牢になりますが、トーンの転移は雑になり、"
 "ローカルコントラストを損なう可能性があります"
 
-#: ../src/iop/toneequal.c:3229
+#: ../src/iop/toneequal.c:3313
 msgid "luminance estimator"
 msgstr "輝度推定方法"
 
-#: ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3315
 msgid "RGB average"
 msgstr "RGB 平均"
 
-#: ../src/iop/toneequal.c:3232
+#: ../src/iop/toneequal.c:3316
 msgid "HSL lightness"
 msgstr "HSV 明度"
 
-#: ../src/iop/toneequal.c:3233
+#: ../src/iop/toneequal.c:3317
 msgid "HSV value / RGB max"
 msgstr "HSV 値 / RGB 最大"
 
-#: ../src/iop/toneequal.c:3234
+#: ../src/iop/toneequal.c:3318
 msgid "RGB sum"
 msgstr "RGB 合計"
 
-#: ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3319
 msgid "RGB euclidean norm"
 msgstr "RGB ユークリッドノルム"
 
-#: ../src/iop/toneequal.c:3237
+#: ../src/iop/toneequal.c:3321
 msgid "RGB geometric mean"
 msgstr "RGB 幾何平均"
 
-#: ../src/iop/toneequal.c:3238
+#: ../src/iop/toneequal.c:3322
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -10937,19 +10937,19 @@ msgstr ""
 "マスクをプレビューし、覆い焼きと焼き付け領域のコントラストが高くなる推定方法"
 "を選択します"
 
-#: ../src/iop/toneequal.c:3244
+#: ../src/iop/toneequal.c:3328
 msgid "preserve details"
 msgstr "細部を保持"
 
-#: ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3331
 msgid "averaged guided filter"
 msgstr "平均ガイドフィルター"
 
-#: ../src/iop/toneequal.c:3248
+#: ../src/iop/toneequal.c:3332
 msgid "guided filter"
 msgstr "ガイドフィルター"
 
-#: ../src/iop/toneequal.c:3249
+#: ../src/iop/toneequal.c:3333
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -10962,11 +10962,11 @@ msgstr ""
 "を保持しようとします\n"
 "'平均ガイドフィルター' は両方の方法の幾何平均です"
 
-#: ../src/iop/toneequal.c:3256
+#: ../src/iop/toneequal.c:3340
 msgid "filter diffusion"
 msgstr "フィルター拡散"
 
-#: ../src/iop/toneequal.c:3257
+#: ../src/iop/toneequal.c:3341
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -10974,11 +10974,11 @@ msgstr ""
 "適用するガイドフィルターのパスの数は、速度を犠牲にしてフィルターのエッジを拡"
 "散するのに役立ちます"
 
-#: ../src/iop/toneequal.c:3265
+#: ../src/iop/toneequal.c:3349
 msgid "smoothing diameter"
 msgstr "平滑化の直径"
 
-#: ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3350
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -10988,11 +10988,11 @@ msgstr ""
 "警告：ノイズ除去プロファイルが使用されている場合、このパラメーターの値が大き"
 "いと、暗室でのプレビューが非常に遅くなる可能性があります"
 
-#: ../src/iop/toneequal.c:3274
+#: ../src/iop/toneequal.c:3358
 msgid "edges refinement/feathering"
 msgstr "エッジ 精緻化/ぼかし"
 
-#: ../src/iop/toneequal.c:3275
+#: ../src/iop/toneequal.c:3359
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11006,11 +11006,11 @@ msgstr ""
 "値を小さくすると、滑らかなグラデーションと滑らかなスムージングが得られます"
 "が、不正確なエッジのテーピングとハロにつながる可能性があります"
 
-#: ../src/iop/toneequal.c:3283
+#: ../src/iop/toneequal.c:3367
 msgid "mask post-processing"
 msgstr "マスク 後処理"
 
-#: ../src/iop/toneequal.c:3289
+#: ../src/iop/toneequal.c:3373
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11020,11 +11020,11 @@ msgstr ""
 "中心線は平均を示しています。 クリッピングが発生すると、極値にオレンジ色のバー"
 "が表示されます"
 
-#: ../src/iop/toneequal.c:3294
+#: ../src/iop/toneequal.c:3378
 msgid "mask quantization"
 msgstr "マスク量子化"
 
-#: ../src/iop/toneequal.c:3296
+#: ../src/iop/toneequal.c:3380
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11034,11 +11034,11 @@ msgstr ""
 "より高い値は、輝度マスクをポスタライズして、ガイドを支援します\n"
 "高いぼかしの値を使用すると、区分的に滑らかな領域を生成します"
 
-#: ../src/iop/toneequal.c:3304
+#: ../src/iop/toneequal.c:3388
 msgid "mask exposure compensation"
 msgstr "マスク露光補正"
 
-#: ../src/iop/toneequal.c:3306
+#: ../src/iop/toneequal.c:3390
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -11048,11 +11048,11 @@ msgstr ""
 "露光を移動するために使用します\n"
 "スポイトは、-4EVで平均露光を自動調整します"
 
-#: ../src/iop/toneequal.c:3318
+#: ../src/iop/toneequal.c:3402
 msgid "mask contrast compensation"
 msgstr "マスクコントラスト補正"
 
-#: ../src/iop/toneequal.c:3320
+#: ../src/iop/toneequal.c:3404
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -11064,7 +11064,7 @@ msgstr ""
 "これにより、露光補正をより適切に制御する露光ヒストグラムをより多くのチャンネ"
 "ルに波及させます"
 
-#: ../src/iop/toneequal.c:3333 ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3417 ../src/iop/toneequal.c:3421
 msgid "display exposure mask"
 msgstr "露光マスクを表示"
 
@@ -11268,20 +11268,20 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "y オフセット"
 
-#: ../src/iop/watermark.c:1356
+#: ../src/iop/watermark.c:1355
 msgid "content"
 msgstr "コンテンツ"
 
-#: ../src/iop/watermark.c:1363
+#: ../src/iop/watermark.c:1362
 msgid "marker"
 msgstr "透かし画像"
 
-#: ../src/iop/watermark.c:1366
+#: ../src/iop/watermark.c:1365
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "%s/watermarks または %s/watermarks のSVG透かし画像"
 
-#: ../src/iop/watermark.c:1385
+#: ../src/iop/watermark.c:1384
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -11289,20 +11289,20 @@ msgstr ""
 "透かし色, タグ\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1387
+#: ../src/iop/watermark.c:1386
 msgid "select watermark color"
 msgstr "透かし色を選択します"
 
-#: ../src/iop/watermark.c:1390
+#: ../src/iop/watermark.c:1389
 msgid "pick color from image"
 msgstr "画像からカラーを抽出"
 
 #. Simple text
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1399
 msgid "text"
 msgstr "テキスト"
 
-#: ../src/iop/watermark.c:1404
+#: ../src/iop/watermark.c:1403
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -11311,11 +11311,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1414
+#: ../src/iop/watermark.c:1413
 msgid "font"
 msgstr "フォント"
 
-#: ../src/iop/watermark.c:1420
+#: ../src/iop/watermark.c:1419
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -11328,58 +11328,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1427 ../src/libs/camera.c:508
+#: ../src/iop/watermark.c:1426 ../src/libs/camera.c:508
 msgid "properties"
 msgstr "プロパティ"
 
-#: ../src/iop/watermark.c:1445
+#: ../src/iop/watermark.c:1444
 msgctxt "size"
 msgid "image"
 msgstr "画像"
 
-#: ../src/iop/watermark.c:1446
+#: ../src/iop/watermark.c:1445
 msgid "larger border"
 msgstr "より広いボーダー"
 
-#: ../src/iop/watermark.c:1447
+#: ../src/iop/watermark.c:1446
 msgid "smaller border"
 msgstr "より狭いボーダー"
 
-#: ../src/iop/watermark.c:1449
+#: ../src/iop/watermark.c:1448
 msgid "scale on"
 msgstr "スケール調整"
 
-#: ../src/iop/watermark.c:1450
+#: ../src/iop/watermark.c:1449
 msgid "size is relative to"
 msgstr "サイズに対して相対的"
 
-#: ../src/iop/watermark.c:1453
+#: ../src/iop/watermark.c:1452
 msgid "position"
 msgstr "ポジション"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1456 ../src/libs/print_settings.c:1389
+#: ../src/iop/watermark.c:1455 ../src/libs/print_settings.c:1389
 msgid "alignment"
 msgstr "位置合わせ"
 
-#: ../src/iop/watermark.c:1472
+#: ../src/iop/watermark.c:1471
 msgid "x offset"
 msgstr "x オフセット"
 
-#: ../src/iop/watermark.c:1475
+#: ../src/iop/watermark.c:1474
 msgid "y offset"
 msgstr "y オフセット"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1480
+#: ../src/iop/watermark.c:1479
 msgid "the opacity of the watermark"
 msgstr "透かしの不透明度"
 
-#: ../src/iop/watermark.c:1481
+#: ../src/iop/watermark.c:1480
 msgid "the scale of the watermark"
 msgstr "透かしの拡大縮小"
 
-#: ../src/iop/watermark.c:1482
+#: ../src/iop/watermark.c:1481
 msgid "the rotation of the watermark"
 msgstr "透かしの回転"
 
@@ -11694,11 +11694,9 @@ msgstr "サンプル追加"
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr "画面上で強調表示、クリックでサンプル固定"
 
-#. delete
-#: ../src/libs/colorpicker.c:412 ../src/libs/image.c:182
-#: ../src/libs/styles.c:458
-msgid "remove"
-msgstr "除外"
+#: ../src/libs/colorpicker.c:412
+msgid "X"
+msgstr ""
 
 #: ../src/libs/colorpicker.c:518
 msgid "live samples"
@@ -12371,6 +12369,11 @@ msgstr "ファイルをゴミ箱に入れます"
 #: ../src/libs/image.c:152
 msgid "physically delete from disk"
 msgstr "ディスクから削除"
+
+#. delete
+#: ../src/libs/image.c:182 ../src/libs/styles.c:458
+msgid "remove"
+msgstr "除外"
 
 #: ../src/libs/image.c:185
 msgid "remove from the collection"
@@ -13143,44 +13146,44 @@ msgstr "フィルムロールへ移動"
 msgid "modulegroups"
 msgstr "モジュール グループ"
 
-#: ../src/libs/modulegroups.c:181
+#: ../src/libs/modulegroups.c:199
 msgid "show only active modules"
 msgstr "アクティブ モジュール"
 
-#: ../src/libs/modulegroups.c:188
+#: ../src/libs/modulegroups.c:206
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr "お気に入り モジュール (下の「他のモジュール」で複数選択 )"
 
-#: ../src/libs/modulegroups.c:194
+#: ../src/libs/modulegroups.c:212
 msgid "basic group"
 msgstr "基本 グループ"
 
-#: ../src/libs/modulegroups.c:200
+#: ../src/libs/modulegroups.c:218
 msgid "tone group"
 msgstr "トーン グループ"
 
-#: ../src/libs/modulegroups.c:206
+#: ../src/libs/modulegroups.c:224
 msgid "color group"
 msgstr "カラー グループ"
 
-#: ../src/libs/modulegroups.c:212
+#: ../src/libs/modulegroups.c:230
 msgid "correction group"
 msgstr "補正 グループ"
 
-#: ../src/libs/modulegroups.c:218
+#: ../src/libs/modulegroups.c:236
 msgid "effects group"
 msgstr "効果 グループ"
 
 #. search box
-#: ../src/libs/modulegroups.c:230
+#: ../src/libs/modulegroups.c:248
 msgid "search module"
 msgstr "検索モジュール"
 
-#: ../src/libs/modulegroups.c:237
+#: ../src/libs/modulegroups.c:254
 msgid "search modules by name or tag"
 msgstr "名前またはタグでモジュールを検索"
 
-#: ../src/libs/modulegroups.c:244
+#: ../src/libs/modulegroups.c:261
 msgid "clear text"
 msgstr "クリアテキスト"
 
