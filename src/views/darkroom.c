@@ -1221,7 +1221,7 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   return FALSE;
 }
 
-/* overexposed */
+/* colour assessment */
 static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
