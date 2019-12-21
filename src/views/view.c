@@ -2001,6 +2001,14 @@ void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, 
   if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
 }
 
+dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm)
+{
+  if(vm->proxy.darkroom.view)
+    return vm->proxy.darkroom.get_layout(vm->proxy.darkroom.view);
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
+}
+
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
 {
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);

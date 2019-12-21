@@ -140,7 +140,7 @@ void init(dt_view_t *self)
 
 #ifdef USE_LUA
   lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
+  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, display_image_cb, 1);
   dt_lua_gtk_wrap(L);
@@ -188,6 +188,15 @@ static cairo_status_t write_snapshot_data(void *closure, const unsigned char *da
   if(res != length)
     return CAIRO_STATUS_WRITE_ERROR;
   return CAIRO_STATUS_SUCCESS;
+}
+
+static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->iso_12646.enabled)
+    return DT_DARKROOM_LAYOUT_COLOR_ASSESMENT;
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
 }
 
 void expose(
@@ -1253,6 +1262,8 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
     // Reconfigure UI and pipe dimentions
     dt_dev_configure(d, d->width, d->height);
   }
+
+  dt_ui_restore_panels(darktable.gui->ui);
   dt_dev_reprocess_center(d);
 }
 
@@ -2181,6 +2192,9 @@ void gui_init(dt_view_t *self)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
   }
+
+  darktable.view_manager->proxy.darkroom.view = self;
+  darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
 }
 
 enum
