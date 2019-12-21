@@ -318,7 +318,7 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
 
   for(int i = 5; i < l + 5; i++)
   {
-    float alpha = (i - 5) * 2.0 * M_PI / (float)l;
+    const float alpha = (i - 5) * 2.0 * M_PI / (float)l;
     (*points)[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
     (*points)[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
   }
@@ -1262,8 +1262,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   if(gpt->source_count > 10)
   {
     // compute the dest inner ellipse intersection with the line from source center to dest center.
-    float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
-    float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
+    const float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
+    const float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
 
     // we don't draw the line if source==point
     if(cdx != 0.0 && cdy != 0.0)
