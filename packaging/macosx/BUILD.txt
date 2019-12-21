@@ -44,7 +44,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ cd darktable
      $ mkdir build
      $ cd build
-     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_C_FLAGS=-I/opt/local/include/libomp -DCMAKE_CXX_FLAGS="-stdlib=libc++ -I/opt/local/include/libomp" -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON
+     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON
      $ make
      $ sudo make install
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
