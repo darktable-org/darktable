@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-17 18:18+0300\n"
+"POT-Creation-Date: 2019-12-21 09:48+0300\n"
 "PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -1565,7 +1565,7 @@ msgstr ""
 #: ../src/common/darktable.c:807 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2012 ../src/iop/filmicrgb.c:1566
-#: ../src/iop/toneequal.c:3317 ../src/libs/export.c:628
+#: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "Нет"
@@ -1749,49 +1749,49 @@ msgstr ""
 msgid "orphaned image"
 msgstr "Одиночный снимок"
 
-#: ../src/common/image.c:1455
+#: ../src/common/image.c:1461
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Ошибка доступа к локальной копии `%s'!"
 
-#: ../src/common/image.c:1461
+#: ../src/common/image.c:1467
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Ошибка записи локальной копии `%s'!"
 
-#: ../src/common/image.c:1468
+#: ../src/common/image.c:1474
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Ошибка перемещения локальной копии `%s' -> `%s'!"
 
-#: ../src/common/image.c:1484
+#: ../src/common/image.c:1490
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Ошибка перемещения `%s': файл не найден!"
 
-#: ../src/common/image.c:1494
+#: ../src/common/image.c:1500
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Ошибка перемещения `%s' -> `%s': файл уже существует!"
 
-#: ../src/common/image.c:1498
+#: ../src/common/image.c:1504
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Ошибка перемещения `%s' -> `%s'!"
 
-#: ../src/common/image.c:1755
+#: ../src/common/image.c:1761
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Невозможно создать локальную копию, когда оригинал недоступен!"
 
-#: ../src/common/image.c:1769
+#: ../src/common/image.c:1775
 msgid "cannot create local copy."
 msgstr "Невозможно создать локальную копию!"
 
-#: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1841 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Невозможно удалить локальную копию, когда оригинал недоступен!"
 
-#: ../src/common/image.c:2004
+#: ../src/common/image.c:2010
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -8536,11 +8536,11 @@ msgstr ""
 "Уменьшите значение для увеличения яркости изображения."
 
 #: ../src/iop/filmicrgb.c:1469 ../src/iop/filmicrgb.c:1483
-#: ../src/iop/toneequal.c:3216 ../src/iop/toneequal.c:3222
-#: ../src/iop/toneequal.c:3228 ../src/iop/toneequal.c:3234
-#: ../src/iop/toneequal.c:3240 ../src/iop/toneequal.c:3246
-#: ../src/iop/toneequal.c:3252 ../src/iop/toneequal.c:3258
-#: ../src/iop/toneequal.c:3264
+#: ../src/iop/toneequal.c:3229 ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3241 ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3253 ../src/iop/toneequal.c:3259
+#: ../src/iop/toneequal.c:3265 ../src/iop/toneequal.c:3271
+#: ../src/iop/toneequal.c:3277
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -8596,7 +8596,7 @@ msgstr "Сохранять цветность"
 msgid "luminance Y"
 msgstr "Светлота Y"
 
-#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3307
+#: ../src/iop/filmicrgb.c:1569 ../src/iop/toneequal.c:3320
 msgid "RGB power norm"
 msgstr "RGB (норма)"
 
@@ -9003,12 +9003,12 @@ msgstr "Масштаб"
 #: ../src/iop/lens.cc:173
 msgctxt "accel"
 msgid "TCA R"
-msgstr "TCA R"
+msgstr "ХА, красный"
 
 #: ../src/iop/lens.cc:174
 msgctxt "accel"
 msgid "TCA B"
-msgstr "TCA B"
+msgstr "ХА, синий"
 
 #: ../src/iop/lens.cc:176
 msgctxt "accel"
@@ -9198,19 +9198,19 @@ msgstr "Искажение"
 
 #: ../src/iop/lens.cc:2459
 msgid "Transversal Chromatic Aberration red"
-msgstr "Поперечные хроматические аберрации, красный канал"
+msgstr "Поперечные хроматические аберрации, красный"
 
 #: ../src/iop/lens.cc:2460
 msgid "TCA red"
-msgstr "TCA, красный канал"
+msgstr "ХА, красный"
 
 #: ../src/iop/lens.cc:2465
 msgid "Transversal Chromatic Aberration blue"
-msgstr "Поперечные хроматические аберрации, синий канал"
+msgstr "Поперечные хроматические аберрации, синий"
 
 #: ../src/iop/lens.cc:2466
 msgid "TCA blue"
-msgstr "TCA, синий канал"
+msgstr "ХА, синий"
 
 #: ../src/iop/lens.cc:2473
 msgid "corrections done: "
@@ -9550,7 +9550,8 @@ msgstr "Некорректный уровень файла PNG %d %d!"
 #: ../src/iop/lut3d.c:384 ../src/iop/lut3d.c:628
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
-msgstr "Ошибка: размер таблицы поиска цветов %d превышает максимально возможный!"
+msgstr ""
+"Ошибка: размер таблицы поиска цветов %d превышает максимально возможный!"
 
 #: ../src/iop/lut3d.c:396 ../src/iop/lut3d.c:414
 msgid "error - allocating buffer for png lut"
@@ -10830,7 +10831,7 @@ msgid ""
 msgstr ""
 "Эквалайзер тонов: ошибка буфера ввода-вывода! Свяжитесь с разработчиками."
 
-#: ../src/iop/toneequal.c:1806 ../src/iop/toneequal.c:2210
+#: ../src/iop/toneequal.c:1806 ../src/iop/toneequal.c:2223
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "Эквалайзер тонов: уменьшите значение параметра сглаживания кривой!"
 
@@ -10838,74 +10839,74 @@ msgstr "Эквалайзер тонов: уменьшите значение п�
 msgid "wait for the preview to finish recomputing"
 msgstr "Эквалайзер тонов: идёт обработка..."
 
-#: ../src/iop/toneequal.c:2215
+#: ../src/iop/toneequal.c:2228
 msgid "some parameters are out-of-bounds"
 msgstr ""
 "Эквалайзер тонов: некоторые значения находятся за пределами допустимого!"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2490
+#: ../src/iop/toneequal.c:2503
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3202
+#: ../src/iop/toneequal.c:3215
 msgid "simple"
 msgstr "Простой"
 
-#: ../src/iop/toneequal.c:3203
+#: ../src/iop/toneequal.c:3216
 msgid "advanced"
 msgstr "Продвинутый"
 
-#: ../src/iop/toneequal.c:3204
+#: ../src/iop/toneequal.c:3217
 msgid "masking"
 msgstr "Маска"
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3230
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3223
+#: ../src/iop/toneequal.c:3236
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3229
+#: ../src/iop/toneequal.c:3242
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3248
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3241
+#: ../src/iop/toneequal.c:3254
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3247
+#: ../src/iop/toneequal.c:3260
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3253
+#: ../src/iop/toneequal.c:3266
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3259
+#: ../src/iop/toneequal.c:3272
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3265
+#: ../src/iop/toneequal.c:3278
 msgid "+0 EV"
 msgstr "-0 EV"
 
-#: ../src/iop/toneequal.c:3283
+#: ../src/iop/toneequal.c:3296
 msgid "double-click to reset the curve"
 msgstr "Двойной щелчок сбрасывает изменения"
 
-#: ../src/iop/toneequal.c:3290
+#: ../src/iop/toneequal.c:3303
 msgid "curve smoothing"
 msgstr "Сглаживание кривой"
 
-#: ../src/iop/toneequal.c:3291
+#: ../src/iop/toneequal.c:3304
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -10917,35 +10918,35 @@ msgstr ""
 "Негативные значения сглаживают колебания кривой, но могут привести\n"
 "к проблемам в локальном контрасте."
 
-#: ../src/iop/toneequal.c:3300
+#: ../src/iop/toneequal.c:3313
 msgid "luminance estimator"
 msgstr "Светлота (функция)"
 
-#: ../src/iop/toneequal.c:3302
+#: ../src/iop/toneequal.c:3315
 msgid "RGB average"
 msgstr "RGB (средн.)"
 
-#: ../src/iop/toneequal.c:3303
+#: ../src/iop/toneequal.c:3316
 msgid "HSL lightness"
 msgstr "Светлота в HSL"
 
-#: ../src/iop/toneequal.c:3304
+#: ../src/iop/toneequal.c:3317
 msgid "HSV value / RGB max"
 msgstr "HSV (знач.) / RGB (макс.)"
 
-#: ../src/iop/toneequal.c:3305
+#: ../src/iop/toneequal.c:3318
 msgid "RGB sum"
 msgstr "RGB (сум.)"
 
-#: ../src/iop/toneequal.c:3306
+#: ../src/iop/toneequal.c:3319
 msgid "RGB euclidean norm"
 msgstr "RGB (эвклид. норм.)"
 
-#: ../src/iop/toneequal.c:3308
+#: ../src/iop/toneequal.c:3321
 msgid "RGB geometric mean"
 msgstr "RGB (геом. средн.)"
 
-#: ../src/iop/toneequal.c:3309
+#: ../src/iop/toneequal.c:3322
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -10953,19 +10954,19 @@ msgstr ""
 "Выбор оценочной функции, отвечающей за контраст между\n"
 "участками для осветления и затемнения"
 
-#: ../src/iop/toneequal.c:3315
+#: ../src/iop/toneequal.c:3328
 msgid "preserve details"
 msgstr "Сохранять детали"
 
-#: ../src/iop/toneequal.c:3318
+#: ../src/iop/toneequal.c:3331
 msgid "averaged guided filter"
 msgstr "Управляемый фильтр (средн.)"
 
-#: ../src/iop/toneequal.c:3319
+#: ../src/iop/toneequal.c:3332
 msgid "guided filter"
 msgstr "Управляемый фильтр"
 
-#: ../src/iop/toneequal.c:3320
+#: ../src/iop/toneequal.c:3333
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -10977,11 +10978,11 @@ msgstr ""
 "сохранить локальный.\n"
 "Усреднённый управляемый фильтр — среднее между двумя вышеуказанными методами."
 
-#: ../src/iop/toneequal.c:3327
+#: ../src/iop/toneequal.c:3340
 msgid "filter diffusion"
 msgstr "Фильтр рассеивания"
 
-#: ../src/iop/toneequal.c:3328
+#: ../src/iop/toneequal.c:3341
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -10989,11 +10990,11 @@ msgstr ""
 "Количество проходов управляемого фильтра.\n"
 "Увеличивает рассеивание на краях."
 
-#: ../src/iop/toneequal.c:3336
+#: ../src/iop/toneequal.c:3349
 msgid "smoothing diameter"
 msgstr "Диаметр сглаживания"
 
-#: ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3350
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -11002,11 +11003,11 @@ msgstr ""
 "Диаметр сглаживания в процентах от наибольшего размера изображения.\n"
 "Большие значения могут значительно уменьшить скорость работы."
 
-#: ../src/iop/toneequal.c:3345
+#: ../src/iop/toneequal.c:3358
 msgid "edges refinement/feathering"
 msgstr "Растушёвка"
 
-#: ../src/iop/toneequal.c:3346
+#: ../src/iop/toneequal.c:3359
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11018,11 +11019,11 @@ msgstr ""
 "Большие значения заставляют маску более точно следовать краям.\n"
 "Меньшие значения уменьшают точность на краях, но сглаживают градиенты."
 
-#: ../src/iop/toneequal.c:3354
+#: ../src/iop/toneequal.c:3367
 msgid "mask post-processing"
 msgstr "Постобработка"
 
-#: ../src/iop/toneequal.c:3360
+#: ../src/iop/toneequal.c:3373
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11032,11 +11033,11 @@ msgstr ""
 "Центральная линия показывает среднее значение.\n"
 "Оранжевые линии показывают о достижении порога обрезки."
 
-#: ../src/iop/toneequal.c:3365
+#: ../src/iop/toneequal.c:3378
 msgid "mask quantization"
 msgstr "Квантование"
 
-#: ../src/iop/toneequal.c:3367
+#: ../src/iop/toneequal.c:3380
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11047,11 +11048,11 @@ msgstr ""
 "и позволяют достичь плавных переходов при использовании\n"
 "больших значений параметра растушёвки."
 
-#: ../src/iop/toneequal.c:3375
+#: ../src/iop/toneequal.c:3388
 msgid "mask exposure compensation"
 msgstr "Коррекция экспозиции"
 
-#: ../src/iop/toneequal.c:3377
+#: ../src/iop/toneequal.c:3390
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -11060,11 +11061,11 @@ msgstr ""
 "Коррекция экспозиции маски.\n"
 "Среднее значение выставлено на -4EV."
 
-#: ../src/iop/toneequal.c:3389
+#: ../src/iop/toneequal.c:3402
 msgid "mask contrast compensation"
 msgstr "Коррекция контраста"
 
-#: ../src/iop/toneequal.c:3391
+#: ../src/iop/toneequal.c:3404
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -11075,7 +11076,7 @@ msgstr ""
 "эффектом управляемого фильтра и для подгонки контраста\n"
 "под -4EV."
 
-#: ../src/iop/toneequal.c:3404 ../src/iop/toneequal.c:3408
+#: ../src/iop/toneequal.c:3417 ../src/iop/toneequal.c:3421
 msgid "display exposure mask"
 msgstr "Показать маску экспозиций"
 
@@ -11421,7 +11422,7 @@ msgstr "Фоновые задачи"
 
 #: ../src/libs/camera.c:78
 msgid "camera settings"
-msgstr "Параметры"
+msgstr "Параметры камеры"
 
 #: ../src/libs/camera.c:104
 msgctxt "accel"
@@ -11714,11 +11715,9 @@ msgstr ""
 "Мышь поверх образца отображает его на изображении (включите опцию ниже), "
 "щелчок блокирует его"
 
-#. delete
-#: ../src/libs/colorpicker.c:412 ../src/libs/image.c:182
-#: ../src/libs/styles.c:458
-msgid "remove"
-msgstr "Убрать"
+#: ../src/libs/colorpicker.c:412
+msgid "X"
+msgstr "X"
 
 #: ../src/libs/colorpicker.c:518
 msgid "live samples"
@@ -12394,6 +12393,11 @@ msgstr "Отправить в корзину"
 msgid "physically delete from disk"
 msgstr "Физически удалить с диска"
 
+#. delete
+#: ../src/libs/image.c:182 ../src/libs/styles.c:458
+msgid "remove"
+msgstr "Убрать"
+
 #: ../src/libs/image.c:185
 msgid "remove from the collection"
 msgstr "Убрать из коллекции"
@@ -12596,7 +12600,7 @@ msgstr "Камеры не обнаружены"
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:430
 msgid "import options"
-msgstr "Параметры"
+msgstr "Параметры импорта"
 
 #. recursive opening.
 #: ../src/libs/import.c:448
@@ -12840,7 +12844,7 @@ msgstr "Поиск на карте"
 
 #: ../src/libs/map_settings.c:37
 msgid "map settings"
-msgstr "Параметры"
+msgstr "Параметры карты"
 
 #: ../src/libs/map_settings.c:94
 msgid "show OSD"
@@ -13373,7 +13377,7 @@ msgstr "Переключить статус навигационной пане�
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1396
 msgid "print settings"
-msgstr "Параметры"
+msgstr "Параметры принтера"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
 #: ../src/libs/print_settings.c:237 ../src/libs/print_settings.c:435
