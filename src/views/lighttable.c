@@ -3720,7 +3720,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   lib->force_expose_all = TRUE;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if((lib->full_preview_id > -1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
      && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
     if(up)
@@ -4005,7 +4005,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           begin_pan(lib, x, y);
 
         // in culling mode, we allow to pan only if one image is zoomed
-        if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+        if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
         {
           if(lib->slots_count <= _get_max_in_memory_images())
           {
