@@ -228,7 +228,7 @@ static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObje
   return TRUE;
 }
 
-static gchar *_panels_get_view_path(char *suffixe)
+static gchar *_panels_get_view_path(char *suffix)
 {
   if(!darktable.view_manager) return NULL;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -246,14 +246,14 @@ static gchar *_panels_get_view_path(char *suffixe)
     g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
   }
 
-  return dt_util_dstrcat(NULL, "%s/ui/%s%s", cv->module_name, lay, suffixe);
+  return dt_util_dstrcat(NULL, "%s/ui/%s%s", cv->module_name, lay, suffix);
 }
 
-static gchar *_panels_get_panel_path(dt_ui_panel_t panel, char *suffixe)
+static gchar *_panels_get_panel_path(dt_ui_panel_t panel, char *suffix)
 {
   gchar *v = _panels_get_view_path("");
   if(!v) return NULL;
-  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffixe);
+  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
 }
 
 static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
