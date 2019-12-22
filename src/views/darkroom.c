@@ -183,7 +183,7 @@ void cleanup(dt_view_t *self)
 
 static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
 {
-  int fd = GPOINTER_TO_INT(closure);
+  const int fd = GPOINTER_TO_INT(closure);
   ssize_t res = write(fd, data, length);
   if(res != length)
     return CAIRO_STATUS_WRITE_ERROR;
@@ -211,7 +211,7 @@ void expose(
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  int32_t tb = dev->border_size;
+  const int32_t tb = dev->border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
