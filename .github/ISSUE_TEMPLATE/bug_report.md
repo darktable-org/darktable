@@ -31,6 +31,7 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. funtoo linux]
  - Version [e.g. 2.6.0]
  - OpenCL activated or no
+ - which GFX-card and GFX-driver
 
 **Additional context**
 Add any other context about the problem here, for example:
@@ -39,3 +40,4 @@ Add any other context about the problem here, for example:
  - Are the steps above reproduce with a fresh edit (removing history)?
  - Attach an XMP if this is necessary
  - Is dt compiled by yourself? If so which compiler is used? Which options?
+ - Is the issue still present using an empty/new config-dir

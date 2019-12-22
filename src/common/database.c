@@ -1846,7 +1846,11 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   g_free(label_text);
 
   // if no upgrade, we exit now, nothing we can do more
-  if(!shall_we_update_the_db) exit(1);
+  if(!shall_we_update_the_db)
+  {
+    fprintf(stderr, "[init] we shall not update the database, aborting.\n");
+    exit(1);
+  }
 }
 
 void dt_database_backup(const char *filename)

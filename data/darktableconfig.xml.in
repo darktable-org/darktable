@@ -86,7 +86,7 @@
   <dtconfig>
     <name>opencl_memory_headroom</name>
     <type>int</type>
-    <default>300</default>
+    <default>400</default>
     <shortdescription>amount of OpenCL memory (in MB) which we assume as being reserved for the driver</shortdescription>
     <longdescription>this amount of memory (in MB) will be subtracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
