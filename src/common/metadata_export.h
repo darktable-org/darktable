@@ -37,8 +37,9 @@ typedef struct dt_export_metadata_t
   GList *list;
 } dt_export_metadata_t;
 
-uint32_t dt_lib_export_metadata_default_flags();
-char *dt_lib_export_metadata_get_conf();
+uint32_t dt_lib_export_metadata_default_flags(void);
+uint32_t dt_lib_export_metadata_get_conf_flags(void);
+char *dt_lib_export_metadata_get_conf(void);
 void dt_lib_export_metadata_set_conf(const char *metadata_presets);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
