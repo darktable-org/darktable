@@ -202,6 +202,7 @@ typedef struct dt_develop_t
 
   // darkroom border size
   int32_t border_size;
+  int32_t orig_width, orig_height;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
