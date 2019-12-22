@@ -255,8 +255,8 @@ static gboolean dt_bauhaus_window_motion_notify(GtkWidget *widget, GdkEventMotio
      || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
-    dt_bauhaus_hide_popup();
     gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current), GTK_STATE_FLAG_NORMAL, TRUE);
+    dt_bauhaus_hide_popup();
     return TRUE;
   }
   // make sure to propagate the event further
@@ -274,9 +274,8 @@ static gboolean dt_bauhaus_window_button_press(GtkWidget *widget, GdkEventMotion
       || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current), GTK_STATE_FLAG_NORMAL, FALSE);
     dt_bauhaus_hide_popup();
-    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_NORMAL, FALSE);
     return TRUE;
   }
   // make sure to propagate the event further
@@ -345,7 +344,7 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   GtkAllocation allocation_w;
   gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
-  int width = allocation_popup_window.width, height = inner_height(allocation_popup_window);
+  const int width = allocation_popup_window.width, height = inner_height(allocation_popup_window);
   // coordinate transform is in vain because we're only ever called after a button release.
   // that means the system is always the one of the popup.
   // that also means that we can't have hovering combobox entries while still holding the button. :(
@@ -442,7 +441,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
       dt_bauhaus_combobox_set(GTK_WIDGET(darktable.bauhaus->current), d->defpos);
       dt_bauhaus_widget_reject(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_FOCUSED, FALSE);
+                                 GTK_STATE_FLAG_FOCUSED, FALSE);
     }
     else
     {
@@ -451,7 +450,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
       darktable.bauhaus->end_mouse_y = event->y;
       dt_bauhaus_widget_accept(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                            GTK_STATE_FLAG_FOCUSED, FALSE);
+                                 GTK_STATE_FLAG_FOCUSED, FALSE);
     }
   }
   else
@@ -1780,7 +1779,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *text_color = default_color_assign();
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  const GtkStateFlags state = gtk_widget_get_state_flags(widget);
   gtk_style_context_get_color(context, state, text_color);
   gtk_render_background(context, cr, 0, 0, width, height + INNER_PADDING);
   gtk_style_context_get_color(context, state, fg_color);

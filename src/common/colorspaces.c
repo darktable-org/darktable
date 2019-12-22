@@ -60,7 +60,7 @@ static const cmsCIExyYTRIPLE sRGB_Primaries = {
 
 // D65:
 static const cmsCIExyYTRIPLE Rec2020_Primaries = {
-  {0.7000, 0.2920, 1.0}, // red
+  {0.7080, 0.2920, 1.0}, // red
   {0.1700, 0.7970, 1.0}, // green
   {0.1310, 0.0460, 1.0}  // blue
 };

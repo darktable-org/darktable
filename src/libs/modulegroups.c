@@ -159,6 +159,24 @@ static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPos
   return TRUE;
 }
 
+void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
+{
+  if(!strcmp(old_view->module_name, "darkroom"))
+  {
+    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
+  }
+}
+
+void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
+{
+  if(!strcmp(new_view->module_name, "darkroom"))
+  {
+    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_gui_key_accel_block_on_focus_connect(d->text_entry);
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -231,7 +249,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), label, FALSE, TRUE, 0);
 
   d->text_entry = gtk_entry_new();
-  dt_gui_key_accel_block_on_focus_connect(d->text_entry);
   gtk_widget_add_events(d->text_entry, GDK_FOCUS_CHANGE_MASK);
 
   gtk_widget_set_tooltip_text(d->text_entry, _("search modules by name or tag"));
