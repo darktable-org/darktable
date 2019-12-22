@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (4)
+#define DEVELOP_MASKS_VERSION (5)
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -137,6 +137,7 @@ typedef struct dt_masks_point_gradient_t
   float rotation;
   float compression;
   float steepness;
+  float curvature;
 } dt_masks_point_gradient_t;
 
 /** structure used to store all forms's id for a group */
