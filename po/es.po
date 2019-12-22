@@ -820,7 +820,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3468
 msgid "pixel interpolator"
-msgstr "Interpolador de píxel"
+msgstr "Interpolador de pixel"
 
 #: ../build/src/preferences_gen.h:3479
 msgctxt "preferences"
@@ -847,7 +847,7 @@ msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
-"El interpolador de píxel es usado para la rotación y corrección de lentes "
+"El interpolador de pixel es usado para la rotación y corrección de lentes "
 "(bilineal, bicúbico, lanczos2, lanczos3)."
 
 #: ../build/src/preferences_gen.h:3520
@@ -2686,11 +2686,11 @@ msgstr "Trazar con pincel"
 
 #: ../src/develop/blend_gui.c:1835 ../src/develop/blend_gui.c:2256
 msgid "raster mask"
-msgstr "máscara de matriz de píxeles"
+msgstr "máscara de matriz de pixeles"
 
 #: ../src/develop/blend_gui.c:1845
 msgid "toggle polarity of raster mask"
-msgstr "Alternar polaridad de la máscara de matriz de píxeles"
+msgstr "Alternar polaridad de la máscara de matriz de pixeles"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:2156 ../src/libs/live_view.c:408
@@ -7443,7 +7443,7 @@ msgstr "colores saturados"
 #: ../src/iop/colorreconstruction.c:1410
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr ""
-"Se corrigen los píxeles con valores de luminosidad por encima de este umbral"
+"Se corrigen los pixeles con valores de luminosidad por encima de este umbral"
 
 #: ../src/iop/colorreconstruction.c:1411
 msgid "how far to look for replacement colors in spatial dimensions"
@@ -7654,7 +7654,7 @@ msgstr ""
 "erróneas con mucha ampliación; a veces puede proteger mucho la saturación o "
 "muy poco en comparación con el promedio local\n"
 " - Promedio local: es lento. Puede proteger la saturación mejor que el "
-"promedio global utilizando los píxeles cercanos como referencia de color, "
+"promedio global utilizando los pixeles cercanos como referencia de color, "
 "por lo que puede permitir mayor desaturación cuando se requiera \n"
 " - Estático: es rápido. Solo usa el umbral como límite estático"
 
@@ -8043,7 +8043,7 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
-"Aumenta el peso del píxel central del parche\n"
+"Aumenta el peso del pixel central del parche\n"
 "al compararse los parches.\n"
 "Útil para recuperar detalles cuando el tamaño del parche\n"
 "es bastante grande."
@@ -9062,38 +9062,38 @@ msgstr "Contraste del filtro paso alto"
 
 #: ../src/iop/hotpixels.c:71
 msgid "hot pixels"
-msgstr "píxeles calientes"
+msgstr "pixeles calientes"
 
 #: ../src/iop/hotpixels.c:441
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "corregido %d pixel"
-msgstr[1] "corregidos %d píxeles"
+msgstr[1] "corregidos %d pixeles"
 
 #: ../src/iop/hotpixels.c:471
 msgid "lower threshold for hot pixel"
-msgstr "umbral inferior de los píxeles calientes"
+msgstr "umbral inferior de los pixeles calientes"
 
 #: ../src/iop/hotpixels.c:479
 msgid "strength of hot pixel correction"
-msgstr "cantidad de corrección de píxeles calientes"
+msgstr "cantidad de corrección de pixeles calientes"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:484
 msgid "detect by 3 neighbors"
-msgstr "detección por 3 píxeles cercanos"
+msgstr "detección por 3 pixeles cercanos"
 
 #: ../src/iop/hotpixels.c:491
 msgid "mark fixed pixels"
-msgstr "marcar píxeles corregidos"
+msgstr "marcar pixeles corregidos"
 
 #: ../src/iop/hotpixels.c:503
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
-"Corrección de píxeles calientes\n"
+"Corrección de pixeles calientes\n"
 "Sólo funciona con imágenes RAW."
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
@@ -10459,7 +10459,7 @@ msgstr "rotación automática de pixeles"
 #: ../src/iop/rotatepixels.c:358
 msgid "automatic pixel rotation only works for the sensors that need it."
 msgstr ""
-"La rotación automática del píxel funciona solo para los sensores que lo "
+"La rotación automática del pixel funciona solo para los sensores que lo "
 "necesiten."
 
 #: ../src/iop/scalepixels.c:56
@@ -10474,7 +10474,7 @@ msgstr "escalado automático de pixeles"
 #: ../src/iop/scalepixels.c:275
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr ""
-"La redimensión automática del píxel funciona solo para los sensores que lo "
+"La redimensión automática del pixel funciona solo para los sensores que lo "
 "necesiten."
 
 #: ../src/iop/shadhi.c:177
@@ -10829,7 +10829,7 @@ msgid ""
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "en auto, las curvas a y b no tendrán efecto y no se mostrarán. los valores "
-"de color (a y b) de cada píxel se ajustarán en función a los datos de la "
+"de color (a y b) de cada pixel se ajustarán en función a los datos de la "
 "curva L. auto XYZ es similar, pero establece los cambios de saturación en el "
 "espacio XYZ."
 
