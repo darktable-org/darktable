@@ -723,7 +723,6 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t num)
 {
-//  if(!image) return 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
