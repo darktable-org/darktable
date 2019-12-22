@@ -380,6 +380,36 @@ void expose(
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
+  else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+
+    // waiting message
+    PangoRectangle ink;
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    pango_layout_set_text(layout, load_txt, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+    pango_cairo_layout_path(cr, layout);
+    cairo_set_line_width(cr, 2.0);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_stroke_preserve(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+    cairo_fill(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+    g_free(load_txt);
+    image_surface_imgid = dev->image_storage.id;
+  }
   cairo_restore(cri);
 
   if(image_surface_imgid == dev->image_storage.id)
