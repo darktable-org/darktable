@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-19 11:20-0600\n"
-"PO-Revision-Date: 2019-12-21 00:49-0600\n"
+"PO-Revision-Date: 2019-12-21 23:55-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6192,7 +6192,7 @@ msgstr "azul"
 
 #: ../src/iop/bilateral.cc:367
 msgid "spatial extent of the gaussian"
-msgstr "extensión espacial del gaussiano"
+msgstr "Extensión espacial gaussiano"
 
 #: ../src/iop/bilateral.cc:368
 msgid "how much to blur red"
@@ -7483,13 +7483,13 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new color mapping module."
 msgstr ""
-"Este módulo sera eliminado en el futuro\n"
+"Este módulo será eliminado en el futuro\n"
 "y solo está aquí, así que puede desactivarlo\n"
 "y moverse al nuevo módulo de mapeo de color."
 
 #: ../src/iop/colortransfer.c:688
 msgid "number of clusters to find in image"
-msgstr "numero de grupos a encontrar en imagen"
+msgstr "Número de grupos para encontrar en la imagen"
 
 #: ../src/iop/colortransfer.c:692
 msgid "acquire"
@@ -7497,7 +7497,7 @@ msgstr "adquirir"
 
 #: ../src/iop/colortransfer.c:694
 msgid "analyze this image"
-msgstr "analizar esta imagen"
+msgstr "Analizar esta imagen"
 
 #: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:399
 msgid "apply"
@@ -7505,7 +7505,7 @@ msgstr "establecer"
 
 #: ../src/iop/colortransfer.c:699
 msgid "apply previously analyzed image look to this image"
-msgstr "establecer en esta imagen el aspecto analizado previamente"
+msgstr "Establecer en esta imagen el aspecto analizado previamente"
 
 #: ../src/iop/colorzones.c:138
 msgid "color zones"
@@ -7534,7 +7534,7 @@ msgstr "película blanco y negro"
 #: ../src/iop/colorzones.c:2086 ../src/iop/retouch.c:2238
 #: ../src/iop/toneequal.c:2017
 msgid "cannot display masks when the blending mask is displayed"
-msgstr "no se puede mostrar máscaras cuando se muestra la máscara de mezcla"
+msgstr "No se puede mostrar máscaras cuando se muestra la de fusión"
 
 #: ../src/iop/colorzones.c:2292 ../src/iop/rgbcurve.c:1571
 msgid ""
@@ -7567,7 +7567,7 @@ msgstr "seleccionar por"
 
 #: ../src/iop/colorzones.c:2342
 msgid "choose selection criterion, will be the abscissa in the graph"
-msgstr "escoja criterio de selección, será la abscisa en el gráfico"
+msgstr "Elegir criterio de selección, que es la abscisa en el gráfico"
 
 #: ../src/iop/colorzones.c:2350
 msgid "process mode"
@@ -7579,12 +7579,12 @@ msgstr "fuerza"
 
 #: ../src/iop/colorzones.c:2354
 msgid "choose between a smoother or stronger effect"
-msgstr "Elija entre un efecto más suave o más marcado."
+msgstr "Elegir entre un efecto más suave o más marcado."
 
 #: ../src/iop/colorzones.c:2390 ../src/iop/rgbcurve.c:1624
 #: ../src/iop/tonecurve.c:1405
 msgid "interpolation method"
-msgstr "método de interpolación"
+msgstr "interpolación"
 
 #: ../src/iop/colorzones.c:2392 ../src/iop/rgbcurve.c:1626
 #: ../src/iop/tonecurve.c:1407
@@ -7607,7 +7607,8 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
-"Cambie el método si ve oscilaciones o cúspides en la curva:\n"
+"Cambie el método de interpolación si ve oscilaciones o cúspides en la "
+"curva:\n"
 "- La curva segmentaria cúbica es mejor para producir curvas suaves, pero "
 "oscila cuando los nodos están demasiado cerca.\n"
 "- La centrípeta es mejor para evitar cúspides y oscilaciones con nódulos "
@@ -7625,17 +7626,17 @@ msgstr "modo de operación"
 
 #: ../src/iop/defringe.c:458
 msgid "global average (fast)"
-msgstr "promedio global (rápido)"
+msgstr "media global (rápido)"
 
 #. 0
 #: ../src/iop/defringe.c:459
 msgid "local average (slow)"
-msgstr "promedio global (lento)"
+msgstr "media local (lento)"
 
 #. 1
 #: ../src/iop/defringe.c:460
 msgid "static threshold (fast)"
-msgstr "el umbral de luz estático (rápido)"
+msgstr "umbral estático (rápido)"
 
 #: ../src/iop/defringe.c:462
 msgid ""
@@ -7648,14 +7649,14 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
-"método de protección de color:\n"
-" - promedio global: rápido, puede mostrar vistas previas ligeramente "
-"erróneas con mucho acercamiento; a veces puede proteger mucho la saturación "
-"o muy poco en comparación con el promedio global\n"
-" - promedio local: lento, puede proteger la saturación mejor que el promedio "
-"global utilizando los pixeles cercanos como referencia de color, por lo que "
-"puede permitir más desaturación cuando se requiera \n"
-" - estático: rápido, solo usa el umbral como límite estático"
+"Método de protección de color:\n"
+" - Promedio global: es rápido. Puede mostrar vistas previas ligeramente "
+"erróneas con mucha ampliación; a veces puede proteger mucho la saturación o "
+"muy poco en comparación con el promedio local\n"
+" - Promedio local: es lento. Puede proteger la saturación mejor que el "
+"promedio global utilizando los píxeles cercanos como referencia de color, "
+"por lo que puede permitir mayor desaturación cuando se requiera \n"
+" - Estático: es rápido. Solo usa el umbral como límite estático"
 
 #: ../src/iop/defringe.c:471
 msgid "edge detection radius"
@@ -7663,11 +7664,11 @@ msgstr "radio de detección de bordes"
 
 #: ../src/iop/defringe.c:479
 msgid "radius for detecting fringe"
-msgstr "radio para detección de halos"
+msgstr "Radio para detección de halos"
 
 #: ../src/iop/defringe.c:480
 msgid "threshold for defringe, higher values mean less defringing"
-msgstr "umbral para reducir halos, mayores valores significan menor reducción"
+msgstr "Umbral para reducir halos. Mayores valores significan menor reducción"
 
 #: ../src/iop/demosaic.c:162
 msgid "demosaic"
@@ -7707,7 +7708,7 @@ msgstr "atravesar (monocromo) (experimental)"
 # Demosaicing -> Algoritmo de interpolación cromática.
 #: ../src/iop/demosaic.c:5130 ../src/iop/demosaic.c:5140
 msgid "demosaicing raw data method"
-msgstr "método de interpolación cromática RAW"
+msgstr "Método de interpolación cromática para imágenes en bruto"
 
 #: ../src/iop/demosaic.c:5135
 msgid "VNG"
@@ -7723,7 +7724,7 @@ msgstr "Markesteijn 3 pasadas (lento)"
 
 #: ../src/iop/demosaic.c:5139
 msgid "frequency domain chroma (slow)"
-msgstr "frecuencia y dominio crominancia (lento)"
+msgstr "croma de dominio de frecuencia (lento)"
 
 #: ../src/iop/demosaic.c:5143
 msgid ""
@@ -7731,13 +7732,13 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
-"umbral para edge-aware median.\n"
-"poner en 0.0 para desactivar.\n"
-"poner en 1.0 para ignorar bordes."
+"Umbral para la mediana de detección de bordes.\n"
+"Poner en 0.0 para desactivar.\n"
+"Poner en 1.0 para ignorar bordes."
 
 #: ../src/iop/demosaic.c:5145
 msgid "edge threshold"
-msgstr "borde del umbral"
+msgstr "umbral del borde"
 
 #: ../src/iop/demosaic.c:5149
 msgid "color smoothing"
@@ -7792,15 +7793,15 @@ msgstr "promedio total y local"
 
 #: ../src/iop/demosaic.c:5166
 msgid "green channels matching method"
-msgstr "método de emparejamiento para el canal verde"
+msgstr "Método de correspondencia para los canales verdes"
 
 #: ../src/iop/demosaic.c:5178
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
 msgstr ""
-"interpolación cromática\n"
-"solo es necesario en imágenes raw."
+"La interpolación cromática solo es\n"
+"necesaria para imágenes en bruto (RAW)."
 
 #: ../src/iop/denoiseprofile.c:498
 msgid "denoise (profiled)"
@@ -7818,7 +7819,7 @@ msgstr "luma (usar en un 2º módulo)"
 #: ../src/iop/denoiseprofile.c:3014
 #, c-format
 msgid "found match for ISO %d"
-msgstr "se encontró coincidencia para el ISO %d"
+msgstr "coincidencia encontrada para el ISO %d"
 
 #: ../src/iop/denoiseprofile.c:3023
 #, c-format
@@ -7991,7 +7992,7 @@ msgstr "ondículas automático"
 
 #: ../src/iop/denoiseprofile.c:4083
 msgid "profile used for variance stabilization"
-msgstr "perfil utilizado para estabilizar la varianza"
+msgstr "Perfil utilizado para estabilizar la varianza"
 
 #: ../src/iop/denoiseprofile.c:4084
 msgid ""
