@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-12-21 15:29+0100\n"
+"PO-Revision-Date: 2019-12-22 12:40+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -9048,7 +9048,7 @@ msgstr "Luminanza Y"
 
 #: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
-msgstr "Norma sulla potenza RGB"
+msgstr "Norma di potenza RGB"
 
 #: ../src/iop/filmicrgb.c:1560
 msgid ""
