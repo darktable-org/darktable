@@ -156,7 +156,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
   {
     const float average = (pixel.x + pixel.y + pixel.z) / 3;
     const float delta = fast_length(pixel - average);
-    const float P = vibrance * (1 - native_powr(delta, abs(vibrance)));
+    const float P = vibrance * (1 - native_powr(delta, fabs(vibrance)));
     pixel = average + (saturation + P) * (pixel - average);
   }
 
