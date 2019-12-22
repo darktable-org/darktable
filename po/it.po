@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-12-22 12:40+0100\n"
+"PO-Revision-Date: 2019-12-22 15:11+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -2902,7 +2902,7 @@ msgstr "Sovrapponi"
 #: ../src/develop/blend_gui.c:2212
 msgctxt "blendmode"
 msgid "softlight"
-msgstr "Luce soffusa"
+msgstr "luce soffusa"
 
 #: ../src/develop/blend_gui.c:2213
 msgctxt "blendmode"
@@ -12467,7 +12467,7 @@ msgstr "velvia"
 #: ../src/iop/velvia.c:104 ../src/iop/vibrance.c:85
 msgctxt "accel"
 msgid "vibrance"
-msgstr "vibranza"
+msgstr "Vibranza"
 
 #: ../src/iop/velvia.c:105
 msgctxt "accel"
@@ -12488,7 +12488,7 @@ msgstr "Quanto preservare alteluci e ombre"
 
 #: ../src/iop/vibrance.c:64 ../src/iop/vibrance.c:252
 msgid "vibrance"
-msgstr "Vibranza"
+msgstr "vibranza"
 
 #: ../src/iop/vibrance.c:254
 msgid "the amount of vibrance"
