@@ -1267,31 +1267,20 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   if (!d->gui_attached) return;
 
   d->iso_12646.enabled = !d->iso_12646.enabled;
+  d->width = d->orig_width;
+  d->height = d->orig_height;
 
   if(d->iso_12646.enabled)
   {
-    // Reset window size
-    d->width += 2 * d->border_size;
-    d->height += 2 * d->border_size;
-
-    // Set new borders size
     d->border_size = 0.125 * d->width;
-
-    // Reconfigure UI and pipe dimentions
-    dt_dev_configure(d, d->width, d->height);
   }
   else
   {
-    // Reset window size
-    d->width += 2 * d->border_size;
-    d->height += 2 * d->border_size;
-
     // Reset border size from config
     d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-
-    // Reconfigure UI and pipe dimentions
-    dt_dev_configure(d, d->width, d->height);
   }
+
+  dt_dev_configure(d, d->width, d->height);
 
   dt_ui_restore_panels(darktable.gui->ui);
   dt_dev_reprocess_center(d);
@@ -2225,6 +2214,7 @@ void gui_init(dt_view_t *self)
 
   darktable.view_manager->proxy.darkroom.view = self;
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
+  dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 }
 
 enum
@@ -3293,6 +3283,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 void configure(dt_view_t *self, int wd, int ht)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  dev->orig_width = wd;
+  dev->orig_height = ht;
   dt_dev_configure(dev, wd, ht);
 }
 
