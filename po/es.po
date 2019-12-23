@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-19 11:20-0600\n"
-"PO-Revision-Date: 2019-12-21 23:55-0600\n"
+"PO-Revision-Date: 2019-12-23 00:30-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -7881,7 +7881,7 @@ msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4014
 msgid "whitebalance-adaptive transform"
-msgstr "transformada adaptable al balance de blancos"
+msgstr "transformada adaptativa del balance de blancos"
 
 #: ../src/iop/denoiseprofile.c:4016
 msgid ""
@@ -7892,8 +7892,8 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
-"Adapta la reducción de ruido de acuerdo con los\n"
-"coeficientes de balance de blancos.\n"
+"Se adapta la reducción de ruido de acuerdo con los\n"
+"coeficientes del balance de blancos.\n"
 "Habilitar en un primer módulo\n"
 "para una mejor reducción de ruido.\n"
 "Deshabilitar si en un módulo previo del mismo\n"
@@ -7918,7 +7918,7 @@ msgstr ""
 "Corrige los errores de la transformada de Anscombe,\n"
 "lo que se traduce en una disminución de la capacidad del canal verde en\n"
 "el modo de ondículas. Combinado con un mal manejo\n"
-"de los coeficientes de balance de blancos, y un error\n"
+"de los coeficientes del balance de blancos, y un error\n"
 "en la normalización de medias no locales, resulta \n"
 "en una disminución de la capacidad cuando se incrementa el tamaño del "
 "parche.\n"
@@ -7999,7 +7999,7 @@ msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
-"método utilizado en el núcleo de reducción de ruido. El método medias no "
+"Método utilizado en el núcleo de reducción de ruido. El método medias no "
 "locales es mejor para la mezcla de luminosidad, el de ondículas funciona "
 "mejor para la mezcla de color"
 
@@ -8023,18 +8023,18 @@ msgid ""
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
-"úsese solo en caso de emergencia: radio de proximidad para buscar "
-"coincidencias en el área de los bordes. incrementar para un mejor desempeño "
-"en la eliminación de ruido, pero con mayor tiempo de ejecución. los radios "
-"grandes pueden ser muy lentos. se le ha advertido"
+"Úsese solo en caso de emergencia: radio de proximidad para buscar "
+"coincidencias en el área de los bordes. Incrementar para un mejor desempeño "
+"en la eliminación de ruido a costa de un mayor tiempo de ejecución. Los "
+"radios grandes pueden ser muy lentos. Ha sido advertido."
 
 #: ../src/iop/denoiseprofile.c:4092
 msgid ""
 "scattering of the neighbourhood to search patches in. increase for better "
 "coarse-grain noise reduction. does not affect execution time."
 msgstr ""
-"dispersión en la proximidad para buscar coincidencias. aumente para una "
-"mejor reducción de ruido de grano grueso. no afecta el tiempo de ejecución."
+"Dispersión en la proximidad para buscar coincidencias. Aumentar para una "
+"mejor reducción de ruido de grano grueso. No afecta el tiempo de ejecución."
 
 #: ../src/iop/denoiseprofile.c:4094
 msgid ""
@@ -8050,7 +8050,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4098
 msgid "finetune denoising strength"
-msgstr "fuerza de la corrección para reducir el ruido"
+msgstr "Fuerza de la corrección para reducir el ruido"
 
 #: ../src/iop/denoiseprofile.c:4099
 msgid ""
@@ -8099,31 +8099,31 @@ msgstr "aleatorio"
 
 #: ../src/iop/dither.c:798
 msgid "floyd-steinberg 1-bit B&W"
-msgstr "algoritmo de floyd-steinberg 1-bit B&W"
+msgstr "Floyd-Steinberg 1 bit B&N"
 
 #: ../src/iop/dither.c:799
 msgid "floyd-steinberg 4-bit gray"
-msgstr "algoritmo de floyd-steinberg 4-bit gris"
+msgstr "Floyd-Steinberg 4 bits gris"
 
 #: ../src/iop/dither.c:800
 msgid "floyd-steinberg 8-bit RGB"
-msgstr "algoritmo de floyd-steinberg 8-bit RGB"
+msgstr "Floyd-Steinberg 8 bits RGB"
 
 #: ../src/iop/dither.c:801
 msgid "floyd-steinberg 16-bit RGB"
-msgstr "algoritmo de floyd-steinberg 16-bit RGB"
+msgstr "Floyd-Steinberg 16 bits RGB"
 
 #: ../src/iop/dither.c:802
 msgid "floyd-steinberg auto"
-msgstr "algoritmo de floyd-steinberg automático"
+msgstr "Floyd-Steinberg automático"
 
 #: ../src/iop/dither.c:807
 msgid "radius for blurring step"
-msgstr "radio de desenfoque"
+msgstr "Radio para un paso de desenfoque"
 
 #: ../src/iop/dither.c:819
 msgid "the gradient range where to apply random dither"
-msgstr "rango de gradiente donde se aplica el tramado aleatorio"
+msgstr "Rango de gradiente donde se aplica el tramado aleatorio"
 
 #: ../src/iop/dither.c:820
 msgid "gradient range"
@@ -8131,11 +8131,11 @@ msgstr "rango de gradiente"
 
 #: ../src/iop/dither.c:827
 msgid "damping level of random dither"
-msgstr "amortiguar nivel de tramado aleatorio"
+msgstr "Nivel de atenuación del tramado aleatorio"
 
 #: ../src/iop/dither.c:828
 msgid "damping"
-msgstr "amortiguar"
+msgstr "atenuación"
 
 #: ../src/iop/equalizer.c:88
 msgid "legacy equalizer"
@@ -8143,7 +8143,7 @@ msgstr "ecualizador (antiguo)"
 
 #: ../src/iop/equalizer.c:311
 msgid "sharpen (strong)"
-msgstr "enfoque (fuerte)"
+msgstr "enfoque (marcado)"
 
 #: ../src/iop/equalizer.c:321
 msgctxt "equalizer"
@@ -8156,7 +8156,7 @@ msgstr "nulo"
 
 #: ../src/iop/equalizer.c:347
 msgid "denoise (strong)"
-msgstr "reducción de ruido (fuerte)"
+msgstr "reducción de ruido (intenso)"
 
 #: ../src/iop/equalizer.c:355
 msgid ""
@@ -8164,7 +8164,7 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 msgstr ""
-"este módulo sera eliminado en el futuro\n"
+"Este módulo sera eliminado en el futuro\n"
 "y solo está aquí, así que puede desactivarlo\n"
 "y moverse al nuevo ecualizador."
 
@@ -8196,7 +8196,7 @@ msgstr "nivel de objetivo"
 
 #: ../src/iop/exposure.c:227
 msgid "magic lantern defaults"
-msgstr "propiedades de la linterna mágica"
+msgstr "parámetros de la linterna mágica"
 
 #: ../src/iop/exposure.c:252 ../src/iop/rawoverexposed.c:172
 #: ../src/iop/rawoverexposed.c:288
@@ -8220,9 +8220,9 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
-"ajusta el nivel de negro para liberar valores RGB negativos.\n"
-"nunca debe usarlo para agregar más densidad en los negros. \n"
-"si está mal configurado, recortará los colores casi negros de la gama \\ n\n"
+"Ajusta el nivel de negro para retirar valores RGB de los negativos.\n"
+"No debe usarse para agregar más densidad en los negros. \n"
+"Si está mal configurado, recortará los colores casi negros de la gama \n"
 "empujando los valores RGB a negativos."
 
 #: ../src/iop/exposure.c:903
@@ -8311,7 +8311,7 @@ msgstr "18 EV (HDR++)"
 #: ../src/iop/filmic.c:1681
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
-"gráfico de solo lectura, utilice los siguientes parámetros para configurar "
+"Gráfico de solo lectura, utilice los siguientes parámetros para configurar "
 "los nodos"
 
 #: ../src/iop/filmic.c:1685
@@ -10340,7 +10340,7 @@ msgstr "agregar pincel"
 #: ../src/iop/retouch.c:4433 ../src/iop/retouch.c:5289
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr "la escala máxima es %i para este tamaño de imagen"
+msgstr "La escala máxima es %i para este tamaño de imagen"
 
 #: ../src/iop/rgbcurve.c:127
 msgid "rgb curve"
@@ -11129,10 +11129,11 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
-"'no' afecta el contraste global y local (seguro si solo agrega contraste)\n"
-"'filtro guiado' solo afecta el contraste global tratando de preservar el "
+"No: afecta el contraste global y local (es seguro si solo se añade "
+"contraste)\n"
+"Filtro guiado: solo afecta el contraste global tratando de preservar el "
 "contraste local\n"
-"'filtro guiado promediado' es una media geométrica de ambos métodos"
+"Filtro guiado promediado: es una media geométrica de ambos métodos"
 
 #: ../src/iop/toneequal.c:3340
 msgid "filter diffusion"
@@ -11156,9 +11157,9 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
-"diámetro del desenfoque en relación porcentual al tamaño de la imagen más "
+"Diámetro del desenfoque en relación porcentual al tamaño de la imagen más "
 "grande\n"
-"advertencia: los valores altos pueden hacer que la vista previa del cuarto "
+"Advertencia: los valores altos pueden hacer que la vista previa del cuarto "
 "oscuro \n"
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
@@ -11272,15 +11273,15 @@ msgstr "desviación de tonos medios"
 
 #: ../src/iop/velvia.c:392
 msgid "the strength of saturation boost"
-msgstr "fuerza del incremento de saturación"
+msgstr "Intensidad del realce de la saturación"
 
 #: ../src/iop/velvia.c:397
 msgid "mid-tones bias"
-msgstr "desviación de tonos medios"
+msgstr "sesgo de tonos medios"
 
 #: ../src/iop/velvia.c:401
 msgid "how much to spare highlights and shadows"
-msgstr "proporción de luces y sombras excluidas"
+msgstr "Proporción de luces y sombras excluidas"
 
 #: ../src/iop/vibrance.c:64 ../src/iop/vibrance.c:254
 msgid "vibrance"
@@ -11288,7 +11289,7 @@ msgstr "intensidad"
 
 #: ../src/iop/vibrance.c:256
 msgid "the amount of vibrance"
-msgstr "la cantidad de intensidad"
+msgstr "Grado de intensidad"
 
 #: ../src/iop/vignette.c:153
 msgid "vignetting"
@@ -11334,15 +11335,15 @@ msgstr "proporción automática"
 
 #: ../src/iop/vignette.c:1153
 msgid "8-bit output"
-msgstr "salida 8-bit"
+msgstr "salida de 8 bits"
 
 #: ../src/iop/vignette.c:1154
 msgid "16-bit output"
-msgstr "salida 16-bit"
+msgstr "salida de 16 bits"
 
 #: ../src/iop/vignette.c:1159
 msgid "fall-off strength"
-msgstr "fuerza del difuminado"
+msgstr "graduación del difuminado"
 
 #: ../src/iop/vignette.c:1162
 msgid "horizontal center"
@@ -11362,27 +11363,27 @@ msgstr "proporción anchura/altura"
 
 #: ../src/iop/vignette.c:1185
 msgid "the radii scale of vignette for start of fall-off"
-msgstr "radio de la escala de viñeteado del principio del difuminado"
+msgstr "Dimensión del radio donde inicia el difuminado del efecto viñeta"
 
 #: ../src/iop/vignette.c:1186
 msgid "the radii scale of vignette for end of fall-off"
-msgstr "radio de la escala de viñeteado del final del difuminado"
+msgstr "Dimensión del radio donde termina el difuminado del efecto viñeta"
 
 #: ../src/iop/vignette.c:1187
 msgid "strength of effect on brightness"
-msgstr "fuerza del efecto en el brillo"
+msgstr "Fuerza del efecto en el brillo"
 
 #: ../src/iop/vignette.c:1188
 msgid "strength of effect on saturation"
-msgstr "fuerza del efecto sobre la saturación"
+msgstr "Fuerza del efecto sobre la saturación"
 
 #: ../src/iop/vignette.c:1189
 msgid "horizontal offset of center of the effect"
-msgstr "desplazamiento horizontal del centro del efecto"
+msgstr "Desplazamiento horizontal del centro del efecto"
 
 #: ../src/iop/vignette.c:1190
 msgid "vertical offset of center of the effect"
-msgstr "desplazamiento vertical del centro del efecto"
+msgstr "Desplazamiento vertical del centro del efecto"
 
 #: ../src/iop/vignette.c:1191
 msgid ""
@@ -11399,15 +11400,15 @@ msgstr ""
 #: ../src/iop/vignette.c:1193
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
-"activar para que la proporción siga el tamaño de imagen automáticamente"
+"Activar para que la proporción siga automáticamente el tamaño de imagen"
 
 #: ../src/iop/vignette.c:1194
 msgid "width-to-height ratio"
-msgstr "proporción ancho/alto"
+msgstr "Factor de proporción entre la altura y la anchura"
 
 #: ../src/iop/vignette.c:1195
 msgid "add some level of random noise to prevent banding"
-msgstr "agregar algun nivel de ruido aleatorio para prevenir bandas"
+msgstr "Añadir cierto nivel aleatorio de ruido para prevenir bandas"
 
 #: ../src/iop/vignette.c:1222
 #, c-format
@@ -11419,7 +11420,7 @@ msgstr "[%s en el nodo] cambiar el tamaño de viñeta/difuminado"
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
 "[%s en el nodo] cambiar el tamaño de viñeta/difuminado manteniendo la "
-"relación"
+"proporción"
 
 #: ../src/iop/vignette.c:1234
 #, c-format
@@ -11468,16 +11469,16 @@ msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"color de texto, etiqueta:\n"
+"Color de texto, etiqueta:\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1386
 msgid "select watermark color"
-msgstr "seleccionar color de la marca de agua"
+msgstr "Escoja el color de la marca de agua"
 
 #: ../src/iop/watermark.c:1389
 msgid "pick color from image"
-msgstr "seleccionar color de la imagen"
+msgstr "Seleccionar un color de la imagen"
 
 #. Simple text
 #: ../src/iop/watermark.c:1399
@@ -11489,7 +11490,7 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"cadena de texto, etiqueta:\n"
+"Cadena de texto, etiqueta:\n"
 "$(WATERMARK_TEXT)"
 
 #. Text font
@@ -11504,7 +11505,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"tipografía, etiquetas:\n"
+"Tipografía, etiquetas:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -11529,11 +11530,11 @@ msgstr "borde corto"
 
 #: ../src/iop/watermark.c:1448
 msgid "scale on"
-msgstr "escala en"
+msgstr "proporcional a"
 
 #: ../src/iop/watermark.c:1449
 msgid "size is relative to"
-msgstr "tamaño es relativo a"
+msgstr "El tamaño es relativo a..."
 
 #: ../src/iop/watermark.c:1452
 msgid "position"
@@ -11555,15 +11556,15 @@ msgstr "desplazamiento y"
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1479
 msgid "the opacity of the watermark"
-msgstr "opacidad de la marca de agua"
+msgstr "Transparencia de la marca de agua"
 
 #: ../src/iop/watermark.c:1480
 msgid "the scale of the watermark"
-msgstr "escala de la marca de agua"
+msgstr "Dimensión de la marca de agua"
 
 #: ../src/iop/watermark.c:1481
 msgid "the rotation of the watermark"
-msgstr "rotación de la marca de agua"
+msgstr "Grados de rotación de la marca de agua"
 
 #: ../src/iop/zonesystem.c:117
 msgid "zone system"
