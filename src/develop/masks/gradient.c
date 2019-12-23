@@ -142,7 +142,23 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
                                              int index)
 {
   if(!gui) return 0;
-  if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
+
+  if(which == 1 && type == GDK_2BUTTON_PRESS)
+  {
+    // double-click resets curvature
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+
+    gradient->curvature = 0.0f;
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index);
+
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
