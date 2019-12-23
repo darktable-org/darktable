@@ -849,10 +849,15 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     // we need the reference point
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
-    float xref = gpt->points[0];
-    float yref = gpt->points[1];
 
-    float dv = atan2(y - yref, x - xref) - atan2(-gui->dy, -gui->dx);
+    // ellipse center
+    const float xref = gpt->points[0];
+    const float yref = gpt->points[1];
+
+    float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 4);
+
+    const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
     ellipse->rotation += dv / M_PI * 180.0f;
     ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
