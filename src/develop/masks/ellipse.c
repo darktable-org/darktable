@@ -760,8 +760,8 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     gui->form_dragging = FALSE;
 
     // we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     ellipse->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -841,10 +841,10 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     // we end the form rotating
     gui->form_rotating = FALSE;
 
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
-    float x = pzx * wd;
-    float y = pzy * ht;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
 
     // we need the reference point
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -938,8 +938,8 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     else
     {
       // we change the center value
-      float wd = darktable.develop->preview_pipe->backbuf_width;
-      float ht = darktable.develop->preview_pipe->backbuf_height;
+      const float wd = darktable.develop->preview_pipe->backbuf_width;
+      const float ht = darktable.develop->preview_pipe->backbuf_height;
       float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
 
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
@@ -1276,8 +1276,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       else
         cangle = -(M_PI / 2) - cangle;
 
-      float arrowx = gpt->points[0] + dx;
-      float arrowy = gpt->points[1] + dy;
+      const float arrowx = gpt->points[0] + dx;
+      const float arrowy = gpt->points[1] + dy;
 
       cairo_move_to(cr, gpt->source[0] + dxs, gpt->source[1] + dys); // source center
       cairo_line_to(cr, arrowx, arrowy);                             // dest border
