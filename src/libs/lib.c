@@ -1102,6 +1102,26 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   }
 }
 
+void dt_lib_toggle_filmstrip_visibility(void)
+{
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  if(!m) return;
+  const gboolean vs = dt_lib_is_visible(m);
+  const gboolean ps = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+
+  if(ps) // bottom panel is visible, just hide/show filmstrip
+  {
+    dt_lib_set_visible(m, !vs);
+  }
+  else // bottom panel is not visible
+  {
+    // show it
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, TRUE, TRUE);
+    // and display filstrip only if it was not activated
+    if(!vs) dt_lib_set_visible(m, !vs);
+  }
+}
+
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
 {
   if(module->reset_button)
