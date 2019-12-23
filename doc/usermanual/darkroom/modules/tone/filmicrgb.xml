@@ -41,15 +41,18 @@
                 Sobotka. While it is primarily intended to recover high-dynamic range from raw
                 sensor data, it can be used with any image in replacement of the base curve
                 module. The developer provided a detailed explanation of the module in a video
-                called <ulink url="https://www.youtube.com/watch?v=zbPj_TqTF88">Filmic RGB:
-                remap any dynamic range in darktable 3.0</ulink>.
+                called
+                <ulink
+                  url="https://www.youtube.com/watch?v=zbPj_TqTF88">Filmic
+                RGB: remap any dynamic range in darktable 3.0</ulink>.
               </para>
 
               <para>
-                Filmic rgb is the successor of the filmic module provided in Darkroom 2.6. While
-                the underlying principles did not change much, users of the previous version
-                should not expect a 1:1 translation of their workflow, and may find
-                <xref linkend="filmic-rgb-for-26-users"/> useful.
+                Filmic rgb is the successor of the filmic module provided in darktable 2.6.x.
+                While the underlying principles did not change much, users of the previous
+                version should not expect a 1:1 translation of their workflow, and may find
+                <xref
+                  linkend="filmic-rgb-for-26-users"/> useful.
               </para>
             </entry>
             <entry>
@@ -66,9 +69,6 @@
   <sect4>
 
     <title>Prerequisites</title>
-
-<!-- IHU - my understanding is that the prerequisites don't change much, except for the 
-      exposure settings - which I modified. Is that correct? -->
 
     <para>
       In order to get the best out of filmic rgb, images need some preparation:
@@ -90,25 +90,25 @@
           highlights: they will be recovered as part of the filmic rgb processing. However, it
           is important to avoid negative pixels in black areas: the computations done by filmic
           rgb will result in unpredictable results in this case. For some cameras models (Canon,
-          mainly), rawspeed, the raw decoding library of darktable, may set an exaggerated black
-          level, resulting in crushed blacks and negative values. If so, brighten the blacks by
-          setting a negative black level value in the
-          <link
-              linkend="exposure"><emphasis>exposure </emphasis></link> module.
+          mainly), rawspeed (the raw decoding library of darktable), may set an exaggerated
+          black level, resulting in crushed blacks and negative values. If so, brighten the
+          blacks by setting a negative black level value in the
+          <link linkend="exposure"><emphasis>exposure </emphasis></link> module.
         </para></listitem>
 
         <listitem><para>
           If you plan on using filmic rgb's auto-tuners, use the
-          <link
-              linkend="whitebalance"><emphasis>white balance</emphasis></link>
-          module first to correct any color casts and get neutral colors. In RGB color spaces,
-          luminance and chrominance are linked, and filmic rgb's luminance detection relies on
-          accurate measures of both. If your picture is very noisy, add an initial step of
-          denoising to help the black exposure readings, and use a high quality demosaicing.
+          <link linkend="whitebalance"
+                ><emphasis>white
+          balance</emphasis></link> module first to correct any color casts and get neutral
+          colors. In RGB color spaces, luminance and chrominance are linked, and filmic rgb's
+          luminance detection relies on accurate measures of both. If your picture is very
+          noisy, add an initial step of denoising to help the black exposure readings, and use a
+          high quality demosaicing.
         </para></listitem>
 
         <listitem><para>
-          If you plan using filmic rgb's chrominance preservation mode, avoid using any tone
+          If you plan on using filmic rgb's chrominance preservation mode, avoid using any tone
           mapping module as well as the base curve module. These may produce unpredictable color
           shifts that would make the chrominance preservation useless. Neither of these modules
           is usually needed if you use filmic rgb.
@@ -124,9 +124,9 @@
     <title>Usage</title>
 
     <para>
-      The filmic rgb module aims at mapping the photographed scene dynamic range to the
-      (smaller) image dynamic range, and finally to the (even smaller) screen dynamic range.
-      This mapping is defined in three steps, each handled in a separate tab in the interface:
+      The filmic rgb module aims at mapping the photographed scene (RAW image) dynamic range to
+      the (smaller) display dynamic range. This mapping is defined in three steps, each handled
+      in a separate tab in the interface:
       <itemizedlist>
 
         <listitem><para>
@@ -174,9 +174,6 @@
 
     <sect5>
       <title>Middle-grey luminance (<guilabel>Scene</guilabel> tab)</title>
-<!-- IHU - okay, I'm not clear on color spaces. My understanding is that filmic
-        worked on XYZ and filmic rgb works on RGB - is that true? does that sentence make sense?
-        :) -->
       <para>
         The middle-grey luminance is the luminance in RGB space of the scene referred 18% grey.
         Its color picker tool reads the average luminance over the drawn area. If you happen to
@@ -197,10 +194,10 @@
       </para>
       <para>
         When modifying the middle-grey luminance, the white and black exposures are
-        automatically slided accordingly, to preserve the dynamic range from clipping and to
-        help you set find the right parameter faster. If you are not happy with the auto
-        adjustment performed by the grey slider, you can correct again the white and black
-        exposure parameters afterwards.
+        automatically slid accordingly, to preserve the dynamic range from clipping and to help
+        you set the right parameter faster. If you are not happy with the auto adjustment
+        performed by the grey slider, you can correct again the white and black exposure
+        parameters afterwards.
       </para>
     </sect5>
 
@@ -239,8 +236,7 @@
         blacks. Every camera sensor has a maximum physical dynamic range for each ISO value (you
         can find them measured on
         <ulink url="https://www.dxomark.com/"
-            ><emphasis>DXOmark</emphasis></ulink>
-        or
+          ><emphasis>DXOmark</emphasis></ulink> or
         <ulink url="https://www.dpreview.com/"
             ><emphasis>DPreview</emphasis></ulink>),
         the software dynamic range in filmic rgb (dynamic range = white exposure - black
@@ -248,9 +244,6 @@
         (10-14EV in most cases). Note that the dynamic range of the scene can be lower than the
         camera's one, especially indoors.
       </para>
-<!-- IHU my understanding is that the control of the S-curve is not an issue anymore
-        because of the new spline - which allows more leeway there, and hence the caveats
-        disappear. Correct? -->
     </sect5>
 
     <sect5>
@@ -303,11 +296,10 @@
         <guilabel>scene</guilabel>
         tab (white-relative exposure minus black-relative-exposure). It is the luminance range
         that is remapped in priority, and it is remapped to the luminance interval defined by
-        the <link linkend="filmicrgb-contrast"
-          >Contrast</link> parameter. It is
-        usually advised to keep the latitude as large as possible, while avoiding clipping. If
-        clipping is observed, you can compensate the effects by either decreasing the latitude,
-        shifting the latitude interval with the
+        the <link linkend="filmicrgb-contrast">Contrast</link> parameter. It is usually advised
+        to keep the latitude as large as possible, while avoiding clipping. If clipping is
+        observed, you can compensate the effects by either decreasing the latitude, shifting the
+        latitude interval with the
         <guilabel>shadow/highlights balance</guilabel>
         parameter, or by decreasing the contrast.
       </para>
@@ -323,8 +315,8 @@
         By default, the latitude is centered in the middle of the dynamic range. If this
         produces clipping in one part of the other of the curve, the balance parameter allows to
         slide the latitude along the slopes, towards the shadows or towards the highlights. This
-        allows to give more room to one extremity of the dynamic range than to the other, if the
-        image properties demand it.
+        allows more room to be given to one extremity of the dynamic range than to the other, if
+        the image properties demand it.
       </para>
     </sect5>
 
@@ -383,8 +375,8 @@
           </para></listitem>
 
           <listitem><para>
-            <emphasis>luminance Y</emphasis> is the sum of the three channels R, G and B. It
-            tends to darkens the reds, and to increase the local contrast in reds.
+            <emphasis>luminance Y</emphasis> is a linear combination of the three channels R, G
+            and B. It tends to darkens the reds, and to increase the local contrast in reds.
           </para></listitem>
 
           <listitem><para>
@@ -403,9 +395,6 @@
     </sect5>
 
     <sect5>
-<!-- IHU I haven't touched that section (anything in the display tab) because
-      I don't have the knowledge/competence to see if this was modified or not compared to the
-      previous version.-->
       <title>Target black luminance (<guilabel>Display</guilabel> tab)</title>
       <para>
         The destination parameters set the target luminance values used to remap the tones
@@ -503,8 +492,8 @@
         <guilabel>contrast</guilabel>
         parameter. Increase the latitude as much as you can without clipping the curve, slide it
         with the
-        <guilabel>extreme luminance
-            saturation</guilabel>
+        <guilabel>shadows/highlights
+            balance</guilabel>
         parameter.
       </para></listitem>
 
@@ -534,11 +523,11 @@
     <title>Filmic rgb for Darktable 2.6 filmic users</title>
 
     <para>
-      Filmic rgb is a major reimplementation of the filmic module, and some adjustments are
-      necessary to switch from one version to the other. This last section underlines the most
-      important differences; a more comprehensive overview is available as a video called
+      Filmic rgb is a reimplementation of the filmic module, and some adjustments are necessary
+      to switch from one version to the other. This last section underlines the most important
+      differences; a more comprehensive overview is available as a video called
       <ulink
-        url="https://www.youtube.com/watch?v=9awBFYcPgGU">dark table 3.0 filmic
+        url="https://www.youtube.com/watch?v=9awBFYcPgGU">darktable 3.0 filmic
       explained to users of darktable 2.6</ulink>. The major differences points when it comes to
       usage are the following:
       <itemizedlist>
@@ -608,7 +597,9 @@
         </para></listitem>
 
         <listitem><para>
-          If you experience weird color shifts, change the working color space to prophoto RGB.
+          If you experience weird color shifts, change the working color space to prophoto RGB
+          in the <link linkend="input_color_profile"><emphasis>input color
+          profile</emphasis></link> module.
         </para></listitem>
 
       </orderedlist>
