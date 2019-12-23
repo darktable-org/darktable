@@ -1670,7 +1670,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
 
   /* restore from a previous collapse all panel state if enabled */
   gchar *key = _panels_get_view_path("panel_collaps_state");
-  uint32_t state = dt_conf_get_int(key);
+  const uint32_t state = dt_conf_get_int(key);
   g_free(key);
   if(state)
   {
