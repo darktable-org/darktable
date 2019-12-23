@@ -203,8 +203,8 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     gui->form_dragging = FALSE;
 
     // we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -230,10 +230,10 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     // we end the form rotating
     gui->form_rotating = FALSE;
 
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
-    float x = pzx * wd;
-    float y = pzy * ht;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
 
     // we need the reference point
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -262,7 +262,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 
     // get the rotation angle only if we are not too close from starting point
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
+    const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
     const float diff = 5.0f * zoom_scale;
     float rotation;
@@ -865,17 +865,17 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
 
   const float v1 = (-(rotation - 90.0f) / 180.0f) * M_PI;
 
-  float x1 = (x * wd + distance * scale * cos(v1)) / wd;
-  float y1 = (y * ht + distance * scale * sin(v1)) / ht;
+  const float x1 = (x * wd + distance * scale * cos(v1)) / wd;
+  const float y1 = (y * ht + distance * scale * sin(v1)) / ht;
 
-  int r1 = dt_gradient_get_points(dev, x1, y1, rotation, &points1, &points_count1);
+  const int r1 = dt_gradient_get_points(dev, x1, y1, rotation, &points1, &points_count1);
 
   const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
 
-  float x2 = (x * wd + distance * scale * cos(v2)) / wd;
-  float y2 = (y * ht + distance * scale * sin(v2)) / ht;
+  const float x2 = (x * wd + distance * scale * cos(v2)) / wd;
+  const float y2 = (y * ht + distance * scale * sin(v2)) / ht;
 
-  int r2 = dt_gradient_get_points(dev, x2, y2, rotation, &points2, &points_count2);
+  const int r2 = dt_gradient_get_points(dev, x2, y2, rotation, &points2, &points_count2);
 
   int res = 0;
 
@@ -1069,11 +1069,11 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     for(int i = 0; i < mw; i++)
     {
-      float x = points[(j * mw + i) * 2];
-      float y = points[(j * mw + i) * 2 + 1];
+      const float x = points[(j * mw + i) * 2];
+      const float y = points[(j * mw + i) * 2 + 1];
 
-      float distance = (sinv * x - cosv * y - offset) * hwscale;
-      float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
+      const float distance = (sinv * x - cosv * y - offset) * hwscale;
+      const float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
 
       points[(j * mw + i) * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
     }
@@ -1099,12 +1099,12 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #endif
   for(int j = 0; j < h; j++)
   {
-    int jj = j % mesh;
-    int mj = j / mesh;
+    const int jj = j % mesh;
+    const int mj = j / mesh;
     for(int i = 0; i < w; i++)
     {
-      int ii = i % mesh;
-      int mi = i / mesh;
+      const int ii = i % mesh;
+      const int mi = i / mesh;
       (*buffer)[j * w + i] = (points[(mj * mw + mi) * 2] * (mesh - ii) * (mesh - jj)
                               + points[(mj * mw + mi + 1) * 2] * ii * (mesh - jj)
                               + points[((mj + 1) * mw + mi) * 2] * (mesh - ii) * jj
@@ -1156,7 +1156,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   for(int j = 0; j < mh; j++)
     for(int i = 0; i < mw; i++)
     {
-      size_t index = (size_t)j * mw + i;
+      const size_t index = (size_t)j * mw + i;
       points[index * 2] = (mesh * i + px) * iscale;
       points[index * 2 + 1] = (mesh * j + py) * iscale;
     }
@@ -1205,12 +1205,12 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   {
     for(int i = 0; i < mw; i++)
     {
-      size_t index = (size_t)j * mw + i;
-      float x = points[index * 2];
-      float y = points[index * 2 + 1];
+      const size_t index = (size_t)j * mw + i;
+      const float x = points[index * 2];
+      const float y = points[index * 2 + 1];
 
-      float distance = (sinv * x - cosv * y - offset) * hwscale;
-      float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
+      const float distance = (sinv * x - cosv * y - offset) * hwscale;
+      const float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
 
       points[index * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
     }
@@ -1228,13 +1228,13 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #endif
   for(int j = 0; j < h; j++)
   {
-    int jj = j % mesh;
-    int mj = j / mesh;
+    const int jj = j % mesh;
+    const int mj = j / mesh;
     for(int i = 0; i < w; i++)
     {
-      int ii = i % mesh;
-      int mi = i / mesh;
-      size_t mindex = (size_t)mj * mw + mi;
+      const int ii = i % mesh;
+      const int mi = i / mesh;
+      const size_t mindex = (size_t)mj * mw + mi;
       buffer[(size_t)j * w + i]
           = (points[mindex * 2] * (mesh - ii) * (mesh - jj) + points[(mindex + 1) * 2] * ii * (mesh - jj)
              + points[(mindex + mw) * 2] * (mesh - ii) * jj + points[(mindex + mw + 1) * 2] * ii * jj)
