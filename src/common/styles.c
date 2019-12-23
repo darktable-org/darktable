@@ -844,7 +844,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           "SELECT num, multi_priority, module, operation, enabled, (SELECT MAX(num) FROM main.history WHERE imgid=?2 "
           "AND operation=data.style_items.operation GROUP BY multi_priority),0,multi_name,iop_order,blendop_version FROM data.style_items WHERE "
           "styleid=?1 UNION SELECT -1,main.history.multi_priority,main.history.module,main.history.operation,main.history.enabled, "
-          "main.history.num,0,multi_name,iop_order FROM main.history WHERE imgid=?2 AND main.history.enabled=1 AND "
+          "main.history.num,0,multi_name,iop_order, blendop_version FROM main.history WHERE imgid=?2 AND main.history.enabled=1 AND "
           "(main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1) OR "
           "(main.history.op_params NOT IN (SELECT op_params FROM data.style_items WHERE styleid=?1 AND "
           "operation=main.history.operation)) OR (main.history.blendop_params NOT IN (SELECT blendop_params FROM "
