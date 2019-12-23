@@ -203,8 +203,8 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     gui->form_dragging = FALSE;
 
     // we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -230,10 +230,10 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     // we end the form rotating
     gui->form_rotating = FALSE;
 
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
-    float x = pzx * wd;
-    float y = pzy * ht;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
 
     // we need the reference point
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -262,7 +262,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 
     // get the rotation angle only if we are not too close from starting point
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
+    const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
     const float diff = 5.0f * zoom_scale;
     float rotation;
