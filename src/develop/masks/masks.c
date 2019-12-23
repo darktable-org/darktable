@@ -228,6 +228,12 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("[GRADIENT] change curvature"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
     g_strlcpy(a->name, _("[GRADIENT] change compression"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
@@ -350,7 +356,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
   else if(formtype & DT_MASKS_GRADIENT)
   {
     if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("ctrl+scroll to set shape opacity (%d%%)"), opacity);
+      g_snprintf(msg, sizeof(msg), _("scroll to set curvature, shift+scroll to change compression\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->pivot_selected)
       g_strlcat(msg, _("move to rotate shape"), sizeof(msg));
   }
