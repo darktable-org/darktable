@@ -1675,7 +1675,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   if(state)
   {
     /* hide all panels */
-    for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(ui, k, FALSE, FALSE);
+    for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(ui, k, FALSE, TRUE);
   }
   else
   {
@@ -1686,7 +1686,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
       if(dt_conf_key_exists(key))
         dt_ui_panel_show(ui, k, dt_conf_get_bool(key), FALSE);
       else
-        dt_ui_panel_show(ui, k, TRUE, FALSE);
+        dt_ui_panel_show(ui, k, TRUE, TRUE);
 
       g_free(key);
     }
