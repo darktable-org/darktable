@@ -4026,7 +4026,7 @@ msgstr "Cantidad de subdivisiones por cuadrícula"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
-msgstr "extra"
+msgstr "guías adicionales"
 
 #: ../src/gui/guides.c:441
 msgid "golden sections"
@@ -4048,7 +4048,7 @@ msgstr "todas"
 
 #: ../src/gui/guides.c:445
 msgid "show some extra guides"
-msgstr "mostrar guías extra"
+msgstr "Mostrar guías adicionales"
 
 #: ../src/gui/guides.c:481
 msgid "grid"
@@ -6605,7 +6605,7 @@ msgstr "recortar y rotar"
 
 #: ../src/iop/clipping.c:1595
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "formato de aspecto inválido. debería ser \"número:número\""
+msgstr "Formato de proporción de aspecto no válido. Debería ser \"número:número\""
 
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:2005
 msgid "full"
@@ -6630,7 +6630,7 @@ msgstr "ambos"
 
 #: ../src/iop/clipping.c:1989
 msgid "mirror image horizontally and/or vertically"
-msgstr "reflejar la imagen horizontal o verticalmente"
+msgstr "Espejar la imagen horizontal o verticalmente"
 
 #: ../src/iop/clipping.c:1994
 msgid "angle"
@@ -6639,7 +6639,7 @@ msgstr "ángulo"
 #: ../src/iop/clipping.c:1997
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
-"forme un ángulo al trazar una línea con clic derecho + arrastre sobre la "
+"Forme un ángulo al trazar una línea con clic derecho + arrastre sobre la "
 "imagen"
 
 #: ../src/iop/clipping.c:2001
@@ -6648,7 +6648,7 @@ msgstr "perspectiva"
 
 #: ../src/iop/clipping.c:2006
 msgid "set perspective correction for your image"
-msgstr "seleccionar corrección de perspectiva para su imagen"
+msgstr "Seleccionar corrección de perspectiva para su imagen"
 
 #: ../src/iop/clipping.c:2018
 msgid "freehand"
@@ -6708,7 +6708,7 @@ msgstr "2:1, univisium"
 
 #: ../src/iop/clipping.c:2034
 msgid "cinemascope"
-msgstr "cinemascope"
+msgstr "cinemascopio"
 
 #: ../src/iop/clipping.c:2035
 msgid "21:9"
@@ -6725,15 +6725,15 @@ msgstr "3:1, panorámica"
 #: ../src/iop/clipping.c:2069 ../src/iop/clipping.c:2081
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "formato de aspecto inválido para `%s'. debería ser \"número:número\""
+msgstr "Formato de proporción de aspecto no válido para `%s'. Debería ser \"número:número\""
 
 #: ../src/iop/clipping.c:2128
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
 msgstr ""
-"ajusta la relación de aspecto\n"
-"la lista está ordenada: desde el mas cuadrado hasta el menos cuadrado"
+"Fija la relación de aspecto\n"
+"La lista está ordenada desde la más cuadrada hasta la más rectangular"
 
 #: ../src/iop/clipping.c:2164 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
