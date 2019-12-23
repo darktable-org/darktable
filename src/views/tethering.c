@@ -104,14 +104,11 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointe
 }
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, gpointer data)
+                                     GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  dt_lib_toggle_filmstrip_visibility();
   return TRUE;
 }
-
 
 void init(dt_view_t *self)
 {
