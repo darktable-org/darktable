@@ -20,7 +20,6 @@
 #endif
 
 #include "common/darktable.h"
-#include "common/colorspaces_inline_conversions.h"
 #include "common/iop_order.h"
 #include "common/debug.h"
 #include "develop/imageop.h"
@@ -31,37 +30,339 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 2
+#define DT_IOP_ORDER_VERSION 5
+
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
+
+
+/** Note :
+ * we do not use finite-math-only and fast-math because divisions by zero are not manually avoided in the code
+ * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
+ * the rest is loop reorganization and vectorization optimization
+ **/
+#if defined(__GNUC__)
+#pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
+                      "tree-loop-distribution", "no-strict-aliasing", \
+                      "loop-interchange", "loop-nest-optimize", "tree-loop-im", \
+                      "unswitch-loops", "tree-loop-ivcanon", "ira-loop-pressure", \
+                      "split-ivs-in-unroller", "variable-expansion-in-unroller", \
+                      "split-loops", "ivopts", "predictive-commoning",\
+                      "tree-loop-linear", "loop-block", "loop-strip-mine", \
+                      "fp-contract=fast", \
+                      "tree-vectorize")
+#endif
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
 static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move);
 
+// this routine rewrite the iop-order to have all them evenly spaced
+// into the list ensuring that we can insert safely at least 40 iop
+// between any two of them. Probably not the best fix, this is mostly
+// a workaround for current limitation and will avoid issues for the next
+// release.
+// ?? TODO: redo the whole pipe ordering
+static void _rewrite_order(GList *iop_order_list)
+{
+  GList *l = iop_order_list;
+  double order = 1.0;
+  while(l)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)l->data;
+    order_entry->iop_order = order;
+    order += 1.0;
+    l = g_list_next(l);
+  }
+}
 
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
- * limitations:
- * - to move an existing module that is always enabled a new version must be created, otherwise
- *   modules can be added/moved in the current version
- * - a module can't be more than once on the same version
+ *
+ * Basically here there is two orders:
+ *   v2 : legacy order used for edits done prior to 3.0
+ *   v5 : new order for all edits starting with 3.0
  */
 static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_list, const int old_version, const int dont_move)
 {
   int new_version = -1;
 
   // version 1 --> 2
+  // v2 is the version that will be used for all edits started before 3.0 was out.
+  // v2 corresponds to the legacy order (as proposed up to 2.6.3) with the new modules available.
   if(old_version == 1)
   {
-    _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
+    // EVERY NEW MODULE MUST BE ADDED HERE
+    // there should be no _ioppr_insert_iop[before|after] in any other places
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
     _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
+
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
     new_version = 2;
   }
+  // version 2 --> 3
+  // v3 is a temporary version corresponding to first attempt to propose a new order during development of 3.0.
+  else if(old_version == 2)
+  {
+    // GENERAL RULE FOR SIGNAL PROCESSING/RECONSTRUCTION
+    // pictures are formed through this path :
+    // scene/surfaces/shapes -> atmosphere -> lens -> sensor -> RAW file
+    // we then need to reconstruct/clean the signal the other way :
+    // RAW file -> sensor denoise -> lens profile / deblur -> atmosphere dehaze -> surfaces perspective correction
+
+    // correct exposure in camera RGB space (otherwise, it's not really exposure)
+    _ioppr_move_iop_before(_iop_order_list, "exposure", "colorin", dont_move);
+
+    // move local distorsions/pixel shifts after general distorsions
+    _ioppr_move_iop_before(_iop_order_list, "retouch", "exposure", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "spots", "retouch", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "liquify", "spots", dont_move);
+
+    // move general perspective/distorsions module after lens
+    _ioppr_move_iop_before(_iop_order_list, "clipping", "liquify", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "flip", "clipping", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "ashift", "flip", dont_move);
+
+    // dehaze
+    _ioppr_move_iop_before(_iop_order_list, "hazeremoval", "ashift", dont_move);
+
+    // lens profiles need a pure sensor reading with no correction
+    _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
+
+    // pixel scaling
+    _ioppr_move_iop_before(_iop_order_list, "scalepixels", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "rotatepixels", "scalepixels", dont_move);
+
+    // move denoising before any deformation to avoid anisotropic noise creation
+    _ioppr_move_iop_before(_iop_order_list, "bilateral", "rotatepixels", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
+
+    // move Lab denoising/reconstruction after input profile where signal is linear
+    // NB: denoising in non-linear spaces makes no sense
+    _ioppr_move_iop_before(_iop_order_list, "colorin", "nlmeans", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "defringe", "nlmeans", dont_move);
+
+    // move frequency filters right after input profile - convolutions need L2 spaces
+    // to respect Parseval's theorem and avoid halos at edges
+    // NB: again, frequency filter in Lab make no sense
+    _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
+
+    // color adjustments in scene-linear space : move right after colorin
+    _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
+
+    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colortransfer", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colortransfer", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
+
+    // scene-linear to display-referred encoding
+    // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
+    _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
+
+    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
+
+    // recover local contrast after non-linear tone edits
+    _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
+
+    // display-referred colour edits
+    _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
+
+    // fix clipping before going in colourout
+    _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
+
+    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
+
+    new_version = 3;
+  }
+  // version 3 --> 4
+  // v4 is a temporary version corresponding to second attempt to propose a new order during development of 3.0.
+  else if(old_version == 3)
+  {
+    // version 4 is a rewrite of the iop-order of previous list. As it
+    // can be seen above some modules have very close iop-order values
+    // and does not have lot of room for insertion (multi-instance
+    // module and/or reordering).
+
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = 4;
+  }
+  // version 4 --> 5
+  // v5 is the final order proposed for new edits in 3.0.
+  else if(old_version == 4)
+  {
+    if(!dont_move)
+    {
+      // The following is a flattened list from original code. The goal is to have a clean starting point for
+      // future modifications.
+      const dt_iop_order_entry_t iop_v5[] = {
+        {  1.0, "rawprepare"},
+        {  2.0, "invert"},
+        {  3.0, "temperature"},
+        {  4.0, "highlights"},
+        {  5.0, "cacorrect"},
+        {  6.0, "hotpixels"},
+        {  7.0, "rawdenoise"},
+        {  8.0, "demosaic"},
+        {  9.0, "denoiseprofile"},
+        { 10.0, "bilateral"},
+        { 11.0, "rotatepixels"},
+        { 12.0, "scalepixels"},
+        { 13.0, "lens"},
+        { 14.0, "hazeremoval"},
+        { 15.0, "ashift"},
+        { 16.0, "flip"},
+        { 17.0, "clipping"},
+        { 18.0, "liquify"},
+        { 19.0, "spots"},
+        { 20.0, "retouch"},
+        { 21.0, "exposure"},
+        { 22.0, "mask_manager"},
+        { 23.0, "tonemap"},
+        { 24.0, "toneequal"},
+        { 25.0, "graduatednd"},
+        { 26.0, "profile_gamma"},
+        { 27.0, "equalizer"},
+        { 28.0, "colorin"},
+
+        { 29.0, "nlmeans"},         // signal processing (denoising)
+                                    //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+        { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
+                                    //    -> improve colour calibration of colorin and reproductibility
+                                    //    of further edits (styles etc.)
+        { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                    //    in order for chromaticity to be meaningful,
+        { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+        { 33.0, "lowpass"},         // same
+        { 34.0, "highpass"},        // same
+        { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
+        { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
+                                    //    so better move it after frequential ops that need L2 Hilbert spaces
+                                    //    of square summable functions
+        { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
+                                    //    colour exchange space, hence after colorin and colorcheckr,
+                                    //    but apply after frequential ops in case it does non-linear witchcraft,
+                                    //    just to be safe
+        { 59.0, "colormapping"},    // same
+        { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                    //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                    //    Really versatile yet under-used module, doing linear ops,
+                                    //    very good in scene-referred workflow
+        { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
+        { 40.0, "colorbalance"},    // scene-referred color manipulation
+        { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
+        { 42.0, "rgblevels"},       // same
+        { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
+                                    //    on camera JPEG default look
+        { 44.0, "filmic"},          // same, but different (parametric) approach
+        { 45.0, "filmicrgb"},       // same, upgraded
+        { 46.0, "colisa"},          // edit contrast while damaging colour
+        { 47.0, "tonecurve"},       // same
+        { 48.0, "levels"},          // same
+        { 49.0, "shadhi"},          // same
+        { 50.0, "zonesystem"},      // same
+        { 51.0, "globaltonemap"},   // same
+        { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
+        { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
+                                    //    to it with tonemapping
+        { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
+                                    // try to recover them - global adjustment of white balance for shadows and highlights
+        { 55.0, "colorcontrast"},   // adjust chrominance globally
+        { 56.0, "velvia"},          // same
+        { 57.0, "vibrance"},        // same, but more subtle
+        { 58.0, "colorzones"},      // same, but locally
+        { 60.0, "bloom"},           // creative module
+        { 61.0, "colorize"},        // creative module
+        { 62.0, "lowlight"},        // creative module
+        { 63.0, "monochrome"},      // creative module
+        { 64.0, "grain"},           // creative module
+        { 65.0, "soften"},          // creative module
+        { 66.0, "splittoning"},     // creative module
+        { 67.0, "vignette"},        // creative module
+        { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+
+        { 69.0, "colorout"},
+        { 70.0, "clahe"},
+        { 71.0, "finalscale"},
+        { 72.0, "overexposed"},
+        { 73.0, "rawoverexposed"},
+        { 74.0, "dither"},
+        { 75.0, "borders"},
+        { 76.0, "watermark"},
+        { 77.0, "gamma"},
+      };
+
+      if(g_list_length(*_iop_order_list) != 77)
+      {
+        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have 77 entries found %d\n",
+                g_list_length(*_iop_order_list));
+        return 4;
+      }
+
+      // note that we cannot delete the *_iop_order_list and recreate it
+
+      GList *l = *_iop_order_list;
+      int i = 0;
+      while(l)
+      {
+        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+        entry->iop_order = iop_v5[i].iop_order;
+        g_strlcpy(entry->operation, iop_v5[i].operation, sizeof(entry->operation));
+        i++;
+        l = g_list_next(l);
+      }
+    }
+    new_version = 5;
+  }
+  // each new version MUST be written as the following (_rewrite_order IS VERY important)
+
+  // If a new module is to be added, it must be added in the current
+  // version (just above) and then a new version must be created with
+  // the following code to ensure modules are evenly spaced (leaving
+  // room for multi-instances and user's re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    // reorder modules to ensure they are all evenly spaced
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
+
+  // If a module is to be reodered in the pipe, the following code
+  // must be used. A new version must be created to ensure modules are
+  // evenly spaced (leaving room for multi-instances and user's
+  // re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    _ioppr_move_iop_[before|after](_iop_order_list, "new_module", "some_module", dont_move);
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
 
   if(new_version <= 0)
     fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
@@ -85,6 +386,10 @@ GList *dt_ioppr_get_iop_order_rules()
                                                 { "demosaic", "colorin" },
                                                 { "colorin", "colorout" },
                                                 { "colorout", "gamma" },
+                                                /* clipping GUI broken if flip is done on top */
+                                                { "flip", "clipping" },
+                                                /* clipping GUI broken if ashift is done on top */
+                                                { "ashift", "clipping" },
                                                 { "\0", "\0" } };
 
   int i = 0;
@@ -223,7 +528,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
-  dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
+  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
 
   if(order_entry)
     iop_order = order_entry->iop_order;
@@ -284,20 +589,23 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
       }
     }
     else
-      fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
-
+    {
+      fprintf(stderr, "[_ioppr_insert_iop_before] module %s doesn't exist in iop order list\n", op_next);
+    }
     if(found)
     {
       // set the iop_order
       iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
+//      if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
       iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
     }
   }
   else
-    fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists on iop order list\n", op_new);
-
+  {
+     fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists in iop order list\n", op_new);
+  }
   *_iop_order_list = iop_order_list;
 }
 
@@ -321,10 +629,8 @@ static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list
   }
   if(prior_next == NULL)
   {
-    fprintf(
-        stderr,
-        "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
-        op_prev, op_new);
+    fprintf(stderr, "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
+            op_prev, op_new);
   }
   else
     _ioppr_insert_iop_before(&iop_order_list, history_list, op_new, prior_next->operation, check_history);
@@ -369,8 +675,9 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     iop_order_list = g_list_remove_link(iop_order_list, iops_order_current);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] current module %s don't exists on iop order list\n", op_current);
-
+  {
+    fprintf(stderr, "[_ioppr_move_iop_before] current module %s doesn't exist in iop order list\n", op_current);
+  }
   // search for the previous and next one
   if(found)
   {
@@ -399,10 +706,13 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
 
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
+   // VERY noisy so disable now
+   //    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
-
+  {
+    fprintf(stderr, "[_ioppr_move_iop_before] next module %s doesn't exist in iop order list\n", op_next);
+  }
   *_iop_order_list = iop_order_list;
 }
 
@@ -427,10 +737,8 @@ static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_curren
   }
   if(prior_next == NULL)
   {
-    fprintf(
-        stderr,
-        "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
-        op_prev, op_current);
+    fprintf(stderr, "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
+            op_prev, op_current);
   }
   else
     _ioppr_move_iop_before(&iop_order_list, op_current, prior_next->operation, dont_move);
@@ -453,7 +761,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 
   if(old_version != version)
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list to version %i\n", version);
+    fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", version);
   }
 
   if(_version && *_version == 0 && old_version > 0) *_version = old_version;
@@ -466,6 +774,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 // if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 {
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
   GList *iop_list = *_iop_list;
 
   GList *modules = g_list_first(iop_list);
@@ -483,12 +792,14 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
       mod->iop_order = DBL_MAX;
     }
 
+    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  db: %14.11f   xmp %8.4f   %16s",mod->iop_order,mod->iop_order,mod->op);
     modules = g_list_next(modules);
   }
   // we need to set the right order
   iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
 }
 
 // returns the first dt_dev_history_item_t on history_list where hist->module == mod
@@ -577,8 +888,9 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
-                mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+            fprintf(stderr,
+                    "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                    mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
         else
@@ -589,8 +901,9 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
-            mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+        fprintf(stderr,
+                "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
 
@@ -704,7 +1017,7 @@ gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b)
 // if module can be placed before than module_next on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next,
                                   const int validate_order, const int log_error)
 {
@@ -744,7 +1057,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // if we reach module_next everithing is OK
+        // if we reach module_next everything is OK
         if(mod == module_next)
         {
           mod2 = mod;
@@ -800,7 +1113,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -841,7 +1154,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // we reach the module next to module_next, everithing is OK
+        // we reach the module next to module_next, everything is OK
         if(mod2 != NULL)
         {
           mod1 = mod;
@@ -897,7 +1210,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -914,7 +1227,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
         module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
   }
 
@@ -924,7 +1237,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
 // if module can be placed after than module_prev on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_after_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev,
                                  const int validate_order, const int log_error)
 {
@@ -1249,6 +1562,178 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   if(fences) g_list_free(fences);
 }
 
+// migrate the given image to another iop_order version (new_iop_order_version)
+// note that this is actually a non exported routine but it will
+// be when dt GUI will provide a way to migrate to a new iop_order version.
+static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+{
+  int _iop_order_version = new_iop_order_version;
+  sqlite3_stmt *stmt;
+
+  // As we have to calculate within the images history data we will create a struct array holding all relevant data
+  // for housekeeping.
+  // Also this ensures we can write test output before we really write data to main.history
+
+  int history_size = 0;
+  // We need the size of the images history for the struct array
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) history_size = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if (history_size <1)
+  {
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] for image %i has no valid history\n", imgid);
+    return current_iop_order_version;
+  }
+
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version);
+
+  if(_iop_order_version != new_iop_order_version)
+  {
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] cannot get new iop-order list for image %i\n", imgid);
+    return current_iop_order_version;
+  }
+
+  // get the number of known iops
+  const int valid_iops = g_list_length (current_iop_list);
+
+  if(DT_IOP_ORDER_INFO)
+  {
+    fprintf(stderr,"\n*** checking for %d known iops ***\n", valid_iops);
+
+    GList *iops_order = g_list_last(current_iop_list);
+    while(iops_order)
+    {
+      dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
+      fprintf(stderr, "  %s, %f\n", order_entry->operation,order_entry->iop_order);
+      iops_order = g_list_previous(iops_order);
+    }
+  }
+
+  typedef struct dt_onthefly_history_t
+  {
+    int num;
+    char operation[20];
+    double old_iop_order;
+    double new_iop_order;
+    int multi_priority;
+  } dt_onthefly_history_t;
+
+  struct dt_onthefly_history_t *myhistory = (dt_onthefly_history_t *)calloc(history_size, sizeof(dt_onthefly_history_t));
+
+  // read in the history
+  for (int i=0;i<history_size;i++)
+  {
+    int hits=0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "SELECT num, operation, iop_order, multi_priority FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      struct dt_onthefly_history_t *this = &myhistory[hits];
+      this->num = sqlite3_column_int(stmt, 0);
+      g_strlcpy(this->operation, (char *)sqlite3_column_text(stmt, 1), 20);
+      this->old_iop_order = this->new_iop_order = sqlite3_column_double(stmt,2);
+      this->multi_priority = sqlite3_column_int(stmt, 3);
+      hits++;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // process history, we assign iop-order to one from v4.
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    this->new_iop_order =
+      dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
+  }
+
+  // process some more checks possibly; any sort data that can't be correct?
+
+  // print complete history information
+  fprintf(stderr, "\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************\n",
+          current_iop_order_version, _iop_order_version, imgid);
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    fprintf(stderr, " %3i %20s multi%3i :: iop %14.11f -> %14.11f\n", this->num, this->operation,
+            this->multi_priority, this->old_iop_order, this->new_iop_order);
+  }
+
+  // Now write history
+
+  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  for (int i=0; i<history_size; i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    if (this->old_iop_order != this->new_iop_order)
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.history SET iop_order = ?1 WHERE imgid = ?2 AND num = ?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, this->new_iop_order);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, this->num);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+  }
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+
+  free(myhistory);
+
+  // return back the actual iop_order_version as written above to be extra safe
+  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
+  if(my_iop_order_version > 0) _iop_order_version = my_iop_order_version;
+
+  // now let's write the corresponding sidecar file which is also
+  // broken. this is needed when the lighttable refresh a thumb and
+  // the conversion happens.
+  dt_image_write_sidecar_file(imgid);
+
+  return _iop_order_version;
+}
+
+// how is on-the-fly conversion done
+// Currently a hack to support v3/v4 history to later
+// returns the history version of imgid
+int dt_ioppr_convert_onthefly(const int imgid)
+{
+  // check current iop order version
+  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
+
+  // already latest
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION)
+  {
+    return my_iop_order_version;
+  }
+  else if (my_iop_order_version == 1)
+  {
+    // if an original image edited before iop-order was introduced we migrate it to v2
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2);
+  }
+  else if (my_iop_order_version == 3 || my_iop_order_version == 4)
+  {
+    // ??? we handle only iop-version 3/4 (which have been broken) and move
+    // it to latest version whatever the latest version is. As v3 or v4 are quite
+    // broken it makes no difference to whatever order we move to. At the time if this
+    // implementation the last/fixed version is v5.
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
+  }
+
+  return my_iop_order_version;
+}
+
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
 {
   int iop_order_ok = 1;
@@ -1331,7 +1816,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
             iop_order_ok = 0;
             fprintf(
                 stderr,
-                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) has the same order image %i (%s)\n",
+                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) have the same order image %i (%s)\n",
                 mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
           }
@@ -1595,244 +2080,9 @@ static inline void _transform_lcms2_rgb(const float *const image_in, float *cons
                               profile_info_to->intent);
 }
 
-static float lerp_lut(const float *const lut, const float v, const int lutsize)
-{
-  // TODO: check if optimization is worthwhile!
-  const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
-  const int t = ft < lutsize - 2 ? ft : lutsize - 2;
-  const float f = ft - t;
-  const float l1 = lut[t];
-  const float l2 = lut[t + 1];
-  return l1 * (1.0f - f) + l2 * f;
-}
 
-static inline void _apply_trc_in(const float *const rgb_in, float *rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (profile_info->lut_in[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? lerp_lut(profile_info->lut_in[c], rgb_in[c], profile_info->lutsize)
-                                                        : dt_iop_eval_exp(profile_info->unbounded_coeffs_in[c], rgb_in[c]))
-                                                        : rgb_in[c];
-  }
-}
-
-static inline void _apply_trc_out(const float *const rgb_in, float *rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (profile_info->lut_out[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? lerp_lut(profile_info->lut_out[c], rgb_in[c], profile_info->lutsize)
-                                                        : dt_iop_eval_exp(profile_info->unbounded_coeffs_out[c], rgb_in[c]))
-                                                        : rgb_in[c];
-  }
-}
-
-static void _ioppr_linear_rgb_matrix_to_xyz(const float *const rgb, float *xyz, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    xyz[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      xyz[c] += profile_info->matrix_in[3 * c + i] * rgb[i];
-    }
-  }
-}
-
-static void _ioppr_xyz_to_linear_rgb_matrix(const float *const xyz, float *rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      rgb[c] += profile_info->matrix_out[3 * c + i] * xyz[i];
-    }
-  }
-}
-
-static void _apply_tonecurves(const float *const image_in, float *const image_out, const int width,
-                              const int height, const float *const lutr, const float *const lutg,
-                              const float *const lutb, const float *const unbounded_coeffsr,
-                              const float *const unbounded_coeffsg, const float *const unbounded_coeffsb,
-                              const int lutsize)
-{
-  const int ch = 4;
-  const float *const lut[3] = { lutr, lutg, lutb };
-  const float *const unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
-  const size_t stride = (size_t)ch * width * height;
-
-  // do we have any lut to apply, or is this a linear profile?
-  if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < stride; k += ch)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        image_out[k + c] = (image_in[k + c] < 1.0f) ? lerp_lut(lut[c], image_in[k + c], lutsize)
-                                                    : dt_iop_eval_exp(unbounded_coeffs[c], image_in[k + c]);
-      }
-    }
-  }
-  else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < stride; k += ch)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        if(lut[c][0] >= 0.0f)
-        {
-          image_out[k + c] = (image_in[k + c] < 1.0f) ? lerp_lut(lut[c], image_in[k + c], lutsize)
-                                                      : dt_iop_eval_exp(unbounded_coeffs[c], image_in[k + c]);
-        }
-      }
-    }
-  }
-}
-
-static void _transform_rgb_to_lab_matrix(const float *const image_in, float *const image_out, const int width,
-                                         const int height,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)(width * height);
-
-  if(profile_info->nonlinearlut)
-  {
-    _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
-                      profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
-                      profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
-                      profile_info->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_out, profile_info, stride, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      float *const in = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
-      dt_XYZ_to_Lab(xyz, in);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      const float *const in = image_in + y * ch;
-      float *const out = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
-      dt_XYZ_to_Lab(xyz, out);
-    }
-  }
-}
-
-static void _transform_lab_to_rgb_matrix(const float *const image_in, float *const image_out, const int width,
-                                         const int height,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)width * height;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch) \
-  schedule(static)
-#endif
-  for(size_t y = 0; y < stride; y++)
-  {
-    const float *const in = image_in + y * ch;
-    float *const out = image_out + y * ch;
-
-    float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-    dt_Lab_to_XYZ(in, xyz);
-    _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info);
-  }
-
-  _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
-                    profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
-                    profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
-                    profile_info->lutsize);
-}
-
-static void _transform_matrix_rgb(const float *const image_in, float *const image_out, const int width,
-                                  const int height, const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                  const dt_iop_order_iccprofile_info_t *const profile_info_to)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)(width * height);
-
-  if(profile_info_from->nonlinearlut)
-  {
-    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
-                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
-                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
-                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      float *const in = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, profile_info_to);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      const float *const in = image_in + y * ch;
-      float *const out = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info_to);
-    }
-  }
-
-  _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
-                    profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
-                    profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
-                    profile_info_to->lutsize);
-}
-
-static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
-    float *unbounded_coeffsr, float *unbounded_coeffsg, float *unbounded_coeffsb, const int lutsize)
+static inline int _init_unbounded_coeffs(float *const lutr, float *const lutg, float *const lutb,
+    float *const unbounded_coeffsr, float *const unbounded_coeffsg, float *const unbounded_coeffsb, const int lutsize)
 {
   int nonlinearlut = 0;
   float *lut[3] = { lutr, lutg, lutb };
@@ -1843,9 +2093,9 @@ static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
     // omit luts marked as linear (negative as marker)
     if(lut[k][0] >= 0.0f)
     {
-      const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] = { lerp_lut(lut[k], x[0], lutsize), lerp_lut(lut[k], x[1], lutsize), lerp_lut(lut[k], x[2], lutsize),
-                           lerp_lut(lut[k], x[3], lutsize) };
+      const float x[4] DT_ALIGNED_PIXEL = { 0.7f, 0.8f, 0.9f, 1.0f };
+      const float y[4] DT_ALIGNED_PIXEL = { extrapolate_lut(lut[k], x[0], lutsize), extrapolate_lut(lut[k], x[1], lutsize), extrapolate_lut(lut[k], x[2], lutsize),
+                                            extrapolate_lut(lut[k], x[3], lutsize) };
       dt_iop_estimate_exp(x, y, 4, unbounded_coeffs[k]);
 
       nonlinearlut++;
@@ -1857,7 +2107,205 @@ static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
   return nonlinearlut;
 }
 
-static void _transform_matrix(struct dt_iop_module_t *self, const float *const image_in, float *const image_out,
+
+static inline void _apply_tonecurves(const float *const image_in, float *const image_out,
+                                     const int width, const int height,
+                                     const float *const restrict lutr,
+                                     const float *const restrict lutg,
+                                     const float *const restrict lutb,
+                                     const float *const restrict unbounded_coeffsr,
+                                     const float *const restrict unbounded_coeffsg,
+                                     const float *const restrict unbounded_coeffsb,
+                                     const int lutsize)
+{
+  const int ch = 4;
+  const float *const lut[3] = { lutr, lutg, lutb };
+  const float *const unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
+  const size_t stride = (size_t)ch * width * height;
+
+  // do we have any lut to apply, or is this a linear profile?
+  if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static) collapse(2) aligned(image_in, image_out:64)
+#endif
+    for(size_t k = 0; k < stride; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        image_out[k + c] = (image_in[k + c] < 1.0f) ? extrapolate_lut(lut[c], image_in[k + c], lutsize)
+                                                    : eval_exp(unbounded_coeffs[c], image_in[k + c]);
+      }
+    }
+  }
+  else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static) collapse(2) aligned(image_in, image_out:64)
+#endif
+    for(size_t k = 0; k < stride; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        if(lut[c][0] >= 0.0f)
+        {
+          image_out[k + c] = (image_in[k + c] < 1.0f) ? extrapolate_lut(lut[c], image_in[k + c], lutsize)
+                                                      : eval_exp(unbounded_coeffs[c], image_in[k + c]);
+        }
+      }
+    }
+  }
+}
+
+
+static inline void _transform_rgb_to_lab_matrix(const float *const restrict image_in, float *const restrict image_out,
+                                                const int width, const int height,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)width * height * ch;
+  const float *const restrict matrix = profile_info->matrix_in;
+
+  if(profile_info->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
+                      profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
+                      profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
+                      profile_info->lutsize);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(image_out, profile_info, stride, ch, matrix) \
+    schedule(static) aligned(image_out:64) aligned(matrix:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      float *const in = image_out + y;
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
+      dt_XYZ_to_Lab(xyz, in);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch, matrix) \
+    schedule(static) aligned(image_in, image_out:64) aligned(matrix:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      const float *const in = image_in + y ;
+      float *const out = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
+      dt_XYZ_to_Lab(xyz, out);
+    }
+  }
+}
+
+
+static inline void _transform_lab_to_rgb_matrix(const float *const restrict image_in, float *const restrict image_out, const int width,
+                                         const int height,
+                                         const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)width * height * ch;
+  const float *const restrict matrix = profile_info->matrix_out;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch, matrix) \
+  schedule(static) aligned(image_in, image_out:64) aligned(matrix:16)
+#endif
+  for(size_t y = 0; y < stride; y += ch)
+  {
+    const float *const in = image_in + y;
+    float *const out = image_out + y;
+
+    float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+    dt_Lab_to_XYZ(in, xyz);
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix);
+  }
+
+  if(profile_info->nonlinearlut)
+  {
+    _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
+                      profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
+                      profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
+                      profile_info->lutsize);
+  }
+}
+
+
+static inline void _transform_matrix_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
+                                  const int height, const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                  const dt_iop_order_iccprofile_info_t *const profile_info_to)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)width * height * ch;
+  const float *const restrict matrix_in = profile_info_from->matrix_in;
+  const float *const restrict matrix_out = profile_info_to->matrix_out;
+
+  if(profile_info_from->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
+                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
+                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
+                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
+    schedule(static) aligned(image_out:64) aligned(matrix_in, matrix_out:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      float *const in = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, matrix_out);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
+    schedule(static) aligned(image_in, image_out:64) aligned(matrix_in, matrix_out:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      const float *const in = image_in + y;
+      float *const out = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix_out);
+    }
+  }
+
+  if(profile_info_to->nonlinearlut)
+  {
+    _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
+                      profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
+                      profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
+                      profile_info_to->lutsize);
+  }
+}
+
+
+static inline void _transform_matrix(struct dt_iop_module_t *self, const float *const restrict image_in, float *const restrict image_out,
                               const int width, const int height, const int cst_from, const int cst_to,
                               int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -1884,6 +2332,7 @@ static void _transform_matrix(struct dt_iop_module_t *self, const float *const i
   }
 }
 
+
 #define DT_IOPPR_LUT_SAMPLES 0x10000
 
 void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, const int lutsize)
@@ -1900,9 +2349,9 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, co
   profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES;
   for(int i = 0; i < 3; i++)
   {
-    profile_info->lut_in[i] = malloc(profile_info->lutsize * sizeof(float));
+    profile_info->lut_in[i] = dt_alloc_sse_ps(profile_info->lutsize);
     profile_info->lut_in[i][0] = -1.0f;
-    profile_info->lut_out[i] = malloc(profile_info->lutsize * sizeof(float));
+    profile_info->lut_out[i] = dt_alloc_sse_ps(profile_info->lutsize);
     profile_info->lut_out[i][0] = -1.0f;
   }
 }
@@ -1913,8 +2362,8 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 {
   for(int i = 0; i < 3; i++)
   {
-    if(profile_info->lut_in[i]) free(profile_info->lut_in[i]);
-    if(profile_info->lut_out[i]) free(profile_info->lut_out[i]);
+    if(profile_info->lut_in[i]) dt_free_align(profile_info->lut_in[i]);
+    if(profile_info->lut_out[i]) dt_free_align(profile_info->lut_out[i]);
   }
 }
 
@@ -2011,8 +2460,8 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
-    float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
-    profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info);
+    const float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
+    profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   }
 
   return err_code;
@@ -2257,81 +2706,6 @@ void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filen
   }
 }
 
-float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float luminance = 0.f;
-
-  if(profile_info->nonlinearlut)
-  {
-    float linear_rgb[3] = { 0.f };
-
-    _apply_trc_in(rgb, linear_rgb, profile_info);
-    luminance = profile_info->matrix_in[3] * linear_rgb[0] + profile_info->matrix_in[4] * linear_rgb[1] + profile_info->matrix_in[5] * linear_rgb[2];
-  }
-  else
-    luminance = profile_info->matrix_in[3] * rgb[0] + profile_info->matrix_in[4] * rgb[1] + profile_info->matrix_in[5] * rgb[2];
-
-  return luminance;
-}
-
-void dt_ioppr_rgb_matrix_to_xyz(const float *const rgb, float *xyz, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  if(profile_info->nonlinearlut)
-  {
-    float linear_rgb[3];
-    _apply_trc_in(rgb, linear_rgb, profile_info);
-    _ioppr_linear_rgb_matrix_to_xyz(linear_rgb, xyz, profile_info);
-  }
-  else
-    _ioppr_linear_rgb_matrix_to_xyz(rgb, xyz, profile_info);
-}
-
-void dt_ioppr_lab_to_rgb_matrix(const float *const lab, float *rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-  dt_Lab_to_XYZ(lab, xyz);
-
-  _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, profile_info);
-
-  if(profile_info->nonlinearlut) _apply_trc_out(rgb, rgb, profile_info);
-}
-
-void dt_ioppr_rgb_matrix_to_lab(const float *const rgb, float *lab, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-  dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, profile_info);
-
-  dt_XYZ_to_Lab(xyz, lab);
-}
-
-float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  return profile_info->grey;
-}
-
-float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from the image colorspace to lab
-  float lab[3] = { 0 };
-  float rgb[3] = { 0 };
-
-  rgb[0] = rgb[1] = rgb[2] = x;
-  dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info);
-  return lab[0] * .01f;
-}
-
-float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from lab to the image colorspace
-  float lab[3] = { 0 };
-  float rgb[3] = { 0 };
-
-  lab[0] = x * 100.f;
-  dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info);
-  return rgb[0];
-}
 
 #if defined(__SSE2__x) // FIXME: this is slower than the C version
 static __m128 _ioppr_linear_rgb_matrix_to_xyz_sse(const __m128 rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
@@ -2379,7 +2753,7 @@ static __m128 _ioppr_xyz_to_linear_rgb_matrix_sse(const __m128 xyz, const dt_iop
 static void _transform_rgb_to_lab_matrix_sse(float *const image, const int width, const int height, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height);
+  const size_t stride = (size_t)width * height;
 
   _apply_tonecurves(image, width, height, profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
       profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
@@ -2461,7 +2835,7 @@ static void _transform_matrix_rgb_sse(float *const image, const int width, const
                                       const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height);
+  const size_t stride = (size_t)width * height;
 
   _apply_tonecurves(image, width, height, profile_info_from->lut_in[0], profile_info_from->lut_in[1],
                     profile_info_from->lut_in[2], profile_info_from->unbounded_coeffs_in[0],
@@ -2505,7 +2879,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   }
   if(profile_info == NULL)
   {
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
+    if (!dt_image_is_monochrome(&self->dev->image_storage))
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return;
   }
@@ -2557,7 +2932,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
 }
 
-void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
+void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
                                              const int height,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_to,
@@ -2714,7 +3089,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
     dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6, sizeof(float));
     if(dev_profile_lut == NULL)
     {
-      fprintf(stderr, "[dt_ioppr_build_iccprofile_params_cl] error allocating memory 6\n");
+      fprintf(stderr, "[dt_ioppr_build_iccprofile_params_cl] error allocating memory 7\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -2763,7 +3138,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   }
   if(profile_info == NULL)
   {
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
+    if (!dt_image_is_monochrome(&self->dev->image_storage))
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return FALSE;
   }
@@ -2950,7 +3326,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   }
 
   const int ch = 4;
-  float *src_buffer = NULL;
+  float *src_buffer_in = NULL;
+  float *src_buffer_out = NULL;
   int in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
@@ -3074,8 +3451,9 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   else
   {
     // no matrix, call lcms2
-    src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
-    if(src_buffer == NULL)
+    src_buffer_in = dt_alloc_align(64, width * height * ch * sizeof(float));
+    src_buffer_out = dt_alloc_align(64, width * height * ch * sizeof(float));
+    if(src_buffer_in == NULL || src_buffer_out == NULL)
     {
       fprintf(stderr,
               "[dt_ioppr_transform_image_colorspace_rgb_cl] error allocating memory for color transformation 1\n");
@@ -3083,7 +3461,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_img_in, width, height, ch * sizeof(float));
+    err = dt_opencl_copy_device_to_host(devid, src_buffer_in, dev_img_in, width, height, ch * sizeof(float));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,
@@ -3092,10 +3470,10 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     }
 
     // just call the CPU version for now
-    dt_ioppr_transform_image_colorspace_rgb(src_buffer, src_buffer, width, height, profile_info_from,
+    dt_ioppr_transform_image_colorspace_rgb(src_buffer_in, src_buffer_out, width, height, profile_info_from,
                                             profile_info_to, message);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out, width, height, ch * sizeof(float));
+    err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out, width, height, ch * sizeof(float));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,
@@ -3105,7 +3483,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   }
 
 cleanup:
-  if(src_buffer) dt_free_align(src_buffer);
+  if(src_buffer_in) dt_free_align(src_buffer_in);
+  if(src_buffer_out) dt_free_align(src_buffer_out);
   if(dev_tmp && in_place) dt_opencl_release_mem_object(dev_tmp);
 
   if(dev_profile_info_from) dt_opencl_release_mem_object(dev_profile_info_from);
@@ -3119,3 +3498,5 @@ cleanup:
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
 #endif
+
+#undef DT_IOP_ORDER_INFO

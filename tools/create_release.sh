@@ -5,10 +5,10 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
 
 cd "$DT_SRC_DIR" || exit
 
-git shortlog -sne release-2.5.0..HEAD
+git shortlog -sne release-2.7.0..HEAD
 
 echo "are you sure these guys received proper credit in the about dialog?"
-echo "HINT: $ tools/generate_authors.rb release-2.2.0..HEAD > AUTHORS"
+echo "HINT: $ tools/generate-authors.sh release-2.6.0 HEAD > AUTHORS"
 read -r answer
 
 # prefix rc with ~, so debian thinks its less than

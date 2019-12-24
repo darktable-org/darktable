@@ -53,9 +53,12 @@ int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
 void dt_history_delete_on_selection();
 
 /** compress history stack */
-void dt_history_compress_on_selection();
+int dt_history_compress_on_selection();
 void dt_history_compress_on_image(int32_t imgid);
-void dt_history_compress_on_image_and_reload(int32_t imgid);
+/* set or clear a tag representing an error state while compressing history */
+void dt_history_set_compress_problem(int32_t imgid, gboolean set);
+/* duplicate an history list */
+GList *dt_history_duplicate(GList *hist);
 
 typedef struct dt_history_item_t
 {
@@ -69,6 +72,9 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
+
+/* check if a module exists in the history of corresponding image */
+gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

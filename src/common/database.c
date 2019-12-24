@@ -17,6 +17,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -39,8 +43,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 19
-#define CURRENT_DATABASE_VERSION_DATA 3
+#define CURRENT_DATABASE_VERSION_LIBRARY 20
+#define CURRENT_DATABASE_VERSION_DATA 4
 
 typedef struct dt_database_t
 {
@@ -1007,6 +1011,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 17)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     ////////////////////////////// masks history
     TRY_EXEC("CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
              "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
@@ -1121,6 +1127,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   //   }
   else if(version == 18)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     TRY_EXEC("UPDATE images SET orientation=-2 WHERE orientation=1;",
              "[init] can't update images orientation 1 from database\n");
 
@@ -1141,6 +1149,33 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 19;
+  }
+  else if(version == 19)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create a temp table to invert all multi_priority
+    TRY_EXEC("CREATE TEMPORARY TABLE m_prio (id INTEGER, operation VARCHAR(256), prio INTEGER)",
+             "[init] can't create temporary table for updating `history and style_items'\n");
+
+    TRY_EXEC("CREATE INDEX m_prio_id_index ON m_prio (id)",
+             "[init] can't create temporary index for updating `history and style_items'\n");
+    TRY_EXEC("CREATE INDEX m_prio_op_index ON m_prio (operation)",
+             "[init] can't create temporary index for updating `history and style_items'\n");
+
+    TRY_EXEC("INSERT INTO m_prio SELECT imgid, operation, MAX(multi_priority)"
+             " FROM main.history GROUP BY imgid, operation",
+             "[init] can't populate m_prio\n");
+
+    TRY_EXEC("UPDATE main.history SET multi_priority = "
+             "(SELECT prio FROM m_prio "
+             " WHERE main.history.operation = operation AND main.history.imgid = id) - main.history.multi_priority",
+             "[init] can't update multi_priority for history\n");
+
+    TRY_EXEC("DROP TABLE m_prio", "[init] can't drop table `m_prio' from database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 20;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1228,6 +1263,8 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
   }
   else if(version == 2)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     //    With sqlite above or equal to 3.25.0 RENAME COLUMN can be used instead of the following code
     //    TRY_EXEC("ALTER TABLE data.tags RENAME COLUMN description TO synonyms;",
     //             "[init] can't change tags column name from description to synonyms\n");
@@ -1250,6 +1287,30 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 3;
+  }
+  else if(version == 3)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create a temp table to invert all multi_priority
+    TRY_EXEC("CREATE TEMPORARY TABLE m_prio (id INTEGER, operation VARCHAR(256), prio INTEGER)",
+             "[init] can't create temporary table for updating `history and style_items'\n");
+
+    TRY_EXEC("INSERT INTO m_prio SELECT styleid, operation, MAX(multi_priority)"
+             " FROM data.style_items GROUP BY styleid, operation",
+             "[init] can't populate m_prio\n");
+
+    // update multi_priority for style items and history
+    TRY_EXEC("UPDATE data.style_items SET multi_priority = "
+             "(SELECT prio FROM m_prio "
+             " WHERE data.style_items.operation = operation AND data.style_items.styleid = id)"
+             " - data.style_items.multi_priority",
+             "[init] can't update multi_priority for style_items\n");
+
+    TRY_EXEC("DROP TABLE m_prio", "[init] can't drop table `m_prio' from database\n");
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 4;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1785,7 +1846,42 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   g_free(label_text);
 
   // if no upgrade, we exit now, nothing we can do more
-  if(!shall_we_update_the_db) exit(1);
+  if(!shall_we_update_the_db)
+  {
+    fprintf(stderr, "[init] we shall not update the database, aborting.\n");
+    exit(1);
+  }
+}
+
+void dt_database_backup(const char *filename)
+{
+  char *version = g_strdup_printf("%s", darktable_package_version);
+  int k = 0;
+  // get plain version (no commit id)
+  while(version[k])
+  {
+    if((version[k] < '0' || version[k] > '9') && (version[k] != '.'))
+    {
+      version[k] = '\0';
+      break;
+    }
+    k++;
+  }
+
+  gchar *backup = g_strdup_printf("%s-pre-%s", filename, version);
+
+  if(!g_file_test(backup, G_FILE_TEST_EXISTS))
+  {
+    GError *gerror = NULL;
+    GFile *src = g_file_new_for_path(filename);
+    GFile *dest = g_file_new_for_path(backup);
+    gboolean copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+    if (!copyStatus)
+      fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+  }
+
+  g_free(version);
+  g_free(backup);
 }
 
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
@@ -1843,12 +1939,21 @@ start:
   db->dbfilename_library = g_strdup(dbfilename_library);
 
   /* make sure the folder exists. this might not be the case for new databases */
-  char *data_path = g_path_get_dirname(db->dbfilename_data);
-  char *library_path = g_path_get_dirname(db->dbfilename_library);
-  g_mkdir_with_parents(data_path, 0750);
-  g_mkdir_with_parents(library_path, 0750);
-  g_free(data_path);
-  g_free(library_path);
+  /* also check if a database backup is needed */
+  if(g_strcmp0(dbfilename_data, ":memory:"))
+  {
+    char *data_path = g_path_get_dirname(dbfilename_data);
+    g_mkdir_with_parents(data_path, 0750);
+    g_free(data_path);
+    dt_database_backup(dbfilename_data);
+  }
+  if(g_strcmp0(dbfilename_library, ":memory:"))
+  {
+    char *library_path = g_path_get_dirname(dbfilename_library);
+    g_mkdir_with_parents(library_path, 0750);
+    g_free(library_path);
+    dt_database_backup(dbfilename_library);
+  }
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */

@@ -1337,7 +1337,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
 
     /* does this module involve blending? */
-    if(piece->blendop_data && (dt_develop_blend_params_t *)piece->blendop_data != DEVELOP_MASK_DISABLED)
+    if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
     {
       /* get specific memory requirement for blending */
       dt_develop_tiling_t tiling_blendop = { 0 };
@@ -1538,7 +1538,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module, piece);
+            dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1700,7 +1700,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module, piece);
+            dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1944,7 +1944,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module, piece);
+            dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -2099,7 +2099,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-          dt_iop_color_picker_apply_module(module, piece);
+          dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
           dt_pthread_mutex_lock(&pipe->busy_mutex);
         }
@@ -2218,7 +2218,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-        dt_iop_color_picker_apply_module(module, piece);
+        dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
         dt_pthread_mutex_lock(&pipe->busy_mutex);
       }
@@ -2322,7 +2322,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      dt_iop_color_picker_apply_module(module, piece);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
 
       dt_pthread_mutex_lock(&pipe->busy_mutex);
     }
@@ -2857,7 +2857,7 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
   if(source_iter)
   {
     const dt_dev_pixelpipe_iop_t *source_piece = (dt_dev_pixelpipe_iop_t *)source_iter->data;
-    if(source_piece)
+    if(source_piece && source_piece->enabled) // there might be stale masks from disabled modules left over. don't use those!
     {
       raster_mask = g_hash_table_lookup(source_piece->raster_masks, GINT_TO_POINTER(raster_mask_id));
       if(raster_mask)

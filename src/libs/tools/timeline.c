@@ -701,7 +701,7 @@ static dt_lib_timeline_time_t _selection_scroll_to(dt_lib_timeline_time_t t, dt_
     // we ensure that we are not before the strip bound
     if(_time_compare(tt, strip->time_mini) <= 0) return strip->time_mini;
 
-    // and we dont want to display blocks after the bounds too
+    // and we don't want to display blocks after the bounds too
     dt_lib_timeline_time_t ttt = tt;
     _time_add(&ttt, nb - 1, strip->zoom);
     if(_time_compare(ttt, strip->time_maxi) <= 0) return tt;
@@ -1377,10 +1377,10 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   }
   else
   {
-    int delta_x, delta_y;
-    if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+    int delta;
+    if(dt_gui_get_scroll_unit_delta(e, &delta))
     {
-      int move = -delta_x - delta_y;
+      int move = -delta;
       if(e->state & GDK_SHIFT_MASK) move *= 2;
 
       _time_add(&(strip->time_pos), move, strip->zoom);

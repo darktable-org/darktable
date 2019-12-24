@@ -583,6 +583,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -803,7 +805,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   dt_pthread_mutex_lock(&g->lock);
   if(!isnan(g->deflicker_computed_exposure))
   {
-    gchar *str = g_strdup_printf("%.2fEV", g->deflicker_computed_exposure);
+    gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
@@ -882,7 +884,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
-  dt_bauhaus_slider_set_format(g->exposure, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
@@ -921,7 +923,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_target_level
       = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
-  dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
                               _("where to place the exposure level for processed pics, EV below overexposure."));
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);

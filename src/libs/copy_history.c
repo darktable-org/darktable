@@ -152,14 +152,27 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  const int img = dt_view_get_image_to_act_on();
+  const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  if (dt_collection_get_selected_count(darktable.collection) < 1 ) return;
 
-  if(img < 0)
-    dt_history_compress_on_selection();
-  else
-    dt_history_compress_on_image(img);
+  const int missing = dt_history_compress_on_selection();
 
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
+  if (missing)
+  {
+    GtkWidget *dialog = gtk_message_dialog_new(
+    GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_CLOSE,
+    ngettext("no history compression of 1 image.\nsee tag: darktable|problem|history-compress.",
+             "no history compression of %d images.\nsee tag: darktable|problem|history-compress.", missing ), missing);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("history compression warning"));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    }
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -292,7 +305,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_hist_dialog_init(&d->dg);
 
 
-  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
+  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));
   ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
   gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
@@ -307,7 +320,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, copy, 3, line++, 3, 1);
 
 
-  d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
+  d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste...")));
   ellipsize_button(d->paste_parts);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
   dt_gui_add_help_link(GTK_WIDGET(d->paste_parts), "history_stack.html#history_stack_usage");
@@ -326,7 +339,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
 
-  GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  GtkWidget *delete = gtk_button_new_with_label(_("discard history"));
   ellipsize_button(delete);
   d->delete_button = delete;
   gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
@@ -343,7 +356,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
 
-  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file..."));
   ellipsize_button(loadbutton);
   d->load_button = loadbutton;
   gtk_widget_set_tooltip_text(loadbutton, _("open an XMP sidecar file\nand apply it to selected images"));

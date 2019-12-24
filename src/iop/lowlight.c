@@ -61,6 +61,7 @@ typedef struct dt_iop_lowlight_gui_data_t
   dt_iop_lowlight_params_t drag_params;
   int dragging;
   int x_move;
+  int timeout_handle;
   float draw_xs[DT_IOP_LOWLIGHT_RES], draw_ys[DT_IOP_LOWLIGHT_RES];
   float draw_min_xs[DT_IOP_LOWLIGHT_RES], draw_min_ys[DT_IOP_LOWLIGHT_RES];
   float draw_max_xs[DT_IOP_LOWLIGHT_RES], draw_max_ys[DT_IOP_LOWLIGHT_RES];
@@ -288,6 +289,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale_blueness, p->blueness);
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -310,6 +316,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -678,6 +686,17 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -706,7 +725,11 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
     {
       dt_iop_lowlight_get_params(p, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else if(event->y > height)
   {
@@ -721,12 +744,13 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
         dist = d2;
       }
     }
+    gtk_widget_queue_draw(widget);
   }
   else
   {
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(event->window,
@@ -838,6 +862,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
+  c->timeout_handle = 0;
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -871,6 +896,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

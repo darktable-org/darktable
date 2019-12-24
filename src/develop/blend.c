@@ -227,7 +227,12 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
         scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(0.3f*input[0]+0.59f*input[1]+0.11f*input[2], 0.0f,
                                                        1.0f); // Gray scaled to 0..1
       else
-        scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(input, work_profile), 0.0f,
+        scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(input,
+                                                                                         work_profile->matrix_in,
+                                                                                         work_profile->lut_in,
+                                                                                         work_profile->unbounded_coeffs_in,
+                                                                                         work_profile->lutsize,
+                                                                                         work_profile->nonlinearlut), 0.0f,
                                                        1.0f);                // Gray scaled to 0..1
       scaled[DEVELOP_BLENDIF_RED_in] =clamp_range_f(input[0], 0.0f, 1.0f);   // Red
       scaled[DEVELOP_BLENDIF_GREEN_in] =clamp_range_f(input[1], 0.0f, 1.0f); // Green
@@ -236,7 +241,12 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
         scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(0.3f*output[0]+0.59f*output[1]+0.11f*output[2],
                                                         0.0f, 1.0f); // Gray scaled to 0..1
       else
-        scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(output, work_profile),
+        scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(output,
+                                                                                          work_profile->matrix_in,
+                                                                                          work_profile->lut_in,
+                                                                                          work_profile->unbounded_coeffs_in,
+                                                                                          work_profile->lutsize,
+                                                                                          work_profile->nonlinearlut),
                                                         0.0f, 1.0f);           // Gray scaled to 0..1
       scaled[DEVELOP_BLENDIF_RED_out] =clamp_range_f(output[0], 0.0f, 1.0f);   // Red
       scaled[DEVELOP_BLENDIF_GREEN_out] =clamp_range_f(output[1], 0.0f, 1.0f); // Green
@@ -2534,7 +2544,12 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         const float c = (work_profile == NULL)
                             ? clamp_range_f(0.3f*a[j]+0.59f*a[j+1]+0.11f*a[j+2], 0.0f, 1.0f)
-                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(a+j, work_profile), 0.0f, 1.0f);
+                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(a+j,
+                                                                              work_profile->matrix_in,
+                                                                              work_profile->lut_in,
+                                                                              work_profile->unbounded_coeffs_in,
+                                                                              work_profile->lutsize,
+                                                                              work_profile->nonlinearlut), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2543,7 +2558,12 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         const float c = (work_profile == NULL)
                             ? clamp_range_f(0.3f*b[j]+0.59f*b[j+1]+0.11f*b[j+2], 0.0f, 1.0f)
-                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(b+j, work_profile), 0.0f, 1.0f);
+                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(b+j,
+                                                                              work_profile->matrix_in,
+                                                                              work_profile->lut_in,
+                                                                              work_profile->unbounded_coeffs_in,
+                                                                              work_profile->lutsize,
+                                                                              work_profile->nonlinearlut), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -3415,7 +3435,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       dev_mask_2 = tmp;
     }
 
-    if(mask_tone_curve)
+    if(mask_tone_curve && opacity > 1e-4f)
     {
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;

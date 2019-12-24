@@ -114,7 +114,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
 
-  int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
+  const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
@@ -146,7 +146,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
 
-  int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
+  const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
@@ -301,7 +301,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
 
 
-  int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
+  const int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* horizontal blur out into out */
@@ -348,8 +348,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       size_t index = (size_t)x - hr * roi_out->width;
       for(int y = -hr; y < roi_out->height; y++)
       {
-        int op = y - hr - 1;
-        int np = y + hr;
+        const int op = y - hr - 1;
+        const int np = y + hr;
         if(op >= 0)
         {
           L -= out[(index + opoffs) * ch];
@@ -467,6 +467,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

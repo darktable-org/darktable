@@ -139,7 +139,7 @@
       icon an over/underexposed warning is toggled on or off. Pixels outside the dynamic range,
       close to pure white or close to pure black, are prominently displayed in a signal color.
       You can also activate the over/underexposure warning with the keyboard shortcut
-      <quote>o</quote>.
+      <quote>O</quote>.
     </para>
 
     <informaltable frame="none">
@@ -203,7 +203,7 @@
       icon activates the soft proof display mode of your image. Soft proof allows you to preview
       your image rendered using a printer profile so as to see how colors will end up on the
       final print. You can also activate soft proof with the keyboard shortcut
-      <quote>ctrl-s</quote>. An information message <quote>soft proof</quote> on the bottom left
+      <quote>Ctrl+S</quote>. An information message <quote>soft proof</quote> on the bottom left
       of your image tells you that you are in soft proof display mode.
     </para>
 
@@ -272,7 +272,7 @@
       <inlinegraphic fileref="&icon_module_gamutcheck;" scalefit="1" width="2%" align="center" />
       icon activates the gamut check display mode of your image. Gamut check highlights in cyan
       all pixels out of gamut with respect to the selected softproof profile. You can also
-      activate gamut check with the keyboard shortcut <quote>ctrl-g</quote>. An information
+      activate gamut check with the keyboard shortcut <quote>Ctrl+G</quote>. An information
       message <quote>gamut check</quote> on the bottom left of your image tells you that you are
       in gamut check display mode. Gamut check and soft proof are mutually exclusive modes.
     </para>
@@ -299,22 +299,22 @@
     </para>
 
     <para>
-      The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>.
+      The filmstrip can be switched on and off using the shortcut <emphasis>Ctrl+F</emphasis>.
       You can change the height of the filmstrip panel by dragging its top.
     </para>
 
     <para>
       You can scroll with your mouse to quickly navigate through the images. You can change the
-      photo being processed by double clicking on another picture. You can also use space bar to
-      process the next photo and use backspace key to process the previous photo.
+      photo being processed by double clicking on another picture. You can also use Spacebar to
+      process the next photo and use Backspace key to process the previous photo.
     </para>
 
     <para>
       The picture currently processed is selected and highlighted; with a single click you can
       select any other picture from the filmstrip without changing the picture currently
-      processed. With the <emphasis>ctrl-a</emphasis> shortcut you select all the pictures of
-      the filmstrip. With the shortcut <emphasis>ctrl-shift-a</emphasis> you unselect all
-      images, and with <emphasis>ctrl-i</emphasis> you reverse the current selection.
+      processed. With the <emphasis>Ctrl+A</emphasis> shortcut you select all the pictures of
+      the filmstrip. With the shortcut <emphasis>Ctrl+Shift+A</emphasis> you unselect all
+      images, and with <emphasis>Ctrl+I</emphasis> you reverse the current selection.
     </para>
 
     <para>
@@ -342,7 +342,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>r</emphasis>
+                <emphasis>R</emphasis>
               </entry>
               <entry>
                 reject image
@@ -350,7 +350,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-d</emphasis>
+                <emphasis>Ctrl+D</emphasis>
               </entry>
               <entry>
                 duplicate image
@@ -358,7 +358,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-c</emphasis>
+                <emphasis>Ctrl+C</emphasis>
               </entry>
               <entry>
                 copy the full history stack
@@ -366,7 +366,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-v</emphasis>
+                <emphasis>Ctrl+V</emphasis>
               </entry>
               <entry>
                 paste all of the copied history stack
@@ -374,7 +374,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>alt-ctrl-c</emphasis>
+                <emphasis>Alt+Ctrl+C</emphasis>
               </entry>
               <entry>
                 selectively copy the history stack
@@ -382,7 +382,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>alt-ctrl-v</emphasis>
+                <emphasis>Alt+Ctrl+V</emphasis>
               </entry>
               <entry>
                 selectively paste from the copied history stack

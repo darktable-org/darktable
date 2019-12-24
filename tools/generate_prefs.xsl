@@ -11,7 +11,6 @@
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
   char tooltip[1024];
@@ -28,6 +27,7 @@
 
   <xsl:variable name="tab_end">
   gtk_widget_show_all(tab);
+  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(tab));
 }
 </xsl:variable>
 
@@ -69,7 +69,7 @@
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_ACCEPT)&#xA;    return;&#xA;</xsl:text>
+      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_ACCEPT) return;&#xA;</xsl:text>
       <xsl:apply-templates select="." mode="change"/>
       <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
     </xsl:if>
@@ -85,8 +85,6 @@
       GtkWidget *seclabel = gtk_label_new(_("import"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -102,8 +100,6 @@
       GtkWidget *seclabel = gtk_label_new(_("lighttable"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -119,8 +115,6 @@
       GtkWidget *seclabel = gtk_label_new(_("darkroom"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -136,8 +130,6 @@
       GtkWidget *seclabel = gtk_label_new(_("map / geolocalisation"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -153,8 +145,6 @@
       GtkWidget *seclabel = gtk_label_new(_("security"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -170,8 +160,6 @@
       GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -192,8 +180,6 @@
       GtkWidget *seclabel = gtk_label_new(_("quality"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -209,8 +195,6 @@
       GtkWidget *seclabel = gtk_label_new(_("xmp"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -226,8 +210,6 @@
       GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -245,8 +227,6 @@
       GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -352,14 +332,14 @@
     </xsl:for-each>
   </xsl:template>
 
-	<xsl:template match="dtconfig[type='dir']" mode="reset">
-		<xsl:text>
-			dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-			gchar *folder = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-			gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), folder);
-			g_free(folder);
-		</xsl:text>
-	</xsl:template>
+  <xsl:template match="dtconfig[type='dir']" mode="reset">
+    <xsl:text>
+      dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+      gchar *folder = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), folder);
+      g_free(folder);
+    </xsl:text>
+  </xsl:template>
 
 <!-- CALLBACK -->
   <xsl:template match="dtconfig[type='string']" mode="change">
@@ -397,13 +377,13 @@
 </xsl:text>
   </xsl:template>
 
-	<xsl:template match="dtconfig[type='dir']" mode="change">
-		<xsl:text>
-		gchar *folder =	gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-		dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
-		g_free(folder);
-		</xsl:text>
-	</xsl:template>
+  <xsl:template match="dtconfig[type='dir']" mode="change">
+    <xsl:text>
+    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
+    g_free(folder);
+    </xsl:text>
+  </xsl:template>
 
 <!-- TAB -->
   <xsl:template match="dtconfig[type='string']" mode="tab">
@@ -421,10 +401,10 @@
   </xsl:template>
 
   <xsl:template match="dtconfig[type='dir']" mode="tab">
-		<xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-		gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
-		gtk_widget_set_hexpand(widget, TRUE);
-		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    <xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+    gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
+    gtk_widget_set_hexpand(widget, TRUE);
+    gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget), setting);
     g_free(setting);
@@ -433,7 +413,7 @@
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
     </xsl:text>
-	</xsl:template>
+  </xsl:template>
 
   <xsl:template match="dtconfig[type='int']" mode="tab">
     <xsl:text>    gint min = 0;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>

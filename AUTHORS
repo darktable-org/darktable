@@ -1,68 +1,93 @@
 * developers:
-Roman Lebedev,
-Pascal Obry,
-Tobias Ellinghaus,
-Stefan Schöfegger,
-Peter Budai,
-Ulrich Pegelow,
-johannes hanika,
-parafin,
-Alexandre Prokoudine,
-Aldric Renaudin,
-Edouard Gomez.
+Pascal Obry
+Aldric Renaudin
+Roman Lebedev
+Tobias Ellinghaus
+Ulrich Pegelow
+parafin
+Pascal de Bruijn
+Stefan Schöfegger
+Peter Budai
+johannes hanika
+Edouard Gomez
 
 * translators:
-Pascal Obry,
-Ger Siemerink,
-Tobias Ellinghaus,
-Maurizio Paglia,
-Timur I. Davletshin,
-Alexandre Prokoudine,
-mepi0011,
-Báthory Péter,
-Jeronimo Pellegrini,
-Matjaž Jeran,
-shlomi braitbart,
-Aurélien PIERRE,
-Heiko Bauke,
-Josep V. Moragues,
-Marko Vertainen,
-Michel Leblond,
-Milan Knížek,
-Novy Sawai,
-Ragnar Wisløff,
-Tomasz Golinski,
-Edgar De la Luz.
+Pascal Obry
+Ger Siemerink
+EdgarLux
+Timur I. Davletshin
+Michel Leblond
+Nilvus
+Jakub Filipowicz
+Matjaž Jeran
+Heiko Bauke
+Josep V. Moragues
+Milan Knížek
+Song Li
+Tomasz Golinski
+maruncz
+Jacques Le Clerc
+Marko Vertainen
+Maurizio Paglia
+Tobias Ellinghaus
+mepi0011
+miroslavfikar
+shlomi braitbart
+Denis Dyakov
+Edgar De la Luz
+Jeronimo Pellegrini
+Magnus Claesson
+Ragnar Wisloff
+Shlomi Alon-Braitbart
+Simon Raffeiner
+Tomasz Goliński
+archont00
+johannes hanika
+lkarcz
 
 * contributors (at least 4 commits):
-Aurélien PIERRE,
-rawfiner,
-edgardoh,
-Dan Torop,
-Ger Siemerink,
-Matthieu Moy,
-Maurizio Paglia,
-Andreas Schneider,
-Heiko Bauke,
-Rikard Öxler,
-Timur I. Davletshin,
-Benoit Brummer,
-Philippe Weyland,
-grand-piano,
-luzpaz,
-Mario Lueder,
-Robert Bridge,
-mepi0011.
+Aurélien PIERRE
+Andreas Schneider
+edgardoh
+rawfiner
+Philippe Weyland
+Ger Siemerink
+Nilvus
+Heiko Bauke
+EdgarLux
+hanno@schwalm-bremen.de
+Jakub Filipowicz
+Jacques Le Clerc
+Timur I. Davletshin
+Michel Leblond
+Bill Ferguson
+Sam Smith
+Alexis Mousset
+Matjaž Jeran
+Matthieu Moy
+Rikard Öxler
+junkyardsparkle
+Denis Dyakov
+Diederik ter Rahe
+Hanno Schwalm
+luzpaz
+Dan Torop
+Marcello Mamino
+Wolfgang Goetz
+mepi0011
+Josep V. Moragues
+maruncz
+mondoman712
 
-* RawSpeed contributors (at least 1 commit):
-Stefan Löffler,
-Stefan Hoffmeister,
-parafin,
-Robert Bieber,
-Tobias Ellinghaus,
-Matthieu Volat,
-Shita Yuuma,
-Stefan Schöfegger,
-luz.paz.
+* Sub-module rawspeed contributors (at least 1 commit):
+Roman Lebedev
+Robert Bridge
+bobobo1618
+luz.paz
+Bastian Bechtold
+Pascal de Bruijn
+dllu
+hanno@schwalm-bremen.de
+junkyardsparkle
 
 And all those of you that made previous releases possible

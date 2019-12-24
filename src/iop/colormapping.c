@@ -899,6 +899,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -912,8 +914,12 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colormapping_params_t tmp
-      = (dt_iop_colormapping_params_t){ .flag = NEUTRAL, .n = 3, .dominance = 100.0f, .equalization = 50.0f };
+  dt_iop_colormapping_params_t *tmp = (dt_iop_colormapping_params_t *)malloc(sizeof(dt_iop_colormapping_params_t));
+
+  tmp->flag = NEUTRAL;
+  tmp->n = 3;
+  tmp->dominance = 100.f;
+  tmp->equalization = 50.0f;
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
@@ -921,18 +927,19 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
   if(module->dev->gui_attached && g && g->flowback_set)
   {
-    memcpy(tmp.source_ihist, g->flowback.hist, sizeof(float) * HISTN);
-    memcpy(tmp.source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
-    memcpy(tmp.source_var, g->flowback.var, sizeof(float) * MAXN * 2);
-    memcpy(tmp.source_weight, g->flowback.weight, sizeof(float) * MAXN);
-    tmp.n = g->flowback.n;
-    tmp.flag = HAS_SOURCE;
+    memcpy(tmp->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
+    memcpy(tmp->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
+    memcpy(tmp->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
+    memcpy(tmp->source_weight, g->flowback.weight, sizeof(float) * MAXN);
+    tmp->n = g->flowback.n;
+    tmp->flag = HAS_SOURCE;
   }
   module->default_enabled = 0;
 
 end:
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colormapping_params_t));
-  memcpy(module->params, &tmp, sizeof(dt_iop_colormapping_params_t));
+  memcpy(module->default_params, tmp, sizeof(dt_iop_colormapping_params_t));
+  memcpy(module->params, tmp, sizeof(dt_iop_colormapping_params_t));
+  free(tmp);
 }
 
 

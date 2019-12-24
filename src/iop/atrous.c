@@ -96,6 +96,7 @@ typedef struct dt_iop_atrous_gui_data_t
   float band_max;
   float sample[MAX_NUM_SCALES];
   int num_samples;
+  int timeout_handle;
 } dt_iop_atrous_gui_data_t;
 
 typedef struct dt_iop_atrous_global_data_t
@@ -114,7 +115,7 @@ typedef struct dt_iop_atrous_data_t
 
 const char *name()
 {
-  return _("equalizer");
+  return _("contrast equalizer");
 }
 
 int default_group()
@@ -984,6 +985,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1314,7 +1317,13 @@ static void reset_mix(dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   reset_mix(self);
+  if(c->timeout_handle)
+  {
+    g_source_remove(c->timeout_handle);
+    c->timeout_handle = 0;
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1638,6 +1647,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1670,7 +1690,11 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     {
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else if(event->y > height)
   {
@@ -1686,6 +1710,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
         dist = d2;
       }
     }
+    gtk_widget_queue_draw(widget);
   }
   else
   {
@@ -1706,8 +1731,8 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     }
     // don't move x-positions:
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(event->window,
@@ -1737,8 +1762,8 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       p->x[c->channel2][k] = d->x[c->channel2][k];
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else if(event->button == 1)
   {
@@ -1809,8 +1834,8 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
       p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
       p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
     }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1827,6 +1852,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
+  c->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1857,6 +1883,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
 
+  dtgtk_justify_notebook_tabs(c->channel_tabs);
+
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
@@ -1885,6 +1913,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

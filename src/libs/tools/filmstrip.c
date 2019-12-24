@@ -545,10 +545,10 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  int delta_x, delta_y;
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  int delta;
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
-    strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
+    strip->offset = CLAMP(strip->offset + delta, 0, strip->collection_count-1);
     strip->force_expose_all = TRUE;
     gtk_widget_queue_draw(strip->filmstrip);
   }
@@ -703,8 +703,11 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  const int32_t width = allocation.width;
-  const int32_t height = allocation.height;
+  const float width = allocation.width;
+  const float height = allocation.height;
+
+  /* empty space between thumbnails */
+  const float line_width = DT_PIXEL_APPLY_DPI(2.0);
 
   // windows could have been expanded for example, we need to create a new surface of the good size and redraw
   if(strip->surface && width != strip->panel_width)
@@ -783,11 +786,13 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   int mouse_over_id = -1;
   int missing = 0;
 
+  cairo_translate(cr, line_width, line_width);
+
   for(int col = 0; col < max_cols; col++)
   {
     if(col < col_start)
     {
-      cairo_translate(cr, wd, 0.0f);
+      cairo_translate(cr, wd, 0);
       continue;
     }
 
@@ -820,17 +825,16 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
       {
         if(!strip->force_expose_all && id == mouse_over_id) strip->last_exposed_id = id;
 
-        dt_view_image_expose_t params = {
-          .image_over = &(strip->image_over),
-          .imgid      = id,
-          .mouse_over = (id == mouse_over_id),
-          .cr         = cr,
-          .width      = wd,
-          .height     = ht,
-          .px         = img_pointerx,
-          .py         = img_pointery,
-          .zoom       = max_cols
-        };
+        dt_view_image_expose_t params = { .image_over = &(strip->image_over),
+                                          .imgid = id,
+                                          .mouse_over = (id == mouse_over_id),
+                                          .cr = cr,
+                                          .width = wd - 2.0 * line_width,
+                                          .height = ht - 2.0 * line_width,
+                                          .px = img_pointerx,
+                                          .py = img_pointery,
+                                          .zoom = max_cols,
+                                          .filmstrip = TRUE };
 
         const int thumb_missed = dt_view_image_expose(&params);
 

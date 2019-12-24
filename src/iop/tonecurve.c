@@ -152,6 +152,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
+  int timeout_handle;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
@@ -851,6 +852,12 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(g->logbase, FALSE);
   }
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -911,6 +918,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1171,6 +1180,17 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   }
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -1203,8 +1223,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   dt_iop_tonecurve_sanity_check(self, widget);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
+
+  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+  if(!c->timeout_handle)
+    c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
 
   return TRUE;
 }
@@ -1227,7 +1251,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected < 0) return TRUE;
 
   gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -TONECURVE_DEFAULT_STEP;
     return _move_point_internal(self, widget, 0.0, delta_y, event->state);
@@ -1300,6 +1324,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
   c->semilog = 0;
+  c->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1392,10 +1417,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("max rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("average rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("sum rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("max RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("average RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("sum RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));
@@ -1439,6 +1464,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1541,7 +1567,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
                                  { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
    // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear and, at 50%,
-   // we dont see the neutral grey we would expect in the middle of a linear gradient between
+   // we don't see the neutral grey we would expect in the middle of a linear gradient between
    // 2 complimentary colors. So we add it artificially, but that will break the smoothness
    // of the transition.
 

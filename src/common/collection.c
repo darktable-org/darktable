@@ -213,7 +213,7 @@ int dt_collection_update(const dt_collection_t *collection)
      * This is important, because otherwise it may be impossible to collapse the group again. */
     wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
   }
-  
+
   /* build select part includes where */
   /* COLOR and PATH */
   if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
@@ -320,8 +320,8 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM images AS mi WHERE ");
   }
-  
-  
+
+
   /* build sort order part */
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
@@ -341,8 +341,8 @@ int dt_collection_update(const dt_collection_t *collection)
 #ifdef _DEBUG
   printf("SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sort_second_order,query);/*only for debugging*/
 #endif
-  
-  
+
+
   /* free memory used */
   g_free(sq);
   g_free(wq);
@@ -669,7 +669,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
       case DT_COLLECTION_SORT_NONE:
       default:/*fall through for default*/
         // shouldn't happen
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC"); 
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC");
         break;
     }
   }
@@ -729,11 +729,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
       case DT_COLLECTION_SORT_NONE:
       default:/*fall through for default*/
         // shouldn't happen
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id"); 
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id");
         break;
     }
   }
-  
+
   g_free(second_order);/*free second order part, it's now part of sq*/
 
   return sq;
@@ -1226,9 +1226,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       query = dt_util_dstrcat(
-          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%1$s' OR folder LIKE '%1$s"
+          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
                  G_DIR_SEPARATOR_S "%%'))",
-          escaped_text);
+          escaped_text, escaped_text);
       break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
@@ -1254,7 +1254,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history WHERE imgid=mi.id)) ",
+      query = dt_util_dstrcat(query, "(id %s IN (SELECT DISTINCT(imgid) FROM main.history)) ",
                               (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
       break;
 

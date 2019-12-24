@@ -95,7 +95,7 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_translate(cr, x, y);
 
   // border
-  float border = MIN(width * .05, height * .05);
+  const float border = MIN(width * .05, height * .05);
   set_color(cr, darktable.bauhaus->graph_border);
   cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
   cairo_fill_preserve(cr);
@@ -157,14 +157,21 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  uint32_t *hist = malloc(histsize);
+  if(hist == NULL) return FALSE;
 
   dt_develop_t *dev = darktable.develop;
-  uint32_t *hist = dev->histogram;
-  float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                  : logf(1.0 + dev->histogram_max);
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  memcpy(hist, dev->histogram, histsize);
+  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                        : logf(1.0 + dev->histogram_max);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  const int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -297,6 +304,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+
+  free(hist);
+
   return TRUE;
 }
 

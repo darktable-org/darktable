@@ -130,7 +130,7 @@
       while right-clicking deselects it (turns the color to red or yellow). Keeping the mouse
       button pressed allows for a sweeping action to select/deselect multiple lines in a row;
       the size of the select/deselect brush can be changed with the mouse wheel. Holding down
-      the <emphasis>shift</emphasis> key and keeping the left or right mouse button pressed
+      the <emphasis>Shift</emphasis> key and keeping the left or right mouse button pressed
       while dragging selects or deselects all lines in the chosen rectangular area.
     </para>
 
@@ -239,8 +239,8 @@
         <inlinegraphic fileref="&icon_ashift_horizontal;" scalefit="1" width="2%" align="center" />
         ), or both types of distortions simultaneously (
         <inlinegraphic fileref="&icon_ashift_both;" scalefit="1" width="2%" align="center" />
-        ). <emphasis>Ctrl-clicking</emphasis> on either icon only fits rotation.
-        <emphasis>Shift-clicking</emphasis> on either icon only fits vertical and/or horizontal
+        ). <emphasis>Ctrl+clicking</emphasis> on either icon only fits rotation.
+        <emphasis>Shift+clicking</emphasis> on either icon only fits vertical and/or horizontal
         lens shift.
       </para>
     </sect5>
@@ -251,8 +251,8 @@
         Clicking on the
         <inlinegraphic fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
         icon causes the image to be (re-)analyzed for suitable line segments.
-        <emphasis>Shift-clicking</emphasis> applies a prior contrast enhancement step,
-        <emphasis>ctrl-clicking</emphasis> applies an edge enhancement step. Both variations can
+        <emphasis>Shift+clicking</emphasis> applies a prior contrast enhancement step,
+        <emphasis>Ctrl+clicking</emphasis> applies an edge enhancement step. Both variations can
         be used alone or in combination if the default is not able to detect a sufficient number
         of lines. Clicking on the
         <inlinegraphic fileref="&icon_ashift_clear;" scalefit="1" width="2%" align="center" />

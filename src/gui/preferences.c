@@ -213,6 +213,15 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
 
 static void hardcoded_gui(GtkWidget *grid, int *line)
 {
+
+  GtkWidget *seclabel = gtk_label_new(_("general"));
+  GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+  gtk_widget_set_hexpand(lbox, TRUE);
+  gtk_widget_set_name(lbox, "pref_section");
+  gtk_grid_attach(GTK_GRID(grid), lbox, 0, (*line)++, 2, 1);
+
+
   // language
 
   GtkWidget *label = gtk_label_new(_("interface language"));
@@ -473,6 +482,7 @@ static void init_tab_presets(GtkWidget *book)
 
   // Adding the outer container
   gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
+  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(book));
 
   tree_insert_presets(model);
 
@@ -532,7 +542,7 @@ static void init_tab_presets(GtkWidget *book)
   // Adding the import/export buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import"));
+  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
@@ -625,12 +635,12 @@ static void init_tab_accels(GtkWidget *book)
 
   // Adding the import/export buttons
 
-  button = gtk_button_new_with_label(C_("preferences", "import"));
+  button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(update_accels_model), (gpointer)model);
 
-  button = gtk_button_new_with_label(_("export"));
+  button = gtk_button_new_with_label(_("export..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)1);
 
@@ -1375,8 +1385,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module);
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(_preferences_dialog),
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                       _("_save"), GTK_RESPONSE_YES,
                                        _("_cancel"), GTK_RESPONSE_CANCEL,
+                                       _("_save"), GTK_RESPONSE_YES,
                                        _("_ok"), GTK_RESPONSE_OK, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

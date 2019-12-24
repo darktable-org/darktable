@@ -80,7 +80,7 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 /** attach a list of tags on selected images. \param[in] tagid id of tag to attach. \param[in] imgid the image
  * id to attach tag to, if < 0 selected images are used. */
 gboolean dt_tag_attach(guint tagid, gint imgid);
-/** same as above but raises a dt_collection_update_query() */
+/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_attach_from_gui(guint tagid, gint imgid);
 
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
@@ -95,7 +95,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid);
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach
  * tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid, gint imgid);
-/** same as above but raises a dt_collection_update_query() */
+/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_detach_from_gui(guint tagid, gint imgid);
 
 /** detach tags from images that matches name, it is valid to use % to match tag */
@@ -114,7 +114,7 @@ GList *dt_tag_get_list(gint imgid);
 
 /** get a list of tags,
  *  the difference to dt_tag_get_list() is that this one checks option for exportation */
-GList *dt_tag_get_list_export(gint imgid);
+GList *dt_tag_get_list_export(gint imgid, int32_t flags);
 
 /** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
@@ -122,7 +122,7 @@ GList *dt_tag_get_hierarchical(gint imgid);
 
 /** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_hierarchical() is that this one checks option for exportation */
-GList *dt_tag_get_hierarchical_export(gint imgid);
+GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 
 /** get the subset of images from the selected ones that have a given tag attached */
 GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
@@ -167,7 +167,7 @@ void dt_tag_free_result(GList **result);
 /** reorganize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
 
-/** get number of seleted images */
+/** get number of selected images */
 uint32_t dt_selected_images_count();
 
 /** get number of images affected with that tag */
@@ -175,6 +175,9 @@ uint32_t dt_tag_images_count(gint tagid);
 
 /** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
 void dt_tag_update_used_tags();
+
+/** retrieves the subtag of requested level for the requested category */
+char *dt_tag_get_subtag(const gint imgid, const char *category, const int level);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

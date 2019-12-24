@@ -122,6 +122,12 @@ void dt_iop_color_picker_set_cst(dt_iop_color_picker_t *picker, const dt_iop_col
 /* returns the active picker colorspace (if any) */
 dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *module);
 
+/* global init: link signal */
+void dt_iop_color_picker_init();
+
+/* global cleanup */
+void dt_iop_color_picker_cleanup();
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -53,6 +53,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplaciancl.c"
   "common/l10n.c"
   "common/metadata.c"
+  "common/metadata_export.c"
   "common/mipmap_cache.c"
   "common/module.c"
   "common/noiseprofiles.c"
@@ -236,6 +237,14 @@ if(USE_OPENMP)
 
   if(OpenMP_CXX_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  endif()
+
+  if(OpenMP_C_INCLUDE_DIRS)
+    include_directories(${OpenMP_C_INCLUDE_DIRS})
+  endif()
+
+  if(OpenMP_CXX_INCLUDE_DIRS)
+    include_directories(${OpenMP_CXX_INCLUDE_DIRS})
   endif()
 
   list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
@@ -639,9 +648,13 @@ find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
+if(NOT SOURCE_PACKAGE)
   add_definitions(-Werror)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # do not error out on "loop not vectorized" clang OpenMP warnings 
+  add_definitions("-Wno-error=pass-failed")
 endif()
 
 # osm gps map library

@@ -168,7 +168,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   {
     dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
@@ -280,6 +280,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   GtkWidget *cmb_preserve_colors;
   double mouse_x, mouse_y;
   int selected;
+  int timeout_handle;
   double selected_offset, selected_y, selected_min, selected_max;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
@@ -597,7 +598,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);       
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
@@ -857,7 +858,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul); 
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
@@ -1421,6 +1422,13 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_visible(g->exposure_bias, FALSE);
   }
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
+
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
@@ -1454,6 +1462,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1949,6 +1959,17 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
@@ -1981,8 +2002,12 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   dt_iop_basecurve_sanity_check(self, widget);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
+
+  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+  if(!c->timeout_handle)
+    c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
 
   return TRUE;
 }
@@ -1998,7 +2023,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected < 0) return TRUE;
 
   gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -BASECURVE_DEFAULT_STEP;
     return _move_point_internal(self, widget, 0.0, delta_y, event->state);
@@ -2118,6 +2143,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
   c->loglogscale = 0;
+  c->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -2139,10 +2165,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->cmb_preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
@@ -2198,6 +2224,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

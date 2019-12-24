@@ -91,11 +91,10 @@ void connect_key_accels(dt_lib_module_t *self)
 
 static gboolean main_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  guint width, height;
   dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)data;
 
-  width = gtk_widget_get_allocated_width(widget);
-  height = gtk_widget_get_allocated_height(widget);
+  const guint width = gtk_widget_get_allocated_width(widget);
+  const guint height = gtk_widget_get_allocated_height(widget);
   gdk_cairo_set_source_rgba (cr, &d->rgb);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill (cr);
@@ -105,11 +104,10 @@ static gboolean main_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data
 
 static gboolean sample_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  guint width, height;
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)data;
 
-  width = gtk_widget_get_allocated_width(widget);
-  height = gtk_widget_get_allocated_height(widget);
+  const guint width = gtk_widget_get_allocated_width(widget);
+  const guint height = gtk_widget_get_allocated_height(widget);
   gdk_cairo_set_source_rgba(cr, &sample->rgb);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill (cr);
@@ -136,7 +134,8 @@ static gboolean sample_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer da
 static void _update_picker_output(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
-  char colstring[512];
+  char text[128] = { 0 };
+  char tooltip[128] = { 0 };
   dt_iop_module_t *module = get_colorout_module();
   if(module)
   {
@@ -167,22 +166,32 @@ static void _update_picker_output(dt_lib_module_t *self)
         lab = darktable.lib->proxy.colorpicker.picked_color_lab_max;
         break;
     }
+
+    // Setting the button color
+    data->rgb.red   = CLAMP(rgb[0], 0.f, 1.f);
+    data->rgb.green = CLAMP(rgb[1], 0.f, 1.f);
+    data->rgb.blue  = CLAMP(rgb[2], 0.f, 1.f);
+
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)",
-                 (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+                 (int)round(rgb[0] * 255.f),
+                 (int)round(rgb[1] * 255.f),
+                 (int)round(rgb[2] * 255.f));
+        snprintf(text, sizeof(text), "%3d %3d %3d",
+                 (int)round(data->rgb.red   * 255.f),
+                 (int)round(data->rgb.green * 255.f),
+                 (int)round(data->rgb.blue  * 255.f));
         break;
       case 1: // Lab
-        snprintf(colstring, sizeof(colstring), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
+        snprintf(text, sizeof(text), "%.02f %.02f %.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
         break;
     }
-    gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
+    gtk_label_set_label(GTK_LABEL(data->output_label), text);
+    gtk_widget_set_tooltip_text(data->output_label, tooltip);
 
-    // Setting the button color
-    data->rgb.red = CLAMP(rgb[0], 0.f, 1.f);
-    data->rgb.green = CLAMP(rgb[1], 0.f, 1.f);
-    data->rgb.blue = CLAMP(rgb[2], 0.f, 1.f);
     gtk_widget_queue_draw(data->color_patch);
   }
 }
@@ -240,12 +249,13 @@ static void _update_samples_output(dt_lib_module_t *self)
   float fallback_rgb[] = { 0, 0, 0 };
   float *rgb = fallback_rgb;
   float *lab = fallback;
-  char text[1024];
+  char text[128] = { 0 };
+  char tooltip[128] = { 0 };
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
   dt_colorpicker_sample_t *sample = NULL;
 
-  int model = dt_conf_get_int("ui_last/colorsamples_model");
-  int statistic = dt_conf_get_int("ui_last/colorsamples_mode");
+  const int model = dt_conf_get_int("ui_last/colorsamples_model");
+  const int statistic = dt_conf_get_int("ui_last/colorsamples_mode");
 
   while(samples)
   {
@@ -280,16 +290,24 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+                 (int)round(rgb[0] * 255.f),
+                 (int)round(rgb[1] * 255.f),
+                 (int)round(rgb[2] * 255.f));
         snprintf(text, sizeof(text), "%3d %3d %3d",
-                 (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
+                 (int)round(sample->rgb.red   * 255.f),
+                 (int)round(sample->rgb.green * 255.f),
+                 (int)round(sample->rgb.blue  * 255.f));
         break;
 
       case 1:
         // Lab
-        snprintf(text, sizeof(text), "%5.02f %5.02f %5.02f", lab[0], lab[1], lab[2]);
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
+        snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
         break;
     }
     gtk_label_set_text(GTK_LABEL(sample->output_label), text);
+    gtk_widget_set_tooltip_text(sample->output_label, tooltip);
 
     samples = g_slist_next(samples);
   }
@@ -391,7 +409,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_widget_set_name(sample->output_label, "live-sample-data");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label, TRUE, TRUE, 0);
 
-  sample->delete_button = gtk_button_new_with_label(_("remove"));
+  sample->delete_button = gtk_button_new_with_label(_("X"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
@@ -589,6 +607,7 @@ void gui_init(dt_lib_module_t *self)
   data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label, FALSE, FALSE, 0);
+  gtk_widget_set_name(data->output_label, "live-sample-data");
 
   restrict_button = gtk_check_button_new_with_label(_("restrict histogram to selection"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(restrict_button))), PANGO_ELLIPSIZE_MIDDLE);

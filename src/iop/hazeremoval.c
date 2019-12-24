@@ -165,7 +165,7 @@ void init(dt_iop_module_t *self)
   self->default_enabled = 0;
   self->params_size = sizeof(dt_iop_hazeremoval_params_t);
   self->gui_data = NULL;
-  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.5f, 0.25f };
+  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.2f, 0.2f };
   memcpy(self->params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
 }
@@ -175,6 +175,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 

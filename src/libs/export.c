@@ -34,11 +34,14 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE(5)
+DT_MODULE(6)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 
@@ -51,8 +54,11 @@ typedef struct dt_lib_export_t
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
+  GtkWidget *metadata_button;
+  char *metadata_export;
 } dt_lib_export_t;
 
+char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
 /** Sets the max dimensions based upon what storage and format supports */
@@ -76,7 +82,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void export_button_clicked(GtkWidget *widget, gpointer user_data)
+static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 {
   char style[128] = { 0 };
 
@@ -154,7 +160,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     list = dt_collection_get_selected(darktable.collection, -1);
 
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale,
-                    style, style_append, icc_type, icc_filename, icc_intent);
+                    style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
   g_free(icc_filename);
 }
@@ -227,6 +233,10 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool("plugins/lighttable/export/style_append"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+
+  // export metadata presets
+  if (d->metadata_export) g_free(d->metadata_export);
+  d->metadata_export = dt_lib_export_metadata_get_conf();
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -521,6 +531,13 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   g_list_free_full(styles, dt_style_free);
 }
 
+static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
+{
+  const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
+  const gboolean ondisk = name && !g_strcmp0(name, _("file on disk"));
+  d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
@@ -692,21 +709,31 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
 
-  // Export button
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
+  // Export button
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("export with current settings"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), FALSE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(button), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
+  //  Add metadata exportation control
+  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
+      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
+  gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
+  gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
   g_signal_connect(G_OBJECT(d->height), "value-changed", G_CALLBACK(height_changed), NULL);
+  g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(metadata_export_clicked), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
 
+  d->metadata_export = NULL;
   self->gui_reset(self);
 }
 
@@ -732,6 +759,8 @@ void gui_cleanup(dt_lib_module_t *self)
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     if(module->widget) gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   } while((it = g_list_next(it)));
+
+  if (d->metadata_export) g_free(d->metadata_export);
 
   free(self->data);
   self->data = NULL;
@@ -787,6 +816,8 @@ void init_presets(dt_lib_module_t *self)
 
       // skip 5*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
       buf += 6 * sizeof(int32_t);
+      // skip metadata presets string
+      buf += strlen(buf) + 1;
       // next skip iccfilename
       buf += strlen(buf) + 1;
 
@@ -1041,12 +1072,33 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_version = 5;
     return new_params;
   }
+  else if(old_version == 5)
+  {
+    // add metadata preset string
+    const gboolean omit = dt_conf_get_bool("omit_tag_hierarchy");
+    char *flags = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
+    const int flags_size = strlen(flags) + 1;
+    size_t new_params_size = old_params_size + flags_size;
+    void *new_params = calloc(1, new_params_size);
+    size_t pos = 0;
+    memcpy(new_params, old_params, 6 * sizeof(int32_t));
+    pos += 6 * sizeof(int32_t);
+    memcpy(new_params + pos, flags, flags_size);
+    pos += flags_size;
+    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - 6 * sizeof(int32_t));
+
+    g_free(flags);
+    *new_size = new_params_size;
+    *new_version = 6;
+    return new_params;
+  }
 
   return NULL;
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // concat storage and format, size is max + header
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
@@ -1084,6 +1136,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  const char *metadata_export = d->metadata_export;
 
   if(fdata)
   {
@@ -1097,11 +1150,12 @@ void *get_params(dt_lib_module_t *self, int *size)
     iccfilename = NULL;
   }
   if(!iccfilename) iccfilename = g_strdup("");
+  if(!metadata_export) metadata_export = g_strdup("");
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
   *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
-          + strlen(iccfilename) + 1;
+          + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
 
   char *params = (char *)calloc(1, *size);
   int pos = 0;
@@ -1117,6 +1171,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params + pos, &icctype, sizeof(int32_t));
   pos += sizeof(int32_t);
+  memcpy(params + pos, metadata_export, strlen(metadata_export) + 1);
+  pos += strlen(metadata_export) + 1;
   memcpy(params + pos, iccfilename, strlen(iccfilename) + 1);
   pos += strlen(iccfilename) + 1;
   memcpy(params + pos, fname, fname_len + 1);
@@ -1169,6 +1225,11 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const int icctype = *(const int *)buf;
   buf += sizeof(int32_t);
+  const char *metadata_export = buf;
+  buf += strlen(metadata_export) + 1;
+  if (d->metadata_export) g_free(d->metadata_export);
+  d->metadata_export = g_strdup(metadata_export);
+  dt_lib_export_metadata_set_conf(d->metadata_export);
   const char *iccfilename = buf;
   buf += strlen(iccfilename) + 1;
 
@@ -1213,7 +1274,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(size
      != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
-        + strlen(iccfilename) + 1)
+        + strlen(iccfilename) + 1 + strlen(metadata_export) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 

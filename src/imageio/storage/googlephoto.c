@@ -645,7 +645,8 @@ static const gchar *gphoto_upload_photo_to_album(dt_gphoto_context_t *ctx, gchar
         o = json_node_get_object(json_object_get_member(o, "status"));
         if(json_object_has_member(o, "message"))
         {
-          if(g_strcmp0(json_object_get_string_member(o, "message"), "OK"))
+          if(g_strcmp0(json_object_get_string_member(o, "message"), "OK")
+             && g_strcmp0(json_object_get_string_member(o, "message"), "Success"))
             return NULL;
         }
         else
@@ -1335,7 +1336,7 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
   dt_storage_gphoto_gui_data_t *ui = self->gui_data;
 
@@ -1357,21 +1358,24 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   close(fd);
 
   // get metadata
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   char *title = NULL;
   char *summary = NULL;
   GList *meta_title = NULL;
 
-  title = g_path_get_basename(img->filename);
-  (g_strrstr(title, "."))[0] = '\0'; // Chop extension...
+  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    title = g_path_get_basename(img->filename);
+    (g_strrstr(title, "."))[0] = '\0'; // Chop extension...
 
-  meta_title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  summary = meta_title != NULL ? meta_title->data : "";
+    meta_title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    summary = meta_title != NULL ? meta_title->data : "";
 
-  dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
-                       self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total, metadata) != 0)
   {
     g_printerr("[gphoto] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);

@@ -364,6 +364,8 @@ typedef struct dt_iop_blend_mode_t
 } dt_iop_blend_mode_t;
 
 
+#define DEVELOP_MASKS_NB_SHAPES 5
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
@@ -425,11 +427,8 @@ typedef struct dt_iop_gui_blend_data_t
   float increments[8];
 
   GtkWidget *masks_combo;
-  GtkWidget *masks_path;
-  GtkWidget *masks_circle;
-  GtkWidget *masks_ellipse;
-  GtkWidget *masks_gradient;
-  GtkWidget *masks_brush;
+  GtkWidget *masks_shapes[DEVELOP_MASKS_NB_SHAPES];
+  int masks_type[DEVELOP_MASKS_NB_SHAPES];
   GtkWidget *masks_edit;
   GtkWidget *masks_polarity;
   int *masks_combo_ids;
@@ -478,6 +477,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module);
 void dt_iop_gui_update_blendif(dt_iop_module_t *module);
 void dt_iop_gui_update_masks(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
+void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module);
 
 /** routine to translate from mode id to sequence in option list */
 int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);

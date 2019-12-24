@@ -174,7 +174,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->output_backbuf)
+  if(dev->preview_pipe->output_backbuf && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
@@ -566,7 +566,7 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "toggle navigation thumbnail visibility"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "hide navigation thumbnail"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

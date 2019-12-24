@@ -420,30 +420,45 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
   {
     // is one-unit cardinal, e.g. from a mouse scroll wheel
     case GDK_SCROLL_LEFT:
-      if(delta_x) *delta_x = -1.0;
-      if(delta_y) *delta_y = 0.0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = -1.0;
+        if(delta_y) *delta_y = 0.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_RIGHT:
-      if(delta_x) *delta_x = 1.0;
-      if(delta_y) *delta_y = 0.0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = 1.0;
+        if(delta_y) *delta_y = 0.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_UP:
-      if(delta_x) *delta_x = 0.0;
-      if(delta_y) *delta_y = -1.0;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0.0;
+        *delta_y = -1.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_DOWN:
-      if(delta_x) *delta_x = 0.0;
-      if(delta_y) *delta_y = 1.0;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0.0;
+        *delta_y = 1.0;
+        handled = TRUE;
+      }
       break;
     // is trackpad (or touch) scroll
     case GDK_SCROLL_SMOOTH:
-      if(delta_x) *delta_x = event->delta_x;
-      if(delta_y) *delta_y = event->delta_y;
-      handled = TRUE;
+      if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
+      {
+        if(delta_x) *delta_x = event->delta_x;
+        if(delta_y) *delta_y = event->delta_y;
+        handled = TRUE;
+      }
     default:
       break;
     }
@@ -460,24 +475,36 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
   {
     // is one-unit cardinal, e.g. from a mouse scroll wheel
     case GDK_SCROLL_LEFT:
-      if(delta_x) *delta_x = -1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = -1;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_RIGHT:
-      if(delta_x) *delta_x = 1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = 1;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_UP:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = -1;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0;
+        *delta_y = -1;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_DOWN:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = 1;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0;
+        *delta_y = 1;
+        handled = TRUE;
+      }
       break;
     // is trackpad (or touch) scroll
     case GDK_SCROLL_SMOOTH:
@@ -494,27 +521,46 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
       // handle
       acc_x += event->delta_x;
       acc_y += event->delta_y;
-      if(fabs(acc_x) >= 1.0)
+      gdouble amt_x = trunc(acc_x);
+      gdouble amt_y = trunc(acc_y);
+      if(amt_x != 0 || amt_y != 0)
       {
-        gdouble amt = trunc(acc_x);
-        acc_x -= amt;
-        if(delta_x) *delta_x = (int)amt;
-        if(delta_y) *delta_y = 0;
-        handled = TRUE;
-      }
-      if(fabs(acc_y) >= 1.0)
-      {
-        gdouble amt = trunc(acc_y);
-        acc_y -= amt;
-        if(delta_x && !handled) *delta_x = 0;
-        if(delta_y) *delta_y = (int)amt;
-        handled = TRUE;
+        acc_x -= amt_x;
+        acc_y -= amt_y;
+        if((delta_x && amt_x != 0) || (delta_y && amt_y != 0))
+        {
+          if(delta_x) *delta_x = (int)amt_x;
+          if(delta_y) *delta_y = (int)amt_y;
+          handled = TRUE;
+        }
       }
       break;
     default:
       break;
   }
   return handled;
+}
+
+gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta)
+{
+  gdouble delta_x, delta_y;
+  if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+  {
+    *delta = delta_x + delta_y;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
+{
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+  {
+    *delta = delta_x + delta_y;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
@@ -658,7 +704,7 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     dt_view_manager_scrolled(darktable.view_manager, event->x, event->y,
                              delta_y < 0,
@@ -1242,7 +1288,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // accels window
-  dt_accel_register_global(NC_("accel", "show accels window"), 0, 0);
+  dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
 
   darktable.gui->reset = 0;
 
@@ -1281,6 +1327,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // finally set the cursor to be the default.
   // for some reason this is needed on some systems to pick up the correctly themed cursor
   dt_control_change_cursor(GDK_LEFT_PTR);
+
+  dt_iop_color_picker_init();
 
   return 0;
 }
@@ -2049,21 +2097,19 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
 typedef struct result_t
 {
   enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
-  GtkWidget *window;
+  char *entry_text;
+  GtkWidget *window, *entry, *button_yes, *button_no;
 } result_t;
 
-static void _yes_no_button_handler_no(GtkButton *button, gpointer data)
+static void _yes_no_button_handler(GtkButton *button, gpointer data)
 {
   result_t *result = (result_t *)data;
-  result->result = RESULT_NO;
-  gtk_widget_destroy(result->window);
-  gtk_main_quit();
-}
-
-static void _yes_no_button_handler_yes(GtkButton *button, gpointer data)
-{
-  result_t *result = (result_t *)data;
-  result->result = RESULT_YES;
+  if((void *)button == (void *)result->button_yes)
+    result->result = RESULT_YES;
+  else if((void *)button == (void *)result->button_no)
+    result->result = RESULT_NO;
+  if(result->entry)
+    result->entry_text = g_strdup(gtk_entry_get_text(GTK_ENTRY(result->entry)));
   gtk_widget_destroy(result->window);
   gtk_main_quit();
 }
@@ -2097,14 +2143,16 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   if(no_text)
   {
     button = gtk_button_new_with_label(no_text);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+    result.button_no = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
   if(yes_text)
   {
     button = gtk_button_new_with_label(yes_text);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+    result.button_yes = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
@@ -2112,6 +2160,69 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_main();
 
   return result.result == RESULT_YES;
+}
+
+char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
+                                           const char *no_text, const char *yes_text)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
+
+  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, 10);
+  gtk_widget_set_margin_end(vbox, 10);
+  gtk_widget_set_margin_top(vbox, 7);
+  gtk_widget_set_margin_bottom(vbox, 5);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+  GtkWidget *entry = gtk_entry_new();
+  g_object_ref(entry);
+  if(placeholder)
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry), placeholder);
+  gtk_box_pack_start(GTK_BOX(vbox), entry, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_widget_set_margin_top(hbox, 10);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  result_t result = {.result = RESULT_NONE, .window = window, .entry = entry};
+
+  GtkWidget *button;
+
+  if(no_text)
+  {
+    button = gtk_button_new_with_label(no_text);
+    result.button_no = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
+
+  if(yes_text)
+  {
+    button = gtk_button_new_with_label(yes_text);
+    result.button_yes = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
+
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  if(result.result == RESULT_YES)
+    return result.entry_text;
+
+  g_free(result.entry_text);
+  return NULL;
 }
 
 // TODO: should that go to another place than gtk.c?
@@ -2176,6 +2287,7 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_PRINT_BG] = { "print_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
     [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
     [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },
@@ -2190,7 +2302,9 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
     [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
     [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
-    [DT_GUI_COLOR_PREVIEW_BORDER] = { "preview_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_CULLING_SELECTED_BORDER] = { "culling_selected_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER]
+    = { "culling_filmstrip_selected_border_color", { 0.1, 0.1, 0.1, 1.0 } },
     [DT_GUI_COLOR_PREVIEW_HOVER_BORDER] = { "preview_hover_border_color", { 0.9, 0.9, 0.9, 1.0 } },
   };
 

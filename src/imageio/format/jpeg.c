@@ -379,7 +379,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     }
   }
 
-  uint8_t *row = malloc((size_t)3 * jpg->global.width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * jpg->global.width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -391,7 +391,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg->cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
@@ -437,7 +437,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   }
   (void)jpeg_start_decompress(&(jpg->dinfo));
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, (size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -453,13 +453,13 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
-    free(row_pointer[0]);
+    dt_free_align(row_pointer[0]);
     fclose(jpg->f);
     return 1;
   }
   (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   fclose(jpg->f);
   return 0;
 }

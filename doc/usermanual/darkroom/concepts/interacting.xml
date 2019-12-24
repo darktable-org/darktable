@@ -20,9 +20,9 @@
   <para>
     In its default setting darktable will only expand one GUI at a time. If you click the
     expander bar of another module, the previous GUI gets collapsed. If you want to see more
-    than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis>
+    than one GUI expanded, you may expand further modules with <emphasis>Shift+click</emphasis>
     &nbsp;&ndash; all previously expanded GUIs remain opened. The expander bar behavior on
-    <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively, is controlled
+    <emphasis>click</emphasis> and <emphasis>Shift+click</emphasis>, respectively, is controlled
     by a preference setting in GUI options (see <xref linkend="gui_options"/>).
   </para>
 
@@ -163,14 +163,14 @@
       <itemizedlist>
 
         <listitem><para>
-          You can hold down the <emphasis>shift</emphasis> key increasing the stepsize by a
+          You can hold down the <emphasis>Shift</emphasis> key increasing the stepsize by a
           factor of 10. You can change this multiplier:
 <programlisting>darkroom/ui/scale_rough_step_multiplier=10.0
 </programlisting>
         </para></listitem>
 
         <listitem><para>
-          You can hold <emphasis>ctrl</emphasis> key decreasing the stepsize by a factor of 10.
+          You can hold <emphasis>Ctrl</emphasis> key decreasing the stepsize by a factor of 10.
           You can change this multiplier:
 <programlisting>darkroom/ui/scale_precise_step_multiplier=0.1
 </programlisting>
@@ -241,20 +241,15 @@
       <itemizedlist>
 
         <listitem><para>
-          <emphasis>Ctrl-z</emphasis> : undo last history modification
+          <emphasis>Ctrl+Z</emphasis> : undo last history modification
         </para></listitem>
 
         <listitem><para>
-          <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+          <emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not been used
           yet)
         </para></listitem>
 
       </itemizedlist>
-    </para>
-
-    <para>
-      Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not
-      recorded and thus cannot be undone.
     </para>
 
   </sect3>

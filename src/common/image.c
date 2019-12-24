@@ -319,25 +319,25 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
   if(img->exif_exposure >= 1.0f)
     if(nearbyintf(img->exif_exposure) == img->exif_exposure)
-      snprintf(line, line_len, "%.0f″ f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture,
+      snprintf(line, line_len, "%.0f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
                (int)img->exif_focal_length, (int)img->exif_iso);
     else
-      snprintf(line, line_len, "%.1f″ f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture,
+      snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
                (int)img->exif_focal_length, (int)img->exif_iso);
   /* want to catch everything below 0.3 seconds */
   else if(img->exif_exposure < 0.29f)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm iso %d", 1.0 / img->exif_exposure, img->exif_aperture,
+    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
   /* catch 1/2, 1/3 */
   else if(nearbyintf(1.0f / img->exif_exposure) == 1.0f / img->exif_exposure)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm iso %d", 1.0 / img->exif_exposure, img->exif_aperture,
+    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
   /* catch 1/1.3, 1/1.6, etc. */
   else if(10 * nearbyintf(10.0f / img->exif_exposure) == nearbyintf(100.0f / img->exif_exposure))
-    snprintf(line, line_len, "1/%.1f f/%.1f %dmm iso %d", 1.0 / img->exif_exposure, img->exif_aperture,
+    snprintf(line, line_len, "1/%.1f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
   else
-    snprintf(line, line_len, "%.1f″ f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture,
+    snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
@@ -854,6 +854,12 @@ int dt_image_altered(const uint32_t imgid)
     if(!strcmp(op, "sharpen") && dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
+    if(!strcmp(op, "rawprepare")) continue;
+    if(!strcmp(op, "colorin")) continue;
+    if(!strcmp(op, "colorout")) continue;
+    if(!strcmp(op, "gamma")) continue;
+    if(!strcmp(op, "demosaic")) continue;
+    if(!strcmp(op, "temperature")) continue;
     altered = 1;
     break;
   }
@@ -948,7 +954,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       g_free(idfield);
     }
 
-    int newid = dt_image_duplicate_with_version(id, version);
+    const int newid = dt_image_duplicate_with_version(id, version);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, newid, 'w');
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -1182,7 +1188,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
-  int res = dt_exif_xmp_read(img, dtfilename, 0);
+  const int res = dt_exif_xmp_read(img, dtfilename, 0);
 
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -1378,6 +1384,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     // move image
     GError *moveError = NULL;
     gboolean moveStatus = g_file_move(old, new, 0, NULL, NULL, NULL, &moveError);
+
     if(moveStatus)
     {
       // statement for getting ids of the image to be moved and its duplicates
@@ -1392,7 +1399,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while(sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
-        int32_t id = sqlite3_column_int(duplicates_stmt, 0);
+        const int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
         gchar oldxmp[PATH_MAX] = { 0 }, newxmp[PATH_MAX] = { 0 };
         g_strlcpy(oldxmp, oldimg, sizeof(oldxmp));
@@ -1417,7 +1424,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       // would return wrong version!
       while(dup_list)
       {
-        int id = GPOINTER_TO_INT(dup_list->data);
+        const int id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
         if(newname)
@@ -1482,11 +1489,17 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       {
 	dt_control_log(_("error moving `%s': file not found"), oldimg);
       }
-      else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+      // only display error message if newname is set (renaming and
+      // not moving) as when moving it can be the case where a
+      // duplicate is being moved, so only the .xmp are present but
+      // the original file may already have been moved.
+      else if(newname
+              && (g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS)
+                  || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)))
       {
 	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
       }
-      else
+      else if(newname)
       {
 	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
       }
@@ -2118,6 +2131,24 @@ char *dt_image_get_text_path(const int32_t imgid)
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);
+}
+
+int dt_image_get_iop_order_version(const int32_t imgid)
+{
+  int iop_order_version = 0;
+
+  // check current iop order version
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return iop_order_version;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

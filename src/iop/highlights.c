@@ -1038,11 +1038,13 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // only on for raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
     module->default_enabled = 1;
   else
+    {
     module->default_enabled = 0;
-
+      module->hide_enable_button = 1;
+    }
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
@@ -1053,7 +1055,6 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;
 }
@@ -1062,6 +1063,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

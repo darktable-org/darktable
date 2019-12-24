@@ -2403,6 +2403,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -3683,7 +3685,9 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile);
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile->matrix_in,
+                                  work_profile->lut_in, work_profile->unbounded_coeffs_in,
+                                  work_profile->lutsize, work_profile->nonlinearlut);
     }
     else
     {
@@ -3730,7 +3734,9 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   {
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i, work_profile);
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i, work_profile->matrix_in,
+                                  work_profile->lut_in, work_profile->unbounded_coeffs_in,
+                                  work_profile->lutsize, work_profile->nonlinearlut);
     }
     else
     {
@@ -3757,7 +3763,9 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     if(work_profile)
     {
-      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i, work_profile);
+      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i, work_profile->matrix_out,
+                                 work_profile->lut_out, work_profile->unbounded_coeffs_out,
+                                 work_profile->lutsize, work_profile->nonlinearlut);;
     }
     else
     {

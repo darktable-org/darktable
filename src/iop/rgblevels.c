@@ -459,8 +459,16 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   {
     const int ch = c->channel;
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    float hist_max;
+
+    if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
+      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_R], fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_G],self->histogram_max[DT_IOP_RGBLEVELS_B]));
+    else
+      hist_max = self->histogram_max[ch];
+
+    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+      hist_max = logf(1.0 + hist_max);
+
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -471,13 +479,13 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
@@ -977,6 +985,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -1064,20 +1074,15 @@ void gui_init(dt_iop_module_t *self)
 
   c->blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
 
   c->greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
 
   c->whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
-
-  GdkRGBA color = { 0 };
-  color.alpha = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->blackpick), &color);
-  color.red = color.green = color.blue = 0.5;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->greypick), &color);
-  color.red = color.green = color.blue = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->whitepick), &color);
+  gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
   GtkWidget *pick_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
@@ -1116,10 +1121,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->cmb_preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum rgb"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
+  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));

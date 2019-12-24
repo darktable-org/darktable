@@ -19,6 +19,10 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include <conio.h>
 #include "win/main_wrapper.h"
@@ -26,6 +30,9 @@
 
 int main(int argc, char *arg[])
 {
+#ifdef __APPLE__
+  dt_osx_prepare_environment();
+#endif
   int result = 1;
   // only used to force-init opencl, so we want these options:
   char *m_arg[] = { "-d", "opencl", "--library", ":memory:"};

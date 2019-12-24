@@ -51,7 +51,7 @@
     <para>
       In its default state, curves will be straight lines, defined by few anchor nodes. You can
       move the nodes to modify the curve. You can generate new nodes by
-      <emphasis>clicking</emphasis> on the curve. With <emphasis>ctrl-click</emphasis> you
+      <emphasis>clicking</emphasis> on the curve. With <emphasis>Ctrl+click</emphasis> you
       generate a new node at the x-location of the mouse pointer and the corresponding
       y-location of the current curve&nbsp;&ndash; this adds a node without risking to
       accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,

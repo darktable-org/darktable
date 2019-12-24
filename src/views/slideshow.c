@@ -71,6 +71,7 @@ typedef struct dt_slideshow_t
   dt_pthread_mutex_t lock;
 
   uint32_t auto_advance;
+  int exporting;
   int delay;
 
   // some magic to hide the mouse pointer
@@ -79,12 +80,8 @@ typedef struct dt_slideshow_t
 
 typedef struct dt_slideshow_format_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
-  dt_slideshow_t *d;
-  dt_slideshow_slot_t slot;
+  dt_imageio_module_data_t head;
+  dt_slideshow_buf_t buf;
   int32_t rank;
 } dt_slideshow_format_t;
 
@@ -113,18 +110,11 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
-  dt_pthread_mutex_lock(&data->d->lock);
 
-  const dt_slideshow_slot_t slot = data->slot;
+  memcpy(data->buf.buf, in, sizeof(uint32_t) * datai->width * datai->height);
+  data->buf.width = datai->width;
+  data->buf.height = datai->height;
 
-  if(slot>=S_LEFT && slot<=S_RIGHT && data->d->buf[slot].buf)
-  {
-    // might have been cleaned up when leaving slide show
-    memcpy(data->d->buf[slot].buf, in, sizeof(uint32_t) * datai->width * datai->height);
-    data->d->buf[slot].width = datai->width;
-    data->d->buf[slot].height = datai->height;
-  }
-  dt_pthread_mutex_unlock(&data->d->lock);
   return 0;
 }
 
@@ -167,6 +157,12 @@ static void requeue_job(dt_slideshow_t *d)
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
 }
 
+static void _set_delay(dt_slideshow_t *d, int value)
+{
+  d->delay = CLAMP(d->delay + value, 1, 60);
+  dt_conf_set_int("slideshow_delay", d->delay);
+}
+
 static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   dt_imageio_module_format_t buf;
@@ -175,27 +171,32 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   buf.bpp = bpp;
   buf.write_image = write_image;
 
+  // lock to copy the information to process the image
+  dt_pthread_mutex_lock(&d->lock);
   dt_slideshow_format_t dat;
-  dat.width = dat.max_width = d->width;
-  dat.height = dat.max_height = d->height;
-  dat.style[0] = '\0';
-  dat.d = d;
-  dat.slot = slot;
+  dat.head.width = dat.head.max_width = d->width;
+  dat.head.height = dat.head.max_height = d->height;
+  dat.head.style[0] = '\0';
   dat.rank = d->buf[slot].rank;
+  dat.buf.buf = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
+
+  d->exporting++;
+
+  const int32_t rank = dat.rank;
+  const gchar *query = dt_collection_get_query(darktable.collection);
+
+  if(rank<0 || rank>=d->col_count || !query)
+  {
+    d->exporting--;
+    dt_pthread_mutex_unlock(&d->lock);
+    goto error;
+  }
+
+  dt_pthread_mutex_unlock(&d->lock);
 
   // get random image id from sql
   int32_t id = 0;
 
-  const int32_t rank = dat.rank;
-
-  if(rank<0 || rank>=d->col_count)
-  {
-    d->buf[slot].invalidated = FALSE;
-    return 1;
-  }
-
-  const gchar *query = dt_collection_get_query(darktable.collection);
-  if(!query) return 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rank);
@@ -211,12 +212,43 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
                                  high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
-                                 NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
+                                 NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
+
+    // lock to copy back into the slot the rendered buffer, not that this is done only if
+    // the slot rank is still the same as the local buffer rank. This can be false if the
+    // buffers have been shifted to advance to next image.
+    dt_pthread_mutex_lock(&d->lock);
+    if(dat.rank == d->buf[slot].rank)
+    {
+      d->buf[slot].invalidated = FALSE;
+      memcpy(d->buf[slot].buf, dat.buf.buf, sizeof(uint32_t) * dat.buf.width * dat.buf.height);
+      d->buf[slot].width = dat.buf.width;
+      d->buf[slot].height = dat.buf.height;
+    }
+    d->exporting--;
+    dt_pthread_mutex_unlock(&d->lock);
   }
 
-  d->buf[slot].invalidated = FALSE;
-
+  dt_free_align(dat.buf.buf);
   return 0;
+
+ error:
+  dt_free_align(dat.buf.buf);
+  return 1;
+}
+
+static gboolean _is_idle(dt_slideshow_t *d)
+{
+  return !(d->buf[S_LEFT].invalidated || d->buf[S_CURRENT].invalidated || d->buf[S_RIGHT].invalidated);
+}
+
+static gboolean auto_advance(gpointer user_data)
+{
+  dt_slideshow_t *d = (dt_slideshow_t *)user_data;
+  if(!d->auto_advance) return FALSE;
+  if(!_is_idle(d)) return TRUE; // never try to advance if still exporting, but call me back again
+  _step_state(d, S_REQUEST_STEP);
+  return FALSE;
 }
 
 static int32_t process_job_run(dt_job_t *job)
@@ -238,7 +270,7 @@ static int32_t process_job_run(dt_job_t *job)
   }
 
   // any other slot to fill?
-  if(d->buf[S_LEFT].invalidated || d->buf[S_CURRENT].invalidated || d->buf[S_RIGHT].invalidated)
+  if(!_is_idle(d))
     requeue_job(d);
 
   return 0;
@@ -250,14 +282,6 @@ static dt_job_t *process_job_create(dt_slideshow_t *d)
   if(!job) return NULL;
   dt_control_job_set_params(job, d, NULL);
   return job;
-}
-
-static gboolean auto_advance(gpointer user_data)
-{
-  dt_slideshow_t *d = (dt_slideshow_t *)user_data;
-  if(!d->auto_advance) return FALSE;
-  _step_state(d, S_REQUEST_STEP);
-  return FALSE;
 }
 
 static void _refresh_display(dt_slideshow_t *d)
@@ -304,9 +328,9 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
   }
 
-  if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
-
   dt_pthread_mutex_unlock(&d->lock);
+
+  if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
 }
 
 // callbacks for a view module:
@@ -356,6 +380,7 @@ void enter(dt_view_t *self)
 
   dt_control_change_cursor(GDK_BLANK_CURSOR);
   d->mouse_timeout = 0;
+  d->exporting = 0;
 
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
@@ -366,7 +391,6 @@ void enter(dt_view_t *self)
 
   // also hide arrows
   dt_control_queue_redraw();
-
 
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -446,7 +470,13 @@ void leave(dt_view_t *self)
   d->mouse_timeout = 0;
   dt_control_change_cursor(GDK_LEFT_PTR);
   d->auto_advance = 0;
+
+  // exporting could be in action, just wait for the last to finish
+  // otherwise we will crash releasing lock and memory.
+  while(d->exporting > 0) sleep(1);
+
   dt_view_lighttable_set_position(darktable.view_manager, d->buf[S_CURRENT].rank);
+
   dt_pthread_mutex_lock(&d->lock);
 
   for(int k=S_LEFT; k<S_SLOT_LAST; k++)
@@ -559,31 +589,33 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
   {
-    d->delay = CLAMP(d->delay + 1, 1, 60);
+    _set_delay(d, 1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-    dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
   {
-    d->delay = CLAMP(d->delay - 1, 1, 60);
+    _set_delay(d, -1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-    dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP_BACK);
-    return 0;
   }
   else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP);
-    return 0;
+  }
+  else
+  {
+    // go back to lt mode
+    d->auto_advance = 0;
+    dt_ctl_switch_mode_to("lighttable");
   }
 
-  // go back to lt mode
-  dt_ctl_switch_mode_to("lighttable");
   return 0;
 }
 

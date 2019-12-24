@@ -86,7 +86,7 @@
   <dtconfig>
     <name>opencl_memory_headroom</name>
     <type>int</type>
-    <default>300</default>
+    <default>400</default>
     <shortdescription>amount of OpenCL memory (in MB) which we assume as being reserved for the driver</shortdescription>
     <longdescription>this amount of memory (in MB) will be subtracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
@@ -199,28 +199,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
-    <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
-    <name>plugins/lighttable/export/export_private_tags</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>force exportation of private tags</shortdescription>
-    <longdescription>darktable doesn't export private tags per default. this option allows to export them to XMP-dc Subject and XMP-lr Hierarchical Subject.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
-    <name>plugins/lighttable/export/export_tag_synonyms</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>request exportation of synonyms</shortdescription>
-    <longdescription>darktable doesn't export the synonyms per default. this option allows to export them along with tags to XMP-dc Subject.</longdescription>
+    <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/tagging/no_entry_completion</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>disable the entry completion</shortdescription>
-    <longdescription>the entry completion is useful for those who enter tags from keybord only. for others the entry completion can be embarassing. need to restart darktable.</longdescription>
+    <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" capability="opencl" section="cpugpu">
     <name>opencl</name>
@@ -689,7 +675,7 @@
   <dtconfig prefs="gui" section="darkroom">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>string</type>
-    <default>$(EXIF_ISO) ISO • $(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm</default>
+    <default>$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
     <shortdescription>pattern for the image infos line</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -1773,6 +1759,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/opacity</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/circle/size</name>
     <type>float</type>
     <default>0.05</default>
@@ -1923,7 +1916,7 @@
     <type>dir</type>
     <default></default>
     <shortdescription>3D lut root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains Lut files used but lut3d modules. need to restart darktable.</longdescription>
+    <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/basecurve/auto_apply</name>

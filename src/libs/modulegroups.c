@@ -30,6 +30,7 @@
 DT_MODULE(1)
 
 #define PADDING 2
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 #include "modulegroups.h"
 
@@ -158,6 +159,24 @@ static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPos
   return TRUE;
 }
 
+void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
+{
+  if(!strcmp(old_view->module_name, "darkroom"))
+  {
+    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
+  }
+}
+
+void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
+{
+  if(!strcmp(new_view->module_name, "darkroom"))
+  {
+    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+    dt_gui_key_accel_block_on_focus_connect(d->text_entry);
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -230,7 +249,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), label, FALSE, TRUE, 0);
 
   d->text_entry = gtk_entry_new();
-  dt_gui_key_accel_block_on_focus_connect(d->text_entry);
   gtk_widget_add_events(d->text_entry, GDK_FOCUS_CHANGE_MASK);
 
   gtk_widget_set_tooltip_text(d->text_entry, _("search modules by name or tag"));
@@ -248,6 +266,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[d->current]), TRUE);
+  if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
   gtk_widget_show_all(d->hbox_buttons);
   gtk_widget_set_no_show_all(d->hbox_buttons, TRUE);
@@ -336,6 +355,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n^^^^^ modulegroups");
+
   GList *modules = darktable.develop->iop;
   if(modules)
   {
@@ -347,6 +369,12 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       GtkWidget *w = module->expander;
+
+      if ((DT_IOP_ORDER_INFO) && (module->enabled))
+      {
+        fprintf(stderr,"\n%20s %9.5f",module->op,module->iop_order);
+        if(dt_iop_is_hidden(module)) fprintf(stderr,", hidden");
+      }
 
       /* skip modules without an gui */
       if(dt_iop_is_hidden(module)) continue;
@@ -363,8 +391,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       // if there's some search text show matching modules only
       if(text_entered && text_entered[0] != '\0')
       {
-        /* don't show deprecated ones */
-        if(module->flags() & IOP_FLAGS_DEPRECATED)
+        /* don't show deprecated ones unless they are enabled */
+        if(module->flags() & IOP_FLAGS_DEPRECATED && !(module->enabled))
         {
           if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
           if(w) gtk_widget_hide(w);
@@ -414,7 +442,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         case DT_MODULEGROUP_FAVORITES:
         {
-          if(module->so->state == dt_iop_state_FAVORITE)
+          if((module->so->state == dt_iop_state_FAVORITE)
+             && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
           {
             if(w) gtk_widget_show(w);
           }
@@ -459,7 +488,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
     } while((modules = g_list_next(modules)) != NULL);
   }
-
+  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 }
@@ -527,17 +556,11 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 
   const int group = _iop_get_group_order(params->group, params->group);
 
-  /* if no change just update visibility */
-  if(d->current == group)
-  {
-    _lib_modulegroups_update_iop_visibility(params->self);
-    free(params);
-    return FALSE;
-  }
-
-  /* set current group */
-  if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
+  /* set current group or just update iop visibility*/
+  if(d->current != group && params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
+  else
+    _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
   return FALSE;

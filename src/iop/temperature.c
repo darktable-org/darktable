@@ -542,7 +542,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
 
       int i = 0;
-      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+      const int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
       for(; i < alignment && i < roi_out->width; i++, out++, in++)
@@ -586,7 +586,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
 
       int i = 0;
-      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+      const int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
       for(; i < alignment && i < roi_out->width; i++, out++, in++)
@@ -970,7 +970,7 @@ static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
   // the raw should provide wb coeffs:
   int ok = 1;
   // Only check the first three values, the fourth is usually NAN for RGB
-  int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
+  const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
   for(int k = 0; ok && k < num_coeffs; k++)
   {
     if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) ok = 0;
@@ -1023,7 +1023,7 @@ void reload_defaults(dt_iop_module_t *module)
       = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 } };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev || module->dev->image_storage.id == -1) goto end;
 
   const int is_raw = dt_image_is_raw(&module->dev->image_storage);
 
@@ -1133,6 +1133,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1422,7 +1424,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
     const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
-    cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
+    const cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
     float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
     dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
     dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);

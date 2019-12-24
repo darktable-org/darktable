@@ -20,9 +20,12 @@
 */
 
 #pragma once
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #ifdef HAVE_OPENCL
-#include "CL/cl.h"           // for cl_mem
+#include <CL/cl.h>           // for cl_mem
 #endif
 
 #include "common/image.h"    // for dt_image_t, dt_image_orientation_t
@@ -148,19 +151,42 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   coeff[2] = g;
 }
 
+
+__DT_CLONE_TARGETS__
+static inline void dt_simd_memcpy(const float *const __restrict__ in,
+                                  float *const __restrict__ out,
+                                  const size_t num_elem)
+{
+  // Perform a parallel vectorized memcpy on 64-bits aligned
+  // contiguous buffers. This is several times faster than the original memcpy
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, out, num_elem) \
+schedule(simd:static) aligned(in, out:64)
+#endif
+  for(size_t k = 0; k < num_elem; k++)
+    out[k] = in[k];
+}
+
+
 /** evaluates the exp fit. */
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 {
   return coeff[1] * powf(x * coeff[0], coeff[2]);
 }
 
 /** Copy alpha channel 1:1 from input to output */
-static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
+static inline void dt_iop_alpha_copy(const void *const __restrict__ ivoid,
+                                     void *const __restrict__ ovoid,
+                                     const int width, const int height)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(ovoid, ivoid) \
+  dt_omp_firstprivate(height, width, ovoid, ivoid) \
   schedule(static)
 #endif
   for(int j = 0; j < height; j++)

@@ -95,6 +95,7 @@ typedef struct dt_iop_rgbcurve_gui_data_t
   rgbcurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
+  int timeout_handle;
   float draw_ys[DT_IOP_RGBCURVE_RES];
   float draw_min_ys[DT_IOP_RGBCURVE_RES];
   float draw_max_ys[DT_IOP_RGBCURVE_RES];
@@ -330,7 +331,13 @@ static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_para
     case DT_S_SCALE_AUTOMATIC_RGB:
     {
       const float val
-          = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+          = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in,
+                                                               work_profile->matrix_in,
+                                                               work_profile->lut_in,
+                                                               work_profile->unbounded_coeffs_in,
+                                                               work_profile->lutsize,
+                                                               work_profile->nonlinearlut)
+                           : dt_camera_rgb_luminance(in);
       if(p->compensate_middle_grey && work_profile)
       {
         out[0] = dt_ioppr_compensate_middle_grey(val, work_profile);
@@ -388,6 +395,14 @@ static gboolean _color_picker_callback_button_press(GtkWidget *widget, GdkEventB
   return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
+static gboolean _is_identity(dt_iop_rgbcurve_params_t *p, rgbcurve_channel_t channel)
+{
+  for(int k=0; k<p->curve_num_nodes[channel]; k++)
+    if(p->curve_nodes[channel][k].x != p->curve_nodes[channel][k].y) return FALSE;
+
+  return TRUE;
+}
+
 static void autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -400,6 +415,21 @@ static void autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
   p->curve_autoscale = combo;
 
   _rgbcurve_show_hide_controls(p, g);
+
+  // swithing to manual scale, if G and B not touched yet, just make them identical to global setting (R)
+  if(combo == DT_S_SCALE_MANUAL_RGB
+     && _is_identity(p, DT_IOP_RGBCURVE_G)
+     && _is_identity(p, DT_IOP_RGBCURVE_B))
+  {
+    for(int k=0; k<DT_IOP_RGBCURVE_MAXNODES; k++)
+      p->curve_nodes[DT_IOP_RGBCURVE_G][k]
+        = p->curve_nodes[DT_IOP_RGBCURVE_B][k] = p->curve_nodes[DT_IOP_RGBCURVE_R][k];
+
+    p->curve_num_nodes[DT_IOP_RGBCURVE_G] = p->curve_num_nodes[DT_IOP_RGBCURVE_B]
+      = p->curve_num_nodes[DT_IOP_RGBCURVE_R];
+    p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
+      = p->curve_type[DT_IOP_RGBCURVE_R];
+  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -540,7 +570,13 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   float val = 0.f;
 
   if(p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-    val = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+    val = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in,
+                                                             work_profile->matrix_in,
+                                                             work_profile->lut_in,
+                                                             work_profile->unbounded_coeffs_in,
+                                                             work_profile->lutsize,
+                                                             work_profile->nonlinearlut)
+                         : dt_camera_rgb_luminance(in);
   else
     val = in[ch];
 
@@ -654,6 +690,17 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  g->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
@@ -684,15 +731,18 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   const float new_x = CLAMP(curve[g->selected].x + dx, 0.0f, 1.0f);
   const float new_y = CLAMP(curve[g->selected].y + dy, 0.0f, 1.0f);
 
+  gtk_widget_queue_draw(widget);
+
   if(_sanity_check(new_x, g->selected, p->curve_num_nodes[ch], p->curve_nodes[ch]))
   {
     curve[g->selected].x = new_x;
     curve[g->selected].y = new_y;
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
 
-  gtk_widget_queue_draw(widget);
+    if(!g->timeout_handle)
+      g->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+  }
 
   return TRUE;
 }
@@ -741,7 +791,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
 
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -RGBCURVE_DEFAULT_STEP;
     return _move_point_internal(self, widget, 0.0, delta_y, event->state);
@@ -924,8 +974,16 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   if(self->enabled)
   {
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    float hist_max;
+
+    if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
+      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBCURVE_R], fmaxf(self->histogram_max[DT_IOP_RGBCURVE_G],self->histogram_max[DT_IOP_RGBCURVE_B]));
+    else
+      hist_max = self->histogram_max[ch];
+
+    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+      hist_max = logf(1.0 + hist_max);
+
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -936,15 +994,15 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 0, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_R, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 1, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_G, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 2, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
         }
         else if(autoscale == DT_S_SCALE_MANUAL_RGB)
@@ -1445,7 +1503,8 @@ void change_image(struct dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(g)
   {
-    g->channel = DT_IOP_RGBCURVE_R;
+    if(!g->channel)
+      g->channel = DT_IOP_RGBCURVE_R;
     g->mouse_x = g->mouse_y = -1.0;
     g->selected = -1;
     g->offset_x = g->offset_y = 0.f;
@@ -1469,6 +1528,8 @@ void gui_init(struct dt_iop_module_t *self)
       (void)dt_draw_curve_add_point(g->minmax_curve[ch], p->curve_nodes[ch][k].x, p->curve_nodes[ch][k].y);
   }
 
+  g->channel = DT_IOP_RGBCURVE_R;
+  g->timeout_handle = 0;
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1584,10 +1645,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max rgb"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average rgb"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum rgb"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max RGB"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average RGB"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum RGB"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
@@ -1611,6 +1672,12 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_compensate_middle_grey), p->compensate_middle_grey);
   dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
 
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+
   _rgbcurve_show_hide_controls(p, g);
 
   // that's all, gui curve is read directly from params during expose event.
@@ -1624,6 +1691,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   g_object_unref(g->sizegroup);
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++) dt_draw_curve_destroy(g->minmax_curve[k]);
+
+  if(g->timeout_handle) g_source_remove(g->timeout_handle);
 
   free(self->gui_data);
   self->gui_data = NULL;
@@ -1694,6 +1763,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)

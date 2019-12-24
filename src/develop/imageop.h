@@ -171,15 +171,15 @@ typedef struct dt_iop_module_so_t
   int (*introspection_init)(struct dt_iop_module_so_t *self, int api_version);
 
   /** callbacks, loaded once, referenced by the instances. */
-  int (*version)();
-  const char *(*name)();
-  int (*default_group)();
-  int (*flags)();
+  int (*version)(void);
+  const char *(*name)(void);
+  int (*default_group)(void);
+  int (*flags)(void);
 
-  const char *(*description)();
+  const char *(*description)(void);
 
-  int (*operation_tags)();
-  int (*operation_tags_filter)();
+  int (*operation_tags)(void);
+  int (*operation_tags_filter)(void);
 
   /** what do the iop want as an input? */
   void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
@@ -276,8 +276,8 @@ typedef struct dt_iop_module_so_t
 
   // introspection related callbacks
   gboolean have_introspection;
-  dt_introspection_t *(*get_introspection)();
-  dt_introspection_field_t *(*get_introspection_linear)();
+  dt_introspection_t *(*get_introspection)(void);
+  dt_introspection_field_t *(*get_introspection_linear)(void);
   void *(*get_p)(const void *param, const char *name);
   dt_introspection_field_t *(*get_f)(const char *name);
 
@@ -396,20 +396,20 @@ typedef struct dt_iop_module_t
   GtkWidget *multimenu_button;
 
   /** version of the parameters in the database. */
-  int (*version)();
+  int (*version)(void);
   /** get name of the module, to be translated. */
-  const char *(*name)();
+  const char *(*name)(void);
   /** get the default group this module belongs to. */
-  int (*default_group)();
+  int (*default_group)(void);
   /** get the iop module flags. */
-  int (*flags)();
+  int (*flags)(void);
 
   /** get a descriptive text used for example in a tooltip in more modules */
-  const char *(*description)();
+  const char *(*description)(void);
 
-  int (*operation_tags)();
+  int (*operation_tags)(void);
 
-  int (*operation_tags_filter)();
+  int (*operation_tags_filter)(void);
   void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
   /** what will it output? */
@@ -537,17 +537,17 @@ typedef struct dt_iop_module_t
 
   // introspection related data
   gboolean have_introspection;
-  dt_introspection_t *(*get_introspection)();
-  dt_introspection_field_t *(*get_introspection_linear)();
+  dt_introspection_t *(*get_introspection)(void);
+  dt_introspection_field_t *(*get_introspection_linear)(void);
   void *(*get_p)(const void *param, const char *name);
   dt_introspection_field_t *(*get_f)(const char *name);
 
 } dt_iop_module_t;
 
 /** loads and inits the modules in the plugins/ directory. */
-void dt_iop_load_modules_so();
+void dt_iop_load_modules_so(void);
 /** cleans up the dlopen refs. */
-void dt_iop_unload_modules_so();
+void dt_iop_unload_modules_so(void);
 /** load a module for a given .so */
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, struct dt_develop_t *dev);
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
@@ -566,6 +566,8 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
+/** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
+void dt_iop_gui_set_enable_button(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** reset the ui to its defaults */
@@ -615,7 +617,12 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
 
-dt_iop_module_t *get_colorout_module();
+/** get module by name and colorout, works only with a dev mode */
+dt_iop_module_t *get_colorout_module(void);
+dt_iop_module_t *get_module_by_name(const char *op);
+
+/** get module flags, works in dev and lt mode */
+int get_module_flags(const char *op);
 
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);

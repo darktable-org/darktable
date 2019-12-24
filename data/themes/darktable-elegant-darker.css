@@ -18,22 +18,16 @@
 
 @import url("darktable.css");
 
-/* hide frames in lighttable preview and culling */
-@define-color preview_border_color transparent;
-
 /* This has been tested with GTK 3.24 on Gnome */
 
-*
-{
-    font-weight: 200;
-    font-family: "Roboto Light", "Segoe UI Light",
-                 "SF Pro Display Light", "Ubuntu Light",
-                 "Cantarell", sans-serif;
-}
+/* hide selection frame in culling */
+@define-color culling_selected_border_color transparent;
 
+*,
 #lib-plugin-ui,
 #iop-plugin-ui,
 #lib-modulelist,
+#bauhaus-popup,
 #modules-tabs,
 #left,
 #right,
@@ -57,7 +51,7 @@ entry *,
 dialog,
 dialog *,
 colorswatch,
-colorswatch *
+colorswatch *,
 stack,
 stack *,
 scrollbar,
@@ -78,40 +72,44 @@ eventbox *,
 box,
 box *
 {
-    font-family: "Roboto Light", "Segoe UI Light",
-                 "SF Pro Display Light", "Ubuntu Light",
-                 "Cantarell", sans-serif;
+    font-family: "Roboto Light", "Roboto",                  /* best case scenario */
+                 "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
+                 "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
+                 "Ubuntu Light", "Ubuntu",                  /* Ubuntu default */
+                 "Cantarell",                               /* Gnome default */ 
+                 sans-serif;                                /* default default */
 }
 
-button
+button,
+#section_label
 {
-    font-weight: 500;
-    font-family: "Roboto Medium", "Segoe UI Semibold",
-                 "SF Pro Display Medium",
-                 "Ubuntu Medium", "Cantarell", sans-serif;
-
+    font-family: "Roboto Medium", "Roboto", 
+                 "Segoe UI Semibold", "Segoe UI",
+                 "SF Pro Display Medium", "SF Pro Display",
+                 "Ubuntu Medium", "Ubuntu",
+                 "Cantarell", 
+                  sans-serif;
 }
 
 #iop-panel-label,
 #lib-panel-label
 {
-    font-family: "Roboto Condensed","Segoe UI Condensed",
-                 "SF Pro Display", "Ubuntu Condensed",
-                 "Cantarell", sans-serif;
-}
-
-#section_label
-{
-    font-family: "Roboto Medium", "Segoe UI Semibold",
-                 "SF Pro Display Medium",
-                 "Ubuntu Medium", "Cantarell", sans-serif;
-    font-weight: 600;
+    font-family: "Roboto Condensed", "Roboto",
+                 "Segoe UI Condensed", "Segoe UI",
+                 "SF Pro Display", "SF Pro Display",
+                 "Ubuntu Condensed", "Ubuntu",
+                 "Cantarell", 
+                 sans-serif;
 }
 
 notebook tabs,
 #modules-tabs,
 #blending-tabs
 {
-    font-family: "Roboto", "Segoe UI", "SF Pro Text", "Ubuntu",
-                 "Cantarell", sans-serif;
+    font-family: "Roboto", 
+                 "Segoe UI", 
+                 "SF Pro Text", 
+                 "Ubuntu",
+                 "Cantarell", 
+                  sans-serif;
 }

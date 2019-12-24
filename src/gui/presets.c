@@ -383,8 +383,8 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   char title[1024];
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
-  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
-                                       GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
+  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       _("_cancel"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_ACCEPT, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -718,8 +718,11 @@ static void menuitem_favourite_toggled(GtkCheckMenuItem *checkmenuitem, gpointer
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   // the module is currently visible, otherwise we wouldn't show the popup. it should also stay visible.
   dt_iop_module_state_t state = module->so->state;
-  if(state == dt_iop_state_FAVORITE) state = dt_iop_state_ACTIVE;
-  else state = dt_iop_state_FAVORITE;
+  if(state == dt_iop_state_FAVORITE)
+    state = dt_iop_state_ACTIVE;
+  else
+    state = dt_iop_state_FAVORITE;
+
   dt_iop_gui_set_state(module, state);
   if(state == dt_iop_state_FAVORITE)
     dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);

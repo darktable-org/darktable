@@ -70,6 +70,7 @@ typedef struct dt_iop_rawdenoise_gui_data_t
   dt_iop_rawdenoise_params_t drag_params;
   int dragging;
   int x_move;
+  int timeout_handle;
   dt_iop_rawdenoise_channel_t channel;
   float draw_xs[DT_IOP_RAWDENOISE_RES], draw_ys[DT_IOP_RAWDENOISE_RES];
   float draw_min_xs[DT_IOP_RAWDENOISE_RES], draw_min_ys[DT_IOP_RAWDENOISE_RES];
@@ -539,7 +540,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -578,6 +579,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
   free(module->global_data);
   module->global_data = NULL;
 }
@@ -631,7 +634,11 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
@@ -846,6 +853,17 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -864,13 +882,17 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
     {
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else
   {
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(
@@ -1005,6 +1027,7 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
+  c->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1056,6 +1079,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

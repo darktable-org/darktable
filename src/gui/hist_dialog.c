@@ -131,6 +131,37 @@ static gboolean _gui_is_set(GList *selops, unsigned int num)
   return FALSE;
 }
 
+void
+tree_on_row_activated (GtkTreeView        *treeview,
+                       GtkTreePath        *path,
+                       GtkTreeViewColumn  *col,
+                       gpointer            userdata)
+{
+  GtkDialog *dialog = GTK_DIALOG(userdata);
+  GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+  GtkTreeIter   iter;
+
+  // unselect all items
+
+  if(gtk_tree_model_get_iter_first(model, &iter))
+  {
+    do
+    {
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, FALSE, -1);
+
+    } while(gtk_tree_model_iter_next(model, &iter));
+  }
+
+  // select now the one that got double-clicked
+
+  if (gtk_tree_model_get_iter(model, &iter, path))
+  {
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, TRUE, -1);
+    // and finally close the dialog
+    g_signal_emit_by_name(dialog, "response", GTK_RESPONSE_OK, NULL);
+  }
+}
+
 int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
   int res;
@@ -185,13 +216,15 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   {
     do
     {
-      dt_history_item_t *item = (dt_history_item_t *)items->data;
+      const dt_history_item_t *item = (dt_history_item_t *)items->data;
 
-      gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_HIST_ITEMS_COL_ENABLED,
-                         iscopy ? TRUE : _gui_is_set(d->selops, item->num), DT_HIST_ITEMS_COL_NAME,
-                         item->name, DT_HIST_ITEMS_COL_NUM, (guint)item->num, -1);
-
+      if(!(get_module_flags(item->op) & IOP_FLAGS_HIDDEN))
+      {
+        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_HIST_ITEMS_COL_ENABLED,
+                           iscopy ? TRUE : _gui_is_set(d->selops, item->num), DT_HIST_ITEMS_COL_NAME,
+                           item->name, DT_HIST_ITEMS_COL_NUM, (guint)item->num, -1);
+      }
     } while((items = g_list_next(items)));
     g_list_free_full(items, dt_history_item_free);
   }
@@ -201,6 +234,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
     return GTK_RESPONSE_CANCEL;
   }
 
+  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback) tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);

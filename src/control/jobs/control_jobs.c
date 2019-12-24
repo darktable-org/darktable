@@ -72,6 +72,7 @@ typedef struct dt_control_export_t
   dt_colorspaces_color_profile_type_t icc_type;
   gchar *icc_filename;
   dt_iop_color_intent_t icc_intent;
+  gchar *metadata_export;
 } dt_control_export_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -466,7 +467,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE,
                                  FALSE, "pre:rawprepare", FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
-                                 num, total);
+                                 num, total, NULL);
 
     t = g_list_delete_link(t, t);
 
@@ -1371,6 +1372,15 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_new("darktable|exported", &etagid);
 
+  dt_export_metadata_t metadata;
+  metadata.flags = 0;
+  metadata.list = dt_util_str_to_glist("\1", settings->metadata_export);
+  if (metadata.list)
+  {
+    metadata.flags = strtol(metadata.list->data, NULL, 16);
+    metadata.list = g_list_remove(metadata.list, metadata.list->data);
+  }
+
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     if(!t)
@@ -1404,7 +1414,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       {
         dt_image_cache_read_release(darktable.image_cache, image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale,
-                           settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
+                           settings->icc_type, settings->icc_filename, settings->icc_intent,
+                          &metadata) != 0)
           dt_control_job_cancel(job);
       }
     }
@@ -1414,6 +1425,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
+  g_list_free_full(metadata.list, g_free);
 
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
 
@@ -1606,7 +1618,7 @@ void dt_control_move_images()
   // Open file chooser dialog
   gchar *dir = NULL;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  int number = dt_collection_get_selected_count(darktable.collection);
+  const int number = dt_collection_get_selected_count(darktable.collection);
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
@@ -1765,6 +1777,7 @@ static void dt_control_export_cleanup(void *p)
   mstorage->free_params(mstorage, sdata);
 
   g_free(settings->icc_filename);
+  g_free(settings->metadata_export);
   free(params->data);
 
   dt_control_image_enumerator_cleanup(params);
@@ -1773,7 +1786,7 @@ static void dt_control_export_cleanup(void *p)
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                       dt_iop_color_intent_t icc_intent)
+                       dt_iop_color_intent_t icc_intent, const gchar *metadata_export)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
@@ -1811,6 +1824,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->icc_type = icc_type;
   data->icc_filename = g_strdup(icc_filename);
   data->icc_intent = icc_intent;
+  data->metadata_export = g_strdup(metadata_export);
 
   dt_control_job_add_progress(job, _("export images"), TRUE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);

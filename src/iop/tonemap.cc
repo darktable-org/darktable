@@ -168,7 +168,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // Plus :
   //  Before compressing the base intensity , we remove average base intensity in order to not have
   //  variable average intensity when varying compression factor.
-  //  after compression we substract 2.0 to have an average intensity at middle tone.
+  //  after compression we subtract 2.0 to have an average intensity at middle tone.
   //
 
   const float contr = 1. / data->contrast;
@@ -279,6 +279,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

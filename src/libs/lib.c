@@ -224,8 +224,8 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   char title[1024];
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   snprintf(title, sizeof(title), _("edit `%s'"), name);
-  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
-                                       GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
+  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       _("_cancel"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_ACCEPT, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -688,7 +688,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
       size_t op_params_size = sqlite3_column_bytes(stmt, 2);
       const char *name = (char *)sqlite3_column_text(stmt, 3);
 
-      int version = module->version(module);
+      int version = module->version();
 
       if(op_version < version)
       {
@@ -789,7 +789,7 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
-  mi->version = module->version(module);
+  mi->version = module->version();
   mi->module = module;
   mi->params = module->get_params(module, &mi->params_size);
 
@@ -972,11 +972,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
 
   /* add module label */
-  char label[128];
-  // TODO: figure out why the span larger size is needed here and CSS styling is uneffective
-  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
   hw[DT_MODULE_LABEL] = gtk_label_new("");
-  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), label);
+  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), module->name(module));
   gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
