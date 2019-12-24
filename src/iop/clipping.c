@@ -2420,8 +2420,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     snprintf(view_angle, sizeof(view_angle), "%.2f°", angle);
     pango_layout_set_text(layout, view_angle, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const float text_w = ink.width;
+    const float text_h = DT_PIXEL_APPLY_DPI(16+2) / zoom_scale;
+    const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    const float xp = pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale;
+    const float yp = pzy * ht - ink.height;
+    gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
     cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_move_to(cr, pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale, pzy * ht - ink.height);
+    cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
