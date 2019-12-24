@@ -66,7 +66,7 @@
 @define-color selected_bg_color @grey_35; /* legacy stuff */
 @define-color border_color @grey_10; /* border, when used */
 @define-color bg_color @grey_15; /* general background */
-@define-color fg_color @grey_65; /* general text */
+@define-color fg_color @grey_70; /* general text */
 @define-color base_color @fg_color; /* legacy stuff */
 @define-color text_color @grey_05; /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
