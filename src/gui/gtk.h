@@ -334,7 +334,7 @@ static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
   for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
     gtk_container_child_set(GTK_CONTAINER(notebook),
                             gtk_notebook_get_nth_page(notebook, i),
-                            "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+                            "tab-expand", TRUE, "tab-fill", TRUE, (char *)NULL);
 }
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
