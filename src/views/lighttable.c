@@ -383,20 +383,18 @@ static void check_layout(dt_view_t *self)
   // make sure we reset culling layout
   _culling_destroy_slots(self);
 
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
-  gboolean vs = dt_lib_is_visible(timeline);
-
+  dt_lib_module_t *mf = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *mt = darktable.view_manager->proxy.timeline.module;
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
   {
-    gtk_widget_hide(GTK_WIDGET(timeline->widget));
-    gtk_widget_show(GTK_WIDGET(m->widget));
+    dt_lib_set_visible(mf, dt_lib_is_visible(mf));
+    dt_lib_set_visible(mt, dt_lib_is_visible(mt));
     dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(m->widget));
-    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
+    dt_lib_set_visible(mf, FALSE); // not available in this layouts
+    dt_lib_set_visible(mt, TRUE);  // always on, visibility is driven by panel state
     g_timeout_add(200, _expose_again_full, self);
     _scrollbars_restore();
   }
@@ -3312,22 +3310,6 @@ void enter(dt_view_t *self)
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
 
-  // show/hide filmstrip when entering the view
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
-  gboolean vs = dt_lib_is_visible(timeline);
-
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    gtk_widget_hide(GTK_WIDGET(timeline->widget));
-    gtk_widget_show(GTK_WIDGET(m->widget));
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(m->widget));
-    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
-  }
-
   gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
                     GDK_ACTION_COPY);
 
@@ -3350,6 +3332,20 @@ void enter(dt_view_t *self)
   lib->force_expose_all = TRUE;
   lib->activate_on_release = DT_VIEW_ERR;
   dt_collection_hint_message(darktable.collection);
+
+  // show/hide filmstrip && timeline when entering the view
+  dt_lib_module_t *mf = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *mt = darktable.view_manager->proxy.timeline.module;
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
+  {
+    dt_lib_set_visible(mf, dt_lib_is_visible(mf));
+    dt_lib_set_visible(mt, dt_lib_is_visible(mt));
+  }
+  else
+  {
+    dt_lib_set_visible(mf, FALSE); // not available in this layouts
+    dt_lib_set_visible(mt, TRUE);  // always on, visibility is driven by panel state
+  }
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
@@ -3436,12 +3432,13 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   else
     lib->full_preview_follow_sel = FALSE;
 
-  // restore panels
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
-  gtk_widget_hide(GTK_WIDGET(timeline->widget));
-  gtk_widget_show(GTK_WIDGET(m->widget));
+  // show/hide filmstrip && timeline when entering the view
+  dt_lib_module_t *mf = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *mt = darktable.view_manager->proxy.timeline.module;
+  dt_lib_set_visible(mf, dt_lib_is_visible(mf));
+  dt_lib_set_visible(mt, dt_lib_is_visible(mt));
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->full_preview_id, FALSE);
+  // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
   // we don't need the scrollbars
@@ -3480,10 +3477,9 @@ static void _preview_quit(dt_view_t *self)
   lib->full_y = 0.0f;
 
   // restore panels
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
-  gboolean vs = dt_lib_is_visible(timeline);
-
+  // show/hide filmstrip && timeline when entering the view
+  dt_lib_module_t *mf = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *mt = darktable.view_manager->proxy.timeline.module;
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     // retrieve saved slots
@@ -3493,13 +3489,13 @@ static void _preview_quit(dt_view_t *self)
     lib->slots_old = NULL;
     lib->slots_count_old = 0;
 
-    gtk_widget_hide(GTK_WIDGET(timeline->widget));
-    gtk_widget_show(GTK_WIDGET(m->widget));
+    dt_lib_set_visible(mf, dt_lib_is_visible(mf));
+    dt_lib_set_visible(mt, dt_lib_is_visible(mt));
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(m->widget));
-    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
+    dt_lib_set_visible(mf, FALSE); // not available in this layouts
+    dt_lib_set_visible(mt, TRUE);  // always on, visibility is driven by panel state
     g_timeout_add(200, _expose_again_full, self);
   }
   dt_ui_restore_panels(darktable.gui->ui);
@@ -4381,15 +4377,53 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                             GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.timeline.module;
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
   {
-    gtk_widget_hide(GTK_WIDGET(m->widget)); // to be sure
+    // we can have both timeline and filmstrip, let's toggle them circulary :
+    // nothing => filmstrip => filmstrip + timeline => timeline => nothing
+    dt_lib_module_t *mt = darktable.view_manager->proxy.timeline.module;
+    dt_lib_module_t *mf = darktable.view_manager->proxy.filmstrip.module;
+    const gboolean mtv = dt_lib_is_visible(mt);
+    const gboolean mfv = dt_lib_is_visible(mf);
+
+    if(!pb) // nothing shown (panel hidden)
+    {
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, TRUE, TRUE);
+      // we ensure that we have at least one lib visible
+      if(!mtv && !mfv) dt_lib_set_visible(mt, FALSE);
+    }
+    else
+    {
+      if(mtv && mfv)
+      {
+        dt_lib_set_visible(mf, FALSE);
+      }
+      else if(mtv)
+      {
+        // we prepare for next step
+        dt_lib_set_visible(mt, FALSE);
+        dt_lib_set_visible(mf, TRUE);
+        // and we hide the panel
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
+      }
+      else
+      {
+        dt_lib_set_visible(mt, TRUE);
+        dt_lib_set_visible(mf, TRUE);
+      }
+    }
   }
   else
   {
-    gboolean vs = dt_lib_is_visible(m);
-    dt_lib_set_visible(m, !vs);
+    // there's only timeline in bottom panel, so better hide/show it instead of timeline lib
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+    // if we show the panel, ensure that timeline is visible
+    if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, TRUE);
   }
   return TRUE;
 }
@@ -4447,7 +4481,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
 
   // timeline
-  dt_accel_register_view(self, NC_("accel", "toggle timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "toggle filmstrip/timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -4562,7 +4596,7 @@ void connect_key_accels(dt_view_t *self)
 
   // timeline
   closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle timeline", closure);
+  dt_accel_connect_view(self, "toggle filmstrip/timeline", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
