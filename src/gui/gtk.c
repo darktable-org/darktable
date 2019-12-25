@@ -1643,22 +1643,32 @@ static void _ui_init_panel_size(GtkWidget *widget)
 {
   gchar *key = NULL;
 
+  int s = 128;
   if(strcmp(gtk_widget_get_name(widget), "right") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
+    s = 350; // default panel size
+    if(key && dt_conf_key_exists(key))
+      s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
+    if(key) gtk_widget_set_size_request(widget, s, -1);
   }
-  else
+  else if(strcmp(gtk_widget_get_name(widget), "left") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
+    s = 350; // default panel size
+    if(key && dt_conf_key_exists(key))
+      s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
+    if(key) gtk_widget_set_size_request(widget, s, -1);
+  }
+  else if(strcmp(gtk_widget_get_name(widget), "bottom") == 0)
+  {
+    key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
+    s = 120; // default panel size
+    if(key && dt_conf_key_exists(key))
+      s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_height"), dt_conf_get_int("max_panel_height"));
+    if(key) gtk_widget_set_size_request(widget, -1, s);
   }
 
-  if(!key) return;
-
-  // we store and apply the new value
-  int s = 350; // default panel size
-  if(dt_conf_key_exists(key))
-    s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
-  gtk_widget_set_size_request(widget, s, -1);
   g_free(key);
 }
 
@@ -1667,6 +1677,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   /* restore left & right panel size */
   _ui_init_panel_size(ui->panels[DT_UI_PANEL_LEFT]);
   _ui_init_panel_size(ui->panels[DT_UI_PANEL_RIGHT]);
+  _ui_init_panel_size(ui->panels[DT_UI_PANEL_BOTTOM]);
 
   /* restore from a previous collapse all panel state if enabled */
   gchar *key = _panels_get_view_path("panel_collaps_state");
@@ -1791,7 +1802,8 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
 
   // for left and right sides, panels are inside a gtkoverlay
   GtkWidget *over_panel = NULL;
-  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT) over_panel = gtk_widget_get_parent(ui->panels[p]);
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    over_panel = gtk_widget_get_parent(ui->panels[p]);
 
   if(show)
   {
@@ -1926,7 +1938,14 @@ static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
 static void _panel_resize_callback(GtkWidget *w, GtkAllocation *allocation, void *user_data)
 {
   GtkWidget *handle = (GtkWidget *)user_data;
-  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), allocation->height);
+  if(strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0)
+  {
+    gtk_widget_set_size_request(handle, allocation->width, DT_PIXEL_APPLY_DPI(5));
+  }
+  else
+  {
+    gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), allocation->height);
+  }
 }
 static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
@@ -1961,15 +1980,20 @@ static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, g
       // we hide the panel
       if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
         dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
-      else
+      else if(strcmp(gtk_widget_get_name(w), "panel-handle-left") == 0)
         dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
+      else if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
     }
   }
   return TRUE;
 }
 static gboolean _panel_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY) ? GDK_SB_H_DOUBLE_ARROW : GDK_LEFT_PTR);
+  if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
+    dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY) ? GDK_SB_V_DOUBLE_ARROW : GDK_LEFT_PTR);
+  else
+    dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY) ? GDK_SB_H_DOUBLE_ARROW : GDK_LEFT_PTR);
   return TRUE;
 }
 static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
@@ -2000,18 +2024,26 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, g
       sx = CLAMP((sx + darktable.gui->widgets.panel_handle_x - x), dt_conf_get_int("min_panel_width"),
                  dt_conf_get_int("max_panel_width"));
       key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
+      gtk_widget_set_size_request(widget, sx, -1);
     }
-    else
+    else if(strcmp(gtk_widget_get_name(w), "panel-handle-left") == 0)
     {
       sx = CLAMP((sx - darktable.gui->widgets.panel_handle_x + x), dt_conf_get_int("min_panel_width"),
                  dt_conf_get_int("max_panel_width"));
       key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
+      gtk_widget_set_size_request(widget, sx, -1);
+    }
+    else if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
+    {
+      sx = CLAMP((sy + darktable.gui->widgets.panel_handle_y - y), dt_conf_get_int("min_panel_height"),
+                 dt_conf_get_int("max_panel_height"));
+      key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
+      gtk_widget_set_size_request(widget, -1, sx);
     }
 
     // we store and apply the new value
     dt_conf_set_int(key, sx);
     g_free(key);
-    gtk_widget_set_size_request(widget, sx, -1);
 
     return TRUE;
   }
@@ -2132,8 +2164,31 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* create the panel box */
   ui->panels[DT_UI_PANEL_BOTTOM] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_hexpand(GTK_WIDGET(widget), TRUE);
-  gtk_grid_attach(GTK_GRID(container), widget, 1, 2, 3, 1);
+  // gtk_widget_set_hexpand(GTK_WIDGET(widget), TRUE);
+  // gtk_widget_set_vexpand(GTK_WIDGET(widget), TRUE);
+  gtk_widget_set_name(widget, "bottom");
+  _ui_init_panel_size(widget);
+
+  GtkWidget *over = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(over), widget);
+  // we add a transparent overlay over the modules margins to resize the panel
+  GtkWidget *handle = gtk_drawing_area_new();
+  gtk_widget_set_halign(handle, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(handle, GTK_ALIGN_START);
+  gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
+  gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                    | GDK_POINTER_MOTION_HINT_MASK);
+  gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-bottom");
+  g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
+  g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
+  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
+  gtk_widget_show(handle);
+
+  gtk_grid_attach(GTK_GRID(container), over, 1, 2, 3, 1);
 
   /* add the container */
   ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
