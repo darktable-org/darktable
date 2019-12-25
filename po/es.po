@@ -2591,8 +2591,8 @@ msgid ""
 "ctrl+click + drag to use the output image"
 msgstr ""
 "Determinar el rango basado en un área de la imagen\n"
-"Pulsar y arrastrar para usar la imagen de entrada\n"
-"Ctrl+Clic+Arrastrar para usar la imagen de salida"
+"Pulsar y Arrastrar para usar la imagen de entrada\n"
+"Ctrl+Clic+Arrastre para usar la imagen de salida"
 
 #: ../src/develop/blend_gui.c:1452
 msgid "reset blend mask settings"
@@ -9495,7 +9495,7 @@ msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"Clic+Arrastrar para mover. Pulsado: mostrar/ocultar control de difuminado\n"
+"Clic+Arrastre para mover. Pulsado: mostrar/ocultar control de difuminado\n"
 "Ctrl+Clic: suavizado automático, cúspide, suavizado, simétrico. Clic derecho "
 "para eliminar"
 
@@ -9836,7 +9836,7 @@ msgstr "filtro rojo"
 #: ../src/iop/monochrome.c:596
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
-"arrastrar y desplazar la rueda del ratón para ajustar el filtro de color "
+"Arrastrar y desplazar la rueda del ratón para ajustar el filtro de color "
 "virtual"
 
 #: ../src/iop/monochrome.c:613
@@ -14530,7 +14530,7 @@ msgstr "preferencias"
 #: ../src/libs/tools/global_toolbox.c:326
 msgctxt "accel"
 msgid "show overlays"
-msgstr "mostrar info superpuesta"
+msgstr "Mostrar información superpuesta"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -15064,27 +15064,27 @@ msgstr "retroceder página"
 #: ../src/views/lighttable.c:4433
 msgctxt "accel"
 msgid "scroll up"
-msgstr "desplazar arriba"
+msgstr "desplazarse hacia arriba"
 
 #: ../src/views/lighttable.c:4434
 msgctxt "accel"
 msgid "scroll down"
-msgstr "desplazar abajo"
+msgstr "desplazarse hacia abajo"
 
 #: ../src/views/lighttable.c:4435
 msgctxt "accel"
 msgid "scroll left"
-msgstr "desplazar izquierda"
+msgstr "desplazarse a la izquierda"
 
 #: ../src/views/lighttable.c:4436
 msgctxt "accel"
 msgid "scroll right"
-msgstr "deplazar derecha"
+msgstr "deplazarse a la derecha"
 
 #: ../src/views/lighttable.c:4437
 msgctxt "accel"
 msgid "scroll center"
-msgstr "desplazar al centro"
+msgstr "desplazarse al centro"
 
 #: ../src/views/lighttable.c:4438
 msgctxt "accel"
@@ -15094,12 +15094,12 @@ msgstr "realinear imagenes a la cuadrícula"
 #: ../src/views/lighttable.c:4439
 msgctxt "accel"
 msgid "select toggle image"
-msgstr "seleccionar imagen activa"
+msgstr "selección de imagen activa"
 
 #: ../src/views/lighttable.c:4440
 msgctxt "accel"
 msgid "select single image"
-msgstr "seleccionar imagen única"
+msgstr "selección de imagen única"
 
 #. Preview key
 #: ../src/views/lighttable.c:4443
@@ -15149,7 +15149,7 @@ msgstr "cambiar a la imagen siguiente/anterior"
 
 #: ../src/views/lighttable.c:4604 ../src/views/lighttable.c:4626
 msgid "scroll the collection"
-msgstr "desplazarse por la colección"
+msgstr "navegar por la colección"
 
 #: ../src/views/lighttable.c:4610
 msgid "change number of images per row"
@@ -15161,19 +15161,19 @@ msgstr "cambiar el orden de las imágenes"
 
 #: ../src/views/lighttable.c:4632
 msgid "zoom all the images"
-msgstr "Ampliar todas las imágenes"
+msgstr "ampliar a la vez todas las imágenes"
 
 #: ../src/views/lighttable.c:4637
 msgid "pan inside all the images"
-msgstr "Desplazarse dentro de todas las imágenes"
+msgstr "desplazar a la vez todas las imágenes"
 
 #: ../src/views/lighttable.c:4643
 msgid "zoom current image"
-msgstr "ampliar la imagen actual"
+msgstr "ampliar la imagen designada"
 
 #: ../src/views/lighttable.c:4649
 msgid "pan inside current image"
-msgstr "desplazarse dentro de la imagen actual"
+msgstr "desplazarse por la imagen designada"
 
 #: ../src/views/lighttable.c:4656
 msgid "zoom the main view"
@@ -15181,7 +15181,7 @@ msgstr "ampliar la vista principal"
 
 #: ../src/views/lighttable.c:4661
 msgid "pan inside the main view"
-msgstr "Panorámica dentro de la vista principal"
+msgstr "desplazarse por el área de la vista principal"
 
 #: ../src/views/lighttable.c:4882
 msgid "set display profile"
@@ -15262,15 +15262,15 @@ msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
 
 #: ../src/views/view.c:2143
 msgid "Left click"
-msgstr "Clic izquierdo"
+msgstr "Clic"
 
 #: ../src/views/view.c:2146
 msgid "Right click"
-msgstr "Clic derecho"
+msgstr "Clic Secundario"
 
 #: ../src/views/view.c:2149
 msgid "Middle click"
-msgstr "Clic medio"
+msgstr "Clic Medio"
 
 #: ../src/views/view.c:2152
 msgid "Scroll"
@@ -15278,11 +15278,11 @@ msgstr "Desplazamiento"
 
 #: ../src/views/view.c:2155
 msgid "Left double-click"
-msgstr "Doble clic izquierdo"
+msgstr "Pulsación Doble"
 
 #: ../src/views/view.c:2158
 msgid "Right double-click"
-msgstr "Doble clic derecho"
+msgstr "Doble Clic Secundario"
 
 #: ../src/views/view.c:2161
 msgid "Drag and drop"
@@ -15290,11 +15290,11 @@ msgstr "Arrastrar y Soltar"
 
 #: ../src/views/view.c:2164
 msgid "Left click+Drag"
-msgstr "Clic izquierdo + arrastrar"
+msgstr "Clic+Arrastre"
 
 #: ../src/views/view.c:2167
 msgid "Right click+Drag"
-msgstr "Clic derecho + arrastrar"
+msgstr "Clic Secundario + Arrastre"
 
 #: ../src/views/view.c:2191
 msgid "darktable - accels window"
