@@ -1685,8 +1685,8 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   g_free(key);
   if(state)
   {
-    /* hide all panels */
-    for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(ui, k, FALSE, TRUE);
+    /* hide all panels (we let saved state as it is, to recover them when pressing TAB)*/
+    for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(ui, k, FALSE, FALSE);
   }
   else
   {
