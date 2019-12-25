@@ -1256,7 +1256,7 @@ void init_global(dt_iop_module_so_t *module)
     gchar *path = g_file_get_path(g_file_get_parent(file));
     g_object_unref(file);
 #ifdef LF_MAX_DATABASE_VERSION
-    gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
+    gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), (char *)NULL);
 #endif
 
 #ifdef LF_0395
@@ -1277,7 +1277,7 @@ void init_global(dt_iop_module_so_t *module)
       fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
-      dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", NULL);
+      dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", (char *)NULL);
       if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
         fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
