@@ -61,6 +61,10 @@ making a backup is strongly advised.
 
 - Add standard variables support in watermark module.
 
+- Allow the same short-cuts to be defined by different modules. This
+  makes it possible to have the filmstrip using the same short-cuts to
+  set stars than the lighttable.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
