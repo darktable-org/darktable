@@ -171,6 +171,7 @@ typedef struct dt_image_t
   // to understand this, look at comment for dt_histogram_roi_t
   int32_t width, height, verified_size, final_width, final_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
+  float aspect_ratio;
 
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
@@ -265,8 +266,12 @@ void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t 
 int dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid);
+/** set the image raw aspect ratio */
+void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
+/** set the image final/cropped aspect ratio if different from stored*/
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio);
 /** reset the image final/cropped aspect ratio to 0.0 */
 void dt_image_reset_aspect_ratio(const int32_t imgid);
 /** returns the orientation bits of the image from exif. */

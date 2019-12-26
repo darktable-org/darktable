@@ -41,7 +41,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
       "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
       "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
-      "raw_maximum FROM main.images WHERE id = ?1",
+      "raw_maximum, aspect_ratio FROM main.images WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -101,6 +101,10 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->raw_black_level = sqlite3_column_int(stmt, 25);
     for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
     img->raw_white_point = sqlite3_column_int(stmt, 26);
+    if(sqlite3_column_type(stmt, 27) == SQLITE_FLOAT)
+      img->aspect_ratio = sqlite3_column_double(stmt, 27);
+    else
+      img->aspect_ratio = 0.0;
 
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
@@ -218,6 +222,13 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       struct dt_image_raw_parameters_t s;
       uint32_t u;
   } flip;
+  if(!img->aspect_ratio || img->aspect_ratio < .0001)
+  {
+    if(img->orientation < ORIENTATION_SWAP_XY)
+      img->aspect_ratio = (float )img->width / (float )img->height;
+    else
+      img->aspect_ratio = (float )img->height / (float )img->width;
+  }
   if(img->id <= 0) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -227,7 +238,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       "focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14, "
       "crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18, longitude = ?19, "
       "latitude = ?20, altitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
-      "raw_maximum = ?25 WHERE id = ?26",
+      "raw_maximum = ?25, aspect_ratio = ROUND(?26,1) WHERE id = ?27",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
@@ -255,7 +266,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->colorspace);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->raw_black_level);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, img->id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 26, img->aspect_ratio);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 27, img->id);
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
