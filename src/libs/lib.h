@@ -158,8 +158,6 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module);
 gboolean dt_lib_is_visible(dt_lib_module_t *module);
 /** set the visible state of a plugin */
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
-/** toggle filmstrip visibility */
-void dt_lib_toggle_filmstrip_visibility(void);
 /** check if a plugin is to be shown in a given view */
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view);
 
