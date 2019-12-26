@@ -173,45 +173,57 @@ int position()
   return 1001;
 }
 
+static inline gboolean _is_on_lighttable()
+{
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  return cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE;
+}
+
 void init_key_accels(dt_lib_module_t *self)
 {
+  dt_view_type_flags_t views = DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
   /* setup rating key accelerators */
-  dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 2"), GDK_KEY_2, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 0"), GDK_KEY_0, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 1"), GDK_KEY_1, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 2"), GDK_KEY_2, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 3"), GDK_KEY_3, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 4"), GDK_KEY_4, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 5"), GDK_KEY_5, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
   /* setup history key accelerators */
-  dt_accel_register_lib(self, NC_("accel", "copy history"), GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy history parts"), GDK_KEY_c,
-                        GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "paste history"), GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "paste history parts"), GDK_KEY_v,
-                        GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "discard history"), 0, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "copy history"), GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "copy history parts"), GDK_KEY_c,
+                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "paste history"), GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "paste history parts"), GDK_KEY_v,
+                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "discard history"), 0, 0);
 
-  dt_accel_register_lib(self, NC_("accel", "duplicate image"), GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "duplicate image"), GDK_KEY_d, GDK_CONTROL_MASK);
 
   /* setup color label accelerators */
-  dt_accel_register_lib(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_lib(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "color green"), GDK_KEY_F3, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "color blue"), GDK_KEY_F4, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "color purple"), GDK_KEY_F5, 0);
 
   /* setup selection accelerators */
-  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "select none"), GDK_KEY_a,
+                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "select film roll"), 0, 0);
+  dt_accel_register_lib_for_views(self, views, NC_("accel", "select untouched"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
+  // this accels are handle directly by lighttable view
+  if(_is_on_lighttable()) return;
+
   // Rating accels
   dt_accel_connect_lib(self, "rate 0", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
                                                       GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
@@ -409,13 +421,6 @@ static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossi
   gtk_widget_queue_draw(strip->filmstrip);
 
   return TRUE;
-}
-
-static inline gboolean _is_on_lighttable()
-{
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  return cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE;
 }
 
 static gboolean _lib_filmstrip_size_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e,
@@ -945,8 +950,6 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
                                                                GObject *aceeleratable, guint keyval,
                                                                GdkModifierType modifier, gpointer data)
 {
-  if(_is_on_lighttable()) return FALSE;
-
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
@@ -962,8 +965,6 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
                                                                      GObject *aceeleratable, guint keyval,
                                                                      GdkModifierType modifier, gpointer data)
 {
-  if(_is_on_lighttable()) return FALSE;
-
   if(_lib_filmstrip_copy_history_key_accel_callback(accel_group, aceeleratable, keyval, modifier, data))
   {
     dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
@@ -979,8 +980,6 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
                                                                 GObject *aceeleratable, guint keyval,
                                                                 GdkModifierType modifier, gpointer data)
 {
-  if(_is_on_lighttable()) return FALSE;
-
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
@@ -1001,8 +1000,6 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
                                                                       GObject *aceeleratable, guint keyval,
                                                                       GdkModifierType modifier, gpointer data)
 {
-  if(_is_on_lighttable()) return FALSE;
-
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
@@ -1027,8 +1024,6 @@ static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup 
                                                                   GObject *aceeleratable, guint keyval,
                                                                   GdkModifierType modifier, gpointer data)
 {
-  if(_is_on_lighttable()) return FALSE;
-
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
 
@@ -1044,15 +1039,10 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
 
-  if(_is_on_lighttable()) return FALSE;
-
   strip->force_expose_all = TRUE;
 
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
-
-  /* check if images is currently loaded in darkroom */
-  if(!_is_on_lighttable() && dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
 
   const int32_t newimgid = dt_image_duplicate(mouse_over_id);
   if(newimgid != -1)
@@ -1071,8 +1061,6 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 {
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  if(_is_on_lighttable()) return FALSE;
 
   const int num = GPOINTER_TO_INT(data);
   strip->force_expose_all = TRUE;
@@ -1125,8 +1113,6 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  if(_is_on_lighttable()) return FALSE;
-
   strip->force_expose_all = TRUE;
 
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
@@ -1141,8 +1127,6 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
 {
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  if(_is_on_lighttable()) return FALSE;
 
   strip->force_expose_all = TRUE;
 
