@@ -50,7 +50,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 typedef struct dt_iop_graduatednd_params_t
 {
   float density;     // The density of filter 0-8 EV
-  float compression; // Default 0% = soft and 100% = hard
+  float hardness; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
   float hue;         // the hue
@@ -114,8 +114,8 @@ void init_presets(dt_iop_module_so_t *self)
 typedef struct dt_iop_graduatednd_gui_data_t
 {
   GtkBox *vbox;
-  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, compression, rotation, hue, saturation
-  GtkWidget *scale1, *scale2, *scale3;                   // density, compression, rotation
+  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, hardness, rotation, hue, saturation
+  GtkWidget *scale1, *scale2, *scale3;                   // density, hardness, rotation
   GtkWidget *gslider1, *gslider2;                        // hue, saturation
 
   dt_iop_color_picker_t color_picker;
@@ -130,7 +130,7 @@ typedef struct dt_iop_graduatednd_gui_data_t
 typedef struct dt_iop_graduatednd_data_t
 {
   float density;     // The density of filter 0-8 EV
-  float compression; // Default 0% = soft and 100% = hard
+  float hardness; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
   float color[4];    // RGB color of gradient
@@ -162,7 +162,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -170,7 +170,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "hardness", GTK_WIDGET(g->scale2));
 }
 
 static inline float f(const float t, const float c, const float x)
@@ -708,10 +708,10 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   {
     float comp;
     if(up)
-      comp = fminf(100.0, p->compression + 1.0);
+      comp = fminf(100.0, p->hardness + 1.0);
     else
-      comp = fmaxf(0.0, p->compression - 1.0);
-    if(comp != p->compression)
+      comp = fmaxf(0.0, p->hardness - 1.0);
+    if(comp != p->hardness)
     {
       dt_bauhaus_slider_set(g->scale2, comp);
     }
@@ -741,12 +741,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float offset = data->offset / 100.0 * 2;
 
 #if 1
-  const float filter_compression
-      = 1.0 / filter_radie / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness
+      = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
 
@@ -754,7 +754,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
                         ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
     schedule(static)
 #endif
@@ -765,8 +765,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -803,7 +803,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
                         ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
     schedule(static)
 #endif
@@ -814,8 +814,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -872,12 +872,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float offset = data->offset / 100.0 * 2;
 
 #if 1
-  const float filter_compression = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness = 1.0 / filter_radie
+                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
 
@@ -885,7 +885,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
                         ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
     schedule(static)
 #endif
@@ -896,8 +896,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
@@ -936,7 +936,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
                         ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
     schedule(static)
 #endif
@@ -947,8 +947,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
@@ -1016,18 +1016,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float density = data->density;
 
 #if 1
-  const float filter_compression = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness = 1.0 / filter_radie
+                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
   const float length_base = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + iy * hh_inv) - 1.0 + offset)
-                            * filter_compression;
-  const float length_inc_y = -cosv * hh_inv * filter_compression;
-  const float length_inc_x = sinv * hw_inv * filter_compression;
+                            * filter_hardness;
+  const float length_inc_y = -cosv * hh_inv * filter_hardness;
+  const float length_inc_x = sinv * hw_inv * filter_hardness;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -1081,12 +1081,12 @@ static void density_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void compression_callback(GtkWidget *slider, gpointer user_data)
+static void hardness_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->compression = dt_bauhaus_slider_get(slider);
+  p->hardness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1110,7 +1110,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_graduatednd_data_t *d = (dt_iop_graduatednd_data_t *)piece->data;
 
   d->density = p->density;
-  d->compression = p->compression;
+  d->hardness = p->hardness;
   d->rotation = p->rotation;
   d->offset = p->offset;
 
@@ -1144,7 +1144,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 
   dt_bauhaus_slider_set(g->scale1, p->density);
-  dt_bauhaus_slider_set(g->scale2, p->compression);
+  dt_bauhaus_slider_set(g->scale2, p->hardness);
   dt_bauhaus_slider_set(g->scale3, p->rotation);
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
@@ -1220,13 +1220,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale1, _("the density in EV for the filter"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(density_callback), self);
 
-  /* compression */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compression, 0);
+  /* hardness */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->hardness, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("hardness"));
   /* xgettext:no-c-format */
-  gtk_widget_set_tooltip_text(g->scale2, _("compression of graduation:\n0% = soft, 100% = hard"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(compression_callback), self);
+  gtk_widget_set_tooltip_text(g->scale2, _("hardness of graduation:\n0% = soft, 100% = hard"));
+  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(hardness_callback), self);
 
   /* rotation */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -180, 180, 0.5, p->rotation, 2);
@@ -1309,7 +1309,7 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_SHIFT_MASK;
   a->action = DT_MOUSE_ACTION_SCROLL;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change compression"), self->name());
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change hardness"), self->name());
   lm = g_slist_append(lm, a);
 
   return lm;
