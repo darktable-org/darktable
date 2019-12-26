@@ -80,6 +80,7 @@ typedef struct dt_lib_timeline_t
   int surface_width;
   int surface_height;
   int32_t panel_width;
+  int32_t panel_height;
 
   GList *blocks;
   dt_lib_timeline_zooms_t zoom;
@@ -963,14 +964,16 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int32_t width = allocation.width;
+  const int32_t height = allocation.height;
 
   // windows could have been expanded for example, we need to create a new surface of the good size and redraw
-  if(width != strip->panel_width)
+  if(width != strip->panel_width || height != strip->panel_height)
   {
     // if it's the first show, we need to recompute the scroll too
-    if(strip->panel_width == 0)
+    if(strip->panel_width == 0 || strip->panel_height == 0)
     {
       strip->panel_width = width;
+      strip->panel_height = height;
       strip->time_pos = _selection_scroll_to(strip->start_t, strip);
     }
     if(strip->surface)
@@ -985,6 +988,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   {
     strip->surface_width = _block_get_at_zoom(self, width);
     strip->panel_width = width;
+    strip->panel_height = height;
     strip->surface_height = allocation.height;
 
     // we set the width of a unit (bar) in the drawing (depending of the zoom level)
@@ -1406,82 +1410,6 @@ static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossin
   return TRUE;
 }
 
-static gboolean _lib_timeline_size_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
-{
-  dt_control_change_cursor((e->type == GDK_ENTER_NOTIFY) ? GDK_SB_V_DOUBLE_ARROW : GDK_LEFT_PTR);
-  return TRUE;
-}
-
-static gboolean _lib_timeline_size_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *d = (dt_lib_timeline_t *)self->data;
-
-  if(e->button == 1)
-  {
-    if(e->type == GDK_BUTTON_PRESS)
-    {
-/* store current  mousepointer position */
-#if GTK_CHECK_VERSION(3, 20, 0)
-      gdk_window_get_device_position(e->window,
-                                     gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(
-                                         gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
-                                     &d->size_handle_x, &d->size_handle_y, 0);
-#else
-      gdk_window_get_device_position(
-          gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),
-          gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(
-              gdk_window_get_display(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
-          &d->size_handle_x, &d->size_handle_y, NULL);
-#endif
-
-      gtk_widget_get_size_request(d->timeline, NULL, &d->size_handle_height);
-      d->size_handle_is_dragging = TRUE;
-      cairo_surface_destroy(d->surface);
-      d->surface = NULL;
-    }
-    else if(e->type == GDK_BUTTON_RELEASE)
-      d->size_handle_is_dragging = FALSE;
-  }
-  return TRUE;
-}
-
-static gboolean _lib_timeline_size_handle_motion_notify_callback(GtkWidget *w, GdkEventButton *e,
-                                                                 gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_timeline_t *d = (dt_lib_timeline_t *)self->data;
-  if(d->size_handle_is_dragging)
-  {
-    gint x, y, sx, sy;
-#if GTK_CHECK_VERSION(3, 20, 0)
-    gdk_window_get_device_position(e->window,
-                                   gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(
-                                       gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
-                                   &x, &y, 0);
-#else
-    gdk_window_get_device_position(
-        gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),
-        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(
-            gdk_window_get_display(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui))))),
-        &x, &y, NULL);
-#endif
-
-    gtk_widget_get_size_request(d->timeline, &sx, &sy);
-    sy = CLAMP(d->size_handle_height + (d->size_handle_y - y), DT_PIXEL_APPLY_DPI(64), DT_PIXEL_APPLY_DPI(400));
-
-    dt_conf_set_int("plugins/lighttable/timeline/height", sy);
-
-    cairo_surface_destroy(d->surface);
-    d->surface = NULL;
-    gtk_widget_set_size_request(d->timeline, -1, sy);
-
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "start selection"), GDK_KEY_bracketleft, 0);
@@ -1521,10 +1449,6 @@ void gui_init(dt_lib_module_t *self)
   /* creating timeline box*/
   d->timeline = gtk_event_box_new();
 
-  /* set size of timeline */
-  int32_t height = dt_conf_get_int("plugins/lighttable/timeline/height");
-  gtk_widget_set_size_request(d->timeline, -1, CLAMP(height, DT_PIXEL_APPLY_DPI(64), DT_PIXEL_APPLY_DPI(400)));
-
   gtk_widget_add_events(d->timeline, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                                          | GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask
                                          | GDK_LEAVE_NOTIFY_MASK);
@@ -1539,25 +1463,8 @@ void gui_init(dt_lib_module_t *self)
                    self);
   g_signal_connect(G_OBJECT(d->timeline), "leave-notify-event", G_CALLBACK(_lib_timeline_mouse_leave_callback),
                    self);
-  /* create the resize handle */
-  GtkWidget *size_handle = gtk_event_box_new();
-  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_add_events(size_handle, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
-                                         | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                                         | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(size_handle), "button-press-event",
-                   G_CALLBACK(_lib_timeline_size_handle_button_callback), self);
-  g_signal_connect(G_OBJECT(size_handle), "button-release-event",
-                   G_CALLBACK(_lib_timeline_size_handle_button_callback), self);
-  g_signal_connect(G_OBJECT(size_handle), "motion-notify-event",
-                   G_CALLBACK(_lib_timeline_size_handle_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(size_handle), "leave-notify-event",
-                   G_CALLBACK(_lib_timeline_size_handle_cursor_callback), self);
-  g_signal_connect(G_OBJECT(size_handle), "enter-notify-event",
-                   G_CALLBACK(_lib_timeline_size_handle_cursor_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), size_handle, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, TRUE, TRUE, 0);
 
   // we update the selection with actual collect rules
   _lib_timeline_collection_changed(NULL, self);

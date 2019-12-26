@@ -29,6 +29,20 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>min_panel_height</name>
+    <type>int</type>
+    <default>64</default>
+    <shortdescription>minimum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>max_panel_height</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>maximum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>slideshow_delay</name>
     <type>int</type>
@@ -577,26 +591,12 @@
     <shortdescription>enable filmstrip</shortdescription>
     <longdescription>enable the filmstrip in darkroom, tethering and map modes.</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/filmstrip/height</name>
-    <type>int</type>
-    <default>120</default>
-    <shortdescription>height of filmstrip</shortdescription>
-    <longdescription>height of the filmstrip in pixels</longdescription>
-  </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/timeline/visible</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>enable timeline</shortdescription>
     <longdescription>enable the timeline in lighttable mode.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/timeline/height</name>
-    <type>int</type>
-    <default>72</default>
-    <shortdescription>height of timeline</shortdescription>
-    <longdescription>height of the timeline in pixels</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/timeline/last_zoom</name>

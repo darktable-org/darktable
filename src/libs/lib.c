@@ -1071,21 +1071,42 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
   sqlite3_finalize(stmt);
 }
 
+static gchar *_get_lib_view_path(dt_lib_module_t *module, char *suffix)
+{
+  if(!darktable.view_manager) return NULL;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  // in lighttable, we store panels states per layout
+  char lay[32] = "";
+  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+  }
+  else if(g_strcmp0(cv->module_name, "darkroom") == 0)
+  {
+    g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
+  }
+
+  return dt_util_dstrcat(NULL, "plugins/%s/%s%s%s", cv->module_name, lay, module->plugin_name, suffix);
+}
+
 gboolean dt_lib_is_visible(dt_lib_module_t *module)
 {
-  char key[512];
-  g_snprintf(key, sizeof(key), "plugins/lighttable/%s/visible", module->plugin_name);
-  if(dt_conf_key_exists(key)) return dt_conf_get_bool(key);
+  gchar *key = _get_lib_view_path(module, "_visible");
+  gboolean ret = TRUE; /* if not key found, always make module visible */
+  if(key && dt_conf_key_exists(key)) ret = dt_conf_get_bool(key);
+  g_free(key);
 
-  /* if not key found, always make module visible */
-  return TRUE;
+  return ret;
 }
 
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
-  char key[512];
-  g_snprintf(key, sizeof(key), "plugins/lighttable/%s/visible", module->plugin_name);
+  gchar *key = _get_lib_view_path(module, "_visible");
   dt_conf_set_bool(key, visible);
+  g_free(key);
   if(module->widget)
   {
     if(module->expander)
@@ -1099,26 +1120,6 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
       else
         gtk_widget_hide(GTK_WIDGET(module->widget));
     }
-  }
-}
-
-void dt_lib_toggle_filmstrip_visibility(void)
-{
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  if(!m) return;
-  const gboolean vs = dt_lib_is_visible(m);
-  const gboolean ps = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-
-  if(ps) // bottom panel is visible, just hide/show filmstrip
-  {
-    dt_lib_set_visible(m, !vs);
-  }
-  else // bottom panel is not visible
-  {
-    // show it
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, TRUE, TRUE);
-    // and display filstrip only if it was not activated
-    if(!vs) dt_lib_set_visible(m, !vs);
   }
 }
 
