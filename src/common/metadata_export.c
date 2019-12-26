@@ -20,7 +20,7 @@
 #include "control/conf.h"
 #include "common/metadata_export.h"
 
-uint32_t dt_lib_export_metadata_default_flags()
+uint32_t dt_lib_export_metadata_default_flags(void)
 {
   const uint32_t flags = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG | DT_META_DT_HISTORY;
   return flags;
@@ -29,7 +29,15 @@ uint32_t dt_lib_export_metadata_default_flags()
 const char flags_keyword[] = "plugins/lighttable/export/metadata_flags";
 const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
 
-char *dt_lib_export_metadata_get_conf()
+uint32_t dt_lib_export_metadata_get_conf_flags(void)
+{
+  char *metadata_flags = dt_conf_get_string(flags_keyword);
+  const int32_t flags = strtol(metadata_flags, NULL, 16);
+  g_free(metadata_flags);
+  return flags;
+}
+
+char *dt_lib_export_metadata_get_conf(void)
 {
   char *metadata_presets = NULL;
   if(dt_conf_key_exists(flags_keyword))

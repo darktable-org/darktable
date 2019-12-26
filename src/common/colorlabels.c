@@ -38,7 +38,7 @@ typedef struct dt_undo_colorlabels_t
   uint8_t after;
 } dt_undo_colorlabels_t;
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_COLORLABELS)
   {
@@ -59,6 +59,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
         if(labels & (1<<color))
           dt_colorlabels_set_label(clabels->imgid, color);
 
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(clabels->imgid));
       list = g_list_next(list);
     }
   }

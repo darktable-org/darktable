@@ -1064,7 +1064,7 @@ delete_next_file:
   return 0;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs)
 {
   dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)item;
   GList *l;
@@ -1082,6 +1082,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t it
     dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)l->data;
     dt_image_set_location_and_elevation(imgid, geoloc);
 
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
     l = g_list_next(l);
   }
 }
@@ -1310,7 +1311,6 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   dt_control_export_t *settings = (dt_control_export_t *)params->data;
   GList *t = params->index;
@@ -1352,11 +1352,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
   dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("exporting %d image to %s", "exporting %d images to %s", total),
-           total, mstorage->name(mstorage));
-  // update the message. initialize_store() might have changed the number of images
-  dt_control_job_set_progress_message(job, message);
 
   double fraction = 0;
 
@@ -1365,7 +1360,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
-  guint num = 0;
   // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
   // sensible assumption?
   guint tagid = 0, etagid = 0;
@@ -1383,14 +1377,15 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    if(!t)
-      imgid = 0;
-    else
-    {
-      imgid = GPOINTER_TO_INT(t->data);
-      t = g_list_delete_link(t, t);
-      num = total - g_list_length(t);
-    }
+    const int imgid = GPOINTER_TO_INT(t->data);
+    t = g_list_delete_link(t, t);
+    const guint num = total - g_list_length(t);
+
+    // progress message
+    char message[512] = { 0 };
+    snprintf(message, sizeof(message), "exporting %d / %d to %s", num, total, mstorage->name(mstorage));
+    // update the message. initialize_store() might have changed the number of images
+    dt_control_job_set_progress_message(job, message);
 
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid);

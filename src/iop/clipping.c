@@ -240,7 +240,8 @@ typedef struct dt_iop_clipping_data_t
 {
   float angle;              // rotation angle
   float aspect;             // forced aspect ratio
-  float m[4];               // rot matrix
+  float m[4];               // rot/mirror matrix
+  float inv_m[4];           // inverse of m (m^-1)
   float ki_h, k_h;          // keystone correction, ki and corrected k
   float ki_v, k_v;          // keystone correction, ki and corrected k
   float tx, ty;             // rotation center
@@ -391,11 +392,18 @@ static inline void backtransform(float *x, float *o, const float *m, const float
   mul_mat_vec_2(m, x, o);
 }
 
-static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
+static inline void inv_matrix(float *m, float *inv_m)
 {
   const float det = (m[0] * m[3]) - (m[1] * m[2]);
-  const float m_inv[] = { m[3] / det, -m[1] / det, -m[2] / det , m[0] / det };
-  mul_mat_vec_2(m_inv, x, o);
+  inv_m[0] =  m[3] / det;
+  inv_m[1] = -m[1] / det;
+  inv_m[2] = -m[2] / det;
+  inv_m[3] =  m[0] / det;
+}
+
+static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
+{
+  mul_mat_vec_2(m, x, o);
   o[1] *= (1.0f + o[0] * t_h);
   o[0] *= (1.0f + o[1] * t_v);
 }
@@ -437,7 +445,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     pi[0] -= d->tx / factor;
     pi[1] -= d->ty / factor;
     // transform this point using matrix m
-    transform(pi, po, d->m, d->k_h, d->k_v);
+    transform(pi, po, d->inv_m, d->k_h, d->k_v);
 
     if(d->flip)
     {
@@ -561,7 +569,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
-    keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
+    if(d->k_apply == 1)
+      keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -674,10 +683,15 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     d->m[3] = -rt[3];
   }
 
+  // now compute inverse of m
+  inv_matrix(d->m, d->inv_m);
+
   if(d->k_apply == 0 && d->crop_auto == 1) // this is the old solution.
   {
-    *roi_out = *roi_in;
+    float inv_rt[4] = { 0.0f };
+    inv_matrix(rt, inv_rt);
 
+    *roi_out = *roi_in;
     // correct keystone correction factors by resolution of this buffer
     const float kc = 1.0f / fminf(roi_in->width, roi_in->height);
     d->k_h = d->ki_h * kc;
@@ -698,7 +712,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       for(int c = 0; c < 4; c++)
       {
         get_corner(oaabb, c, p);
-        transform(p, o, rt, d->k_h, d->k_v);
+        transform(p, o, inv_rt, d->k_h, d->k_v);
         for(int k = 0; k < 2; k++)
           if(fabsf(o[k]) > 0.001f) newcropscale = fminf(newcropscale, aabb[(o[k] > 0 ? 2 : 0) + k] / o[k]);
       }
@@ -761,7 +775,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       // rotation
       p[0] = o[0] - .5f * roi_in->width;
       p[1] = o[1] - .5f * roi_in->height;
-      transform(p, o, d->m, d->k_h, d->k_v);
+      transform(p, o, d->inv_m, d->k_h, d->k_v);
       o[0] += .5f * roi_in->width;
       o[1] += .5f * roi_in->height;
 
@@ -944,7 +958,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
-    keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
+    if(d->k_apply == 1)
+      keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -2420,8 +2435,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     snprintf(view_angle, sizeof(view_angle), "%.2f°", angle);
     pango_layout_set_text(layout, view_angle, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const float text_w = ink.width;
+    const float text_h = DT_PIXEL_APPLY_DPI(16+2) / zoom_scale;
+    const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    const float xp = pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale;
+    const float yp = pzy * ht - ink.height;
+    gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
     cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_move_to(cr, pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale, pzy * ht - ink.height);
+    cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -3039,12 +3061,18 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
   if(g->straightening)
   {
-    float dx = x - g->button_down_x, dy = y - g->button_down_y;
+    // adjust the line with possible current angle and flip on this module
+    float pts[4] = { x, y, g->button_down_x, g->button_down_y };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+    float dx = pts[0] - pts[2];
+    float dy = pts[1] - pts[3];
     if(dx < 0)
     {
       dx = -dx;
       dy = -dy;
     }
+
     float angle = atan2f(dy, dx);
     if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0)) angle = 0.0f;
     float close = angle;
@@ -3054,9 +3082,11 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       close = -M_PI / 2.0 - close;
     else
       close = -close;
-    float a = 180.0 / M_PI * close + g->button_down_angle;
+
+    float a = 180.0 / M_PI * close;
     if(a < -180.0) a += 360.0;
     if(a > 180.0) a -= 360.0;
+
     dt_bauhaus_slider_set(g->angle, -a);
     dt_control_change_cursor(GDK_LEFT_PTR);
   }
