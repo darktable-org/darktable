@@ -40,7 +40,7 @@ typedef struct dt_undo_tags_t
 static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif);
 static void _detach_tag(guint tagid, gint imgid, gboolean undo_actif);
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_TAGS)
   {
@@ -79,6 +79,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 
       dt_image_synch_xmp(tags->imgid);
 
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(tags->imgid));
       list = g_list_next(list);
     }
 

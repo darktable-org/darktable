@@ -137,6 +137,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
+  dev->iso_12646.enabled = FALSE;
+
   dev->second_window.zoom = DT_ZOOM_FIT;
   dev->second_window.closeup = 0;
   dev->second_window.zoom_x = dev->second_window.zoom_y = 0;
@@ -704,7 +706,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 {
   // fixed border on every side
-  const int tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->border_size;
   wd -= 2*tb;
   ht -= 2*tb;
   if(dev->width != wd || dev->height != ht)
@@ -721,7 +723,6 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t num)
 {
-//  if(!image) return 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
