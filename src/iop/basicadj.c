@@ -119,6 +119,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clip"));
 }
 
@@ -133,6 +134,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "middle grey", GTK_WIDGET(g->sl_middle_grey));
   dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->sl_brightness));
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->sl_saturation));
+  dt_accel_connect_slider_iop(self, "vibrance", GTK_WIDGET(g->sl_vibrance));
   dt_accel_connect_slider_iop(self, "clip", GTK_WIDGET(g->sl_clip));
 }
 
