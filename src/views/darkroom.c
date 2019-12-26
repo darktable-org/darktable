@@ -3331,7 +3331,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
 
   // fullscreen view
-  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_z, 0);
+  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_w, 0);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
