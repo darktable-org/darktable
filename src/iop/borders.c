@@ -1043,7 +1043,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->pos_h_slider, NULL, _("horizontal position"));
   dt_bauhaus_slider_set_format(g->pos_h_slider, "%.2f");
   g_signal_connect(G_OBJECT(g->pos_h_slider), "value-changed", G_CALLBACK(pos_h_slider_callback), self);
-  gtk_widget_set_tooltip_text(g->pos_h_slider, _("costom horizontal position"));
+  gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h_slider, TRUE, TRUE, 0);
 
   g->pos_v = dt_bauhaus_combobox_new(self);
@@ -1057,7 +1057,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->pos_v_slider, NULL, _("vertical position"));
   dt_bauhaus_slider_set_format(g->pos_v_slider, "%.2f");
   g_signal_connect(G_OBJECT(g->pos_v_slider), "value-changed", G_CALLBACK(pos_v_slider_callback), self);
-  gtk_widget_set_tooltip_text(g->pos_v_slider, _("costom vertical position"));
+  gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v_slider, TRUE, TRUE, 0);
 
   gui_init_positions(self);
