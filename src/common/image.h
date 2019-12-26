@@ -74,6 +74,8 @@ typedef enum
   DT_IMAGE_MONOCHROME = 32768,
   // image has usercrop information
   DT_IMAGE_HAS_USERCROP = 65536,
+  // image is an sraw
+  DT_IMAGE_S_RAW = 1 << 17,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -220,6 +222,10 @@ int dt_image_is_raw(const dt_image_t *img);
 int dt_image_is_hdr(const dt_image_t *img);
 /** returns non-zero if this image was taken using a monochrome camera */
 int dt_image_is_monochrome(const dt_image_t *img);
+/** returns non-zero if the image supports a color correction matrix */
+int dt_image_is_matrix_correction_supported(const dt_image_t *img);
+/** returns non-zero if the image supports the rawprepare module */
+int dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
 void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);

@@ -107,35 +107,29 @@ int dt_image_is_hdr(const dt_image_t *img)
     return 0;
 }
 
+// NULL terminated list of supported non-RAW extensions
+//  const char *dt_non_raw_extensions[]
+//    = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
+//        ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
+//        ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
 int dt_image_is_raw(const dt_image_t *img)
 {
-  // NULL terminated list of supported non-RAW extensions
-  const char *dt_non_raw_extensions[]
-      = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
-          ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
-          ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
-
-  if(img->flags & DT_IMAGE_RAW) return TRUE;
-
-  const char *c = img->filename + strlen(img->filename);
-  while(*c != '.' && c > img->filename) c--;
-
-  gboolean isnonraw = FALSE;
-  for(const char **i = dt_non_raw_extensions; *i != NULL; i++)
-  {
-    if(!g_ascii_strncasecmp(c, *i, strlen(*i)))
-    {
-      isnonraw = TRUE;
-      break;
-    }
-  }
-
-  return !isnonraw;
+   return (img->flags & DT_IMAGE_RAW);
 }
 
 int dt_image_is_monochrome(const dt_image_t *img)
 {
    return (img->flags & DT_IMAGE_MONOCHROME);
+}
+
+int dt_image_is_matrix_correction_supported(const dt_image_t *img)
+{
+   return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME) );
+} 
+
+int dt_image_is_rawprepare_supported(const dt_image_t *img)
+{
+   return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW));
 }
 
 const char *dt_image_film_roll_name(const char *path)

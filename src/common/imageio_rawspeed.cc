@@ -367,7 +367,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // sraw aren't real raw, but not ldr either (need white balance and stuff)
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
-
+  img->flags |= DT_IMAGE_S_RAW;
   img->width = r->dim.x;
   img->height = r->dim.y;
 

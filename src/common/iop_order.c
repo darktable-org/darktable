@@ -2879,7 +2879,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   }
   if(profile_info == NULL)
   {
-    if (!dt_image_is_monochrome(&self->dev->image_storage))
+    // The range information below is not informative in case it's the colorin module itself.
+    if (strcmp(self->op,"colorin"))
       fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return;
@@ -3138,7 +3139,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   }
   if(profile_info == NULL)
   {
-    if (!dt_image_is_monochrome(&self->dev->image_storage))
+    // The range information below is not informative in case it's the colorin module itself.
+    if (strcmp(self->op,"colorin"))
       fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return FALSE;
