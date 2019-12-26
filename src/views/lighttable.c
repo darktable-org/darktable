@@ -1110,7 +1110,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   const int max_rows = 1 + (int)((height) / ht + .5);
   lib->max_rows = max_rows;
-  lib->visible_rows = height / ht;
+  lib->visible_rows = MAX(1, height / ht);
   const int max_cols = iir;
 
   int id;
@@ -1131,7 +1131,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     cairo_set_font_size(cr, fs);
-    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
     pango_layout_set_text(layout, _("there are no images in this collection"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy - ink.height - ink.x);
@@ -1146,25 +1146,25 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
     pango_cairo_show_layout(cr, layout);
     cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 3 * ls - ls * .25f);
     cairo_line_to(cr, 0.0f, 10.0f);
-    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
     pango_layout_set_text(layout, _("try to relax the filter settings in the top panel"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
-    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
     pango_cairo_show_layout(cr, layout);
     cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
     cairo_line_to(cr, width * 0.5f, 0.0f);
-    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
     pango_layout_set_text(layout, _("or add images in the collection module in the left panel"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
-    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
     pango_cairo_show_layout(cr, layout);
     cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 6 * ls - ls * 0.25f);
     cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
-    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
 
     pango_font_description_free(desc);
@@ -2581,43 +2581,33 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If more than one image is selected, iterate over these. */
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
-    int sel_group_count = 0;
-    int current_group = -1;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-        &stmt, NULL);
-    while (sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      uint32_t imgid  = sqlite3_column_int(stmt, 0);
-      const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if (image->group_id != current_group)
-      {
-        sel_group_count++;
-        current_group = image->group_id;
-      }
-      dt_image_cache_read_release(darktable.image_cache, image);
-    }
+    int sel_count = 0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT count(*) FROM memory.collected_images AS col, main.selected_images as sel "
+                                "WHERE col.imgid=sel.imgid",
+                                -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] selected group: %d\n", sel_group_count);
 
     /* How many images to preload in advance. */
     int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
     gboolean preload = preload_num > 0;
     preload_num = CLAMPS(preload_num, 1, 99999);
 
-    gchar *stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
-                                         "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                                         (sel_group_count <= 1) ?
+    gchar *stmt_string
+        = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
+                          "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
+                          (sel_count <= 1) ?
                                            /* We want to operate on the currently collected images,
                                             * so there's no need to match against the selection */
-                                           "" :
+                              ""
+                                           :
                                            /* Limit the matches to the current selection */
-                                           "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
-                                         (offset >= 0) ? ">" : "<",
-                                         lib->full_preview_rowid,
-                                         /* Direction of our navigation -- when showing for the first time,
-                                          * i.e. when offset == 0, assume forward navigation */
-                                         (offset >= 0) ? "ASC" : "DESC",
-                                         preload_num);
+                              "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
+                          (offset >= 0) ? ">" : "<", lib->full_preview_rowid,
+                          /* Direction of our navigation -- when showing for the first time,
+                           * i.e. when offset == 0, assume forward navigation */
+                          (offset >= 0) ? "ASC" : "DESC", preload_num);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
@@ -3430,8 +3420,10 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   sqlite3_stmt *stmt;
   int nb_sel = 0;
   uint32_t imgid_sel = -1;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
+                              "WHERE col.imgid=sel.imgid",
+                              -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     nb_sel++;
@@ -3720,7 +3712,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   lib->force_expose_all = TRUE;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if((lib->full_preview_id > -1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
      && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
     if(up)
@@ -4005,7 +3997,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           begin_pan(lib, x, y);
 
         // in culling mode, we allow to pan only if one image is zoomed
-        if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+        if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
         {
           if(lib->slots_count <= _get_max_in_memory_images())
           {

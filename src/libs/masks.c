@@ -1147,7 +1147,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     if(from_group && depth < 3)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("use inversed shape"));
+      item = gtk_menu_item_new_with_label(_("use inverted shape"));
       g_signal_connect(item, "activate", (GCallback)_tree_inverse, self);
       gtk_menu_shell_append(menu, item);
       if(nb == 1)

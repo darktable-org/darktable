@@ -33,7 +33,7 @@ dt_undo_lt_history_t *dt_history_snapshot_item_init(void);
 
 void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_end);
 
-void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action);
+void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs);
 
 void dt_history_snapshot_undo_lt_history_data_free(gpointer data);
 
