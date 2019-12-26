@@ -36,9 +36,9 @@ making a backup is strongly advised.
   the mouse. The positions of each one is remembered for each views'
   layout.
 
-- Add darkroom loading screen.
-
 ## New Features And Changes
+
+- Add darkroom loading screen.
 
 - Make modules labels a bit smaller for better UI consistency.
 
