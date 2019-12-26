@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-26 22:33+0100\n"
-"PO-Revision-Date: 2019-12-26 22:36+0100\n"
+"POT-Creation-Date: 2019-12-27 00:01+0100\n"
+"PO-Revision-Date: 2019-12-27 00:01+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5999,7 +5999,8 @@ msgstr ""
 "en poussant les valeurs RVB négativement."
 
 #: ../src/iop/basicadj.c:703 ../src/iop/exposure.c:808
-#: ../src/iop/exposure.c:887 ../src/iop/exposure.c:926 ../src/iop/relight.c:359
+#: ../src/iop/exposure.c:887 ../src/iop/exposure.c:926
+#: ../src/iop/graduatednd.c:1218 ../src/iop/relight.c:359
 #: ../src/iop/soften.c:749
 #, c-format
 msgid "%.2f EV"
@@ -9001,6 +9002,11 @@ msgstr "grain"
 msgctxt "accel"
 msgid "coarseness"
 msgstr "granularité"
+
+#: ../src/iop/grain.c:631
+#, c-format
+msgid "%.0f ISO"
+msgstr "%.0f ISO"
 
 #: ../src/iop/grain.c:633
 msgid "the grain size (~ISO of the film)"
