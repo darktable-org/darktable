@@ -2591,7 +2591,7 @@ msgid ""
 "ctrl+click + drag to use the output image"
 msgstr ""
 "Determinar el rango basado en un área de la imagen\n"
-"Pulsar y Arrastrar para usar la imagen de entrada\n"
+"Pulsar y arrastrar para usar la imagen de entrada\n"
 "Ctrl+Clic+Arrastre para usar la imagen de salida"
 
 #: ../src/develop/blend_gui.c:1452
@@ -5758,7 +5758,7 @@ msgstr "mezcla"
 
 #: ../src/iop/atrous.c:1906 ../src/iop/colorzones.c:2360
 msgid "make effect stronger or weaker"
-msgstr "hacer mas suave o fuerte el efecto"
+msgstr "Hacer más suave o más intenso el efecto"
 
 #: ../src/iop/basecurve.c:178
 msgid "neutral"
@@ -7534,7 +7534,7 @@ msgstr "película blanco y negro"
 #: ../src/iop/colorzones.c:2086 ../src/iop/retouch.c:2238
 #: ../src/iop/toneequal.c:2017
 msgid "cannot display masks when the blending mask is displayed"
-msgstr "No se puede mostrar máscaras cuando se muestra la de fusión"
+msgstr "No se pueden mostrar máscaras cuando se muestra la de fusión"
 
 #: ../src/iop/colorzones.c:2292 ../src/iop/rgbcurve.c:1571
 msgid ""
@@ -7567,7 +7567,7 @@ msgstr "seleccionar por"
 
 #: ../src/iop/colorzones.c:2342
 msgid "choose selection criterion, will be the abscissa in the graph"
-msgstr "Elegir criterio de selección, que es la abscisa en el gráfico"
+msgstr "Elegir el criterio de selección, que corresponde a la abscisa en el gráfico"
 
 #: ../src/iop/colorzones.c:2350
 msgid "process mode"
@@ -7668,7 +7668,7 @@ msgstr "Radio para detección de halos"
 
 #: ../src/iop/defringe.c:480
 msgid "threshold for defringe, higher values mean less defringing"
-msgstr "Umbral para reducir halos. Mayores valores significan menor reducción"
+msgstr "Umbral para reducir halos. Valores significan menor reducción"
 
 #: ../src/iop/demosaic.c:162
 msgid "demosaic"
@@ -8050,7 +8050,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4098
 msgid "finetune denoising strength"
-msgstr "Fuerza de la corrección para reducir el ruido"
+msgstr "Intensidad de la corrección para reducir el ruido"
 
 #: ../src/iop/denoiseprofile.c:4099
 msgid ""
@@ -11408,7 +11408,7 @@ msgstr "Factor de proporción entre la altura y la anchura"
 
 #: ../src/iop/vignette.c:1195
 msgid "add some level of random noise to prevent banding"
-msgstr "Añadir cierto nivel aleatorio de ruido para prevenir bandas"
+msgstr "Añadir cierto nivel de ruido aleatorio para prevenir bandas"
 
 #: ../src/iop/vignette.c:1222
 #, c-format
