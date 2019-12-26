@@ -1003,7 +1003,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size * 100.0, 2);
   dt_bauhaus_widget_set_label(g->size, NULL, _("border size"));
-  dt_bauhaus_slider_set_format(g->size, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->size, "%.2f %%");
   g_signal_connect(G_OBJECT(g->size), "value-changed", G_CALLBACK(size_callback), self);
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->size, TRUE, TRUE, 0);
@@ -1064,14 +1064,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size * 100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, NULL, _("frame line size"));
-  dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->frame_size, "%.2f %%");
   g_signal_connect(G_OBJECT(g->frame_size), "value-changed", G_CALLBACK(frame_size_callback), self);
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_size, TRUE, TRUE, 0);
 
   g->frame_offset = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_offset * 100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_offset, NULL, _("frame line offset"));
-  dt_bauhaus_slider_set_format(g->frame_offset, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->frame_offset, "%.2f %%");
   g_signal_connect(G_OBJECT(g->frame_offset), "value-changed", G_CALLBACK(frame_offset_callback), self);
   gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_offset, TRUE, TRUE, 0);

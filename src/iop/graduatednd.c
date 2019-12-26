@@ -1215,7 +1215,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -8.0, 8.0, 0.1, p->density, 2);
-  dt_bauhaus_slider_set_format(g->scale1, "%.2fev");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("density"));
   gtk_widget_set_tooltip_text(g->scale1, _("the density in EV for the filter"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(density_callback), self);

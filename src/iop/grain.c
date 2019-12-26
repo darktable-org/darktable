@@ -628,7 +628,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
-  dt_bauhaus_slider_set_format(g->scale1, "%.0fISO");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.0f ISO"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->scale1, _("the grain size (~ISO of the film)"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(scale_callback), self);
