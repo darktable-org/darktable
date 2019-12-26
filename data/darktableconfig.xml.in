@@ -584,20 +584,6 @@
     <shortdescription>capture view mode</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/filmstrip/visible</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>enable filmstrip</shortdescription>
-    <longdescription>enable the filmstrip in darkroom, tethering and map modes.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/timeline/visible</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>enable timeline</shortdescription>
-    <longdescription>enable the timeline in lighttable mode.</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/timeline/last_zoom</name>
     <type>int</type>
