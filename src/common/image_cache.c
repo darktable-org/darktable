@@ -222,7 +222,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       struct dt_image_raw_parameters_t s;
       uint32_t u;
   } flip;
-  if(!img->aspect_ratio || img->aspect_ratio < .0001)
+  if(img->aspect_ratio < .0001)
   {
     if(img->orientation < ORIENTATION_SWAP_XY)
       img->aspect_ratio = (float )img->width / (float )img->height;
