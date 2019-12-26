@@ -163,7 +163,7 @@ msgstr "Jérémy Rosen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:95(title)
 msgid "Preface"
-msgstr "Voreinstellung"
+msgstr "Vorwort"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:98(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:168(keyword)
