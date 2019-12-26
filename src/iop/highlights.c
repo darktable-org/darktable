@@ -982,6 +982,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT) piece->process_cl_ready = 0;
+  if(self->hide_enable_button)
+    piece->enabled = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1038,7 +1040,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // only on for raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&(module->dev->image_storage)))
     module->default_enabled = 1;
   else
     {
