@@ -256,6 +256,20 @@ static gchar *_panels_get_panel_path(dt_ui_panel_t panel, char *suffix)
   return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
 }
 
+static gboolean _panel_is_visible(dt_ui_panel_t panel)
+{
+  gchar *key = _panels_get_view_path("panel_collaps_state");
+  if(dt_conf_get_int(key))
+  {
+    g_free(key);
+    return FALSE;
+  }
+  key = _panels_get_panel_path(panel, "_visible");
+  const gboolean ret = dt_conf_get_bool(key);
+  g_free(key);
+  return ret;
+}
+
 static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                 GdkModifierType modifier, gpointer data)
 {
@@ -281,31 +295,24 @@ static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group, GObj
 
 static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
 {
-  gchar *key = NULL;
-
   switch(border)
   {
     case DT_UI_BORDER_LEFT: // left border
     {
-      key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_visible");
-      dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !dt_conf_get_bool(key), TRUE);
+      dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !_panel_is_visible(DT_UI_PANEL_LEFT), TRUE);
     }
     break;
 
     case DT_UI_BORDER_RIGHT: // right border
     {
-      key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_visible");
-      dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !dt_conf_get_bool(key), TRUE);
+      dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !_panel_is_visible(DT_UI_PANEL_RIGHT), TRUE);
     }
     break;
 
     case DT_UI_BORDER_TOP: // top border
     {
-      key = _panels_get_panel_path(DT_UI_PANEL_CENTER_TOP, "_visible");
-      const gboolean show_ct = dt_conf_get_bool(key);
-      g_free(key);
-      key = _panels_get_panel_path(DT_UI_PANEL_TOP, "_visible");
-      const gboolean show_t = dt_conf_get_bool(key);
+      const gboolean show_ct = _panel_is_visible(DT_UI_PANEL_CENTER_TOP);
+      const gboolean show_t = _panel_is_visible(DT_UI_PANEL_TOP);
       // all visible => toolbar hidden => all hidden => toolbar visible => all visible
       if(show_ct && show_t)
         dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, FALSE, TRUE);
@@ -321,11 +328,8 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
     case DT_UI_BORDER_BOTTOM: // bottom border
     default:
     {
-      key = _panels_get_panel_path(DT_UI_PANEL_CENTER_BOTTOM, "_visible");
-      const gboolean show_cb = dt_conf_get_bool(key);
-      g_free(key);
-      key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_visible");
-      const gboolean show_b = dt_conf_get_bool(key);
+      const gboolean show_cb = _panel_is_visible(DT_UI_PANEL_CENTER_BOTTOM);
+      const gboolean show_b = _panel_is_visible(DT_UI_PANEL_BOTTOM);
       // all visible => toolbar hidden => all hidden => toolbar visible => all visible
       if(show_cb && show_b)
         dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
@@ -338,7 +342,6 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
     }
     break;
   }
-  g_free(key);
 }
 
 static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1758,6 +1761,34 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
 {
   g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
 
+  // for left and right sides, panels are inside a gtkoverlay
+  GtkWidget *over_panel = NULL;
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    over_panel = gtk_widget_get_parent(ui->panels[p]);
+
+  if(show)
+  {
+    gtk_widget_show(ui->panels[p]);
+    if(over_panel) gtk_widget_show(over_panel);
+  }
+  else
+  {
+    gtk_widget_hide(ui->panels[p]);
+    if(over_panel) gtk_widget_hide(over_panel);
+  }
+
+  // force redraw of the border (to be sure the arrow in the right direction)
+  if(p == DT_UI_PANEL_TOP || p == DT_UI_PANEL_CENTER_TOP)
+    gtk_widget_queue_draw(darktable.gui->widgets.top_border);
+  else if(p == DT_UI_PANEL_BOTTOM || p == DT_UI_PANEL_CENTER_BOTTOM)
+    gtk_widget_queue_draw(darktable.gui->widgets.bottom_border);
+  else if(p == DT_UI_PANEL_LEFT)
+    gtk_widget_queue_draw(darktable.gui->widgets.left_border);
+  else if(p == DT_UI_PANEL_RIGHT)
+    gtk_widget_queue_draw(darktable.gui->widgets.right_border);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
   if(write)
   {
     gchar *key;
@@ -1765,8 +1796,20 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     {
       // we reset the collaps_panel value if we show a panel
       key = _panels_get_view_path("panel_collaps_state");
-      dt_conf_set_int(key, 0);
-      g_free(key);
+      if(dt_conf_get_int(key) != 0)
+      {
+        dt_conf_set_int(key, 0);
+        g_free(key);
+        // we ensure that all panels state are recorded as hidden
+        for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
+        {
+          key = _panels_get_panel_path(k, "_visible");
+          dt_conf_set_bool(key, FALSE);
+          g_free(key);
+        }
+      }
+      else
+        g_free(key);
       key = _panels_get_panel_path(p, "_visible");
       dt_conf_set_bool(key, show);
       g_free(key);
@@ -1799,34 +1842,6 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
       }
     }
   }
-
-  // for left and right sides, panels are inside a gtkoverlay
-  GtkWidget *over_panel = NULL;
-  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
-    over_panel = gtk_widget_get_parent(ui->panels[p]);
-
-  if(show)
-  {
-    gtk_widget_show(ui->panels[p]);
-    if(over_panel) gtk_widget_show(over_panel);
-  }
-  else
-  {
-    gtk_widget_hide(ui->panels[p]);
-    if(over_panel) gtk_widget_hide(over_panel);
-  }
-
-  // force redraw of the border (to be sure the arrow in the right direction)
-  if(p == DT_UI_PANEL_TOP || p == DT_UI_PANEL_CENTER_TOP)
-    gtk_widget_queue_draw(darktable.gui->widgets.top_border);
-  else if(p == DT_UI_PANEL_BOTTOM || p == DT_UI_PANEL_CENTER_BOTTOM)
-    gtk_widget_queue_draw(darktable.gui->widgets.bottom_border);
-  else if(p == DT_UI_PANEL_LEFT)
-    gtk_widget_queue_draw(darktable.gui->widgets.left_border);
-  else if(p == DT_UI_PANEL_RIGHT)
-    gtk_widget_queue_draw(darktable.gui->widgets.right_border);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
 }
 
 gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
