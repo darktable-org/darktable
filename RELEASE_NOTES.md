@@ -62,7 +62,7 @@ making a backup is strongly advised.
   makes it possible to have the filmstrip using the same short-cuts to
   set stars than the lighttable.
 
-- Add log editing support for the blending modes L, R, G, B, C, g.
+- Add log editing support for the L, R, G, B, C, g blending modes.
   This gives more control on the dark pixels.
 
 ## Bug fixes
