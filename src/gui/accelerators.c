@@ -164,7 +164,8 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
-void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
+void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
+                                     guint accel_key, GdkModifierType mods)
 {
   gchar accel_path[256];
   dt_accel_t *accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
@@ -178,23 +179,34 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
   // we get the views in which the lib will be displayed
-  accel->views = 0;
+  accel->views = views;
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+}
+void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
+{
+  dt_view_type_flags_t v = 0;
   int i=0;
   const gchar **views = self->views(self);
   while (views[i])
   {
-    if (strcmp(views[i], "lighttable") == 0) accel->views |= DT_VIEW_LIGHTTABLE;
-    else if (strcmp(views[i], "darkroom") == 0) accel->views |= DT_VIEW_DARKROOM;
-    else if (strcmp(views[i], "print") == 0) accel->views |= DT_VIEW_PRINT;
-    else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
-    else if (strcmp(views[i], "map") == 0) accel->views |= DT_VIEW_MAP;
-    else if (strcmp(views[i], "tethering") == 0) accel->views |= DT_VIEW_TETHERING;
+    if(strcmp(views[i], "lighttable") == 0)
+      v |= DT_VIEW_LIGHTTABLE;
+    else if(strcmp(views[i], "darkroom") == 0)
+      v |= DT_VIEW_DARKROOM;
+    else if(strcmp(views[i], "print") == 0)
+      v |= DT_VIEW_PRINT;
+    else if(strcmp(views[i], "slideshow") == 0)
+      v |= DT_VIEW_SLIDESHOW;
+    else if(strcmp(views[i], "map") == 0)
+      v |= DT_VIEW_MAP;
+    else if(strcmp(views[i], "tethering") == 0)
+      v |= DT_VIEW_TETHERING;
     else if(strcmp(views[i], "*") == 0)
-      accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
-                      | DT_VIEW_SLIDESHOW;
+      v |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
+           | DT_VIEW_SLIDESHOW;
     i++;  
   }
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  dt_accel_register_lib_for_views(self, v, path, accel_key, mods);
 }
 
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)
