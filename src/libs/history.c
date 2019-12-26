@@ -181,7 +181,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
     gtk_widget_set_name(onoff, "history-switch-always-enabled");
     gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
-    // gtk_widget_set_tooltip_text(onoff, _("always-on module"));
+    gtk_widget_set_tooltip_text(onoff, _("always-on module"));
   }
   else if(default_enabled)
   {
@@ -190,7 +190,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
     gtk_widget_set_name(onoff, "history-switch-default-enabled");
     gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
-    // gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
+    gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
   }
   else
   {
@@ -199,8 +199,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
       onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated,
                                CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
       gtk_widget_set_name(onoff, "history-switch-deprecated");
-      // for after 3.0 as it breaks translation
-      // gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
+      gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
     }
     else
     {
@@ -529,7 +528,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   return changed;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
