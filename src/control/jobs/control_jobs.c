@@ -1311,7 +1311,6 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   dt_control_export_t *settings = (dt_control_export_t *)params->data;
   GList *t = params->index;
@@ -1361,7 +1360,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
-
   // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
   // sensible assumption?
   guint tagid = 0, etagid = 0;
@@ -1379,10 +1377,9 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    const guint num = total - g_list_length(t);
-
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     t = g_list_delete_link(t, t);
+    const guint num = total - g_list_length(t);
 
     // progress message
     char message[512] = { 0 };
