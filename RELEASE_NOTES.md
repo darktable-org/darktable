@@ -69,7 +69,7 @@ making a backup is strongly advised.
 
 - All valid Lut files are displayed in file selector.
 
-- Fix straightening in crop and rorate module when flip is applied.
+- Fix straightening in crop and rotate module when flip is applied.
 
 - The ellipse and gradient masks can now be manipulated when the
   crop and rotate flip is activated.
@@ -88,6 +88,8 @@ making a backup is strongly advised.
   previously computed histogram for a short period of time.
 
 - Properly update the XMP when doing undo/redo actions.
+
+- Fix discrepancies between the SSE/OpenCL local Laplacian code paths.
 
 # Changes since 2.6
 
