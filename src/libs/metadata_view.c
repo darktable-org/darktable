@@ -754,6 +754,10 @@ void gui_init(dt_lib_module_t *self)
      image in darkroom when enter */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for tags changes */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+                            G_CALLBACK(_mouse_over_image_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
