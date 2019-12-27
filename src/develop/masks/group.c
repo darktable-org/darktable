@@ -252,7 +252,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   const int wt = piece->iwidth;
   const int ht = piece->iheight;
-  float *buf = malloc((size_t)ht * wt * sizeof(float));
+  float *buf = dt_alloc_align(64, (size_t)ht * wt * sizeof(float));
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -274,7 +274,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   }
 
   // we free the old buffer
-  free(*buffer);
+  dt_free_align(*buffer);
   (*buffer) = buf;
 
   // we return correct values for positions;
@@ -342,7 +342,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = malloc(sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_alloc_align(64, sizeof(float) * (r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
@@ -429,7 +429,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   free(px);
   free(h);
   free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
+  for(int i = 0; i < nb; i++) dt_free_align(bufs[i]);
   free(bufs);
   return 1;
 
@@ -441,7 +441,7 @@ error:
   free(px);
   free(h);
   free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
+  for(int i = 0; i < nb; i++) dt_free_align(bufs[i]);
   free(bufs);
   return 0;
 }
@@ -486,7 +486,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(height, width) \
+          dt_omp_firstprivate(width, height) \
           shared(bufs)
 #else
 #pragma omp parallel for shared(bufs)
@@ -505,8 +505,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(height, op, width) \
-          shared(bufs, buffer)
+          dt_omp_firstprivate(width, height, op) \
+          shared(buffer, bufs)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -515,7 +515,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
             for(int x = 0; x < width; x++)
             {
               const size_t index = (size_t)y * width + x;
-              buffer[index] = fmaxf(buffer[index], bufs[index] * op);
+              buffer[index] = MAX(buffer[index], bufs[index] * op);
             }
         }
         else if(state & DT_MASKS_STATE_INTERSECTION)
@@ -523,8 +523,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-            dt_omp_firstprivate(height, op, width) \
-            shared(bufs, buffer)
+            dt_omp_firstprivate(width, height, op) \
+            shared(buffer, bufs)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -536,7 +536,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
               const float b1 = buffer[index];
               const float b2 = bufs[index];
               if(b1 > 0.0f && b2 > 0.0f)
-                buffer[index] = fminf(b1, b2 * op);
+                buffer[index] = MIN(b1, b2 * op);
               else
                 buffer[index] = 0.0f;
             }
@@ -546,8 +546,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(height, op, width) \
-          shared(bufs, buffer)
+          dt_omp_firstprivate(width, height, op) \
+          shared(buffer, bufs)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -566,8 +566,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(height, op, width) \
-          shared(bufs, buffer)
+          dt_omp_firstprivate(width, height, op) \
+          shared(buffer, bufs)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -579,9 +579,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
               const float b1 = buffer[index];
               const float b2 = bufs[index] * op;
               if(b1 > 0.0f && b2 > 0.0f)
-                buffer[index] = fmaxf((1.0f - b1) * b2, b1 * (1.0f - b2));
+                buffer[index] = MAX((1.0f - b1) * b2, b1 * (1.0f - b2));
               else
-                buffer[index] = fmaxf(b1, b2);
+                buffer[index] = MAX(b1, b2);
             }
         }
         else // if we are here, this mean that we just have to copy the shape and null other parts
@@ -589,8 +589,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(height, op, width) \
-          shared(bufs, buffer)
+          dt_omp_firstprivate(width, height, op) \
+          shared(buffer, bufs)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif

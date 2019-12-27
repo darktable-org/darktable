@@ -158,10 +158,11 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 static void _brush_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x,
                           float p3y, float t, float *x, float *y)
 {
-  float a = (1 - t) * (1 - t) * (1 - t);
-  float b = 3 * t * (1 - t) * (1 - t);
-  float c = 3 * t * t * (1 - t);
-  float d = t * t * t;
+  const float ti = 1.0f - t;
+  const float a = ti * ti * ti;
+  const float b = 3.0f * t * ti * ti;
+  const float c = 3.0f * t * t * ti;
+  const float d = t * t * t;
   *x = p0x * a + p1x * b + p2x * c + p3x * d;
   *y = p0y * a + p1y * b + p2y * c + p3y * d;
 }
@@ -174,13 +175,14 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
   _brush_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, xc, yc);
 
   // now we get derivative points
-  float a = 3 * (1 - t) * (1 - t);
-  float b = 3 * ((1 - t) * (1 - t) - 2 * t * (1 - t));
-  float c = 3 * (2 * t * (1 - t) - t * t);
-  float d = 3 * t * t;
+  const float ti = 1.0f - t;
+  const float a = 3.0f * ti * ti;
+  const float b = 3.0f * (ti * ti - 2.0f * t * ti);
+  const float c = 3.0f * (2.0f * t * ti - t * t);
+  const float d = 3.0f * t * t;
 
-  float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
-  float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
+  const float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
+  const float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
 
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
@@ -189,7 +191,7 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
     *yb = NAN;
     return;
   }
-  float l = 1.0 / sqrtf(dx * dx + dy * dy);
+  const float l = 1.0f / sqrtf(dx * dx + dy * dy);
   *xb = (*xc) + rad * dy * l;
   *yb = (*yc) - rad * dx * l;
 }
@@ -359,8 +361,7 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   float aa = a1 + incra;
   for(int i = 1; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
     rr += incrr;
@@ -399,8 +400,7 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
   float aa = a1 + incra;
   for(int i = 1; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
     rr += incrr;
@@ -429,8 +429,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
   float aa = a1 + incra;
   for(int i = 0; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rad * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rad * sinf(aa));
     aa += incra;
@@ -471,8 +470,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
   {
     rpoints[0] = points_max[0];
     rpoints[1] = points_max[1];
-    dt_masks_dynbuf_add(dpoints, rpoints[0]);
-    dt_masks_dynbuf_add(dpoints, rpoints[1]);
+    dt_masks_dynbuf_add_n(dpoints, rpoints, 2);
 
     if(withborder)
     {
@@ -495,8 +493,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
 
       rborder[0] = border_max[0];
       rborder[1] = border_max[1];
-      dt_masks_dynbuf_add(dborder, rborder[0]);
-      dt_masks_dynbuf_add(dborder, rborder[1]);
+      dt_masks_dynbuf_add_n(dborder, rborder, 2);
     }
 
     if(withpayload)
@@ -505,8 +502,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
       {
         rpayload[0] = p1[5] + tmax * (p2[5] - p1[5]);
         rpayload[1] = p1[6] + tmax * (p2[6] - p1[6]);
-        dt_masks_dynbuf_add(dpayload, rpayload[0]);
-        dt_masks_dynbuf_add(dpayload, rpayload[1]);
+        dt_masks_dynbuf_add_n(dpayload, rpayload, 2);
       }
     }
 
@@ -707,8 +703,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
         {
           while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
           {
-            dt_masks_dynbuf_add(dpayload, p1[5]);
-            dt_masks_dynbuf_add(dpayload, p1[6]);
+            dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
           }
         }
       }
@@ -729,8 +724,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add(dpayload, p1[5]);
-          dt_masks_dynbuf_add(dpayload, p1[6]);
+          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
         }
       }
     }
@@ -750,8 +744,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add(dpayload, p1[5]);
-          dt_masks_dynbuf_add(dpayload, p1[6]);
+          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
         }
       }
 
@@ -768,13 +761,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
 
     _brush_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, rp, dpoints, dborder, dpayload);
 
-    dt_masks_dynbuf_add(dpoints, rc[0]);
-    dt_masks_dynbuf_add(dpoints, rc[1]);
+    dt_masks_dynbuf_add_n(dpoints, rc, 2);
 
     if(dpayload)
     {
-      dt_masks_dynbuf_add(dpayload, rp[0]);
-      dt_masks_dynbuf_add(dpayload, rp[1]);
+      dt_masks_dynbuf_add_n(dpayload, rp, 2);
     }
 
     if(dborder)
@@ -789,8 +780,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      dt_masks_dynbuf_add(dborder, rb[0]);
-      dt_masks_dynbuf_add(dborder, rb[1]);
+      dt_masks_dynbuf_add_n(dborder, rb, 2);
     }
 
     // we first want to be sure that there are no gaps in border
@@ -815,8 +805,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     {
       while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
       {
-        dt_masks_dynbuf_add(dpayload, rp[0]);
-        dt_masks_dynbuf_add(dpayload, rp[1]);
+        dt_masks_dynbuf_add_n(dpayload, rp, 2);
       }
     }
   }
@@ -860,13 +849,13 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   }
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
-  if(border) free(*border);
+  if(border) dt_free_align(*border);
   if(border) *border = NULL;
   if(border) *border_count = 0;
-  if(payload) free(*payload);
+  if(payload) dt_free_align(*payload);
   if(payload) *payload = NULL;
   if(payload) *payload_count = 0;
   return 0;
@@ -2519,8 +2508,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 1))
   {
-    free(points);
-    free(border);
+    dt_free_align(points);
+    dt_free_align(border);
     return 0;
   }
 
@@ -2550,8 +2539,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free_align(points);
+  dt_free_align(border);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
@@ -2569,8 +2558,8 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 0))
   {
-    free(points);
-    free(border);
+    dt_free_align(points);
+    dt_free_align(border);
     return 0;
   }
 
@@ -2600,8 +2589,8 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free_align(points);
+  dt_free_align(border);
 
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
@@ -2628,13 +2617,13 @@ static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
     const int x = (int)((float)i * lx / (float)l) + p0[0] - posx;
     const int y = (int)((float)i * ly / (float)l) + p0[1] - posy;
     const float op = density * ((i <= solid) ? 1.0f : 1.0 - (float)(i - solid) / (float)soft);
-    (*buffer)[y * bw + x] = fmaxf((*buffer)[y * bw + x], op);
+    (*buffer)[y * bw + x] = MAX((*buffer)[y * bw + x], op);
     if(x > 0)
       (*buffer)[y * bw + x - 1]
-          = fmaxf((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
     if(y > 0)
       (*buffer)[(y - 1) * bw + x]
-          = fmaxf((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
   }
 }
 
@@ -2651,9 +2640,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 0;
   }
 
@@ -2698,7 +2687,16 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc((size_t)(*width) * (*height), sizeof(float));
+  size_t bufsize = (size_t)(*width) * (*height)  * sizeof(float);
+  *buffer = dt_alloc_align(64, bufsize);
+  if(*buffer == NULL)
+  {
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
+    return 0;
+  }
+  memset(*buffer, 0, bufsize);
 
   // now we fill the falloff
   int p0[2], p1[2];
@@ -2713,9 +2711,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     _brush_falloff(buffer, p0, p1, *posx, *posy, *width, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free_align(points);
+  dt_free_align(border);
+  dt_free_align(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
@@ -2725,7 +2723,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh, float hardness,
+static inline void _brush_falloff_roi(float *buffer, const int *p0, const int *p1, int bw, int bh, float hardness,
                                       float density)
 {
   // segment length (increase by 1 to avoid division-by-zero special case handling)
@@ -2759,11 +2757,11 @@ static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, i
 
     float *buf = buffer + (size_t)y * bw + x;
 
-    *buf = fmaxf(*buf, op);
+    *buf = MAX(*buf, op);
     if(x + dx >= 0 && x + dx < bw)
-      buf[dpx] = fmaxf(buf[dpx], op); // this one is to avoid gaps due to int rounding
+      buf[dpx] = MAX(buf[dpx], op); // this one is to avoid gaps due to int rounding
     if(y + dy >= 0 && y + dy < bh)
-      buf[dpy] = fmaxf(buf[dpy], op); // this one is to avoid gaps due to int rounding
+      buf[dpy] = MAX(buf[dpy], op); // this one is to avoid gaps due to int rounding
   }
 }
 
@@ -2784,12 +2782,13 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   float *points = NULL, *border = NULL, *payload = NULL;
 
   int points_count, border_count, payload_count;
+
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 0;
   }
 
@@ -2800,7 +2799,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // empty the output buffer
   memset(buffer, 0, (size_t)width * height * sizeof(float));
 
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
 
   // we shift and scale down brush and border
   for(int i = nb_corner * 3; i < border_count; i++)
@@ -2853,20 +2852,26 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 1;
   }
 
   // now we fill the falloff
-  int p0[2], p1[2];
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(nb_corner, border_count, width, height) \
+  shared(buffer, points, border, payload)
+#else
+#pragma omp parallel for shared(buffer)
+#endif
+#endif
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    p0[0] = points[i * 2];
-    p0[1] = points[i * 2 + 1];
-    p1[0] = border[i * 2];
-    p1[1] = border[i * 2 + 1];
+    const int p0[] = { points[i * 2], points[i * 2 + 1] };
+    const int p1[] = { border[i * 2], border[i * 2 + 1] };
 
     if(MAX(p0[0], p1[0]) < 0 || MIN(p0[0], p1[0]) >= width || MAX(p0[1], p1[1]) < 0
        || MIN(p0[1], p1[1]) >= height)
@@ -2875,9 +2880,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     _brush_falloff_roi(buffer, p0, p1, width, height, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free_align(points);
+  dt_free_align(border);
+  dt_free_align(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
