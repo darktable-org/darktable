@@ -65,6 +65,9 @@ making a backup is strongly advised.
 - Add log editing support for the L, R, G, B, C, g blending modes.
   This gives more control on the dark pixels.
 
+- Define many new accels for most of the sliders to allow more control
+  using the keyboard.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
@@ -90,6 +93,10 @@ making a backup is strongly advised.
 - Properly update the XMP when doing undo/redo actions.
 
 - Fix discrepancies between the SSE/OpenCL local Laplacian code paths.
+
+- Better performance for tone equalizer's guided filter.
+
+- Exports should now better respect the final dimensions requested.
 
 # Changes since 2.6
 
