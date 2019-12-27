@@ -1383,7 +1383,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
     // progress message
     char message[512] = { 0 };
-    snprintf(message, sizeof(message), "exporting %d / %d to %s", num, total, mstorage->name(mstorage));
+    snprintf(message, sizeof(message), _("exporting %d / %d to %s"), num, total, mstorage->name(mstorage));
     // update the message. initialize_store() might have changed the number of images
     dt_control_job_set_progress_message(job, message);
 
