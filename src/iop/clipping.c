@@ -204,6 +204,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 typedef struct dt_iop_clipping_gui_data_t
 {
+  GtkNotebook *notebook;
+
   GtkWidget *angle;
   GtkWidget *cx,*cy,*cw,*ch;
   GtkWidget *hvflip;
@@ -2024,8 +2026,24 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->old_width = g->old_height = -1;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  // Init GTK notebook
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("main")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("margins")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("guides")));
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+
+  dtgtk_justify_notebook_tabs(g->notebook);
+
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));
@@ -2034,43 +2052,42 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->hvflip, _("both"));
   g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
-
+  gtk_box_pack_start(GTK_BOX(page1), g->hvflip, TRUE, TRUE, 0);
 
   g->angle = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 0.25, p->angle, 2);
   dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
   g_signal_connect(G_OBJECT(g->angle), "value-changed", G_CALLBACK(angle_callback), self);
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->angle, TRUE, TRUE, 0);
 
   g->cx = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cx, 2);
   dt_bauhaus_widget_set_label(g->cx, NULL, _("left"));
   dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cx), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cx, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cx, TRUE, TRUE, 0);
 
   g->cw = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cw, 2);
   dt_bauhaus_widget_set_label(g->cw, NULL, _("right"));
   dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cw), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cw, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cw, TRUE, TRUE, 0);
 
   g->cy = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cy, 2);
   dt_bauhaus_widget_set_label(g->cy, NULL, _("top"));
   dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cy), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cy, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cy, TRUE, TRUE, 0);
 
   g->ch = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->ch, 2);
   dt_bauhaus_widget_set_label(g->ch, NULL, _("bottom"));
   dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
   g_signal_connect(G_OBJECT(g->ch), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->ch, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(page2), g->ch, TRUE, TRUE, 2);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
@@ -2080,7 +2097,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->keystone_type, _("full"));
   gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->crop_auto, NULL, _("automatic cropping"));
@@ -2088,7 +2105,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
   gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
   g_signal_connect(G_OBJECT(g->crop_auto), "value-changed", G_CALLBACK(crop_auto_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->crop_auto, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->crop_auto, TRUE, TRUE, 0);
 
   dt_iop_clipping_aspect_t aspects[] = { { _("freehand"), 0, 0 },
                                          { _("original image"), 1, 0 },
@@ -2204,15 +2221,15 @@ void gui_init(struct dt_iop_module_t *self)
                                                    "the list is sorted: from most square to least square"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->guide_lines, TRUE, TRUE, 0);
 
   g->guides_widgets = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->guides_widgets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->guides_widgets, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   int i = 0;
@@ -2247,7 +2264,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->flip_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
