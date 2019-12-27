@@ -32,7 +32,7 @@
     <title>Procedure</title>
 
     <para>
-      This procedure uses monochrome, channel mixer and splittoning modules.
+      This procedure uses monochrome, channel mixer and split-toning modules.
     </para>
 
     <orderedlist>
@@ -91,20 +91,20 @@
       </para></listitem>
 
       <listitem><para>
-        Splittoning
+        split-toning
       </para>
 
       <para>
         The result of the previous step does also add a color cast on highlights that we
         actually want to have white for a prettier result. We also want to add some blue color
-        cast to the shadows in order to emphasis them. Module <emphasis>splittoning</emphasis>
+        cast to the shadows in order to emphasis them. Module <emphasis>split-toning</emphasis>
         (<xref linkend="splittoning"/>) can accomplish this.
       </para>
 
       <orderedlist>
 
         <listitem><para>
-          Enable the splittoning module
+          Enable the split-toning module
         </para></listitem>
 
         <listitem><para>
