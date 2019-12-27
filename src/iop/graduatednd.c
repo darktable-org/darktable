@@ -163,7 +163,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
 }
