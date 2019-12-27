@@ -520,6 +520,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (v)"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (h)"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shear"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "focal length"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop factor"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "aspect adjust"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -530,6 +533,9 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "lens shift (v)", GTK_WIDGET(g->lensshift_v));
   dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
   dt_accel_connect_slider_iop(self, "shear", GTK_WIDGET(g->shear));
+  dt_accel_connect_slider_iop(self, "focal length", GTK_WIDGET(g->f_length));
+  dt_accel_connect_slider_iop(self, "crop factor", GTK_WIDGET(g->crop_factor));
+  dt_accel_connect_slider_iop(self, "aspect adjust", GTK_WIDGET(g->aspect));
 }
 
 // multiply 3x3 matrix with 3x1 vector
