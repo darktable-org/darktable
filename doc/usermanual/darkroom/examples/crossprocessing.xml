@@ -44,7 +44,7 @@
     <title>Procedure</title>
 
     <para>
-      This procedure uses tone curve, channel mixer and splittoning modules.
+      This procedure uses tone curve, channel mixer and split-toning modules.
     </para>
 
     <orderedlist>
@@ -99,18 +99,18 @@
       </orderedlist></listitem>
 
       <listitem><para>
-        Splittoning
+        split-toning
       </para>
 
       <para>
-        We use <emphasis>splittoning</emphasis> (<xref linkend="splittoning"/>) to add some more
+        We use <emphasis>split-toning</emphasis> (<xref linkend="splittoning"/>) to add some more
         coloring to the result for cyan/blue shadows and yellow highlight.
       </para>
 
       <orderedlist>
 
         <listitem><para>
-          Enable the splittoning module
+          Enable the split-toning module
         </para></listitem>
 
         <listitem><para>
@@ -126,7 +126,7 @@
         </para></listitem>
 
         <listitem><para>
-          Use the balance slider to tune the splittoning effect. This differs on every image due
+          Use the balance slider to tune the split-toning effect. This differs on every image due
           to it's exposure, motive etc.
         </para></listitem>
 
