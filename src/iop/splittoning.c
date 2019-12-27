@@ -110,6 +110,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick primary color"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick secondary color"), 0, 0);
 
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "balance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
 }
@@ -121,6 +125,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick primary color", GTK_WIDGET(g->shadow_colorpick));
   dt_accel_connect_button_iop(self, "pick secondary color", GTK_WIDGET(g->highlight_colorpick));
 
+  dt_accel_connect_slider_iop(self, "shadows-hue", GTK_WIDGET(g->shadow_hue_gslider));
+  dt_accel_connect_slider_iop(self, "shadows-saturation", GTK_WIDGET(g->shadow_sat_gslider));
+  dt_accel_connect_slider_iop(self, "highlights-hue", GTK_WIDGET(g->highlight_hue_gslider));
+  dt_accel_connect_slider_iop(self, "highlights-saturation", GTK_WIDGET(g->highlight_sat_gslider));
   dt_accel_connect_slider_iop(self, "balance", GTK_WIDGET(g->balance_scale));
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress_scale));
 }
