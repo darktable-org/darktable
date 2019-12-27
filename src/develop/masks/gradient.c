@@ -106,7 +106,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
     }
-    else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
+    else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
       dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
       if(up)
@@ -117,6 +117,18 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", gradient->compression);
+      dt_masks_update_image(darktable.develop);
+    }
+    else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
+    {
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+      if(up)
+        gradient->curvature = fminf(gradient->curvature + 0.05f, 2.0f);
+      else
+        gradient->curvature = fmaxf(gradient->curvature - 0.05f, -2.0f);
+      dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+      dt_masks_gui_form_remove(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index);
       dt_masks_update_image(darktable.develop);
     }
     return 1;
@@ -130,7 +142,23 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
                                              int index)
 {
   if(!gui) return 0;
-  if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
+
+  if(which == 1 && type == GDK_2BUTTON_PRESS)
+  {
+    // double-click resets curvature
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+
+    gradient->curvature = 0.0f;
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index);
+
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
@@ -307,6 +335,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     gradient->rotation = -rotation / M_PI * 180.0f;
     gradient->compression = MAX(0.0f, compression);
     gradient->steepness = MAX(0.0f, steepness);
+    gradient->curvature = 0.0f;
     // not used for masks
     form->source[0] = form->source[1] = 0.0f;
 
@@ -716,105 +745,26 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 }
 
 
-static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rotation, float **points,
-                                  int *points_count)
+static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rotation, float curvature,
+                                  float **points, int *points_count)
 {
   *points = NULL;
   *points_count = 0;
 
   const float wd = dev->preview_pipe->iwidth;
   const float ht = dev->preview_pipe->iheight;
+  const float scale = sqrtf(wd * wd + ht * ht);
   const float distance = 0.1f * fminf(wd, ht);
-
-  const float xmax = wd - 1.0f;
-  const float ymax = ht - 1.0f;
 
   const float v = (-rotation / 180.0f) * M_PI;
   const float cosv = cos(v);
   const float sinv = sin(v);
-  const float offset = sinv * x * wd - cosv * y * ht;
 
-  // find intercept points of straight line and image borders
-  int intercept_count = 0;
-  float intercept[4];
-  int l;
-  float delta_x, delta_y;
-
-  if(sinv == 0.0f)
-  {
-    const float is = -offset / cosv;
-    if(is >= 0.0f && is <= ymax)
-    {
-      intercept[0] = 0;
-      intercept[1] = is;
-      intercept[2] = xmax;
-      intercept[3] = is;
-      intercept_count = 2;
-    }
-  }
-  else if(cosv == 0.0f)
-  {
-    const float is = offset / sinv;
-    if(is >= 0.0f && is <= xmax)
-    {
-      intercept[0] = is;
-      intercept[1] = 0;
-      intercept[2] = is;
-      intercept[3] = ymax;
-      intercept_count = 2;
-    }
-  }
-  else
-  {
-    float is = -offset / cosv;
-    if(is >= 0.0f && is <= ymax)
-    {
-      intercept[0] = 0;
-      intercept[1] = is;
-      intercept_count++;
-    }
-    is = (xmax * sinv - offset) / cosv;
-    if(is >= 0.0f && is <= ymax)
-    {
-      intercept[intercept_count * 2] = xmax;
-      intercept[intercept_count * 2 + 1] = is;
-      intercept_count++;
-    }
-    is = offset / sinv;
-    if(is >= 0.0f && is <= xmax && intercept_count < 2)
-    {
-      intercept[intercept_count * 2] = is;
-      intercept[intercept_count * 2 + 1] = 0;
-      intercept_count++;
-    }
-    is = (ymax * cosv + offset) / sinv;
-    if(is >= 0.0f && is <= xmax && intercept_count < 2)
-    {
-      intercept[intercept_count * 2] = is;
-      intercept[intercept_count * 2 + 1] = ymax;
-      intercept_count++;
-    }
-  }
-
-  // how many points do we need ?
-  if(intercept_count != 2)
-  {
-    l = 0;
-    delta_x = delta_y = 0.0f;
-  }
-  else
-  {
-    l = (int)ceilf(sqrt((intercept[2] - intercept[0]) * (intercept[2] - intercept[0])
-                        + (intercept[3] - intercept[1]) * (intercept[3] - intercept[1])));
-    delta_x = (intercept[2] - intercept[0] != 0.0f) ? (intercept[2] - intercept[0]) / l : 0.0f;
-    delta_y = (intercept[3] - intercept[1] != 0.0f) ? (intercept[3] - intercept[1]) / l : 0.0f;
-  }
-
-  // buffer allocations
-  *points = dt_alloc_align(64, 2 * (l + 3) * sizeof(float));
+  *points_count = 2 * sqrtf(wd * wd + ht * ht) + 3;
+  *points = dt_alloc_align(64, 2 * (*points_count) * sizeof(float));
   if(*points == NULL) return 0;
-  memset(*points, 0, 2 * (l + 3) * sizeof(float));
-  *points_count = l + 3;
+  memset(*points, 0, 2 * (*points_count) * sizeof(float));
+
 
   // we set the anchor point
   (*points)[0] = x * wd;
@@ -833,18 +783,20 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   (*points)[5] = y2;
 
   // we set the line point
-  float xx = intercept[0];
-  float yy = intercept[1];
-  for(int i = 3; i < l + 3; i++)
+  const float xstart = MAX(-sqrtf(1.0f / fabsf(curvature)), -1.0f);
+  const float xdelta = -2.0f * xstart / (*points_count - 3);
+  for(int i = 3; i < *points_count; i++)
   {
-    (*points)[i * 2] = xx;
-    (*points)[i * 2 + 1] = yy;
-    xx += delta_x;
-    yy += delta_y;
+    const float xi = xstart + i * xdelta;
+    const float yi = curvature * xi * xi;
+    const float xii = (cosv * xi + sinv * yi) * scale;
+    const float yii = (sinv * xi - cosv * yi) * scale;
+    (*points)[i * 2] = xii + x * wd;
+    (*points)[i * 2 + 1] = yii + y * ht;
   }
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform(dev, *points, l + 3)) return 1;
+  if(dt_dev_distort_transform(dev, *points, *points_count)) return 1;
 
   // if we failed, then free all and return
   dt_free_align(*points);
@@ -854,7 +806,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
 }
 
 static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, float rotation, float distance,
-                                         float **points, int *points_count)
+                                         float curvature, float **points, int *points_count)
 {
   *points = NULL;
   *points_count = 0;
@@ -871,14 +823,14 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   const float x1 = (x * wd + distance * scale * cos(v1)) / wd;
   const float y1 = (y * ht + distance * scale * sin(v1)) / ht;
 
-  const int r1 = dt_gradient_get_points(dev, x1, y1, rotation, &points1, &points_count1);
+  const int r1 = dt_gradient_get_points(dev, x1, y1, rotation, curvature, &points1, &points_count1);
 
   const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
 
   const float x2 = (x * wd + distance * scale * cos(v2)) / wd;
   const float y2 = (y * ht + distance * scale * sin(v2)) / ht;
 
-  const int r2 = dt_gradient_get_points(dev, x2, y2, rotation, &points2, &points_count2);
+  const int r2 = dt_gradient_get_points(dev, x2, y2, rotation, curvature, &points2, &points_count2);
 
   int res = 0;
 
@@ -1053,16 +1005,18 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const float v = (-gradient->rotation / 180.0f) * M_PI;
   const float sinv = sin(v);
   const float cosv = cos(v);
-  const float offset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
+  const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
+  const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
   const float cs = powf(10.0f, gradient->steepness);
   const float steepness = cs * cs - 1.0f;
   const float normf = 0.5f * cs / compression;
+  const float curvature = gradient->curvature;
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, offset, hwscale, normf, steepness) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, normf, steepness, curvature) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1075,8 +1029,12 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       const float x = points[(j * gw + i) * 2];
       const float y = points[(j * gw + i) * 2 + 1];
 
-      const float distance = (sinv * x - cosv * y - offset) * hwscale;
-      const float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
+      const float x0 = (cosv * x + sinv * y - xoffset) * hwscale;
+      const float y0 = (sinv * x - cosv * y - yoffset) * hwscale;
+
+      const float distance = y0 - curvature * x0 * x0;
+
+      float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
 
       points[(j * gw + i) * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
     }
@@ -1160,6 +1118,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   for(int j = 0; j < gh; j++)
     for(int i = 0; i < gw; i++)
     {
+
       const size_t index = (size_t)j * gw + i;
       points[index * 2] = (grid * i + px) * iscale;
       points[index * 2 + 1] = (grid * j + py) * iscale;
@@ -1190,16 +1149,18 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const float v = (-gradient->rotation / 180.0f) * M_PI;
   const float sinv = sin(v);
   const float cosv = cos(v);
-  const float offset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
+  const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
+  const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
   const float cs = powf(10.0f, gradient->steepness);
   const float steepness = cs * cs - 1.0f;
   const float normf = 0.5f * cs / compression;
+  const float curvature = gradient->curvature;
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, offset, hwscale, normf, steepness) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, normf, steepness, curvature) \
   shared(points)
 #else
 #pragma omp parallel for shared(points)
@@ -1213,7 +1174,11 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
       const float x = points[index * 2];
       const float y = points[index * 2 + 1];
 
-      const float distance = (sinv * x - cosv * y - offset) * hwscale;
+      const float x0 = (cosv * x + sinv * y - xoffset) * hwscale;
+      const float y0 = (sinv * x - cosv * y - yoffset) * hwscale;
+
+      const float distance = y0 - curvature * x0 * x0;
+
       const float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
 
       points[index * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);

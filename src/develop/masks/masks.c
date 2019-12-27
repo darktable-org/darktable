@@ -228,6 +228,12 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("[GRADIENT] change curvature"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
     g_strlcpy(a->name, _("[GRADIENT] change compression"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
@@ -350,7 +356,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
   else if(formtype & DT_MASKS_GRADIENT)
   {
     if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("ctrl+scroll to set shape opacity (%d%%)"), opacity);
+      g_snprintf(msg, sizeof(msg), _("scroll to set curvature, shift+scroll to change compression\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->pivot_selected)
       g_strlcat(msg, _("move to rotate shape"), sizeof(msg));
   }
@@ -731,12 +737,13 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
   else if(form->type & DT_MASKS_GRADIENT)
   {
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
-    if(dt_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, points,
-                              points_count))
+    if(dt_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, gradient->curvature,
+                              points, points_count))
     {
       if(border)
         return dt_gradient_get_points_border(dev, gradient->anchor[0], gradient->anchor[1],
-                                             gradient->rotation, gradient->compression, border, border_count);
+                                             gradient->rotation, gradient->compression, gradient->curvature,
+                                             border, border_count);
       else
         return 1;
     }
@@ -1145,6 +1152,32 @@ static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
 }
 
 
+static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting gradient
+   * up to v4: only linear gradient (relative to input image)
+   * after v5: curved gradients
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  GList *p = g_list_first(m->points);
+
+  if(!p) return 1;
+
+  if(m->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+    gradient->curvature = 0.0f;
+  }
+
+  m->version = 5;
+
+  return 0;
+}
+
+
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
   int res = 1;
@@ -1155,20 +1188,27 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   }
 #endif
 
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
     if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+  }
+  else if(old_version == 4 && new_version == 5)
+  {
+    res = dt_masks_legacy_params_v4_to_v5(dev, params);
   }
 
   return res;
