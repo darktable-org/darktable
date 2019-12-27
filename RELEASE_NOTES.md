@@ -68,6 +68,11 @@ making a backup is strongly advised.
 - Define many new accels for most of the sliders to allow more control
   using the keyboard.
 
+- The images operations modules has been extended to support coping,
+  replacing and merging metadata.
+
+- Better visibility for the zoomed image part in the navigation widget.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
@@ -97,6 +102,7 @@ making a backup is strongly advised.
 - Better performance for tone equalizer's guided filter.
 
 - Exports should now better respect the final dimensions requested.
+
 
 # Changes since 2.6
 
