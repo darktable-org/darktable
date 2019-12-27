@@ -21,7 +21,7 @@
 
 kernel void
 colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -41,7 +41,7 @@ colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in, write_only image
 
 kernel void
 colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -61,8 +61,8 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image
 
 kernel void
 colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info_from, read_only image2d_t lut_from,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info_to, read_only image2d_t lut_to)
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info_from, read_only image2d_t lut_from,
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info_to, read_only image2d_t lut_to)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);

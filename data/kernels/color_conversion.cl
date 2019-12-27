@@ -41,7 +41,7 @@ typedef struct dt_colorspaces_iccprofile_info_cl_t
   float grey;
 } dt_colorspaces_iccprofile_info_cl_t;
 
-inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut, constant float *const unbounded_coeffs, const int n_lut, const int lutsize)
+inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut, global const float *const unbounded_coeffs, const int n_lut, const int lutsize)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -70,7 +70,7 @@ inline float lookup(read_only image2d_t lut, const float x)
   return read_imagef(lut, sampleri, p).x;
 }
 
-inline float lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
+inline float lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -87,7 +87,7 @@ inline float lookup_unbounded(read_only image2d_t lut, const float x, constant f
   else return x;
 }
 
-inline float4 apply_trc_in(const float4 rgb_in, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+inline float4 apply_trc_in(const float4 rgb_in, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float4 rgb_out;
 
@@ -99,7 +99,7 @@ inline float4 apply_trc_in(const float4 rgb_in, constant dt_colorspaces_iccprofi
   return rgb_out;
 }
 
-inline float4 apply_trc_out(const float4 rgb_in, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+inline float4 apply_trc_out(const float4 rgb_in, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float4 rgb_out;
 
@@ -111,7 +111,7 @@ inline float4 apply_trc_out(const float4 rgb_in, constant dt_colorspaces_iccprof
   return rgb_out;
 }
 
-inline float4 matrix_product(const float4 xyz, constant float *matrix)
+inline float4 matrix_product(const float4 xyz, global const float *matrix)
 {
   float4 output = 0.0f;
   output.x = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2] * xyz.z;
@@ -121,7 +121,7 @@ inline float4 matrix_product(const float4 xyz, constant float *matrix)
   return output;
 }
 
-inline float get_rgb_matrix_luminance(const float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, constant float *matrix, read_only image2d_t lut)
+inline float get_rgb_matrix_luminance(const float4 rgb, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, global const float *matrix, read_only image2d_t lut)
 {
   float luminance = 0.f;
 

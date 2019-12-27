@@ -160,7 +160,7 @@ kernel void
 filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                  int width, int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
-                 constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
                  const float sigma_toe, const float sigma_shoulder, const float saturation,
                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
@@ -216,7 +216,7 @@ inline float pixel_rgb_norm_power(const float4 pixel)
 
 
 inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
-                            constant dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                            global const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                             read_only image2d_t lut, const int use_work_profile)
 {
   switch(variant)
@@ -241,7 +241,7 @@ kernel void
 filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  int width, int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
-                 constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
                  const float sigma_toe, const float sigma_shoulder, const float saturation,
                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,

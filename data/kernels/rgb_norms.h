@@ -29,7 +29,7 @@
 
 inline float
 dt_rgb_norm(const float4 in, const int norm, const int work_profile,
-  constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+  global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   if (norm == DT_RGB_NORM_LUMINANCE)
   {

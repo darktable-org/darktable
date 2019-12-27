@@ -96,7 +96,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
            const int process_saturation_vibrance, const float saturation, const float vibrance,
            const int process_hlcompr, const float hlcomp, const float hlrange,
            const float middle_grey, const float inv_middle_grey,
-           constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
            const int use_work_profile)
 {
   const int x = get_global_id(0);
