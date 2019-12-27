@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-27 15:23+0100\n"
-"PO-Revision-Date: 2019-12-27 15:24+0100\n"
+"POT-Creation-Date: 2019-12-27 19:30+0100\n"
+"PO-Revision-Date: 2019-12-27 19:31+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2269,6 +2269,11 @@ msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
+
+#: ../src/control/jobs/control_jobs.c:1386
+#, c-format
+msgid "exporting %d / %d to %s"
+msgstr "exportation %d / %d vers %s"
 
 #: ../src/control/jobs/control_jobs.c:1403 ../src/views/darkroom.c:637
 #: ../src/views/print.c:261
@@ -7328,7 +7333,6 @@ msgid "cooling filter"
 msgstr "filtre froid"
 
 #: ../src/iop/colorcorrection.c:272
-#, fuzzy
 msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -15719,11 +15723,6 @@ msgstr "action"
 
 #~ msgid "(needs a restart)"
 #~ msgstr "(nécessite un redémarrage)"
-
-#~ msgid "exporting %d image to %s"
-#~ msgid_plural "exporting %d images to %s"
-#~ msgstr[0] "exportation de %d image vers %s"
-#~ msgstr[1] "exportation de %d images vers %s"
 
 #~ msgid "3D lut (cube)"
 #~ msgstr "lut 3D (cube)"
