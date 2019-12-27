@@ -3157,10 +3157,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   }
 
   mouse_over_id = dt_view_get_image_to_act_on();
-  if(mouse_over_id <= 0)
-    dt_ratings_apply_to_selection(num);
-  else
-    dt_ratings_apply_to_image_or_group(mouse_over_id, num);
+  dt_ratings_apply(mouse_over_id, num, TRUE, TRUE, TRUE);
   _update_collected_images(self);
 
   dt_collection_update_query(darktable.collection); // update the counter
@@ -3787,7 +3784,7 @@ void activate_control_element(dt_view_t *self)
     case DT_VIEW_STAR_5:
     {
       const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-      dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
+      dt_ratings_apply(mouse_over_id, lib->image_over, TRUE, TRUE, TRUE);
       _update_collected_images(self);
       break;
     }

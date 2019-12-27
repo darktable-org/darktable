@@ -229,7 +229,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           rights = strchr(rights, ' ');
           if(rights != NULL) rights++;
         }
-        dt_metadata_set(img->id, "Xmp.dc.rights", rights);
+        dt_metadata_set(img->id, "Xmp.dc.rights", rights, FALSE, FALSE);
         free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.description"))
@@ -242,7 +242,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           description = strchr(description, ' ');
           if(description != NULL) description++;
         }
-        dt_metadata_set(img->id, "Xmp.dc.description", description);
+        dt_metadata_set(img->id, "Xmp.dc.description", description, FALSE, FALSE);
         free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.title"))
@@ -255,7 +255,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           title = strchr(title, ' ');
           if(title != NULL) title++;
         }
-        dt_metadata_set(img->id, "Xmp.dc.title", title);
+        dt_metadata_set(img->id, "Xmp.dc.title", title, FALSE, FALSE);
         free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.creator"))
@@ -268,7 +268,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           creator = strchr(creator, ' ');
           if(creator != NULL) creator++;
         }
-        dt_metadata_set(img->id, "Xmp.dc.creator", creator);
+        dt_metadata_set(img->id, "Xmp.dc.creator", creator, FALSE, FALSE);
         free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.publisher"))
@@ -281,7 +281,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           publisher = strchr(publisher, ' ');
           if(publisher != NULL) publisher++;
         }
-        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
+        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher, FALSE, FALSE);
         free(adr);
       }
     }
@@ -437,7 +437,7 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
         char *tag = dt_util_foo_to_utf8(str.c_str());
         guint tagid = 0;
         dt_tag_new(tag, &tagid);
-        dt_tag_attach_from_gui(tagid, img->id);
+        dt_tag_attach_from_gui(tagid, img->id, FALSE, FALSE);
         g_free(tag);
         ++pos;
       }
@@ -445,22 +445,22 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str(), FALSE, FALSE);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Copyright"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str(), FALSE, FALSE);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str(), FALSE, FALSE);
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Contact"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str(), FALSE, FALSE);
     }
 
     return true;
@@ -678,7 +678,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         char tagname[64];
         snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
         dt_tag_new(tagname, &tagid);
-        dt_tag_attach(tagid, img->id);
+        dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
     /*
      * Get the focus distance in meters.
@@ -880,25 +880,25 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str(), FALSE, FALSE);
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str(), FALSE, FALSE);
     }
 
     // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
     if(FIND_EXIF_TAG("Exif.Photo.UserComment"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str(), FALSE, FALSE);
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str(), FALSE, FALSE);
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Rating"))
@@ -1102,19 +1102,19 @@ static void dt_exif_apply_global_overwrites(dt_image_t *img)
     char *str;
 
     str = dt_conf_get_string("ui_last/import_last_creator");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.creator", str);
+    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.creator", str, FALSE, FALSE);
     g_free(str);
 
     str = dt_conf_get_string("ui_last/import_last_rights");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.rights", str);
+    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.rights", str, FALSE, FALSE);
     g_free(str);
 
     str = dt_conf_get_string("ui_last/import_last_publisher");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.publisher", str);
+    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.publisher", str, FALSE, FALSE);
     g_free(str);
 
     str = dt_conf_get_string("ui_last/import_last_tags");
-    if(str != NULL && str[0] != '\0') dt_tag_attach_string_list(str, img->id);
+    if(str != NULL && str[0] != '\0') dt_tag_attach_string_list(str, img->id, FALSE, FALSE);
     g_free(str);
   }
 }
@@ -1301,6 +1301,22 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     return 0;
   }
   return 1;
+}
+
+static void dt_remove_exif_geotag(Exiv2::ExifData &exifData)
+{
+  static const char *keys[] =
+  {
+    "Exif.GPSInfo.GPSLatitude",
+    "Exif.GPSInfo.GPSLongitude",
+    "Exif.GPSInfo.GPSAltitude",
+    "Exif.GPSInfo.GPSLatitudeRef",
+    "Exif.GPSInfo.GPSLongitudeRef",
+    "Exif.GPSInfo.GPSAltitudeRef",
+    "Exif.GPSInfo.GPSVersionID"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_exif_keys(exifData, keys, n_keys);
 }
 
 int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const int sRGB, const int out_width,
@@ -1551,6 +1567,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       }
 
       // GPS data
+      dt_remove_exif_geotag(exifData);
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(!std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
       {
@@ -1846,9 +1863,6 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
   sqlite3_finalize(stmt_sel_id);
   sqlite3_finalize(stmt_ins_tags);
   sqlite3_finalize(stmt_ins_tagged);
-
-  // update used_tags
-  dt_tag_update_used_tags();
 }
 
 typedef struct history_entry_t
@@ -3001,8 +3015,23 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   xmpData["Xmp.darktable.history_end"] = history_end;
 }
 
+static void dt_remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
+{
+  static const char *keys[] =
+  {
+    "Xmp.exif.GPSVersionID",
+    "Xmp.exif.GPSLongitude",
+    "Xmp.exif.GPSLatitude",
+    "Xmp.exif.GPSAltitudeRef",
+    "Xmp.exif.GPSAltitude"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_xmp_keys(xmpData, keys, n_keys);
+}
+
 static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData, double longitude, double latitude, double altitude)
 {
+  dt_remove_xmp_exif_geotag(xmpData);
   if(!std::isnan(longitude) && !std::isnan(latitude))
   {
     char long_dir = 'E', lat_dir = 'N';
@@ -3040,36 +3069,6 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData, double longitude, do
     xmpData["Xmp.exif.GPSAltitude"] = ele_str;
     g_free(ele_str);
   }
-}
-
-static void dt_remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
-{
-  static const char *keys[] =
-  {
-    "Xmp.exif.GPSVersionID",
-    "Xmp.exif.GPSLongitude",
-    "Xmp.exif.GPSLatitude",
-    "Xmp.exif.GPSAltitudeRef",
-    "Xmp.exif.GPSAltitude"
-  };
-  static const guint n_keys = G_N_ELEMENTS(keys);
-  dt_remove_xmp_keys(xmpData, keys, n_keys);
-}
-
-static void dt_remove_exif_geotag(Exiv2::ExifData &exifData)
-{
-  static const char *keys[] =
-  {
-    "Exif.GPSInfo.GPSLatitude",
-    "Exif.GPSInfo.GPSLongitude",
-    "Exif.GPSInfo.GPSAltitude",
-    "Exif.GPSInfo.GPSLatitudeRef",
-    "Exif.GPSInfo.GPSLongitudeRef",
-    "Exif.GPSInfo.GPSAltitudeRef",
-    "Exif.GPSInfo.GPSVersionID"
-  };
-  static const guint n_keys = G_N_ELEMENTS(keys);
-  dt_remove_exif_keys(exifData, keys, n_keys);
 }
 
 static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)

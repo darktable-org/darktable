@@ -836,7 +836,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
       {
         guint tagid = strtoul(*entry, NULL, 0);
 
-        dt_tag_attach(tagid, imgsel);
+        dt_tag_attach(tagid, imgsel, TRUE, TRUE);
 
         const guint count = dt_tag_images_count(tagid);
         gtk_tree_model_get_iter_first(store, &iter);
@@ -881,7 +881,7 @@ static void attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   const int imgsel = dt_view_get_image_to_act_on();
   if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
     return;
-  dt_tag_attach(tagid, imgsel);
+  dt_tag_attach(tagid, imgsel, TRUE, TRUE);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -930,7 +930,7 @@ static void detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_lib
     return;
   GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
-  dt_tag_detach(tagid, imgsel);
+  dt_tag_detach(tagid, imgsel, TRUE, TRUE);
 
   init_treeview(self, 0);
   if (d->tree_flag || !d->suggestion_flag)
@@ -997,7 +997,7 @@ static void pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t
   if(tagid <= 0) return;
 
   const int imgsel = dt_view_get_image_to_act_on();
-  dt_tag_attach(tagid, imgsel);
+  dt_tag_attach(tagid, imgsel, TRUE, TRUE);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -1111,7 +1111,7 @@ static void new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   if(!tag || tag[0] == '\0') return;
 
   /** attach tag to selected images  */
-  dt_tag_attach_string_list(tag, -1);
+  dt_tag_attach_string_list(tag, -1, TRUE, TRUE);
   dt_image_synch_xmp(-1);
 
   /** record last tag used */
@@ -1124,6 +1124,7 @@ static void new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   init_treeview(self, 0);
   init_treeview(self, 1);
   raise_signal_tag_changed(self);
+  gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
 }
 
 static void entry_activated(GtkButton *button, dt_lib_module_t *self)
@@ -2800,7 +2801,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       // both these functions can deal with -1 for all selected images. no need for extra code in here!
-      dt_tag_attach_string_list(tag, d->floating_tag_imgid);
+      dt_tag_attach_string_list(tag, d->floating_tag_imgid, TRUE, TRUE);
       dt_image_synch_xmp(d->floating_tag_imgid);
 
       /** record last tag used */
@@ -2833,7 +2834,7 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
   {
     const int imgsel = dt_control_get_mouse_over_id();
 
-    dt_tag_attach_string_list(d->last_tag, imgsel);
+    dt_tag_attach_string_list(d->last_tag, imgsel, TRUE, TRUE);
     dt_image_synch_xmp(imgsel);
     init_treeview(self, 0);
     init_treeview(self, 1);

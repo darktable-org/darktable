@@ -853,7 +853,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
         guint tagid = 0;
         if(!dt_tag_exists((char *)cvalue, &tagid)) dt_tag_new((char *)cvalue, &tagid);
 
-        dt_tag_attach_from_gui(tagid, imgid);
+        dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
         data->has_tags = TRUE;
         xmlFree(cvalue);
       }
@@ -924,7 +924,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       if(!xmlStrncmp(ttlNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, ttlNode->xmlChildrenNode, 1);
-        dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue);
+        dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue, FALSE, FALSE);
         xmlFree(cvalue);
       }
       ttlNode = ttlNode->next;
@@ -938,7 +938,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       if(!xmlStrncmp(desNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
-        dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue);
+        dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue, FALSE, FALSE);
         xmlFree(cvalue);
       }
       desNode = desNode->next;
@@ -952,7 +952,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       if(!xmlStrncmp(creNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
-        dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue);
+        dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue, FALSE, FALSE);
         xmlFree(cvalue);
       }
       creNode = creNode->next;
@@ -966,7 +966,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       if(!xmlStrncmp(rigNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
-        dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue);
+        dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue, FALSE, FALSE);
         xmlFree(cvalue);
       }
       rigNode = rigNode->next;
@@ -1508,7 +1508,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev == NULL && data.has_rating)
   {
-    dt_ratings_apply_to_image(imgid, data.rating);
+    dt_ratings_apply(imgid, data.rating, FALSE, FALSE, FALSE);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("rating"), sizeof(imported));
@@ -1520,7 +1520,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     dt_image_geoloc_t geoloc;
     geoloc.longitude = data.lon;
     geoloc.latitude = data.lat;
-    dt_image_set_location(imgid, &geoloc);
+    geoloc.elevation = NAN;
+    dt_image_set_location(imgid, &geoloc, FALSE, FALSE);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));
