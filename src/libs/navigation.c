@@ -209,7 +209,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     {
       // Add a dark overlay on the picture to make it fade
       cairo_rectangle(cr, 0, 0, wd, ht);
-      cairo_set_source_rgba(cr, 0, 0, 0, 0.33);
+      cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
       cairo_fill(cr);
 
       float boxw = 1, boxh = 1;
