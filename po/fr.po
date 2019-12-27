@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-27 12:12+0100\n"
-"PO-Revision-Date: 2019-12-27 12:19+0100\n"
+"POT-Creation-Date: 2019-12-27 15:23+0100\n"
+"PO-Revision-Date: 2019-12-27 15:24+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1426,12 +1426,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRVB (web)"
 
 #: ../src/common/colorspaces.c:1412 ../src/common/colorspaces.c:1605
-#: ../src/iop/colorin.c:2113 ../src/libs/print_settings.c:1034
+#: ../src/iop/colorin.c:2137 ../src/libs/print_settings.c:1034
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RVB (compatible)"
 
 #: ../src/common/colorspaces.c:1417 ../src/common/colorspaces.c:1607
-#: ../src/iop/colorin.c:2114
+#: ../src/iop/colorin.c:2138
 msgid "linear Rec709 RGB"
 msgstr "RVB Rec709 linéaire"
 
@@ -1440,7 +1440,7 @@ msgid "gamma Rec709 RGB"
 msgstr "RVB Rec709 gamma"
 
 #: ../src/common/colorspaces.c:1426 ../src/common/colorspaces.c:1609
-#: ../src/iop/colorin.c:2115
+#: ../src/iop/colorin.c:2139
 msgid "linear Rec2020 RGB"
 msgstr "RVB Rec2020 linéaire"
 
@@ -1481,7 +1481,7 @@ msgstr "infrarouge linéaire BVR"
 msgid "BRG (for testing)"
 msgstr "BRV (pour test)"
 
-#: ../src/common/colorspaces.c:1603 ../src/iop/colorin.c:2112
+#: ../src/common/colorspaces.c:1603 ../src/iop/colorin.c:2136
 #: ../src/iop/lut3d.c:1129
 msgid "sRGB"
 msgstr "sRVB"
@@ -1563,31 +1563,31 @@ msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
 
-#: ../src/common/darktable.c:230
+#: ../src/common/darktable.c:231
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:247
+#: ../src/common/darktable.c:248
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:270
+#: ../src/common/darktable.c:271
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:283 ../src/libs/import.c:825
+#: ../src/common/darktable.c:284 ../src/libs/import.c:825
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:802
+#: ../src/common/darktable.c:805
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:803
+#: ../src/common/darktable.c:806
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1601,7 +1601,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:807 ../src/common/variables.c:380
+#: ../src/common/darktable.c:810 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2027 ../src/iop/filmicrgb.c:1574
 #: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
@@ -1609,7 +1609,7 @@ msgstr ""
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:807 ../src/common/variables.c:378
+#: ../src/common/darktable.c:810 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2028 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
@@ -1762,7 +1762,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:938 ../src/develop/blend_gui.c:2515
 #: ../src/develop/blend_gui.c:2765 ../src/develop/develop.c:1898
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
-#: ../src/iop/ashift.c:4863 ../src/iop/ashift.c:4869 ../src/iop/colorin.c:2111
+#: ../src/iop/ashift.c:4863 ../src/iop/ashift.c:4869 ../src/iop/colorin.c:2135
 #: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
 #: ../src/libs/live_view.c:436
 msgid "off"
@@ -1842,12 +1842,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:642 ../src/common/mipmap_cache.c:1060
+#: ../src/common/imageio.c:654 ../src/common/mipmap_cache.c:1060
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
 
-#: ../src/common/imageio.c:660
+#: ../src/common/imageio.c:672
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1856,17 +1856,17 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:661
+#: ../src/common/imageio.c:673
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:661
+#: ../src/common/imageio.c:673
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:671
+#: ../src/common/imageio.c:683
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -2027,7 +2027,7 @@ msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
-#: ../src/libs/metadata_view.c:578
+#: ../src/libs/metadata_view.c:579
 msgid "m"
 msgstr "m"
 
@@ -3210,74 +3210,78 @@ msgid "[GRADIENT creation] set rotation"
 msgstr "[GRADIENT création] terminer création"
 
 #: ../src/develop/masks/masks.c:231
+msgid "[GRADIENT] change curvature"
+msgstr "[GRADIENT] changer courbure"
+
+#: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change compression"
 msgstr "[GRADIENT] changer opacité"
 
-#: ../src/develop/masks/masks.c:237
+#: ../src/develop/masks/masks.c:243
 msgid "[GRADIENT] change opacity"
 msgstr "[GRADIENT] changer opacité"
 
-#: ../src/develop/masks/masks.c:244
+#: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change size"
 msgstr "[ELLIPSE] changer taille"
 
-#: ../src/develop/masks/masks.c:250
+#: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] change opacity"
 msgstr "[ELLIPSE] changer opacité"
 
-#: ../src/develop/masks/masks.c:256
+#: ../src/develop/masks/masks.c:262
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELLIPSE] changer le mode d'adoucissement"
 
-#: ../src/develop/masks/masks.c:262
+#: ../src/develop/masks/masks.c:268
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELLIPSE] tourner forme"
 
-#: ../src/develop/masks/masks.c:269
+#: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change size"
 msgstr "[PINCEAU] changer taille"
 
-#: ../src/develop/masks/masks.c:275
+#: ../src/develop/masks/masks.c:281
 msgid "[BRUSH creation] change hardness"
 msgstr "[PINCEAU] changer dureté"
 
-#: ../src/develop/masks/masks.c:281
+#: ../src/develop/masks/masks.c:287
 msgid "[BRUSH] change opacity"
 msgstr "[PINCEAU] changer opacité"
 
-#: ../src/develop/masks/masks.c:286
+#: ../src/develop/masks/masks.c:292
 msgid "[BRUSH] change hardness"
 msgstr "[PINCEAU] changer dureté"
 
-#: ../src/develop/masks/masks.c:293
+#: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change size"
 msgstr "[CERCLE] changer taille"
 
-#: ../src/develop/masks/masks.c:299
+#: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change opacity"
 msgstr "[CERCLE] changer l'opacité"
 
-#: ../src/develop/masks/masks.c:305
+#: ../src/develop/masks/masks.c:311
 msgid "[CIRCLE] change feather size"
 msgstr "[CERCLE] changer la taille d'adoucissement"
 
-#: ../src/develop/masks/masks.c:340
+#: ../src/develop/masks/masks.c:346
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl-clic pour ajouter un nœud aïgu"
 
-#: ../src/develop/masks/masks.c:342
+#: ../src/develop/masks/masks.c:348
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl-clic pour basculer entre un nœud courbe et aigu"
 
-#: ../src/develop/masks/masks.c:344
+#: ../src/develop/masks/masks.c:350
 msgid "right-click to reset curvature"
 msgstr "clic-droit pour réinitialiser la courbure"
 
-#: ../src/develop/masks/masks.c:346
+#: ../src/develop/masks/masks.c:352
 msgid "ctrl+click to add a node"
 msgstr "ctrl-clic pour ajouter un point"
 
-#: ../src/develop/masks/masks.c:348 ../src/develop/masks/masks.c:386
+#: ../src/develop/masks/masks.c:354 ../src/develop/masks/masks.c:392
 #, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
@@ -3285,16 +3289,20 @@ msgstr ""
 "shift+défiler pour changer la dureté, ctrl+défiler pour changer l'opacité (%d"
 "%%)"
 
-#: ../src/develop/masks/masks.c:353
+#: ../src/develop/masks/masks.c:359
 #, c-format
-msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "ctrl-défiler pour modifier l'opacité (%d%%)"
+msgid ""
+"scroll to set curvature, shift+scroll to change compression\n"
+"ctrl+scroll to set shape opacity (%d%%)"
+msgstr ""
+"défiler pour changer la courbure, shift+défiler pour changer la dureté,\n"
+"ctrl+défiler pour changer l'opacité (%d%%)"
 
-#: ../src/develop/masks/masks.c:355
+#: ../src/develop/masks/masks.c:361
 msgid "move to rotate shape"
 msgstr "déplacer pour faire pivoter"
 
-#: ../src/develop/masks/masks.c:361 ../src/develop/masks/masks.c:383
+#: ../src/develop/masks/masks.c:367 ../src/develop/masks/masks.c:389
 #, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
@@ -3303,11 +3311,11 @@ msgstr ""
 "défiler pour changer la taille, shift+défiler pour changer la dureté,\n"
 "ctrl+défiler pour changer l'opacité (%d%%)"
 
-#: ../src/develop/masks/masks.c:363
+#: ../src/develop/masks/masks.c:369
 msgid "ctrl+click to rotate"
 msgstr "ctrl-clic pour pivoter"
 
-#: ../src/develop/masks/masks.c:366
+#: ../src/develop/masks/masks.c:372
 #, c-format
 msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
@@ -3317,7 +3325,7 @@ msgstr ""
 "shift+défiler pour changer le dégradé, ctrl+défiler pour modifier l'opacité "
 "(%d%%)"
 
-#: ../src/develop/masks/masks.c:372
+#: ../src/develop/masks/masks.c:378
 #, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
@@ -3327,60 +3335,60 @@ msgstr ""
 "dureté,\n"
 "ctrl+défiler pour changer l'opacité (%d%%)"
 
-#: ../src/develop/masks/masks.c:375
+#: ../src/develop/masks/masks.c:381
 #, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
 "défiler pour changer la dureté, ctrl+défiler pour modifier l'opacité (%d%%)"
 
-#: ../src/develop/masks/masks.c:377
+#: ../src/develop/masks/masks.c:383
 msgid "scroll to set brush size"
 msgstr "défiler pour modifier la taille du pinceau"
 
-#: ../src/develop/masks/masks.c:539
+#: ../src/develop/masks/masks.c:545
 #, c-format
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/masks.c:541
+#: ../src/develop/masks/masks.c:547
 #, c-format
 msgid "path #%d"
 msgstr "chemin #%d"
 
-#: ../src/develop/masks/masks.c:543
+#: ../src/develop/masks/masks.c:549
 #, c-format
 msgid "gradient #%d"
 msgstr "dégradé #%d"
 
-#: ../src/develop/masks/masks.c:545
+#: ../src/develop/masks/masks.c:551
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellipse #%d"
 
-#: ../src/develop/masks/masks.c:547
+#: ../src/develop/masks/masks.c:553
 #, c-format
 msgid "brush #%d"
 msgstr "pinceau #%d"
 
-#: ../src/develop/masks/masks.c:615
+#: ../src/develop/masks/masks.c:621
 #, c-format
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1325
+#: ../src/develop/masks/masks.c:1365
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:2078 ../src/libs/masks.c:1053
+#: ../src/develop/masks/masks.c:2118 ../src/libs/masks.c:1053
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:2103
+#: ../src/develop/masks/masks.c:2143
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2414
+#: ../src/develop/masks/masks.c:2454
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -7332,11 +7340,11 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "règle la saturation globale"
 
-#: ../src/iop/colorin.c:120
+#: ../src/iop/colorin.c:123
 msgid "input color profile"
 msgstr "profil de couleur d'entrée"
 
-#: ../src/iop/colorin.c:473
+#: ../src/iop/colorin.c:476
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -7345,38 +7353,38 @@ msgstr ""
 "impossible d'extraire la matrice depuis l'espace « %s », il sera remplacé "
 "par Rec2020 RVB!"
 
-#: ../src/iop/colorin.c:1583
+#: ../src/iop/colorin.c:1586
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "matrice couleur « %s » non trouvée!"
 
-#: ../src/iop/colorin.c:1618
+#: ../src/iop/colorin.c:1621
 msgid "input profile could not be generated!"
 msgstr "impossible de générer le profil d'entrée"
 
-#: ../src/iop/colorin.c:1700
+#: ../src/iop/colorin.c:1703
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
-#: ../src/iop/colorin.c:2073
+#: ../src/iop/colorin.c:2097
 msgid "input profile"
 msgstr "profil d'entrée"
 
-#: ../src/iop/colorin.c:2077
+#: ../src/iop/colorin.c:2101
 msgid "working profile"
 msgstr "profil de travail"
 
-#: ../src/iop/colorin.c:2087 ../src/iop/colorin.c:2098
+#: ../src/iop/colorin.c:2111 ../src/iop/colorin.c:2122
 #: ../src/iop/colorout.c:894
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "profils ICC dans %s ou %s"
 
-#: ../src/iop/colorin.c:2109
+#: ../src/iop/colorin.c:2133
 msgid "gamut clipping"
 msgstr "troncature gamut"
 
-#: ../src/iop/colorin.c:2117
+#: ../src/iop/colorin.c:2141
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "cantonne les valeurs Lab au gamut de l'espace RVB"
 
@@ -13639,12 +13647,16 @@ msgstr "rawspeed"
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:414
+#: ../src/libs/metadata_view.c:410
+msgid "avif"
+msgstr "avif"
+
+#: ../src/libs/metadata_view.c:415
 #, c-format
 msgid "loader: %s"
 msgstr "chargement: %s"
 
-#: ../src/libs/metadata_view.c:703
+#: ../src/libs/metadata_view.c:704
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -15653,6 +15665,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2424
 msgid "Action"
 msgstr "action"
+
+#~ msgid "ctrl+scroll to set shape opacity (%d%%)"
+#~ msgstr "ctrl-défiler pour modifier l'opacité (%d%%)"
 
 #~ msgctxt "accel"
 #~ msgid "controls"
