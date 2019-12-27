@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-27 19:30+0100\n"
-"PO-Revision-Date: 2019-12-27 19:31+0100\n"
+"POT-Creation-Date: 2019-12-27 21:08+0100\n"
+"PO-Revision-Date: 2019-12-27 21:24+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1126,8 +1126,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
-#: ../build/src/preferences_gen.h:3909 ../src/control/jobs/control_jobs.c:1624
-#: ../src/control/jobs/control_jobs.c:1684 ../src/gui/preferences.c:1617
+#: ../build/src/preferences_gen.h:3909 ../src/control/jobs/control_jobs.c:1558
+#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/preferences.c:1617
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
@@ -1223,8 +1223,8 @@ msgstr "%s/%s: %s"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1624
-#: ../src/control/jobs/control_jobs.c:1684 ../src/gui/hist_dialog.c:171
+#: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1558
+#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/hist_dialog.c:171
 #: ../src/gui/preferences.c:1157 ../src/gui/preferences.c:1183
 #: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1388
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
@@ -1233,8 +1233,8 @@ msgstr "%s: %s"
 #: ../src/iop/lut3d.c:1029 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2144
-#: ../src/libs/tagging.c:2185
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2145
+#: ../src/libs/tagging.c:2186
 msgid "_cancel"
 msgstr "_annuler"
 
@@ -1786,56 +1786,56 @@ msgstr ""
 "<h1>Merci,</h1><p>tout devrait s'être bien passé, vous pouvez <b>fermer</b> "
 "votre navigateur maintenant et <b>retourner</b> dans darktable.</p>"
 
-#: ../src/common/image.c:185
+#: ../src/common/image.c:186
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1493
+#: ../src/common/image.c:1559
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1499
+#: ../src/common/image.c:1565
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1506
+#: ../src/common/image.c:1572
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1522
+#: ../src/common/image.c:1588
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s », le fichier n'existe pas"
 
-#: ../src/common/image.c:1532
+#: ../src/common/image.c:1598
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s », le fichier existe"
 
-#: ../src/common/image.c:1536
+#: ../src/common/image.c:1602
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1793
+#: ../src/common/image.c:1859
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1807
+#: ../src/common/image.c:1873
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1873 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1939 ../src/control/jobs/control_jobs.c:659
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:2042
+#: ../src/common/image.c:2108
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1894,26 +1894,26 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:789
+#: ../src/common/opencl.c:792
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/common/opencl.c:796
+#: ../src/common/opencl.c:799
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "GPU multiples détectés - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:803
+#: ../src/common/opencl.c:806
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "GPU très rapide détecté - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:810
+#: ../src/common/opencl.c:813
 msgid "opencl scheduling profile set to default."
 msgstr "profil de planification opencl par défaut positionné"
 
@@ -1954,21 +1954,21 @@ msgstr "legal"
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
-#: ../src/common/ratings.c:129 ../src/common/ratings.c:150
+#: ../src/common/ratings.c:133
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "rejet de %d image"
 msgstr[1] "rejet de %d images"
 
-#: ../src/common/ratings.c:131 ../src/common/ratings.c:152
+#: ../src/common/ratings.c:135
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "application de %d étoile(s) à %d image"
 msgstr[1] "application de %d étoile(s) à %d images"
 
-#: ../src/common/ratings.c:194
+#: ../src/common/ratings.c:150
 msgid "no images selected to apply rating"
 msgstr "aucune image sélectionnée pour appliquer les étoiles"
 
@@ -2026,7 +2026,7 @@ msgstr "au dessus du niveau de la mer"
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:508 ../src/iop/watermark.c:775
+#: ../src/common/utility.c:508 ../src/iop/watermark.c:822
 #: ../src/libs/metadata_view.c:579
 msgid "m"
 msgstr "m"
@@ -2113,192 +2113,192 @@ msgstr[1] "importation de %d images depuis l'appareil photo"
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
-#: ../src/control/jobs/control_jobs.c:148
+#: ../src/control/jobs/control_jobs.c:142
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "échec de la création du dossier de destination, abandon du déplacement..."
 
-#: ../src/control/jobs/control_jobs.c:346
+#: ../src/control/jobs/control_jobs.c:340
 msgid "exposure bracketing only works on raw images."
 msgstr "bracketing d'exposition marche uniquement sur les images raw."
 
-#: ../src/control/jobs/control_jobs.c:353
+#: ../src/control/jobs/control_jobs.c:347
 msgid "images have to be of same size and orientation!"
 msgstr "les images doivent avoir les mêmes taille et orientation !"
 
-#: ../src/control/jobs/control_jobs.c:448
+#: ../src/control/jobs/control_jobs.c:442
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion  de %d images"
 
-#: ../src/control/jobs/control_jobs.c:510
+#: ../src/control/jobs/control_jobs.c:504
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR « %s » écrite"
 
-#: ../src/control/jobs/control_jobs.c:536
+#: ../src/control/jobs/control_jobs.c:530
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:566
+#: ../src/control/jobs/control_jobs.c:560
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:641
+#: ../src/control/jobs/control_jobs.c:635
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "enlèvement de %d image"
 msgstr[1] "enlèvement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:743
+#: ../src/control/jobs/control_jobs.c:737
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
-#: ../src/control/jobs/control_jobs.c:744
+#: ../src/control/jobs/control_jobs.c:738
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "impossible de supprimer du disque %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:754
+#: ../src/control/jobs/control_jobs.c:748
 msgid "physically delete"
 msgstr "supprime du disque définitivement"
 
-#: ../src/control/jobs/control_jobs.c:755
+#: ../src/control/jobs/control_jobs.c:749
 msgid "physically delete all files"
 msgstr "supprime physiquement tous les fichiers"
 
-#: ../src/control/jobs/control_jobs.c:757
+#: ../src/control/jobs/control_jobs.c:751
 msgid "only remove from the collection"
 msgstr "enlève uniquement de la collection"
 
-#: ../src/control/jobs/control_jobs.c:758
+#: ../src/control/jobs/control_jobs.c:752
 msgid "skip to next file"
 msgstr "passe au fichier suivant"
 
-#: ../src/control/jobs/control_jobs.c:759
+#: ../src/control/jobs/control_jobs.c:753
 msgid "stop process"
 msgstr "arrête l'effacement"
 
-#: ../src/control/jobs/control_jobs.c:764
+#: ../src/control/jobs/control_jobs.c:758
 msgid "trashing error"
 msgstr "erreur de la poubelle"
 
-#: ../src/control/jobs/control_jobs.c:765
+#: ../src/control/jobs/control_jobs.c:759
 msgid "deletion error"
 msgstr "erreur de suppression"
 
-#: ../src/control/jobs/control_jobs.c:908
+#: ../src/control/jobs/control_jobs.c:902
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "mise à la poubelle de %d image"
 msgstr[1] "mise à la poubelle de %d images"
 
-#: ../src/control/jobs/control_jobs.c:910
+#: ../src/control/jobs/control_jobs.c:904
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1127
+#: ../src/control/jobs/control_jobs.c:1077
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:1208
+#: ../src/control/jobs/control_jobs.c:1142
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1223
+#: ../src/control/jobs/control_jobs.c:1157
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1224
+#: ../src/control/jobs/control_jobs.c:1158
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1229
+#: ../src/control/jobs/control_jobs.c:1163
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1230
+#: ../src/control/jobs/control_jobs.c:1164
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1246
+#: ../src/control/jobs/control_jobs.c:1180
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1249
+#: ../src/control/jobs/control_jobs.c:1183
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "suppression de la copie locale de %d image"
 msgstr[1] "suppression des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1288
+#: ../src/control/jobs/control_jobs.c:1222
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "mise à jour des informations de %d image"
 msgstr[1] "mise à jour des informations de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1354
+#: ../src/control/jobs/control_jobs.c:1288
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
 
-#: ../src/control/jobs/control_jobs.c:1386
+#: ../src/control/jobs/control_jobs.c:1320
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1403 ../src/views/darkroom.c:637
+#: ../src/control/jobs/control_jobs.c:1337 ../src/views/darkroom.c:637
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1493
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "merge hdr image"
 msgstr "fusion hdr d'images"
 
-#: ../src/control/jobs/control_jobs.c:1507
+#: ../src/control/jobs/control_jobs.c:1441
 msgid "duplicate images"
 msgstr "cloner les images"
 
-#: ../src/control/jobs/control_jobs.c:1514
+#: ../src/control/jobs/control_jobs.c:1448
 msgid "flip images"
 msgstr "retourne les images"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1521
+#: ../src/control/jobs/control_jobs.c:1455
 msgid "remove images"
 msgstr "enlever les images"
 
-#: ../src/control/jobs/control_jobs.c:1543
+#: ../src/control/jobs/control_jobs.c:1477
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -2309,16 +2309,16 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images "
 "sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1550
+#: ../src/control/jobs/control_jobs.c:1484
 msgid "remove images?"
 msgstr "enlever les images ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1566
+#: ../src/control/jobs/control_jobs.c:1500
 msgid "delete images"
 msgstr "supprimer les images"
 
-#: ../src/control/jobs/control_jobs.c:1590
+#: ../src/control/jobs/control_jobs.c:1524
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -2328,7 +2328,7 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
 "poubelle  ?"
 
-#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1526
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -2340,24 +2340,24 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
 "sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1599
+#: ../src/control/jobs/control_jobs.c:1533
 msgid "trash images?"
 msgstr "mise à la poubelle?"
 
-#: ../src/control/jobs/control_jobs.c:1599
+#: ../src/control/jobs/control_jobs.c:1533
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1620
+#: ../src/control/jobs/control_jobs.c:1554
 msgid "move images"
 msgstr "déplacer les images"
 
-#: ../src/control/jobs/control_jobs.c:1625
-#: ../src/control/jobs/control_jobs.c:1685
+#: ../src/control/jobs/control_jobs.c:1559
+#: ../src/control/jobs/control_jobs.c:1619
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1646
+#: ../src/control/jobs/control_jobs.c:1580
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -2372,17 +2372,17 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1655
+#: ../src/control/jobs/control_jobs.c:1589
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l'image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1680
+#: ../src/control/jobs/control_jobs.c:1614
 msgid "copy images"
 msgstr "copier les images"
 
-#: ../src/control/jobs/control_jobs.c:1706
+#: ../src/control/jobs/control_jobs.c:1640
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -2392,51 +2392,51 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
 "vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1712
+#: ../src/control/jobs/control_jobs.c:1646
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1732
-#: ../src/control/jobs/control_jobs.c:1739
+#: ../src/control/jobs/control_jobs.c:1666
+#: ../src/control/jobs/control_jobs.c:1673
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1746 ../src/libs/image.c:276
+#: ../src/control/jobs/control_jobs.c:1680 ../src/libs/image.c:444
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
-#: ../src/control/jobs/control_jobs.c:1809
+#: ../src/control/jobs/control_jobs.c:1743
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1824
+#: ../src/control/jobs/control_jobs.c:1758
 msgid "export images"
 msgstr "exporter les images"
 
-#: ../src/control/jobs/control_jobs.c:1849
+#: ../src/control/jobs/control_jobs.c:1783
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1864
+#: ../src/control/jobs/control_jobs.c:1798
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1903 ../src/libs/geotagging.c:781
+#: ../src/control/jobs/control_jobs.c:1837 ../src/libs/geotagging.c:781
 msgid "time offset"
 msgstr "décalage"
 
-#: ../src/control/jobs/control_jobs.c:1927 ../src/libs/copy_history.c:366
+#: ../src/control/jobs/control_jobs.c:1861 ../src/libs/copy_history.c:366
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
@@ -2901,7 +2901,7 @@ msgstr "mode de fusion"
 msgid "choose blending mode"
 msgstr "choisir le mode de fusion"
 
-#: ../src/develop/blend_gui.c:2733 ../src/iop/watermark.c:1447
+#: ../src/develop/blend_gui.c:2733 ../src/iop/watermark.c:1494
 msgid "opacity"
 msgstr "opacité"
 
@@ -3042,12 +3042,12 @@ msgstr "monter"
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
-#: ../src/libs/tagging.c:1180 ../src/libs/tagging.c:1277
+#: ../src/develop/imageop.c:1046 ../src/libs/image.c:164
+#: ../src/libs/tagging.c:1181 ../src/libs/tagging.c:1278
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1753
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1754
 msgid "rename"
 msgstr "renommer"
 
@@ -3134,8 +3134,8 @@ msgstr "« %s » n'est pas un XMP de Lightroom !"
 
 #. tags
 #: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
-#: ../src/libs/export_metadata.c:273 ../src/libs/import.c:580
-#: ../src/libs/metadata_view.c:137
+#: ../src/libs/export_metadata.c:273 ../src/libs/image.c:511
+#: ../src/libs/import.c:580 ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "mots-clés"
 
@@ -3144,18 +3144,18 @@ msgstr "mots-clés"
 msgid "rating"
 msgstr "étoile"
 
-#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1527 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "géolocalisation"
 
 #. DT_COLLECTION_SORT_ID
-#: ../src/develop/lightroom.c:1535 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1536 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "labels couleur"
 
-#: ../src/develop/lightroom.c:1541
+#: ../src/develop/lightroom.c:1542
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3657,9 +3657,9 @@ msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:232
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1180
-#: ../src/libs/tagging.c:1277 ../src/libs/tagging.c:1365
-#: ../src/libs/tagging.c:1533 ../src/libs/tagging.c:1753
+#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1181
+#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1366
+#: ../src/libs/tagging.c:1534 ../src/libs/tagging.c:1754
 msgid "cancel"
 msgstr "annuler"
 
@@ -4518,7 +4518,7 @@ msgstr "modifier"
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
-#: ../src/imageio/format/copy.c:124
+#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:456
 msgid "copy"
 msgstr "copier"
 
@@ -5372,7 +5372,7 @@ msgid "perspective correction"
 msgstr "correction de perspective"
 
 #: ../src/iop/ashift.c:519 ../src/iop/graduatednd.c:166
-#: ../src/iop/watermark.c:264
+#: ../src/iop/watermark.c:311
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
@@ -5450,7 +5450,7 @@ msgid "vertical"
 msgstr "verticale"
 
 #: ../src/iop/ashift.c:4841 ../src/iop/graduatednd.c:1239
-#: ../src/iop/watermark.c:1454
+#: ../src/iop/watermark.c:1501
 msgid "rotation"
 msgstr "rotation"
 
@@ -5882,7 +5882,7 @@ msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
 #: ../src/iop/basecurve.c:2156 ../src/iop/lens.cc:2441
 #: ../src/iop/tonecurve.c:1443 ../src/iop/vignette.c:1158
-#: ../src/iop/watermark.c:1451
+#: ../src/iop/watermark.c:1498
 msgid "scale"
 msgstr "échelle"
 
@@ -7533,21 +7533,21 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
 #: ../src/views/darkroom.c:2098 ../src/views/darkroom.c:2106
-#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
+#: ../src/views/lighttable.c:4903 ../src/views/lighttable.c:4911
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
 #: ../src/views/darkroom.c:2099 ../src/views/darkroom.c:2107
-#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
+#: ../src/views/lighttable.c:4904 ../src/views/lighttable.c:4912
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
 #: ../src/views/darkroom.c:2100 ../src/views/darkroom.c:2108
-#: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
+#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
@@ -7555,7 +7555,7 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 #: ../src/views/darkroom.c:2101 ../src/views/darkroom.c:2109
-#: ../src/views/lighttable.c:4909 ../src/views/lighttable.c:4917
+#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -9384,7 +9384,7 @@ msgstr "choisir la couleur du film dans l'image"
 msgid "lens correction"
 msgstr "correction des objectifs"
 
-#: ../src/iop/lens.cc:172 ../src/iop/vignette.c:174 ../src/iop/watermark.c:263
+#: ../src/iop/lens.cc:172 ../src/iop/vignette.c:174 ../src/iop/watermark.c:310
 msgctxt "accel"
 msgid "scale"
 msgstr "échelle"
@@ -10494,7 +10494,7 @@ msgstr "mode de remplissage"
 msgid "erase"
 msgstr "effacer"
 
-#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1398
+#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1445
 msgid "color"
 msgstr "couleur"
 
@@ -11690,44 +11690,44 @@ msgstr "[%s sur nœud ] changer miniature/taille dégradé et garde ratio"
 msgid "[%s on center] move vignette"
 msgstr "[%s au centre] déplacer vignette"
 
-#: ../src/iop/watermark.c:236
+#: ../src/iop/watermark.c:283
 msgid "watermark"
 msgstr "filigrane"
 
-#: ../src/iop/watermark.c:261
+#: ../src/iop/watermark.c:308
 msgctxt "accel"
 msgid "refresh"
 msgstr "rafraîchir"
 
-#: ../src/iop/watermark.c:262
+#: ../src/iop/watermark.c:309
 msgctxt "accel"
 msgid "opacity"
 msgstr "opacité"
 
-#: ../src/iop/watermark.c:265
+#: ../src/iop/watermark.c:312
 msgctxt "accel"
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:266
+#: ../src/iop/watermark.c:313
 msgctxt "accel"
 msgid "y offset"
 msgstr "décalage y"
 
-#: ../src/iop/watermark.c:1371
+#: ../src/iop/watermark.c:1418
 msgid "content"
 msgstr "contenu"
 
-#: ../src/iop/watermark.c:1378
+#: ../src/iop/watermark.c:1425
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1381
+#: ../src/iop/watermark.c:1428
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "filigranes SVG dans %s/watermarks ou %s/watermarks"
 
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1447
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -11735,20 +11735,20 @@ msgstr ""
 "couleur du filigrane, tag:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1402
+#: ../src/iop/watermark.c:1449
 msgid "select watermark color"
 msgstr "sélectionne la couleur du filigrane"
 
-#: ../src/iop/watermark.c:1405
+#: ../src/iop/watermark.c:1452
 msgid "pick color from image"
 msgstr "choisit une couleur dans l'image"
 
 #. Simple text
-#: ../src/iop/watermark.c:1415
+#: ../src/iop/watermark.c:1462
 msgid "text"
 msgstr "texte"
 
-#: ../src/iop/watermark.c:1419
+#: ../src/iop/watermark.c:1466
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -11757,11 +11757,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1429
+#: ../src/iop/watermark.c:1476
 msgid "font"
 msgstr "police"
 
-#: ../src/iop/watermark.c:1435
+#: ../src/iop/watermark.c:1482
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -11774,58 +11774,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1442 ../src/libs/camera.c:508
+#: ../src/iop/watermark.c:1489 ../src/libs/camera.c:508
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/iop/watermark.c:1460
+#: ../src/iop/watermark.c:1507
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1461
+#: ../src/iop/watermark.c:1508
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1462
+#: ../src/iop/watermark.c:1509
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1464
+#: ../src/iop/watermark.c:1511
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1465
+#: ../src/iop/watermark.c:1512
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1468
+#: ../src/iop/watermark.c:1515
 msgid "position"
 msgstr "position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1471 ../src/libs/print_settings.c:1389
+#: ../src/iop/watermark.c:1518 ../src/libs/print_settings.c:1389
 msgid "alignment"
 msgstr "alignement"
 
-#: ../src/iop/watermark.c:1487
+#: ../src/iop/watermark.c:1534
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1490
+#: ../src/iop/watermark.c:1537
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1495
+#: ../src/iop/watermark.c:1542
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1496
+#: ../src/iop/watermark.c:1543
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1497
+#: ../src/iop/watermark.c:1544
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 
@@ -12240,7 +12240,7 @@ msgstr[1] ""
 msgid "delete images' history?"
 msgstr "supprimer l'historiqe des images ?"
 
-#: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
+#: ../src/libs/copy_history.c:308 ../src/libs/image.c:372
 msgid "copy..."
 msgstr "copier..."
 
@@ -12529,8 +12529,8 @@ msgstr ""
 msgid "edit metadata exportation"
 msgstr "modification de l'exportation des métadonnées"
 
-#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1365
-#: ../src/libs/tagging.c:1533
+#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1366
+#: ../src/libs/tagging.c:1534
 msgid "save"
 msgstr "enregistrer"
 
@@ -12546,7 +12546,7 @@ msgstr "données EXIF"
 msgid "export exif metadata"
 msgstr "exporter les métadonnées exif"
 
-#: ../src/libs/export_metadata.c:252
+#: ../src/libs/export_metadata.c:252 ../src/libs/image.c:499
 msgid "metadata"
 msgstr "métadonnées"
 
@@ -12573,7 +12573,7 @@ msgstr ""
 "si le stockage distant ne supporte pas les métadonnées de darktable, il est "
 "possible de les définir."
 
-#: ../src/libs/export_metadata.c:270
+#: ../src/libs/export_metadata.c:270 ../src/libs/image.c:505
 msgid "geo tags"
 msgstr "géolocalisation"
 
@@ -12833,195 +12833,289 @@ msgstr "module déprécié"
 msgid "original"
 msgstr "original"
 
-#: ../src/libs/image.c:51
+#: ../src/libs/image.c:71
 msgid "selected image[s]"
 msgstr "images sélectionnées"
 
-#: ../src/libs/image.c:142
+#: ../src/libs/image.c:162
 msgid "trash"
 msgstr "poubelle"
 
-#: ../src/libs/image.c:150
+#: ../src/libs/image.c:170
 msgid "send file to trash"
 msgstr "place dans la poubelle"
 
-#: ../src/libs/image.c:152
+#: ../src/libs/image.c:172
 msgid "physically delete from disk"
 msgstr "supprime physiquement du disque"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #. delete
-#: ../src/libs/image.c:182 ../src/libs/styles.c:458
+#: ../src/libs/image.c:350 ../src/libs/styles.c:458
 msgid "remove"
 msgstr "enlever"
 
-#: ../src/libs/image.c:185
+#: ../src/libs/image.c:353
 msgid "remove from the collection"
 msgstr "enlève de la bibliothèque"
 
-#: ../src/libs/image.c:197
+#: ../src/libs/image.c:365
 msgid "move..."
 msgstr "déplacer..."
 
-#: ../src/libs/image.c:200
+#: ../src/libs/image.c:368
 msgid "move to other folder"
 msgstr "déplace vers un autre dossier"
 
-#: ../src/libs/image.c:207
+#: ../src/libs/image.c:375
 msgid "copy to other folder"
 msgstr "copie vers un autre dossier"
 
-#: ../src/libs/image.c:212
+#: ../src/libs/image.c:380
 msgid "create HDR"
 msgstr "créer HDR"
 
-#: ../src/libs/image.c:217
+#: ../src/libs/image.c:385
 msgid "create a high dynamic range image from selected shots"
 msgstr "créer une image à grande dynamique à partir des photos sélectionnées"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/libs/image.c:219
+#: ../src/libs/image.c:387
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/libs/image.c:222
+#: ../src/libs/image.c:390
 msgid "add a duplicate to the collection, including its history stack"
 msgstr ""
 "crée une copie virtuelle de l'image et de son développement dans la "
 "collection"
 
-#: ../src/libs/image.c:229
+#: ../src/libs/image.c:397
 msgid "rotate selected images 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anti-horaire)"
 
-#: ../src/libs/image.c:235
+#: ../src/libs/image.c:403
 msgid "rotate selected images 90 degrees CW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/libs/image.c:239
+#: ../src/libs/image.c:407
 msgid "reset rotation"
 msgstr "réinitialiser"
 
-#: ../src/libs/image.c:242
+#: ../src/libs/image.c:410
 msgid "reset rotation to EXIF data"
 msgstr ""
 "réinitialise l'orientation\n"
 "à la valeur EXIF"
 
-#: ../src/libs/image.c:247
+#: ../src/libs/image.c:415
 msgid "copy locally"
 msgstr "copier localement"
 
-#: ../src/libs/image.c:250
+#: ../src/libs/image.c:418
 msgid "copy the image locally"
 msgstr "copie l'image localement"
 
-#: ../src/libs/image.c:254
+#: ../src/libs/image.c:422
 msgid "resync local copy"
 msgstr "resync copie locale"
 
-#: ../src/libs/image.c:257
+#: ../src/libs/image.c:425
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "synchronise le fichier XMP de l'image et supprime la copie locale"
 
 #. DT_COLLECTION_SORT_COLOR
-#: ../src/libs/image.c:262 ../src/libs/tools/filter.c:152
+#: ../src/libs/image.c:430 ../src/libs/tools/filter.c:152
 msgid "group"
 msgstr "grouper"
 
-#: ../src/libs/image.c:265
+#: ../src/libs/image.c:433
 msgid "add selected images to expanded group or create a new one"
 msgstr ""
 "ajoute les images sélectionnées au groupe actuel ou à un nouveau groupe"
 
-#: ../src/libs/image.c:269
+#: ../src/libs/image.c:437
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/image.c:272
+#: ../src/libs/image.c:440
 msgid "remove selected images from the group"
 msgstr "enlève les images sélectionnées du groupe"
 
-#: ../src/libs/image.c:279
+#: ../src/libs/image.c:447
 msgid "update image information to match changes to file"
 msgstr "mise à jour des informations de l'image depuis le fichier"
 
-#: ../src/libs/image.c:302
+#: ../src/libs/image.c:452
+msgid "metadata operations"
+msgstr "opérations sur métadonnées"
+
+#: ../src/libs/image.c:453
+msgid "metadata operations apply on selected metadata"
+msgstr ""
+"les opérations sur les métadonnées n'affecte que les métadonnées "
+"sélectionnées"
+
+#: ../src/libs/image.c:460
+msgid "set the (first) selected image as source of metadata"
+msgstr "copier les métadonnées de la première image sélectionnée"
+
+#: ../src/libs/image.c:464
+msgid "merge"
+msgstr "fusionner"
+
+#: ../src/libs/image.c:468
+msgid ""
+"merge selected metadata on selected images (doesn't clear previous dt "
+"metadata and tags on selected images)"
+msgstr ""
+"fusionner les métadonnées sélectionnées des images sélectionnées (n'efface "
+"pas les métadonnées dt et mots-clés des images sélectionnées)"
+
+#: ../src/libs/image.c:472
+msgid "replace"
+msgstr "remplacer"
+
+#: ../src/libs/image.c:476
+msgid ""
+"replace selected metadata on selected images (clears previous dt metadata "
+"and tags on selected images)"
+msgstr ""
+"remplacer les métadonnées sélectionnées des images sélectionnées (efface les "
+"métadonnées dt et mots-clés des images sélectionnées)"
+
+#: ../src/libs/image.c:480 ../src/libs/metadata.c:393
+msgid "clear"
+msgstr "effacer"
+
+#: ../src/libs/image.c:483
+msgid "clear selected metadata on selected images"
+msgstr "effacer les métadonnées des images sélectionnées"
+
+#: ../src/libs/image.c:487 ../src/libs/tools/ratings.c:54
+msgid "ratings"
+msgstr "étoiles"
+
+#: ../src/libs/image.c:489
+msgid "select ratings metadata"
+msgstr "sélectionner les métadonnées étoiles"
+
+#: ../src/libs/image.c:493
+msgid "colors"
+msgstr "couleurs"
+
+#: ../src/libs/image.c:495
+msgid "select colors metadata"
+msgstr "sélectionner les métadonnées couleurs"
+
+#: ../src/libs/image.c:501
+msgid "select dt metadata (from metadata editor module)"
+msgstr "sélectionner les méta-données dt (du module d'édition des métadonnées)"
+
+#: ../src/libs/image.c:507
+msgid "select geo tags metadata"
+msgstr "sélectionner les méta-données géolocalisation"
+
+#: ../src/libs/image.c:513
+msgid "select tags metadata"
+msgstr "sélectionner les méta-données mots-clés"
+
+#: ../src/libs/image.c:544
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "enlever de la bibliothèque"
 
-#: ../src/libs/image.c:303
+#: ../src/libs/image.c:545
 msgctxt "accel"
 msgid "delete from disk or send to trash"
 msgstr "supprimer physiquement du disque ou envoyer à la poubelle"
 
-#: ../src/libs/image.c:304
+#: ../src/libs/image.c:546
 msgctxt "accel"
 msgid "move to other folder"
 msgstr "déplace vers un autre dossier"
 
-#: ../src/libs/image.c:305
+#: ../src/libs/image.c:547
 msgctxt "accel"
 msgid "copy to other folder"
 msgstr "copie vers un autre dossier"
 
-#: ../src/libs/image.c:306
+#: ../src/libs/image.c:548
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/libs/image.c:307
+#: ../src/libs/image.c:549
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anit-horaire)"
 
-#: ../src/libs/image.c:308
+#: ../src/libs/image.c:550
 msgctxt "accel"
 msgid "create HDR"
 msgstr "créer HDR"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/libs/image.c:309
+#: ../src/libs/image.c:551
 msgctxt "accel"
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/libs/image.c:310
+#: ../src/libs/image.c:552
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "réinitialiser"
 
-#: ../src/libs/image.c:311
+#: ../src/libs/image.c:553
 msgctxt "accel"
 msgid "copy the image locally"
 msgstr "copie l'image localement"
 
-#: ../src/libs/image.c:312
+#: ../src/libs/image.c:554
 msgctxt "accel"
 msgid "resync the local copy"
 msgstr "resync copie locale"
 
-#: ../src/libs/image.c:313
+#: ../src/libs/image.c:555
 msgctxt "accel"
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
+#: ../src/libs/image.c:556
+msgctxt "accel"
+msgid "copy metadata"
+msgstr "copier métadonnées"
+
+#: ../src/libs/image.c:557
+msgctxt "accel"
+msgid "replace metadata"
+msgstr "remplacer métadonnée"
+
+#: ../src/libs/image.c:558
+msgctxt "accel"
+msgid "merge metadata"
+msgstr "fusionner métadonnées"
+
+#: ../src/libs/image.c:559
+msgctxt "accel"
+msgid "clear metadata"
+msgstr "effacer métadonnées"
+
 #. Grouping keys
-#: ../src/libs/image.c:315
+#: ../src/libs/image.c:561
 msgctxt "accel"
 msgid "group"
 msgstr "grouper"
 
-#: ../src/libs/image.c:316
+#: ../src/libs/image.c:562
 msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
@@ -13396,10 +13490,6 @@ msgstr "<sans changement>"
 
 #: ../src/libs/metadata.c:315
 msgctxt "accel"
-msgid "clear"
-msgstr "effacer"
-
-#: ../src/libs/metadata.c:393
 msgid "clear"
 msgstr "effacer"
 
@@ -14100,27 +14190,27 @@ msgstr ""
 "dans la collection actuelle"
 
 #. setup selection accelerators
-#: ../src/libs/select.c:251 ../src/libs/tools/filmstrip.c:208
+#: ../src/libs/select.c:251 ../src/libs/tools/filmstrip.c:209
 msgctxt "accel"
 msgid "select all"
 msgstr "tout"
 
-#: ../src/libs/select.c:252 ../src/libs/tools/filmstrip.c:209
+#: ../src/libs/select.c:252 ../src/libs/tools/filmstrip.c:210
 msgctxt "accel"
 msgid "select none"
 msgstr "aucune"
 
-#: ../src/libs/select.c:253 ../src/libs/tools/filmstrip.c:211
+#: ../src/libs/select.c:253 ../src/libs/tools/filmstrip.c:212
 msgctxt "accel"
 msgid "invert selection"
 msgstr "inverser"
 
-#: ../src/libs/select.c:254 ../src/libs/tools/filmstrip.c:212
+#: ../src/libs/select.c:254 ../src/libs/tools/filmstrip.c:213
 msgctxt "accel"
 msgid "select film roll"
 msgstr "dossier"
 
-#: ../src/libs/select.c:255 ../src/libs/tools/filmstrip.c:213
+#: ../src/libs/select.c:255 ../src/libs/tools/filmstrip.c:214
 msgctxt "accel"
 msgid "select untouched"
 msgstr "non développées"
@@ -14229,7 +14319,7 @@ msgid "deletes the selected style in list above"
 msgstr "supprime le style sélectionné dans la liste ci-dessus"
 
 #. import button
-#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2710
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2711
 msgctxt "verb"
 msgid "import..."
 msgstr "importer..."
@@ -14277,21 +14367,21 @@ msgstr ""
 "attache le mot-clé\n"
 "à toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:1060 ../src/libs/tagging.c:1931
+#: ../src/libs/tagging.c:1060 ../src/libs/tagging.c:1932
 msgid "detach tag"
 msgstr "détacher le mot-clé"
 
-#: ../src/libs/tagging.c:1179
+#: ../src/libs/tagging.c:1180
 msgid "delete tag?"
 msgstr "supprimer le mot-clé ?"
 
-#: ../src/libs/tagging.c:1186 ../src/libs/tagging.c:1283
-#: ../src/libs/tagging.c:1539
+#: ../src/libs/tagging.c:1187 ../src/libs/tagging.c:1284
+#: ../src/libs/tagging.c:1540
 #, c-format
 msgid "tag: %s "
 msgstr "mot-clé sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1193
+#: ../src/libs/tagging.c:1194
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -14307,87 +14397,87 @@ msgstr[1] ""
 "ce mot-clé est assigné à %d images"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:1229
+#: ../src/libs/tagging.c:1230
 #, c-format
 msgid "tag %s removed"
 msgstr "mot-clé %s supprimé"
 
-#: ../src/libs/tagging.c:1276 ../src/libs/tagging.c:1943
+#: ../src/libs/tagging.c:1277 ../src/libs/tagging.c:1944
 msgid "delete branch"
 msgstr "supprimer la branche"
 
-#: ../src/libs/tagging.c:1290
+#: ../src/libs/tagging.c:1291
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> mot-clé sera supprimé."
 msgstr[1] "<u>%d</u> mot-clé seront supprimés."
 
-#: ../src/libs/tagging.c:1295 ../src/libs/tagging.c:1551
-#: ../src/libs/tagging.c:1771
+#: ../src/libs/tagging.c:1296 ../src/libs/tagging.c:1552
+#: ../src/libs/tagging.c:1772
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> image sera mise à jour."
 msgstr[1] "<u>%d</u> images seront mises à jour."
 
-#: ../src/libs/tagging.c:1321
+#: ../src/libs/tagging.c:1322
 #, c-format
 msgid "%d tags removed"
 msgstr "%d mots-clés supprimés"
 
-#: ../src/libs/tagging.c:1364
+#: ../src/libs/tagging.c:1365
 msgid "create tag"
 msgstr "créer un mot-clé"
 
-#: ../src/libs/tagging.c:1374 ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:1375 ../src/libs/tagging.c:1560
 msgid "name: "
 msgstr "nom"
 
-#: ../src/libs/tagging.c:1387
+#: ../src/libs/tagging.c:1388
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "ajouter à : \"%s\" "
 
-#: ../src/libs/tagging.c:1393 ../src/libs/tagging.c:1574
+#: ../src/libs/tagging.c:1394 ../src/libs/tagging.c:1575
 msgid "category"
 msgstr "sans catégorie"
 
-#: ../src/libs/tagging.c:1396 ../src/libs/tagging.c:1577
+#: ../src/libs/tagging.c:1397 ../src/libs/tagging.c:1578
 msgid "private"
 msgstr "privé"
 
-#: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1583
+#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1584
 msgid "synonyms: "
 msgstr "synonymes :"
 
-#: ../src/libs/tagging.c:1419 ../src/libs/tagging.c:1604
-#: ../src/libs/tagging.c:1793
+#: ../src/libs/tagging.c:1420 ../src/libs/tagging.c:1605
+#: ../src/libs/tagging.c:1794
 msgid "empty tag is not allowed, aborting"
 msgstr "mot-clé vide interdit, annulation"
 
-#: ../src/libs/tagging.c:1421
+#: ../src/libs/tagging.c:1422
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
 "pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
 
-#: ../src/libs/tagging.c:1436
+#: ../src/libs/tagging.c:1437
 msgid "tag name already exists. aborting."
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1533
 msgid "edit tag"
 msgstr "éditer le mot-clé"
 
-#: ../src/libs/tagging.c:1546 ../src/libs/tagging.c:1766
+#: ../src/libs/tagging.c:1547 ../src/libs/tagging.c:1767
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
 msgstr[1] "<u>%d</u> mot-clé seront mis à jour"
 
-#: ../src/libs/tagging.c:1606
+#: ../src/libs/tagging.c:1607
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -14395,105 +14485,105 @@ msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
 "pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
 
-#: ../src/libs/tagging.c:1644
+#: ../src/libs/tagging.c:1645
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1752
+#: ../src/libs/tagging.c:1753
 msgid "rename path?"
 msgstr "renommer un chemin?"
 
-#: ../src/libs/tagging.c:1759
+#: ../src/libs/tagging.c:1760
 #, c-format
 msgid "selected path: %s "
 msgstr "chemin sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1795
+#: ../src/libs/tagging.c:1796
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' mal placé, un mot-clé vide est interdit, annulation"
 
-#: ../src/libs/tagging.c:1821
+#: ../src/libs/tagging.c:1822
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1927
+#: ../src/libs/tagging.c:1928
 msgid "attach tag"
 msgstr "attacher le mot-clé"
 
-#: ../src/libs/tagging.c:1939
+#: ../src/libs/tagging.c:1940
 msgid "delete tag"
 msgstr "supprimer un mot-clé"
 
-#: ../src/libs/tagging.c:1949
+#: ../src/libs/tagging.c:1950
 msgid "create tag..."
 msgstr "créer un mot-clé..."
 
-#: ../src/libs/tagging.c:1953
+#: ../src/libs/tagging.c:1954
 msgid "edit tag..."
 msgstr "éditer le mot-clé..."
 
-#: ../src/libs/tagging.c:1962
+#: ../src/libs/tagging.c:1963
 msgid "rename path..."
 msgstr "renommer un chemin..."
 
-#: ../src/libs/tagging.c:1969
+#: ../src/libs/tagging.c:1970
 msgid "copy to entry"
 msgstr "copier l'entrée"
 
-#: ../src/libs/tagging.c:1993
+#: ../src/libs/tagging.c:1994
 msgid "go to tag collection"
 msgstr "aller à la collection liée au mot-clé"
 
-#: ../src/libs/tagging.c:1999
+#: ../src/libs/tagging.c:2000
 msgid "go back to work"
 msgstr "retourner au module de mots-clés"
 
-#: ../src/libs/tagging.c:2115
+#: ../src/libs/tagging.c:2116
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2116
+#: ../src/libs/tagging.c:2117
 msgid "(private)"
 msgstr "privé"
 
-#: ../src/libs/tagging.c:2142
+#: ../src/libs/tagging.c:2143
 msgid "Select a keyword file"
 msgstr "sélectionner un fichier de mot-clé"
 
-#: ../src/libs/tagging.c:2145
+#: ../src/libs/tagging.c:2146
 msgid "_import"
 msgstr "_importer"
 
-#: ../src/libs/tagging.c:2159
+#: ../src/libs/tagging.c:2160
 msgid "error importing tags"
 msgstr "erreur lors de l'import de mot-clé"
 
-#: ../src/libs/tagging.c:2161
+#: ../src/libs/tagging.c:2162
 #, c-format
 msgid "%zd tags imported"
 msgstr "« %zd » mots-clés importés"
 
-#: ../src/libs/tagging.c:2183
+#: ../src/libs/tagging.c:2184
 msgid "Select file to export to"
 msgstr "sélectionne le fichier pour l'export"
 
-#: ../src/libs/tagging.c:2186
+#: ../src/libs/tagging.c:2187
 msgid "_export"
 msgstr "_exporter"
 
-#: ../src/libs/tagging.c:2201
+#: ../src/libs/tagging.c:2202
 msgid "error exporting tags"
 msgstr "erreur lors de l'export de mot-clé"
 
-#: ../src/libs/tagging.c:2203
+#: ../src/libs/tagging.c:2204
 #, c-format
 msgid "%zd tags exported"
 msgstr "« %zd » mots-clés exportés"
 
-#: ../src/libs/tagging.c:2562
+#: ../src/libs/tagging.c:2563
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -14505,47 +14595,47 @@ msgstr ""
 "clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
 "ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:2573
+#: ../src/libs/tagging.c:2574
 msgid "attach"
 msgstr "attacher"
 
-#: ../src/libs/tagging.c:2576
+#: ../src/libs/tagging.c:2577
 msgid "attach tag to all selected images"
 msgstr ""
 "attache le mot-clé\n"
 "à toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:2581
+#: ../src/libs/tagging.c:2582
 msgid "detach"
 msgstr "détacher"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2585
 msgid "detach tag from all selected images"
 msgstr ""
 "détache le mot-clé\n"
 "de toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:2591
+#: ../src/libs/tagging.c:2592
 msgid "toggle list with / without hierarchy"
 msgstr "active/désactive la liste hiérarchique"
 
-#: ../src/libs/tagging.c:2599
+#: ../src/libs/tagging.c:2600
 msgid "toggle sort by name or by count"
 msgstr "activer le classement par nom ou par nombre"
 
-#: ../src/libs/tagging.c:2609
+#: ../src/libs/tagging.c:2610
 msgid "toggle show or not darktable tags"
 msgstr "activer/désactiver l'affichage des mots-clés spécifiques à darktable"
 
-#: ../src/libs/tagging.c:2625
+#: ../src/libs/tagging.c:2626
 msgid "enter tag name"
 msgstr "entrez un mot-clé"
 
-#: ../src/libs/tagging.c:2635
+#: ../src/libs/tagging.c:2636
 msgid "clear entry"
 msgstr "effacer texte"
 
-#: ../src/libs/tagging.c:2687
+#: ../src/libs/tagging.c:2688
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -14557,11 +14647,11 @@ msgstr ""
 "clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
 "ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:2702
+#: ../src/libs/tagging.c:2703
 msgid "new"
 msgstr "nouveau"
 
-#: ../src/libs/tagging.c:2705
+#: ../src/libs/tagging.c:2706
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -14569,28 +14659,28 @@ msgstr ""
 "crée un nouveau mot-clé à\n"
 "partir de la saisie"
 
-#: ../src/libs/tagging.c:2713
+#: ../src/libs/tagging.c:2714
 msgid "import tags from a Lightroom keyword file"
 msgstr "importer des mots-clés depuis un fichier Lightroom"
 
-#: ../src/libs/tagging.c:2718
+#: ../src/libs/tagging.c:2719
 msgctxt "verb"
 msgid "export..."
 msgstr "exporter..."
 
-#: ../src/libs/tagging.c:2721
+#: ../src/libs/tagging.c:2722
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exporte tous les tags dans un fichier de mot-clé Lightroom"
 
-#: ../src/libs/tagging.c:2728
+#: ../src/libs/tagging.c:2729
 msgid "toggle list / tree view"
 msgstr "passe de la vue liste / arbre"
 
-#: ../src/libs/tagging.c:2736
+#: ../src/libs/tagging.c:2737
 msgid "toggle list with / without suggestion"
 msgstr "active/désactive les suggestions"
 
-#: ../src/libs/tagging.c:2865
+#: ../src/libs/tagging.c:2866
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -14682,37 +14772,37 @@ msgstr "bandeau"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4416
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4413
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4417
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4414
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4418
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4415
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4419
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4416
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4420
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4417
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:4421
+#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:4418
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:4422
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:4419
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -14751,30 +14841,35 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4408
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4405
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4409
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4406
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4410
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4407
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:204 ../src/views/lighttable.c:4411
+#: ../src/libs/tools/filmstrip.c:204 ../src/views/lighttable.c:4408
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:205 ../src/views/lighttable.c:4412
+#: ../src/libs/tools/filmstrip.c:205 ../src/views/lighttable.c:4409
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
+
+#: ../src/libs/tools/filmstrip.c:206 ../src/views/lighttable.c:4410
+msgctxt "accel"
+msgid "clear color labels"
+msgstr "aucun label couleur"
 
 #: ../src/libs/tools/filter.c:65
 msgid "filter"
@@ -14931,10 +15026,6 @@ msgstr "activer/désactiver le mode sélection"
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
 msgstr "boîte à outils de module"
-
-#: ../src/libs/tools/ratings.c:54
-msgid "ratings"
-msgstr "étoiles"
 
 #: ../src/libs/tools/timeline.c:111
 msgid "timeline"
@@ -15141,19 +15232,19 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2096 ../src/views/lighttable.c:4904
+#: ../src/views/darkroom.c:2096 ../src/views/lighttable.c:4901
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:2104 ../src/views/lighttable.c:4912
+#: ../src/views/darkroom.c:2104 ../src/views/lighttable.c:4909
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2124 ../src/views/lighttable.c:4920
+#: ../src/views/darkroom.c:2124 ../src/views/lighttable.c:4917
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2125 ../src/views/lighttable.c:4924
+#: ../src/views/darkroom.c:2125 ../src/views/lighttable.c:4921
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
@@ -15161,12 +15252,12 @@ msgstr "profil (écran secondaire)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2180 ../src/views/lighttable.c:4954
+#: ../src/views/darkroom.c:2180 ../src/views/lighttable.c:4951
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2183 ../src/views/lighttable.c:4957
+#: ../src/views/darkroom.c:2183 ../src/views/lighttable.c:4954
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
@@ -15280,13 +15371,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3337 ../src/views/lighttable.c:4448
+#: ../src/views/darkroom.c:3337 ../src/views/lighttable.c:4445
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3338 ../src/views/lighttable.c:4449
+#: ../src/views/darkroom.c:3338 ../src/views/lighttable.c:4446
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -15308,7 +15399,7 @@ msgstr "rechercher module"
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3448 ../src/views/lighttable.c:4595
+#: ../src/views/darkroom.c:3448 ../src/views/lighttable.c:4592
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
@@ -15358,183 +15449,178 @@ msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
-#: ../src/views/lighttable.c:3269
+#: ../src/views/lighttable.c:3266
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
 msgstr[0] "début de la sélection atteinte (%d image)"
 msgstr[1] "début de la sélection atteinte (%d images)"
 
-#: ../src/views/lighttable.c:3274
+#: ../src/views/lighttable.c:3271
 msgid "you have reached the start of your collection"
 msgstr "début de la collection atteinte"
 
-#: ../src/views/lighttable.c:3298
+#: ../src/views/lighttable.c:3295
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
 msgstr[0] "fin de la sélection atteinte (%d image)"
 msgstr[1] "fin de la sélection atteinte (%d images)"
 
-#: ../src/views/lighttable.c:3303
+#: ../src/views/lighttable.c:3300
 msgid "you have reached the end of your collection"
 msgstr " fin de la collection atteinte"
 
-#: ../src/views/lighttable.c:3623
+#: ../src/views/lighttable.c:3620
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "le zoom est limité à %d images."
 
-#: ../src/views/lighttable.c:4413
-msgctxt "accel"
-msgid "clear color labels"
-msgstr "aucun label couleur"
-
 #. Navigation keys
-#: ../src/views/lighttable.c:4425
+#: ../src/views/lighttable.c:4422
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:4426
+#: ../src/views/lighttable.c:4423
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:4427
+#: ../src/views/lighttable.c:4424
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:4428
+#: ../src/views/lighttable.c:4425
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4431
+#: ../src/views/lighttable.c:4428
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:4432
+#: ../src/views/lighttable.c:4429
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:4433
+#: ../src/views/lighttable.c:4430
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:4434
+#: ../src/views/lighttable.c:4431
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:4435
+#: ../src/views/lighttable.c:4432
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:4436
+#: ../src/views/lighttable.c:4433
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:4437
+#: ../src/views/lighttable.c:4434
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:4438
+#: ../src/views/lighttable.c:4435
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:4441
+#: ../src/views/lighttable.c:4438
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:4442
+#: ../src/views/lighttable.c:4439
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:4443
+#: ../src/views/lighttable.c:4440
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:4444
+#: ../src/views/lighttable.c:4441
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4452
+#: ../src/views/lighttable.c:4449
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:4453
+#: ../src/views/lighttable.c:4450
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
 #. timeline
-#: ../src/views/lighttable.c:4456
+#: ../src/views/lighttable.c:4453
 msgctxt "accel"
 msgid "toggle filmstrip/timeline"
 msgstr "activer/désactiver le bandeau/la chronologie"
 
-#: ../src/views/lighttable.c:4582
+#: ../src/views/lighttable.c:4579
 msgid "open image in darkroom"
 msgstr "ouvrir l'image dans la chambre noire"
 
-#: ../src/views/lighttable.c:4589
+#: ../src/views/lighttable.c:4586
 msgid "switch to next/previous image"
 msgstr "passer à l'image suivante/précédente"
 
-#: ../src/views/lighttable.c:4602 ../src/views/lighttable.c:4624
+#: ../src/views/lighttable.c:4599 ../src/views/lighttable.c:4621
 msgid "scroll the collection"
 msgstr "défiler la collection"
 
-#: ../src/views/lighttable.c:4608
+#: ../src/views/lighttable.c:4605
 msgid "change number of images per row"
 msgstr "changer le nombre d'image par ligne"
 
-#: ../src/views/lighttable.c:4616
+#: ../src/views/lighttable.c:4613
 msgid "change image order"
 msgstr "changer l'ordre des images"
 
-#: ../src/views/lighttable.c:4630
+#: ../src/views/lighttable.c:4627
 msgid "zoom all the images"
 msgstr "zoom toutes les images"
 
-#: ../src/views/lighttable.c:4635
+#: ../src/views/lighttable.c:4632
 msgid "pan inside all the images"
 msgstr "déplacer toutes les images"
 
-#: ../src/views/lighttable.c:4641
+#: ../src/views/lighttable.c:4638
 msgid "zoom current image"
 msgstr "zoom image"
 
-#: ../src/views/lighttable.c:4647
+#: ../src/views/lighttable.c:4644
 msgid "pan inside current image"
 msgstr "déplacer l'image"
 
-#: ../src/views/lighttable.c:4654
+#: ../src/views/lighttable.c:4651
 msgid "zoom the main view"
 msgstr "zoom vue principale"
 
-#: ../src/views/lighttable.c:4659
+#: ../src/views/lighttable.c:4656
 msgid "pan inside the main view"
 msgstr "déplacer la vue principale"
 
-#: ../src/views/lighttable.c:4880
+#: ../src/views/lighttable.c:4877
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -15542,15 +15628,15 @@ msgstr "profil (écran)"
 msgid "map"
 msgstr "carte"
 
-#: ../src/views/map.c:1408
+#: ../src/views/map.c:1404
 msgid "[on image] open in darkroom"
 msgstr "[sur image] ouvre dans la chambre noire"
 
-#: ../src/views/map.c:1413
+#: ../src/views/map.c:1409
 msgid "[on map] zoom map"
 msgstr "[sur carte] agrandir la carte"
 
-#: ../src/views/map.c:1418
+#: ../src/views/map.c:1414
 msgid "move image location"
 msgstr "déplacer la position des images"
 
