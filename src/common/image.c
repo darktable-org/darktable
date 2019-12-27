@@ -107,35 +107,29 @@ int dt_image_is_hdr(const dt_image_t *img)
     return 0;
 }
 
+// NULL terminated list of supported non-RAW extensions
+//  const char *dt_non_raw_extensions[]
+//    = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
+//        ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
+//        ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
 int dt_image_is_raw(const dt_image_t *img)
 {
-  // NULL terminated list of supported non-RAW extensions
-  const char *dt_non_raw_extensions[]
-      = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
-          ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
-          ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
-
-  if(img->flags & DT_IMAGE_RAW) return TRUE;
-
-  const char *c = img->filename + strlen(img->filename);
-  while(*c != '.' && c > img->filename) c--;
-
-  gboolean isnonraw = FALSE;
-  for(const char **i = dt_non_raw_extensions; *i != NULL; i++)
-  {
-    if(!g_ascii_strncasecmp(c, *i, strlen(*i)))
-    {
-      isnonraw = TRUE;
-      break;
-    }
-  }
-
-  return !isnonraw;
+   return (img->flags & DT_IMAGE_RAW);
 }
 
 int dt_image_is_monochrome(const dt_image_t *img)
 {
    return (img->flags & DT_IMAGE_MONOCHROME);
+}
+
+int dt_image_is_matrix_correction_supported(const dt_image_t *img)
+{
+   return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME) );
+} 
+
+int dt_image_is_rawprepare_supported(const dt_image_t *img)
+{
+   return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW));
 }
 
 const char *dt_image_film_roll_name(const char *path)
@@ -581,20 +575,56 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_image_set_flip(imgid, orientation);
 }
 
+void dt_image_set_raw_aspect_ratio(const int32_t imgid)
+{
+  /* fetch image from cache */
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+  /* set image aspect ratio */
+  if(image->orientation < ORIENTATION_SWAP_XY)
+    image->aspect_ratio = (float )image->width / (float )image->height;
+  else
+    image->aspect_ratio = (float )image->height / (float )image->width;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+}
+
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
 {
   if (aspect_ratio > .0f)
   {
-    sqlite3_stmt *stmt;
+    /* fetch image from cache */
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE images SET aspect_ratio=ROUND(?1,1) WHERE id=?2",
-                                -1, &stmt, NULL);
+    /* set image aspect ratio */
+    image->aspect_ratio = aspect_ratio;
 
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, aspect_ratio);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    /* store */
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+}
+
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio)
+{
+  if (aspect_ratio > .0f)
+  {
+    /* fetch image from cache */
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+
+    /* set image aspect ratio */
+    if(fabs(image->aspect_ratio - aspect_ratio) > 0.1)
+    {
+      dt_image_cache_read_release(darktable.image_cache, image);
+      dt_image_t *wimage = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      wimage->aspect_ratio = aspect_ratio;
+      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_SAFE);
+    }
+    else
+      dt_image_cache_read_release(darktable.image_cache, image);
 
     if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
@@ -603,13 +633,14 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
 
 void dt_image_reset_aspect_ratio(const int32_t imgid)
 {
-  sqlite3_stmt *stmt;
+  /* fetch image from cache */
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET aspect_ratio=0.0 WHERE id=?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  /* set image aspect ratio */
+  image->aspect_ratio = 0.f;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
   if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
@@ -1255,6 +1286,7 @@ void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
   img->final_width = img->final_height = 0;
+  img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;

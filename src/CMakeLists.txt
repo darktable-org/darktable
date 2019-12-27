@@ -120,7 +120,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -170,6 +170,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")

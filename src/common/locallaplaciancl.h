@@ -37,6 +37,7 @@ typedef struct dt_local_laplacian_cl_t
   int num_levels;
   float sigma, highlights, shadows, clarity;
   int blocksize, blockwd, blockht;
+  int max_supp;
   size_t bwidth, bheight;
 
   // pyramid of padded monochrome input buffer
