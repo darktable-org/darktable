@@ -142,9 +142,9 @@
   <dtconfig>
     <name>opencl_device_priority</name>
     <type>string</type>
-    <default>*/!0,*/*/*</default>
+    <default>*/!0,*/*/*/!0,*</default>
     <shortdescription>priority of OpenCL devices for each pixelpipe type</shortdescription>
-    <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
+    <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail, preview2). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_mandatory_timeout</name>
