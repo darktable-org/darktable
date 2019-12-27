@@ -238,8 +238,6 @@ void *dt_control_expose(void *voidptr)
 
   // look up some colors once
   GdkRGBA bg_color = lookup_color(context, "bg_color");
-  GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
-  GdkRGBA fg_color = lookup_color(context, "fg_color");
 
   gdk_cairo_set_source_rgba(cr, &bg_color);
   cairo_save(cr);
@@ -264,31 +262,21 @@ void *dt_control_expose(void *voidptr)
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
+    const float pad = DT_PIXEL_APPLY_DPI(10.0f), xc = width / 2.0;
     const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = MIN(pad + ink.width * .5f, width * .5f - pad);
     float rad = DT_PIXEL_APPLY_DPI(14);
     // ellipsze the text if it does not fit on the screen
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * wd * 2.0f));
-    cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
-    for(int k = 0; k < 5; k++)
-    {
-      cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
-      cairo_line_to(cr, xc + wd, yc - rad);
-      cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
-      cairo_line_to(cr, xc - wd, yc + rad);
-      if(k == 0)
-      {
-        gdk_cairo_set_source_rgba(cr, &selected_bg_color);
-        cairo_fill_preserve(cr);
-      }
-      cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
-      cairo_stroke(cr);
-      rad += .5f;
-    }
-    gdk_cairo_set_source_rgba(cr, &fg_color);
-    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
+    cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
+    cairo_line_to(cr, xc + wd, yc - rad);
+    cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
+    cairo_line_to(cr, xc - wd, yc + rad);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_fill(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+    cairo_move_to(cr, xc - wd + pad, yc - ink.height * 0.5);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -304,15 +292,15 @@ void *dt_control_expose(void *voidptr)
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("working.."), -1);
+    pango_layout_set_text(layout, _("working..."), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
     cairo_set_line_width(cr, 2.0);
-    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
     cairo_stroke_preserve(cr);
-    gdk_cairo_set_source_rgba(cr, &fg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
     cairo_fill(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -704,27 +692,8 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
   else if(key == accels->global_header.accel_key && state == accels->global_header.accel_mods)
   {
-    char param[512];
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    // in lighttable, we store panels states per layout
-    char lay[32] = "";
-    if(g_strcmp0(cv->module_name, "lighttable") == 0)
-    {
-      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
-    }
-
-    /* do nothing if in collapse panel state
-       TODO: reconsider adding this check to ui api */
-    g_snprintf(param, sizeof(param), "%s/ui/%spanel_collaps_state", cv->module_name, lay);
-    if(dt_conf_get_int(param)) return 0;
-
-    /* toggle the header visibility state */
-    g_snprintf(param, sizeof(param), "%s/ui/%sshow_header", cv->module_name, lay);
-    const gboolean header = !dt_conf_get_bool(param);
-    dt_conf_set_bool(param, header);
-
-    /* show/hide the actual header panel */
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header, TRUE);
+    /* toggle panel viewstate */
+    dt_ui_toggle_header(darktable.gui->ui);
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     return 1;
   }

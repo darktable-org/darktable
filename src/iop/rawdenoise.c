@@ -540,7 +540,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -603,7 +603,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_RAWDENOISE_BANDS, NULL, d->force[ch]);
   }
 
-  if (!(pipe->image.flags & DT_IMAGE_RAW))
+  if (!(dt_image_is_raw(&pipe->image)))
     piece->enabled = 0;
 }
 

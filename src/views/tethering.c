@@ -104,14 +104,15 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointe
 }
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, gpointer data)
+                                     GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
-
 
 void init(dt_view_t *self)
 {

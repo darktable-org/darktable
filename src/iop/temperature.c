@@ -1025,7 +1025,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) goto end;
 
-  const int is_raw = dt_image_is_raw(&module->dev->image_storage);
+  const int is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
 
   module->default_enabled = 0;
   module->hide_enable_button = 0;
@@ -1033,7 +1033,7 @@ void reload_defaults(dt_iop_module_t *module)
   // White balance module doesn't need to be enabled for monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
-  if(is_raw && dt_image_is_monochrome(&(module->dev->image_storage)))
+  if(dt_image_is_monochrome(&(module->dev->image_storage)))
   {
     module->hide_enable_button = 1;
   }
@@ -1442,7 +1442,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
 #endif
 
-  dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
+  dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
 

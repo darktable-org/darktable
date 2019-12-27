@@ -48,7 +48,7 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
   if(dsc->cst != iop_cs_RAW) return;
 
-  if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
+  if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 
   if(dt_ioppr_get_iop_order(pipe->iop_order_list, self->op) > dt_ioppr_get_iop_order(pipe->iop_order_list, "rawprepare")) return;
 
@@ -65,7 +65,7 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
   if(dsc->cst != iop_cs_RAW) return;
 
-  if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
+  if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 
   if(dt_ioppr_get_iop_order(pipe->iop_order_list, self->op) >= dt_ioppr_get_iop_order(pipe->iop_order_list, "rawprepare")) return;
 

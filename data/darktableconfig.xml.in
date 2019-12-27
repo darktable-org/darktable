@@ -15,11 +15,32 @@
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui">
-    <name>panel_width</name>
+  <dtconfig>
+    <name>min_panel_width</name>
     <type>int</type>
-    <default>350</default>
-    <shortdescription>width of the side panels in pixels</shortdescription>
+    <default>150</default>
+    <shortdescription>minimum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>max_panel_width</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription>maximum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>min_panel_height</name>
+    <type>int</type>
+    <default>64</default>
+    <shortdescription>minimum width of the side panels in pixels</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>max_panel_height</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
@@ -158,7 +179,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
-    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU.</longdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; inital value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
@@ -562,34 +583,6 @@
     <default>0</default>
     <shortdescription>capture view mode</shortdescription>
     <longdescription/>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/filmstrip/visible</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>enable filmstrip</shortdescription>
-    <longdescription>enable the filmstrip in darkroom, tethering and map modes.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/filmstrip/height</name>
-    <type>int</type>
-    <default>120</default>
-    <shortdescription>height of filmstrip</shortdescription>
-    <longdescription>height of the filmstrip in pixels</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/timeline/visible</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>enable timeline</shortdescription>
-    <longdescription>enable the timeline in lighttable mode.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/timeline/height</name>
-    <type>int</type>
-    <default>72</default>
-    <shortdescription>height of timeline</shortdescription>
-    <longdescription>height of the timeline in pixels</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/timeline/last_zoom</name>
@@ -1204,7 +1197,7 @@
   <dtconfig>
     <name>lighttable/ui/preview/bottom_visible</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>show bottom panel in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -1241,6 +1234,20 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>show toolbar top panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/panels_collapse_controls</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show borders arrows in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/panel_collaps_state</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>panels collapsing state in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui" section="darkroom">

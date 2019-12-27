@@ -382,6 +382,7 @@ return_label:
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_HDR;
     img->loader = loader;
   }
@@ -527,6 +528,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_TIFF;
     return ret;
@@ -538,6 +540,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_PNG;
@@ -552,6 +555,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_J2K;
     return ret;
@@ -564,6 +568,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_PNM;
@@ -753,8 +758,24 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale;
   const double scale = fminf(scalex, scaley);
 
-  const int processed_width = floor(scale * pipe.processed_width);
-  const int processed_height = floor(scale * pipe.processed_height);
+  int processed_width;
+  int processed_height;
+
+  float origin[] = { 0.0f, 0.0f };
+
+  if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
+  {
+    processed_width = scale * pipe.processed_width + 0.5f;
+    processed_height = scale * pipe.processed_height + 0.5f;
+
+    if(ceilf(processed_width / scale) + origin[0] > pipe.iwidth) processed_width--;
+    if(ceilf(processed_height / scale) + origin[1] > pipe.iheight) processed_height--;
+  }
+  else
+  {
+    processed_width = floor(scale * pipe.processed_width);
+    processed_height = floor(scale * pipe.processed_height);
+  }
 
   const int bpp = format->bpp(format_params);
 
@@ -966,6 +987,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
     img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_GM;
