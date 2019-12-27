@@ -77,6 +77,11 @@ making a backup is strongly advised.
 
 - Add support for AVIF file format.
 
+- The images operations modules has been extended to support coping,
+  replacing and merging metadata.
+
+- Better visibility for the zoomed image part in the navigation widget.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
