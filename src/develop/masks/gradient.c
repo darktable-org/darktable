@@ -123,9 +123,9 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
     {
       dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
       if(up)
-        gradient->curvature = fminf(gradient->curvature + 0.05f, 1.0f);
+        gradient->curvature = fminf(gradient->curvature + 0.05f, 2.0f);
       else
-        gradient->curvature = fmaxf(gradient->curvature - 0.05f, -1.0f);
+        gradient->curvature = fmaxf(gradient->curvature - 0.05f, -2.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
@@ -760,7 +760,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const float cosv = cos(v);
   const float sinv = sin(v);
 
-  *points_count = 500 + 3;
+  *points_count = 2 * sqrtf(wd * wd + ht * ht) + 3;
   *points = dt_alloc_align(64, 2 * (*points_count) * sizeof(float));
   if(*points == NULL) return 0;
   memset(*points, 0, 2 * (*points_count) * sizeof(float));
@@ -783,8 +783,8 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   (*points)[5] = y2;
 
   // we set the line point
-  const float xstart = -1.0f;
-  const float xdelta = 2.0f / (*points_count - 3);
+  const float xstart = MAX(-sqrtf(1.0f / fabsf(curvature)), -1.0f);
+  const float xdelta = -2.0f * xstart / (*points_count - 3);
   for(int i = 3; i < *points_count; i++)
   {
     const float xi = xstart + i * xdelta;
