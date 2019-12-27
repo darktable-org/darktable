@@ -75,6 +75,8 @@ making a backup is strongly advised.
   curved to revert fish-eye kind distortion and so become a straight
   line on the horizon for example.
 
+- Add support for AVIF file format.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
