@@ -82,12 +82,6 @@ typedef struct dt_control_image_enumerator_t
   gpointer data;
 } dt_control_image_enumerator_t;
 
-typedef struct dt_undo_geotag_t
-{
-  GList *before;
-  GList *after;
-} dt_undo_geotag_t;
-
 /* enumerator of images from filmroll */
 static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
 {
@@ -1064,49 +1058,6 @@ delete_next_file:
   return 0;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs)
-{
-  dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)item;
-  GList *l;
-
-  if(action == DT_ACTION_UNDO)
-    l = geotags->before;
-  else
-    l = geotags->after;
-
-  while(l)
-  {
-    const int imgid = GPOINTER_TO_INT((dt_image_geoloc_t *)l->data);
-
-    l = g_list_next(l);
-    dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)l->data;
-    dt_image_set_location_and_elevation(imgid, geoloc);
-
-    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
-    l = g_list_next(l);
-  }
-}
-
-void _geotags_free_undo_data_t(gpointer data)
-{
-  dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)data;
-  GList *lb = geotags->before;
-  GList *la = geotags->after;
-
-  do
-  {
-    if(la) la = g_list_next(la);
-    if(la) g_free((dt_image_geoloc_t *)la->data);
-    if(lb) lb = g_list_next(lb);
-    if(lb) g_free((dt_image_geoloc_t *)lb->data);
-    if(la) la = g_list_next(la);
-    if(lb) lb = g_list_next(lb);
-  } while(la || lb);
-
-  g_list_free(geotags->before);
-  g_list_free(geotags->after);
-}
-
 static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
@@ -1116,7 +1067,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   const dt_control_gpx_apply_t *d = params->data;
   const gchar *filename = d->filename;
   const gchar *tz = d->tz;
-
   /* do we have any selected images */
   if(!t) goto bail_out;
 
@@ -1132,7 +1082,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(!tz_camera) goto bail_out;
   GTimeZone *tz_utc = g_time_zone_new_utc();
 
-  dt_undo_geotag_t *geotags = g_malloc0(sizeof(dt_undo_geotag_t));
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
 
   /* go thru each selected image and lookup location in gpx */
   do
@@ -1180,30 +1130,14 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* only update image location if time is within gpx tack range */
     if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
     {
-      dt_image_geoloc_t *before = g_malloc0(sizeof(dt_image_geoloc_t));
-      dt_image_geoloc_t *after = g_malloc0(sizeof(dt_image_geoloc_t));
-      memcpy(after, &geoloc, sizeof(dt_image_geoloc_t));
-      dt_image_get_location(imgid, before);
-
-      // first the image id and then the position
-      geotags->before = g_list_append(geotags->before, GINT_TO_POINTER(imgid));
-      geotags->before = g_list_append(geotags->before, (gpointer)before);
-      // likewise for the new position
-      geotags->after = g_list_append(geotags->after, GINT_TO_POINTER(imgid));
-      geotags->after = g_list_append(geotags->after, (gpointer)after);
-
-      dt_image_set_location_and_elevation(imgid, &geoloc);
+      // set location to image and its group
+      dt_image_set_location(imgid, &geoloc, TRUE, TRUE);
       cntr++;
     }
 
   } while((t = g_list_next(t)) != NULL);
 
-  if(geotags->before)
-  {
-    dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_GEOTAG, (dt_undo_data_t)geotags, _pop_undo, _geotags_free_undo_data_t);
-    dt_undo_end_group(darktable.undo);
-  }
+  dt_undo_end_group(darktable.undo);
 
   dt_control_log(ngettext("applied matched GPX location onto %d image", "applied matched GPX location onto %d images", cntr), cntr);
 
@@ -1259,12 +1193,12 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     if(is_copy)
     {
       if (dt_image_local_copy_set(imgid) == 0)
-        dt_tag_attach_from_gui(tagid, imgid);
+        dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
     }
     else
     {
       if (dt_image_local_copy_reset(imgid) == 0)
-        dt_tag_detach_from_gui(tagid, imgid);
+        dt_tag_detach_from_gui(tagid, imgid, FALSE, FALSE);
     }
     t = g_list_delete_link(t, t);
 
@@ -1388,9 +1322,9 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     dt_control_job_set_progress_message(job, message);
 
     // remove 'changed' tag from image
-    dt_tag_detach(tagid, imgid);
+    dt_tag_detach(tagid, imgid, FALSE, FALSE);
     // make sure the 'exported' tag is set on the image
-    dt_tag_attach_from_gui(etagid, imgid);
+    dt_tag_attach_from_gui(etagid, imgid, FALSE, FALSE);
     // check if image still exists:
     char imgfilename[PATH_MAX] = { 0 };
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
