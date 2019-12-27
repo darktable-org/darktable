@@ -35,6 +35,9 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
+#ifdef HAVE_LIBAVIF
+#include "common/imageio_avif.h"
+#endif
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
 
@@ -1840,6 +1843,7 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
                                                            .filename_work = "" };
+  dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id <= 0) goto end;
@@ -1883,12 +1887,32 @@ void reload_defaults(dt_iop_module_t *module)
       img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
     }
+#ifdef HAVE_LIBAVIF
+    else if(!strcmp(ext, "avif"))
+    {
+      struct avif_color_profile cp = {
+          .type = DT_COLORSPACE_NONE,
+      };
+
+      img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
+      if (cp.type != DT_COLORSPACE_NONE) {
+        color_profile = cp.type;
+      } else {
+        img->profile_size = cp.icc_profile_size;
+        img->profile      = cp.icc_profile;
+
+        use_eprofile = (img->profile_size > 0);
+      }
+    }
+#endif
     g_free(ext);
   }
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  if (color_profile != DT_COLORSPACE_NONE) {
+    tmp.type = color_profile;
+  } else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     tmp.type = DT_COLORSPACE_LIN_REC709;
