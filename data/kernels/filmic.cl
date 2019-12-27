@@ -206,12 +206,10 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
 inline float pixel_rgb_norm_power(const float4 pixel)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
-  float4 RGB = fabs(pixel);
-  RGB.w = 0.0f; // ensure we don't count the alpha channel in the norm
+  const float4 RGB = fabs(pixel);
   const float4 RGB_square = RGB * RGB;
   const float4 RGB_cubic = RGB_square * RGB;
-  const float4 ones = 1.0f;
-  return vdot(RGB_cubic, ones) / vdot(RGB_square, ones);
+  return (RGB_cubic.x + RGB_cubic.y + RGB_cubic.z) / fmax(RGB_square.x + RGB_square.y + RGB_square.z, 1e-6f);
 }
 
 

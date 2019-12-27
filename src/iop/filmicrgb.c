@@ -329,7 +329,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
     denominator += RGB_square;
   }
 
-  return numerator / denominator;
+  return numerator / fmaxf(denominator, 1e-6f);
 }
 
 
