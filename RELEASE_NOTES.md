@@ -71,6 +71,10 @@ making a backup is strongly advised.
 - Define many new accels for most of the sliders to allow more control
   using the keyboard.
 
+- Add support for curved gradients. The grandient mask can now be
+  curved to revert fish-eye kind distortion and so become a straight
+  line on the horizon for example.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
