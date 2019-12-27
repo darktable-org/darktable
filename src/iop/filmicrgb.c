@@ -273,6 +273,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "latitude"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows highlights balance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "extreme luminance saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target black luminance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target middle grey"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target white luminance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target power transfer function"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -287,6 +291,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "latitude", GTK_WIDGET(g->latitude));
   dt_accel_connect_slider_iop(self, "shadows highlights balance", GTK_WIDGET(g->balance));
   dt_accel_connect_slider_iop(self, "extreme luminance saturation", GTK_WIDGET(g->saturation));
+  dt_accel_connect_slider_iop(self, "target black luminance", GTK_WIDGET(g->black_point_target));
+  dt_accel_connect_slider_iop(self, "target middle grey", GTK_WIDGET(g->grey_point_target));
+  dt_accel_connect_slider_iop(self, "target white luminance", GTK_WIDGET(g->white_point_target));
+  dt_accel_connect_slider_iop(self, "target power transfer function", GTK_WIDGET(g->output_power));
 }
 
 

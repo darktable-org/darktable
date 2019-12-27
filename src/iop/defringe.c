@@ -24,6 +24,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <math.h>
@@ -108,6 +109,20 @@ const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
   return;
 }
 */
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge detection radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "edge detection radius", GTK_WIDGET(g->radius_scale));
+  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->thresh_scale));
+}
 
 // fibonacci lattice to select surrounding pixels for different cases
 static const float fib[] = { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233 };

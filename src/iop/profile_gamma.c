@@ -123,24 +123,26 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
+//  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "grey point"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows range"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luma"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black relative exposure"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "safety factor"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
+//  dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
   dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
   dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
   dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
-  dt_accel_connect_slider_iop(self, "grey point", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "shadows range", GTK_WIDGET(g->shadows_range));
+  dt_accel_connect_slider_iop(self, "middle grey luma", GTK_WIDGET(g->grey_point));
+  dt_accel_connect_slider_iop(self, "black relative exposure", GTK_WIDGET(g->shadows_range));
+  dt_accel_connect_slider_iop(self, "safety factor", GTK_WIDGET(g->security_factor));
 }
 
 void init_presets(dt_iop_module_so_t *self)
