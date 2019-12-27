@@ -28,6 +28,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
@@ -107,6 +108,34 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black level correction"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlight compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clip"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "black level correction", GTK_WIDGET(g->sl_black_point));
+  dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->sl_exposure));
+  dt_accel_connect_slider_iop(self, "highlight compression", GTK_WIDGET(g->sl_hlcompr));
+  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->sl_contrast));
+  dt_accel_connect_slider_iop(self, "middle grey", GTK_WIDGET(g->sl_middle_grey));
+  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->sl_brightness));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->sl_saturation));
+  dt_accel_connect_slider_iop(self, "vibrance", GTK_WIDGET(g->sl_vibrance));
+  dt_accel_connect_slider_iop(self, "clip", GTK_WIDGET(g->sl_clip));
 }
 
 static void _turn_select_region_off(struct dt_iop_module_t *self)
