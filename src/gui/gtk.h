@@ -109,6 +109,7 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   gboolean show_overlays;
+  gboolean show_focus_peaking;
 
   double dpi, dpi_factor, ppd;
 

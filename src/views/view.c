@@ -23,6 +23,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -1412,6 +1413,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
       cairo_rectangle(cr, rectx, recty, rectw, recth);
       cairo_fill(cr);
+
+      if(darktable.gui->show_focus_peaking)
+        dt_focuspeaking(cr, width, height, cairo_image_surface_get_data(surface),
+                                           cairo_image_surface_get_width(surface),
+                                           cairo_image_surface_get_height(surface));
 
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
     }
