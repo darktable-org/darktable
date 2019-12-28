@@ -7,9 +7,8 @@ assignees: ''
 
 ---
 
-Bugs report just saying it crashes without filling most of the items
-below and making no effort to help developpers to reproduce will be
-closed without notice.
+Bug reports that do not make an effort to help the developers will be closed without notice.
+A bug report simply stating that Darktable crashes is unhelpful, so please fill in most of the items below and provide detailed information.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -17,8 +16,8 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
+2. Click on '...'
+3. Scroll down to '...'
 4. See error
 
 **Expected behavior**
@@ -28,16 +27,16 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Platform (please complete the following information):**
+ - Darktable Version [e.g. 2.6.0]
  - OS: [e.g. funtoo linux]
- - Version [e.g. 2.6.0]
  - OpenCL activated or no
- - which GFX-card and GFX-driver
+ - Which graphics card and driver version
 
 **Additional context**
 Add any other context about the problem here, for example:
- - Can you reproduce with another dt version?
+ - Can you reproduce with another Darktable version?
  - Can you reproduce with a RAW or Jpeg or both?
  - Are the steps above reproduce with a fresh edit (removing history)?
  - Attach an XMP if this is necessary
- - Is dt compiled by yourself? If so which compiler is used? Which options?
+ - Did you compile Darktable yourself? If so which compiler was used, with what options?
  - Is the issue still present using an empty/new config-dir
