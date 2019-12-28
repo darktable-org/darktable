@@ -4137,9 +4137,12 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(!darktable.control->key_accelerators_on) return 0;
 
   // we need a full expose
-  if((key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods) ||     // hide/show sideborders,
-     (key == accels->lighttable_timeline.accel_key && state == accels->lighttable_timeline.accel_mods) ||   // hide/show timeline,
-     (key == accels->global_focus_peaking.accel_key && state == accels->global_focus_peaking.accel_mods))   // hide/show focus peaking
+  if((key == accels->global_sideborders.accel_key
+      && state == accels->global_sideborders.accel_mods)           // hide/show sideborders,
+     || (key == accels->lighttable_timeline.accel_key
+         && state == accels->lighttable_timeline.accel_mods)       // hide/show timeline,
+     || (key == accels->global_focus_peaking.accel_key
+         && (state == accels->global_focus_peaking.accel_mods)))   // hide/show focus peaking
   {
     _force_expose_all(self);
   }
