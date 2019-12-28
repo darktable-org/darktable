@@ -59,7 +59,7 @@
       </para>
     </sect5>  
     <sect6 id="raster_mask_usage_warning">
-	<title>Warning<title>
+	<title>Warning</title>
 	<para>
 	  The raster mask can only be sourced from a module instance preceeding the current module instance in
 	  the pixelpipe. Be sure not to move the source module instance after the one that uses it as it currently
