@@ -2225,11 +2225,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
-  gtk_box_pack_start(GTK_BOX(page3), g->guide_lines, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->guide_lines, FALSE, FALSE, 0);
 
   g->guides_widgets = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(page3), g->guides_widgets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->guides_widgets, FALSE, FALSE, 0);
 
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   int i = 0;
@@ -2264,7 +2264,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(page3), g->flip_guides, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), g->flip_guides, FALSE, FALSE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
