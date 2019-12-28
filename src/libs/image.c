@@ -466,30 +466,34 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, flag, 0, line, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/rating"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(ratings_flag_callback), self);
+
   flag = gtk_check_button_new_with_label(_("colors"));
   d->colors_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select colors metadata"));
-  gtk_grid_attach(grid, flag, 2, line, 2, 1);
+  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/colors"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(colors_flag_callback), self);
-  flag = gtk_check_button_new_with_label(_("metadata"));
-  d->metadata_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select dt metadata (from metadata editor module)"));
-  gtk_grid_attach(grid, flag, 4, line++, 2, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(metadata_flag_callback), self);
-  flag = gtk_check_button_new_with_label(_("geo tags"));
-  d->geotags_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
-  gtk_grid_attach(grid, flag, 0, line, 2, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
+
   flag = gtk_check_button_new_with_label(_("tags"));
   d->tags_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select tags metadata"));
-  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_grid_attach(grid, flag, 0, line, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/tags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(tags_flag_callback), self);
+
+  flag = gtk_check_button_new_with_label(_("geo tags"));
+  d->geotags_flag = flag;
+  gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
+  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
+  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
+
+  flag = gtk_check_button_new_with_label(_("metadata"));
+  d->metadata_flag = flag;
+  gtk_widget_set_tooltip_text(flag, _("select dt metadata (from metadata editor module)"));
+  gtk_grid_attach(grid, flag, 0, line++, 2, 1);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
+  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(metadata_flag_callback), self);
 
   button = gtk_button_new_with_label(_("copy"));
   ellipsize_button(button);
@@ -519,7 +523,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
-  gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
+  gtk_grid_attach(grid, pastemode, 0, line++, 5, 1);
   dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
   g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
 
