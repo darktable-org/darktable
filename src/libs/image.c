@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -51,7 +52,7 @@ typedef struct dt_lib_image_t
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button, *delete_button, *create_hdr_button,
       *duplicate_button, *reset_button, *move_button, *copy_button, *group_button, *ungroup_button,
       *cache_button, *uncache_button, *refresh_button,
-      *copy_metadata_button, *replace_metadata_button, *merge_metadata_button, *clear_metadata_button,
+      *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   int imageid;
 } dt_lib_image_t;
@@ -279,19 +280,14 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
   d->imageid = _get_source_image();
   if(d->imageid)
   {
-    gtk_widget_set_sensitive(d->replace_metadata_button, TRUE);
-    gtk_widget_set_sensitive(d->merge_metadata_button, TRUE);
+    gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
   }
 }
 
-static void replace_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void paste_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  _execute_metadata(self, DT_MA_REPLACE);
-}
-
-static void merge_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
-{
-  _execute_metadata(self, DT_MA_MERGE);
+  const int mode = dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode");
+  _execute_metadata(self, mode == 0 ? DT_MA_MERGE : DT_MA_REPLACE);
 }
 
 static void clear_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -334,20 +330,38 @@ static void tags_flag_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_bool("plugins/lighttable/copy_metadata/tags", flag);
 }
 
+static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  int mode = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/lighttable/copy_metadata/pastemode", mode);
+}
+
 #define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
-  self->widget = gtk_grid_new();
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
-  GtkGrid *grid = GTK_GRID(self->widget);
+
+  // Init GTK notebook
+  GtkNotebook *notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  GtkWidget *page1 = GTK_WIDGET(gtk_grid_new());
+  GtkWidget *page2 = GTK_WIDGET(gtk_grid_new());
+
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page1, gtk_label_new(_("images")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page2, gtk_label_new(_("metadata")));
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(notebook, 0)));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(notebook), FALSE, FALSE, 0);
+
+  dtgtk_justify_notebook_tabs(notebook);
+
+  // images operations
+  GtkGrid *grid = GTK_GRID(page1);
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  GtkWidget *button;
-
-  button = gtk_button_new_with_label(_("remove"));
+  GtkWidget *button = gtk_button_new_with_label(_("remove"));
   ellipsize_button(button);
   d->remove_button = button;
   gtk_widget_set_tooltip_text(button, _("remove from the collection"));
@@ -441,17 +455,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
 
-  button = gtk_button_new_with_label(_("refresh exif"));
-  ellipsize_button(button);
-  d->refresh_button = button;
-  gtk_widget_set_tooltip_text(button, _("update image information to match changes to file"));
-  gtk_grid_attach(grid, button, 0, line++, 4, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
-
-
-  GtkWidget *label = dt_ui_section_label_new(_("metadata operations"));
-  gtk_widget_set_tooltip_text(label, _("metadata operations apply on selected metadata"));
-  gtk_grid_attach(grid, label, 0, line++, 4, 1);
+  // metadata operations
+  grid = GTK_GRID(page2);
+  gtk_grid_set_column_homogeneous(grid, TRUE);
+  line = 0;
 
   button = gtk_button_new_with_label(_("copy"));
   ellipsize_button(button);
@@ -460,22 +467,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(button, _("set the (first) selected image as source of metadata"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(copy_metadata_callback), self);
-
-  button = gtk_button_new_with_label(_("merge"));
-  ellipsize_button(button);
-  d->merge_metadata_button = button;
-  gtk_widget_set_sensitive(button, FALSE);
-  gtk_widget_set_tooltip_text(button, _("merge selected metadata on selected images (doesn\'t clear previous dt metadata and tags on selected images)"));
-  gtk_grid_attach(grid, button, 2, line++, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(merge_metadata_callback), self);
-
-  button = gtk_button_new_with_label(_("replace"));
-  ellipsize_button(button);
-  d->replace_metadata_button = button;
-  gtk_widget_set_sensitive(button, FALSE);
-  gtk_widget_set_tooltip_text(button, _("replace selected metadata on selected images (clears previous dt metadata and tags on selected images)"));
-  gtk_grid_attach(grid, button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(replace_metadata_callback), self);
 
   button = gtk_button_new_with_label(_("clear"));
   ellipsize_button(button);
@@ -515,6 +506,30 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/tags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(tags_flag_callback), self);
 
+  button = gtk_button_new_with_label(_("paste"));
+  ellipsize_button(button);
+  d->paste_metadata_button = button;
+  gtk_widget_set_sensitive(button, FALSE);
+  gtk_widget_set_tooltip_text(button, _("paste selected metadata on selected images (doesn\'t clear previous dt metadata and tags on selected images)"));
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(paste_metadata_callback), self);
+
+  GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(pastemode, NULL, _("mode"));
+  dt_bauhaus_combobox_add(pastemode, _("merge"));
+  dt_bauhaus_combobox_add(pastemode, _("overwrite"));
+  gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
+  gtk_grid_attach(grid, pastemode, 0, line++, 4, 1);
+  dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
+  g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
+
+  button = gtk_button_new_with_label(_("refresh exif"));
+  ellipsize_button(button);
+  d->refresh_button = button;
+  gtk_widget_set_tooltip_text(button, _("update image information to match changes to file"));
+  gtk_grid_attach(grid, button, 0, line++, 4, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
+
   /* connect preference changed signal */
   dt_control_signal_connect(
       darktable.signals,
@@ -528,7 +543,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   d->imageid = 0;
-  gtk_widget_set_sensitive(d->replace_metadata_button, FALSE);
+  gtk_widget_set_sensitive(d->paste_metadata_button, FALSE);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -555,7 +570,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "merge metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
@@ -579,8 +594,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
   dt_accel_connect_button_lib(self, "refresh exif", d->refresh_button);
   dt_accel_connect_button_lib(self, "copy metadata", d->copy_metadata_button);
-  dt_accel_connect_button_lib(self, "replace metadata", d->replace_metadata_button);
-  dt_accel_connect_button_lib(self, "merge metadata", d->merge_metadata_button);
+  dt_accel_connect_button_lib(self, "paste metadata", d->paste_metadata_button);
   dt_accel_connect_button_lib(self, "clear metadata", d->clear_metadata_button);
   // Grouping keys
   dt_accel_connect_button_lib(self, "group", d->group_button);
