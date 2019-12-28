@@ -13,10 +13,9 @@
   </indexterm>
 
   <para>
-    When a <quote>drawn mask</quote> or a <quote>parametric mask</quote> is active
-    the final mask can be reused in other modules. This works because all the shapes from the drawn mask 
-    and all the blend functions from the parametric mask of a module assemble a final mask,
-    which internally is stored as a raster image and made accessible to other modules.
+    Raster mask produced by <quote>drawn mask</quote>, <quote>parametric mask</quote> or their
+    combination in the context of a specific module instance can be made accessible to module
+    instances that follow in the pixelpipe.
   </para>
 
   <sect4 status="draft" id="raster_mask_overview">
@@ -24,23 +23,22 @@
     <title>Overview</title>
 
     <para>
-      Each individual mask selects a set of pixels and how drastically the effect of the module
-      is applied to this selection. Several drawn masks and parametric blend functions can be defined 
-      and they all together render the final mask, the final settings of how drastically the effect 
-      of the module will be. 
+      A mask defined in the context of a module instance determines the extent to which the module 
+      instance result is blended with its input (see <xref linkend="blending"/>).  
     </para>
 
     <para>
-      The selection of these masks can be saved as an alpha map, that is an image
-      as big as the input image in which for each pixel an intensity value is being stored between zero
-      and the maximum alpha value. If the value for a pixel is zero the input of the module is left unchanged, if the 
-      value has the maximum intensity the module has full effect and for each alpha value in-between the 
-      minimum and the maximum the effect is applied proportionally at that location.
+      <quote>drawn mask</quote>, <quote>parametric mask</quote> or <quote>drawn and parameteric mask</quote>
+      calculated for a specific module instance can be represented  
+      as a raster mask, that is an image with the same pixel arrangement as the input image in which
+      each pixel's intensity has a disrete value between zero and the maximum. Pixel's intensity in the raster 
+      mask is directly proportional to the effect the module instance has on it, i.e. zero intencity
+      pixels are not affected (in other words, get passed to module instance's output AS IS) and vice versa.
     </para>
 
     <para>
-      Internally for each module the alpha map is saved and made accessible to other modules in the raster mask button.
-      So a mask from any module can be reused from any other module easily.
+      The raster mask of a specific module instance may be used by any module instance that follows it in 
+      the pixelpipe.
     </para>
 
   </sect4>
@@ -48,14 +46,26 @@
   <sect4 id="raster_mask_usage">
 
     <title>Usage</title>
-
-    <sect5 id="raster_mask_usage_dropdown">
-      <title>Drop-down menu</title>
+    <para>
+	Open the module instance which should use the raster mask from another module instance. In the 
+	mask options toolbar press <quote>raster mask</quote> button to display additional mask options.   
+    </para>
+    <sect5 id="raster_mask_usage_combobox">
+      <title>raster mask combobox</title>
       <para>
-        If there is a mask in another module it will appear in the drop-down menu of the raster mask.
-        You can easily identify the mask by the name of the module it was defined in.
+        Values in raster mask drop-down represent names of module instances which have a raster mask calculated
+	up in the pixelpipe. Choose the name of the module instance from which raster mask should be copied
+	to the current module instance.
       </para>
     </sect5>  
+    <sect6 id="raster_mask_usage_warning">
+	<title>Warning<title>
+	<para>
+	  The raster mask can only be sourced from a module instance preceeding the current module instance in
+	  the pixelpipe. Be sure not to move the source module instance after the one that uses it as it currently
+	  may lead to undesirable effects (in the worst case, a darktable crash).
+	</para>
+    </sect6>
 
   </sect4>
 
