@@ -332,7 +332,7 @@ static void tags_flag_callback(GtkWidget *widget, dt_lib_module_t *self)
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int mode = dt_bauhaus_combobox_get(widget);
+  const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_metadata/pastemode", mode);
 }
 
@@ -460,21 +460,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   line = 0;
 
-  button = gtk_button_new_with_label(_("copy"));
-  ellipsize_button(button);
-  d->copy_metadata_button = button;
-  d->imageid = 0;
-  gtk_widget_set_tooltip_text(button, _("set the (first) selected image as source of metadata"));
-  gtk_grid_attach(grid, button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(copy_metadata_callback), self);
-
-  button = gtk_button_new_with_label(_("clear"));
-  ellipsize_button(button);
-  d->clear_metadata_button = button;
-  gtk_widget_set_tooltip_text(button, _("clear selected metadata on selected images"));
-  gtk_grid_attach(grid, button, 2, line++, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_metadata_callback), self);
-
   GtkWidget *flag = gtk_check_button_new_with_label(_("ratings"));
   d->ratings_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select ratings metadata"));
@@ -484,42 +469,57 @@ void gui_init(dt_lib_module_t *self)
   flag = gtk_check_button_new_with_label(_("colors"));
   d->colors_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select colors metadata"));
-  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_grid_attach(grid, flag, 2, line, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/colors"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(colors_flag_callback), self);
   flag = gtk_check_button_new_with_label(_("metadata"));
   d->metadata_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select dt metadata (from metadata editor module)"));
-  gtk_grid_attach(grid, flag, 0, line, 2, 1);
+  gtk_grid_attach(grid, flag, 4, line++, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(metadata_flag_callback), self);
   flag = gtk_check_button_new_with_label(_("geo tags"));
   d->geotags_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
-  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_grid_attach(grid, flag, 0, line, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
   flag = gtk_check_button_new_with_label(_("tags"));
   d->tags_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select tags metadata"));
-  gtk_grid_attach(grid, flag, 0, line, 2, 1);
+  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/tags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(tags_flag_callback), self);
+
+  button = gtk_button_new_with_label(_("copy"));
+  ellipsize_button(button);
+  d->copy_metadata_button = button;
+  d->imageid = 0;
+  gtk_widget_set_tooltip_text(button, _("set the (first) selected image as source of metadata"));
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(copy_metadata_callback), self);
 
   button = gtk_button_new_with_label(_("paste"));
   ellipsize_button(button);
   d->paste_metadata_button = button;
   gtk_widget_set_sensitive(button, FALSE);
-  gtk_widget_set_tooltip_text(button, _("paste selected metadata on selected images (doesn\'t clear previous dt metadata and tags on selected images)"));
-  gtk_grid_attach(grid, button, 2, line++, 2, 1);
+  gtk_widget_set_tooltip_text(button, _("paste selected metadata on selected images"));
+  gtk_grid_attach(grid, button, 2, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(paste_metadata_callback), self);
+
+  button = gtk_button_new_with_label(_("clear"));
+  ellipsize_button(button);
+  d->clear_metadata_button = button;
+  gtk_widget_set_tooltip_text(button, _("clear selected metadata on selected images"));
+  gtk_grid_attach(grid, button, 4, line++, 2, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
   GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(pastemode, NULL, _("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
-  gtk_grid_attach(grid, pastemode, 0, line++, 4, 1);
+  gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
   g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
 
@@ -527,7 +527,7 @@ void gui_init(dt_lib_module_t *self)
   ellipsize_button(button);
   d->refresh_button = button;
   gtk_widget_set_tooltip_text(button, _("update image information to match changes to file"));
-  gtk_grid_attach(grid, button, 0, line++, 4, 1);
+  gtk_grid_attach(grid, button, 0, line++, 6, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
 
   /* connect preference changed signal */
