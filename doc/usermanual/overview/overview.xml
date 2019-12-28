@@ -109,8 +109,9 @@
 
     <listitem><para>
       A powerful mask feature gives you fine control on module's effect to different parts of an
-      image. You can at your choice draw a mask using various shapes or define a parametric mask
-      based on pixel values.
+      image. You can draw a mask using various shapes and their combinations, define a parametric mask
+      based on pixel values and even use both approaches in a single mask. The same
+      mask can be used by several modules at the same time.
     </para></listitem>
 
     <listitem><para>
