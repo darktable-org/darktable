@@ -1565,7 +1565,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 // migrate the given image to another iop_order version (new_iop_order_version)
 // note that this is actually a non exported routine but it will
 // be when dt GUI will provide a way to migrate to a new iop_order version.
-static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
 {
   int _iop_order_version = new_iop_order_version;
   sqlite3_stmt *stmt;
@@ -1702,6 +1702,22 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   dt_image_write_sidecar_file(imgid);
 
   return _iop_order_version;
+}
+
+int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+{
+  const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version);
+
+  int _version = new_iop_order_version;
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version);
+
+  dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
+
+  // finaly reload history
+
+  dt_dev_reload_history_items(dev);
+
+  return ret;
 }
 
 // how is on-the-fly conversion done
