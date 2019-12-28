@@ -114,11 +114,6 @@
     </para></listitem>
 
     <listitem><para>
-      Most modules can exist as multiple instances. Together with the mask feature, you can let
-      an operation have different effects on different parts of the image.
-    </para></listitem>
-
-    <listitem><para>
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
