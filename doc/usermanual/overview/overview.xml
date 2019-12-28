@@ -71,8 +71,8 @@
     </para></listitem>
 
     <listitem><para>
-      Import a variety of standard, raw and high dynamic range image formats (e.g. JPEG, CR2,
-      DNG, OpenEXR, PFM, ...).
+      Import a variety of standard raw, low and high dynamic range image formats (e.g. CR2,
+      DNG, JPEG, OpenEXR, PFM).
     </para></listitem>
 
     <listitem><para>
