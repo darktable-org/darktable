@@ -31,7 +31,7 @@
     <title>General Features</title>
 
     <listitem><para>
-      darktable runs on GNU/Linux / GTK3, Mac OS X / macports and Solaris 11 / GTK3.
+      darktable runs on GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows and Solaris 11 / GTK3.
     </para></listitem>
 
     <listitem><para>
