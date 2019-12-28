@@ -1,6 +1,6 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Bug Report
+about: Open a new bug report
 title: ''
 labels: ''
 assignees: ''
@@ -8,6 +8,7 @@ assignees: ''
 
 <!-- IMPORTANT
 Bug reports that do not make an effort to help the developers will be closed without notice.
+Make sure that this bug has not already been opened and/or closed by searching the issues on GitHub, as duplicate bug reports will be closed.
 A bug report simply stating that Darktable crashes is unhelpful, so please fill in most of the items below and provide detailed information.
 -->
 
