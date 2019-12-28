@@ -130,43 +130,59 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll forward");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_forward);
+
   dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll back");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_back);
 
   // slideshow
   dt_accel_path_view(path, sizeof(path), "slideshow", "start and stop");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_start);
+
   // Lighttable
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll up");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_up);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll down");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_down);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll left");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_left);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll right");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_right);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll center");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_center);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_display_focus);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "toggle filmstrip/timeline");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_100);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom fit");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_fit);
+
   // darkroom
   dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
+
   // add an option to allow skip mouse events while editing masks
   dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
+
   // set focus to the search module text box
   dt_accel_path_view(path, sizeof(path), "darkroom", "search modules");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_search_modules_focus);
