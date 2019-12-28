@@ -103,8 +103,8 @@
     </para></listitem>
 
     <listitem><para>
-      Many darktable modules can be combined with blending operators for even more development
-      options.
+      Many darktable modules can be instantiated multiple times and applied with blending 
+      operators for even more development options.
     </para></listitem>
 
     <listitem><para>
