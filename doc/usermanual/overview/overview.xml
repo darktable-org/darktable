@@ -54,8 +54,8 @@
     </para></listitem>
 
     <listitem><para>
-      Most image processing is done in CIELab color space, which is much larger than the gamut
-      of modern displays, printers or even human vision.
+      Image processing modules operate in CIELab and several popular RGB model-based color spaces,
+      which are much larger than the gamut of modern displays, printers or even human vision.
     </para></listitem>
 
     <listitem><para>
