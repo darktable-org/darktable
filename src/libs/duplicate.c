@@ -87,7 +87,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
 static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent *event, dt_lib_module_t *self)
 {
-  int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
+  const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
   dt_metadata_set(imgid, "Xmp.dc.title", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
