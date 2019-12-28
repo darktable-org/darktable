@@ -187,7 +187,7 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 
-  dt_accel_path_global(path, sizeof(path), "overlay focus peaking");
+  dt_accel_path_global(path, sizeof(path), "toggle focus peaking");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_focus_peaking);
 }
 
