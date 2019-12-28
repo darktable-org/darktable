@@ -17,7 +17,7 @@
 
     <para>
       By default a module takes its input from the preceding module, performs its calculations
-      and handles its output over to the next module in the pixelpipe. On demand you can
+      and hands its output over to the next module in the pixelpipe. On demand you can
       activate an additional step where a module's output is reprocessed with its input before
       giving the result to the next module. This additional processing step is called blending.
       Input and output can be processed with different algorithms, called blending operators or
