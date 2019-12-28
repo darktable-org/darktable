@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -329,6 +330,17 @@ void expose(
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
@@ -3578,6 +3590,18 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
+
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;

@@ -130,43 +130,59 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll forward");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_forward);
+
   dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll back");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_back);
 
   // slideshow
   dt_accel_path_view(path, sizeof(path), "slideshow", "start and stop");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_start);
+
   // Lighttable
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll up");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_up);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll down");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_down);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll left");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_left);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll right");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_right);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll center");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_center);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_display_focus);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "toggle filmstrip/timeline");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_100);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom fit");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_fit);
+
   // darkroom
   dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
+
   // add an option to allow skip mouse events while editing masks
   dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
+
   // set focus to the search module text box
   dt_accel_path_view(path, sizeof(path), "darkroom", "search modules");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_search_modules_focus);
@@ -186,6 +202,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
+
+  dt_accel_path_global(path, sizeof(path), "toggle focus peaking");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_focus_peaking);
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -225,6 +244,22 @@ static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObje
 {
   dt_ctl_switch_mode();
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
+}
+
+static gboolean _focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                               guint keyval, GdkModifierType modifier, gpointer data)
+{
+  // Set focus peaking hidden by default
+  gint visible = FALSE;
+
+  // Get the current parameter if defined
+  if(dt_conf_key_exists("ui/show_focus_peaking")) visible = dt_conf_get_bool("ui/show_focus_peaking");
+
+  // Inverse the current parameter and save it
+  visible = !visible;
+  dt_conf_set_bool("ui/show_focus_peaking", visible);
+  darktable.gui->show_focus_peaking = visible;
   return TRUE;
 }
 
@@ -1081,6 +1116,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // key accelerator that enables scrolling of side panels
   gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
 
+  // Init focus peaking
+  gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+
   // Initializing widgets
   init_widgets(gui);
 
@@ -1225,6 +1263,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // toggle view of header
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
+
+  // toggle focus peaking everywhere
+  dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle focus peaking",
+                          g_cclosure_new(G_CALLBACK(_focuspeaking_switch_key_accel_callback), NULL, NULL));
 
   // View-switch
   dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
