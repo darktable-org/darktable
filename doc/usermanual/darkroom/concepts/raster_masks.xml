@@ -58,9 +58,11 @@
 	to the current module instance.
       </para>
       <warning>
-	The raster mask can only be sourced from a module instance preceeding the current module instance in
-	the pixelpipe. Be sure not to move the source module instance after the one that uses it as it currently
-	may lead to undesirable effects (in the worst case, a darktable crash).
+	<para>
+	  The raster mask can only be sourced from a module instance preceeding the current module instance in
+	  the pixelpipe. Be sure not to move the source module instance after the one that uses it as it currently
+	  may lead to undesirable effects (in the worst case, a darktable crash).
+	</para>
       </warning>
     </sect5>  
     
