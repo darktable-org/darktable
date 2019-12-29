@@ -50,19 +50,20 @@
 
     <para>
       The panel is divided into two areas:
-        <itemizedlist>
+      <itemizedlist>
 
-          <listitem><para>
-            The upper one called attached tags area focuses on the tag(s) currently attached to the image
-            under the cursor or the selected image(s) if the mouse is outside the lighttable. It contains
-            the attached tags list view and the row of five buttons under it.
-          </para></listitem>
+        <listitem><para>
+          The upper one called attached tags area focuses on the tag(s) currently attached to the image
+          under the cursor or the selected image(s) if the mouse is outside the lighttable. It contains
+          the attached tags list view and the row of five buttons under it.
+        </para></listitem>
                   
-          <listitem><para>
-            The lower one called tag dictonary area focuses on all tags  available in the database.
-            It contains the text box, the tag dictionary list view and the row of five buttons under it.
-            </para></listitem>
-          </itemizedlist>
+        <listitem><para>
+          The lower one called tag dictonary area focuses on all tags  available in the database.
+          It contains the text box, the tag dictionary list view and the row of five buttons under it.
+          </para></listitem>
+        </itemizedlist>
+      </para>
     <sect4 id="tagging_tag_properties">
 
       <title>tag properties</title>
