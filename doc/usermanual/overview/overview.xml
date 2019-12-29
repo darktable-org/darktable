@@ -103,8 +103,8 @@
     </para></listitem>
 
     <listitem><para>
-      Many darktable modules can be instantiated multiple times and applied with blending 
-      operators including different types of masks for even more development options.
+      Many darktable modules can be instantiated multiple times, applied with blending 
+      operators and different types of masks for even more development options.
     </para></listitem>
 
     <listitem><para>
