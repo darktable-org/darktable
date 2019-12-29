@@ -13,10 +13,8 @@
   </indexterm>
 
   <para>
-    When a <quote>drawn mask</quote> or a <quote>parametric mask</quote> is active
-    the final mask can be reused in other modules. This works because all the shapes from the drawn mask 
-    and all the blend functions from the parametric mask of a module assemble a final mask,
-    which internally is stored as a raster image and made accessible to other modules.
+    A raster mask produced by <quote>drawn mask</quote> and/or <quote>parametric mask</quote> in the
+    context of a specific module can be reused by modules that follow it in the pixelpipe.
   </para>
 
   <sect4 status="draft" id="raster_mask_overview">
@@ -24,23 +22,18 @@
     <title>Overview</title>
 
     <para>
-      Each individual mask selects a set of pixels and how drastically the effect of the module
-      is applied to this selection. Several drawn masks and parametric blend functions can be defined 
-      and they all together render the final mask, the final settings of how drastically the effect 
-      of the module will be. 
+      A mask defined in the context of a module determines the extent to which the module affects the input image.
     </para>
 
     <para>
-      The selection of these masks can be saved as an alpha map, that is an image
-      as big as the input image in which for each pixel an intensity value is being stored between zero
-      and the maximum alpha value. If the value for a pixel is zero the input of the module is left unchanged, if the 
-      value has the maximum intensity the module has full effect and for each alpha value in-between the 
-      minimum and the maximum the effect is applied proportionally at that location.
+      <quote>drawn mask</quote>, <quote>parametric mask</quote> or <quote>drawn and parameteric mask</quote>
+      calculated for a specific module can be represented with a raster mask, that is an image with
+      the same pixel arrangement as the input image in which each pixel's opacity has a value between 0%
+      and 100%. Pixels with zero opacity get passed to module's output without any changes and vice versa.
     </para>
 
     <para>
-      Internally for each module the alpha map is saved and made accessible to other modules in the raster mask button.
-      So a mask from any module can be reused from any other module easily.
+      The raster mask of a specific module may be reused by modules that follows it in the pixelpipe.
     </para>
 
   </sect4>
@@ -48,15 +41,26 @@
   <sect4 id="raster_mask_usage">
 
     <title>Usage</title>
-
-    <sect5 id="raster_mask_usage_dropdown">
-      <title>Drop-down menu</title>
+    <para>
+	Let's start with opening the module which should use the raster mask of another module. In the 
+	mask options toolbar press <quote>raster mask</quote> button to display additional mask controls.   
+    </para>
+    <sect5 id="raster_mask_usage_combobox">
+      <title>raster mask combobox</title>
       <para>
-        If there is a mask in another module it will appear in the drop-down menu of the raster mask.
-        You can easily identify the mask by the name of the module it was defined in.
+        Values in raster mask combobox represent names of modules which have their raster mask calculated
+	up in the pixelpipe. Choose the name of the module from which raster mask should be copied
+	to the current module.
       </para>
+      <warning>
+	<para>
+	  The raster mask can only be sourced from a module preceeding the current module in
+	  the pixelpipe. Be sure not to move the source module after the one that uses it as this currently
+	  may lead to undesirable effects (in the worst case, a darktable crash).
+	</para>
+      </warning>
     </sect5>  
-
+    
   </sect4>
 
 </sect3>
