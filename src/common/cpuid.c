@@ -25,9 +25,9 @@
         Anders Kvist <akv@lnxbx.dk> and Klaus Post <klauspost@gmail.com>
  */
 
+#include "config.h"
 #include "cpuid.h"
 #include "common/darktable.h"
-#include "config.h"
 #include <glib.h>
 
 #ifdef HAVE_CPUID_H
