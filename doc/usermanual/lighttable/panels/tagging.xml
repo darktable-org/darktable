@@ -30,10 +30,20 @@
               <para>
                 This panel is for managing tags on images. Tags are stored in both sidecar files
                 (.xmp) and within the darktable database for a faster access. The panel is divided
-                into two parts: the upper part contains the tag(s) currently attached to the image
-                under the cursor or the selected image(s) if the mouse is outside the lighttable.
-                The lower part contains a list of all available tags in the database, the dictionary, which can be
-                filtered in the text box above.
+                into two parts:
+                <itemizedlist>
+
+                  <listitem><para>
+                    The upper part contains the tag(s) currently attached to the image
+                    under the cursor or the selected image(s) if the mouse is outside the lighttable.
+                  </para></listitem>
+                  
+                  <listitem><para>
+                    The lower part contains a list of all available tags in the database, the dictionary, which can be
+                    filtered in the text box above.
+                  </para></listitem>
+                  
+                </itemizedlist>
               </para>
               <para>
                 The list of available tags can be displayed in three different manners:
