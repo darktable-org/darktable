@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2019-12-29 01:42-0600\n"
-"PO-Revision-Date: 2019-12-29 02:53-0600\n"
+"PO-Revision-Date: 2019-12-29 11:36-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -338,7 +338,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:194(para)
 msgid "Fully non-destructive editing."
-msgstr "Edición no destructiva totalmente."
+msgstr "Edición absolutamente no destructiva."
 
 # floating point pixel - revisar traducción
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:198(para)
@@ -384,7 +384,6 @@ msgstr ""
 "para perfil ICC incorporado para exportar a: sRGB, Adobe RGB, XYZ y RGB "
 "lineal."
 
-# Revisar
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:223(para)
 msgid ""
 "A collect module allows you to execute flexible database queries, search "
@@ -3038,7 +3037,6 @@ msgstr ""
 "mostradas en su miniatura."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2251(para)
-#, fuzzy
 msgid ""
 "You can give a rating from zero to five stars to an image. The quality "
 "criteria which lead to a rating are fully up to you. Whenever you import "
@@ -3050,20 +3048,19 @@ msgid ""
 "icon or typing the <emphasis>R</emphasis> key. This will remove all stars. "
 "You can reverse the rejection by applying a new star rating."
 msgstr ""
-"Puede darle a una imagen una calificación de cero a cinco estrellas. Los "
-"criterios de calidad que conducen a cierta calificación son totalmente "
-"personales. Cuando se importan imágenes, cada una recibe una clasificación "
-"predeterminada que puede definir en <quote>opciones de la interfaz</quote> "
+"Puede darle a una imagen una puntuación de cero a cinco estrellas. Los "
+"criterios de calidad que conducen a cierta puntuación son totalmente "
+"personales. Cuando se importan imágenes, cada una recibe una puntuación "
+"predeterminada que puede definirse en <quote>opciones de la interfaz</quote> "
 "(consulte <xref linkend=\"gui_options\"/>). En cualquier momento se puede "
-"cambiar la calificación. También se puede marcar una imagen como "
-"<quote>rechazada</quote> presionando el icono <inlinegraphic fileref="
+"cambiar la puntuación. También se puede marcar una imagen como "
+"<quote>rechazada</quote> presionando el ícono <inlinegraphic fileref="
 "\"images/lighttable_thumb_reject.png\" scalefit=\"1\" width=\"2%\" align="
-"\"center\"/> o escribiendo la tecla <emphasis>r</emphasis>. Al hacerlo, "
-"eliminará todas las estrellas. Para revertir esta condición, se aplica "
-"nuevamente una calificación con estrellas."
+"\"center\"/> o pulsando la tecla <emphasis>R</emphasis>. Como consecuencia, "
+"eliminará todas las estrellas. Para revertir esta condición, realice "
+"nuevamente una puntuación de estrellas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2262(para)
-#, fuzzy
 msgid ""
 "There are several ways to change a rating. While hovering the cursor over an "
 "image thumbnail, you can press a number key <emphasis>0 – 5</emphasis> for "
@@ -3071,12 +3068,11 @@ msgid ""
 "an image; this is probably the fastest way when rating your images on first "
 "inspection of a film roll."
 msgstr ""
-"Hay distintas formas de cambiar una puntuación. Mientras pase el cursor "
-"sobre la miniatura de una imagen, podrá presionar las teclas <emphasis>0 – "
-"5</emphasis> para el número de estrellas, o presione <emphasis>r</emphasis> "
-"para <quote>rechazar</quote> una imagen; esta es probablemente la forma más "
-"rápida de valorar sus imágenes cuando realice la primera inspección de su "
-"carrete."
+"Hay distintas formas de cambiar una puntuación. Al hacer la primera "
+"inspección del carrete, probablemente la forma más rápida de puntuar, es que "
+"mientras pase el cursor sobre la miniatura de una imagen, pulse alguna de "
+"las teclas <emphasis>0 – 5</emphasis> para asignar un número de estrellas, o "
+"pulse <emphasis>R</emphasis> para <quote>rechazar</quote> la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2278(emphasis)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2279(emphasis)
@@ -3705,7 +3701,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6219(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20358(title)
 msgid "Undo/redo"
-msgstr "Deshacer/rehacer"
+msgstr "Deshacer/Rehacer"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2794(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6222(primary)
@@ -3720,7 +3716,6 @@ msgid "redo"
 msgstr "rehacer"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2801(para)
-#, fuzzy
 msgid ""
 "Most changes in the lighttable are recorded and can be reverted. This "
 "includes modifications to color labels, ratings, geo-localization, tags, "
@@ -3730,18 +3725,18 @@ msgid ""
 "while in the lighttable, but it is reset each time the view is switched "
 "(going to the darkroom for example)."
 msgstr ""
-"Durante la edición, darktable registra todos los cambios realizados en el "
-"historial (consulte <xref linkend=\"history\"/>). Esto incluye "
-"modificaciones de cualquier parámetro en un módulo, pero también si se "
-"agrega o elimina una instancia de módulo. Gracias a esta registro, es "
-"posible deshacer cambios o rehacerlos para recuperar un estado de edición "
-"anterior. Tenga en cuenta que esta función de deshacer/rehacer es ilimitada "
-"en el número de pasos al editar una imagen, pero se restablece cada vez que "
-"el cuarto oscuro se cambia a una nueva imagen."
+"La mayoría de los cambios en la mesa de luz se registran y pueden ser "
+"revertidos. Esto incluye modificaciones en las etiquetas de color, "
+"puntuaciones, geolocalización, etiquetas, metadatos, copiado/pegado del "
+"historial o aplicar un estilo. Gracias a este registro, es posible deshacer "
+"los cambios o rehacerlos para recuperar un estado anterior. Tenga en cuenta "
+"que el número de pasos de esta función para deshacer/rehacer es ilimitada "
+"mientras se está en la mesa de luz, sin embargo, se restablece cada vez que "
+"se cambia de vista (por ejemplo, yendo al cuarto oscuro)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2816(para)
 msgid "<emphasis>Ctrl+Z</emphasis> : undo last modifications"
-msgstr "<emphasis>Ctrl+Z</emphasis>: deshace la última modificación"
+msgstr "<emphasis>Ctrl+Z</emphasis> : deshace la última modificación"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2820(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6246(para)
@@ -3750,7 +3745,7 @@ msgid ""
 "<emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not "
 "been used yet)"
 msgstr ""
-"<emphasis>Ctrl+Y</emphasis>: rehace la última acción (sin ningún efecto si "
+"<emphasis>Ctrl+Y</emphasis> : rehace la última acción (sin ningún efecto si "
 "todavía no se ha utilizado la función de deshacer)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2812(para)
@@ -7577,17 +7572,16 @@ msgstr ""
 "aceptar el nuevo valor y volverá al modo normal de control."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6143(para)
-#, fuzzy
 msgid ""
 "Alternatively you can type in a new value using your keyboard and commit by "
 "hitting the enter key. You may even supply the new value in the form of an "
 "arithmetic expressions which darktable will calculate for you – the old "
 "value is referenced as <quote>x</quote>."
 msgstr ""
-"Alternativamente, puede escribir un nuevo valor usando su teclado y "
-"confirmar presionando la tecla Entrar. Incluso puede proporcionar el nuevo "
-"valor en forma de expresiones aritméticas que calculará darktable: el valor "
-"anterior se denomina <quote>x</quote>."
+"Como alternativa, puede teclear el valor y confirmarlo pulsando la tecla "
+"Entrar. Incluso puede proporcionar el nuevo valor en forma de expresiones "
+"aritméticas que darktable calculará: el valor anterior a ese se denomina "
+"<quote>x</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6150(para)
 msgid "Double-click"
@@ -7856,7 +7850,6 @@ msgstr ""
 "una vez en la tubería del píxel. Aquí tiene algunos casos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6375(para)
-#, fuzzy
 msgid ""
 "Most of our modules are highly versatile and depending on parameters can "
 "deliver quite varying effects. For example the <emphasis>fill light</"
@@ -7865,12 +7858,12 @@ msgid ""
 "corrections in your image at the same time – one for dark tones and another "
 "one for lighter tones."
 msgstr ""
-"La mayoría de nuestros módulos son verdaderamente versátiles y, dependiendo "
-"de los parámetros, pueden ofrecer efectos muy variados. Por ejemplo, el "
-"módulo <emphasis>luz de relleno</emphasis> (<xref linkend=\"fill_light\"/>) "
-"permite la modificación local de la luminosidad en función de los valores de "
-"píxeles. Es posible que desee hacer dos correcciones de claridad en su "
-"imagen al mismo tiempo, una para tonos oscuros y otra para tonos más claros."
+"La mayoría de los módulos son verdaderamente versátiles y, dependiendo de "
+"los parámetros, pueden ofrecer efectos muy variados. Por ejemplo, el módulo "
+"<emphasis>luz de relleno</emphasis> (<xref linkend=\"fill_light\"/>) permite "
+"la modificación local de la luminosidad en función de los valores de "
+"pixeles. Tal vez desee hacer dos correcciones de claridad en su imagen al "
+"mismo tiempo, una para tonos oscuros y otra para tonos más claros."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6383(para)
 msgid ""
