@@ -85,8 +85,7 @@
     </para></listitem>
 
     <listitem><para>
-      The powerful export system supports local disk storage, popular web albums (flickr,
-      Google Photos, Facebook webalbum, Piwigo), LaTeX book template,
+      darktable supports export of developer images to local disk storage, some web albums, LaTeX book template,
       email attachments and can generate a simple html-based web gallery. darktable allows
       you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF),
       or linear high dynamic range (PFM, EXR) images.
