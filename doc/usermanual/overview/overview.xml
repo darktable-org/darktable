@@ -103,16 +103,16 @@
     </para></listitem>
 
     <listitem><para>
-      Many darktable modules can be combined with blending operators for even more development
-      options.
+      A powerful mask feature gives you fine control over extent the module affects complete image
+      or its specific parts. To select image areas you draw a mask using various shapes and/or 
+      define a parametric mask based on pixel values.
     </para></listitem>
 
     <listitem><para>
-      A powerful mask feature gives you fine control on module's effect to different parts of an
-      image. You can at your choice draw a mask using various shapes or define a parametric mask
-      based on pixel values.
+      Flexibility of masks is further extended by the possibility to apply them in different blending 
+      modes and reuse the same mask in several modules.
     </para></listitem>
-
+	  
     <listitem><para>
       Most modules can exist as multiple instances. Together with the mask feature, you can let
       an operation have different effects on different parts of the image.
