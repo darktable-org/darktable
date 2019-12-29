@@ -29,39 +29,15 @@
             <entry>
               <para>
                 This panel is for managing tags on images. Tags are stored in both sidecar files
-                (.xmp) and within the darktable database for a faster access. The panel is divided
-                into two parts:
-                <itemizedlist>
-
-                  <listitem><para>
-                    The upper part contains the tag(s) currently attached to the image
-                    under the cursor or the selected image(s) if the mouse is outside the lighttable.
-                  </para></listitem>
-                  
-                  <listitem><para>
-                    The lower part contains a list of all available tags in the database, the dictionary, which can be
-                    filtered in the text box above.
-                  </para></listitem>
-                  
-                </itemizedlist>
+                (.xmp) and within the darktable database for a faster access.
               </para>
               <para>
-                The list of available tags can be displayed in three different manners:
-                <itemizedlist>
-
-                  <listitem><para>
-                    A flat list of tags
-                  </para></listitem>
-
-                  <listitem><para>
-                    A tree view to navigate within your hierarchical tags
-                  </para></listitem>
-
-                  <listitem><para>
-                    A list of suggestions based on already attached tags on selected images.
-                  </para></listitem>
-
-                </itemizedlist>
+                The goal of tags is to add information to the images within a given keyword set.
+                But when the number of tags becomes large it is interesting to organize them in a hierachical manner, as a tree.
+                The parent tags may not add information to the image, for example the tag <quote>color</quote>
+                in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
+                seen as <quote>category</quote> if it is not in the dictionary itself. If exist as a tag, it can be set
+                explicitly as a <quote>category</quote> (see create or edit command).
               </para>
             </entry>
             <entry>
@@ -73,14 +49,20 @@
     </informaltable>
 
     <para>
-      The goal of tags is to add information to the images within a given keyword set.
-      But when the number of tags becomes large it is interesting to organize them in a hierachical manner, as a tree.
-      The parent tags may not add information to the image, for example the tag <quote>color</quote>
-      in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
-      seen as <quote>category</quote> if it is not in the dictionary itself. If exist as a tag, it can be set
-      explicitly as a <quote>category</quote> (see create or edit command).
-    </para>
+      The panel is divided into two areas:
+        <itemizedlist>
 
+          <listitem><para>
+            The upper one called attached tags area focuses on the tag(s) currently attached to the image
+            under the cursor or the selected image(s) if the mouse is outside the lighttable. It contains
+            the attached tags list view and the row of five buttons under it.
+          </para></listitem>
+                  
+          <listitem><para>
+            The lower one called tag dictonary area focuses on all tags  available in the database.
+            It contains the text box, the tag dictionary list view and the row of five buttons under it.
+            </para></listitem>
+          </itemizedlist>
     <sect4 id="tagging_tag_properties">
 
       <title>tag properties</title>
