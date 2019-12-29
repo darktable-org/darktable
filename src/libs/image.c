@@ -470,7 +470,7 @@ void gui_init(dt_lib_module_t *self)
   flag = gtk_check_button_new_with_label(_("colors"));
   d->colors_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select colors metadata"));
-  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_grid_attach(grid, flag, 3, line++, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/colors"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(colors_flag_callback), self);
 
@@ -484,7 +484,7 @@ void gui_init(dt_lib_module_t *self)
   flag = gtk_check_button_new_with_label(_("geo tags"));
   d->geotags_flag = flag;
   gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
-  gtk_grid_attach(grid, flag, 2, line++, 2, 1);
+  gtk_grid_attach(grid, flag, 3, line++, 2, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
 
