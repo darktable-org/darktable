@@ -115,31 +115,36 @@
       </para>
 
       <para>
-        All the views have the following characteristics:
+        The attached tags and tag dictionary views display additional information on the sides of the tag:
         
         <itemizedlist>
           
           <listitem><para>
-            On the left there is an indicator giving the status of the tag in relation with the selected images:
+            On the left, an indicator gives the status of the tag in relation to the selected images:
             
             <itemizedlist>
               
               <listitem><para>
-                A <quote>check-mark</quote> means the tag is attached to all selected images.
+                A <quote>check-mark</quote> means that the tag is attached to all selected images.
               </para></listitem>
               
               <listitem><para>
-                A <quote>minus</quote> means that the tag is attached at least to one selected image.
-                On tree view, on the parent node, it means that at least one child tag is attached to
-                a selected image.
+                A <quote>minus</quote> means that the tag is attached to at least one selected image.
+                In tree view, for a parent tag it also means that at least one child tag is attached to
+                at least one of the selected images.
+              </para></listitem>
+              
+              <listitem><para>
+                Absence of any marking in the tag dictionary view means that the tag exists in the database, 
+                but is not attached to any of the selected images.
               </para></listitem>
               
             </itemizedlist>
           </para></listitem>
 
           <listitem><para>
-            On the right the count of images attached to the tag, in the database for dictionary view or
-            among the selected images for attached view.
+            The number in parentheses on the right from the tag is the attached image count. The attached tags 
+            view considers the selected images, while the tag dictionary view counts across the whole database.
           </para></listitem>
         
         </itemizedlist>  
