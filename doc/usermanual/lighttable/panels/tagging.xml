@@ -136,7 +136,8 @@
               
               <listitem><para>
                 Absence of any marking in the tag dictionary view means that the tag exists in the database, 
-                but is not attached to any of the selected images.
+                but is not attached to any of the selected images. In tree view, for a parent tag it also means
+                that none of itschild tags is attached to any of the selected images.
               </para></listitem>
               
             </itemizedlist>
