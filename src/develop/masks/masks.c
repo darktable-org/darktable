@@ -355,7 +355,10 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
-    if(gui->form_selected)
+    if(gui->creation)
+      g_snprintf(msg, sizeof(msg),
+                 _("shift+scroll to change compression\nctrl+scroll to set opacity (%d%%)"), opacity);
+    else if(gui->form_selected)
       g_snprintf(msg, sizeof(msg), _("scroll to set curvature, shift+scroll to change compression\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->pivot_selected)
       g_strlcat(msg, _("move to rotate shape"), sizeof(msg));

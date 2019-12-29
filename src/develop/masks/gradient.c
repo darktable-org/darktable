@@ -84,12 +84,15 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
 {
   if(gui->creation)
   {
-    float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    if(up)
-      compression = fmaxf(compression, 0.001f) * 0.8f;
-    else
-      compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+      if(up)
+        compression = fmaxf(compression, 0.001f) * 0.8f;
+      else
+        compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
+      dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+    }
     return 1;
   }
 
