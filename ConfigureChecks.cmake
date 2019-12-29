@@ -1,5 +1,8 @@
 include(CheckCSourceCompiles)
 include(TestBigEndian)
+include(CheckIncludeFile)
+
+check_include_file(cpuid.h HAVE_CPUID_H)
 
 if (OpenMP_FOUND)
 
