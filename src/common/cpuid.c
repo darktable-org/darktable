@@ -25,13 +25,16 @@
         Anders Kvist <akv@lnxbx.dk> and Klaus Post <klauspost@gmail.com>
  */
 
-#include "cpuid.h"
-#include <cpuid.h>
-#include "common/darktable.h"
 #include "config.h"
+#include "cpuid.h"
+#include "common/darktable.h"
 #include <glib.h>
 
-#if defined(__i386__) || defined(__x86_64__)
+#ifdef HAVE_CPUID_H
+#include <cpuid.h>
+#endif
+
+#if defined(HAVE___GET_GPUID)
 dt_cpu_flags_t dt_detect_cpu_features()
 {
   guint32 ax, bx, cx, dx;
