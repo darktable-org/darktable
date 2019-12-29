@@ -84,12 +84,15 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
 {
   if(gui->creation)
   {
-    float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    if(up)
-      compression = fmaxf(compression, 0.001f) * 0.8f;
-    else
-      compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+      if(up)
+        compression = fmaxf(compression, 0.001f) * 0.8f;
+      else
+        compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
+      dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+    }
     return 1;
   }
 
@@ -760,10 +763,10 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const float cosv = cos(v);
   const float sinv = sin(v);
 
-  *points_count = 2 * sqrtf(wd * wd + ht * ht) + 3;
-  *points = dt_alloc_align(64, 2 * (*points_count) * sizeof(float));
+  const int count = sqrtf(wd * wd + ht * ht) + 3;
+  *points = dt_alloc_align(64, 2 * count * sizeof(float));
   if(*points == NULL) return 0;
-  memset(*points, 0, 2 * (*points_count) * sizeof(float));
+  memset(*points, 0, 2 * count * sizeof(float));
 
 
   // we set the anchor point
@@ -782,17 +785,37 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   (*points)[4] = x2;
   (*points)[5] = y2;
 
+  *points_count = 3;
+
   // we set the line point
-  const float xstart = MAX(-sqrtf(1.0f / fabsf(curvature)), -1.0f);
-  const float xdelta = -2.0f * xstart / (*points_count - 3);
-  for(int i = 3; i < *points_count; i++)
+  const float xstart = fabs(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
+  const float xdelta = -2.0f * xstart / (count - 3);
+
+  int in_frame = FALSE;
+  for(int i = 3; i < count; i++)
   {
-    const float xi = xstart + i * xdelta;
+    const float xi = xstart + (i - 3) * xdelta;
     const float yi = curvature * xi * xi;
     const float xii = (cosv * xi + sinv * yi) * scale;
     const float yii = (sinv * xi - cosv * yi) * scale;
-    (*points)[i * 2] = xii + x * wd;
-    (*points)[i * 2 + 1] = yii + y * ht;
+    const float xiii = xii + x * wd;
+    const float yiii = yii + y * ht;
+
+    // don't generate guide points if they extend too far beyond the image frame;
+    // this is to avoid that modules like lens correction fail on out of range coordinates
+    if(xiii < -0.1f * wd || xiii > 1.1f * wd || yiii < -0.1f * ht || yiii > 1.1f * ht)
+    {
+      if(!in_frame)
+        continue;         // we have not entered the frame yet
+      else
+        break;            // we have left the frame
+    }
+    else
+      in_frame = TRUE;    // we are in the frame
+
+    (*points)[*points_count * 2] = xiii;
+    (*points)[*points_count * 2 + 1] = yiii;
+    (*points_count)++;
   }
 
   // and we transform them with all distorted modules
