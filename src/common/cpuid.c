@@ -26,10 +26,13 @@
  */
 
 #include "cpuid.h"
-#include <cpuid.h>
 #include "common/darktable.h"
 #include "config.h"
 #include <glib.h>
+
+#ifdef HAVE_CPUID_H
+#include <cpuid.h>
+#endif
 
 #if defined(__i386__) || defined(__x86_64__)
 dt_cpu_flags_t dt_detect_cpu_features()
