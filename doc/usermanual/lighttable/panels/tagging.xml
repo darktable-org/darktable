@@ -116,21 +116,36 @@
 
       <para>
         All the views have the following characteristics:
-      </para>
+        
+        <itemizedlist>
+          
+          <listitem><para>
+            On the left there is an indicator giving the status of the tag in relation with the selected images:
+            
+            <itemizedlist>
+              
+              <listitem><para>
+                A <quote>check-mark</quote> means the tag is attached to all selected images.
+              </para></listitem>
+              
+              <listitem><para>
+                A <quote>minus</quote> means that the tag is attached at least to one selected image.
+                On tree view, on the parent node, it means that at least one child tag is attached to
+                a selected image.
+              </para></listitem>
+              
+            </itemizedlist>
+          </para></listitem>
 
-      <para>
-        On the left there is an indicator giving the status of the tag in relation with the selected images.
-        A <quote>check-mark</quote> means the tag is attached to all selected images.
-        A <quote>minus</quote> means that the tag is attached at least to one selected image.
-        On tree view, on the parent node, it means that at least one child tag is attached to
-        a selected image.
+          <listitem><para>
+            On the right the count of images attached to the tag, in the database for dictionary view or
+            among the selected images for attached view.
+          </para></listitem>
+        
+        </itemizedlist>  
+            
       </para>
-
-      <para>
-        On the right the count of images attached to the tag, in the database for dictionary view or
-        among the selected images for attached view.
-      </para>
-
+      
       <para>
         An <emphasis>italic</emphasis> tag is considered as a category. A category is a tag which helps
         to organize the tags but doesn't bring information to the image. A category is not exported.
