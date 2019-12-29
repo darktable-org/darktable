@@ -760,7 +760,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const float cosv = cos(v);
   const float sinv = sin(v);
 
-  *points_count = 2 * sqrtf(wd * wd + ht * ht) + 3;
+  *points_count = sqrtf(wd * wd + ht * ht) / 2 + 3;
   *points = dt_alloc_align(64, 2 * (*points_count) * sizeof(float));
   if(*points == NULL) return 0;
   memset(*points, 0, 2 * (*points_count) * sizeof(float));
@@ -783,11 +783,12 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   (*points)[5] = y2;
 
   // we set the line point
-  const float xstart = MAX(-sqrtf(1.0f / fabsf(curvature)), -1.0f);
+  const float xstart = fabs(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (*points_count - 3);
+
   for(int i = 3; i < *points_count; i++)
   {
-    const float xi = xstart + i * xdelta;
+    const float xi = xstart + (i - 3) * xdelta;
     const float yi = curvature * xi * xi;
     const float xii = (cosv * xi + sinv * yi) * scale;
     const float yii = (sinv * xi - cosv * yi) * scale;
