@@ -34,7 +34,7 @@
 #include <cpuid.h>
 #endif
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(HAVE___GET_GPUID)
 dt_cpu_flags_t dt_detect_cpu_features()
 {
   guint32 ax, bx, cx, dx;
