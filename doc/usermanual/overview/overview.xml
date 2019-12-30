@@ -86,8 +86,8 @@
 
     <listitem><para>
       darktable can export developed images as low or high dynamic range files (JPEG, PNG, TIFF, 
-      PDF, PFM, EXR) to local disk storage, some web albums, LaTeX book template,
-      email attachments and can generate a simple html-based web gallery.
+      PDF, PFM, EXR) to local disk storage, web albums, LaTeX book template,
+      email attachments, and can generate a simple html-based web gallery.
     </para></listitem>
 
     <listitem><para>
