@@ -65,6 +65,7 @@ extern "C" {
 #include "common/tags.h"
 #include "common/iop_order.h"
 #include "common/variables.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -72,6 +73,181 @@ extern "C" {
 }
 
 #include "external/adobe_coeff.c"
+
+static const char *_get_exiv2_type(const int type)
+{
+  switch(type)
+  {
+    case 1:
+      return "Byte";
+    case 2:
+      return "Ascii";
+    case 3:
+      return "Short";
+    case 4:
+      return "Long";
+    case 5:
+      return "Rational"; // two LONGs: numerator and denumerator of a fraction
+    case 6:
+      return "SByte";
+    case 7:
+      return "Undefined";
+    case 8:
+      return "SShort";
+    case 9:
+      return "SLong";
+    case 10:
+      return "SRational"; // two SLONGs: numerator and denumerator of a fraction.
+    case 11:
+      return "Float"; //  single precision (4-byte) IEEE format
+    case 12:
+      return "Double"; // double precision (8-byte) IEEE format.
+    case 13:
+      return "Ifd";  // 32-bit (4-byte) unsigned integer
+    case 16:
+      return "LLong"; // 64-bit (8-byte) unsigned integer
+    case 17:
+      return "LLong"; // 64-bit (8-byte) signed integer
+    case 18:
+      return "Ifd8"; // 64-bit (8-byte) unsigned integer
+    case 0x10000:
+      return "String";
+    case 0x10001:
+      return "Date";
+    case 0x10002:
+      return "Time";
+    case 0x10003:
+      return "Comment";
+    case 0x10004:
+      return "Directory";
+    case 0x10005:
+      return "XmpText";
+    case 0x10006:
+      return "XmpAlt";
+    case 0x10007:
+      return "XmpBag";
+    case 0x10008:
+      return "XmpSeq";
+    case 0x10009:
+      return "LangAlt";
+    case 0x1fffe:
+      return "Invalid";
+    case 0x1ffff:
+      return "LastType";
+    default:
+      return "Invalid";
+  }
+}
+
+static void _get_xmp_tags(const char *prefix, GList **taglist)
+{
+  const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList(prefix);
+  if(pl)
+  {
+    for (int i = 0; pl[i].name_ != 0; ++i)
+    {
+//      std::printf("Xmp.%s.%s type %s\n", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      *taglist = g_list_prepend(*taglist, tag);
+    }
+#if 0
+    std::string line;
+    std::ostringstream tags;
+    Exiv2::XmpProperties::printProperties(tags, prefix);
+    std::istringstream input(tags.str()) ;
+    while (std::getline(input, line))
+    {
+      std::printf("Xmp.%s %s\n", prefix, line.c_str());
+    }
+#endif
+  }
+}
+
+GList *dt_get_exiv2_taglist()
+{
+  Exiv2::XmpParser::initialize();
+  ::atexit(Exiv2::XmpParser::terminate);
+  GList *taglist = NULL;
+
+  try
+  {
+    const Exiv2::GroupInfo *groupList = Exiv2::ExifTags::groupList();
+    if(groupList)
+    {
+      while(groupList->tagList_)
+      {
+        const std::string groupName(groupList->groupName_);
+        if(groupName.substr(0, 3) != "Sub" &&
+            groupName != "Image2" &&
+            groupName != "Image3" &&
+            groupName != "Thumbnail"
+            )
+        {
+          const Exiv2::TagInfo *tagInfo = groupList->tagList_();
+          while(tagInfo->tag_ != 0xFFFF)
+          {
+//            std::printf("Exif.%s.%s type %s\n", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
+            char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
+            taglist = g_list_prepend(taglist, tag);
+            tagInfo++;
+          }
+#if 0
+          std::string line;
+          std::ostringstream tags;
+          Exiv2::ExifTags::taglist(tags,groupList->groupName_);
+          std::istringstream input(tags.str()) ;
+          while (std::getline(input, line))
+          {
+            std::printf("Exif.%s %s\n", groupList->groupName_, line.c_str());
+          }
+#endif
+        }
+      groupList++;
+      }
+    }
+#if 0
+    {
+      std::string line;
+      std::ostringstream tags;
+      Exiv2::IptcDataSets::dataSetList(tags);
+      std::istringstream input(tags.str()) ;
+      while (std::getline(input, line))
+      {
+        std::printf("Iptc %s\n", line.c_str());
+      }
+    }
+#endif
+
+    const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
+    while(iptcEnvelopeList->number_ != 0xFFFF)
+    {
+//      std::printf("Iptc.Envelope.%s type %s\n", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
+      char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
+      taglist = g_list_prepend(taglist, tag);
+      iptcEnvelopeList++;
+    }
+
+    const Exiv2::DataSet *iptcApplication2List = Exiv2::IptcDataSets::application2RecordList();
+    while(iptcApplication2List->number_ != 0xFFFF)
+    {
+//      std::printf("Iptc.Application2.%s type %s\n", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
+      char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
+      taglist = g_list_prepend(taglist, tag);
+      iptcApplication2List++;
+    }
+
+    _get_xmp_tags("dc", &taglist);
+    _get_xmp_tags("xmp", &taglist);
+    _get_xmp_tags("tiff", &taglist);
+    _get_xmp_tags("exif", &taglist);
+    _get_xmp_tags("exifEX", &taglist);
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::printf("[exiv2 taglist] exception: \"%s\"\n", e.what());
+  }
+  return taglist;
+}
 
 // exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
 // wrap it into some c++ magic to make sure we unlock in all cases. well, actually not magic but basic raii.

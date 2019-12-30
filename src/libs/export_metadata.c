@@ -39,6 +39,7 @@
 typedef enum dt_lib_tagging_cols_t
 {
   DT_LIB_EXPORT_METADATA_COL_XMP = 0,
+  DT_LIB_EXPORT_METADATA_COL_TYPE,
   DT_LIB_EXPORT_METADATA_COL_FORMULA,
   DT_LIB_EXPORT_METADATA_NUM_COLS
 } dt_lib_tagging_cols_t;
@@ -50,39 +51,7 @@ typedef struct dt_lib_export_metadata_t
   GtkWidget *dialog;
 } dt_lib_export_metadata_t;
 
-// TODO replace the following list by a dynamic exiv2 list able to provide info type
-// Here are listed only string or XmpText. Can be added as needed.
-const char *dt_export_xmp_keys[]
-    = { "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
-        "Xmp.dc.subject",
-
-        "Xmp.exif.GPSLatitude", "Xmp.exif.GPSLongitude", "Xmp.exif.GPSAltitude",
-        "Xmp.exif.DateTimeOriginal",
-        "Xmp.exifEX.LensModel",
-
-        "Exif.Image.DateTimeOriginal", "Exif.Image.Make", "Exif.Image.Model", "Exif.Image.Orientation",
-        "Exif.Image.Artist", "Exif.Image.Copyright", "Exif.Image.Rating",
-
-        "Exif.GPSInfo.GPSLatitude", "Exif.GPSInfo.GPSLongitude", "Exif.GPSInfo.GPSAltitude",
-        "Exif.GPSInfo.GPSLatitudeRef", "Exif.GPSInfo.GPSLongitudeRef", "Exif.GPSInfo.GPSAltitudeRef",
-        "Exif.GPSInfo.GPSVersionID",
-
-        "Exif.Photo.DateTimeOriginal", "Exif.Photo.ExposureTime", "Exif.Photo.ShutterSpeedValue",
-        "Exif.Photo.FNumber", "Exif.Photo.ApertureValue", "Exif.Photo.ISOSpeedRatings",
-        "Exif.Photo.FocalLengthIn35mmFilm", "Exif.Photo.LensModel", "Exif.Photo.Flash",
-        "Exif.Photo.WhiteBalance", "Exif.Photo.UserComment", "Exif.Photo.ColorSpace",
-
-        "Xmp.xmp.CreateDate", "Xmp.xmp.CreatorTool", "Xmp.xmp.Identifier", "Xmp.xmp.Label", "Xmp.xmp.ModifyDate",
-        "Xmp.xmp.Nickname", "Xmp.xmp.Rating",
-
-        "Iptc.Application2.Subject", "Iptc.Application2.Keywords", "Iptc.Application2.LocationName",
-        "Iptc.Application2.City", "Iptc.Application2.SubLocation", "Iptc.Application2.ProvinceState",
-        "Iptc.Application2.CountryName", "Iptc.Application2.Copyright", "Iptc.Application2.Caption",
-        "Iptc.Application2.Byline", "Iptc.Application2.ObjectName",
-
-        "Xmp.tiff.ImageWidth", "Xmp.tiff.ImageLength", "Xmp.tiff.Artist", "Xmp.tiff.Copyright"
-       };
-const guint dt_export_xmp_keys_n = G_N_ELEMENTS(dt_export_xmp_keys);
+GList *dt_get_exiv2_taglist();
 
 // find a string on the list
 static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
@@ -112,15 +81,18 @@ static void add_selected_metadata(GtkTreeView *view, dt_lib_export_metadata_t *d
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     char *tagname;
-    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, -1);
+    char *type;
+    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, &type, -1);
     if (!find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_LIB_EXPORT_METADATA_COL_XMP, tagname))
     {
       gtk_list_store_append(d->liststore, &iter);
-      gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_FORMULA, "", -1);
+      gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type,
+                            DT_LIB_EXPORT_METADATA_COL_FORMULA, "", -1);
       selection = gtk_tree_view_get_selection(d->view);
       gtk_tree_selection_select_iter(selection, &iter);
     }
     g_free(tagname);
+    g_free(type);
   }
 }
 
@@ -157,7 +129,7 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   gtk_container_add(GTK_CONTAINER(area), vbox);
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(300), DT_PIXEL_APPLY_DPI(300));
+  gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -166,15 +138,29 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of available tags. click 'add' button or double-click on tag to add the selected one"));
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes("List", renderer, "text", 0, NULL);
+  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("tag"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
-  GtkListStore *liststore = gtk_list_store_new(1, G_TYPE_STRING);
-  for(int i=0; i<dt_export_xmp_keys_n; i++)
+  renderer = gtk_cell_renderer_text_new();
+  col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
+  gtk_tree_view_append_column(view, col);
+  GtkListStore *liststore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+
+  GList *taglist = dt_get_exiv2_taglist();
+  for(GList *tag = taglist; tag; tag = g_list_next(tag))
   {
     GtkTreeIter iter;
     gtk_list_store_append(liststore, &iter);
-    gtk_list_store_set(liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, dt_export_xmp_keys[i], -1);
+    const char *tagname = tag->data;
+    char *type = g_strstr_len(tagname, -1, ",");
+    if(type)
+    {
+      type[0] = '\0';
+      type++;
+    }
+    gtk_list_store_set(liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type, -1);
   }
+  g_list_free_full(taglist, g_free);
+
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
@@ -315,9 +301,12 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("redefined tag"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
+  gtk_tree_view_append_column(view, col);
+  renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(formula_edited), (gpointer)d);
-  col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 1, NULL);
+  col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 2, NULL);
   gtk_tree_view_append_column(view, col);
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
                         _("list of calculated metadata\n"
@@ -329,7 +318,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   g_free(tooltip_text);
   g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(key_press_on_list), (gpointer)d);
 
-  GtkListStore *liststore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+  GtkListStore *liststore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   d->liststore = liststore;
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
