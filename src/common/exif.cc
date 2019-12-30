@@ -2609,7 +2609,7 @@ static int history_v1_to_v3(const int imgid)
 
   // get iop order up to this version
   int iop_order_version = 1;
-  GList *iop_order_v1 = dt_ioppr_get_iop_order_list(&iop_order_version);
+  GList *iop_order_v1 = dt_ioppr_get_iop_order_list(&iop_order_version, FALSE);
 
   // set the iop_order version
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2939,7 +2939,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
         // insert mask_manager entry
         int iop_order_version1 = 1;
-        GList *iop_order_list = dt_ioppr_get_iop_order_list(&iop_order_version1);
+        GList *iop_order_list = dt_ioppr_get_iop_order_list(&iop_order_version1, FALSE);
         const float iop_order_mask_manager = dt_ioppr_get_iop_order(iop_order_list, "mask_manager");
         g_list_free_full(iop_order_list, free);
 

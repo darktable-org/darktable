@@ -687,7 +687,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     GList *modules_used = NULL;
 
     int imgid_iop_order_version = dt_image_get_iop_order_version(imgid);
-    GList *current_iop_list = dt_ioppr_get_iop_order_list(&imgid_iop_order_version);
+    GList *current_iop_list = dt_ioppr_get_iop_order_list(&imgid_iop_order_version, FALSE);
 
     dt_dev_pop_history_items_ext(&dev, dev.history_end);
 
