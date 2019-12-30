@@ -137,7 +137,7 @@
       </para>
 
       <para>
-        Right-click opens a submenu with available commands for that tag.
+        Right-clicking on the tag opens a submenu with available commands.
       </para>
 
       <para>
@@ -145,8 +145,7 @@
       </para>
 
       <para>
-        An overlay appears hovering a tag which has some properties set.
-        This avoids to edit the tag to see its properties.
+        Hovering cursor over a tag displays an overlay with basic usage instructions for the tagging panel.
       </para>
 
       <para>
