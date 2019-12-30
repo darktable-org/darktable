@@ -310,7 +310,7 @@ void expose(
     }
     cairo_paint(cr);
 
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+    cairo_translate(cr, ceilf(.5f * (width - wd)), ceilf(.5f * (height - ht)));
     if(closeup)
     {
       const double scale = 1<<closeup;
@@ -328,7 +328,11 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    if(closeup)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    else
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
