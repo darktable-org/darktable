@@ -144,8 +144,8 @@
           </para></listitem>
 
           <listitem><para>
-            The number in parentheses on the right from the tag is the attached image count. The attached tags 
-            view considers the selected images, while the tag dictionary view counts across the whole database.
+            On the right, the number in parentheses gives the attached image count. In the attached tags 
+            view, this count refers to the selected images, while in the tag dictionary view it refers to the whole database.
           </para></listitem>
         
         </itemizedlist>  
