@@ -375,9 +375,8 @@ static double _PQ_fct(double x)
 static double _HLG_fct(double x)
 {
   static const double Beta  = 0.04;
-  static const double A     = 0.17883277;
-  static const double RA    = 1.0 / A;
-  static const double B     = 1.0 - 4.0 * A;
+  static const double RA    = 5.591816309728916; // 1.0 / A where A = 0.17883277
+  static const double B     = 0.28466892; // 1.0 - 4.0 * A
   static const double C     = 0.5599107295; // 0,5 –aln(4a)
 
   double e = MAX(x * (1.0 - Beta) + Beta, 0.0);
