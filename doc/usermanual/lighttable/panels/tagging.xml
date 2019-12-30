@@ -193,8 +193,8 @@
       </para>
 
       <para>
-        You can resize the height of attached view or dictionary view using Ctrl+wheel.
-        New sizes are kept for ulterior darktable sessions.
+        You can adjust height of the attached tags and tag dictionary list views using Ctrl+wheel. 
+        The updated list view height is kept for new darktable sessions.
       </para>
 
     </sect4>
