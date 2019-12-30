@@ -746,9 +746,18 @@ static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_curren
   *_iop_order_list = iop_order_list;
 }
 
+gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
+{
+  const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
+  const dt_iop_order_entry_t *bm = (const dt_iop_order_entry_t *)b;
+  if(am->iop_order > bm->iop_order) return 1;
+  if(am->iop_order < bm->iop_order) return -1;
+  return 0;
+}
+
 // returns a list of dt_iop_order_entry_t
 // if *_version == 0 it returns the current version and updates *_version
-GList *dt_ioppr_get_iop_order_list(int *_version)
+GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
 {
   GList *iop_order_list = _ioppr_get_iop_order_v1();
   int old_version = 1;
@@ -765,6 +774,8 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
   }
 
   if(_version && *_version == 0 && old_version > 0) *_version = old_version;
+
+  if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
 
   return iop_order_list;
 }
@@ -1588,7 +1599,7 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
     return current_iop_order_version;
   }
 
-  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version);
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version, FALSE);
 
   if(_iop_order_version != new_iop_order_version)
   {
@@ -1709,7 +1720,7 @@ int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int cur
   const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version);
 
   int _version = new_iop_order_version;
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version);
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version, FALSE);
 
   dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
 

@@ -1527,7 +1527,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   // free iop_order if any
   if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
   // read iop_order for this particular edit
-  dev->iop_order_list = dt_ioppr_get_iop_order_list(&dev->iop_order_version);
+  dev->iop_order_list = dt_ioppr_get_iop_order_list(&dev->iop_order_version, FALSE);
   // set the iop_order to the iop list
   dt_ioppr_set_default_iop_order(&dev->iop, dev->iop_order_list);
 

@@ -46,7 +46,7 @@ typedef struct dt_iop_order_rule_t
 } dt_iop_order_rule_t;
 
 /** returns a list of dt_iop_order_entry_t and updates *_version */
-GList *dt_ioppr_get_iop_order_list(int *_version);
+GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted);
 /** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
 /** returns the iop_order from iop_order_list list with operation = op_name */

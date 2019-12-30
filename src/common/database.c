@@ -1050,7 +1050,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     ////////////////////////////// custom iop order
     int iop_order_version = 1;
-    GList *prior_v1 = dt_ioppr_get_iop_order_list(&iop_order_version);
+    GList *prior_v1 = dt_ioppr_get_iop_order_list(&iop_order_version, FALSE);
 
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN iop_order_version INTEGER",
              "[init] can't add `iop_order_version' column to images table in database\n");
@@ -1224,7 +1224,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     sqlite3_stmt *sel_stmt = NULL;
     int iop_order_version = 1;
-    GList *prior_v1 = dt_ioppr_get_iop_order_list(&iop_order_version);
+    GList *prior_v1 = dt_ioppr_get_iop_order_list(&iop_order_version, FALSE);
 
     // create a temp table with the previous priorities
     TRY_EXEC("CREATE TEMPORARY TABLE iop_order_tmp (iop_order REAL, operation VARCHAR(256))",

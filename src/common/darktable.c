@@ -969,7 +969,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_imageio_init(darktable.imageio);
 
   // load iop order
-  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL);
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL, FALSE);
   // load iop order rules
   darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
