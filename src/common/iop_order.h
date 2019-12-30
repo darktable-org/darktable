@@ -78,6 +78,8 @@ int dt_ioppr_convert_onthefly(int imgid);
 /** migrate imgid from current to new iop-order version */
 int dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int imgid,
                                const int current_iop_order_version, const int new_iop_order_version);
+/** likewise but migration is done to the list of iop order */
+int dt_ioppr_migrate_iop_order_from_list(struct dt_develop_t *dev, const int imgid, GList *iop_order_list);
 
 /** returns the iop_order before module_next if module can be moved */
 double dt_ioppr_get_iop_order_before_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next,

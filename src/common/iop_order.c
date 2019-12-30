@@ -1576,7 +1576,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 // migrate the given image to another iop_order version (new_iop_order_version)
 // note that this is actually a non exported routine but it will
 // be when dt GUI will provide a way to migrate to a new iop_order version.
-int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version, GList *iop_order_list)
 {
   int _iop_order_version = new_iop_order_version;
   sqlite3_stmt *stmt;
@@ -1599,7 +1599,8 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
     return current_iop_order_version;
   }
 
-  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version, FALSE);
+  GList *current_iop_list = iop_order_list != NULL ? iop_order_list
+                                                   : dt_ioppr_get_iop_order_list(&_iop_order_version, FALSE);
 
   if(_iop_order_version != new_iop_order_version)
   {
@@ -1692,12 +1693,15 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
     }
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  if(_iop_order_version != -1)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
 
   sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
@@ -1717,10 +1721,23 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
 
 int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int current_iop_order_version, const int new_iop_order_version)
 {
-  const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version);
+  const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version, NULL);
 
   int _version = new_iop_order_version;
   GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version, FALSE);
+
+  dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
+
+  // finaly reload history
+
+  dt_dev_reload_history_items(dev);
+
+  return ret;
+}
+
+int dt_ioppr_migrate_iop_order_from_list(dt_develop_t *dev, const int imgid, GList *iop_order_list)
+{
+  const int ret = _ioppr_migrate_iop_order(imgid, -1, -1, iop_order_list);
 
   dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
 
@@ -1747,7 +1764,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
   else if (my_iop_order_version == 1)
   {
     // if an original image edited before iop-order was introduced we migrate it to v2
-    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2);
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2, NULL);
   }
   else if (my_iop_order_version == 3 || my_iop_order_version == 4)
   {
@@ -1755,7 +1772,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
     // it to latest version whatever the latest version is. As v3 or v4 are quite
     // broken it makes no difference to whatever order we move to. At the time if this
     // implementation the last/fixed version is v5.
-    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION, NULL);
   }
 
   return my_iop_order_version;
