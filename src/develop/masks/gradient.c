@@ -437,6 +437,13 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
   return 0;
 }
 
+// check if (x,y) lies within reasonable limits relative to image frame
+static inline int _gradient_is_canonical(const float x, const float y, const float wd, const float ht)
+{
+  return (isnormal(x) && isnormal(y) && x >= -wd && x <= 2 * wd && y >= -ht && y <= 2 * ht) ? TRUE : FALSE;
+}
+
+
 static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index)
 {
   double dashed[] = { 4.0, 4.0 };
@@ -601,44 +608,90 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cosv = cos(v);
   }
 
-  float x, y;
-
   // draw line
   if(gpt->points_count > 4)
   {
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 5.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 3.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    _gradient_point_transform(xref, yref, gpt->points[6] + dx, gpt->points[7] + dy, sinv, cosv, &x, &y);
-    cairo_move_to(cr, x, y);
-    for(int i = 5; i < gpt->points_count; i++)
+    const float *points = gpt->points + 6;
+    const int points_count = gpt->points_count - 3;
+    const float wd = darktable.develop->preview_pipe->iwidth;
+    const float ht = darktable.develop->preview_pipe->iheight;
+
+    int count = 0;
+    float x, y;
+
+    while(count < points_count)
     {
-      _gradient_point_transform(xref, yref, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy, sinv, cosv,
+      if(!isnormal(points[count * 2]))
+      {
+        count++;
+        continue;
+      }
+
+      _gradient_point_transform(xref, yref, points[count * 2] + dx, points[count * 2 + 1] + dy, sinv, cosv, &x, &y);
+
+      if(!_gradient_is_canonical(x, y, wd, ht))
+      {
+        count++;
+        continue;
+      }
+
+      cairo_set_dash(cr, dashed, 0, 0);
+      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
+        cairo_set_line_width(cr, 5.0 / zoom_scale);
+      else
+        cairo_set_line_width(cr, 3.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+      cairo_move_to(cr, x, y);
+
+      count++;
+      for(; count < points_count && isnormal(points[count * 2]); count++)
+      {
+        _gradient_point_transform(xref, yref, points[count * 2] + dx, points[count * 2 + 1] + dy, sinv, cosv,
                                 &x, &y);
-      cairo_line_to(cr, x, y);
+
+        if(!_gradient_is_canonical(x, y, wd, ht))
+          break;
+
+        cairo_line_to(cr, x, y);
+      }
+      cairo_stroke_preserve(cr);
+      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
+        cairo_set_line_width(cr, 2.0 / zoom_scale);
+      else
+        cairo_set_line_width(cr, 1.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      cairo_stroke(cr);
     }
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    cairo_stroke(cr);
   }
 
   // draw border
   if((gui->group_selected == index) && gpt->border_count > 3)
   {
-    int count = 0;
-    float *border = gpt->border;
-    int border_count = gpt->border_count;
+    const float *border = gpt->border;
+    const int border_count = gpt->border_count;
+    const float wd = darktable.develop->preview_pipe->iwidth;
+    const float ht = darktable.develop->preview_pipe->iheight;
 
+    int count = 0;
+    float x, y;
 
     while(count < border_count)
     {
+      if(!isnormal(border[count * 2]))
+      {
+        count++;
+        continue;
+      }
+
+      _gradient_point_transform(xref, yref, border[count * 2] + dx, border[count * 2 + 1] + dy, sinv, cosv, &x, &y);
+
+      if(!_gradient_is_canonical(x, y, wd, ht))
+      {
+        count++;
+        continue;
+      }
+
       cairo_set_dash(cr, dashed, len, 0);
       if((gui->group_selected == index) && (gui->border_selected))
         cairo_set_line_width(cr, 2.0 / zoom_scale);
@@ -646,14 +699,17 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
         cairo_set_line_width(cr, 1.0 / zoom_scale);
       cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
-      _gradient_point_transform(xref, yref, gpt->border[count * 2] + dx, gpt->border[count * 2 + 1] + dy,
-                                sinv, cosv, &x, &y);
       cairo_move_to(cr, x, y);
+
       count++;
-      for(; count < border_count && !isinf(border[count * 2]); count++)
+      for(; count < border_count && isnormal(border[count * 2]); count++)
       {
-        _gradient_point_transform(xref, yref, gpt->border[count * 2] + dx, gpt->border[count * 2 + 1] + dy,
+        _gradient_point_transform(xref, yref, border[count * 2] + dx, border[count * 2 + 1] + dy,
                                   sinv, cosv, &x, &y);
+
+        if(!_gradient_is_canonical(x, y, wd, ht))
+          break;
+
         cairo_line_to(cr, x, y);
       }
       cairo_stroke_preserve(cr);
@@ -664,8 +720,6 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_set_dash(cr, dashed, len, 4);
       cairo_stroke(cr);
-
-      if(count < border_count && isinf(border[count * 2])) count++;
     }
   }
 
@@ -705,7 +759,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
     // from start to end
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    cairo_line_to(cr, pivot_start_x, pivot_start_y);
+    cairo_move_to(cr, pivot_start_x, pivot_start_y);
     cairo_line_to(cr, pivot_end_x, pivot_end_y);
     cairo_stroke(cr);
 
@@ -803,7 +857,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
 
     // don't generate guide points if they extend too far beyond the image frame;
     // this is to avoid that modules like lens correction fail on out of range coordinates
-    if(xiii < -0.1f * wd || xiii > 1.1f * wd || yiii < -0.1f * ht || yiii > 1.1f * ht)
+    if(xiii < -wd || xiii > 2 * wd || yiii < -ht || yiii > 2 * ht)
     {
       if(!in_frame)
         continue;         // we have not entered the frame yet
