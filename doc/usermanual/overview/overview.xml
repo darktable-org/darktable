@@ -98,9 +98,13 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 60 image operation modules which cover everything from
-      basic operations, tonal value changes, color manipulation, correction of common image
-      defects to artistic effects.
+      darktable comes with more than 60 image processing modules which cover correction of 
+      digital image imperfections and common defects, basic adjustments, tonal value
+      changes, color manipulation, as well as enhancements and artistic effects.
+    </para></listitem>
+
+    <listitem><para>
+      You can instantiate most modules multiple times and control the order in which they get applied.
     </para></listitem>
 
     <listitem><para>
@@ -114,11 +118,6 @@
       modes and reuse the same mask in several modules.
     </para></listitem>
 	  
-    <listitem><para>
-      Most modules can exist as multiple instances. Together with the mask feature, you can let
-      an operation have different effects on different parts of the image.
-    </para></listitem>
-
     <listitem><para>
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
