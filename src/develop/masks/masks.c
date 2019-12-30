@@ -438,9 +438,9 @@ void dt_masks_form_gui_points_free(gpointer data)
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)data;
 
-  free(gpt->points);
-  free(gpt->border);
-  free(gpt->source);
+  dt_free_align(gpt->points);
+  dt_free_align(gpt->border);
+  dt_free_align(gpt->source);
   free(gpt);
 }
 
@@ -452,11 +452,11 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   if(gpt)
   {
     gpt->points_count = gpt->border_count = gpt->source_count = 0;
-    free(gpt->points);
+    dt_free_align(gpt->points);
     gpt->points = NULL;
-    free(gpt->border);
+    dt_free_align(gpt->border);
     gpt->border = NULL;
-    free(gpt->source);
+    dt_free_align(gpt->source);
     gpt->source = NULL;
   }
 }
