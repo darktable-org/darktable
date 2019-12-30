@@ -571,7 +571,7 @@ msgstr "zawsze pytaj przed kopiowaniem zdjęć."
 
 #: ../build/src/preferences_gen.h:3040
 msgid "ask before removing empty folders"
-msgstr "pytaj przed usunięciem niepustych folderów"
+msgstr "pytaj przed usunięciem pustych folderów"
 
 #: ../build/src/preferences_gen.h:3052
 msgid ""
