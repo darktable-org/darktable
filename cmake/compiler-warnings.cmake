@@ -42,16 +42,6 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format-truncation)
 # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)
 
-# should be < 64Kb
-math(EXPR MAX_MEANINGFUL_SIZE 32*1024)
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
-
-# 512Kb
-# # src/external/wb_presets.c, wb_preset <- ~400Kb
-math(EXPR MAX_MEANINGFUL_SIZE 512*1024)
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
-
 # minimal main thread's stack/frame stack size. (musl)
 # 1Mb seems enough, and 256Kb seems to work too.
 # 128Kb does NOT work, based on my testing. Roman.
