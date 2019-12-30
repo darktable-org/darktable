@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
-"POT-Creation-Date: 2019-12-29 12:28-0600\n"
-"PO-Revision-Date: 2019-12-30 00:00-0600\n"
+"POT-Creation-Date: 2019-12-30 00:43-0600\n"
+"PO-Revision-Date: 2019-12-30 13:41-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -330,11 +330,11 @@ msgstr "Características Generales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:190(para)
 msgid ""
-"darktable runs on GNU/Linux / GTK3, Mac OS X / macports and Solaris 11 / "
-"GTK3."
+"darktable runs on GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows and "
+"Solaris 11 / GTK3."
 msgstr ""
-"darktable se ejecuta en GNU/Linux / GTK3, Mac OS X / macports y Solaris 11 / "
-"GTK2."
+"darktable se ejecuta en GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows "
+"y Solaris 11 / GTK3."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:194(para)
 msgid "Fully non-destructive editing."
@@ -1840,7 +1840,7 @@ msgstr ""
 "favorito, se realiza en el diálogo de <emphasis>más módulos</emphasis> "
 "(<xref linkend=\"more_modules\"/>), en la parte inferior del panel derecho, "
 "haciendo click en el módulo hasta que una estrella se muestre frente al "
-"icono."
+"ícono."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1397(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10939(title)
@@ -4639,7 +4639,7 @@ msgid ""
 "pan."
 msgstr ""
 "También puede utilizar la línea de tiempo para seleccionar imágenes por "
-"rango de fechas con un clic de ratón + arrastre."
+"rango de fechas con pulsado + arrastre."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3561(title)
 msgid "Image information"
@@ -5810,7 +5810,7 @@ msgid ""
 "suggestions or full dictionary tag list (inactive on tree view). The "
 "suggestions list is based on already attached tags on selected images."
 msgstr ""
-"Al hacer click en el icono de <inlinegraphic fileref=\"images/"
+"Al hacer click en el ícono de <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> se abre un combobox que le da un rápido acceso a los ajustes de sus "
 "módulos favoritos. Haga click en el nombre del pre-ajuste para aplicarlo a "
@@ -6440,9 +6440,8 @@ msgid "$(DECRIPTION)"
 msgstr "$(DECRIPTION)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5279(entry)
-#, fuzzy
 msgid "description from metadata"
-msgstr "autor de los metadatos"
+msgstr "descripción desde los metadatos"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5285(code)
 msgid "$(CREATOR)"
@@ -6510,7 +6509,7 @@ msgstr "$(TAGS)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5343(entry)
 msgid "tags list (Xmp.dc.Subject)"
-msgstr ""
+msgstr "lista de etiquetas (Xmp.dc.Subject)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5349(code)
 msgid "$(CATEGORYn$(category))"
@@ -6939,10 +6938,10 @@ msgid ""
 "with out-of-gamut colors. See <xref linkend=\"rendering_intent\"/> for a "
 "more detailed description of the available options."
 msgstr ""
-"Esta opción le permite definir el propósito, i.e. la forma en la que "
-"darktable lidiará con la gama de colores del archivo de salida. Vea la <xref "
+"Esta opción le permite definir el propósito. Como el caso en el que "
+"darktable tratará con la gama de colores del archivo de salida. Vea la <xref "
 "linkend=\"rendering_intent\"/> para una descripción mas detallada de las "
-"opciones disponibles"
+"opciones disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5697(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20902(bridgehead)
@@ -7376,10 +7375,10 @@ msgid ""
 "> . Clicking on the name of the module expands the module's GUI with all "
 "parameters."
 msgstr ""
-"Un módulo tiene una barra de expansión <inlinegraphic fileref=\"images/"
+"Un módulo tiene una barra de pliegue <inlinegraphic fileref=\"images/"
 "darkroom_module_expander.png\" scalefit=\"1\" width=\"30%\" align=\"center\"/"
-"> . Al hacer click en el nombre del módulo se expandirá la interfaz del "
-"módulo con todos sus parámetros."
+"> . Al pulsar sobre el nombre del módulo se despliega el módulo y se "
+"muestran todos sus controles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6019(para)
 msgid ""
@@ -7407,9 +7406,9 @@ msgid ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to turn a module on or "
 "off."
 msgstr ""
-"Expandir un módulo <emphasis>no</emphasis> lo activa. Necesita hacer click "
-"en el icono <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png"
-"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> para encender o apagar un "
+"Desplegar un módulo <emphasis>no</emphasis> lo activa. Necesita pulsar en el "
+"ícono <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> para activar o desactivar un "
 "módulo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6034(para)
@@ -7419,7 +7418,7 @@ msgid ""
 "available presets or creates a new preset from your current settings (see "
 "<xref linkend=\"module_presets\"/>)."
 msgstr ""
-"El icono <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
+"El ícono <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> accede a los ajustes "
 "predeterminados del módulo o crea un nuevo ajuste basado en su configuración "
 "actual (ver <xref linkend=\"module_presets\"/>)."
@@ -7430,7 +7429,7 @@ msgid ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon is used to reset the "
 "module parameters to their default values."
 msgstr ""
-"El icono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
+"El ícono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> es utilizado para restaurar "
 "los parámetros del módulo a sus valores por defecto."
 
@@ -7443,7 +7442,7 @@ msgid ""
 "<xref linkend=\"multiple_instances\"/>)."
 msgstr ""
 "La mayoría de los módulos de darktable pueden tener múltiples instancias, "
-"cada uno con diferentes ajustes. Haga click en el icono <inlinegraphic "
+"cada uno con diferentes ajustes. Haga click en el ícono <inlinegraphic "
 "fileref=\"images/darkroom_module_icon_instances.png\" scalefit=\"1\" width="
 "\"2%\" align=\"center\"/> para generar una nueva instancia y controlar las "
 "existentes (ver <xref linkend=\"multiple_instances\"/>)."
@@ -7734,7 +7733,7 @@ msgid ""
 "\" align=\"center\"/> icon and select <quote>store new preset</quote>. The "
 "following dialog will be shown for configuring the preset:"
 msgstr ""
-"Primero configure los parámetros del módulo y luego haga click en el icono "
+"Primero configure los parámetros del módulo y luego haga click en el ícono "
 "<inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> y seleccione <quote>almacenar nuevo "
 "preajuste</quote>. El nuevo diálogo se mostrará para que configure su "
@@ -7913,7 +7912,7 @@ msgid ""
 "darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"4%\" align="
 "\"center\"/> icon a drop-down menu will appear."
 msgstr ""
-"Al hacer clic en el icono <inlinegraphic fileref=\"images/"
+"Al hacer clic en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"4%\" align="
 "\"center\"/> un menú desplegable aparecerá."
 
@@ -8550,7 +8549,7 @@ msgid ""
 "automatically be moved into the edit mode in which you generate a new "
 "instance of the selected shape and afterwards change its properties."
 msgstr ""
-"Para dibujar una figura necesitará hacer click sobre el símbolo de la forma. "
+"Para dibujar una figura necesitará pulsar sobre el símbolo de la forma. "
 "Automáticamente será dirigido al modo de edición en el cual podrá generar "
 "una nueva instancia de la figura seleccionada y luego, cambiar sus "
 "propiedades."
@@ -8629,8 +8628,8 @@ msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_brush.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> symbol adds a brush stroke."
 msgstr ""
-"Al hacer click en el símbolo <inlinegraphic fileref=\"images/shape_brush.png"
-"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se agregará un trazo de "
+"Al pulsar en el símbolo <inlinegraphic fileref=\"images/shape_brush.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se agregará un trazo de "
 "brocha."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6930(para)
@@ -8718,8 +8717,8 @@ msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_circle.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> symbol adds a circle shape."
 msgstr ""
-"Al hacer click sobre el símbolo <inlinegraphic fileref=\"images/shape_circle."
-"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura en "
+"Al pulsar sobre el símbolo <inlinegraphic fileref=\"images/shape_circle.png"
+"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura en "
 "forma de círculo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6993(para)
@@ -8763,9 +8762,9 @@ msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_ellipse.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> symbol adds an ellipse shape."
 msgstr ""
-"Al hacer click en el címbolo <inlinegraphic fileref=\"images/shape_ellipse."
-"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura en "
-"forma de elipse."
+"Al pulsar en el címbolo <inlinegraphic fileref=\"images/shape_ellipse.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura en forma "
+"de elipse."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7036(para)
 #, fuzzy
@@ -8801,9 +8800,9 @@ msgid ""
 "width=\"2%\" align=\"center\"/> symbol adds a shape defined by a user "
 "defined closed path."
 msgstr ""
-"Al hacer click sobre el botón <inlinegraphic fileref=\"images/shape_path.png"
-"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura "
-"definida por el usuario que genera una ruta cerrada."
+"Al pulsar sobre el botón <inlinegraphic fileref=\"images/shape_path.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se agrega una figura definida "
+"por el usuario que genera una ruta cerrada."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7076(para)
 #, fuzzy
@@ -10594,7 +10593,7 @@ msgid ""
 msgstr ""
 "Puede controlar la vista dividida al mover la línea divisoria hacia adelante "
 "y hacia atrás. Si pasa el puntero de su ratón sobre la línea divisoria, un "
-"pequeño icono de rotación aparecerá en el centro de la línea. Haga click "
+"pequeño ícono de rotación aparecerá en el centro de la línea. Haga click "
 "sobre este para cambiar entre una vista divisoria vertical u horizontal."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8457(para)
@@ -10712,7 +10711,7 @@ msgid ""
 msgstr ""
 "Al utilizar el cuentagotas, puede tomar muestras de color de su imagen, "
 "mostrar sus valores de formas múltiples y comparar colores de diversas "
-"ubicaciones. El cuentagotas es activado al presionar el icono <inlinegraphic "
+"ubicaciones. El cuentagotas es activado al presionar el ícono <inlinegraphic "
 "fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"3%"
 "\" align=\"center\"/>. Hay múltiples parámetros para controlar como el "
 "cuentagotas funciona, estos ajustes permanecerán en efecto hasta que deje el "
@@ -11330,10 +11329,10 @@ msgid ""
 "grey background whilst hidden modules have a dark grey background and do not "
 "display any of their controls."
 msgstr ""
-"Cada módulo se muestra con pequeño icono al lado de su nombre. Al hacer "
+"Cada módulo se muestra con pequeño ícono al lado de su nombre. Al hacer "
 "click-izquierdo con su ratón, cambiará entre los estados visible, escondido "
 "o favorito. Los módulos favoritos son indicados por una estrella frente al "
-"icono, y además de aparecer en su propio grupo de módulos, también será "
+"ícono, y además de aparecer en su propio grupo de módulos, también será "
 "visible en el grupo de módulos <link linkend=\"module_groups"
 "\"><emphasis>favoritos</emphasis></link>. Esta es una buena forma de acceder "
 "rápidamente a los módulos que utiliza frecuentemente. Los módulos visibles "
@@ -11385,7 +11384,7 @@ msgid ""
 "gives you quick access to your favorite module's presets. Click on the "
 "preset name to apply it to the image."
 msgstr ""
-"Al hacer click en el icono de <inlinegraphic fileref=\"images/"
+"Al hacer click en el ícono de <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> se abre un combobox que le da un rápido acceso a los ajustes de sus "
 "módulos favoritos. Haga click en el nombre del pre-ajuste para aplicarlo a "
@@ -11402,7 +11401,7 @@ msgid ""
 "styles. Hovering with the mouse over a style name opens a tooltip showing "
 "the involved modules. Click on a style name to apply that style to the image."
 msgstr ""
-"Al hacer click sobre el icono de <inlinegraphic fileref=\"images/"
+"Al hacer click sobre el ícono de <inlinegraphic fileref=\"images/"
 "darkroom_styles.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se abre "
 "un combobox con sus estilos. Al pasar el puntero de su ratón sobre el nombre "
 "de un estilo, se abre una caja de consejos mostrando los módulos "
@@ -11429,7 +11428,7 @@ msgid ""
 "emphasis> module in order to reconstruct those areas (see <xref linkend="
 "\"highlight_reconstruction\"/> and <xref linkend=\"color_reconstruction\"/>)."
 msgstr ""
-"Al pulsar en el icono <inlinegraphic fileref=\"images/"
+"Al pulsar en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_rawoverexposed.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/>, se muestra una advertencia sobre las áreas de la imagen en "
 "bruto de entrada con canales de color recortados. Los canales de color "
@@ -11445,7 +11444,7 @@ msgstr ""
 msgid ""
 "Right-clicking on the icon opens a dialog with configuration parameters."
 msgstr ""
-"Al hacer click-derecho sobre el icono se abre un diálogo con los parámetros "
+"Al hacer click-derecho sobre el ícono se abre un diálogo con los parámetros "
 "de configuración."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9264(para)
@@ -11517,7 +11516,7 @@ msgid ""
 "prominently displayed in a signal color. You can also activate the over/"
 "underexposure warning with the keyboard shortcut <quote>O</quote>."
 msgstr ""
-"Al hacer click sobre el icono de <inlinegraphic fileref=\"images/"
+"Al hacer click sobre el ícono de <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_overexposed.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> una advertencia de sobre/sub-exposición es activada o "
 "desactivada. Los pixeles fuera del rango dinámico, cerca al blanco puro o "
@@ -11585,7 +11584,7 @@ msgid ""
 "quote> on the bottom left of your image tells you that you are in soft proof "
 "display mode."
 msgstr ""
-"Al hacer click en el icono <inlinegraphic fileref=\"images/"
+"Al hacer click en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_softproof.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> se activa el modo de prueba de pantalla de su imagen. La prueba "
 "de pantalla le permite pre-visualizar su imagen procesada utilizando el "
@@ -11671,7 +11670,7 @@ msgid ""
 "image tells you that you are in gamut check display mode. Gamut check and "
 "soft proof are mutually exclusive modes."
 msgstr ""
-"Al hacer click en el icono <inlinegraphic fileref=\"images/"
+"Al hacer click en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_gamutcheck.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> se activa el modo de revisión de gamut de su imagen. El gamut "
 "revisa las luces en los pixeles cian fuera del gamut original con respecto "
@@ -11688,7 +11687,7 @@ msgid ""
 "they are the same as for the soft proof option (see <xref linkend=\"softproof"
 "\"/>)."
 msgstr ""
-"Al hacer clic con el botón derecho en el icono, se abre un cuadro de diálogo "
+"Al hacer clic con el botón derecho en el ícono, se abre un cuadro de diálogo "
 "con los parámetros de configuración; son los mismos que para la opción de "
 "prueba en pantalla (consulte <xref linkend=\"softproof\"/>)."
 
@@ -12766,7 +12765,7 @@ msgstr ""
 "darktable puede calcular el nivel de negro y los valores de exposición "
 "correctos para sus imágenes, basados en el contenido de un área rectangular. "
 "Los deslizadores de ajuste le permiten definir el porcentaje de los valores "
-"de brillo que serán ignorados por el calculo. Al presionar el icono "
+"de brillo que serán ignorados por el calculo. Al presionar el ícono "
 "<inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> se inicia el calculo y le permite "
 "dibujar un área rectangular de su elección utilizando el ratón. Esta "
@@ -18052,7 +18051,7 @@ msgid ""
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the point "
 "tool and left-click on the image to place it."
 msgstr ""
-"Pulse el icono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png"
+"Pulse el ícono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> para activar la "
 "herramienta y clic izquierdo sobre la imagen para colocarla."
 
@@ -18158,7 +18157,7 @@ msgid ""
 "click to place another point and start forming the path. To end the line "
 "just right-click anywhere."
 msgstr ""
-"Pulse el icono <inlinegraphic fileref=\"images/darkroom_module_icon_presets."
+"Pulse el ícono <inlinegraphic fileref=\"images/darkroom_module_icon_presets."
 "png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> para activar la "
 "herramienta de línea. Con clic izquierdo en la imagen se coloca el primer "
 "punto, mueva y dé clic izquierdo nuevamente para colocar otro punto y seguir "
@@ -18288,7 +18287,7 @@ msgid ""
 "their controls. Alternatively you can at any time right-click on the image "
 "for the same effect."
 msgstr ""
-"Al pulsar en el icono <inlinegraphic fileref=\"images/"
+"Al pulsar en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_liquify_edit.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> se activa o desactiva la herramienta de edición del nodo que muestra "
 "todos los objetos de distorsión definidos y sus controles. Alternativamente, "
@@ -18382,7 +18381,7 @@ msgid ""
 "identified but not of interest to this module </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
-"Al pulsar en el icono <quote>obtener estructura</quote> ( <inlinegraphic "
+"Al pulsar en el ícono <quote>obtener estructura</quote> ( <inlinegraphic "
 "fileref=\"images/darkroom_module_ashift_structure.png\" scalefit=\"1\" width="
 "\"2%\" align=\"center\"/> ) hace que darktable analice la imagen para "
 "elementos estructurales. Los segmentos de línea son detectados y evaluados. "
@@ -18441,7 +18440,7 @@ msgid ""
 "optimization process which finds the best suited parameters. The image and "
 "the overlaid lines are then displayed with perspective corrections applied."
 msgstr ""
-"Al pulsar en uno de los iconos de <quote>ajuste automático</quote> (ver más "
+"Al pulsar en uno de los íconos de <quote>ajuste automático</quote> (ver más "
 "abajo) se inicia un proceso de optimización que encuentra los parámetros más "
 "adecuados. La imagen y las líneas superpuestas se muestran con correcciones "
 "de perspectiva aplicadas."
@@ -18631,17 +18630,17 @@ msgid ""
 "darkroom_module_ashift_eye.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> icon you can switch the overlay display of line segments on and off."
 msgstr ""
-"Al hacer clic en el icono <inlinegraphic fileref=\"images/"
+"Al hacer clic en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> hace que la imagen sea (re)analizada para segmentos de línea "
 "adecuados. <emphasis>Mayús+clic </emphasis> aplica un paso de mejora de "
 "contraste anterior, <emphasis>Ctrl+clic</emphasis> aplica un paso de mejora "
 "de borde. Ambas variaciones se pueden usar solas o en combinación si el "
 "valor predeterminado no puede detectar un número suficiente de líneas. Al "
-"pulsar en el icono <inlinegraphic fileref=\"images/"
+"pulsar en el ícono <inlinegraphic fileref=\"images/"
 "darkroom_module_ashift_clear.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> se descartan todos los datos estructurales recopilados. Al pulsar en el "
-"icono <inlinegraphic fileref=\"images/darkroom_module_ashift_eye.png\" "
+"ícono <inlinegraphic fileref=\"images/darkroom_module_ashift_eye.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> puede activar y desactivar la "
 "visualización de superposición de segmentos de línea."
 
@@ -19005,7 +19004,7 @@ msgid ""
 "the canvas to choose the area to be healed, i.e. the target area. A cross is "
 "displayed where the source area will be positioned."
 msgstr ""
-"Seleccione la forma deseada pulsando sobre el icono correspondiente, luego "
+"Seleccione la forma deseada pulsando sobre el ícono correspondiente, luego "
 "haga clic en el lienzo para elegir el área objetivo a sanear. Se muestra una "
 "cruz donde se ubicará el área de origen."
 
@@ -22678,7 +22677,7 @@ msgid ""
 "displayed as small icons on the map."
 msgstr ""
 "Las imágenes que ya tienen datos de geo ubicación en sus metadatos se "
-"mostrarán como pequeños iconos en el mapa."
+"mostrarán como pequeños íconos en el mapa."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20337(para)
 #, fuzzy
@@ -23458,20 +23457,21 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21077(bridgehead)
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "usar pulsación simple en el panel de colecciones"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21079(para)
 msgid ""
 "(default off). In single-click mode, you can select range of value directly "
 "with the mouse."
 msgstr ""
+"En el modo de pulsación simple, puede seleccionar el rango del valor "
+"directamente con el ratón (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21083(bridgehead)
 msgid "expand a single lighttable module at a time"
-msgstr "expandir un solo módulo en la mesa de luz a la vez"
+msgstr "desplegar un solo módulo en la mesa de luz a la vez"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21085(para)
-#, fuzzy
 msgid ""
 "Controls how lighttable panels are expanded. If this option is enabled, "
 "expanding a panel by <emphasis>clicking</emphasis> collapses any currently "
@@ -23480,12 +23480,12 @@ msgid ""
 "reverts the meaning of <emphasis>click</emphasis> and <emphasis>Shift+click</"
 "emphasis> (default off)."
 msgstr ""
-"Controla cómo se expanden los paneles de la mesa de luz. Si esta opción está "
-"habilitada, desplegar un panel al <emphasis>pulsar</emphasis> pliega "
-"cualquier panel expandido actualmente. Si desea desplegar un panel sin "
-"plegar los demás, hágalo con <emphasis>Mayús+clic</emphasis>. Deshabilitar "
-"esta opción revierte el significado de <emphasis>clic</emphasis> y "
-"<emphasis>Mayús+clic</emphasis> (por defecto desactivado)."
+"Controla la manera de desplagar los paneles de la mesa de luz. Si esta "
+"opción está habilitada, desplegar un panel al <emphasis>pulsarlo</emphasis> "
+"pliega cualquier otro panel actualmente expandido. Si desea desplegar un "
+"panel sin plegar los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. "
+"Deshabilitar esta opción revierte el sentido de <emphasis>pulsarlo</"
+"emphasis> y <emphasis>Mayús+Clic</emphasis> (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21093(bridgehead)
 msgid "scroll to lighttable modules when expanded/collapsed"
@@ -23567,18 +23567,16 @@ msgstr ""
 "predeterminado es color falso)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21140(bridgehead)
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "Verdadero si la imagen es una imagen ldr."
+msgstr "patrón para el texto informativo de la imagen"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21142(para)
 msgid "See for available values."
-msgstr ""
+msgstr "Consulte las opciones disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21146(bridgehead)
-#, fuzzy
 msgid "position of the image info line"
-msgstr "La posición del elemento de estilo dentro del estilo."
+msgstr "posición del texto informativo de la imagen"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21148(para)
 msgid ""
@@ -23586,29 +23584,31 @@ msgid ""
 "between <quote>top left</quote><quote>top right</quote><quote>top center</"
 "quote><quote>bottom</quote> and <quote>hidden</quote> (default bottom)."
 msgstr ""
+"Controla en qué panel se muestra la línea de información de la imagen. Se "
+"puede elegir entre <quote>arriba a la izquierda</quote><quote>arriba a la "
+"derecha</quote><quote>arriba al centro</quote><quote>abajo</quote> y "
+"<quote>oculto</quote> (abajo por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21154(bridgehead)
 msgid "show search module text entry"
-msgstr ""
+msgstr "mostrar la entrada de texto del módulo de búsqueda"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21156(para)
-#, fuzzy
 msgid ""
 "Controls how to determine which modules are shown at the same time in the "
 "right panel. You can choose between <quote>groups icons</quote><quote>search "
 "entry</quote><quote>both</quote> (default both). (need a restart)"
 msgstr ""
-"Controla cómo se muestran los canales individuales de color cuando se "
-"activan en la función de máscaras paramétricas. Puede elegir entre "
-"<quote>color falso</quote> y <quote>escala de grises</quote> (el "
-"predeterminado es color falso)."
+"Controla la manera de decidir qué módulos se muestran al mismo tiempo en el "
+"panel derecho. Puede elegir entre <quote>grupos de iconos</quote>, "
+"<quote>entrada de búsqueda</quote> y <quote>ambos</quote> (\"ambos\" "
+"activado por defecto). Necesita reiniciar."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21162(bridgehead)
 msgid "expand a single darkroom module at a time"
-msgstr "expandir un solo módulo en el cuarto oscuro a la vez"
+msgstr "desplegar un solo módulo en el cuarto oscuro a la vez"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21164(para)
-#, fuzzy
 msgid ""
 "Controls how darkroom modules are expanded. If this option is enabled, "
 "expanding a module by <emphasis>clicking</emphasis> collapses any currently "
@@ -23617,22 +23617,26 @@ msgid ""
 "option reverts the meaning of <emphasis>click</emphasis> and <emphasis>Shift"
 "+click</emphasis> (default on)."
 msgstr ""
-"Controla cómo se expanden los paneles de la mesa de luz. Si esta opción está "
-"habilitada, desplegar un panel al <emphasis>pulsar</emphasis> pliega "
-"cualquier panel expandido actualmente. Si desea desplegar un panel sin "
-"plegar los demás, hágalo con <emphasis>Mayús+clic</emphasis>. Deshabilitar "
-"esta opción revierte el significado de <emphasis>clic</emphasis> y "
-"<emphasis>Mayús+clic</emphasis> (por defecto desactivado)."
+"Controla la manera de desplegar los paneles del cuarto oscuro. Si esta "
+"opción está habilitada, desplegar un panel al <emphasis>pulsarlo</emphasis> "
+"pliega cualquier otro panel actualmente expandido. Si desea desplegar un "
+"panel sin plegar los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. "
+"Deshabilitar esta opción revierte el sentido de <emphasis>pulsarlo</"
+"emphasis> y <emphasis>Mayús+Clic</emphasis> (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21172(bridgehead)
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
+"desplegar el módulo cuando está activado, y contraerlo cuando está "
+"desactivado"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21174(para)
 msgid ""
 "This option allows to expand or collapse automatically modules when they are "
 "enabled or disabled. (default off)"
 msgstr ""
+"Esta opción permite desplegar o contraer automáticamente los módulos cuando "
+"se activan o desactivan. (desactivado por defecto)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21179(bridgehead)
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -23691,7 +23695,7 @@ msgid ""
 "number can slow down the drawing of the map. Needs a restart if changed "
 "(default 100)."
 msgstr ""
-"El número máximo de imágenes geo-etiquetadas mostradas en el mapa. Si se "
+"El número máximo de imágenes geoetiquetadas mostradas en el mapa. Si se "
 "incrementa este número, la muestra sobre el mapa será mas lenta. Se necesita "
 "reiniciar si se cambia (100 por defecto)."
 
@@ -23720,8 +23724,8 @@ msgid ""
 "Always ask the user before any image is removed from the database (default "
 "on)."
 msgstr ""
-"Siempre pregunte al usuario antes de que cualquier imagen sea eliminada de "
-"la base de datos (encendido por defecto)."
+"Siempre pregunta al usuario antes de que eliminar cualquier imagen de la "
+"base de datos (activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21233(bridgehead)
 msgid "ask before erasing images from disk"
@@ -23730,7 +23734,7 @@ msgstr "preguntar antes de eliminar imágenes del disco"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21235(para)
 msgid "Always ask the user before any image file is deleted (default on)."
 msgstr ""
-"Siempre pregunte antes de que cualquier imagen sea eliminada (encendido por "
+"Siempre pregunta antes de que cualquier imagen sea eliminada (activado por "
 "defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21239(bridgehead)
@@ -23742,8 +23746,8 @@ msgid ""
 "Instead of physically deleting images from disk put them into the system's "
 "trash bin (default on)."
 msgstr ""
-"En vez de eliminar las imágenes físicamente del disco, las coloca en la "
-"papelera de su sistema (encendido por defecto)."
+"En vez de eliminar las imágenes físicamente del disco, las envía a la "
+"papelera del sistema (activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21246(bridgehead)
 msgid "ask before moving images from film roll folder"
@@ -23752,8 +23756,8 @@ msgstr "preguntar antes de mover imágenes desde la carpeta del carrete"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21248(para)
 msgid "Always ask the user before any image file is moved (default on)."
 msgstr ""
-"Siempre pregunte al usuario antes de que cualquier archivo de imagen sea "
-"movido (encendido por defecto)."
+"Siempre pregunta al usuario antes de mover cualquier archivo de imagen "
+"(activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21252(bridgehead)
 msgid "ask before copying images to new film roll folder"
@@ -23762,21 +23766,20 @@ msgstr "preguntar antes de copiar imágenes a una nueva carpeta del carrete"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21254(para)
 msgid "Always ask the user before any image file is copied (default on)."
 msgstr ""
-"Siempre pregunte al usuario antes de que cualquier archivo de imagen sea "
-"copiado (encendido por defecto)."
+"Siempre pregunta al usuario antes de copiar cualquier archivo de imagen "
+"(activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21258(bridgehead)
 msgid "ask before removing empty folders"
 msgstr "preguntar antes de eliminar carpetas vacías"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21260(para)
-#, fuzzy
 msgid ""
 "Always ask the user before removing any empty folder. This can happen after "
 "moving or deleting images (default off)."
 msgstr ""
-"Siempre pregunte antes de que cualquier imagen sea eliminada (encendido por "
-"defecto)."
+"Siempre pregunta antes de que cualquier carpeta vacía sea eliminada "
+"(desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21264(bridgehead)
 msgid "ask before deleting a tag"
@@ -23785,19 +23788,18 @@ msgstr "preguntar antes de borrar una etiqueta"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21266(para)
 msgid "Always ask user before deleting a tag from an image (default on)."
 msgstr ""
-"Siempre pregunte al usuario antes de eliminar la etiqueta de una imagen "
-"(encendido por defecto)."
+"Siempre pregunta al usuario antes de eliminar la etiqueta de una imagen "
+"(activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21270(bridgehead)
 msgid "ask before deleting a style"
 msgstr "preguntar antes de borrar un estilo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21272(para)
-#, fuzzy
 msgid "Always ask user before deleting a style (default on)."
 msgstr ""
-"Siempre pregunte al usuario antes de eliminar la etiqueta de una imagen "
-"(encendido por defecto)."
+"Siempre pregunta al usuario antes de eliminar un estilo (activado por "
+"defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21280(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21571(title)
@@ -24776,11 +24778,11 @@ msgstr "operaciones de imagen/recortar y rotar/aceptar"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22041(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22737(entry)
 msgid "Return"
-msgstr "Enter"
+msgstr "Entrar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22046(entry)
 msgid "image operations/flip/rotate 90 degrees CCW"
-msgstr "operaciones de imagen/voltear/rotar 90 grados en contra del reloj"
+msgstr "operaciones de imagen/voltear/rotar 90 grados en sentido antihorario"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22049(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22425(entry)
@@ -24789,7 +24791,7 @@ msgstr "["
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22054(entry)
 msgid "image operations/flip/rotate 90 degrees CW"
-msgstr "operaciones de imagen/voltear/rotar 90 grados en con el reloj"
+msgstr "operaciones de imagen/voltear/rotar 90 grados en sentido horario"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22057(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22489(entry)
@@ -24798,7 +24800,7 @@ msgstr "]"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22062(entry)
 msgid "modules/copy_history/copy all"
-msgstr "módulos/copiar_historial/copiar todo"
+msgstr "módulos/copiar historial/copiar todo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22065(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22145(entry)
@@ -24807,7 +24809,7 @@ msgstr "Ctrl+C"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22070(entry)
 msgid "modules/copy_history/copy"
-msgstr "módulos/copiar_historial/copiar"
+msgstr "módulos/copiar historial/copiar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22073(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22153(entry)
@@ -24816,7 +24818,7 @@ msgstr "Ctrl+Mayús+C"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22078(entry)
 msgid "modules/copy_history/paste all"
-msgstr "módulos/copiar_historial/pegar todo"
+msgstr "módulos/copiar historial/pegar todo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22081(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22177(entry)
@@ -24825,7 +24827,7 @@ msgstr "Ctrl+V"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22086(entry)
 msgid "modules/copy_history/paste"
-msgstr "módulos/copiar_historial/pegar"
+msgstr "módulos/copiar historial/pegar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22089(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22185(entry)
@@ -24843,7 +24845,7 @@ msgstr "Ctrl+E"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22102(entry)
 msgid "modules/filmstrip/color blue"
-msgstr "módulos/tira de imágenes/etiqueta azul"
+msgstr "módulos/tira de imágenes/marca azul"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22105(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22545(entry)
@@ -24852,7 +24854,7 @@ msgstr "F4"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22110(entry)
 msgid "modules/filmstrip/color green"
-msgstr "módulos/tira de imágenes/etiqueta verde"
+msgstr "módulos/tira de imágenes/marca verde"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22113(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22553(entry)
@@ -24861,7 +24863,7 @@ msgstr "F3"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22118(entry)
 msgid "modules/filmstrip/color purple"
-msgstr "módulos/tira de imágenes/etiqueta púrpura"
+msgstr "módulos/tira de imágenes/marca púrpura"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22121(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22561(entry)
@@ -24870,7 +24872,7 @@ msgstr "F5"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22126(entry)
 msgid "modules/filmstrip/color red"
-msgstr "módulos/tira de imágenes/etiqueta roja"
+msgstr "módulos/tira de imágenes/marca roja"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22129(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22569(entry)
@@ -24879,7 +24881,7 @@ msgstr "F1"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22134(entry)
 msgid "modules/filmstrip/color yellow"
-msgstr "módulos/tira de imágenes/etiqueta amarilla"
+msgstr "módulos/tira de imágenes/marca amarilla"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22137(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22577(entry)
@@ -24905,7 +24907,7 @@ msgstr "Ctrl+D"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22166(entry)
 msgid "modules/filmstrip/invert selection"
-msgstr "módulos/tira de imágenes/invertir selecciónmódulos/tira de imágenes/"
+msgstr "módulos/tira de imágenes/invertir selección"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22169(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22305(entry)
@@ -25204,7 +25206,7 @@ msgstr "vistas/cuarto oscuro/incrementar opacidad de la brocha"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22481(entry)
 msgid "greater"
-msgstr "mas"
+msgstr ">"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22486(entry)
 msgid "views/darkroom/increase brush size"
@@ -25283,7 +25285,7 @@ msgstr "vistas/mesa de luz/retroceder página"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22593(entry)
 msgid "Page_Down"
-msgstr "Re_Pág"
+msgstr "Re Pág"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22598(entry)
 msgid "views/lighttable/navigate page up"
@@ -25291,7 +25293,7 @@ msgstr "vistas/mesa de luz/avanzar página"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22601(entry)
 msgid "Page_Up"
-msgstr "Av_Pág"
+msgstr "Av Pág"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22606(entry)
 msgid "views/lighttable/navigate up"
@@ -25351,7 +25353,7 @@ msgstr "vistas/mesa de luz/desplazar al centro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22697(entry)
 msgid "apostrophe"
-msgstr "apostrofe"
+msgstr "( ' ) apóstrofo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22702(entry)
 msgid "views/lighttable/scroll down"
@@ -26854,7 +26856,6 @@ msgstr ""
 "correctamente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23935(para)
-#, fuzzy
 msgid ""
 "There are several adjustment parameters to get it running. If you install "
 "fresh, darktable will detect your system and set conservative values by "
@@ -26865,15 +26866,15 @@ msgid ""
 "properly import a new film roll. As a frequent symptom you get skulls "
 "displayed instead of thumbs for many of your pictures."
 msgstr ""
-"Hay varios ajustes que podemos hacer a los parámetros para que corra. Si "
-"tiene una instalación fresca, darktable detectará su sistema y ajustará "
+"Hay varios ajustes que podemos hacer a los parámetros para que funcione. Si "
+"tiene una instalación nueva, darktable detectará su sistema y ajustará "
 "valores conservadores por defecto. Sin embargo, si actualiza darktable desde "
-"una versión anterior (e.g. viniendo de 0.9.3 hacia 1.0), las posibilidades "
-"son que tenga unos ajustes desfavorables en sus preferencias. Las "
+"una versión anterior (por ejemplo, viniendo de 0.9.3 y yendo a la 1.0), es "
+"probable que tenga ajustes desfavorables en sus preferencias. Las "
 "consecuencias pueden hacer que darktable aborte debido a fallas de "
-"asignación o – comúnmente – darktable no será capaz de importar un nuevo "
-"carrete apropiadamente. Un síntoma frecuente será la visualización de "
-"calaveras en vez de miniaturas para muchas de sus imágenes."
+"asignación o, más comúnmente, no será capaz de importar apropiadamente un "
+"nuevo carrete. Como un síntoma frecuente será la visualización de calaveras "
+"en vez de miniaturas para muchas de sus fotos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23945(para)
 msgid ""
@@ -27028,7 +27029,6 @@ msgstr ""
 "darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24057(para)
-#, fuzzy
 msgid ""
 "Typically there is no need to restrict oneself in the number of background "
 "threads on a 64-bit system. On a multi-processor system a number of two to "
@@ -27037,13 +27037,13 @@ msgid ""
 "cores – darktable's pixelpipe anyhow uses all of them in parallel – but "
 "hiding I/O latency."
 msgstr ""
-"Por lo general, no es necesario restringirse en el número de subprocesos de "
-"fondo en un sistema de 64 bits. En un sistema multiprocesador, un rango de "
-"dos a ocho subprocesos puede acelerar la generación de miniaturas "
-"considerablemente en comparación con un solo subproceso. La razón no es "
-"aprovechar al máximo todos los núcleos de la CPU, ya que de todos modos el "
-"proceso completo de imagen en darktable los utiliza en paralelo, pero "
-"ocultando la latencia de E/S (entrada-salida)."
+"Por lo general, no hay necesidad de restringirse en el número de hilos de "
+"fondo en un sistema de 64 bits. En un sistema multiprocesador, un número de "
+"dos a ocho hilos puede acelerar considerablemente la generación de "
+"miniaturas en comparación con un solo hilo. La razón no es tanto aprovechar "
+"al máximo todos los núcleos de la CPU (ya que de todos modos el proceso "
+"completo de imagen en darktable los utiliza en paralelo), sino ocultar la "
+"latencia de E/S (entrada-salida)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24066(primary)
 msgid "panoramas"
@@ -27187,7 +27187,6 @@ msgstr ""
 "tarjeta gráfica."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24158(para)
-#, fuzzy
 msgid ""
 "Fortunately an industry consortium lead by The Khronos Group has developed "
 "an open, standardized interface called OpenCL. It allows the use of your GPU "
@@ -27202,17 +27201,17 @@ msgid ""
 "calculations for you."
 msgstr ""
 "Afortunadamente, un consorcio industrial liderado por The Khronos Group ha "
-"desarrollado una interfaz abierta y estándar llamada OpenCL. Esta le permite "
-"utilizar todo su GPU como un dispositivo de procesamiento numérico. OpenCL "
-"le ofrece un lenguaje de programación similar a C99 con un fuerte enfoque en "
-"el computo paralelo. Una aplicación que quiera utilizar OpenCL necesitará un "
-"código fuente en OpenCL que maneje un hardware con una rutina de compilador "
-"específica para OpenCL. De esta forma, la aplicación puede utilizar OpenCL "
-"sobre diferentes arquitecturas de GPU (incluso al mismo tiempo). Todos los "
-"<quote>secretos</quote> de hardware están escondidos en este compilador y "
-"usualmente no son visibles al usuario (o a la aplicación). El código "
-"compilado OpenCL se carga en su GPU y – con ciertas llamadas a la API – "
-"estará listo para realizar los cálculos por usted."
+"desarrollado una interfaz abierta y estandarizada llamada OpenCL. Esta le "
+"permite utilizar todo su GPU como un dispositivo de procesamiento numérico. "
+"OpenCL le ofrece un lenguaje de programación similar a C99 con un fuerte "
+"enfoque en el cómputo paralelo. Una aplicación que quiera usar OpenCL "
+"necesitará el código fuente de OpenCL que se pasa a un compilador OpenCL de "
+"hardware específico en tiempo de ejecución. De esta forma la aplicación "
+"puede usar OpenCL en diferentes arquitecturas de GPU (incluso al mismo "
+"tiempo). Todos los <quote>secretos</quote> de hardware están ocultos en este "
+"compilador y usualmente no son visibles para el usuario (o a la aplicación). "
+"El código OpenCL compilado se carga en la GPU y, con ciertas llamadas a la "
+"API, está listo para hacer cálculos por el usuario."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24175(title)
 msgid "How to activate OpenCL in darktable"
@@ -27237,7 +27236,6 @@ msgstr ""
 "donde la encuentre el enlazador dinámico de su sistema."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24186(para)
-#, fuzzy
 msgid ""
 "When darktable starts, it will first try to find and load libOpenCL.so and – "
 "on success – check if the available graphics card comes with OpenCL support. "
@@ -27249,15 +27247,15 @@ msgid ""
 "to be prepared for darktable's modules. If all that is done, the preparation "
 "is finished."
 msgstr ""
-"Cuando darktable se inicia, primero intentará encontrar y cargar  libOpenCL."
-"so y – si tiene éxito – verificará si la tarjeta gráfica disponible viene "
-"con soporte OpenCL. Una cantidad suficiente de memoria gráfica (1GB+) "
-"necesita estar disponible para tomar ventaja del GPU. Si eso está bien, "
-"darktable tratará de configurar su entorno OpenCL: un contexto de "
-"procesamiento necesita ser iniciado, una canalización de calculo necesita "
-"iniciarse, los archivos del código fuente de OpenCL (su extensión es .cl) "
-"necesitan ser leídos y compilados, y las rutinas incluidas (llamadas OpenCL "
-"kernels) necesitan prepararse para los módulos de darktable. Si todo esto "
+"Cuando darktable se inicia, primero intentará encontrar y cargar libOpenCL."
+"so y, si tiene éxito, comprobará si la tarjeta gráfica disponible viene con "
+"soporte para OpenCL. Es necesario disponer de una cantidad suficiente de "
+"memoria gráfica (más de 1GB) para aprovechar las ventajas de la GPU. Si eso "
+"está bien, darktable intenta configurar su entorno OpenCL: un contexto de "
+"procesamiento necesita ser inicializado, una tubería de cálculo debe ser "
+"iniciada, los archivos de código fuente de OpenCL (la extensión es .cl) "
+"necesitan ser leídos y compilados y las rutinas incluidas (llamadas kernels "
+"OpenCL) necesitan ser preparadas para los módulos de darktable. Si todo esto "
 "funciona, la preparación estará completa."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24197(para)
@@ -27626,7 +27624,6 @@ msgstr ""
 
 # wrapper library - mejorar
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24437(para)
-#, fuzzy
 msgid ""
 "darktable might find your libOpenCL.so but then tell you that it couldn't "
 "get a platform. NVIDIA drivers will often give error code -1001 in that "
@@ -27638,15 +27635,15 @@ msgid ""
 "Often the needed libraries cannot be found by your system's dynamic loader. "
 "Giving full path names might help."
 msgstr ""
-"darktable quizás encuentre su libOpenCL.so pero luego le dirá que no pudo "
-"obtener la plataforma. En este caso, los drivers NVIDIA usualmente darán el "
-"error de código -1001. Esto sucede porque libOpenCL.so librería de "
-"envoltorio. Para un trabajo real, librerías adicionales – específicas del "
-"vendedor, dispositivo y driver – necesitan ser cargadas. Esto falló por "
-"alguna razón. Hay una estructura de archivos en /etc/OpenCL en su sistema "
-"que libOpenCL.so consulta para encontrar estas librerías. Revise si puede "
-"encontrar algo sospechoso y trate de arreglarlo. Usualmente, las librerías "
-"necesarias no pueden ser encontradas por el buscador dinámico de su sistema. "
+"darktable quizás le diga que no pudo obtener libOpenCL.so de la plataforma "
+"aunque lo encuentre. En ese caso, los controladores NVIDIA usualmente "
+"arrojarán el código de error 1001. Sucede esto porque libOpenCL.so es una "
+"librería contenedora. Para un trabajo real, es necesario cargar más "
+"librerías específicas para el proveedor, el dispositivo y el controlador. "
+"Falló por alguna razón. Hay una estructura de archivos en /etc/OpenCL en el "
+"sistema que libOpenCL.so consulta para encontrar estas librerías. Compruebe "
+"si hay algo sospechoso e intente arreglarlo. A menudo, las librerías "
+"necesarias no pueden ser encontradas por el cargador dinámico del sistema. "
 "Dar los nombres de las rutas completas quizás ayude."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24448(para)
