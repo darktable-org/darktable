@@ -103,7 +103,7 @@
     </para></listitem>
 
     <listitem><para>
-      You can instantiate most modules multiple times and control order in which they get applied.
+      You can instantiate most modules multiple times and control the order in which they get applied.
     </para></listitem>
 
     <listitem><para>
