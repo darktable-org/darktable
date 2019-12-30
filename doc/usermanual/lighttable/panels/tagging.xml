@@ -28,16 +28,17 @@
           <row>
             <entry>
               <para>
-                This panel is for managing tags on images. Tags are stored in both sidecar files
-                (.xmp) and within the darktable database for a faster access.
+                This panel allows managing tags on images. Tags are stored in both XMP sidecar files
+                and within the darktable database.
               </para>
               <para>
-                The goal of tags is to add information to the images within a given keyword set.
-                But when the number of tags becomes large it is interesting to organize them in a hierachical manner, as a tree.
-                The parent tags may not add information to the image, for example the tag <quote>color</quote>
-                in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
-                seen as <quote>category</quote> if it is not in the dictionary itself. If exist as a tag, it can be set
-                explicitly as a <quote>category</quote> (see create or edit command).
+                Tags provide the means of adding information to the images within a given keyword dictionary.
+                You can manage tags as a hierarchical tree, which is useful when their number becomes large.
+              </para>
+              <para>
+                Unlike child tags, parent tags do not add information to the image, but rather represent categories.
+                Consider the <quote>color|white</quote> tag where <quote>color</quote> surves as a category 
+                for the <quote>white</quote> tag.
               </para>
             </entry>
             <entry>
@@ -49,18 +50,16 @@
     </informaltable>
 
     <para>
-      The panel is divided into two areas:
+      The panel contains two views:
       <itemizedlist>
 
         <listitem><para>
-          The upper one called attached tags area focuses on the tag(s) currently attached to the image
-          under the cursor or the selected image(s) if the mouse is outside the lighttable. It contains
-          the attached tags list view and the row of five buttons under it.
+          The upper <quote>attached tags</quote> view displays tag(s) that are currently attached to the image
+          under the cursor or the selected image(s), if the cursor is outside the center area of the lighttable view.
         </para></listitem>
                   
         <listitem><para>
-          The lower one called tag dictonary area focuses on all tags  available in the database.
-          It contains the text box, the tag dictionary list view and the row of five buttons under it.
+          The lower <quote>tag dictonary/<quote> view displays all tags that are available in the database.
           </para></listitem>
         </itemizedlist>
       </para>
