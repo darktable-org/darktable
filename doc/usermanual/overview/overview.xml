@@ -103,9 +103,9 @@
     </para></listitem>
 
     <listitem><para>
-      A powerful mask feature gives you fine control over extent the module affects complete image
-      or its specific parts. To select image areas you draw a mask using various shapes and/or 
-      define a parametric mask based on pixel values.
+      A powerful mask feature gives you fine control over how the module affects complete image
+      or its specific areas. You can select image areas by drawing a mask using various shapes, 
+      or by defining a parametric mask based on pixel values.
     </para></listitem>
 
     <listitem><para>
