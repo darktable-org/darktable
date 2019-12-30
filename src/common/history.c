@@ -573,7 +573,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   const int iop_order_version_src = dt_image_get_iop_order_version(imgid);
 
   int iop_order_version_dest = dt_image_get_iop_order_version(dest_imgid);
-  GList *dest_iop_list = dt_ioppr_get_iop_order_list(&iop_order_version_dest);
+  GList *dest_iop_list = dt_ioppr_get_iop_order_list(&iop_order_version_dest, FALSE);
 
   // the user have selected some history entries
   if (DT_IOP_ORDER_INFO)
