@@ -21,8 +21,8 @@
   </indexterm>
 
   <para>
-    Drawing a mask represents the simplest appoach for limiting the effect of darktable module instance to a limited 
-    region of the developed image.
+    Drawing a mask represents the simplest appoach for limiting the effect of a darktable module to a specific 
+    area in the developed image.
   </para>
 
   <sect4 status="final" id="drawn_mask_overview">
