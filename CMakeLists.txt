@@ -57,6 +57,15 @@ if (USE_OPENMP)
     find_package(OpenMP 4.0 REQUIRED)
 endif()
 
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+
+# Fail if returned library is not pthread
+if (NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "POSIX threads: not found")
+endif()
+
 include(ConfigureChecks.cmake)
 
 include(CheckCCompilerFlag)
