@@ -87,16 +87,22 @@ static void add_selected_metadata(GtkTreeView *view, dt_lib_export_metadata_t *d
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     char *tagname;
-    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, -1);
+    char *type;
+    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, &type, -1);
     if (!find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_LIB_EXPORT_METADATA_COL_XMP, tagname))
     {
       gtk_list_store_append(d->liststore, &iter);
+<<<<<<< HEAD
       gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
+=======
+      gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type,
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
                             DT_LIB_EXPORT_METADATA_COL_FORMULA, "", -1);
       selection = gtk_tree_view_get_selection(d->view);
       gtk_tree_selection_select_iter(selection, &iter);
     }
     g_free(tagname);
+    g_free(type);
   }
 }
 
@@ -182,6 +188,7 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("tag"), renderer, "text", 0, NULL);
+<<<<<<< HEAD
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
   col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
@@ -192,6 +199,16 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
 
   // populate the metadata tag list with exiv2 information
   for(GList *tag = d->taglist; tag; tag = g_list_next(tag))
+=======
+  gtk_tree_view_append_column(view, col);
+  renderer = gtk_cell_renderer_text_new();
+  col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
+  gtk_tree_view_append_column(view, col);
+  GtkListStore *liststore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+
+  GList *taglist = dt_get_exiv2_taglist();
+  for(GList *tag = taglist; tag; tag = g_list_next(tag))
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
   {
     GtkTreeIter iter;
     gtk_list_store_append(liststore, &iter);
@@ -202,6 +219,7 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
       type[0] = '\0';
       type++;
     }
+<<<<<<< HEAD
     gtk_list_store_set(liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type,
         DT_LIB_EXPORT_METADATA_COL_VISIBLE, TRUE, -1);
     if(type)
@@ -210,6 +228,11 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
       type[0] = ',';
     }
   }
+=======
+    gtk_list_store_set(liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type, -1);
+  }
+  g_list_free_full(taglist, g_free);
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, model);
@@ -351,6 +374,9 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("redefined tag"), renderer, "text", 0, NULL);
+  gtk_tree_view_append_column(view, col);
+  renderer = gtk_cell_renderer_text_new();
+  col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);

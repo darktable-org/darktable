@@ -146,9 +146,26 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
   {
     for (int i = 0; pl[i].name_ != 0; ++i)
     {
+<<<<<<< HEAD
       char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
     }
+=======
+//      std::printf("Xmp.%s.%s type %s\n", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      *taglist = g_list_prepend(*taglist, tag);
+    }
+#if 0
+    std::string line;
+    std::ostringstream tags;
+    Exiv2::XmpProperties::printProperties(tags, prefix);
+    std::istringstream input(tags.str()) ;
+    while (std::getline(input, line))
+    {
+      std::printf("Xmp.%s %s\n", prefix, line.c_str());
+    }
+#endif
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
   }
 }
 
@@ -175,18 +192,54 @@ GList *dt_get_exiv2_taglist()
           const Exiv2::TagInfo *tagInfo = groupList->tagList_();
           while(tagInfo->tag_ != 0xFFFF)
           {
+<<<<<<< HEAD
+=======
+//            std::printf("Exif.%s.%s type %s\n", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
             char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
             taglist = g_list_prepend(taglist, tag);
             tagInfo++;
           }
+<<<<<<< HEAD
+=======
+#if 0
+          std::string line;
+          std::ostringstream tags;
+          Exiv2::ExifTags::taglist(tags,groupList->groupName_);
+          std::istringstream input(tags.str()) ;
+          while (std::getline(input, line))
+          {
+            std::printf("Exif.%s %s\n", groupList->groupName_, line.c_str());
+          }
+#endif
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
         }
       groupList++;
       }
     }
+<<<<<<< HEAD
+=======
+#if 0
+    {
+      std::string line;
+      std::ostringstream tags;
+      Exiv2::IptcDataSets::dataSetList(tags);
+      std::istringstream input(tags.str()) ;
+      while (std::getline(input, line))
+      {
+        std::printf("Iptc %s\n", line.c_str());
+      }
+    }
+#endif
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
 
     const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
+<<<<<<< HEAD
+=======
+//      std::printf("Iptc.Envelope.%s type %s\n", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
       char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcEnvelopeList++;
@@ -195,6 +248,10 @@ GList *dt_get_exiv2_taglist()
     const Exiv2::DataSet *iptcApplication2List = Exiv2::IptcDataSets::application2RecordList();
     while(iptcApplication2List->number_ != 0xFFFF)
     {
+<<<<<<< HEAD
+=======
+//      std::printf("Iptc.Application2.%s type %s\n", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
       char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcApplication2List++;
@@ -202,6 +259,7 @@ GList *dt_get_exiv2_taglist()
 
     _get_xmp_tags("dc", &taglist);
     _get_xmp_tags("xmp", &taglist);
+<<<<<<< HEAD
     _get_xmp_tags("xmpRights", &taglist);
     _get_xmp_tags("xmpMM", &taglist);
     _get_xmp_tags("xmpBJ", &taglist);
@@ -237,6 +295,15 @@ GList *dt_get_exiv2_taglist()
   {
     std::string s(e.what());
     std::cerr << "[exiv2 taglist] " << s << std::endl;
+=======
+    _get_xmp_tags("tiff", &taglist);
+    _get_xmp_tags("exif", &taglist);
+    _get_xmp_tags("exifEX", &taglist);
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::printf("[exiv2 taglist] exception: \"%s\"\n", e.what());
+>>>>>>> replace fixed tag list by exiv2 list for exported metadata
   }
   return taglist;
 }
