@@ -37,7 +37,7 @@
               </para>
               <para>
                 Unlike child tags, parent tags do not add information to the image, but rather represent categories.
-                Consider the <quote>color|white</quote> tag where <quote>color</quote> surves as a category 
+                For example, in the <quote>color|white</quote> tag <quote>color</quote> is a category 
                 for the <quote>white</quote> tag.
               </para>
             </entry>
