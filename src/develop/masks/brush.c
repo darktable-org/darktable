@@ -1043,32 +1043,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
     }
-    else if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
-    {
-      float masks_density;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
-
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-      {
-        masks_density = dt_conf_get_float("plugins/darkroom/spots/brush_density");
-        masks_density = MAX(0.05f, MIN(masks_density * amount, 1.0f));
-        dt_conf_set_float("plugins/darkroom/spots/brush_density", masks_density);
-      }
-      else
-      {
-        masks_density = dt_conf_get_float("plugins/darkroom/masks/brush/density");
-        masks_density = MAX(0.05f, MIN(masks_density * amount, 1.0f));
-        dt_conf_set_float("plugins/darkroom/masks/brush/density", masks_density);
-      }
-
-      if(gui->guipoints_count > 0)
-      {
-        dt_masks_dynbuf_set(gui->guipoints_payload, -2, masks_density);
-      }
-    }
-
-    else
+    else if(state == 0)
     {
       float masks_border;
       float amount = 1.03f;
@@ -1202,11 +1177,8 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   else
     masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), 1.0f);
 
-  float masks_density;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_density = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_density"), 1.0f);
-  else
-    masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
+  // always start with a mask density of 100%, it will be adjusted with pen pressure if used.
+  const float masks_density = 1.0f;
 
   if(gui->creation && which == 1
      && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
@@ -2145,11 +2117,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       else
         masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), 1.0f);
 
-      float masks_density;
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_density = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_density"), 1.0f);
-      else
-        masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
+      const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 
       const float radius1 = masks_border * masks_hardness * MIN(wd, ht);
       const float radius2 = masks_border * MIN(wd, ht);
@@ -2167,8 +2135,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
 
       cairo_save(cr);
-      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, masks_density);
-      if(masks_density < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
+      if(opacity < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
