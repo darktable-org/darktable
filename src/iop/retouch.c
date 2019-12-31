@@ -2021,10 +2021,12 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  if(rt_get_selected_shape_id() > 0)
+  const int shape_id = rt_get_selected_shape_id();
+
+  if(shape_id > 0)
   {
-    float opacity = dt_bauhaus_slider_get(slider);
-    rt_masks_form_change_opacity(self, rt_get_selected_shape_id(), opacity);
+    const float opacity = dt_bauhaus_slider_get(slider);
+    rt_masks_form_change_opacity(self, shape_id, opacity);
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2039,11 +2041,13 @@ void gui_post_expose (struct dt_iop_module_t *self,
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  if(rt_get_selected_shape_id() > 0)
+  const int shape_id = rt_get_selected_shape_id();
+
+  if(shape_id > 0)
   {
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, rt_get_selected_shape_id()));
+    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
     darktable.gui->reset = reset;
   }
 }
