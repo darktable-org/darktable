@@ -2622,25 +2622,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
-/*
-  g->copied_scale = -1;
-  g->mask_display = 0;
-  g->suppress_mask = 0;
-  g->display_wavelet_scale = 0;
-  g->displayed_wavelet_scale = 0;
-  g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
-
-  g->preview_auto_levels = 0;
-  g->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
-  g->preview_levels[1] = 0.f;
-  g->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  g->is_dragging = 0;
-  g->wdbar_mouse_x = -1;
-  g->wdbar_mouse_y = -1;
-  g->lvlbar_mouse_x = -1;
-  g->lvlbar_mouse_y = -1;
-*/
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
