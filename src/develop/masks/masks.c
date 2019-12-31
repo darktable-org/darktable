@@ -1640,17 +1640,21 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   else if(form->type & DT_MASKS_BRUSH)
     ret = dt_brush_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
 
-  if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  if(gui)
   {
-    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-    float amount = 0.05f;
-    if(!up) amount = -amount;
+    // for brush, the opacity is the density of the masks, do not update opacity here for the brush.
+    if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    {
+      float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+      float amount = 0.05f;
+      if(!up) amount = -amount;
 
-    opacity = CLAMP(opacity + amount, 0.0f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+      opacity = CLAMP(opacity + amount, 0.0f, 1.0f);
+      dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+    }
+
+    _set_hinter_message(gui, form);
   }
-
-  if(gui) _set_hinter_message(gui, form);
 
   return ret;
 }
