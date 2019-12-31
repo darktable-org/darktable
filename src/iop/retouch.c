@@ -663,12 +663,11 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
 static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, float opacity)
 {
-  if(opacity < 0.f || opacity > 1.f) return;
-
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
-    grpt->opacity = opacity;
+    grpt->opacity = CLAMP(opacity, 0.0f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
 
     dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
   }
