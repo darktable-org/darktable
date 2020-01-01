@@ -952,12 +952,12 @@
       </indexterm>
 
       <para>
-        The filmstrip along the bottom shows the same images as lighttable, with respect to
+        The filmstrip along the bottom shows the same images as lighttable perspective, with respect to
         filters and sort order. It is turned on/off with key accelerator
         <emphasis>Ctrl+F</emphasis>. You can navigate along the filmstrip by scrolling with the
         mouse wheel and change the height of the filmstrip panel by dragging its top. The
-        filmstrip allows you to interact with images while you are not in lighttable mode. For
-        example, you can, while developing an image in darkroom mode, switch to another image to
+        filmstrip allows you to interact with images while you are not in lighttable perspective. For
+        example, you can, while developing an image in darkroom perspective, switch to another image to
         develop, by double clicking the thumbnail in the filmstrip. You can also rate the images
         as you do in lighttable, copy/paste history stack, etc.
       </para>
@@ -1099,7 +1099,7 @@
 
         <para>
           All changes are stored automatically when you switch images or leave the darktable
-          perspective. You can safely leave darkroom mode or quit darktable at any time and
+          perspective. You can safely leave darkroom perspective or quit darktable at any time and
           come back later to continue your work. That said darktable does not need a
           <quote>save</quote> button and it does not have one.
           <indexterm>
