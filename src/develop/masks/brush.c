@@ -536,7 +536,7 @@ static inline int _brush_cyclic_cursor(int n, int nb)
 
 /** get all points of the brush and the border */
 /** this takes care of gaps and iop distortions */
-static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction, 
+static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction,
                                     dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
                                     float **border, int *border_count, float **payload, int *payload_count,
                                     int source)
@@ -2105,7 +2105,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
 
   if(!gui) return;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -2125,8 +2125,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
+    const float wd = darktable.develop->preview_pipe->iwidth;
+    const float ht = darktable.develop->preview_pipe->iheight;
 
     if(gui->guipoints_count == 0)
     {
@@ -2151,8 +2151,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       else
         masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
 
-      float radius1 = masks_border * masks_hardness * MIN(wd, ht);
-      float radius2 = masks_border * MIN(wd, ht);
+      const float radius1 = masks_border * masks_hardness * MIN(wd, ht);
+      const float radius2 = masks_border * MIN(wd, ht);
 
       float xpos, ypos;
       if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
@@ -2198,7 +2198,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_save(cr);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float linewidth = cairo_get_line_width(cr);
+      const float linewidth = cairo_get_line_width(cr);
       masks_border = guipoints_payload[0];
       masks_hardness = guipoints_payload[1];
       masks_density = guipoints_payload[2];

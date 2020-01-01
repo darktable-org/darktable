@@ -256,7 +256,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->raw_black_level);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, img->id);
-  int rc = sqlite3_step(stmt);
+  const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 

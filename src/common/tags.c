@@ -83,7 +83,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     }
 
     dt_tag_update_used_tags();
-    dt_collection_update_query(darktable.collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 }
@@ -161,6 +160,12 @@ gboolean dt_tag_new(const char *name, guint *tagid)
     return TRUE;
   }
   sqlite3_finalize(stmt);
+
+  if(g_strstr_len(name, -1, "darktable|") == name)
+  {
+    // clear darktable tags list to make sure the new tag will be added by next call to dt_set_darktable_tags()
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.darktable_tags", NULL, NULL, NULL);
+  }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO data.tags (id, name) VALUES (NULL, ?1)",
                               -1, &stmt, NULL);
@@ -467,7 +472,7 @@ gboolean dt_tag_attach(guint tagid, gint imgid)
 void dt_tag_attach_from_gui(guint tagid, gint imgid)
 {
   if(dt_tag_attach(tagid, imgid))
-    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_attach_list(GList *tags, gint imgid)
@@ -479,8 +484,7 @@ void dt_tag_attach_list(GList *tags, gint imgid)
     } while((child = g_list_next(child)) != NULL);
 
   dt_tag_update_used_tags();
-
-  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_attach_string_list(const gchar *tags, gint imgid)
@@ -511,8 +515,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
     }
 
     dt_tag_update_used_tags();
-
-    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   g_strfreev(tokens);
 }
@@ -572,7 +575,7 @@ void dt_tag_detach_from_gui(guint tagid, gint imgid)
 
   dt_tag_update_used_tags();
 
-  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_detach_by_string(const char *name, gint imgid)
@@ -588,8 +591,10 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   sqlite3_finalize(stmt);
 
   dt_tag_update_used_tags();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
+// to be called before issuing any query based on memory.darktable_tags
 static void dt_set_darktable_tags()
 {
   sqlite3_stmt *stmt;
@@ -823,7 +828,7 @@ GList *dt_tag_get_list(gint imgid)
     }
   }
 
-  g_list_free_full(taglist, g_free);
+  dt_tag_free_result(&taglist);
 
   return dt_util_glist_uniq(tags);
 }
@@ -846,10 +851,17 @@ GList *dt_tag_get_hierarchical(gint imgid)
     taglist = g_list_next(taglist);
   }
 
-  g_list_free_full(taglist, g_free);
+  dt_tag_free_result(&taglist);
 
   tags = g_list_reverse(tags);
   return tags;
+}
+
+static gint is_tag_a_category(gconstpointer a, gconstpointer b)
+{
+  dt_tag_t *ta = (dt_tag_t *)a;
+  dt_tag_t *tb = (dt_tag_t *)b;
+  return ((g_strcmp0(ta->tag, tb->tag) == 0) && ((ta->flags | tb->flags) & DT_TF_CATEGORY)) ? 0 : -1;
 }
 
 GList *dt_tag_get_list_export(gint imgid, int32_t flags)
@@ -865,16 +877,36 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
 
   if(count < 1) return NULL;
   GList *sorted_tags = dt_sort_tag(taglist, 0);
+  sorted_tags = g_list_reverse(sorted_tags);
 
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
     dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
     if ((export_private_tags || !(t->flags & DT_TF_PRIVATE))
         && !(t->flags & DT_TF_CATEGORY)
-        && !(omit_tag_hierarchy && (t->flags & DT_TF_PATH)))
+        && !(t->flags & DT_TF_PATH))
     {
       gchar *tagname = t->leave;
       tags = g_list_prepend(tags, g_strdup(tagname));
+
+      // add path tags as necessary
+      if(!omit_tag_hierarchy)
+      {
+        GList *next = g_list_next(sorted_tags);
+        gchar *end = g_strrstr(t->tag, "|");
+        while (end)
+        {
+          end[0] = '\0';
+          end = g_strrstr(t->tag, "|");
+          if (!next || !g_list_find_custom(next, t, (GCompareFunc)is_tag_a_category))
+          {
+            const gchar *tag = end ? end + 1 : t->tag;
+            tags = g_list_prepend(tags, g_strdup(tag));
+          }
+        }
+      }
+
+      // add synonyms as necessary
       if (export_tag_synomyms)
       {
         gchar *synonyms = t->synonym;
@@ -1563,7 +1595,7 @@ ssize_t dt_tag_export(const char *filename)
         }
       }
       else
-        fprintf(fd, "[%s]\n", tokens[i]);
+        fprintf(fd, "%s\n", tokens[i]);
     }
   }
 

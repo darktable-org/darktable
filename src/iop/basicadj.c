@@ -639,6 +639,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -683,7 +685,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->sl_exposure = dt_bauhaus_slider_new_with_range(self, -4.0, 4.0, .02, p->exposure, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure, -18.0, 18.0);
   dt_bauhaus_widget_set_label(g->sl_exposure, NULL, _("exposure"));
-  dt_bauhaus_slider_set_format(g->sl_exposure, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
   g_object_set(g->sl_exposure, "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_exposure), "value-changed", G_CALLBACK(_exposure_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure, TRUE, TRUE, 0);

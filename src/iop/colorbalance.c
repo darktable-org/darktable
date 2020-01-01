@@ -1490,6 +1490,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2500,7 +2502,7 @@ void gui_init(dt_iop_module_t *self)
   (void)lift_messages;
   ADD_FACTOR(lift)
 
-  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.5f, 0.0f, 2, 0);
+  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 1.0f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_lift, NULL, _("hue"));
   dt_bauhaus_slider_set_format(g->hue_lift, "%.2f °");
   draw_hue_slider(g->hue_lift);
@@ -2550,7 +2552,7 @@ void gui_init(dt_iop_module_t *self)
   (void)gamma_messages;
   ADD_FACTOR(gamma)
 
-  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.5f, 0.0f, 2, 0);
+  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 1.0f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_gamma, NULL, _("hue"));
   dt_bauhaus_slider_set_format(g->hue_gamma, "%.2f °");
   draw_hue_slider(g->hue_gamma);
@@ -2599,7 +2601,7 @@ void gui_init(dt_iop_module_t *self)
   (void)gain_messages;
   ADD_FACTOR(gain)
 
-  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.05f, 0.0f, 2, 0);
+  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 1.0f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_gain, NULL, _("hue"));
   dt_bauhaus_slider_set_format(g->hue_gain, "%.2f °");
   draw_hue_slider(g->hue_gain);

@@ -315,15 +315,24 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
 
   int ftype = form->type;
 
-  if(!(ftype & DT_MASKS_GROUP) || gui->group_edited < 0) return;
+  dt_masks_type_t formtype;
+  int opacity = 100;
 
-  // we get the selected form
-  const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
-  const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-  if(!sel) return;
+  if((ftype & DT_MASKS_GROUP) && (gui->group_edited >= 0))
+  {
+    // we get the selected form
+    const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    if(!sel) return;
 
-  const dt_masks_type_t formtype = sel->type;
-  const int opacity = _get_opacity(gui, form);
+    formtype = sel->type;
+    opacity = _get_opacity(gui, form);
+  }
+  else
+  {
+    formtype = form->type;
+    opacity = (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
+  }
 
   if(formtype & DT_MASKS_PATH)
   {
@@ -579,7 +588,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
     grpt->parentid = grpid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
     if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
-    grpt->opacity = 1.0f;
+    grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     // we save the group
     dt_dev_add_masks_history_item(dev, module, TRUE);
@@ -1631,6 +1640,16 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   else if(form->type & DT_MASKS_BRUSH)
     ret = dt_brush_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
 
+  if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  {
+    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+    float amount = 0.05f;
+    if(!up) amount = -amount;
+
+    opacity = CLAMP(opacity + amount, 0.0f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+  }
+
   if(gui) _set_hinter_message(gui, form);
 
   return ret;
@@ -1738,11 +1757,14 @@ void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);
   dt_iop_module_t *m = darktable.develop->gui_module;
-  if(m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+  if(m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS)
+    && m->blend_data)
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)m->blend_data;
     bd->masks_shown = DT_MASKS_EDIT_OFF;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+    for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
   }
 }
 
@@ -1753,13 +1775,18 @@ void dt_masks_reset_show_masks_icons(void)
   while(modules)
   {
     dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
-    if((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+    if(m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)m->blend_data;
-      if(!bd) break;
+      if(!bd) break;  // TODO: this doesn't look right. Why do we break the while look as soon as one module has no blend_data?
       bd->masks_shown = DT_MASKS_EDIT_OFF;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
       gtk_widget_queue_draw(bd->masks_edit);
+      for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+      {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
+        gtk_widget_queue_draw(bd->masks_shapes[n]);
+      }
     }
     modules = g_list_next(modules);
   }
@@ -2300,13 +2327,10 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     if(fpt->formid == id)
     {
-      const float nv = fpt->opacity + amount;
-      if(nv <= 1.0f && nv >= 0.0f)
-      {
-        fpt->opacity = nv;
-        dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
-        dt_masks_update_image(darktable.develop);
-      }
+      const float opacity = CLAMP(fpt->opacity + amount, 0.0f, 1.0f);
+      fpt->opacity = opacity;
+      dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
+      dt_masks_update_image(darktable.develop);
       break;
     }
     fpts = g_list_next(fpts);
@@ -2382,7 +2406,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
     if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
-    grpt->opacity = 1.0f;
+    grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     return grpt;
   }

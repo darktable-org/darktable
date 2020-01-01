@@ -435,11 +435,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   pthread_mutexattr_t recursive_locking;
   pthread_mutexattr_init(&recursive_locking);
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)  
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
   {
     dt_pthread_mutex_init(&(darktable.db_image[k]),&(recursive_locking));
   }
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.dev_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
@@ -855,6 +856,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
       if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
     }
+    fprintf(stderr, "ERROR: can't acquire database lock, aborting.\n");
     return 1;
   }
 
@@ -934,7 +936,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
-    if(dt_gui_gtk_init(darktable.gui)) return 1;
+    if(dt_gui_gtk_init(darktable.gui))
+    {
+      fprintf(stderr, "ERROR: can't init gui, aborting.\n");
+      return 1;
+    }
     dt_bauhaus_init();
   }
   else
@@ -944,7 +950,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_view_manager_init(darktable.view_manager);
 
   // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
-  if(!darktable.develop) return 1;
+  if(!darktable.develop)
+  {
+    fprintf(stderr, "ERROR: can't init develop system, aborting.\n");
+    return 1;
+  }
 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
@@ -956,7 +966,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
   // check if all modules have a iop order assigned
-  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list)) return 1;
+  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
+  {
+    fprintf(stderr, "ERROR: iop order looks bad, aborting.\n");
+    return 1;
+  }
 
   if(init_gui)
   {
@@ -1145,11 +1159,12 @@ void dt_cleanup()
 
   dt_capabilities_cleanup();
 
-  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)  
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
   {
     dt_pthread_mutex_destroy(&(darktable.db_image[k]));
   }
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.dev_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.readFile_mutex));

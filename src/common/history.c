@@ -598,7 +598,8 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
         if (iop_order_version_src != iop_order_version_dest)
         {
           hist->module->iop_order =
-            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op) + (double)hist->module->multi_priority / 100.0f;
+            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op)
+            + (double)hist->module->iop_order / 100.0f;
         }
 
         if (!dt_iop_is_hidden(hist->module))
@@ -635,7 +636,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
         if (iop_order_version_src != iop_order_version_dest)
         {
           mod_src->iop_order =
-            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->multi_priority / 100.0f;
+            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->iop_order / 100.0f;
         }
 
         if (DT_IOP_ORDER_INFO)
@@ -962,7 +963,6 @@ static int dt_history_end_attop(int32_t imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
   if (sqlite3_step(stmt) == SQLITE_ROW)
     end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -1006,6 +1006,23 @@ void dt_history_compress_on_image(int32_t imgid)
     dt_unlock_image(imgid);
     return;
   }
+
+  int masks_count = 0;
+  const char *op_mask_manager = "mask_manager";
+  gboolean manager_position = FALSE;
+
+  // We must know for sure whether there is a mask manager at slot 0 in history
+  // because only if this is **not** true history nums and history_end must be increased
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+    "SELECT COUNT(*) FROM main.history WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if (sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
   // compress history, keep disabled modules as documented
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.history WHERE imgid = ?1 AND num "
@@ -1018,35 +1035,15 @@ void dt_history_compress_on_image(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  int masks_count = 0;
-  char op_mask_manager[20] = { 0 };
-
-  gboolean manager_position = FALSE;
-  // do we already have a mask manager at the correct position? We don't want to increase history nums later
-  g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      if (sqlite3_column_int(stmt, 0) == 0) manager_position = TRUE;
-    }
-  sqlite3_finalize(stmt);
-
   // delete all mask_manager entries
-  g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt,
-                              NULL);
+    "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // compress masks history, this keeps masks owned by the mask manager.
+  // compress masks history
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1 AND num "
                                                              "NOT IN (SELECT MAX(num) FROM main.masks_history WHERE "
                                                              "imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
@@ -1055,18 +1052,18 @@ void dt_history_compress_on_image(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // if there's masks create a mask manage entry
+  // if there are masks create a mask manager entry, so we need to count them
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1, &stmt, NULL);
+    "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   if(masks_count > 0)
   {
-    // set the masks history as first entry. This means the mask is owned by the manager, is this really correct and desired?
+    // Set num in masks history to make sure they are owned by the manager at slot 0.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
+      "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);

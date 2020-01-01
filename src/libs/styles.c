@@ -442,34 +442,34 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, FALSE, 0);
 
   // create
-  GtkWidget *cbutton = gtk_button_new_with_label(_("create"));
+  GtkWidget *cbutton = gtk_button_new_with_label(_("create..."));
   g_signal_connect(G_OBJECT(cbutton), "clicked", G_CALLBACK(create_clicked), d);
   gtk_widget_set_tooltip_text(cbutton, _("create styles from history stack of selected images"));
   gtk_box_pack_start(GTK_BOX(hbox1), cbutton, TRUE, TRUE, 0);
 
   // edit
-  GtkWidget *widget = gtk_button_new_with_label(_("edit"));
+  GtkWidget *widget = gtk_button_new_with_label(_("edit..."));
   d->edit_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(edit_clicked), d);
   gtk_widget_set_tooltip_text(widget, _("edit the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // delete
-  widget = gtk_button_new_with_label(_("delete"));
+  widget = gtk_button_new_with_label(_("remove"));
   d->delete_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
   gtk_widget_set_tooltip_text(widget, _("deletes the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // import button
-  GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
+  GtkWidget *importButton = gtk_button_new_with_label(C_("verb", "import..."));
   d->import_button = importButton;
   gtk_widget_set_tooltip_text(importButton, _("import style from a style file"));
   g_signal_connect(importButton, "clicked", G_CALLBACK(import_clicked), d);
   gtk_box_pack_start(GTK_BOX(hbox2), importButton, TRUE, TRUE, 0);
 
   // export button
-  GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  GtkWidget *exportButton = gtk_button_new_with_label(_("export..."));
   d->export_button = exportButton;
   gtk_widget_set_tooltip_text(exportButton, _("export the selected style into a style file"));
   g_signal_connect(exportButton, "clicked", G_CALLBACK(export_clicked), d);

@@ -51,7 +51,7 @@ DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 typedef enum dt_iop_clipping_flags_t
 {
   FLAG_FLIP_HORIZONTAL = 1 << 0,
-  FLAG_FLIP_VERTICAL = 1 << 1
+  FLAG_FLIP_VERTICAL   = 1 << 1
 } dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_aspect_t
@@ -71,19 +71,19 @@ typedef struct dt_iop_clipping_params_t
 
 typedef enum _grab_region_t
 {
-  GRAB_CENTER = 0,                                            // 0
-  GRAB_LEFT = 1 << 0,                                         // 1
-  GRAB_TOP = 1 << 1,                                          // 2
-  GRAB_RIGHT = 1 << 2,                                        // 4
-  GRAB_BOTTOM = 1 << 3,                                       // 8
-  GRAB_TOP_LEFT = GRAB_TOP | GRAB_LEFT,                       // 3
-  GRAB_TOP_RIGHT = GRAB_TOP | GRAB_RIGHT,                     // 6
-  GRAB_BOTTOM_RIGHT = GRAB_BOTTOM | GRAB_RIGHT,               // 12
-  GRAB_BOTTOM_LEFT = GRAB_BOTTOM | GRAB_LEFT,                 // 9
-  GRAB_HORIZONTAL = GRAB_LEFT | GRAB_RIGHT,                   // 5
-  GRAB_VERTICAL = GRAB_TOP | GRAB_BOTTOM,                     // 10
-  GRAB_ALL = GRAB_LEFT | GRAB_TOP | GRAB_RIGHT | GRAB_BOTTOM, // 15
-  GRAB_NONE = 1 << 4                                          // 16
+  GRAB_CENTER       = 0,                                               // 0
+  GRAB_LEFT         = 1 << 0,                                          // 1
+  GRAB_TOP          = 1 << 1,                                          // 2
+  GRAB_RIGHT        = 1 << 2,                                          // 4
+  GRAB_BOTTOM       = 1 << 3,                                          // 8
+  GRAB_TOP_LEFT     = GRAB_TOP | GRAB_LEFT,                            // 3
+  GRAB_TOP_RIGHT    = GRAB_TOP | GRAB_RIGHT,                           // 6
+  GRAB_BOTTOM_RIGHT = GRAB_BOTTOM | GRAB_RIGHT,                        // 12
+  GRAB_BOTTOM_LEFT  = GRAB_BOTTOM | GRAB_LEFT,                         // 9
+  GRAB_HORIZONTAL   = GRAB_LEFT | GRAB_RIGHT,                          // 5
+  GRAB_VERTICAL     = GRAB_TOP | GRAB_BOTTOM,                          // 10
+  GRAB_ALL          = GRAB_LEFT | GRAB_TOP | GRAB_RIGHT | GRAB_BOTTOM, // 15
+  GRAB_NONE         = 1 << 4                                           // 16
 } _grab_region_t;
 
 /* calculate the aspect ratios for current image */
@@ -108,7 +108,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float angle, cx, cy, cw, ch, k_h, k_v;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     k.f = o->k_h;
     int is_horizontal;
@@ -153,7 +153,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float angle, cx, cy, cw, ch, k_h, k_v;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -183,7 +183,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int k_apply, crop_auto;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -393,10 +393,11 @@ static inline void backtransform(float *x, float *o, const float *m, const float
 
 static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
-  const float rt[] = { m[0], -m[1], -m[2], m[3] };
-  mul_mat_vec_2(rt, x, o);
-  o[1] *= 1.0f + o[0] * t_h;
-  o[0] *= 1.0f + o[1] * t_v;
+  const float det = (m[0] * m[3]) - (m[1] * m[2]);
+  const float m_inv[] = { m[3] / det, -m[1] / det, -m[2] / det , m[0] / det };
+  mul_mat_vec_2(m_inv, x, o);
+  o[1] *= (1.0f + o[0] * t_h);
+  o[0] *= (1.0f + o[1] * t_v);
 }
 
 
@@ -417,11 +418,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
+
   float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma, mb, md, me, mg, mh;
-  keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
+  if(d->k_apply == 1)
+    keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -485,7 +488,8 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma, mb, md, me, mg, mh;
-  keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
+  if(d->k_apply == 1)
+    keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -506,6 +510,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     }
 
     backtransform(pi, po, d->m, d->k_h, d->k_v);
+
     po[0] += d->tx / factor;
     po[1] += d->ty / factor;
     if(d->k_apply == 1) keystone_backtransform(po, k_space, ma, mb, md, me, mg, mh, kxa, kya);
@@ -1207,10 +1212,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     else if(p->k_type == 2) // we want vertical points to be aligned
     {
       // line equations parameters
-      float a1 = (d->kyb - d->kya) / (d->kxb - d->kxa);
-      float b1 = d->kya - a1 * d->kxa;
-      float a2 = (d->kyc - d->kyd) / (d->kxc - d->kxd);
-      float b2 = d->kyd - a2 * d->kxd;
+      const float a1 = (d->kyb - d->kya) / (d->kxb - d->kxa);
+      const float b1 = d->kya - a1 * d->kxa;
+      const float a2 = (d->kyc - d->kyd) / (d->kxc - d->kxd);
+      const float b2 = d->kyd - a2 * d->kxd;
 
       if(d->kxa > d->kxd)
       {
@@ -1352,11 +1357,11 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
     else
     {
       const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-      float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
-                      / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
-      float ri = (float)iwd / (float)iht;
+      const float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
+                            / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+      const float ri = (float)iwd / (float)iht;
 
-      float prec = 0.0003f;
+      const float prec = 0.0003f;
       if(fabsf(whratio - 3.0f / 2.0f) < prec)
       {
         p->ratio_d = 3;
@@ -1720,16 +1725,16 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->cw < 0)
   {
     if(p->ch < 0)
-      hvflip = 3;
+      hvflip = 3; // BOTH
     else
-      hvflip = 1;
+      hvflip = 1; // HORIZONTAL
   }
   else
   {
     if(p->ch < 0)
-      hvflip = 2;
+      hvflip = 2; // VERTICAL
     else
-      hvflip = 0;
+      hvflip = 0; // NONE
   }
   dt_bauhaus_combobox_set(g->hvflip, hvflip);
 
@@ -1812,6 +1817,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1933,7 +1940,7 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
 
   if(aratio < bratio) return -1;
 
-  float prec = 0.0003f;
+  const float prec = 0.0003f;
   if(fabsf(aratio - bratio) < prec) return 0;
 
   return 1;
@@ -1943,7 +1950,7 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
 static gchar *format_aspect(gchar *original, int adim, int bdim)
 {
   // Special ratios:  freehand, original image
-  if ( bdim == 0 ) return g_strdup(original);
+  if(bdim == 0) return g_strdup(original);
 
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
@@ -2207,10 +2214,10 @@ static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t 
 }
 
 // draw rounded rectangle
-static void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y)
+static void gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y)
 {
-  float radius = height / 5.0f;
-  float degrees = M_PI / 180.0;
+  const float radius = height / 5.0f;
+  const float degrees = M_PI / 180.0;
   cairo_new_sub_path(cr);
   cairo_arc(cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
   cairo_arc(cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
@@ -2305,7 +2312,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     char dimensions[16];
     dimensions[0] = '\0';
     PangoLayout *layout;
-    PangoRectangle ink;
+    PangoRectangle ext;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
@@ -2314,12 +2321,27 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions), "%.0fx%.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%.0f x %.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
 
     pango_layout_set_text(layout, dimensions, -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - ink.width * .5f,
-                  (g->clip_y + g->clip_h / 2) * ht - ink.height * .5f);
+    pango_layout_get_pixel_extents(layout, NULL, &ext);
+    const float text_w = ext.width;
+    const float text_h = DT_PIXEL_APPLY_DPI(16+2) / zoom_scale;
+    const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+    float xp = (g->clip_x + g->clip_w * .5f) * wd - text_w * .5f;
+    float yp = (g->clip_y + g->clip_h * .5f) * ht - text_h * .5f;
+
+    // ensure that the rendered string remains visible within the window bounds
+    double x1, y1, x2, y2;
+    cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
+    xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
+    yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
+
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
+                               xp - margin, yp - margin);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -2349,7 +2371,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
 
   const int which = dt_bauhaus_combobox_get(g->guide_lines);
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
+  const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
     guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
@@ -2646,20 +2668,20 @@ static float dist_seg(float xa, float ya, float xb, float yb, float xc, float yc
 {
   if(xa == xb && ya == yb) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 
-  float sx = xb - xa;
-  float sy = yb - ya;
+  const float sx = xb - xa;
+  const float sy = yb - ya;
 
-  float ux = xc - xa;
-  float uy = yc - ya;
+  const float ux = xc - xa;
+  const float uy = yc - ya;
 
-  float dp = sx * ux + sy * uy;
+  const float dp = sx * ux + sy * uy;
   if(dp < 0) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 
-  float sn2 = sx * sx + sy * sy;
+  const float sn2 = sx * sx + sy * sy;
   if(dp > sn2) return (xc - xb) * (xc - xb) + (yc - yb) * (yc - yb);
 
-  float ah2 = dp * dp / sn2;
-  float un2 = ux * ux + uy * uy;
+  const float ah2 = dp * dp / sn2;
+  const float un2 = ux * ux + uy * uy;
   return un2 - ah2;
 }
 

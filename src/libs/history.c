@@ -51,6 +51,11 @@ typedef struct dt_lib_history_t
   int previous_history_end;
 } dt_lib_history_t;
 
+/* 3 widgets in each history line */
+#define HIST_WIDGET_NUMBER 0
+#define HIST_WIDGET_MODULE 1
+#define HIST_WIDGET_STATUS 2
+
 /* compress history stack */
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
@@ -115,7 +120,6 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   d->compress_button = gtk_button_new_with_label(_("compress history stack"));
-  gtk_label_set_xalign (GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->compress_button))), 0.0f);
   gtk_widget_set_tooltip_text(d->compress_button, _("create a minimal history stack which produces the same image"));
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
 
@@ -154,25 +158,62 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, const char *label,
-                                             gboolean enabled, gboolean selected)
+                                             gboolean enabled, gboolean default_enabled, gboolean always_on, gboolean selected, gboolean deprecated)
 {
   /* create label */
-  GtkWidget *widget = NULL;
-  gchar numlabel[256];
-  if(num == -1)
-    g_snprintf(numlabel, sizeof(numlabel), "%d - %s", num + 1, label);
-  else
-  {
-    if(enabled)
-      g_snprintf(numlabel, sizeof(numlabel), "%d - %s", num + 1, label);
-    else
-      g_snprintf(numlabel, sizeof(numlabel), "%d - %s (%s)", num + 1, label, _("off"));
-  }
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gchar numlab[10];
+
+  g_snprintf(numlab, sizeof(numlab), "%2d", num + 1);
+  GtkWidget *numwidget = gtk_label_new(numlab);
+  gtk_widget_set_name(numwidget, "history-number");
+
+  GtkWidget *onoff = NULL;
 
   /* create toggle button */
-  widget = gtk_toggle_button_new_with_label(numlabel);
+  GtkWidget *widget = gtk_toggle_button_new_with_label(label);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
-  gtk_widget_set_name(GTK_WIDGET(widget), "history-button");
+
+  if(always_on)
+  {
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on,
+                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(onoff, "history-switch-always-enabled");
+    gtk_widget_set_name(widget, "history-button-always-enabled");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
+    // gtk_widget_set_tooltip_text(onoff, _("always-on module"));
+  }
+  else if(default_enabled)
+  {
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
+                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(onoff, "history-switch-default-enabled");
+    gtk_widget_set_name(widget, "history-button-default-enabled");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
+    // gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
+  }
+  else
+  {
+    if(deprecated)
+    {
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated,
+                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_name(onoff, "history-switch-deprecated");
+      // for after 3.0 as it breaks translation
+      // gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
+    }
+    else
+    {
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
+                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
+    }
+    gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
+  }
+
+  gtk_widget_set_sensitive (onoff, FALSE);
+
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -183,7 +224,11 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
 
-  return widget;
+  gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), onoff, FALSE, FALSE, 0);
+
+  return hbox;
 }
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
@@ -616,9 +661,9 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* add default which always should be */
   int num = -1;
-  gtk_box_pack_start(GTK_BOX(d->history_box),
-                     _lib_history_create_button(self, num, _("original"), FALSE, darktable.develop->history_end == 0),
-                     TRUE, TRUE, 0);
+  GtkWidget *widget =
+    _lib_history_create_button(self, num, _("original"), FALSE, FALSE, TRUE, darktable.develop->history_end == 0, FALSE);
+  gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
   num++;
 
   if (d->record_undo == TRUE)
@@ -644,17 +689,18 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   while(history)
   {
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-    char marker [32] = "";
-    if(hitem->module->flags() & IOP_FLAGS_DEPRECATED)
-      g_snprintf(marker, sizeof(marker), "/!\\ "); // instead of an UTF character
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
-      label = g_strdup_printf("%s%s", marker, hitem->module->name());
+      label = g_strdup_printf("%s", hitem->module->name());
     else
-      label = g_strdup_printf("%s%s %s", marker, hitem->module->name(), hitem->multi_name);
+      label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
-    gboolean selected = (num == darktable.develop->history_end - 1);
-    GtkWidget *widget = _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)), selected);
+    const gboolean selected = (num == darktable.develop->history_end - 1);
+    widget =
+      _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)),
+                                 hitem->module->default_enabled, hitem->module->hide_enable_button, selected,
+                                 hitem->module->flags() & IOP_FLAGS_DEPRECATED);
+
     g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
@@ -728,7 +774,8 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
+    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);

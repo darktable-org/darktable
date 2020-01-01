@@ -399,12 +399,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // ... if 100% frame_offset we ensure frame_line "stick" the out border
     const int frame_br_out_x
         = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_l, border_size_r)))
-              ? (roi_out->width)
-              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width);
+              ? (roi_out->width - 1)
+              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
     const int frame_br_out_y
         = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_t, border_size_b)))
-              ? (roi_out->height)
-              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height);
+              ? (roi_out->height - 1)
+              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
 
     for(int r = frame_tl_out_y; r <= frame_br_out_y; r++)
     {
@@ -672,7 +672,7 @@ static void aspect_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
   {
@@ -713,7 +713,7 @@ static void position_h_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
   {
@@ -751,7 +751,7 @@ static void position_v_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
   {
@@ -779,7 +779,7 @@ static void position_v_changed(GtkWidget *combo, dt_iop_module_t *self)
   else if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
     g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
-    p->pos_v = g->pos_h_ratios[which];
+    p->pos_v = g->pos_v_ratios[which];
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -930,6 +930,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void gui_init_aspect(struct dt_iop_module_t *self)

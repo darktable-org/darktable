@@ -20,9 +20,12 @@
 */
 
 #pragma once
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #ifdef HAVE_OPENCL
-#include "CL/cl.h"           // for cl_mem
+#include <CL/cl.h>           // for cl_mem
 #endif
 
 #include "common/image.h"    // for dt_image_t, dt_image_orientation_t

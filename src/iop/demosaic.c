@@ -4799,6 +4799,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -4996,11 +4998,13 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
 
   // only on for raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
     module->default_enabled = 1;
   else
+    {
     module->default_enabled = 0;
-
+      module->hide_enable_button = 1;
+    }
   if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
 end:

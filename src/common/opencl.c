@@ -204,7 +204,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR, (void **)&vendor, &vendor_size);
   if(err != CL_SUCCESS)
   {
-    res = 1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get vendor name of device %d: %d\n", k, err);
+    res = -1;
     goto end;
   }
 
@@ -213,21 +214,24 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME, (void **)&infostr, &infostr_size);
   if(err != CL_SUCCESS)
   {
-    res = 1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device name of device %d: %d\n", k, err);
+    res = -1;
     goto end;
   }
 
   err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION, (void **)&driverversion, &driverversion_size);
   if(err != CL_SUCCESS)
   {
-    res = 1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get driver version of device %d `%s': %d\n", k, infostr, err);
+    res = -1;
     goto end;
   }
 
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VERSION, (void **)&deviceversion, &deviceversion_size);
   if(err != CL_SUCCESS)
   {
-    res = 1;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device version of device %d `%s': %d\n", k, infostr, err);
+    res = -1;
     goto end;
   }
 
@@ -296,7 +300,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
                                            &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < opencl_memory_requirement * 1024 * 1024)
+  if(cl->dev[dev].max_global_mem < (uint64_t)opencl_memory_requirement * 1024 * 1024)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
@@ -338,7 +342,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     }
     else
     {
-      res = 1;
+      res = -1;
       goto end;
     }
 
@@ -353,7 +357,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
-    res = 1;
+    res = -1;
     goto end;
   }
   // create a command queue for first device the context reported
@@ -362,7 +366,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
-    res = 1;
+    res = -1;
     goto end;
   }
 
@@ -385,7 +389,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
-    res = 1;
+    res = -1;
     goto end;
   }
 
@@ -400,7 +404,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  options = g_strdup_printf("-w -cl-fast-relaxed-math %s -D%s=1 -I%s",
+  // do not use -cl-fast-relaxed-math, this breaks AMD OpenCL
+  // do not use -cl-finite-math-only, this breaks Intel Neo OpenCL
+  options = g_strdup_printf("-w %s -D%s=1 -I%s",
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
@@ -475,7 +481,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
         fclose(f);
         g_strfreev(tokens);
-        res = 1;
+        res = -1;
         goto end;
       }
 
@@ -490,7 +496,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
-    res = 1;
+    res = -1;
     goto end;
   }
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++) g_free(includemd5[n]);
@@ -699,12 +705,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   {
     const int res = dt_opencl_device_init(cl, dev, devices, k, opencl_memory_requirement);
 
-    if(res == 1)
-      goto finally;
-    else if(res == -1)
+    if(res != 0)
       continue;
 
-    // that is, increase dev only if res == 0
+    // increase dev only if dt_opencl_device_init was successful (res == 0)
 
     ++dev;
   }
@@ -1653,7 +1657,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
         rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if(rd != cached_filesize)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file '%s' MD5: %s!\n", binname, md5sum);
         }
         else
         {
@@ -1663,8 +1667,8 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
           if(err != CL_SUCCESS)
           {
             dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n",
-                     binname, err);
+                     "[opencl_load_program] could not load cached binary program from file '%s' MD5: '%s'! (%d)\n",
+                     binname, md5sum, err);
           }
           else
           {
@@ -1683,6 +1687,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   {
     // if loading cached was unsuccessful for whatever reason,
     // try to remove cached binary & link
+#if !defined(_WIN32)
     if(linkedfile_len > 0)
     {
       char link_dest[PATH_MAX] = { 0 };
@@ -1690,6 +1695,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
       g_unlink(link_dest);
     }
     g_unlink(binname);
+#else
+    // delete the file which contains the MD5 name
+    g_unlink(dup);
+#endif //!defined(_WIN32)
 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_load_program] could not load cached binary program, trying to compile source\n");
@@ -1711,10 +1720,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   else
   {
     free(file);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file `%s'\n", binname);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file '%s' MD5: '%s' \n", binname, md5sum);
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from `%s'\n", filename);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'\n", filename, md5sum);
 
   return 1;
 }
@@ -1813,7 +1822,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s", cachedir, md5sum);
-          FILE *f = g_fopen(link_dest, "w");
+          FILE *f = g_fopen(link_dest, "wb");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;

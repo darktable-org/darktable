@@ -979,7 +979,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   /* add import single image buttons */
-  GtkWidget *widget = gtk_button_new_with_label(_("image"));
+  GtkWidget *widget = gtk_button_new_with_label(_("image..."));
   dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
   d->import_file = GTK_BUTTON(widget);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
@@ -990,7 +990,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_single_image_callback), self);
 
   /* adding the import folder button */
-  widget = gtk_button_new_with_label(_("folder"));
+  widget = gtk_button_new_with_label(_("folder..."));
   dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
   d->import_directory = GTK_BUTTON(widget);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);

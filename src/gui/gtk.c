@@ -1288,7 +1288,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // accels window
-  dt_accel_register_global(NC_("accel", "show accels window"), 0, 0);
+  dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
 
   darktable.gui->reset = 0;
 
@@ -1327,6 +1327,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // finally set the cursor to be the default.
   // for some reason this is needed on some systems to pick up the correctly themed cursor
   dt_control_change_cursor(GDK_LEFT_PTR);
+
+  dt_iop_color_picker_init();
 
   return 0;
 }

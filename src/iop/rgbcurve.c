@@ -959,8 +959,16 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   if(self->enabled)
   {
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    float hist_max;
+
+    if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
+      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBCURVE_R], fmaxf(self->histogram_max[DT_IOP_RGBCURVE_G],self->histogram_max[DT_IOP_RGBCURVE_B]));
+    else
+      hist_max = self->histogram_max[ch];
+
+    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+      hist_max = logf(1.0 + hist_max);
+
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -971,15 +979,15 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 0, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_R, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 1, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_G, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, 2, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
         }
         else if(autoscale == DT_S_SCALE_MANUAL_RGB)
@@ -1480,7 +1488,8 @@ void change_image(struct dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(g)
   {
-    g->channel = DT_IOP_RGBCURVE_R;
+    if(!g->channel)
+      g->channel = DT_IOP_RGBCURVE_R;
     g->mouse_x = g->mouse_y = -1.0;
     g->selected = -1;
     g->offset_x = g->offset_y = 0.f;
@@ -1504,6 +1513,7 @@ void gui_init(struct dt_iop_module_t *self)
       (void)dt_draw_curve_add_point(g->minmax_curve[ch], p->curve_nodes[ch][k].x, p->curve_nodes[ch][k].y);
   }
 
+  g->channel = DT_IOP_RGBCURVE_R;
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1729,6 +1739,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)

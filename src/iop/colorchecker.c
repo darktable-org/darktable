@@ -902,6 +902,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -935,7 +937,10 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   dt_iop_request_focus(self);
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  {
     dt_dev_reprocess_all(self->dev);
+    self->gui_update(self);
+  }
   else
     dt_control_queue_redraw();
 

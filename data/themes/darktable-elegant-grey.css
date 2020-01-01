@@ -23,7 +23,7 @@
 /* Perceptually uniform grey gradient */
 
 /* General */
-@define-color selected_bg_color @grey_65; /* legacy stuff */
+@define-color selected_bg_color @grey_55; /* legacy stuff */
 @define-color border_color @grey_40; /* border, when used */
 @define-color bg_color @grey_45; /* general background */
 @define-color fg_color @grey_95; /* general text */
@@ -34,7 +34,6 @@
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_70;
 @define-color scroll_bar_active @grey_90;
-@define-color scroll_bar_focus @grey_75;
 @define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */
@@ -57,12 +56,10 @@
 @define-color button_border @grey_60;
 @define-color button_bg @grey_55;
 @define-color button_fg @grey_95;
-@define-color button_focus_bg @grey_65;
-@define-color button_focus_fg @grey_100;
 @define-color button_checked_bg @grey_75;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_85;
-@define-color button_hover_fg @grey_45;
+@define-color button_hover_bg @grey_70;
+@define-color button_hover_fg @grey_35;
 
 /* text fields */
 @define-color field_bg @grey_45;
@@ -76,8 +73,7 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_35;
-@define-color tooltip_fg_color @grey_95;
-@define-color really_dark_bg_color @grey_35;
+@define-color menu_bg_color @grey_35;
 
 /* Views */
 @define-color darkroom_bg_color @grey_75;
@@ -105,3 +101,28 @@
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_35;
 @define-color inset_histogram alpha(@grey_95, 0.50);
+
+menu,
+menuitem arrow
+{
+  background-color: @menu_bg_color;
+}
+
+/* Adjust middle grey picker on levels and rgb levels modules to make it visible */
+#picker-grey
+{
+  color: @grey_65;
+}
+
+/* deactivated switch buttons, make them less visible */
+#history-switch:disabled
+{
+    color: shade(@plugin_label_color, .9);
+    background-color: transparent;
+}
+
+#history-button *
+{
+  color: shade(@plugin_fg_color, 0.8);
+  background-color: transparent;
+}
