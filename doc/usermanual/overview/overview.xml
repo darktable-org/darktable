@@ -119,10 +119,10 @@
     </para></listitem>
 	  
     <listitem><para>
-      darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
-      that always just works&trade;. It's designed as a module where the denoising performance
-      only depends on camera and ISO setting. A database of profiles contains parameters for
-      well above 200 popular camera models.
+      darktable features a selection of effective denoiser modules including a highly efficient,
+      yet simple <quote>denoise (profiled)</quote> that just works 
+      (see <xref linkend="denoise_profiled"/>). The collection of noise 
+      profiles contains parameters for different ISO settings of 200+ popular camera models.
     </para></listitem>
 
     <listitem><para>
