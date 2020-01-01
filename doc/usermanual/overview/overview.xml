@@ -221,8 +221,8 @@
 
             <listitem><para>
               You may optionally supply the filename of an image or the name of a folder
-              containing image files. If a filename is given darktable starts in darkroom view
-              with that file opened. If a folder is given darktable starts in lighttable view
+              containing image files. If a filename is given, darktable starts in darkroom perspective
+              with that file opened. If a folder is given, darktable starts in lighttable perspective
               with the content of that folder as the current collection.
             </para></listitem>
 
@@ -877,78 +877,21 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
+              <graphic fileref="images/lighttable_perspective.png" scalefit="1" width="80%" align="center" />
             </entry>
           </row>
         </tbody>
       </tgroup>
     </informaltable>
 
-    <sect2 status="final" id="views">
+    <sect2 status="final" id="perspectives">
 
-      <title>Views</title>
+      <title>Perspectives</title>
 
       <para>
-        darktable consists of several views or modes. There are five available views as
-        described in this section. You can switch between views by clicking the view name at the
-        top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by
-        using one of the key accelerators:
-        <informaltable frame="none" width="60%">
-          <tgroup cols="2" colsep="0" rowsep="0">
-            <colspec colwidth='1*'/>
-            <colspec colwidth='9*'/>
-            <tbody>
-              <row>
-                <entry>
-                  <emphasis>L</emphasis>
-                </entry>
-                <entry>
-                  switches to lighttable
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>D</emphasis>
-                </entry>
-                <entry>
-                  switches to darkroom
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>T</emphasis>
-                </entry>
-                <entry>
-                  switches to camera tethering
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>M</emphasis>
-                </entry>
-                <entry>
-                  switches to map
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>S</emphasis>
-                </entry>
-                <entry>
-                  switches to slideshow
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>P</emphasis>
-                </entry>
-                <entry>
-                  switches to print
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        darktable consists of five perspectives described in this section. You can switch 
+        between perspectives by clicking their names at the top right of darktable window or using    
+        shortcuts (see <xref linkend="shortcuts"/>). The active perspective is highlighted with a light font color.
       </para>
 
       <sect3 status="final" id="overview_lighttable">
@@ -956,7 +899,7 @@
         <title>Lighttable</title>
 
         <para>
-          The lighttable view is where images and film rolls are managed. It's also where you
+          The lighttable perspective is where images and film rolls are managed. It's also where you
           rate images, add tags and colorlabels, and export images among other actions (see
           <xref linkend="lighttable_chapter"/>).
         </para>
@@ -968,7 +911,7 @@
         <title>Darkroom</title>
 
         <para>
-          In the darkroom view you develop a single image using the available modules (see
+          In the darkroom perspective you develop a single image using the available modules (see
           <xref linkend="darkroom_chapter"/>).
         </para>
 
@@ -979,7 +922,7 @@
         <title>Tethering</title>
 
         <para>
-          This view is for shooting with the camera connected to the computer and remotely
+          The tethering perspective is for shooting with the camera connected to the computer and remotely
           capturing images that will be downloaded and shown on computer screen (see
           <xref linkend="tethering_chapter"/>).
         </para>
@@ -991,7 +934,7 @@
         <title>Map</title>
 
         <para>
-          This view shows images with geo-tag data on a map and allows manually geo-tagging new
+          The map perspective shows images with geo-tag data on a map and allows manually geo-tagging new
           images (see <xref linkend="map_chapter"/>).
         </para>
 
@@ -1002,7 +945,7 @@
         <title>Slideshow</title>
 
         <para>
-          This view shows images as a slideshow, processing them on-the-fly (see
+          The slideshow perspective view shows images as a slideshow, processing them on-the-fly (see
           <xref linkend="slideshow_chapter"/>).
         </para>
 
@@ -1013,7 +956,7 @@
         <title>Print</title>
 
         <para>
-          This view allows you to send images to your printer (see
+          The print perspective allows you to send images to your printer (see
           <xref linkend="print_chapter"/>).
         </para>
 
@@ -1026,12 +969,9 @@
       <title>Screen layout</title>
 
       <para>
-        The general screen layout of all views is similar. There is a center area which contains
-        most of the relevant information of that view. Then there are panels left, right, top
-        and bottom to the center area. The left panel typically has an informational purpose.
-        The right panel offers functions to modify an image. The top and bottom panel give
-        access to several settings and shortcuts. Each of the panels can be collapsed or
-        expanded by pressing a triangle like
+        The general screen layout of all perspectives consists of a center area which contains
+        image(s) while left, right, top and bottom panels hold various tools. Each of the
+        panels can be collapsed or expanded by pressing a triangle like
         <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
         , located close to the panel.
       </para>
@@ -1145,7 +1085,7 @@
 
       <para>
         To begin with darktable, you first need to import images. The import module is in the
-        left panel of the lighttable view (<xref linkend="import"/>). You can either import from
+        left panel of the lighttable perspective (<xref linkend="import"/>). You can either import from
         the filesystem or, if darktable supports your camera model, directly from camera.
       </para>
 
@@ -1188,24 +1128,23 @@
 
         <para>
           This section will guide you through the basics of developing an image in the darkroom
-          view.
+          perspective.
         </para>
 
         <para>
-          To begin, open an image in darkroom mode by double clicking an image thumbnail on the
-          lighttable. The darkroom mode is where the actual adjustments for an image are made,
-          where an arsenal of modules are at hand to help you reach your goal.
+          To begin, open an image in darkroom perspective by double clicking an image thumbnail on the
+          lighttable perspective.
         </para>
 
         <para>
           Each change made on a module while developing an image is turned into a
           <link linkend="history"><emphasis>history stack</emphasis></link> item. The history is
-          stored in a database and in an XMP sidecar file for the specific image.
+          stored in the darktable database and in an XMP sidecar file for the specific image.
         </para>
 
         <para>
-          All changes are stored automatically when you switch images or go from one darktable
-          view to another. You can safely leave darkroom mode or quit darktable at any time and
+          All changes are stored automatically when you switch images or leave the darktable
+          perspective. You can safely leave darkroom mode or quit darktable at any time and
           come back later to continue your work. That said darktable does not need a
           <quote>save</quote> button and it does not have one.
           <indexterm>
@@ -1214,7 +1153,7 @@
         </para>
 
         <para>
-          On the left panel in darkroom mode is the <link linkend="history"><emphasis>history
+          On the left panel in darkroom perspective is the <link linkend="history"><emphasis>history
           stack</emphasis></link>, showing changes starting from bottom, and building up with
           each change made to the image. You can select a point in this history to show how the
           image looked at that point, for comparison of changes. The stack can be compressed: it
@@ -1453,7 +1392,7 @@
       </para>
 
       <para>
-        Images are exported from the lighttable view, using the <emphasis>export
+        Images are exported from the lighttable perspective, using the <emphasis>export
         selected</emphasis> dialog in the right panel (<xref linkend="export_selected"/>). In
         general, export means: save my developed raw image as a JPEG.
       </para>
