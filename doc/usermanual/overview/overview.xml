@@ -879,76 +879,41 @@
       <para>
         darktable consists of five perspectives described in this section. You can switch 
         between perspectives by clicking their names at the top right of darktable window or using    
-        shortcuts (see <xref linkend="shortcuts"/>). The active perspective is highlighted with a light font color.
+        shortcuts (see <xref linkend="shortcuts"/>). The active perspective is highlighted with
+        the light font color.
       </para>
 
-      <sect3 status="final" id="overview_lighttable">
+      <para>
+        The lighttable perspective is where images and film rolls are managed. It's also where you
+        rate images, add tags and colorlabels, and export images among other actions (see
+        <xref linkend="lighttable_chapter"/>).
+      </para>
 
-        <title>Lighttable</title>
+      <para>
+        In the darkroom perspective you develop a single image using the available modules (see
+        <xref linkend="darkroom_chapter"/>).
+      </para>
 
-        <para>
-          The lighttable perspective is where images and film rolls are managed. It's also where you
-          rate images, add tags and colorlabels, and export images among other actions (see
-          <xref linkend="lighttable_chapter"/>).
-        </para>
+      <para>
+        The tethering perspective is for shooting with the camera connected to the computer and remotely
+        capturing images that will be downloaded and shown on computer screen (see
+        <xref linkend="tethering_chapter"/>).
+      </para>
 
-      </sect3>
+      <para>
+        The map perspective shows images with geo-tag data on a map and allows manually geo-tagging new
+        images (see <xref linkend="map_chapter"/>).
+      </para>
 
-      <sect3 status="final" id="overview_darkroom">
+      <para>
+        The slideshow perspective view shows images as a slideshow, processing them on-the-fly (see
+        <xref linkend="slideshow_chapter"/>).
+      </para>
 
-        <title>Darkroom</title>
-
-        <para>
-          In the darkroom perspective you develop a single image using the available modules (see
-          <xref linkend="darkroom_chapter"/>).
-        </para>
-
-      </sect3>
-
-      <sect3 status="final" id="overview_tethering">
-
-        <title>Tethering</title>
-
-        <para>
-          The tethering perspective is for shooting with the camera connected to the computer and remotely
-          capturing images that will be downloaded and shown on computer screen (see
-          <xref linkend="tethering_chapter"/>).
-        </para>
-
-      </sect3>
-
-      <sect3 status="final" id="overview_map">
-
-        <title>Map</title>
-
-        <para>
-          The map perspective shows images with geo-tag data on a map and allows manually geo-tagging new
-          images (see <xref linkend="map_chapter"/>).
-        </para>
-
-      </sect3>
-
-      <sect3 status="final" id="overview_slideshow">
-
-        <title>Slideshow</title>
-
-        <para>
-          The slideshow perspective view shows images as a slideshow, processing them on-the-fly (see
-          <xref linkend="slideshow_chapter"/>).
-        </para>
-
-      </sect3>
-
-      <sect3 status="final" id="overview_print">
-
-        <title>Print</title>
-
-        <para>
-          The print perspective allows you to send images to your printer (see
-          <xref linkend="print_chapter"/>).
-        </para>
-
-      </sect3>
+      <para>
+        The print perspective allows you to send images to your printer (see
+        <xref linkend="print_chapter"/>).
+      </para>
 
     </sect2>
 
