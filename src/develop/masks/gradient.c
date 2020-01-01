@@ -40,7 +40,7 @@ static void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_g
   *inside = *inside_border = *inside_source = 0;
   *near = -1;
 
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   const float as2 = as * as;
@@ -163,7 +163,7 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
   }
   else if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     // we start the form rotating or dragging
     if(gui->pivot_selected)
@@ -382,16 +382,16 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
   }
   else if(!gui->creation)
   {
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+    const float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
     int in, inb, near, ins;
-    float x = pzx * darktable.develop->preview_pipe->backbuf_width;
-    float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
+    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     dt_gradient_get_distance(x, y, as, gui, index, &in, &inb, &near, &ins);
 
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
     if(gpt
        && (x - gpt->points[2]) * (x - gpt->points[2]) + (y - gpt->points[3]) * (y - gpt->points[3]) < as * as)
@@ -459,8 +459,8 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   // preview gradient creation
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
+    const float wd = darktable.develop->preview_pipe->iwidth;
+    const float ht = darktable.develop->preview_pipe->iheight;
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
     const float distance = 0.1f * fminf(wd, ht);
     const float scale = sqrtf(wd * wd + ht * ht);
@@ -595,7 +595,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_restore(cr);
     return;
   }
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
   float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f;
   const float xref = gpt->points[0];
@@ -739,7 +739,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   // draw anchor point
   {
     cairo_set_dash(cr, dashed, 0, 0);
-    float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
+    const float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
     cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
     cairo_fill_preserve(cr);
@@ -981,7 +981,7 @@ end:
 static int dt_gradient_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                                 int *width, int *height, int *posx, int *posy)
 {
-  float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
   float points[8];
 
@@ -1173,7 +1173,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   double start2 = dt_get_wtime();
 
   // we get the gradient values
-  dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+  const dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
 
   // we create a buffer of grid points for later interpolation. mainly in order to reduce memory footprint
   const int w = roi->width;
