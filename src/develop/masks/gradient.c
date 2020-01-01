@@ -267,13 +267,13 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
     const float diff = 5.0f * zoom_scale;
-    float rotation;
     float x0, y0;
+    float rotation;
     if(!gui->form_dragging
        || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
            && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
     {
-      rotation = 0.0f;
+      rotation = -1.0f;
       x0 = pzx * wd;
       y0 = pzy * ht;
     }
@@ -286,18 +286,23 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 
     gui->form_dragging = FALSE;
     dt_iop_module_t *crea_module = gui->creation_module;
-    // we create the circle
+    // we create the gradient
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float pts[4] = { pzx * wd, pzy * ht, x0, y0 };
-    dt_dev_distort_backtransform(darktable.develop, pts, 2);
-    gradient->anchor[0] = pts[2] / darktable.develop->preview_pipe->iwidth;
-    gradient->anchor[1] = pts[3] / darktable.develop->preview_pipe->iheight;
+    float pts[8] = { x0, y0, pzx * wd, pzy * ht, 0, 0, 0, 4000 };
+    dt_dev_distort_backtransform(darktable.develop, pts, 4);
+    gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+    gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
     if(rotation > 0.0f)
     {
-      rotation = atan2f(pts[1] - pts[3], pts[0] - pts[2]);
+      rotation = atan2f(pts[3] - pts[1], pts[2] - pts[0]);
+    }
+    else
+    {
+      // compute angle bettween the 2 vectors taking into account any rotation in flip or corp&rorate module
+      rotation = atan2(pts[7] - pts[5], pts[6] - pts[4]) - atan2(4000, 0);
     }
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
