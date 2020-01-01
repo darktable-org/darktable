@@ -34,6 +34,8 @@
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbnail.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
@@ -137,6 +139,7 @@ typedef struct dt_layout_image_t
   double aspect_ratio;
 } dt_layout_image_t;
 
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -223,6 +226,11 @@ typedef struct dt_library_t
 
   GtkWidget *profile_floating_window;
 
+  GtkWidget *flow;
+  GListStore *fstore;
+
+  int view_height, view_width;
+  int first_rowid;
 } dt_library_t;
 
 static inline float absmul(float a, float b) {
@@ -825,6 +833,7 @@ static void _update_collected_images(dt_view_t *self)
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_recreate_slots(self);
 
   dt_control_queue_redraw_center();
+  dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
 }
 
 static void _set_position(dt_view_t *self, uint32_t pos)
@@ -2765,11 +2774,14 @@ void begin_pan(dt_library_t *lib, double x, double y)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  return;
   const double start = dt_get_wtime();
   const dt_lighttable_layout_t layout = get_layout();
 
   // Let's show full preview if in that state...
-  dt_library_t *lib = (dt_library_t *)self->data;
+  // dt_library_t *lib = (dt_library_t *)self->data;
 
   lib->missing_thumbnails = 0;
 
@@ -3304,6 +3316,13 @@ static void _culling_scroll(dt_library_t *lib, const int up)
 
 void enter(dt_view_t *self)
 {
+  // we add the flowbox and hide the main drawingarea
+  dt_library_t *lib = (dt_library_t *)self->data;
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                          dt_ui_thumbtable(darktable.gui->ui)->widget);
+  gtk_widget_hide(dt_ui_center(darktable.gui->ui));
+  gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
 
@@ -3323,7 +3342,6 @@ void enter(dt_view_t *self)
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
   // clear some state variables
-  dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
   lib->force_expose_all = TRUE;
@@ -3508,6 +3526,12 @@ static void _preview_quit(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  // we remove the flowbox
+  dt_library_t *lib = (dt_library_t *)self->data;
+  gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)),
+                       dt_ui_thumbtable(darktable.gui->ui)->widget);
+  gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
+
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
 
   // disconnect dropping images for import
@@ -3520,7 +3544,6 @@ void leave(dt_view_t *self)
                                (gpointer)self);
 
   // clear some state variables
-  dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
   lib->activate_on_release = DT_VIEW_ERR;
@@ -3723,10 +3746,11 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && state == 0)
   {
-    if(up)
-      move_view(lib, DIRECTION_UP);
+    /*if(up) _fm_move_up(self);
+    // move_view(lib, DIRECTION_UP);
     else
-      move_view(lib, DIRECTION_DOWN);
+      _fm_move_down(self);
+    // move_view(lib, DIRECTION_DOWN);*/
   }
   else if(layout != DT_LIGHTTABLE_LAYOUT_CULLING)
   {
