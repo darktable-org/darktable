@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-27 13:16+0100\n"
-"PO-Revision-Date: 2019-11-27 13:16+0100\n"
+"PO-Revision-Date: 2020-01-01 15:51+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -11,11 +11,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
-msgstr "virtuele bibliotheek  en donkere kamer"
+msgstr "virtuele bibliotheek en donkere kamer"
 
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
@@ -4855,7 +4855,7 @@ msgstr "overschrijven"
 
 #: ../src/imageio/storage/disk.c:202
 msgid "skip"
-msgstr "sla over"
+msgstr "overslaan"
 
 #: ../src/imageio/storage/disk.c:281 ../src/imageio/storage/gallery.c:274
 #: ../src/imageio/storage/latex.c:273
