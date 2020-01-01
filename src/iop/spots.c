@@ -507,7 +507,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         {
           forms = g_list_next(forms);
           pos++;
-          free(mask);
+          dt_free_align(mask);
 
           continue;
         }
@@ -538,7 +538,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
             }
           }
         }
-        free(mask);
+        dt_free_align(mask);
       }
       pos++;
       forms = g_list_next(forms);
