@@ -927,8 +927,8 @@
         panels can be collapsed or expanded by pressing triangles like
         <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
         located on the middle outside borders of the panels (use <emphasis>b</emphasis> to
-        show/hide panel borders) or shortcuts like <emphasis>Shift+Ctrl+t</emphasis> (used to 
-        show/hide then top panel).
+        show/hide panel borders). Another approach to controlling visibility of the panels is 
+        via shortcuts like <emphasis>Shift+Ctrl+t</emphasis> which is used to show/hide the top panel.
       </para>
 
       <para>
