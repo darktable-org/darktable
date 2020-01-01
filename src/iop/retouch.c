@@ -3851,12 +3851,13 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = calloc(roi_mask_scaled->width * roi_mask_scaled->height, sizeof(float));
+  mask_tmp = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
+  memset(mask_tmp, 0, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -4292,7 +4293,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free_align(mask);
             continue;
           }
         }
@@ -4306,7 +4307,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free_align(mask);
           mask = NULL;
         }
 
@@ -4360,8 +4361,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
             rt_copy_mask_to_alpha(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free_align(mask);
+        if(mask_scaled) dt_free_align(mask_scaled);
 
         forms = g_list_next(forms);
       }
@@ -5106,7 +5107,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free_align(mask);
             continue;
           }
         }
@@ -5122,14 +5123,14 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         // only heal needs mask scaled
         if(algo != DT_IOP_RETOUCH_HEAL && mask_scaled != NULL)
         {
-          free(mask_scaled);
+          dt_free_align(mask_scaled);
           mask_scaled = NULL;
         }
 
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free_align(mask);
           mask = NULL;
         }
 
@@ -5189,8 +5190,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
                                      gd);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free_align(mask);
+        if(mask_scaled) dt_free_align(mask_scaled);
         if(dev_mask_scaled) dt_opencl_release_mem_object(dev_mask_scaled);
 
         forms = g_list_next(forms);
