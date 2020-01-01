@@ -17,6 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
+
 #include "common/cache.h"
 #include "common/darktable.h"
 #include "common/dtpthread.h"
@@ -367,10 +369,26 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #if((__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && 1)
   // yes, this is *HIGHLY* unportable and is accessing implementation details.
 #ifdef _DEBUG
-  if(entry->lock.lock.__data.__nr_readers <= 1)
-#else
+
+# if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
+  if (entry->lock.lock.__data.__readers <= 1)
+# elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
+  if (entry->lock.lock.__data.__nr_readers <= 1)
+# else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+#  error "No valid reader member"
+# endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+
+#else /* _DEBUG */
+
+# if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
+  if (entry->lock.__data.__readers <= 1)
+# elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
   if(entry->lock.__data.__nr_readers <= 1)
-#endif
+# else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+#  error "No valid reader member"
+# endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+
+#endif /* _DEBUG */
   {
     // only if there are no other reades we may poison.
     assert(entry->data_size);

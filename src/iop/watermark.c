@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/tags.h"
+#include "common/variables.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

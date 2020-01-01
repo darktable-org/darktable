@@ -28,30 +28,17 @@
           <row>
             <entry>
               <para>
-                This panel is for managing tags on images. Tags are stored in both sidecar files
-                (.xmp) and within the darktable database for a faster access. The panel is divided
-                into two parts: the upper part contains the tag(s) currently attached to the image
-                under the cursor or the selected image(s) if the mouse is outside the lighttable.
-                The lower part contains a list of all available tags in the database, the dictionary, which can be
-                filtered in the text box above.
+                This panel allows managing tags on images. Tags are stored in both XMP sidecar files
+                and within the darktable database.
               </para>
               <para>
-                The list of available tags can be displayed in three different manners:
-                <itemizedlist>
-
-                  <listitem><para>
-                    A flat list of tags
-                  </para></listitem>
-
-                  <listitem><para>
-                    A tree view to navigate within your hierarchical tags
-                  </para></listitem>
-
-                  <listitem><para>
-                    A list of suggestions based on already attached tags on selected images.
-                  </para></listitem>
-
-                </itemizedlist>
+                Tags provide the means of adding information to the images within a given keyword dictionary.
+                You can manage tags as a hierarchical tree, which is useful when their number becomes large.
+              </para>
+              <para>
+                Unlike child tags, parent tags do not add information to the image, but rather represent categories.
+                For example, in the <quote>color|white</quote> tag <quote>color</quote> is a category 
+                for the <quote>white</quote> tag.
               </para>
             </entry>
             <entry>
@@ -63,14 +50,19 @@
     </informaltable>
 
     <para>
-      The goal of tags is to add information to the images within a given keyword set.
-      But when the number of tags becomes large it is interesting to organize them in a hierachical manner, as a tree.
-      The parent tags may not add information to the image, for example the tag <quote>color</quote>
-      in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
-      seen as <quote>category</quote> if it is not in the dictionary itself. If exist as a tag, it can be set
-      explicitly as a <quote>category</quote> (see create or edit command).
-    </para>
+      The panel contains two views:
+      <itemizedlist>
 
+        <listitem><para>
+          The upper <quote>attached tags</quote> view displays tag(s) that are currently attached to the image
+          under the cursor or the selected image(s), if the cursor is outside the center area of the lighttable view.
+        </para></listitem>
+                  
+        <listitem><para>
+          The lower <quote>tag dictonary</quote> view displays all tags that are available in the database.
+          </para></listitem>
+        </itemizedlist>
+      </para>
     <sect4 id="tagging_tag_properties">
 
       <title>tag properties</title>
@@ -115,29 +107,50 @@
       </para>
 
       <para>
-        All the views have the following characteristics:
-      </para>
+        The attached tags and tag dictionary views display additional information on the sides of the tag:
+        
+        <itemizedlist>
+          
+          <listitem><para>
+            On the left, an indicator gives the status of the tag in relation to the selected images:
+            
+            <itemizedlist>
+              
+              <listitem><para>
+                A <quote>check-mark</quote> means that the tag is attached to all selected images.
+              </para></listitem>
+              
+              <listitem><para>
+                A <quote>minus</quote> means that the tag is attached to at least one selected image.
+                In tree view, for a parent tag it also means that at least one child tag is attached to
+                at least one of the selected images.
+              </para></listitem>
+              
+              <listitem><para>
+                Absence of any marking in the tag dictionary view means that the tag exists in the database, 
+                but is not attached to any of the selected images. In tree view, for a parent tag it also means
+                that none of its child tags is attached to any of the selected images.
+              </para></listitem>
+              
+            </itemizedlist>
+          </para></listitem>
 
-      <para>
-        On the left there is an indicator giving the status of the tag in relation with the selected images.
-        A <quote>check-mark</quote> means the tag is attached to all selected images.
-        A <quote>minus</quote> means that the tag is attached at least to one selected image.
-        On tree view, on the parent node, it means that at least one child tag is attached to
-        a selected image.
+          <listitem><para>
+            On the right, the number in parentheses gives the attached image count. In the attached tags 
+            view, this count refers to the selected images, while in the tag dictionary view it refers to the whole database.
+          </para></listitem>
+        
+        </itemizedlist>  
+            
       </para>
-
-      <para>
-        On the right the count of images attached to the tag, in the database for dictionary view or
-        among the selected images for attached view.
-      </para>
-
+      
       <para>
         An <emphasis>italic</emphasis> tag is considered as a category. A category is a tag which helps
         to organize the tags but doesn't bring information to the image. A category is not exported.
       </para>
 
       <para>
-        Right-click opens a submenu with available commands for that tag.
+        Right-clicking on the tag opens a submenu with available commands.
       </para>
 
       <para>
@@ -145,8 +158,7 @@
       </para>
 
       <para>
-        An overlay appears hovering a tag which has some properties set.
-        This avoids to edit the tag to see its properties.
+        Hovering cursor over a tag displays an overlay with basic usage instructions for the tagging panel.
       </para>
 
       <para>
@@ -193,8 +205,8 @@
       </para>
 
       <para>
-        You can resize the height of attached view or dictionary view using Ctrl+wheel.
-        New sizes are kept for ulterior darktable sessions.
+        You can adjust height of the attached tags and tag dictionary list views using Ctrl+wheel. 
+        The updated list view height is kept for new darktable sessions.
       </para>
 
     </sect4>
