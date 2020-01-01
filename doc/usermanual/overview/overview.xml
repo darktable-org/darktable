@@ -959,9 +959,11 @@
       <para>
         The general screen layout of all perspectives consists of a center area which contains
         image(s) while left, right, top and bottom panels hold various tools. Each of the
-        panels can be collapsed or expanded by pressing a triangle like
+        panels can be collapsed or expanded by pressing triangles like
         <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
-        , located close to the panel.
+        located on the middle outside borders of the panels (use <emphasis>b</emphasis> to
+        show/hide panel borders) or shortcuts like <emphasis>Shift+Ctrl+t</emphasis> (used to 
+        show/hide then top panel).
       </para>
 
       <para>
