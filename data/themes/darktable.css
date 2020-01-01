@@ -235,6 +235,9 @@ box *
   color: @disabled_fg_color;
 }
 
+#testlb {
+  background-color: #ff0000;
+}
 /* Side panels */
 
 /* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)

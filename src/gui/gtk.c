@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "dtgtk/sidepanel.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
@@ -86,8 +87,14 @@ typedef struct dt_ui_t
 
   /* center widget */
   GtkWidget *center;
+  GtkWidget *center_base;
+
   /* main widget */
   GtkWidget *main_window;
+
+  /* thumb table */
+  dt_thumbtable_t *thumbtable;
+  GtkWidget *lb;
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -1556,19 +1563,25 @@ static void init_main_table(GtkWidget *container)
   gtk_box_pack_start(GTK_BOX(widget), centergrid, TRUE, TRUE, 0);
 
   /* setup center drawing area */
+  GtkWidget *ocda = gtk_overlay_new();
   GtkWidget *cda = gtk_drawing_area_new();
   gtk_widget_set_size_request(cda, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
-  gtk_widget_set_hexpand(cda, TRUE);
-  gtk_widget_set_vexpand(cda, TRUE);
+  gtk_widget_set_hexpand(ocda, TRUE);
+  gtk_widget_set_vexpand(ocda, TRUE);
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                              | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(cda, TRUE);
   gtk_widget_set_visible(cda, TRUE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(ocda), cda);
 
-  gtk_grid_attach(GTK_GRID(centergrid), cda, 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(centergrid), ocda, 0, 0, 1, 1);
   darktable.gui->ui->center = cda;
+  darktable.gui->ui->center_base = ocda;
+
+  /* initiialize the thumb panel */
+  darktable.gui->ui->thumbtable = dt_thumbtable_new();
 
   /* center should redraw when signal redraw center is raised*/
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER,
@@ -1578,8 +1591,8 @@ static void init_main_table(GtkWidget *container)
   GtkWidget *vscrollBar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);
   GtkWidget *hscrollBar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, NULL);
 
-  gtk_grid_attach_next_to(GTK_GRID(centergrid), vscrollBar, cda, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(centergrid), hscrollBar, cda, GTK_POS_BOTTOM, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(centergrid), vscrollBar, ocda, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(centergrid), hscrollBar, ocda, GTK_POS_BOTTOM, 1, 1);
 
   darktable.gui->scrollbars.vscrollbar = vscrollBar;
   darktable.gui->scrollbars.hscrollbar = hscrollBar;
@@ -1903,6 +1916,14 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
 GtkWidget *dt_ui_center(dt_ui_t *ui)
 {
   return ui->center;
+}
+GtkWidget *dt_ui_center_base(dt_ui_t *ui)
+{
+  return ui->center_base;
+}
+dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui)
+{
+  return ui->thumbtable;
 }
 
 GtkWidget *dt_ui_main_window(dt_ui_t *ui)
