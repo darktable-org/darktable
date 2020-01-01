@@ -3,26 +3,26 @@
   <chapterinfo>
     <keywordset>
       <keyword>darkroom</keyword>
-      <keyword>view</keyword>
+      <keyword>pespective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Darkroom</title>
 
   <indexterm>
-    <primary>darkroom</primary>
+    <primary>darkroom pespective</primary>
   </indexterm>
 
   <para>
-    The darkroom view is where you develop your image.
+    The darkroom pespective is where you develop your image.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The darkroom view</screeninfo>
+      <screeninfo>The darkroom pespective</screeninfo>
 
-      <graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/darkroom_pespective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -33,7 +33,7 @@
 
     <para>
       Darkroom mode is for photographic development of the image that you selected from the
-      lighttable. Numerous tools, named modules, are available for processing that image.
+      lighttable pespective. Numerous tools, named modules, are available for processing that image.
     </para>
 
     <para>
@@ -56,7 +56,7 @@
     </para>
 
     <para>
-      You normally export multiple images from the lighttable view but you can also export the
+      You normally export multiple images from the lighttable pespective but you can also export the
       current image directly from the darkroom by using the shortcut
       <emphasis>Ctrl+E</emphasis>. Export parameters are then those currently selected in the
       lighttable.

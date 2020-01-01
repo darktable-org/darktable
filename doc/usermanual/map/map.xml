@@ -9,26 +9,26 @@
     <keywordset>
       <keyword>geotagging</keyword>
       <keyword>map</keyword>
-      <keyword>view</keyword>
+      <keyword>perspective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Map</title>
 
   <indexterm>
-    <primary>map view</primary>
+    <primary>map perspective</primary>
   </indexterm>
 
   <para>
-    The Map view is were you geotag your images.
+    The Map perspective is were you geotag your images.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The map view</screeninfo>
+      <screeninfo>The map perspective</screeninfo>
 
-      <graphic fileref="images/map_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/map_perspective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -38,7 +38,7 @@
     <title>Overview</title>
 
     <para>
-      Map view will show you a world map with the currently open image, or film roll of images,
+      Map perspective will show you a world map with the currently open image, or film roll of images,
       pinned to their geotagged location. This requires that the image was geotagged by a camera
       with that feature. Some newer cameras, including smartphones, are already equipped with
       GPS receivers. Other cameras may need additional GPS hardware to do this.
@@ -48,13 +48,13 @@
       Even if your camera doesn't support this feature, there is an alternative method.
       darktable can match the Exif time and date data in your image(s) to a separate GPX data
       tracking file created by a GPS tracker recording your movements. These can be handheld
-      devices or a GPS tracker app on your smartphone. This is all done in the lighttable view
+      devices or a GPS tracker app on your smartphone. This is all done in the lighttable perspective
       (see <xref linkend="geotagging"/>).
     </para>
 
     <sect2 status="final" id="map_center_map_view">
 
-      <title>Center map view</title>
+      <title>Center map</title>
 
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
@@ -63,7 +63,7 @@
           <tbody>
             <row>
               <entry>
-                In the center of the map view you will see a map.
+                In the center of the map perspective you will see a map.
               </entry>
               <entry>
                 <graphic fileref="map/images/map_center_view.png" scalefit="1" width="80%" align="center" />
@@ -128,9 +128,9 @@
       </indexterm>
 
       <para>
-        All image moves in the map view are recorded by darktable. It is then possible to undo
+        All image moves in the map perspective are recorded by darktable. It is then possible to undo
         or redo such changes to recover a previous state. Note that this undo/redo facility is
-        unlimited while moving images but it is reset each time the map view is left.
+        unlimited while moving images, but it is reset each time you leave the map perspective.
       </para>
 
       <para>

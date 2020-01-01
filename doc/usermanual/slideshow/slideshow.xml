@@ -9,26 +9,26 @@
   <chapterinfo>
     <keywordset>
       <keyword>slideshow</keyword>
-      <keyword>view</keyword>
+      <keyword>perspective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Slideshow</title>
 
   <indexterm>
-    <primary>slideshow view</primary>
+    <primary>slideshow perspective</primary>
   </indexterm>
 
   <para>
-    The slideshow view starts a slideshow of your current collection.
+    The slideshow perspective starts a slideshow of your current collection.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The slideshow view</screeninfo>
+      <screeninfo>The slideshow perspective</screeninfo>
 
-      <graphic fileref="images/slideshow_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/slideshow_perspective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -38,7 +38,7 @@
     <title>Overview</title>
 
     <para>
-      Entering the slideshow view starts a slideshow of the images of the current collection
+      Entering the slideshow perspective starts a slideshow of the images of the current collection
       with filtering rules and sort order applied. To learn more on how to define the
       collection, the filtering and the sort order see <xref linkend="collect_images"/> and
       <xref linkend="filtering_and_sort_order"/>.
@@ -58,7 +58,7 @@
     <title>Usage</title>
 
     <para>
-      The slideshow view is in an early stage of development with a basic set of features.
+      The slideshow perspective is in an early stage of development with a basic set of features.
       <informaltable frame="none" width="80%">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth='1*'/>
@@ -110,7 +110,7 @@
                 <emphasis>ESC</emphasis>
               </entry>
               <entry>
-                leave slideshow mode and return to lighttable view
+                leave slideshow mode and return to lighttable perspective
               </entry>
             </row>
           </tbody>

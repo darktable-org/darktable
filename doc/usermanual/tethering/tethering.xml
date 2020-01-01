@@ -8,27 +8,27 @@
   <chapterinfo>
     <keywordset>
       <keyword>tethering</keyword>
-      <keyword>view</keyword>
+      <keyword>perspective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Tethering</title>
 
   <indexterm>
-    <primary>tethering view</primary>
+    <primary>tethering perspective</primary>
   </indexterm>
 
   <para>
-    The tethering view allows you to capture images directly into darktable from your connected
+    The tethering perspective allows you to capture images directly into darktable from your connected
     camera.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The tethering view</screeninfo>
+      <screeninfo>The tethering perspective</screeninfo>
 
-      <graphic fileref="images/tethering_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/tethering_perspective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -83,7 +83,7 @@
       </informaltable>
 
       <para>
-        When entering tethering view, a film roll will be created using the same structure as
+        When entering tethering perspective, a film roll will be created using the same structure as
         defined when you import from the camera. Job code will be predefined as
         <quote>capture</quote>.
       </para>

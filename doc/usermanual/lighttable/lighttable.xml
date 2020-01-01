@@ -9,14 +9,14 @@
   <chapterinfo>
     <keywordset>
       <keyword>lighttable</keyword>
-      <keyword>view</keyword>
+      <keyword>perspective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Lighttable</title>
 
   <indexterm>
-    <primary>lighttable view</primary>
+    <primary>lighttable perspective</primary>
   </indexterm>
 
   <para>
@@ -26,9 +26,9 @@
   <para>
     <screenshot>
 
-      <screeninfo>The lighttable view</screeninfo>
+      <screeninfo>The lighttable perspective</screeninfo>
 
-      <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/lighttable_perspective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -108,7 +108,7 @@
                 <emphasis>D</emphasis>
               </entry>
               <entry>
-                open in darkroom view for developing
+                open in darkroom perspective for developing
               </entry>
             </row>
             <row>
@@ -143,7 +143,7 @@
       image-changed indicator
       <inlinegraphic fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
       on all thumbnails. By default these overlays are only visible on the thumbnail under the
-      mouse cursor. An overlay button is also available in the other views where it affects the
+      mouse cursor. An overlay button is also available in the other perspectives where it affects the
       filmstrip accordingly (see <xref linkend="filmstrip_overview"/> and
       <xref linkend="darkroom_filmstrip"/>).
     </para>

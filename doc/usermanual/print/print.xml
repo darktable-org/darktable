@@ -9,26 +9,26 @@
   <chapterinfo>
     <keywordset>
       <keyword>print</keyword>
-      <keyword>view</keyword>
+      <keyword>perspective</keyword>
     </keywordset>
   </chapterinfo>
 
   <title>Print</title>
 
   <indexterm>
-    <primary>print view</primary>
+    <primary>print perspective</primary>
   </indexterm>
 
   <para>
-    The print view lets you output a selected image to your printer.
+    The print perspective lets you output a selected image to your printer.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The print view</screeninfo>
+      <screeninfo>The print perspective</screeninfo>
 
-      <graphic fileref="images/print_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/print_perspective.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
@@ -38,13 +38,13 @@
     <title>Overview</title>
 
     <para>
-      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photograph which
+      This perspective is about printing&nbsp;&ndash; or the joy of giving birth to a photograph which
       can be put on the wall. Because printing is not easy, there are many technical aspects to
       be taken into account.
     </para>
 
     <para>
-      After selecting an image in the lighttable view (see
+      After selecting an image in the lighttable perspective (see
       <xref linkend="lighttable_overview"/>) one can enter the print module where there are
       several options for the print layout and for selecting which printer to use.
     </para>
