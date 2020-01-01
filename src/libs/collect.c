@@ -583,7 +583,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
   gchar *str = NULL;
-  gboolean visible;
+  gboolean visible = FALSE;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
 
@@ -636,6 +636,23 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     g_free(operator);
     g_free(number);
     g_free(number2);
+  }
+  else if (property == DT_COLLECTION_PROP_FILENAME)
+  {
+    GList *list, *l;
+    list = dt_util_str_to_glist(",", needle);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+      if(g_str_has_prefix((char *)l->data, "%"))
+      {
+        if((visible = (g_strrstr(haystack, (char *)l->data + 1) != NULL))) break;
+      }
+      else
+      {
+        if((visible = (g_strrstr(haystack, (char *)l->data) != NULL))) break;
+      }
+    }
   }
   else
   {
