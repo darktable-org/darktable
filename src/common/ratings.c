@@ -23,6 +23,7 @@
 #include "common/ratings.h"
 #include "common/undo.h"
 #include "common/grouping.h"
+#include "views/view.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -111,29 +112,35 @@ void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_o
   GList *undo = NULL;
   GList *imgs = NULL;
   guint count = 0;
+  int new_rating = rating;
+
   if(imgid == -1)
     imgs = dt_collection_get_selected(darktable.collection, -1);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
 
-  int new_rating = rating;
-  // one star is a toggle, so you can easily reject images by removing the last star:
-  // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
-  if(toggle_on && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
-  {
-    if(dt_ratings_get(GPOINTER_TO_INT(imgs->data)) == 1)
-      new_rating = 0;
-  }
-
   if(imgs)
   {
+    const int previous_rating = dt_ratings_get(GPOINTER_TO_INT(imgs->data));
+    // one star is a toggle, so you can easily reject images by removing the last star:
+    // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
+    if(toggle_on && !dt_conf_get_bool("rating_one_double_tap") &&
+      (previous_rating == DT_VIEW_STAR_1) && (new_rating == DT_VIEW_STAR_1))
+    {
+      new_rating = DT_VIEW_DESERT;
+    }
+    else if((previous_rating == DT_VIEW_REJECT) && (new_rating == DT_VIEW_REJECT))
+    {
+      new_rating = DT_VIEW_DESERT;
+    }
+
     if(group_on) dt_grouping_add_grouped_images(&imgs);
     count = g_list_length(imgs);
-    if(rating == 6)
+    if(new_rating == DT_VIEW_REJECT)
       dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
     else
       dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
-                     rating, count);
+                     new_rating, count);
 
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     _ratings_apply(imgs, new_rating, &undo, undo_on);
