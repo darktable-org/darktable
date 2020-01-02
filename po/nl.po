@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-02 11:07+0100\n"
-"PO-Revision-Date: 2020-01-02 11:26+0100\n"
+"POT-Creation-Date: 2020-01-02 11:45+0100\n"
+"PO-Revision-Date: 2020-01-02 11:47+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2646,25 +2646,25 @@ msgstr "keer getekend masker om"
 msgid "add gradient"
 msgstr "kleurverloop toevoegen"
 
-#: ../src/develop/blend_gui.c:1958 ../src/iop/retouch.c:2677
+#: ../src/develop/blend_gui.c:1958 ../src/iop/retouch.c:2661
 #: ../src/iop/spots.c:680 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
 #: ../src/libs/masks.c:1666
 msgid "add path"
 msgstr "pad toevoegen"
 
-#: ../src/develop/blend_gui.c:1967 ../src/iop/retouch.c:2684
+#: ../src/develop/blend_gui.c:1967 ../src/iop/retouch.c:2668
 #: ../src/iop/spots.c:687 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
 #: ../src/libs/masks.c:1673
 msgid "add ellipse"
 msgstr "ellips toevoegen"
 
-#: ../src/develop/blend_gui.c:1976 ../src/iop/retouch.c:2691
+#: ../src/develop/blend_gui.c:1976 ../src/iop/retouch.c:2675
 #: ../src/iop/spots.c:694 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
 #: ../src/libs/masks.c:1680
 msgid "add circle"
 msgstr "cirkel toevoegen"
 
-#: ../src/develop/blend_gui.c:1985 ../src/iop/retouch.c:2671
+#: ../src/develop/blend_gui.c:1985 ../src/iop/retouch.c:2655
 #: ../src/libs/masks.c:1033 ../src/libs/masks.c:1686
 msgid "add brush"
 msgstr "penseel toevoegen"
@@ -2949,7 +2949,7 @@ msgstr "masker verdoezelen"
 msgid "radius for gaussian blur of blend mask"
 msgstr "te gebruiken straal voor gaussian verdoezeling van het masker"
 
-#: ../src/develop/blend_gui.c:2812 ../src/iop/retouch.c:2953
+#: ../src/develop/blend_gui.c:2812 ../src/iop/retouch.c:2937
 msgid "mask opacity"
 msgstr "masker bedekking"
 
@@ -3367,15 +3367,15 @@ msgstr "kopie van %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: masker versie komt niet overeen: %d != %d"
 
-#: ../src/develop/masks/masks.c:2121 ../src/libs/masks.c:1053
+#: ../src/develop/masks/masks.c:2125 ../src/libs/masks.c:1053
 msgid "add existing shape"
 msgstr "bestaande vorm toevoegen"
 
-#: ../src/develop/masks/masks.c:2146
+#: ../src/develop/masks/masks.c:2150
 msgid "use same shapes as"
 msgstr "gebruik dezelfde vorm als"
 
-#: ../src/develop/masks/masks.c:2457
+#: ../src/develop/masks/masks.c:2461
 msgid "masks can not contain themselves"
 msgstr "maskers mogen zichzelf niet insluiten"
 
@@ -6108,7 +6108,7 @@ msgstr "midden grijs"
 msgid "middle grey adjustment"
 msgstr "aanpassing middengrijs"
 
-#: ../src/iop/basicadj.c:779 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2920
+#: ../src/iop/basicadj.c:779 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2904
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
 msgid "brightness"
 msgstr "helderheid"
@@ -6767,7 +6767,7 @@ msgstr "is gecorrigeerd"
 
 #: ../src/iop/clipping.c:2036
 msgid "main"
-msgstr ""
+msgstr "grootste"
 
 #: ../src/iop/clipping.c:2037
 msgid "margins"
@@ -6812,7 +6812,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2077
 msgid "top"
-msgstr ""
+msgstr "top"
 
 #: ../src/iop/clipping.c:2080
 msgid "the top margin cannot overlap with the bottom margin"
@@ -6956,7 +6956,7 @@ msgstr "links"
 #: ../src/iop/clipping.c:3357
 msgctxt "accel"
 msgid "top"
-msgstr ""
+msgstr "top"
 
 #: ../src/iop/clipping.c:3358
 msgctxt "accel"
@@ -7233,10 +7233,9 @@ msgid "green-red"
 msgstr "groen-rood"
 
 #: ../src/iop/colorchecker.c:137
-#, fuzzy
 msgctxt "accel"
 msgid "blue-yellow"
-msgstr "blauw/geel"
+msgstr "blauw-geel"
 
 #: ../src/iop/colorchecker.c:290
 msgid "it8 skin tones"
@@ -7753,7 +7752,7 @@ msgstr "natuurlijke huidskleuren"
 msgid "black & white film"
 msgstr "zwart-wit film"
 
-#: ../src/iop/colorzones.c:2099 ../src/iop/retouch.c:2238
+#: ../src/iop/colorzones.c:2099 ../src/iop/retouch.c:2241
 #: ../src/iop/toneequal.c:2017
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
@@ -8045,7 +8044,6 @@ msgid "preserve shadows"
 msgstr "behoud schaduwen"
 
 #: ../src/iop/denoiseprofile.c:521
-#, fuzzy
 msgctxt "accel"
 msgid "bias correction"
 msgstr "bias correctie"
@@ -9264,7 +9262,7 @@ msgstr "middenkleuren bias"
 #: ../src/iop/grain.c:631
 #, c-format
 msgid "%.0f ISO"
-msgstr ""
+msgstr "%.0f ISO"
 
 #: ../src/iop/grain.c:633
 msgid "the grain size (~ISO of the film)"
@@ -9962,7 +9960,7 @@ msgstr "helderheid"
 msgid "soften with"
 msgstr "verzachten met"
 
-#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2937 ../src/iop/shadhi.c:836
+#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2921 ../src/iop/shadhi.c:836
 msgid "gaussian"
 msgstr "gaussian"
 
@@ -10446,16 +10444,16 @@ msgstr ""
 msgid "retouch"
 msgstr "retoucheren"
 
-#: ../src/iop/retouch.c:1931
+#: ../src/iop/retouch.c:1930
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
 "weergave van schalen is onmogelijk wanneer een mengmasker wordt getoond"
 
-#: ../src/iop/retouch.c:2651
+#: ../src/iop/retouch.c:2635
 msgid "# shapes:"
 msgstr "# vormen:"
 
-#: ../src/iop/retouch.c:2656
+#: ../src/iop/retouch.c:2640
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -10464,43 +10462,43 @@ msgstr ""
 "afbeelding\n"
 "vormen worden aan de huidige schaal toegevoegd"
 
-#: ../src/iop/retouch.c:2663
+#: ../src/iop/retouch.c:2647
 msgid "show and edit shapes on the current scale"
 msgstr "toon en bewerk vormen in huidige schaal"
 
-#: ../src/iop/retouch.c:2698
+#: ../src/iop/retouch.c:2682
 msgid "algorithms:"
 msgstr "algoritmen:"
 
-#: ../src/iop/retouch.c:2703
+#: ../src/iop/retouch.c:2687
 msgid "activates fill tool"
 msgstr "activeer vul gereedschap"
 
-#: ../src/iop/retouch.c:2710
+#: ../src/iop/retouch.c:2694
 msgid "activates blur tool"
 msgstr "activeer gereedschap verdoezelen"
 
-#: ../src/iop/retouch.c:2717
+#: ../src/iop/retouch.c:2701
 msgid "activates healing tool"
 msgstr "activeer gereedschap herstellen"
 
-#: ../src/iop/retouch.c:2724
+#: ../src/iop/retouch.c:2708
 msgid "activates cloning tool"
 msgstr "activeer gereedschap klonen"
 
-#: ../src/iop/retouch.c:2738
+#: ../src/iop/retouch.c:2722
 msgid "# scales:"
 msgstr "# schalen:"
 
-#: ../src/iop/retouch.c:2747
+#: ../src/iop/retouch.c:2731
 msgid "current:"
 msgstr "huidige:"
 
-#: ../src/iop/retouch.c:2756
+#: ../src/iop/retouch.c:2740
 msgid "merge from:"
 msgstr "samenvoegen met:"
 
-#: ../src/iop/retouch.c:2769
+#: ../src/iop/retouch.c:2753
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -10512,43 +10510,43 @@ msgstr ""
 "de rode box toont de huidige schaal\n"
 "groene lijnen geven aan dat schalen vormen bezitten"
 
-#: ../src/iop/retouch.c:2791
+#: ../src/iop/retouch.c:2775
 msgid "display masks"
 msgstr "toon maskers"
 
-#: ../src/iop/retouch.c:2797
+#: ../src/iop/retouch.c:2781
 msgid "temporarily switch off shapes"
 msgstr "vormen tijdelijk uitschakelen"
 
-#: ../src/iop/retouch.c:2804
+#: ../src/iop/retouch.c:2788
 msgid "display wavelet scale"
 msgstr "toon wavelet schaal"
 
-#: ../src/iop/retouch.c:2812
+#: ../src/iop/retouch.c:2796
 msgid "cut shapes from current scale"
 msgstr "knip vormen van huidige schaal"
 
-#: ../src/iop/retouch.c:2818
+#: ../src/iop/retouch.c:2802
 msgid "paste cut shapes to current scale"
 msgstr "plak geknipte vormen aan huidige schaal"
 
-#: ../src/iop/retouch.c:2842
+#: ../src/iop/retouch.c:2826
 msgid "preview single scale"
 msgstr "voorbeeld enkele schaal"
 
-#: ../src/iop/retouch.c:2849
+#: ../src/iop/retouch.c:2833
 msgid "adjust preview levels"
 msgstr "pas preview niveaus aan"
 
-#: ../src/iop/retouch.c:2868
+#: ../src/iop/retouch.c:2852
 msgid "auto levels"
 msgstr "automatisch niveaus"
 
-#: ../src/iop/retouch.c:2880
+#: ../src/iop/retouch.c:2864
 msgid "shape selected:"
 msgstr "geselecteerde vorm"
 
-#: ../src/iop/retouch.c:2884
+#: ../src/iop/retouch.c:2868
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -10556,118 +10554,118 @@ msgstr ""
 "klik om een vorm te selecteren,\n"
 "of deselecteer door met een klik in een leeg ruimte"
 
-#: ../src/iop/retouch.c:2891
+#: ../src/iop/retouch.c:2875
 msgid "fill mode"
 msgstr "vul modus"
 
-#: ../src/iop/retouch.c:2892
+#: ../src/iop/retouch.c:2876
 msgid "erase"
 msgstr "wissen"
 
-#: ../src/iop/retouch.c:2893 ../src/iop/watermark.c:1446
+#: ../src/iop/retouch.c:2877 ../src/iop/watermark.c:1446
 msgid "color"
 msgstr "kleur"
 
-#: ../src/iop/retouch.c:2894
+#: ../src/iop/retouch.c:2878
 msgid "erase the detail or fills with chosen color"
 msgstr "wis de details of vullingen met gekozen kleur"
 
-#: ../src/iop/retouch.c:2906 ../src/iop/retouch.c:2907
+#: ../src/iop/retouch.c:2890 ../src/iop/retouch.c:2891
 msgid "select fill color"
 msgstr "selecteer vul kleur"
 
-#: ../src/iop/retouch.c:2913
+#: ../src/iop/retouch.c:2897
 msgid "pick fill color from image"
 msgstr "kies kleur van afbeelding"
 
-#: ../src/iop/retouch.c:2917
+#: ../src/iop/retouch.c:2901
 msgid "fill color: "
 msgstr "vul kleur:"
 
-#: ../src/iop/retouch.c:2922
+#: ../src/iop/retouch.c:2906
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "kleur helderheid fine-tuning, dit werkt ook met wissen"
 
-#: ../src/iop/retouch.c:2936
+#: ../src/iop/retouch.c:2920
 msgid "blur type"
 msgstr "type verdoezeling"
 
-#: ../src/iop/retouch.c:2938
+#: ../src/iop/retouch.c:2922
 msgid "bilateral"
 msgstr "bilateral"
 
-#: ../src/iop/retouch.c:2939
+#: ../src/iop/retouch.c:2923
 msgid "type for the blur algorithm"
 msgstr "algoritme voor het type verdoezeling"
 
-#: ../src/iop/retouch.c:2945
+#: ../src/iop/retouch.c:2929
 msgid "blur radius"
 msgstr "straal verdoezeling"
 
-#: ../src/iop/retouch.c:2946
+#: ../src/iop/retouch.c:2930
 msgid "radius of the selected blur type"
 msgstr "straal van geselecteerd type verdoezeling"
 
-#: ../src/iop/retouch.c:2954
+#: ../src/iop/retouch.c:2938
 msgid "set the opacity on the selected shape"
 msgstr "bepaal bedekking op geselecteerde vorm"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2958
+#: ../src/iop/retouch.c:2942
 msgid "retouch tools"
 msgstr "retouch gereedschappen"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2967
+#: ../src/iop/retouch.c:2951
 msgid "wavelet decompose"
 msgstr "wavelet decompose"
 
 #. shapes
-#: ../src/iop/retouch.c:2981
+#: ../src/iop/retouch.c:2965
 msgid "shapes"
 msgstr "vormen"
 
-#: ../src/iop/retouch.c:3335
+#: ../src/iop/retouch.c:3319
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "retoucheer gereedschap cirkel"
 
-#: ../src/iop/retouch.c:3336
+#: ../src/iop/retouch.c:3320
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "retoucheer gereedschap elipse"
 
-#: ../src/iop/retouch.c:3337
+#: ../src/iop/retouch.c:3321
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "retoucheer gereedschap pad"
 
-#: ../src/iop/retouch.c:3338
+#: ../src/iop/retouch.c:3322
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "retoucheer gereedschap penseel"
 
-#: ../src/iop/retouch.c:3340
+#: ../src/iop/retouch.c:3324
 msgctxt "accel"
 msgid "continuous add circle"
 msgstr "doorlopend cirkels toevoegen"
 
-#: ../src/iop/retouch.c:3341
+#: ../src/iop/retouch.c:3325
 msgctxt "accel"
 msgid "continuous add ellipse"
 msgstr "doorlopend ellipsen toevoegen"
 
-#: ../src/iop/retouch.c:3342
+#: ../src/iop/retouch.c:3326
 msgctxt "accel"
 msgid "continuous add path"
 msgstr "doorlopend paden toevoegen"
 
-#: ../src/iop/retouch.c:3343
+#: ../src/iop/retouch.c:3327
 msgctxt "accel"
 msgid "continuous add brush"
 msgstr "doorlopend penselen toevoegen"
 
-#: ../src/iop/retouch.c:4434 ../src/iop/retouch.c:5290
+#: ../src/iop/retouch.c:4418 ../src/iop/retouch.c:5274
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "maximale schaal %i voor deze afbeeldings groote"
