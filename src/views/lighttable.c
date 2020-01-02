@@ -4883,10 +4883,9 @@ void gui_init(dt_view_t *self)
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
   // and the popup window
-  const int panel_width = dt_conf_get_int("panel_width");
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
-  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
+  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 350, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif

@@ -1809,8 +1809,7 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int panel_width = dt_conf_get_int("panel_width");
-  const int dialog_width = panel_width > 350 ? panel_width : 350;
+  const int dialog_width = 350;
 
   /* create rawoverexposed popup tool */
   {

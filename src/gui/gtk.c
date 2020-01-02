@@ -1435,15 +1435,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
 
   configure_ppd_dpi(gui);
 
-  // set constant width from conf key
-  int panel_width = dt_conf_get_int("panel_width");
-  if(panel_width < 20 || panel_width > 1000)
-  {
-    // fix for unset/insane values.
-    panel_width = 300 * gui->dpi_factor;
-    dt_conf_set_int("panel_width", panel_width);
-  }
-
   gtk_window_set_default_size(GTK_WINDOW(widget), DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
