@@ -87,7 +87,7 @@
     </para></listitem>
 
     <listitem><para>
-      darktable can export developed images as low or high dynamic range files (JPEG, PNG, TIFF, 
+      darktable can export developed images as low or high dynamic range files (JPEG, PNG, TIFF,
       PDF, PFM, EXR) to local disk storage, web albums, LaTeX book template,
       email attachments, and can generate a simple html-based web gallery.
     </para></listitem>
@@ -98,7 +98,7 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 60 image processing modules which cover correction of 
+      darktable comes with more than 60 image processing modules which cover correction of
       digital image imperfections and common defects, basic adjustments, tonal value
       changes, color manipulation, as well as enhancements and artistic effects.
     </para></listitem>
@@ -109,15 +109,15 @@
 
     <listitem><para>
       A powerful mask feature gives you fine control over how the module affects complete image
-      or its specific areas. You can select image areas by drawing a mask using various shapes, 
+      or its specific areas. You can select image areas by drawing a mask using various shapes,
       or by defining a parametric mask based on pixel values.
     </para></listitem>
 
     <listitem><para>
-      Flexibility of masks is further extended by the possibility to apply them in different blending 
+      Flexibility of masks is further extended by the possibility to apply them in different blending
       modes and reuse the same mask in several modules.
     </para></listitem>
-	  
+
     <listitem><para>
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
@@ -1057,11 +1057,11 @@
       </indexterm>
 
       <para>
-        The filmstrip along the bottom shows the same images as lighttable, with respect to
+        The filmstrip along the bottom shows the same images as lighttable filemanager, with respect to
         filters and sort order. It is turned on/off with key accelerator
         <emphasis>Ctrl+F</emphasis>. You can navigate along the filmstrip by scrolling with the
         mouse wheel and change the height of the filmstrip panel by dragging its top. The
-        filmstrip allows you to interact with images while you are not in lighttable mode. For
+        filmstrip allows you to interact with images while you are not in lighttable filemanager mode. For
         example, you can, while developing an image in darkroom mode, switch to another image to
         develop, by double clicking the thumbnail in the filmstrip. You can also rate the images
         as you do in lighttable, copy/paste history stack, etc.
