@@ -568,8 +568,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
 
   /* set size of navigation draw area */
-  const int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width * 0.5f);
+  gtk_widget_set_size_request(self->widget, -1, 175);
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
