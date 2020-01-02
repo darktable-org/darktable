@@ -64,6 +64,9 @@ static const char WhiteFluorescent[] = N_("white fluorescent");
 static const char SodiumVaporFluorescent[] = N_("sodium-vapor fluorescent");
 static const char DayWhiteFluorescent[] = N_("day white fluorescent");
 static const char HighTempMercuryVaporFluorescent[] = N_("high temp. mercury-vapor fluorescent");
+// On Some Panasonic
+static const char D55[] = N_("D55");
+static const char ISO_Studio_Tungsten[] = N_("ISO Studio Tungsten");
 
 static const char Flash[] = N_("flash");
 // For Olympus with no real "Flash" preset:
@@ -4788,7 +4791,7 @@ const wb_data wb_preset[] =
   { "Olympus", "E-M5 Mark III", CoolWhiteFluorescent, 0, { 1.765625, 1, 2.953125, 0 } },
   { "Olympus", "E-M5 Mark III", Underwater          , 0, { 2.03125, 1, 2.03125, 0 } },
   { "Olympus", "E-M5 Mark III", Flash               , 0, { 2.109375, 1, 1.734375, 0 } },
-  
+
   /* Firmware version 1.2 */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Olympus", "E-M10", Daylight, -7,		{ 1.671875, 1, 2.070312, 0 } },
@@ -5223,6 +5226,16 @@ const wb_data wb_preset[] =
   { "Panasonic", "DC-G9", Shade, 0,             { 2.507813, 1, 1.679688, 0 } },
   { "Panasonic", "DC-G9", Incandescent, 0,      { 1.632813, 1, 2.839844, 0 } },
   { "Panasonic", "DC-G9", Flash, 0,             { 2.566406, 1, 1.734375, 0 } },
+
+  /* Panasonic DC-TZ96 Firmware Version 1.0 */
+
+  { "Panasonic", "DC-TZ96", Daylight, 0,            { 2.1328125,  1, 1.79296875, 0 } },
+  { "Panasonic", "DC-TZ96", Cloudy, 0,              { 2.30859375, 1, 1.65625,    0 } },
+  { "Panasonic", "DC-TZ96", Shade, 0,               { 2.4609375,  1, 1.54296875, 0 } },
+  { "Panasonic", "DC-TZ96", Incandescent, 0,        { 1.4765625,  1, 2.55859375, 0 } },
+  { "Panasonic", "DC-TZ96", Flash, 0,               { 2.3203125,  1, 1.56640625, 0 } },
+  { "Panasonic", "DC-TZ96", D55, 0,                 { 1.9765625,  1, 1.90234375, 0 } },
+  { "Panasonic", "DC-TZ96", ISO_Studio_Tungsten, 0, { 1.4765625,  1, 2.55859375, 0 } },
 
   { "Panasonic", "DMC-FZ8", Daylight, 0,	{ 1.904943, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ8", Cloudy, 0,		{ 2.060836, 1, 1.498099, 0 } },
@@ -7703,8 +7716,8 @@ const wb_data wb_preset[] =
   { "Sony", "ILCE-6400", "3200K", 0, { 1.8125, 1, 2.87890625, 0 } },
   { "Sony", "ILCE-6400", "4500K", 0, { 2.34375, 1, 2.05859375, 0 } },
   { "Sony", "ILCE-6400", "6000K", 0, { 2.7578125, 1, 1.6875, 0 } },
-  { "Sony", "ILCE-6400", "8500K", 0, { 3.1953125, 1, 1.41796875, 0 } },  
-    
+  { "Sony", "ILCE-6400", "8500K", 0, { 3.1953125, 1, 1.41796875, 0 } },
+
   // Sony ILCE-6500 Firmware Version 1.05
   { "Sony", "ILCE-6500", Daylight, 0, { 2.6171875, 1, 1.74609375, 0 } },
   { "Sony", "ILCE-6500", Shade, 0, { 3.08203125, 1, 1.4375, 0 } },
