@@ -106,6 +106,7 @@ making a backup is strongly advised.
 
 - Exports should now better respect the final dimensions requested.
 
+- Fix issues with brush opacity handling.
 
 # Changes since 2.6
 
