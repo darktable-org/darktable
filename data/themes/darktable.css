@@ -282,7 +282,6 @@ box *
   padding: 0.5em 0.5em 0.25em 0.5em;
 }
 
-
 /* GTK Buttons */
 
 button
@@ -424,7 +423,6 @@ entry selection
 {
   background-color: @field_selected_bg;
 }
-
 
 /* Labels in views */
 
@@ -606,6 +604,8 @@ dialog combobox window
   padding: 0.4em;
 }
 
+/* Views links in header */
+
 #view_dropdown,
 #view_label
 {
@@ -619,6 +619,8 @@ dialog combobox window
 #view_label {
   margin: 0.1em 0;
 }
+
+/* Menus options */
 
 menuitem button,
 popover button,
@@ -636,12 +638,12 @@ menuitem check
   margin-right: 5px;
 }
 
+/* header and footer combobox */
 #header-toolbar combobox,
 #footer-toolbar combobox
 {
   margin: 0 0.5em;
 }
-
 
 /* Dialog windows */
 
@@ -813,7 +815,6 @@ separator:hover
   color: @button_border;
 }
 
-
 /* empty space at top/bottom of sidepanels when scrolled */
 undershoot,
 undershoot.top,
@@ -854,6 +855,7 @@ overshoot.right
   margin: 2px 0;
 }
 
+/* entries options */
 entry
 {
   margin: 2px 0;
@@ -877,6 +879,7 @@ entry
   padding: 1px;
 }
 
+/* checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
 checkbutton check
@@ -884,17 +887,20 @@ checkbutton check
   margin: 5px 8px 5px 0;
 }
 
-#left #lib-plugin-ui #dt-button /* arrow size of dropdown button arrow on filter collection */
+/* arrow size of dropdown button arrow on filter collection */
+#left #lib-plugin-ui #dt-button 
 {
   padding: 0px;
 }
 
-#iop-plugin-ui #dt-button  /* arrow size of some buttons on darkroom modules */
+/* arrow size of some buttons on darkroom modules */
+#iop-plugin-ui #dt-button
 {
   padding: 2px;
 }
 
-#left #history-button, /* choose here spacing between history items in darkroom */
+/* choose below spacing between history items in darkroom */
+#left #history-button,
 #left #history-button-enabled,
 #left #history-switch,
 #left #history-switch-enabled,
@@ -909,6 +915,7 @@ checkbutton check
   margin: 0px 1px 1px 1px;
 }
 
+/* then font size */
 #left #history-switch-always-enabled,
 #left #history-switch-default-enabled,
 #left #history-switch,
@@ -922,6 +929,7 @@ checkbutton check
   font-size: 0.5em;
 }
 
+/* other stuff */
 #iop-bottom-bar
 {
     min-height: 1.2em;
@@ -934,6 +942,7 @@ combobox label
 
 /* STUFF TO MERGE WITH ABOVE RULES */
 
+/* about darktable dialog popup */
 aboutdialog,
 aboutdialog box,
 aboutdialog box *
@@ -946,11 +955,23 @@ aboutdialog headerbar
   padding: 2px;
 }
 
+/* progress bar on bottom left side when exporting, importing, etc... */
 progressbar *
 {
   background-color: @text_color;
 }
 
+progressbar
+{
+  background-color: @really_dark_bg_color;
+}
+
+progressbar progress
+{
+  background-color: @fg_color;
+}
+
+/* filechooser sidebar options */
 filechooser sidebar-icon
 {
   padding: 0px 5px 0px 10px;
@@ -961,15 +982,7 @@ filechooser sidebar-row
   padding-top: 3px;
 }
 
-progressbar
-{
-  background-color: @really_dark_bg_color;
-}
-progressbar progress
-{
-  background-color: @fg_color;
-}
-
+/* other stuff */
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
@@ -977,8 +990,10 @@ cell:selected
 
 #show_mask_button
 {
-    color: #FFFF00;
+    color: #ffff00;
 }
+
+/* Preferences dialog window options */
 
 #preferences_notebook scrolledwindow viewport {
   padding: 5px;
@@ -1004,7 +1019,7 @@ cell:selected
     margin-top: 0;
 }
 
-/* Color picker */
+/* Color picker module in darkroom left panel */
 
 #color-picker-area
 {
@@ -1060,7 +1075,9 @@ cell:selected
 }
 
 /* Pseudo-classes : need to be defined last to not be overwritten */
+/* All states options are designed below, active, hover, selected, disabled and check states */
 
+/* main states */
 * button:selected,
 * button:active,
 * button:checked,
@@ -1096,7 +1113,7 @@ combobox window *:active,
   color: @button_checked_fg;
 }
 
-/* currently selected button */
+/* history currently selected button */
 #history-button:selected *,
 #history-button-enabled:selected *,
 #history-button-always-enabled:selected *,
@@ -1113,6 +1130,7 @@ combobox window *:active,
     color: @button_checked_fg;
 }
 
+/* hover states, some needed background only, other color only and some both */
 * button:hover,
 button:hover,
 menuitem:hover,
@@ -1163,6 +1181,7 @@ notebook tab:hover label,
   color: @button_hover_fg;
 }
 
+/* last history needed states */
 #history-button-enabled *
 {
   color: @plugin_fg_color;
@@ -1175,6 +1194,7 @@ notebook tab:hover label,
   background-color: transparent;
 }
 
+/* disabled buttons */
 button:disabled,
 #recent-collection-button:disabled
 {
@@ -1198,6 +1218,7 @@ button:disabled,
     color: @plugin_label_color;
 }
 
+/* Treeviews and filechoosers states */
 treeview *:hover,
 filechooser *:hover
 {
@@ -1226,6 +1247,7 @@ filechooser checkbutton:checked
     background-color: transparent;
 }
 
+/* Views links states in header */
 #view_dropdown *:selected,
 #view_label:selected
 {
@@ -1242,6 +1264,7 @@ filechooser checkbutton:checked
   color: @disabled_fg_color;
 }
 
+/* sliders states */
 #bauhaus-popup:hover,
 #bauhaus-combobox:hover,
 #bauhaus-slider:hover
@@ -1261,6 +1284,7 @@ filechooser checkbutton:checked
   color: @plugin_bg;
 }
 
+/* notebooks states */
 notebook tab:hover
 {
   border-bottom: 2px solid @button_hover_fg;
@@ -1284,6 +1308,7 @@ notebook tab:checked label
   color: @button_checked_fg;
 }
 
+/* entries states */
 entry:hover
 {
   color: @field_hover_fg;
@@ -1305,6 +1330,7 @@ textview text selection
   background-color: @field_selected_bg;
 }
 
+/* scrollbars hover state */
 scrollbar.horizontal slider:hover,
 scrollbar.vertical slider:hover,
 #iop-plugin-ui scrollbar slider:hover,
