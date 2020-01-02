@@ -226,38 +226,25 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   // load all params and create the iop-list
 
-  GList *iop_order_list = NULL;
+  const int current_iop_order = dt_image_get_iop_order_version(imgid);
 
-  double iop_order = 1.0;
+  int32_t iop_order_version = 0;
 
-  while(size)
-  {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-
-    const int32_t len = *(int32_t *)buf;
-    buf += sizeof(int32_t);
-
-    entry->iop_order = iop_order++;
-    memcpy(entry->operation, buf, len);
-    *(entry->operation + len) = '\0';
-    buf += len;
-
-    iop_order_list = g_list_append(iop_order_list, entry);
-
-    size -= (sizeof(int32_t) + len);
-  }
+  GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, size, &iop_order_version);
 
   // set pipe iop order
 
   dt_dev_write_history(darktable.develop);
 
-  dt_ioppr_migrate_iop_order_from_list(darktable.develop, imgid, iop_order_list);
+  dt_ioppr_migrate_iop_order(darktable.develop, imgid, current_iop_order, iop_order_version);
 
   // invalidate buffers and force redraw of darkroom
 
   dt_dev_invalidate_all(darktable.develop);
 
   update(self);
+
+  if(iop_order_list) g_list_free(iop_order_list);
 
   return 0;
 }
@@ -273,7 +260,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   GList *modules = g_list_first(darktable.develop->iop);
 
   // compute size of all modules
-  *size = 0;
+  *size = sizeof(int32_t);
 
   while(modules)
   {
@@ -289,6 +276,29 @@ void *get_params(dt_lib_module_t *self, int *size)
   modules = g_list_first(darktable.develop->iop);
 
   int pos = 0;
+
+  int count = DT_IOP_ORDER_PRESETS_START_ID + 1;
+
+  // add the count of all current ioporder presets
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*)"
+                              " FROM data.presets "
+                              " WHERE operation='ioporder'", -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    count += sqlite3_column_int(stmt, 0);
+  }
+
+  sqlite3_finalize(stmt);
+
+  // set set preset iop-order version
+
+  memcpy(params+pos, &count, sizeof(int32_t));
+  pos += sizeof(int32_t);
 
   while(modules)
   {
