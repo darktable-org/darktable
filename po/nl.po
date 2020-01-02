@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 16:26+0100\n"
-"PO-Revision-Date: 2020-01-01 16:32+0100\n"
+"POT-Creation-Date: 2020-01-02 11:07+0100\n"
+"PO-Revision-Date: 2020-01-02 11:26+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1591,7 +1591,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:810 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
-#: ../src/iop/clipping.c:2104 ../src/iop/filmicrgb.c:1574
+#: ../src/iop/clipping.c:2102 ../src/iop/filmicrgb.c:1574
 #: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
@@ -1599,7 +1599,7 @@ msgstr "nee"
 
 #: ../src/common/darktable.c:810 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/iop/clipping.c:2105 ../src/libs/export.c:629 ../src/libs/export.c:635
+#: ../src/iop/clipping.c:2103 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
 msgid "yes"
 msgstr "ja"
@@ -2256,9 +2256,9 @@ msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:1320
-#, fuzzy, c-format
+#, c-format
 msgid "exporting %d / %d to %s"
-msgstr "exporteer %d afbeelding naar %s"
+msgstr "exporteren %d / %d naar %s"
 
 #: ../src/control/jobs/control_jobs.c:1337 ../src/views/darkroom.c:653
 #: ../src/views/print.c:261
@@ -5381,19 +5381,16 @@ msgid "shear"
 msgstr "plotten"
 
 #: ../src/iop/ashift.c:523
-#, fuzzy
 msgctxt "accel"
 msgid "focal length"
 msgstr "brandpuntsafstand"
 
 #: ../src/iop/ashift.c:524
-#, fuzzy
 msgctxt "accel"
 msgid "crop factor"
 msgstr "cropfactor"
 
 #: ../src/iop/ashift.c:525
-#, fuzzy
 msgctxt "accel"
 msgid "aspect adjust"
 msgstr "verhouding aanpassen"
@@ -5430,13 +5427,13 @@ msgstr "lensverschuiving (%s)"
 
 #: ../src/iop/ashift.c:4629 ../src/iop/ashift.c:4630 ../src/iop/ashift.c:4735
 #: ../src/iop/ashift.c:4736 ../src/iop/clipping.c:1743
-#: ../src/iop/clipping.c:2050 ../src/iop/clipping.c:2096
+#: ../src/iop/clipping.c:2048 ../src/iop/clipping.c:2094
 msgid "horizontal"
 msgstr "horizontaal"
 
 #: ../src/iop/ashift.c:4629 ../src/iop/ashift.c:4630 ../src/iop/ashift.c:4735
 #: ../src/iop/ashift.c:4736 ../src/iop/clipping.c:1742
-#: ../src/iop/clipping.c:2051 ../src/iop/clipping.c:2095
+#: ../src/iop/clipping.c:2049 ../src/iop/clipping.c:2093
 msgid "vertical"
 msgstr "verticaal"
 
@@ -5457,12 +5454,12 @@ msgstr "lensverschuiving (horizontaal)"
 msgid "shear"
 msgstr "plotten"
 
-#: ../src/iop/ashift.c:4862 ../src/iop/clipping.c:2039
-#: ../src/iop/clipping.c:2227 ../src/libs/live_view.c:343
+#: ../src/iop/ashift.c:4862 ../src/iop/clipping.c:2225
+#: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/ashift.c:4868 ../src/iop/clipping.c:2103
+#: ../src/iop/ashift.c:4868 ../src/iop/clipping.c:2101
 msgid "automatic cropping"
 msgstr "automatisch uitsnijden"
 
@@ -5523,7 +5520,7 @@ msgstr "plot de afbeelding langs een diagonaal"
 msgid "display guide lines overlay"
 msgstr "weergeven rasterlijnen"
 
-#: ../src/iop/ashift.c:4981 ../src/iop/clipping.c:2106
+#: ../src/iop/ashift.c:4981 ../src/iop/clipping.c:2104
 msgid "automatically crop to avoid black edges"
 msgstr "automatisch uitsnijden om zwarte randen te voorkomen"
 
@@ -5905,8 +5902,8 @@ msgstr "behoud van kleuren"
 
 #: ../src/iop/basecurve.c:2166 ../src/iop/basecurve.c:2179
 #: ../src/iop/basicadj.c:753 ../src/iop/clipping.c:1741
-#: ../src/iop/clipping.c:2049 ../src/iop/clipping.c:2094
-#: ../src/iop/clipping.c:2234 ../src/iop/clipping.c:2261
+#: ../src/iop/clipping.c:2047 ../src/iop/clipping.c:2092
+#: ../src/iop/clipping.c:2232 ../src/iop/clipping.c:2259
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2300
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1646
 #: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1431
@@ -6004,7 +6001,6 @@ msgid "basic adjustments"
 msgstr "basis aanpassingen"
 
 #: ../src/iop/basicadj.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "black level correction"
 msgstr "zwart niveau correctie"
@@ -6015,10 +6011,9 @@ msgid "exposure"
 msgstr "belichting"
 
 #: ../src/iop/basicadj.c:117
-#, fuzzy
 msgctxt "accel"
 msgid "highlight compression"
-msgstr "hooglichten comprimeren"
+msgstr "compressie markeren"
 
 #: ../src/iop/basicadj.c:118 ../src/iop/bilat.c:116 ../src/iop/colisa.c:99
 #: ../src/iop/colorbalance.c:304 ../src/iop/filmicrgb.c:272
@@ -6028,7 +6023,6 @@ msgid "contrast"
 msgstr "contrast"
 
 #: ../src/iop/basicadj.c:119
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey"
 msgstr "midden grijs"
@@ -6053,7 +6047,6 @@ msgid "vibrance"
 msgstr "levendigheid"
 
 #: ../src/iop/basicadj.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "clip"
 msgstr "clippen"
@@ -6177,7 +6170,6 @@ msgid "local contrast"
 msgstr "lokaal contrast"
 
 #: ../src/iop/bilat.c:114 ../src/iop/globaltonemap.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "detail"
 msgstr "detail"
@@ -6398,10 +6390,9 @@ msgid "frame line size"
 msgstr "afmeting frame"
 
 #: ../src/iop/borders.c:202
-#, fuzzy
 msgctxt "accel"
 msgid "frame line offset"
-msgstr "afstand van het frame"
+msgstr "afstand tot frame"
 
 #: ../src/iop/borders.c:203
 msgctxt "accel"
@@ -6436,7 +6427,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:942 ../src/iop/clipping.c:2122
+#: ../src/iop/borders.c:942 ../src/iop/clipping.c:2120
 msgid "golden cut"
 msgstr "gulden snede"
 
@@ -6456,7 +6447,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:947 ../src/iop/clipping.c:2112
+#: ../src/iop/borders.c:947 ../src/iop/clipping.c:2110
 msgid "square"
 msgstr "vierkant"
 
@@ -6465,9 +6456,8 @@ msgid "constant border"
 msgstr "vaste randdikte"
 
 #: ../src/iop/borders.c:949 ../src/iop/borders.c:975 ../src/iop/borders.c:981
-#, fuzzy
 msgid "custom..."
-msgstr "aangepaste sortering"
+msgstr "aangepast ..."
 
 #: ../src/iop/borders.c:970 ../src/iop/borders.c:976
 msgid "center"
@@ -6499,7 +6489,7 @@ msgstr ""
 "de afmeting van de rand\n"
 "als percentage van de volledige afbeelding"
 
-#: ../src/iop/borders.c:1015 ../src/iop/clipping.c:2209
+#: ../src/iop/borders.c:1015 ../src/iop/clipping.c:2207
 msgid "aspect"
 msgstr "verhouding"
 
@@ -6515,9 +6505,8 @@ msgid "aspect ratio"
 msgstr "beeldverhouding"
 
 #: ../src/iop/borders.c:1025
-#, fuzzy
 msgid "set the custom aspect ratio"
-msgstr "bepaal de verhouding "
+msgstr "bepaal uw beeldverhouding"
 
 #: ../src/iop/borders.c:1029 ../src/iop/flip.c:75
 #: ../src/libs/print_settings.c:1279
@@ -6764,7 +6753,7 @@ msgstr "uitsnijden en roteren"
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "ongeldige verhouding, dit moet zijn \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1744 ../src/iop/clipping.c:2097
+#: ../src/iop/clipping.c:1744 ../src/iop/clipping.c:2095
 msgid "full"
 msgstr "geheel"
 
@@ -6776,157 +6765,155 @@ msgstr "oud systeem"
 msgid "correction applied"
 msgstr "is gecorrigeerd"
 
-#: ../src/iop/clipping.c:2037
+#: ../src/iop/clipping.c:2036
 msgid "main"
 msgstr ""
 
-#: ../src/iop/clipping.c:2038
-#, fuzzy
+#: ../src/iop/clipping.c:2037
 msgid "margins"
-msgstr "marge boven"
+msgstr "marges"
 
-#: ../src/iop/clipping.c:2048 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2046 ../src/libs/live_view.c:374
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:2052 ../src/iop/clipping.c:2264
+#: ../src/iop/clipping.c:2050 ../src/iop/clipping.c:2262
 #: ../src/iop/colorbalance.c:2384 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "beide"
 
-#: ../src/iop/clipping.c:2054
+#: ../src/iop/clipping.c:2052
 msgid "mirror image horizontally and/or vertically"
 msgstr "spiegel afbeelding horizontaal en/of verticaal"
 
-#: ../src/iop/clipping.c:2058
+#: ../src/iop/clipping.c:2056
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:2061
+#: ../src/iop/clipping.c:2059
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "klik op de rechtermuisknop en trek een rechte lijn over afbeelding"
 
-#: ../src/iop/clipping.c:2065
+#: ../src/iop/clipping.c:2063
 msgid "left"
 msgstr "links"
 
-#: ../src/iop/clipping.c:2068
+#: ../src/iop/clipping.c:2066
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2072
+#: ../src/iop/clipping.c:2070
 msgid "right"
 msgstr "rechts"
 
-#: ../src/iop/clipping.c:2075
+#: ../src/iop/clipping.c:2073
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2079
+#: ../src/iop/clipping.c:2077
 msgid "top"
 msgstr ""
 
-#: ../src/iop/clipping.c:2082
+#: ../src/iop/clipping.c:2080
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2086
-#, fuzzy
+#: ../src/iop/clipping.c:2084
 msgid "bottom"
 msgstr "bodem"
 
-#: ../src/iop/clipping.c:2089
+#: ../src/iop/clipping.c:2087
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2093
+#: ../src/iop/clipping.c:2091
 msgid "keystone"
 msgstr "keystone"
 
-#: ../src/iop/clipping.c:2098
+#: ../src/iop/clipping.c:2096
 msgid "set perspective correction for your image"
 msgstr "corrigeer het perspectief van de afbeelding"
 
-#: ../src/iop/clipping.c:2110
+#: ../src/iop/clipping.c:2108
 msgid "freehand"
 msgstr "vrije selectie"
 
-#: ../src/iop/clipping.c:2111
+#: ../src/iop/clipping.c:2109
 msgid "original image"
 msgstr "originele afbeeldingen"
 
-#: ../src/iop/clipping.c:2113
+#: ../src/iop/clipping.c:2111
 msgid "10:8 in print"
 msgstr "10:8 op papier"
 
-#: ../src/iop/clipping.c:2114
+#: ../src/iop/clipping.c:2112
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2115
+#: ../src/iop/clipping.c:2113
 msgid "11x14"
 msgstr "11x14"
 
 # volgens mij is 'letter' een naam van een formaat voor papier, toch?
-#: ../src/iop/clipping.c:2116
+#: ../src/iop/clipping.c:2114
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:2117
+#: ../src/iop/clipping.c:2115
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2118
+#: ../src/iop/clipping.c:2116
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2119
+#: ../src/iop/clipping.c:2117
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2120
+#: ../src/iop/clipping.c:2118
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2121
+#: ../src/iop/clipping.c:2119
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2123
+#: ../src/iop/clipping.c:2121
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2124
+#: ../src/iop/clipping.c:2122
 msgid "widescreen"
 msgstr "breedbeeld"
 
-#: ../src/iop/clipping.c:2125
+#: ../src/iop/clipping.c:2123
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2126
+#: ../src/iop/clipping.c:2124
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:2127
+#: ../src/iop/clipping.c:2125
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2128
+#: ../src/iop/clipping.c:2126
 msgid "anamorphic"
 msgstr "anamorphic"
 
-#: ../src/iop/clipping.c:2129
+#: ../src/iop/clipping.c:2127
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2173
+#: ../src/iop/clipping.c:2159 ../src/iop/clipping.c:2171
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "formaat verhouding voor `%s' is verkeerd. dit moet zijn \"number:number\""
 
-#: ../src/iop/clipping.c:2220
+#: ../src/iop/clipping.c:2218
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -6934,65 +6921,64 @@ msgstr ""
 "bepaal de beeldverhouding\n"
 "de lijst is gesorteerd van meest naar minst vierkant"
 
-#: ../src/iop/clipping.c:2256 ../src/libs/live_view.c:370
+#: ../src/iop/clipping.c:2254 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
 msgstr "inschakelen hulplijnen, vergemakkelijkt  compositie verbetering"
 
-#: ../src/iop/clipping.c:2260 ../src/iop/clipping.c:2265
+#: ../src/iop/clipping.c:2258 ../src/iop/clipping.c:2263
 #: ../src/libs/live_view.c:379
 msgid "flip guides"
 msgstr "verwissel hulplijnen"
 
-#: ../src/iop/clipping.c:2262 ../src/libs/live_view.c:376
+#: ../src/iop/clipping.c:2260 ../src/libs/live_view.c:376
 msgid "horizontally"
 msgstr "horizontaal"
 
-#: ../src/iop/clipping.c:2263 ../src/libs/live_view.c:377
+#: ../src/iop/clipping.c:2261 ../src/libs/live_view.c:377
 msgid "vertically"
 msgstr "verticaal"
 
-#: ../src/iop/clipping.c:3356
+#: ../src/iop/clipping.c:3354
 msgctxt "accel"
 msgid "commit"
 msgstr "goedkeuren"
 
-#: ../src/iop/clipping.c:3357
+#: ../src/iop/clipping.c:3355
 msgctxt "accel"
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:3358
+#: ../src/iop/clipping.c:3356
 msgctxt "accel"
 msgid "left"
 msgstr "links"
 
-#: ../src/iop/clipping.c:3359
+#: ../src/iop/clipping.c:3357
 msgctxt "accel"
 msgid "top"
 msgstr ""
 
-#: ../src/iop/clipping.c:3360
+#: ../src/iop/clipping.c:3358
 msgctxt "accel"
 msgid "right"
 msgstr "rechts"
 
-#: ../src/iop/clipping.c:3361
-#, fuzzy
+#: ../src/iop/clipping.c:3359
 msgctxt "accel"
 msgid "bottom"
 msgstr "bodem"
 
-#: ../src/iop/clipping.c:3386
+#: ../src/iop/clipping.c:3384
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s on borders] uitsnijden"
 
-#: ../src/iop/clipping.c:3392
+#: ../src/iop/clipping.c:3390
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s on borders] uitsnijden behoud verhouding"
 
-#: ../src/iop/clipping.c:3397
+#: ../src/iop/clipping.c:3395
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definieer/roteer horizon"
@@ -7039,10 +7025,9 @@ msgid "similar to Kodachrome"
 msgstr "vergelijkbaar met Kodachrome"
 
 #: ../src/iop/colorbalance.c:301
-#, fuzzy
 msgctxt "accel"
 msgid "input saturation"
-msgstr "ingaaande verzadiging"
+msgstr "ingaande verzadiging"
 
 #: ../src/iop/colorbalance.c:302
 #, fuzzy
@@ -7051,10 +7036,9 @@ msgid "output saturation"
 msgstr "uitgaande verzadiging"
 
 #: ../src/iop/colorbalance.c:303
-#, fuzzy
 msgctxt "accel"
 msgid "contrast fulcrum"
-msgstr "contrast draaipunt"
+msgstr "contrast steunpunt"
 
 #: ../src/iop/colorbalance.c:964
 msgid "optimize luma from patches"
@@ -7244,10 +7228,9 @@ msgid "lightness"
 msgstr "helderheid"
 
 #: ../src/iop/colorchecker.c:136
-#, fuzzy
 msgctxt "accel"
 msgid "green-red"
-msgstr "groen/rood"
+msgstr "groen-rood"
 
 #: ../src/iop/colorchecker.c:137
 #, fuzzy
@@ -7506,19 +7489,16 @@ msgid "color mapping"
 msgstr "kleurenkaart"
 
 #: ../src/iop/colormapping.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "number of clusters"
 msgstr "aantal clusters"
 
 #: ../src/iop/colormapping.c:165
-#, fuzzy
 msgctxt "accel"
 msgid "color dominance"
 msgstr "kleurdominantie"
 
 #: ../src/iop/colormapping.c:166
-#, fuzzy
 msgctxt "accel"
 msgid "histogram equalization"
 msgstr "histogram egaliseren"
@@ -8054,14 +8034,12 @@ msgid "denoise (profiled)"
 msgstr "ruisreductie (profiled)"
 
 #: ../src/iop/denoiseprofile.c:519
-#, fuzzy
 msgctxt "accel"
 msgid "adjust autoset parameters"
-msgstr "aanpassen automatische instelling parameters"
+msgstr "aanpassen automatische parameter instellingen"
 
 # of behoud kleuren
 #: ../src/iop/denoiseprofile.c:520
-#, fuzzy
 msgctxt "accel"
 msgid "preserve shadows"
 msgstr "behoud schaduwen"
@@ -8073,13 +8051,11 @@ msgid "bias correction"
 msgstr "bias correctie"
 
 #: ../src/iop/denoiseprofile.c:522 ../src/iop/nlmeans.c:117
-#, fuzzy
 msgctxt "accel"
 msgid "patch size"
 msgstr "patch grootte"
 
 #: ../src/iop/denoiseprofile.c:523
-#, fuzzy
 msgctxt "accel"
 msgid "search radius"
 msgstr "zoek straal"
@@ -8091,7 +8067,6 @@ msgid "scattering"
 msgstr "tethering"
 
 #: ../src/iop/denoiseprofile.c:525
-#, fuzzy
 msgctxt "accel"
 msgid "central pixel weight"
 msgstr "centrale pixel invloed (details)"
@@ -9120,7 +9095,6 @@ msgid "global tonemap"
 msgstr "global tonemap"
 
 #: ../src/iop/globaltonemap.c:122
-#, fuzzy
 msgctxt "accel"
 msgid "bias"
 msgstr "bias"
@@ -9220,10 +9194,9 @@ msgid "density"
 msgstr "dichtheid"
 
 #: ../src/iop/graduatednd.c:165
-#, fuzzy
 msgctxt "accel"
 msgid "hardness"
-msgstr "scherpte"
+msgstr "hardheid"
 
 #: ../src/iop/graduatednd.c:1225
 msgid "density"
@@ -9234,9 +9207,8 @@ msgid "the density in EV for the filter"
 msgstr "dichtheid voor het filter in EV"
 
 #: ../src/iop/graduatednd.c:1232
-#, fuzzy
 msgid "hardness"
-msgstr "scherpte"
+msgstr "hardheid"
 
 #: ../src/iop/graduatednd.c:1234
 #, fuzzy, no-c-format
@@ -9321,7 +9293,6 @@ msgid "haze removal"
 msgstr "waas verwijderen"
 
 #: ../src/iop/hazeremoval.c:122
-#, fuzzy
 msgctxt "accel"
 msgid "distance"
 msgstr "afstand"
@@ -9343,7 +9314,6 @@ msgid "highlight reconstruction"
 msgstr "hooglichten herstellen"
 
 #: ../src/iop/highlights.c:98
-#, fuzzy
 msgctxt "accel"
 msgid "clipping threshold"
 msgstr "drempel clipping"
@@ -9698,7 +9668,6 @@ msgid "levels"
 msgstr "niveaus"
 
 #: ../src/iop/levels.c:138
-#, fuzzy
 msgctxt "accel"
 msgid "gray"
 msgstr "grijs"
@@ -10243,10 +10212,9 @@ msgid "dynamic range"
 msgstr "dynamisch gebied"
 
 #: ../src/iop/profile_gamma.c:130
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luma"
-msgstr "middelste grijze luminantie"
+msgstr "middengrijs luminantie"
 
 #: ../src/iop/profile_gamma.c:131
 #, fuzzy
@@ -10699,7 +10667,7 @@ msgctxt "accel"
 msgid "continuous add brush"
 msgstr "doorlopend penselen toevoegen"
 
-#: ../src/iop/retouch.c:4433 ../src/iop/retouch.c:5289
+#: ../src/iop/retouch.c:4434 ../src/iop/retouch.c:5290
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "maximale schaal %i voor deze afbeeldings groote"
@@ -10959,9 +10927,8 @@ msgid "the mix of effect"
 msgstr "mix effect"
 
 #: ../src/iop/splittoning.c:90
-#, fuzzy
 msgid "split-toning"
-msgstr "duo toning"
+msgstr "duo-toning"
 
 #: ../src/iop/splittoning.c:110
 msgctxt "accel"
@@ -10974,28 +10941,24 @@ msgid "pick secondary color"
 msgstr "pak de secundaire kleur"
 
 #: ../src/iop/splittoning.c:113
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-hue"
-msgstr "schaduwen"
+msgstr "schaduwen tint"
 
 #: ../src/iop/splittoning.c:114
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-saturation"
-msgstr "hsl verzadiging"
+msgstr "schaduwen verzadiging"
 
 #: ../src/iop/splittoning.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-hue"
-msgstr "hooglichten"
+msgstr "hooglichten tint"
 
 #: ../src/iop/splittoning.c:116
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-saturation"
-msgstr "hooglichten herstellen"
+msgstr "hooglichten verzadiging"
 
 #: ../src/iop/splittoning.c:117
 msgctxt "accel"
@@ -11187,10 +11150,9 @@ msgid "tone curve"
 msgstr "toon curve"
 
 #: ../src/iop/tonecurve.c:211
-#, fuzzy
 msgctxt "accel"
 msgid "base of the logarithm"
-msgstr "basis van de logaritme"
+msgstr "basis van het logaritme"
 
 #: ../src/iop/tonecurve.c:1346
 msgid "color space"
@@ -12927,9 +12889,8 @@ msgid "default enabled module"
 msgstr "inschakelen module"
 
 #: ../src/libs/history.c:202
-#, fuzzy
 msgid "deprecated module"
-msgstr "zoek module"
+msgstr "verouderde module"
 
 #: ../src/libs/history.c:664 ../src/libs/snapshots.c:346
 msgid "original"
@@ -13198,7 +13159,7 @@ msgstr "plak metadata"
 #, fuzzy
 msgctxt "accel"
 msgid "clear metadata"
-msgstr "metadata"
+msgstr "verduidelijk metadata"
 
 #. Grouping keys
 #: ../src/libs/image.c:578
@@ -14424,10 +14385,9 @@ msgid "tag"
 msgstr "label"
 
 #: ../src/libs/tagging.c:128
-#, fuzzy
 msgctxt "accel"
 msgid "redo last tag"
-msgstr "creëer label"
+msgstr "geef laatste label opnieuw"
 
 #: ../src/libs/tagging.c:1052
 msgid "attach tag to all"
@@ -15130,9 +15090,8 @@ msgid "lua options"
 msgstr "lua-opties"
 
 #: ../src/views/darkroom.c:413
-#, fuzzy
 msgid "loading image"
-msgstr "verplaats %d afbeelding"
+msgstr "ophalen afbeelding"
 
 #: ../src/views/darkroom.c:585
 msgid "gamut check"
