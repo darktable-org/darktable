@@ -118,11 +118,9 @@ menuitem arrow
 #history-switch:disabled
 {
     color: shade(@plugin_label_color, .9);
-    background-color: transparent;
 }
 
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.8);
-  background-color: transparent;
 }
