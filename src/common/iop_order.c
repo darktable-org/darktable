@@ -759,21 +759,75 @@ gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 // if *_version == 0 it returns the current version and updates *_version
 GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
 {
-  GList *iop_order_list = _ioppr_get_iop_order_v1();
-  int old_version = 1;
-  const int version = ((_version == NULL) || (*_version == 0)) ? DT_IOP_ORDER_VERSION: *_version;
+  GList *iop_order_list = NULL;
 
-  while(old_version < version && old_version > 0)
+  // first check if this is a version from a preset
+  if(_version && *_version > DT_IOP_ORDER_PRESETS_START_ID)
   {
-    old_version = _ioppr_legacy_iop_order_step(&iop_order_list, NULL, old_version, FALSE);
+    sqlite3_stmt *stmt;
+
+    // we read the iop-order-list in the preset table, the actual version is
+    // the first int32_t serialized into the io_params. This is then a sequential
+    // search, but there will not be many such presets and we do call this routine
+    // only when loading an image and when changing the iop-order.
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT op_params"
+                                " FROM data.presets "
+                                " WHERE operation='ioporder'", -1, &stmt, NULL);
+
+    int res = sqlite3_step(stmt);
+    gboolean found = FALSE;
+
+    if(res == SQLITE_ROW)
+    {
+      while(res == SQLITE_ROW)
+      {
+        const char *buf = (char *)sqlite3_column_blob(stmt, 0);
+
+        int iop_order_version = buf ? *(int32_t *)buf : -1;
+
+        // found the proper version
+        if(iop_order_version == *_version)
+        {
+          const int32_t buf_size = sqlite3_column_bytes(stmt, 0);
+
+          iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, buf_size, &iop_order_version);
+          found = TRUE;
+          break;
+        }
+
+        res = sqlite3_step(stmt);
+      }
+    }
+
+    if(!found)
+    {
+      // preset not found, fall back to last built-in version, will be loaded below
+      *_version =  DT_IOP_ORDER_VERSION;
+    }
+
+    sqlite3_finalize(stmt);
   }
 
-  if(old_version != version)
+  if(iop_order_list == NULL)
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", version);
-  }
+    iop_order_list = _ioppr_get_iop_order_v1();
+    int old_version = 1;
+    const int version = ((_version == NULL) || (*_version == 0)) ? DT_IOP_ORDER_VERSION: *_version;
 
-  if(_version && *_version == 0 && old_version > 0) *_version = old_version;
+    while(old_version < version && old_version > 0)
+    {
+      old_version = _ioppr_legacy_iop_order_step(&iop_order_list, NULL, old_version, FALSE);
+    }
+
+    if(old_version != version)
+    {
+      fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", version);
+    }
+
+    if(_version && *_version == 0 && old_version > 0) *_version = old_version;
+  }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
 

@@ -69,19 +69,49 @@ void update(dt_lib_module_t *self)
   const int32_t imgid = darktable.develop->image_storage.id;
 
   int current_iop_order_version = dt_image_get_iop_order_version(imgid);
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&current_iop_order_version, TRUE);
 
   int mode = DT_IOP_ORDER_UNSAFE;
 
-  if (current_iop_order_version == 2)
-    mode = DT_IOP_ORDER_LEGACY;
-  else if(current_iop_order_version == 5)
-    mode = DT_IOP_ORDER_RECOMMENDED;
+  if(current_iop_order_version > DT_IOP_ORDER_PRESETS_START_ID)
+  {
+    const GList *entries =  dt_bauhaus_combobox_get_entries(d->widget);
+
+    // four first entries are built-in
+    for(int k=0; k<4; k++) entries = g_list_next(entries);
+    int count = 4;
+
+    while(entries)
+    {
+      const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
+      const int iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->widget), entry->label));
+
+      if(current_iop_order_version == iop_order_version)
+      {
+        mode = count;
+        break;
+      }
+      entries = g_list_next(entries);
+      count++;
+    }
+
+    // preset not found, set to custom
+    if(mode == DT_IOP_ORDER_UNSAFE)
+      mode = DT_IOP_ORDER_CUSTOM;
+  }
+  else
+  {
+    if (current_iop_order_version == 2)
+      mode = DT_IOP_ORDER_LEGACY;
+    else if(current_iop_order_version == 5)
+      mode = DT_IOP_ORDER_RECOMMENDED;
+  }
+
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(&current_iop_order_version, TRUE);
 
   /*
-     Check if user has changed the order (custom order).
-     We do not check for iop-order but the actual order of modules
-     compared to the canonical order of modules for the given iop-order version.
+    Check if user has changed the order (custom order).
+    We do not check for iop-order but the actual order of modules
+    compared to the canonical order of modules for the given iop-order version.
   */
   GList *modules = g_list_first(darktable.develop->iop);
   GList *iop = iop_order_list;
@@ -110,6 +140,8 @@ void update(dt_lib_module_t *self)
     // skip all same modules (duplicate instances) if any
     while(modules && !strcmp(((dt_iop_module_t *)modules->data)->op, mod->op)) modules = g_list_next(modules);
   }
+
+  g_list_free(iop_order_list);
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -143,6 +175,11 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
     new_iop_order_version = 2;
   else if(mode == DT_IOP_ORDER_RECOMMENDED)
     new_iop_order_version = 5;
+  else // preset
+  {
+    const char *name = dt_bauhaus_combobox_get_text(widget);
+    new_iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), name));
+  }
 
   if(current_iop_order_version != new_iop_order_version
      || d->current_mode == DT_IOP_ORDER_CUSTOM)
@@ -164,19 +201,53 @@ static void _image_loaded_callback(gpointer instace, gpointer user_data)
   update(self);
 }
 
+static void _fill_iop_order(dt_lib_module_t *self)
+{
+  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  dt_bauhaus_combobox_clear(d->widget);
+
+  dt_bauhaus_combobox_add(d->widget, _("unsafe, select one below"));
+  dt_bauhaus_combobox_add(d->widget, _("custom order"));
+  dt_bauhaus_combobox_add(d->widget, _("legacy"));
+  dt_bauhaus_combobox_add(d->widget, _("recommended"));
+
+  // fill preset iop-order
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, op_params"
+                              " FROM data.presets "
+                              " WHERE operation='ioporder'", -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+    const char *buf = (char *)sqlite3_column_blob(stmt, 1);
+    const int iop_order_version = *(int32_t *)buf;
+    dt_bauhaus_combobox_add(d->widget, name);
+    g_object_set_data(G_OBJECT(d->widget), name, GUINT_TO_POINTER(iop_order_version));
+  }
+
+  sqlite3_finalize(stmt);
+
+  darktable.gui->reset = reset;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)malloc(sizeof(dt_lib_ioporder_t));
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  d->widget = dt_bauhaus_combobox_new(NULL);
 
-  dt_bauhaus_combobox_add(d->widget, _("unsafe, select one below"));
-  dt_bauhaus_combobox_add(d->widget, _("custom order"));
-  dt_bauhaus_combobox_add(d->widget, _("legacy"));
-  dt_bauhaus_combobox_add(d->widget, _("recommended"));
-  dt_bauhaus_combobox_set(d->widget, 0);
+  d->widget = dt_bauhaus_combobox_new(NULL);
+  _fill_iop_order(self);
+
   gtk_widget_set_tooltip_text
     (d->widget,
      _("information:\n"
@@ -232,6 +303,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, size, &iop_order_version);
 
+  if(iop_order_version < DT_IOP_ORDER_PRESETS_START_ID) return 1;
+
   // set pipe iop order
 
   dt_dev_write_history(darktable.develop);
@@ -242,6 +315,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   dt_dev_invalidate_all(darktable.develop);
 
+  _fill_iop_order(self);
   update(self);
 
   if(iop_order_list) g_list_free(iop_order_list);
