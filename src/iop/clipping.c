@@ -2032,11 +2032,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
   GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("main")));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("margins")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("guides")));
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
@@ -2066,28 +2064,28 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cx), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cx, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cx, FALSE, FALSE, 0);
 
   g->cw = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cw, 2);
   dt_bauhaus_widget_set_label(g->cw, NULL, _("right"));
   dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cw), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cw, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cw, FALSE, FALSE, 0);
 
   g->cy = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cy, 2);
   dt_bauhaus_widget_set_label(g->cy, NULL, _("top"));
   dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
   g_signal_connect(G_OBJECT(g->cy), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cy, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), g->cy, FALSE, FALSE, 0);
 
   g->ch = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->ch, 2);
   dt_bauhaus_widget_set_label(g->ch, NULL, _("bottom"));
   dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
   g_signal_connect(G_OBJECT(g->ch), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->ch, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(page2), g->ch, FALSE, FALSE, 2);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
@@ -2225,11 +2223,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
-  gtk_box_pack_start(GTK_BOX(page3), g->guide_lines, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->guide_lines, TRUE, TRUE, 0);
 
   g->guides_widgets = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(page3), g->guides_widgets, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->guides_widgets, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   int i = 0;
@@ -2264,7 +2262,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(page3), g->flip_guides, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), g->flip_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
