@@ -841,7 +841,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE);
 
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
-    int32_t version = (newversion != -1) ? newversion : max_version + 1;
+    const int32_t version = (newversion != -1) ? newversion : max_version + 1;
     max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET version=?1 WHERE id = ?2",
