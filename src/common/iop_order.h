@@ -45,12 +45,16 @@ typedef struct dt_iop_order_rule_t
   char op_next[20];
 } dt_iop_order_rule_t;
 
+#define DT_IOP_ORDER_PRESETS_START_ID 1000
+
 /** returns a list of dt_iop_order_entry_t and updates *_version */
 GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted);
 /** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
 /** returns the iop_order from iop_order_list list with operation = op_name */
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
+/** returns the iop_order_list from the serialized form found in buf (blob in preset table) */
+GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *iop_order_version);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);

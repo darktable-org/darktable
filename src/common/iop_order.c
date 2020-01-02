@@ -1900,6 +1900,38 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
   return iop_order_ok;
 }
 
+GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *iop_order_version)
+{
+  GList *iop_order_list = NULL;
+
+  double iop_order = 1.0;
+
+  // read leading iop-order-version
+  *iop_order_version = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+  size -= sizeof(int32_t);
+
+  // parse all modules
+  while(size)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+
+    const int32_t len = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+
+    entry->iop_order = iop_order++;
+    memcpy(entry->operation, buf, len);
+    *(entry->operation + len) = '\0';
+    buf += len;
+
+    iop_order_list = g_list_append(iop_order_list, entry);
+
+    size -= (sizeof(int32_t) + len);
+  }
+
+  return iop_order_list;
+}
+
 //---------------------------------------------------------
 // colorspace transforms
 //---------------------------------------------------------
