@@ -220,18 +220,7 @@ eventbox *,
 box,
 box *
 {
-  font-family: sans-serif;
-  font-size: 1em;
   background-color: transparent;
-  background-image: none;
-  text-shadow:none;
-  box-shadow:none;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  outline-style:none;
-  min-width: 0;
-  min-height: 0;
 }
 
 /* General properties */
@@ -263,13 +252,6 @@ box *
   /* right sidebar */
 }
 
-#left scrolledwindow,
-#right scrolledwindow
-{
-  margin: 0;
-  padding: 0;
-}
-
 #header-toolbar,
 #footer-toolbar
 {
@@ -282,17 +264,9 @@ box *
 #lib-plugin-ui,
 #iop-plugin-ui
 {
-  margin: 0;
   border-radius: 0;
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
-}
-
-#lib-plugin-ui scrolledwindow,
-#iop-plugin-ui scrolledwindow
-{
-  margin: 0;
-  padding: 0;
 }
 
 #iop-plugin-ui-main,
@@ -315,7 +289,6 @@ button
 {
   border-radius: 2px;
   padding: 1px;
-  margin: 0;
   border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
@@ -477,7 +450,7 @@ entry selection
   padding: 0 2pt 2pt 0.5em;
   font-weight: normal;
   font-family: sans-serif;
-  font-size: larger;
+  font-size: 1.1em;
 }
 
 /* Labels of controls sections in modules */
