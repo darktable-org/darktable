@@ -69,44 +69,33 @@ void update(dt_lib_module_t *self)
   const int32_t imgid = darktable.develop->image_storage.id;
 
   int current_iop_order_version = dt_image_get_iop_order_version(imgid);
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(&current_iop_order_version, TRUE);
 
   int mode = DT_IOP_ORDER_UNSAFE;
 
-  if(current_iop_order_version > DT_IOP_ORDER_PRESETS_START_ID)
+  const GList *entries =  dt_bauhaus_combobox_get_entries(d->widget);
+
+  // two first entries are built-in
+  for(int k=0; k<2; k++) entries = g_list_next(entries);
+  int count = 2;
+
+  while(entries)
   {
-    const GList *entries =  dt_bauhaus_combobox_get_entries(d->widget);
+    const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
+    const int iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->widget), entry->label));
 
-    // four first entries are built-in
-    for(int k=0; k<4; k++) entries = g_list_next(entries);
-    int count = 4;
-
-    while(entries)
+    if(current_iop_order_version == iop_order_version)
     {
-      const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
-      const int iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->widget), entry->label));
-
-      if(current_iop_order_version == iop_order_version)
-      {
-        mode = count;
-        break;
-      }
-      entries = g_list_next(entries);
-      count++;
+      mode = count;
+      break;
     }
-
-    // preset not found, set to custom
-    if(mode == DT_IOP_ORDER_UNSAFE)
-      mode = DT_IOP_ORDER_CUSTOM;
-  }
-  else
-  {
-    if (current_iop_order_version == 2)
-      mode = DT_IOP_ORDER_LEGACY;
-    else if(current_iop_order_version == 5)
-      mode = DT_IOP_ORDER_RECOMMENDED;
+    entries = g_list_next(entries);
+    count++;
   }
 
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&current_iop_order_version, TRUE);
+  // preset not found, set to custom
+  if(mode == DT_IOP_ORDER_UNSAFE)
+    mode = DT_IOP_ORDER_CUSTOM;
 
   /*
     Check if user has changed the order (custom order).
