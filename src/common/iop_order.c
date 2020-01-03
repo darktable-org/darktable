@@ -793,7 +793,11 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
           const int32_t buf_size = sqlite3_column_bytes(stmt, 0);
 
           iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, buf_size, &iop_order_version);
-          found = TRUE;
+
+          if(iop_order_list)
+            found = TRUE;
+          else
+            *_version = 0;
           break;
         }
 
@@ -1958,32 +1962,48 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *i
 {
   GList *iop_order_list = NULL;
 
-  double iop_order = 1.0;
-
   // read leading iop-order-version
   *iop_order_version = *(int32_t *)buf;
   buf += sizeof(int32_t);
   size -= sizeof(int32_t);
+
+  if(*iop_order_version < DT_IOP_ORDER_PRESETS_START_ID || *iop_order_version > DT_IOP_ORDER_PRESETS_START_ID + 1000)
+    goto error;
 
   // parse all modules
   while(size)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
+    // get the iop-order
+    entry->iop_order = *(double *)buf;
+    buf += sizeof(double);
+
+    if(entry->iop_order<0.f || entry->iop_order>1000.0f) { free(entry); goto error; }
+
+    // get length of module name
     const int32_t len = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    entry->iop_order = iop_order++;
+    if(len<0 || len>20) { free(entry); goto error; }
+
+    // set module name
     memcpy(entry->operation, buf, len);
     *(entry->operation + len) = '\0';
     buf += len;
 
+    // append to the list
     iop_order_list = g_list_append(iop_order_list, entry);
 
-    size -= (sizeof(int32_t) + len);
+    size -= (sizeof(double) + sizeof(int32_t) + len);
   }
 
   return iop_order_list;
+
+ error:
+  g_list_free(iop_order_list);
+  *iop_order_version = 0;
+  return NULL;
 }
 
 //---------------------------------------------------------

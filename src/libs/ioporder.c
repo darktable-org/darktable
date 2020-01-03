@@ -339,19 +339,13 @@ void *get_params(dt_lib_module_t *self, int *size)
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    *size += strlen(mod->op) + sizeof(int32_t);
+    *size += strlen(mod->op) + sizeof(int32_t) + sizeof(double);
     modules = g_list_next(modules);
   }
 
-  // allocate the parameter buffer
-  char *params = (char *)malloc(*size);
+  // compute iop-order preset version
 
-  // store all modules in proper order
-  modules = g_list_first(darktable.develop->iop);
-
-  int pos = 0;
-
-  int count = DT_IOP_ORDER_PRESETS_START_ID + 1;
+  int32_t version = DT_IOP_ORDER_PRESETS_START_ID + 1;
 
   // add the count of all current ioporder presets
 
@@ -364,23 +358,37 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    count += sqlite3_column_int(stmt, 0);
+    version += sqlite3_column_int(stmt, 0);
   }
 
   sqlite3_finalize(stmt);
 
-  // set set preset iop-order version
+  // allocate the parameter buffer
+  char *params = (char *)malloc(*size);
 
-  memcpy(params+pos, &count, sizeof(int32_t));
+  // store all modules in proper order
+  modules = g_list_first(darktable.develop->iop);
+
+  // set set preset iop-order version
+  int pos = 0;
+
+  memcpy(params+pos, &version, sizeof(int32_t));
   pos += sizeof(int32_t);
 
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    const int32_t len = strlen(mod->op);
 
+    // write the iop-order
+    memcpy(params+pos, &(mod->iop_order), sizeof(double));
+    pos += sizeof(double);
+
+    // write the len of the module name
+    const int32_t len = strlen(mod->op);
     memcpy(params+pos, &len, sizeof(int32_t));
     pos += sizeof(int32_t);
+
+    // write the module name
     memcpy(params+pos, mod->op, len);
     pos += len;
 
