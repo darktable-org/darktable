@@ -1746,13 +1746,6 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   }
   sqlite3_finalize(stmt);
 
-  // now add any module created after dev->iop_order_version
-  dt_ioppr_legacy_iop_order(&dev->iop, &dev->iop_order_list, dev->history, dev->iop_order_version);
-
-  //dt_ioppr_print_module_iop_order(dev->iop, "dt_dev_read_history_no_image end");
-  //dt_ioppr_print_history_iop_order(dev->history, "dt_dev_read_history_no_image end");
-  //dt_ioppr_print_iop_order(dev->iop_order_list, "dt_dev_read_history_no_image end");
-
   dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
   dt_masks_read_masks_history(dev, imgid);
