@@ -52,323 +52,12 @@
                       "tree-vectorize")
 #endif
 
-static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
-static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
-static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
-static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move);
-
-// this routine rewrite the iop-order to have all them evenly spaced
-// into the list ensuring that we can insert safely at least 40 iop
-// between any two of them. Probably not the best fix, this is mostly
-// a workaround for current limitation and will avoid issues for the next
-// release.
-// ?? TODO: redo the whole pipe ordering
-static void _rewrite_order(GList *iop_order_list)
-{
-  GList *l = iop_order_list;
-  double order = 1.0;
-  while(l)
-  {
-    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)l->data;
-    order_entry->iop_order = order;
-    order += 1.0;
-    l = g_list_next(l);
-  }
-}
-
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
  *
  * Basically here there is two orders:
  *   v2 : legacy order used for edits done prior to 3.0
  *   v5 : new order for all edits starting with 3.0
  */
-static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_list, const int old_version, const int dont_move)
-{
-  int new_version = -1;
-
-  // version 1 --> 2
-  // v2 is the version that will be used for all edits started before 3.0 was out.
-  // v2 corresponds to the legacy order (as proposed up to 2.6.3) with the new modules available.
-  if(old_version == 1)
-  {
-    // EVERY NEW MODULE MUST BE ADDED HERE
-    // there should be no _ioppr_insert_iop[before|after] in any other places
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
-    _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
-
-    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
-
-    new_version = 2;
-  }
-  // version 2 --> 3
-  // v3 is a temporary version corresponding to first attempt to propose a new order during development of 3.0.
-  else if(old_version == 2)
-  {
-    // GENERAL RULE FOR SIGNAL PROCESSING/RECONSTRUCTION
-    // pictures are formed through this path :
-    // scene/surfaces/shapes -> atmosphere -> lens -> sensor -> RAW file
-    // we then need to reconstruct/clean the signal the other way :
-    // RAW file -> sensor denoise -> lens profile / deblur -> atmosphere dehaze -> surfaces perspective correction
-
-    // correct exposure in camera RGB space (otherwise, it's not really exposure)
-    _ioppr_move_iop_before(_iop_order_list, "exposure", "colorin", dont_move);
-
-    // move local distorsions/pixel shifts after general distorsions
-    _ioppr_move_iop_before(_iop_order_list, "retouch", "exposure", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "spots", "retouch", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "liquify", "spots", dont_move);
-
-    // move general perspective/distorsions module after lens
-    _ioppr_move_iop_before(_iop_order_list, "clipping", "liquify", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "flip", "clipping", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "ashift", "flip", dont_move);
-
-    // dehaze
-    _ioppr_move_iop_before(_iop_order_list, "hazeremoval", "ashift", dont_move);
-
-    // lens profiles need a pure sensor reading with no correction
-    _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
-
-    // pixel scaling
-    _ioppr_move_iop_before(_iop_order_list, "scalepixels", "lens", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "rotatepixels", "scalepixels", dont_move);
-
-    // move denoising before any deformation to avoid anisotropic noise creation
-    _ioppr_move_iop_before(_iop_order_list, "bilateral", "rotatepixels", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
-
-    // move Lab denoising/reconstruction after input profile where signal is linear
-    // NB: denoising in non-linear spaces makes no sense
-    _ioppr_move_iop_before(_iop_order_list, "colorin", "nlmeans", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "defringe", "nlmeans", dont_move);
-
-    // move frequency filters right after input profile - convolutions need L2 spaces
-    // to respect Parseval's theorem and avoid halos at edges
-    // NB: again, frequency filter in Lab make no sense
-    _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
-
-    // color adjustments in scene-linear space : move right after colorin
-    _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
-
-    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colortransfer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colortransfer", "colorchecker", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
-
-    // scene-linear to display-referred encoding
-    // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
-    _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
-
-    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
-
-    // recover local contrast after non-linear tone edits
-    _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
-
-    // display-referred colour edits
-    _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
-
-    // fix clipping before going in colourout
-    _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
-
-    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
-
-    new_version = 3;
-  }
-  // version 3 --> 4
-  // v4 is a temporary version corresponding to second attempt to propose a new order during development of 3.0.
-  else if(old_version == 3)
-  {
-    // version 4 is a rewrite of the iop-order of previous list. As it
-    // can be seen above some modules have very close iop-order values
-    // and does not have lot of room for insertion (multi-instance
-    // module and/or reordering).
-
-    if(!dont_move) _rewrite_order(*_iop_order_list);
-    new_version = 4;
-  }
-  // version 4 --> 5
-  // v5 is the final order proposed for new edits in 3.0.
-  else if(old_version == 4)
-  {
-    if(!dont_move)
-    {
-      // The following is a flattened list from original code. The goal is to have a clean starting point for
-      // future modifications.
-      const dt_iop_order_entry_t iop_v5[] = {
-        {  1.0, "rawprepare"},
-        {  2.0, "invert"},
-        {  3.0, "temperature"},
-        {  4.0, "highlights"},
-        {  5.0, "cacorrect"},
-        {  6.0, "hotpixels"},
-        {  7.0, "rawdenoise"},
-        {  8.0, "demosaic"},
-        {  9.0, "denoiseprofile"},
-        { 10.0, "bilateral"},
-        { 11.0, "rotatepixels"},
-        { 12.0, "scalepixels"},
-        { 13.0, "lens"},
-        { 14.0, "hazeremoval"},
-        { 15.0, "ashift"},
-        { 16.0, "flip"},
-        { 17.0, "clipping"},
-        { 18.0, "liquify"},
-        { 19.0, "spots"},
-        { 20.0, "retouch"},
-        { 21.0, "exposure"},
-        { 22.0, "mask_manager"},
-        { 23.0, "tonemap"},
-        { 24.0, "toneequal"},
-        { 25.0, "graduatednd"},
-        { 26.0, "profile_gamma"},
-        { 27.0, "equalizer"},
-        { 28.0, "colorin"},
-
-        { 29.0, "nlmeans"},         // signal processing (denoising)
-                                    //    -> needs a signal as scene-referred as possible (even if it works in Lab)
-        { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
-                                    //    -> improve colour calibration of colorin and reproductibility
-                                    //    of further edits (styles etc.)
-        { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
-                                    //    in order for chromaticity to be meaningful,
-        { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
-        { 33.0, "lowpass"},         // same
-        { 34.0, "highpass"},        // same
-        { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
-        { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
-                                    //    so better move it after frequential ops that need L2 Hilbert spaces
-                                    //    of square summable functions
-        { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
-                                    //    colour exchange space, hence after colorin and colorcheckr,
-                                    //    but apply after frequential ops in case it does non-linear witchcraft,
-                                    //    just to be safe
-        { 59.0, "colormapping"},    // same
-        { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
-                                    //    but coefs are user-defined instead of calibrated and read from ICC profile.
-                                    //    Really versatile yet under-used module, doing linear ops,
-                                    //    very good in scene-referred workflow
-        { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
-        { 40.0, "colorbalance"},    // scene-referred color manipulation
-        { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
-        { 42.0, "rgblevels"},       // same
-        { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
-                                    //    on camera JPEG default look
-        { 44.0, "filmic"},          // same, but different (parametric) approach
-        { 45.0, "filmicrgb"},       // same, upgraded
-        { 46.0, "colisa"},          // edit contrast while damaging colour
-        { 47.0, "tonecurve"},       // same
-        { 48.0, "levels"},          // same
-        { 49.0, "shadhi"},          // same
-        { 50.0, "zonesystem"},      // same
-        { 51.0, "globaltonemap"},   // same
-        { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
-        { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
-                                    //    to it with tonemapping
-        { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
-                                    // try to recover them - global adjustment of white balance for shadows and highlights
-        { 55.0, "colorcontrast"},   // adjust chrominance globally
-        { 56.0, "velvia"},          // same
-        { 57.0, "vibrance"},        // same, but more subtle
-        { 58.0, "colorzones"},      // same, but locally
-        { 60.0, "bloom"},           // creative module
-        { 61.0, "colorize"},        // creative module
-        { 62.0, "lowlight"},        // creative module
-        { 63.0, "monochrome"},      // creative module
-        { 64.0, "grain"},           // creative module
-        { 65.0, "soften"},          // creative module
-        { 66.0, "splittoning"},     // creative module
-        { 67.0, "vignette"},        // creative module
-        { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
-
-        { 69.0, "colorout"},
-        { 70.0, "clahe"},
-        { 71.0, "finalscale"},
-        { 72.0, "overexposed"},
-        { 73.0, "rawoverexposed"},
-        { 74.0, "dither"},
-        { 75.0, "borders"},
-        { 76.0, "watermark"},
-        { 77.0, "gamma"},
-      };
-
-      if(g_list_length(*_iop_order_list) != 77)
-      {
-        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have 77 entries found %d\n",
-                g_list_length(*_iop_order_list));
-        return 4;
-      }
-
-      // note that we cannot delete the *_iop_order_list and recreate it
-
-      GList *l = *_iop_order_list;
-      int i = 0;
-      while(l)
-      {
-        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-        entry->iop_order = iop_v5[i].iop_order;
-        g_strlcpy(entry->operation, iop_v5[i].operation, sizeof(entry->operation));
-        i++;
-        l = g_list_next(l);
-      }
-    }
-    new_version = 5;
-  }
-  // each new version MUST be written as the following (_rewrite_order IS VERY important)
-
-  // If a new module is to be added, it must be added in the current
-  // version (just above) and then a new version must be created with
-  // the following code to ensure modules are evenly spaced (leaving
-  // room for multi-instances and user's re-ordering):
-  /*
-  else if(old_version == <N>)
-  {
-    // reorder modules to ensure they are all evenly spaced
-    if(!dont_move) _rewrite_order(*_iop_order_list);
-    new_version = <N+1>;
-  }
-  */
-
-  // If a module is to be reodered in the pipe, the following code
-  // must be used. A new version must be created to ensure modules are
-  // evenly spaced (leaving room for multi-instances and user's
-  // re-ordering):
-  /*
-  else if(old_version == <N>)
-  {
-    _ioppr_move_iop_[before|after](_iop_order_list, "new_module", "some_module", dont_move);
-    if(!dont_move) _rewrite_order(*_iop_order_list);
-    new_version = <N+1>;
-  }
-  */
-
-  if(new_version <= 0)
-    fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
-
-  return new_version;
-}
 
 // returns a list of dt_iop_order_rule_t
 // this do not have versions
@@ -407,101 +96,6 @@ GList *dt_ioppr_get_iop_order_rules()
   return rules;
 }
 
-// first version of iop order, must never be modified
-// it returns a list with the default iop_order per module, starting at 1.0, increment by 1.0
-static GList *_ioppr_get_iop_order_v1()
-{
-  GList *iop_order_list = NULL;
-
-  const dt_iop_order_entry_t prior_entry[] = { { 0.0, "rawprepare" },
-                                                  { 0.0, "invert" },
-                                                  { 0.0, "temperature" },
-                                                  { 0.0, "highlights" },
-                                                  { 0.0, "cacorrect" },
-                                                  { 0.0, "hotpixels" },
-                                                  { 0.0, "rawdenoise" },
-                                                  { 0.0, "demosaic" },
-                                                  { 0.0, "mask_manager" },
-                                                  { 0.0, "denoiseprofile" },
-                                                  { 0.0, "tonemap" },
-                                                  { 0.0, "exposure" },
-                                                  { 0.0, "spots" },
-                                                  { 0.0, "retouch" },
-                                                  { 0.0, "lens" },
-                                                  { 0.0, "ashift" },
-                                                  { 0.0, "liquify" },
-                                                  { 0.0, "rotatepixels" },
-                                                  { 0.0, "scalepixels" },
-                                                  { 0.0, "flip" },
-                                                  { 0.0, "clipping" },
-                                                  { 0.0, "graduatednd" },
-                                                  { 0.0, "basecurve" },
-                                                  { 0.0, "bilateral" },
-                                                  { 0.0, "profile_gamma" },
-                                                  { 0.0, "hazeremoval" },
-                                                  { 0.0, "colorin" },
-                                                  { 0.0, "colorreconstruct" },
-                                                  { 0.0, "colorchecker" },
-                                                  { 0.0, "defringe" },
-                                                  { 0.0, "equalizer" },
-                                                  { 0.0, "vibrance" },
-                                                  { 0.0, "colorbalance" },
-                                                  { 0.0, "colorize" },
-                                                  { 0.0, "colortransfer" },
-                                                  { 0.0, "colormapping" },
-                                                  { 0.0, "bloom" },
-                                                  { 0.0, "nlmeans" },
-                                                  { 0.0, "globaltonemap" },
-                                                  { 0.0, "shadhi" },
-                                                  { 0.0, "atrous" },
-                                                  { 0.0, "bilat" },
-                                                  { 0.0, "colorzones" },
-                                                  { 0.0, "lowlight" },
-                                                  { 0.0, "monochrome" },
-                                                  { 0.0, "filmic" },
-                                                  { 0.0, "colisa" },
-                                                  { 0.0, "zonesystem" },
-                                                  { 0.0, "tonecurve" },
-                                                  { 0.0, "levels" },
-                                                  { 0.0, "relight" },
-                                                  { 0.0, "colorcorrection" },
-                                                  { 0.0, "sharpen" },
-                                                  { 0.0, "lowpass" },
-                                                  { 0.0, "highpass" },
-                                                  { 0.0, "grain" },
-                                                  { 0.0, "colorcontrast" },
-                                                  { 0.0, "colorout" },
-                                                  { 0.0, "channelmixer" },
-                                                  { 0.0, "soften" },
-                                                  { 0.0, "vignette" },
-                                                  { 0.0, "splittoning" },
-                                                  { 0.0, "velvia" },
-                                                  { 0.0, "clahe" },
-                                                  { 0.0, "finalscale" },
-                                                  { 0.0, "overexposed" },
-                                                  { 0.0, "rawoverexposed" },
-                                                  { 0.0, "borders" },
-                                                  { 0.0, "watermark" },
-                                                  { 0.0, "dither" },
-                                                  { 0.0, "gamma" },
-                                                  { 0.0, "\0" }
-  };
-
-  int i = 0;
-  while(prior_entry[i].operation[0] != '\0')
-  {
-    dt_iop_order_entry_t *order_entry = calloc(1, sizeof(dt_iop_order_entry_t));
-
-    order_entry->iop_order = (double)(i + 1);
-    snprintf(order_entry->operation, sizeof(order_entry->operation), "%s", prior_entry[i].operation);
-
-    iop_order_list = g_list_append(iop_order_list, order_entry);
-    i++;
-  }
-
-  return iop_order_list;
-}
-
 // returns the first iop order entry that matches operation == op_name
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name)
 {
@@ -536,216 +130,6 @@ double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
   return iop_order;
 }
 
-// insert op_new before op_next on *_iop_order_list
-// it sets the iop_order on op_new
-// if check_history == 1 it check that the generated iop_order do not exists on any module in history
-static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int check_history)
-{
-  GList *iop_order_list = *_iop_order_list;
-
-  // check that the new operation don't exists on the list
-  if(dt_ioppr_get_iop_order_entry(iop_order_list, op_new) == NULL)
-  {
-    // create a new iop order entry
-    dt_iop_order_entry_t *iop_order_new = (dt_iop_order_entry_t*)calloc(1, sizeof(dt_iop_order_entry_t));
-    snprintf(iop_order_new->operation, sizeof(iop_order_new->operation), "%s", op_new);
-
-    // search for the previous one
-    int position = 0;
-    int found = 0;
-    double iop_order_prev = DBL_MAX;
-    double iop_order_next = DBL_MAX;
-    GList *iops_order = g_list_first(iop_order_list);
-    while(iops_order)
-    {
-      dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
-      if(strcmp(order_entry->operation, op_next) == 0)
-      {
-        iop_order_next = order_entry->iop_order;
-        found = 1;
-        break;
-      }
-      iop_order_prev = order_entry->iop_order;
-      position++;
-
-      iops_order = g_list_next(iops_order);
-    }
-
-    // now we have to check if there's a module with iop_order between iop_order_prev and iop_order_next
-    if(found)
-    {
-      if(!check_history)
-      {
-        GList *history = g_list_first(history_list);
-        while(history)
-        {
-          dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-
-          if(hist->iop_order >= iop_order_prev && hist->iop_order <= iop_order_next)
-            iop_order_prev = hist->iop_order;
-
-          history = g_list_next(history);
-        }
-      }
-    }
-    else
-    {
-      fprintf(stderr, "[_ioppr_insert_iop_before] module %s doesn't exist in iop order list\n", op_next);
-    }
-    if(found)
-    {
-      // set the iop_order
-      iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
-//      if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
-
-      // insert it on the proper order
-      iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
-    }
-  }
-  else
-  {
-     fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists in iop order list\n", op_new);
-  }
-  *_iop_order_list = iop_order_list;
-}
-
-// insert op_new after op_prev on *_iop_order_list
-// it updates the iop_order on op_new
-// if check_history == 1 it check that the generated iop_order do not exists on any module in history
-static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_prev, const int check_history)
-{
-  GList *iop_order_list = *_iop_order_list;
-
-  // inserting after op_prev is the same as moving before the very next one after op_prev
-  dt_iop_order_entry_t *prior_next = NULL;
-  GList *iops_order = g_list_last(iop_order_list);
-  while(iops_order)
-  {
-    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
-    if(strcmp(order_entry->operation, op_prev) == 0) break;
-
-    prior_next = order_entry;
-    iops_order = g_list_previous(iops_order);
-  }
-  if(prior_next == NULL)
-  {
-    fprintf(stderr, "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
-            op_prev, op_new);
-  }
-  else
-    _ioppr_insert_iop_before(&iop_order_list, history_list, op_new, prior_next->operation, check_history);
-
-  *_iop_order_list = iop_order_list;
-}
-
-// moves op_current before op_next by updating the iop_order
-// only if dont_move == FALSE
-static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move)
-{
-  if(dont_move) return;
-
-  GList *iop_order_list = *_iop_order_list;
-
-  int position = 0;
-  int found = 0;
-  dt_iop_order_entry_t *iop_order_prev = NULL;
-  dt_iop_order_entry_t *iop_order_next = NULL;
-  dt_iop_order_entry_t *iop_order_current = NULL;
-  GList *iops_order_current = NULL;
-
-  // search for the current one
-  GList *iops_order = g_list_first(iop_order_list);
-  while(iops_order)
-  {
-    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
-    if(strcmp(order_entry->operation, op_current) == 0)
-    {
-      iops_order_current = iops_order;
-      iop_order_current = order_entry;
-      found = 1;
-      break;
-    }
-
-    iops_order = g_list_next(iops_order);
-  }
-
-  if(found)
-  {
-    // remove it from the list
-    iop_order_list = g_list_remove_link(iop_order_list, iops_order_current);
-  }
-  else
-  {
-    fprintf(stderr, "[_ioppr_move_iop_before] current module %s doesn't exist in iop order list\n", op_current);
-  }
-  // search for the previous and next one
-  if(found)
-  {
-    found = 0;
-    iops_order = g_list_first(iop_order_list);
-    while(iops_order)
-    {
-      dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
-      if(strcmp(order_entry->operation, op_next) == 0)
-      {
-        iop_order_next = order_entry;
-        found = 1;
-        break;
-      }
-      iop_order_prev = order_entry;
-      position++;
-
-      iops_order = g_list_next(iops_order);
-    }
-  }
-
-  if(found)
-  {
-    // set the iop_order
-    iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 2.0;
-
-    // insert it on the proper order
-    iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
-   // VERY noisy so disable now
-   //    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
-  }
-  else
-  {
-    fprintf(stderr, "[_ioppr_move_iop_before] next module %s doesn't exist in iop order list\n", op_next);
-  }
-  *_iop_order_list = iop_order_list;
-}
-
-// moves op_current after op_prev by updating the iop_order
-// only if dont_move == FALSE
-static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move)
-{
-  if(dont_move) return;
-
-  GList *iop_order_list = *_iop_order_list;
-
-  // moving after op_prev is the same as moving before the very next one after op_prev
-  dt_iop_order_entry_t *prior_next = NULL;
-  GList *iops_order = g_list_last(iop_order_list);
-  while(iops_order)
-  {
-    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
-    if(strcmp(order_entry->operation, op_prev) == 0) break;
-
-    prior_next = order_entry;
-    iops_order = g_list_previous(iops_order);
-  }
-  if(prior_next == NULL)
-  {
-    fprintf(stderr, "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
-            op_prev, op_current);
-  }
-  else
-    _ioppr_move_iop_before(&iop_order_list, op_current, prior_next->operation, dont_move);
-
-  *_iop_order_list = iop_order_list;
-}
-
 gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 {
   const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
@@ -759,10 +143,124 @@ gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 // if *_version == 0 it returns the current version and updates *_version
 GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
 {
+  // This is the latest default iop order. it corresponds to version 5. The list below must be kept in
+  // synch with the "recommended" preset in the ioporder module.
+  //
+  // This default is needed here to initialize the develop module before the presets are set. It is also
+  // a fast way to create the current working iop-order version for new images.
+  //
+  const dt_iop_order_entry_t default_order[] = {
+    {  1.0, "rawprepare"},
+    {  2.0, "invert"},
+    {  3.0, "temperature"},
+    {  4.0, "highlights"},
+    {  5.0, "cacorrect"},
+    {  6.0, "hotpixels"},
+    {  7.0, "rawdenoise"},
+    {  8.0, "demosaic"},
+    {  9.0, "denoiseprofile"},
+    { 10.0, "bilateral"},
+    { 11.0, "rotatepixels"},
+    { 12.0, "scalepixels"},
+    { 13.0, "lens"},
+    { 14.0, "hazeremoval"},
+    { 15.0, "ashift"},
+    { 16.0, "flip"},
+    { 17.0, "clipping"},
+    { 18.0, "liquify"},
+    { 19.0, "spots"},
+    { 20.0, "retouch"},
+    { 21.0, "exposure"},
+    { 22.0, "mask_manager"},
+    { 23.0, "tonemap"},
+    { 24.0, "toneequal"},
+    { 25.0, "graduatednd"},
+    { 26.0, "profile_gamma"},
+    { 27.0, "equalizer"},
+    { 28.0, "colorin"},
+
+    { 29.0, "nlmeans"},         // signal processing (denoising)
+                                //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+    { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
+                                //    -> improve colour calibration of colorin and reproductibility
+                                //    of further edits (styles etc.)
+    { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                //    in order for chromaticity to be meaningful,
+    { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+    { 33.0, "lowpass"},         // same
+    { 34.0, "highpass"},        // same
+    { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
+    { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
+                                //    so better move it after frequential ops that need L2 Hilbert spaces
+                                //    of square summable functions
+    { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
+                                //    colour exchange space, hence after colorin and colorcheckr,
+                                //    but apply after frequential ops in case it does non-linear witchcraft,
+                                //    just to be safe
+    { 59.0, "colormapping"},    // same
+    { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                //    Really versatile yet under-used module, doing linear ops,
+                                //    very good in scene-referred workflow
+    { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
+    { 40.0, "colorbalance"},    // scene-referred color manipulation
+    { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
+    { 42.0, "rgblevels"},       // same
+    { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
+                                //    on camera JPEG default look
+    { 44.0, "filmic"},          // same, but different (parametric) approach
+    { 45.0, "filmicrgb"},       // same, upgraded
+    { 46.0, "colisa"},          // edit contrast while damaging colour
+    { 47.0, "tonecurve"},       // same
+    { 48.0, "levels"},          // same
+    { 49.0, "shadhi"},          // same
+    { 50.0, "zonesystem"},      // same
+    { 51.0, "globaltonemap"},   // same
+    { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
+    { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
+                                //    to it with tonemapping
+    { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
+                                // try to recover them - global adjustment of white balance for shadows and highlights
+    { 55.0, "colorcontrast"},   // adjust chrominance globally
+    { 56.0, "velvia"},          // same
+    { 57.0, "vibrance"},        // same, but more subtle
+    { 58.0, "colorzones"},      // same, but locally
+    { 60.0, "bloom"},           // creative module
+    { 61.0, "colorize"},        // creative module
+    { 62.0, "lowlight"},        // creative module
+    { 63.0, "monochrome"},      // creative module
+    { 64.0, "grain"},           // creative module
+    { 65.0, "soften"},          // creative module
+    { 66.0, "splittoning"},     // creative module
+    { 67.0, "vignette"},        // creative module
+    { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+    { 69.0, "colorout"},
+    { 70.0, "clahe"},
+    { 71.0, "finalscale"},
+    { 72.0, "overexposed"},
+    { 73.0, "rawoverexposed"},
+    { 74.0, "dither"},
+    { 75.0, "borders"},
+    { 76.0, "watermark"},
+    { 77.0, "gamma"},
+    {  0.0, "" }
+  };
+
   GList *iop_order_list = NULL;
 
-  // first check if this is a version from a preset
-  if(_version && *_version > DT_IOP_ORDER_PRESETS_START_ID)
+  if(_version == NULL || *_version == 0)
+  {
+    for(int k=0; default_order[k].operation[0]; k++)
+    {
+      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+      entry->iop_order = default_order[k].iop_order;
+      strncpy(entry->operation, default_order[k].operation, sizeof(entry->operation));
+      iop_order_list = g_list_append(iop_order_list, entry);
+    }
+
+    if(_version) *_version = DT_IOP_ORDER_VERSION;
+  }
+  else
   {
     sqlite3_stmt *stmt;
 
@@ -773,64 +271,33 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT op_params"
-                                " FROM data.presets "
+                                " FROM data.presets"
                                 " WHERE operation='ioporder'", -1, &stmt, NULL);
 
-    int res = sqlite3_step(stmt);
-    gboolean found = FALSE;
-
-    if(res == SQLITE_ROW)
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      while(res == SQLITE_ROW)
+      const char *buf = (char *)sqlite3_column_blob(stmt, 0);
+
+      int iop_order_version = buf ? *(int32_t *)buf : -1;
+
+      // found the proper version
+      if(iop_order_version == *_version)
       {
-        const char *buf = (char *)sqlite3_column_blob(stmt, 0);
+        const int32_t buf_size = sqlite3_column_bytes(stmt, 0);
 
-        int iop_order_version = buf ? *(int32_t *)buf : -1;
+        iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, buf_size, &iop_order_version);
 
-        // found the proper version
-        if(iop_order_version == *_version)
+        if(!iop_order_list)
         {
-          const int32_t buf_size = sqlite3_column_bytes(stmt, 0);
-
-          iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, buf_size, &iop_order_version);
-
-          if(iop_order_list)
-            found = TRUE;
-          else
-            *_version = 0;
-          break;
+          // preset not found, fall back to last built-in version, will be loaded below
+          fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", *_version);
+          *_version = 0;
         }
-
-        res = sqlite3_step(stmt);
+        break;
       }
     }
 
-    if(!found)
-    {
-      // preset not found, fall back to last built-in version, will be loaded below
-      *_version =  DT_IOP_ORDER_VERSION;
-    }
-
     sqlite3_finalize(stmt);
-  }
-
-  if(iop_order_list == NULL)
-  {
-    iop_order_list = _ioppr_get_iop_order_v1();
-    int old_version = 1;
-    const int version = ((_version == NULL) || (*_version == 0)) ? DT_IOP_ORDER_VERSION: *_version;
-
-    while(old_version < version && old_version > 0)
-    {
-      old_version = _ioppr_legacy_iop_order_step(&iop_order_list, NULL, old_version, FALSE);
-    }
-
-    if(old_version != version)
-    {
-      fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", version);
-    }
-
-    if(_version && *_version == 0 && old_version > 0) *_version = old_version;
   }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
@@ -993,47 +460,6 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
   }
 
   *_iop_list = iop_list;
-}
-
-// upgrades iop & iop order to current version
-void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList *history_list, const int _old_version)
-{
-  GList *iop_list = *_iop_list;
-  GList *iop_order_list = *_iop_order_list;
-  int dt_version = DT_IOP_ORDER_VERSION;
-  int old_version = _old_version;
-
-  // we want to add any module created after this version of iop_order
-  // but we won't move existing modules so only add methods will be executed
-  while(old_version < dt_version && old_version > 0)
-  {
-    old_version = _ioppr_legacy_iop_order_step(&iop_order_list, history_list, old_version, TRUE);
-  }
-
-  // now that we have a list of iop_order for version new_version but with all new modules
-  // we take care of the iop_order of new modules on iop list
-  GList *modules = g_list_first(iop_list);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-
-    if(mod->multi_priority == 0 && mod->iop_order == DBL_MAX)
-    {
-      mod->iop_order = dt_ioppr_get_iop_order(iop_order_list, mod->op);
-      if(mod->iop_order == DBL_MAX)
-        fprintf(stderr, "[dt_ioppr_legacy_iop_order] can't find iop_order for module %s\n", mod->op);
-    }
-
-    modules = g_list_next(modules);
-  }
-  // we need to set the right order
-  iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
-
-  // and check for duplicates
-  dt_ioppr_check_duplicate_iop_order(&iop_list, history_list);
-
-  *_iop_list = iop_list;
-  *_iop_order_list = iop_order_list;
 }
 
 // check if all so modules on iop_list have a iop_order defined in iop_order_list
@@ -1957,8 +1383,7 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *i
   buf += sizeof(int32_t);
   size -= sizeof(int32_t);
 
-  if(*iop_order_version < DT_IOP_ORDER_PRESETS_START_ID || *iop_order_version > DT_IOP_ORDER_PRESETS_START_ID + 1000)
-    goto error;
+  if(*iop_order_version < 0) goto error;
 
   // parse all modules
   while(size)

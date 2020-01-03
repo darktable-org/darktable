@@ -61,8 +61,6 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
 
 /** sets the default iop_order to iop_list */
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list);
-/** adjusts iop_list and iop_order_list to the current version of iop order */
-void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList *history_list, const int old_version);
 
 /** returns 1 if there's a module_so without a iop_order defined */
 int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
