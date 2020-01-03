@@ -246,6 +246,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   d->widget = dt_bauhaus_combobox_new(NULL);
+  d->current_mode = DT_IOP_ORDER_UNSAFE;
+
   _fill_iop_order(self);
 
   gtk_widget_set_tooltip_text
