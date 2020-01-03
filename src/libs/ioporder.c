@@ -171,15 +171,8 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
     return;
   }
 
-  if(mode == DT_IOP_ORDER_LEGACY)
-    new_iop_order_version = 2;
-  else if(mode == DT_IOP_ORDER_RECOMMENDED)
-    new_iop_order_version = 5;
-  else // preset
-  {
-    const char *name = dt_bauhaus_combobox_get_text(widget);
-    new_iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), name));
-  }
+  const char *name = dt_bauhaus_combobox_get_text(widget);
+  new_iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), name));
 
   if(current_iop_order_version != new_iop_order_version
      || d->current_mode == DT_IOP_ORDER_CUSTOM)
@@ -212,8 +205,6 @@ static void _fill_iop_order(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_add(d->widget, _("unsafe, select one below"));
   dt_bauhaus_combobox_add(d->widget, _("custom order"));
-  dt_bauhaus_combobox_add(d->widget, _("legacy"));
-  dt_bauhaus_combobox_add(d->widget, _("recommended"));
 
   // fill preset iop-order
 
@@ -415,8 +406,8 @@ void init_presets(dt_lib_module_t *self)
     {  0.0, "" }
   };
 
-  params = _serialize_preset(v2, 1002, &size);
-  dt_lib_presets_add("legPS", self->plugin_name, self->version(), (const char *)params, size);
+  params = _serialize_preset(v2, 2, &size);
+  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, size);
   free(params);
 
   // ------------------------------------------------- IOP Order V5
@@ -518,8 +509,8 @@ void init_presets(dt_lib_module_t *self)
     {  0.0, "" }
   };
 
-  params = _serialize_preset(v5, 1005, &size);
-  dt_lib_presets_add("recPS", self->plugin_name, self->version(), (const char *)params, size);
+  params = _serialize_preset(v5, 5, &size);
+  dt_lib_presets_add(_("recommended"), self->plugin_name, self->version(), (const char *)params, size);
   free(params);
 }
 
@@ -540,7 +531,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, size, &iop_order_version);
 
-  if(iop_order_version < DT_IOP_ORDER_PRESETS_START_ID) return 1;
+  if(iop_order_version < 0) return 1;
 
   // set pipe iop order
 
