@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-02 11:45+0100\n"
-"PO-Revision-Date: 2020-01-02 11:47+0100\n"
+"POT-Creation-Date: 2020-01-03 09:49+0100\n"
+"PO-Revision-Date: 2020-01-03 10:16+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2603,6 +2603,10 @@ msgid ""
 "double click to reset. press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data. press 'm' to toggle mask view."
 msgstr ""
+"reset met een dubbelklik,\n"
+"'a' schakelt tussen beschikbare schuif modussen\n"
+"'c' schakelt kanaal data in/uit\n"
+"'m' schakelt masker weergave in/uit"
 
 #: ../src/develop/blend_gui.c:1829 ../src/develop/blend_gui.c:2539
 msgid "parametric mask"
@@ -3187,9 +3191,8 @@ msgid "[GRADIENT creation] set rotation"
 msgstr "[GRADIENT creation] rotatie instellen"
 
 #: ../src/develop/masks/masks.c:231
-#, fuzzy
 msgid "[GRADIENT] change curvature"
-msgstr "[GRADIENT] wijzig dekking"
+msgstr "[GRADIENT] wijzig kromming"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change compression"
@@ -3481,40 +3484,49 @@ msgstr "wit daglicht tl-licht"
 msgid "high temp. mercury-vapor fluorescent"
 msgstr "hoge temp. kwikdamp tl-licht"
 
+#. On Some Panasonic
 #: ../src/external/wb_presets.c:68
+msgid "D55"
+msgstr "D55"
+
+#: ../src/external/wb_presets.c:69
+msgid "ISO Studio Tungsten"
+msgstr "ISO Studio Tungsten"
+
+#: ../src/external/wb_presets.c:71
 msgid "flash"
 msgstr "flits"
 
 #. For Olympus with no real "Flash" preset:
-#: ../src/external/wb_presets.c:70
+#: ../src/external/wb_presets.c:73
 msgid "flash (auto mode)"
 msgstr "flits (automatisch)"
 
-#: ../src/external/wb_presets.c:71
+#: ../src/external/wb_presets.c:74
 msgid "evening sun"
 msgstr "avondzon"
 
-#: ../src/external/wb_presets.c:72
+#: ../src/external/wb_presets.c:75
 msgid "underwater"
 msgstr "onderwater"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:2036
+#: ../src/external/wb_presets.c:76 ../src/views/darkroom.c:2036
 msgid "black & white"
 msgstr "zwart en wit"
 
-#: ../src/external/wb_presets.c:75
+#: ../src/external/wb_presets.c:78
 msgid "spot WB"
 msgstr "spot WB"
 
-#: ../src/external/wb_presets.c:76
+#: ../src/external/wb_presets.c:79
 msgid "manual WB"
 msgstr "handmatige WB"
 
-#: ../src/external/wb_presets.c:77
+#: ../src/external/wb_presets.c:80
 msgid "camera WB"
 msgstr "camera WB"
 
-#: ../src/external/wb_presets.c:78
+#: ../src/external/wb_presets.c:81
 msgid "auto WB"
 msgstr "automatisch WB"
 
@@ -3838,10 +3850,9 @@ msgstr "header aan/uit"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1268
-#, fuzzy
 msgctxt "accel"
 msgid "toggle focus peaking"
-msgstr "toppaneel aan/uit"
+msgstr "focus piek aan/uit"
 
 #. View-switch
 #: ../src/gui/gtk.c:1273
@@ -6138,9 +6149,8 @@ msgid "vibrance"
 msgstr "levendigheid"
 
 #: ../src/iop/basicadj.c:792
-#, fuzzy
 msgid "vibrance adjustment"
-msgstr "basis aanpassingen"
+msgstr "aanpassingen levendigheid"
 
 #: ../src/iop/basicadj.c:799
 msgid "apply auto exposure based on the entire image"
@@ -6191,10 +6201,9 @@ msgid "shadows"
 msgstr "schaduwen"
 
 #: ../src/iop/bilat.c:119
-#, fuzzy
 msgctxt "accel"
 msgid "midtone range"
-msgstr "middenkleuren gebied"
+msgstr "middenkleuren bereik"
 
 #: ../src/iop/bilat.c:481 ../src/iop/colorbalance.c:2371
 #: ../src/iop/denoiseprofile.c:4089 ../src/iop/exposure.c:866
@@ -6530,9 +6539,8 @@ msgstr ""
 "rechtermuisknop en typ uw eigen y:h"
 
 #: ../src/iop/borders.c:1048
-#, fuzzy
 msgid "custom horizontal position"
-msgstr "horizontale positie"
+msgstr "aangepaste horizontale positie"
 
 #: ../src/iop/borders.c:1053 ../src/iop/borders.c:1059
 msgid "vertical position"
@@ -6547,9 +6555,8 @@ msgstr ""
 "rechtermuisknop en typ uw eigen x:w"
 
 #: ../src/iop/borders.c:1062
-#, fuzzy
 msgid "custom vertical position"
-msgstr "verticale positie"
+msgstr "aangepaste verticale positie"
 
 # eventueel: frame-afmeting
 #: ../src/iop/borders.c:1068
@@ -7030,7 +7037,6 @@ msgid "input saturation"
 msgstr "ingaande verzadiging"
 
 #: ../src/iop/colorbalance.c:302
-#, fuzzy
 msgctxt "accel"
 msgid "output saturation"
 msgstr "uitgaande verzadiging"
@@ -7271,7 +7277,7 @@ msgid "patch #%d"
 msgstr "patch #%d"
 
 #: ../src/iop/colorchecker.c:1253
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -7282,10 +7288,10 @@ msgid ""
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
 "gewijzigde patronen zijn gemarkeerd door een contour\n"
-"klik voor selectie\n"
-"dubbelklik voor reset\n"
+"klik om te selecteren\n"
+"reset met dubbelklik\n"
 "verwijder patch met rechtermuisknop\n"
-"vervang patch met shift-klik en kleuropname"
+"vervang patch met shift-klik tijdens de kleuropname"
 
 #: ../src/iop/colorchecker.c:1378
 msgid "patch"
@@ -7843,7 +7849,6 @@ msgid "defringe"
 msgstr "verwijder franje (defringe)"
 
 #: ../src/iop/defringe.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "edge detection radius"
 msgstr "rand opsporingsstraal"
@@ -8059,10 +8064,9 @@ msgid "search radius"
 msgstr "zoek straal"
 
 #: ../src/iop/denoiseprofile.c:524
-#, fuzzy
 msgctxt "accel"
 msgid "scattering"
-msgstr "tethering"
+msgstr "verstrooiing"
 
 #: ../src/iop/denoiseprofile.c:525
 msgctxt "accel"
@@ -8881,25 +8885,21 @@ msgid "extreme luminance saturation"
 msgstr "extreme luminantie verzadiging"
 
 #: ../src/iop/filmicrgb.c:276
-#, fuzzy
 msgctxt "accel"
 msgid "target black luminance"
 msgstr "mikpunt zwart luminantie"
 
 #: ../src/iop/filmicrgb.c:277
-#, fuzzy
 msgctxt "accel"
 msgid "target middle grey"
 msgstr "mikpunt midden grijs"
 
 #: ../src/iop/filmicrgb.c:278
-#, fuzzy
 msgctxt "accel"
 msgid "target white luminance"
 msgstr "mikpunt wit luminantie"
 
 #: ../src/iop/filmicrgb.c:279
-#, fuzzy
 msgctxt "accel"
 msgid "target power transfer function"
 msgstr "doel kracht transfer functie"
@@ -9209,12 +9209,12 @@ msgid "hardness"
 msgstr "hardheid"
 
 #: ../src/iop/graduatednd.c:1234
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "hardness of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
-"compressie  voor gradering:\n"
+"hardheid voor gradering:\n"
 "0% = zacht, 100% = hard"
 
 #: ../src/iop/graduatednd.c:1241
@@ -9245,16 +9245,15 @@ msgid "[%s on line] change density"
 msgstr "[%s on line] verander dichtheid"
 
 #: ../src/iop/graduatednd.c:1318
-#, fuzzy, c-format
+#, c-format
 msgid "[%s on line] change hardness"
-msgstr "[%s on line] verander dichtheid"
+msgstr "[%s on line] verander hardheid"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
 msgstr "korrel"
 
 #: ../src/iop/grain.c:440
-#, fuzzy
 msgctxt "accel"
 msgid "midtones bias"
 msgstr "middenkleuren bias"
@@ -10063,9 +10062,8 @@ msgid "_select"
 msgstr "_selecteren"
 
 #: ../src/iop/lut3d.c:1045
-#, fuzzy
 msgid "hald cluts (png) or 3D lut (cube)"
-msgstr "hald cluts (png)"
+msgstr "behoud cluts (png) of 3D lut (cube)"
 
 #: ../src/iop/lut3d.c:1052 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
@@ -10215,13 +10213,11 @@ msgid "middle grey luma"
 msgstr "middengrijs luminantie"
 
 #: ../src/iop/profile_gamma.c:131
-#, fuzzy
 msgctxt "accel"
 msgid "black relative exposure"
 msgstr "relatieve belichting zwart"
 
 #: ../src/iop/profile_gamma.c:132
-#, fuzzy
 msgctxt "accel"
 msgid "safety factor"
 msgstr "veiligheidsfactor"
@@ -10992,9 +10988,8 @@ msgid "balance"
 msgstr "witbalans"
 
 #: ../src/iop/splittoning.c:692
-#, fuzzy
 msgid "the balance of center of split-toning"
-msgstr "totale middelpunt"
+msgstr "het evenwicht van het centrum van split-toning"
 
 #: ../src/iop/splittoning.c:693
 msgid ""
@@ -11012,6 +11007,7 @@ msgstr "vlekken verwijderen"
 #: ../src/iop/spots.c:178
 msgid "spot module is limited to 64 shapes. please add a new instance !"
 msgstr ""
+"spot module is beperkt tot 64 vormen, voeg dus een nieuw exemplaar toe!"
 
 #: ../src/iop/spots.c:672
 msgid "number of strokes:"
@@ -12877,14 +12873,12 @@ msgid "create a style from the current history stack"
 msgstr "creëer stijl van bewerkingsstappen"
 
 #: ../src/libs/history.c:184
-#, fuzzy
 msgid "always-on module"
-msgstr "toon module"
+msgstr "standaard module aan"
 
 #: ../src/libs/history.c:193
-#, fuzzy
 msgid "default enabled module"
-msgstr "inschakelen module"
+msgstr "standaard ingeschakelde module"
 
 #: ../src/libs/history.c:202
 msgid "deprecated module"
@@ -13009,33 +13003,28 @@ msgid "ratings"
 msgstr "classificeringen"
 
 #: ../src/libs/image.c:463
-#, fuzzy
 msgid "select ratings metadata"
-msgstr "selecteer interpolatiemethode"
+msgstr "selecteer classificatie metadata"
 
 #: ../src/libs/image.c:468
 msgid "colors"
 msgstr "kleuren"
 
 #: ../src/libs/image.c:470
-#, fuzzy
 msgid "select colors metadata"
-msgstr "selecteer kleur van het filmmateriaal"
+msgstr "selecteer kleur metadata"
 
 #: ../src/libs/image.c:477
-#, fuzzy
 msgid "select tags metadata"
-msgstr "selecteer label"
+msgstr "selecteer label metadata"
 
 #: ../src/libs/image.c:484
-#, fuzzy
 msgid "select geo tags metadata"
-msgstr "verwijder metadata label"
+msgstr "kies geo labels metadata"
 
 #: ../src/libs/image.c:491
-#, fuzzy
 msgid "select dt metadata (from metadata editor module)"
-msgstr "exporteer dt xmp metadata (van metadata bewerkingsmodule)"
+msgstr "kies dt metadata (van metadata bewerkingsmodule)"
 
 #: ../src/libs/image.c:500
 msgid "set the (first) selected image as source of metadata"
@@ -13046,27 +13035,24 @@ msgid "paste"
 msgstr "plakken"
 
 #: ../src/libs/image.c:508
-#, fuzzy
 msgid "paste selected metadata on selected images"
-msgstr "metadata toevoegen aan geselecteerde afbeelding(en)"
+msgstr "plak geselecteerde metadata aan geselecteerde afbeeldingen"
 
 #: ../src/libs/image.c:512 ../src/libs/metadata.c:393
 msgid "clear"
 msgstr "wis"
 
 #: ../src/libs/image.c:515
-#, fuzzy
 msgid "clear selected metadata on selected images"
-msgstr "metadata toevoegen aan geselecteerde afbeelding(en)"
+msgstr "wis geselecteerde metadata van geselecteerde afbeeldingen"
 
 #: ../src/libs/image.c:521
 msgid "merge"
 msgstr "samenvoegen"
 
 #: ../src/libs/image.c:523
-#, fuzzy
 msgid "how to handle existing metadata"
-msgstr "hoe om te gaan met de bestaande geschiedenis"
+msgstr "hoe om te gaan met de bestaande metadata"
 
 #: ../src/libs/image.c:531
 msgid "update image information to match changes to file"
@@ -13143,10 +13129,9 @@ msgid "copy metadata"
 msgstr "kopieer metadata"
 
 #: ../src/libs/image.c:574
-#, fuzzy
 msgctxt "accel"
 msgid "replace metadata"
-msgstr "verwijder metadata label"
+msgstr "vervang metadata"
 
 #: ../src/libs/image.c:575
 msgctxt "accel"
@@ -13154,10 +13139,9 @@ msgid "paste metadata"
 msgstr "plak metadata"
 
 #: ../src/libs/image.c:576
-#, fuzzy
 msgctxt "accel"
 msgid "clear metadata"
-msgstr "verduidelijk metadata"
+msgstr "wis metadata"
 
 #. Grouping keys
 #: ../src/libs/image.c:578
@@ -13501,9 +13485,8 @@ msgid "group the forms"
 msgstr "groepeer vormen"
 
 #: ../src/libs/masks.c:1150
-#, fuzzy
 msgid "use inverted shape"
-msgstr "gebruik geïnverteerde vorm"
+msgstr "gebruik omgekeerde vorm"
 
 #: ../src/libs/masks.c:1156
 msgid "mode : union"
@@ -15127,7 +15110,7 @@ msgstr "toon een tweede scherm module ontwikkelen"
 
 #: ../src/views/darkroom.c:1938
 msgid "toggle ISO 12646 colour assessment conditions"
-msgstr ""
+msgstr "schakel ISO 12646 kleur beoordelingsvoorwaarden"
 
 #: ../src/views/darkroom.c:1948
 msgid ""
@@ -15588,7 +15571,6 @@ msgstr "voorbeeld passende zoom"
 
 #. timeline
 #: ../src/views/lighttable.c:4456
-#, fuzzy
 msgctxt "accel"
 msgid "toggle filmstrip/timeline"
 msgstr "wissel fotoreeks"
