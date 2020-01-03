@@ -146,20 +146,9 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
   {
     for (int i = 0; pl[i].name_ != 0; ++i)
     {
-//      std::printf("Xmp.%s.%s type %s\n", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
     }
-#if 0
-    std::string line;
-    std::ostringstream tags;
-    Exiv2::XmpProperties::printProperties(tags, prefix);
-    std::istringstream input(tags.str()) ;
-    while (std::getline(input, line))
-    {
-      std::printf("Xmp.%s %s\n", prefix, line.c_str());
-    }
-#endif
   }
 }
 
@@ -186,42 +175,18 @@ GList *dt_get_exiv2_taglist()
           const Exiv2::TagInfo *tagInfo = groupList->tagList_();
           while(tagInfo->tag_ != 0xFFFF)
           {
-//            std::printf("Exif.%s.%s type %s\n", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
             char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
             taglist = g_list_prepend(taglist, tag);
             tagInfo++;
           }
-#if 0
-          std::string line;
-          std::ostringstream tags;
-          Exiv2::ExifTags::taglist(tags,groupList->groupName_);
-          std::istringstream input(tags.str()) ;
-          while (std::getline(input, line))
-          {
-            std::printf("Exif.%s %s\n", groupList->groupName_, line.c_str());
-          }
-#endif
         }
       groupList++;
       }
     }
-#if 0
-    {
-      std::string line;
-      std::ostringstream tags;
-      Exiv2::IptcDataSets::dataSetList(tags);
-      std::istringstream input(tags.str()) ;
-      while (std::getline(input, line))
-      {
-        std::printf("Iptc %s\n", line.c_str());
-      }
-    }
-#endif
 
     const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
-//      std::printf("Iptc.Envelope.%s type %s\n", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
       char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcEnvelopeList++;
@@ -230,7 +195,6 @@ GList *dt_get_exiv2_taglist()
     const Exiv2::DataSet *iptcApplication2List = Exiv2::IptcDataSets::application2RecordList();
     while(iptcApplication2List->number_ != 0xFFFF)
     {
-//      std::printf("Iptc.Application2.%s type %s\n", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
       char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcApplication2List++;
@@ -238,9 +202,36 @@ GList *dt_get_exiv2_taglist()
 
     _get_xmp_tags("dc", &taglist);
     _get_xmp_tags("xmp", &taglist);
+    _get_xmp_tags("xmpRights", &taglist);
+    _get_xmp_tags("xmpMM", &taglist);
+    _get_xmp_tags("xmpBJ", &taglist);
+    _get_xmp_tags("xmpTPg", &taglist);
+    _get_xmp_tags("xmpDM", &taglist);
+    _get_xmp_tags("pdf", &taglist);
+    _get_xmp_tags("photoshop", &taglist);
+    _get_xmp_tags("crs", &taglist);
     _get_xmp_tags("tiff", &taglist);
     _get_xmp_tags("exif", &taglist);
     _get_xmp_tags("exifEX", &taglist);
+    _get_xmp_tags("aux", &taglist);
+    _get_xmp_tags("iptc", &taglist);
+    _get_xmp_tags("iptcExt", &taglist);
+    _get_xmp_tags("plus", &taglist);
+    _get_xmp_tags("mwg-rs", &taglist);
+    _get_xmp_tags("mwg-kw", &taglist);
+    _get_xmp_tags("dwc", &taglist);
+    _get_xmp_tags("dcterms", &taglist);
+    _get_xmp_tags("digiKam", &taglist);
+    _get_xmp_tags("kipi", &taglist);
+    _get_xmp_tags("GPano", &taglist);
+    _get_xmp_tags("lr", &taglist);
+    _get_xmp_tags("MP", &taglist);
+    _get_xmp_tags("MPRI", &taglist);
+    _get_xmp_tags("MPReg", &taglist);
+    _get_xmp_tags("acdsee", &taglist);
+    _get_xmp_tags("mediapro", &taglist);
+    _get_xmp_tags("expressionmedia", &taglist);
+    _get_xmp_tags("MicrosoftPhoto", &taglist);
   }
   catch (Exiv2::AnyError& e)
   {
@@ -3632,13 +3623,20 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     // make sure to remove all geotags if necessary
     if(m)
     {
-      if (!(m->flags & DT_META_EXIF))
+      Exiv2::ExifData exifOldData;
+      Exiv2::ExifData &exifData = img->exifData();
+      if(!(m->flags & DT_META_EXIF))
+      {
+        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end() ; ++i)
+        {
+          exifOldData[i->key()] = i->value();
+        }
         img->clearExifData();
+      }
 
       dt_exif_xmp_read_data_export(xmpData, imgid, m);
 
       Exiv2::IptcData &iptcData = img->iptcData();
-      Exiv2::ExifData &exifData = img->exifData();
 
       if(!(m->flags & DT_META_GEOTAG))
         dt_remove_exif_geotag(exifData);
@@ -3659,17 +3657,28 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         gchar *formula = (gchar *)tags->data;
         if (formula[0])
         {
-          gchar *result = dt_variables_expand(params, formula, FALSE);
-          if (result && result[0])
+          if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
           {
-            if (g_str_has_prefix(tagname, "Xmp."))
-              xmpData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Iptc."))
-              iptcData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Exif."))
-              exifData[tagname] = result;
+            Exiv2::ExifData::const_iterator pos;
+            if(dt_exif_read_exif_tag(exifOldData, &pos, tagname))
+            {
+              exifData[tagname] = pos->value();
+            }
           }
-          g_free(result);
+          else
+          {
+            gchar *result = dt_variables_expand(params, formula, FALSE);
+            if(result && result[0])
+            {
+              if(g_str_has_prefix(tagname, "Xmp."))
+                xmpData[tagname] = result;
+              else if(g_str_has_prefix(tagname, "Iptc."))
+                iptcData[tagname] = result;
+              else if(g_str_has_prefix(tagname, "Exif."))
+                exifData[tagname] = result;
+            }
+            g_free(result);
+          }
         }
         else
         {
