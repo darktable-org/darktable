@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-03 09:49+0100\n"
-"PO-Revision-Date: 2020-01-03 10:16+0100\n"
+"POT-Creation-Date: 2020-01-03 10:19+0100\n"
+"PO-Revision-Date: 2020-01-03 10:23+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6807,7 +6807,7 @@ msgstr "links"
 
 #: ../src/iop/clipping.c:2066
 msgid "the left margin cannot overlap with the right margin"
-msgstr ""
+msgstr "de linker marge mag niet de rechter marge overlappen"
 
 #: ../src/iop/clipping.c:2070
 msgid "right"
@@ -6815,7 +6815,7 @@ msgstr "rechts"
 
 #: ../src/iop/clipping.c:2073
 msgid "the right margin cannot overlap with the left margin"
-msgstr ""
+msgstr "de rechter marge mag niet de linker marge overlappen"
 
 #: ../src/iop/clipping.c:2077
 msgid "top"
@@ -6823,7 +6823,7 @@ msgstr "top"
 
 #: ../src/iop/clipping.c:2080
 msgid "the top margin cannot overlap with the bottom margin"
-msgstr ""
+msgstr "de top marge mag niet de bodem marge overlappen"
 
 #: ../src/iop/clipping.c:2084
 msgid "bottom"
@@ -6831,7 +6831,7 @@ msgstr "bodem"
 
 #: ../src/iop/clipping.c:2087
 msgid "the bottom margin cannot overlap with the top margin"
-msgstr ""
+msgstr "de bodem marge mag niet de top marge overlappen"
 
 #: ../src/iop/clipping.c:2091
 msgid "keystone"
@@ -13028,7 +13028,7 @@ msgstr "kies dt metadata (van metadata bewerkingsmodule)"
 
 #: ../src/libs/image.c:500
 msgid "set the (first) selected image as source of metadata"
-msgstr ""
+msgstr "stel de (eerste) geselecteerde afbeelding in als bron voor metadata"
 
 #: ../src/libs/image.c:504
 msgid "paste"
