@@ -19,6 +19,7 @@
 #include "gui/accelerators.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 
@@ -79,8 +80,10 @@ static void dt_accel_path_view_translated(char *s, size_t n, dt_view_t *module, 
 
 static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *module, const char *path)
 {
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
+  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path));
+  g_free(module_name_fixed);
 }
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
@@ -92,16 +95,18 @@ static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *mod
 static void dt_accel_paths_slider_iop_translated(char *s[], size_t n, dt_iop_module_so_t *module,
                                                  const char *path)
 {
-  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
+  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "increase"));
-  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "decrease"));
-  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "reset"));
-  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "edit"));
-  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
+  g_free(module_name_fixed);
 }
 
 static void dt_accel_path_lua_translated(char *s, size_t n, const char *path)
@@ -164,7 +169,8 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
-void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
+void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
+                                     guint accel_key, GdkModifierType mods)
 {
   gchar accel_path[256];
   dt_accel_t *accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
@@ -178,23 +184,34 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
   // we get the views in which the lib will be displayed
-  accel->views = 0;
+  accel->views = views;
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+}
+void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
+{
+  dt_view_type_flags_t v = 0;
   int i=0;
   const gchar **views = self->views(self);
   while (views[i])
   {
-    if (strcmp(views[i], "lighttable") == 0) accel->views |= DT_VIEW_LIGHTTABLE;
-    else if (strcmp(views[i], "darkroom") == 0) accel->views |= DT_VIEW_DARKROOM;
-    else if (strcmp(views[i], "print") == 0) accel->views |= DT_VIEW_PRINT;
-    else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
-    else if (strcmp(views[i], "map") == 0) accel->views |= DT_VIEW_MAP;
-    else if (strcmp(views[i], "tethering") == 0) accel->views |= DT_VIEW_TETHERING;
+    if(strcmp(views[i], "lighttable") == 0)
+      v |= DT_VIEW_LIGHTTABLE;
+    else if(strcmp(views[i], "darkroom") == 0)
+      v |= DT_VIEW_DARKROOM;
+    else if(strcmp(views[i], "print") == 0)
+      v |= DT_VIEW_PRINT;
+    else if(strcmp(views[i], "slideshow") == 0)
+      v |= DT_VIEW_SLIDESHOW;
+    else if(strcmp(views[i], "map") == 0)
+      v |= DT_VIEW_MAP;
+    else if(strcmp(views[i], "tethering") == 0)
+      v |= DT_VIEW_TETHERING;
     else if(strcmp(views[i], "*") == 0)
-      accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
-                      | DT_VIEW_SLIDESHOW;
+      v |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
+           | DT_VIEW_SLIDESHOW;
     i++;  
   }
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  dt_accel_register_lib_for_views(self, v, path, accel_key, mods);
 }
 
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)

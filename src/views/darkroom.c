@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -140,7 +141,7 @@ void init(dt_view_t *self)
 
 #ifdef USE_LUA
   lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
+  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, display_image_cb, 1);
   dt_lua_gtk_wrap(L);
@@ -183,11 +184,20 @@ void cleanup(dt_view_t *self)
 
 static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
 {
-  int fd = GPOINTER_TO_INT(closure);
+  const int fd = GPOINTER_TO_INT(closure);
   ssize_t res = write(fd, data, length);
   if(res != length)
     return CAIRO_STATUS_WRITE_ERROR;
   return CAIRO_STATUS_SUCCESS;
+}
+
+static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->iso_12646.enabled)
+    return DT_DARKROOM_LAYOUT_COLOR_ASSESMENT;
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
 }
 
 void expose(
@@ -201,12 +211,11 @@ void expose(
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_save(cri);
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
-
-  dt_develop_t *dev = (dt_develop_t *)self->data;
 
   if(dev->gui_synch && !dev->image_loading)
   {
@@ -286,22 +295,56 @@ void expose(
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
-    if(dev->full_preview)
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
     else
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    {
+      if(dev->full_preview)
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+      else
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+
+    cairo_translate(cr, ceilf(.5f * (width - wd)), ceilf(.5f * (height - ht)));
     if(closeup)
     {
       const double scale = 1<<closeup;
       cairo_scale(cr, scale, scale);
       cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
     }
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, -tb / 3, -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    if(closeup)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    else
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+
     cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
@@ -315,8 +358,27 @@ void expose(
     const float wd = dev->preview_pipe->output_backbuf_width;
     const float ht = dev->preview_pipe->output_backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
+    else
+    {
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
+
     cairo_paint(cr);
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, 2 * tb / 3, 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
@@ -325,13 +387,43 @@ void expose(
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
-    cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
+
+    cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image_storage.id;
+  }
+  else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+
+    // waiting message
+    PangoRectangle ink;
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    pango_layout_set_text(layout, load_txt, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+    pango_cairo_layout_path(cr, layout);
+    cairo_set_line_width(cr, 2.0);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_stroke_preserve(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+    cairo_fill(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+    g_free(load_txt);
     image_surface_imgid = dev->image_storage.id;
   }
   cairo_restore(cri);
@@ -954,12 +1046,13 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
-
 
 static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
@@ -1182,6 +1275,32 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 
   // cancel glib timeout if invoked by long button press
   return FALSE;
+}
+
+/* colour assessment */
+static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if (!d->gui_attached) return;
+
+  d->iso_12646.enabled = !d->iso_12646.enabled;
+  d->width = d->orig_width;
+  d->height = d->orig_height;
+
+  if(d->iso_12646.enabled)
+  {
+    d->border_size = 0.125 * d->width;
+  }
+  else
+  {
+    // Reset border size from config
+    d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
+
+  dt_dev_configure(d, d->width, d->height);
+
+  dt_ui_restore_panels(darktable.gui->ui);
+  dt_dev_reprocess_center(d);
 }
 
 /* overexposed */
@@ -1809,8 +1928,15 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int panel_width = dt_conf_get_int("panel_width");
-  const int dialog_width = panel_width > 350 ? panel_width : 350;
+  const int dialog_width = 350;
+
+  /* Enable ISO 12646-compliant colour assessment conditions */
+  dev->iso_12646.button
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(dev->iso_12646.button,
+                              _("toggle ISO 12646 colour assessment conditions"));
+  g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
   /* create rawoverexposed popup tool */
   {
@@ -2101,6 +2227,10 @@ void gui_init(dt_view_t *self)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
   }
+
+  darktable.view_manager->proxy.darkroom.view = self;
+  darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
+  dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 }
 
 enum
@@ -2674,10 +2804,10 @@ void mouse_enter(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -2757,10 +2887,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = darktable.develop;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = darktable.develop;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -2787,10 +2917,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -2888,10 +3018,10 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -3169,6 +3299,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 void configure(dt_view_t *self, int wd, int ht)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  dev->orig_width = wd;
+  dev->orig_height = ht;
   dt_dev_configure(dev, wd, ht);
 }
 
@@ -3214,7 +3346,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
 
   // fullscreen view
-  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_z, 0);
+  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_w, 0);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -3461,6 +3593,18 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
+
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;

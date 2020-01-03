@@ -358,7 +358,7 @@ static int _print_job_run(dt_job_t *job)
   guint tagid = 0;
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach_from_gui(tagid, params->imgid);
+  dt_tag_attach_from_gui(tagid, params->imgid, FALSE, FALSE);
 
   return 0;
 }

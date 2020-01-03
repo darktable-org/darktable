@@ -28,12 +28,96 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
+- A new color assessment mode is introduced into the darkroom. This
+  mode is designed to ensure proper color perception based on
+  ICC recommended (ISO 12646:2008) colour proofing conditions.
+
+- It is now possible to resize the left and right panels directly with
+  the mouse. The positions of each one is remembered for each views'
+  layout.
+
+- Add a focus peaking mode in the lighttable and darkroom. The default
+  key to toggle this mode is <kbd>Ctrl+Shift+F</kbd>
 
 ## New Features And Changes
 
+- Add darkroom loading screen.
+
+- Make modules labels a bit smaller for better UI consistency.
+
+- Add small rectangle around the angle display when using the
+  straightening tool for better lisibility.
+
+- Ensure the different views layout are recorded. Many views (and mode
+  like lighttable's culling or darkroom's color assessment), can have
+  the filmstrip or timeline bottom widgets, we record the exact layout
+  for each layout.
+
+- Add tool tips on module in history.
+
+- Add support for applying back the last added key-word with a simple
+  key short-cut. Default short-cut is <kbd>Alt+T</kbd>.
+
+- Add wide-gamut HLG/PQ based color space P3 and Rec2020.
+
+- Add custom borders support in framing module.
+
+- Add standard variables support in watermark module.
+
+- Allow the same short-cuts to be defined by different modules. This
+  makes it possible to have the filmstrip using the same short-cuts to
+  set stars than the lighttable.
+
+- Add log editing support for the L, R, G, B, C, g blending modes.
+  This gives more control on the dark pixels.
+
+- Define many new accels for most of the sliders to allow more control
+  using the keyboard.
+
+- Add support for curved gradients. The grandient mask can now be
+  curved to revert fish-eye kind distortion and so become a straight
+  line on the horizon for example.
+
+- Add support for AVIF file format.
+
+- The images operations modules has been extended to support coping,
+  replacing and merging metadata.
+
+- Better visibility for the zoomed image part in the navigation widget.
 
 ## Bug fixes
 
+- All valid Lut files are displayed in file selector.
+
+- Fix straightening in crop and rotate module when flip is applied.
+
+- The ellipse and gradient masks can now be manipulated when the
+  crop and rotate flip is activated.
+
+- Fix style editing from lighttable. The modules list was empty due to
+  an error in SQL statement.
+
+- Make clicking on group icon easier. The active zone around the group
+  icon was too small.
+
+- Make sure no more than 64 spots are added in spot removal module and
+  display a message when the limit is reached.
+
+- Delay histogram display until the image is fully loaded and so the
+  corresponding histogram is ready. Darktable was displaying the
+  previously computed histogram for a short period of time.
+
+- Properly update the XMP when doing undo/redo actions.
+
+- Fix discrepancies between the SSE/OpenCL local Laplacian code paths.
+
+- Better performance when using masks.
+
+- Better performance for tone equalizer's guided filter.
+
+- Exports should now better respect the final dimensions requested.
+
+- Fix issues with brush opacity handling.
 
 ## Lua
 
@@ -43,11 +127,15 @@ making a backup is strongly advised.
 
 ## RawSpeed changes
 
+
 ### Changed Dependencies
+
 
 ### Changes
 
+
 ## Camera support, compared to 3.0.0
+
 
 ### Base Support
 

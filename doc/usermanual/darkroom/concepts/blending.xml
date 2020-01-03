@@ -17,7 +17,7 @@
 
     <para>
       By default a module takes its input from the preceding module, performs its calculations
-      and handles its output over to the next module in the pixelpipe. On demand you can
+      and hands its output over to the next module in the pixelpipe. On demand you can
       activate an additional step where a module's output is reprocessed with its input before
       giving the result to the next module. This additional processing step is called blending.
       Input and output can be processed with different algorithms, called blending operators or
@@ -181,7 +181,7 @@
                     This is the original image, pretty heavily processed: first
                     <link linkend="monochrome"> <emphasis>monochrome</emphasis></link>, then
                     some blue <link linkend="splittoning">
-                    <emphasis>splittoning</emphasis></link> but as you see it lacks pop in
+                    <emphasis>split-toning</emphasis></link> but as you see it lacks pop in
                     details and is a bit out of focus...
                   </para>
                 </entry>

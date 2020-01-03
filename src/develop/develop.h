@@ -109,7 +109,8 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
 extern const gchar *dt_dev_histogram_type_names[];
@@ -200,6 +201,10 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
 
+  // darkroom border size
+  int32_t border_size;
+  int32_t orig_width, orig_height;
+
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
@@ -269,6 +274,13 @@ typedef struct dt_develop_t
     dt_dev_rawoverexposed_colorscheme_t colorscheme;
     float threshold;
   } rawoverexposed;
+
+  // ISO 12646-compliant colour assessment conditions
+  struct
+  {
+    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
+    gboolean enabled;
+  } iso_12646;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct

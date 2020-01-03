@@ -90,7 +90,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
-  dt_metadata_set(imgid, "Xmp.dc.title", gtk_entry_get_text(GTK_ENTRY(widget)));
+  dt_metadata_set(imgid, "Xmp.dc.title", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
   dt_image_synch_xmp(imgid);
 
   return FALSE;
@@ -198,7 +198,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   if (d->imgid == 0) return;
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = darktable.develop->border_size;
   int nw = width-2*tb;
   int nh = height-2*tb;
 

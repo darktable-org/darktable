@@ -120,7 +120,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -170,6 +170,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -217,13 +218,6 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES to_library)
 endif()
 
-# Check for base threading library
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
-# Fail if returned library is not pthread
-if(NOT CMAKE_USE_PTHREADS_INIT)
-  message(FATAL_ERROR "POSIX threads: not found")
-endif()
 # Append thread flags/libraries to LIBS
 list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 
@@ -318,6 +312,16 @@ if(USE_WEBP)
   endif(WEBP_FOUND)
   else(USE_WEBP)
 endif(USE_WEBP)
+
+if (USE_AVIF)
+    find_package(libavif 0.5.2 CONFIG)
+    if (TARGET avif)
+        list(APPEND LIBS avif)
+        add_definitions(-DHAVE_LIBAVIF=1)
+        list(APPEND SOURCES "common/imageio_avif.c")
+        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+    endif()
+endif()
 
 if(USE_LENSFUN)
   find_package(LensFun)

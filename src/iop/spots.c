@@ -164,24 +164,38 @@ static void _resynch_params(struct dt_iop_module_t *self)
 }
 
 
-static void _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
+static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path)) ||
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_circle)) ||
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse)))
+
+  // we check the nb of shapes limit
+  dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
+  guint nb = 0;
+  if(grp && (grp->type & DT_MASKS_GROUP)) nb = g_list_length(grp->points);
+
+  if(nb >= 64)
+  {
+    dt_control_log(_("spot module is limited to 64 shapes. please add a new instance !"));
+  }
+
+  if(nb < 64
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_circle))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse))))
   {
     // we unset the creation mode
     dt_masks_change_form_gui(NULL);
   }
-  if (widget != g->bt_path) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  if (widget != g->bt_circle) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  if (widget != g->bt_ellipse) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+  if(widget != g->bt_path || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
+  if(widget != g->bt_circle || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
+  if(widget != g->bt_ellipse || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+
+  return (nb < 64);
 }
 
 static gboolean _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -195,7 +209,7 @@ static gboolean _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
 }
 static gboolean _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -209,7 +223,7 @@ static gboolean _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_
 }
 static gboolean _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -493,7 +507,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         {
           forms = g_list_next(forms);
           pos++;
-          free(mask);
+          dt_free_align(mask);
 
           continue;
         }
@@ -524,7 +538,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
             }
           }
         }
-        free(mask);
+        dt_free_align(mask);
       }
       pos++;
       forms = g_list_next(forms);

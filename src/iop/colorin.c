@@ -35,6 +35,9 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
+#ifdef HAVE_LIBAVIF
+#include "common/imageio_avif.h"
+#endif
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
 
@@ -542,7 +545,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   cl_int err = -999;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -894,7 +897,7 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
                             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -1002,7 +1005,7 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
                           void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -1286,7 +1289,7 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                  const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -1400,7 +1403,7 @@ static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -1577,7 +1580,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     if(isnan(cam_xyz[0]))
     {
-      if(dt_image_is_raw(&pipe->image) && !dt_image_is_monochrome(&pipe->image))
+      if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
         fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
@@ -1840,6 +1843,7 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
                                                            .filename_work = "" };
+  dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id <= 0) goto end;
@@ -1883,15 +1887,35 @@ void reload_defaults(dt_iop_module_t *module)
       img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
     }
+#ifdef HAVE_LIBAVIF
+    else if(!strcmp(ext, "avif"))
+    {
+      struct avif_color_profile cp = {
+          .type = DT_COLORSPACE_NONE,
+      };
+
+      img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
+      if (cp.type != DT_COLORSPACE_NONE) {
+        color_profile = cp.type;
+      } else {
+        img->profile_size = cp.icc_profile_size;
+        img->profile      = cp.icc_profile;
+
+        use_eprofile = (img->profile_size > 0);
+      }
+    }
+#endif
     g_free(ext);
   }
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  if (color_profile != DT_COLORSPACE_NONE) {
+    tmp.type = color_profile;
+  } else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if (img->flags & DT_IMAGE_MONOCHROME)
+    tmp.type = DT_COLORSPACE_LIN_REC709;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
@@ -1900,6 +1924,8 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
+  else if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 

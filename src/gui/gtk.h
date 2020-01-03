@@ -42,6 +42,9 @@ typedef struct dt_gui_widgets_t
   GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
   GtkGrid *panel_right;
 
+  /* resize of left/right panels */
+  gboolean panel_handle_dragging;
+  int panel_handle_x, panel_handle_y;
 } dt_gui_widgets_t;
 
 typedef struct dt_gui_scrollbars_t
@@ -60,6 +63,7 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_FONT,
   DT_GUI_COLOR_PRINT_BG,
   DT_GUI_COLOR_BRUSH_CURSOR,
   DT_GUI_COLOR_BRUSH_TRACE,
@@ -78,6 +82,8 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_CULLING_SELECTED_BORDER,
   DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER,
   DT_GUI_COLOR_PREVIEW_HOVER_BORDER,
+  DT_GUI_COLOR_LOG_BG,
+  DT_GUI_COLOR_LOG_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -103,6 +109,7 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   gboolean show_overlays;
+  gboolean show_focus_peaking;
 
   double dpi, dpi_factor, ppd;
 
@@ -301,6 +308,8 @@ void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, gboolean show);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
+/** \brief toggle view of header */
+void dt_ui_toggle_header(struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
@@ -334,7 +343,7 @@ static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
   for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
     gtk_container_child_set(GTK_CONTAINER(notebook),
                             gtk_notebook_get_nth_page(notebook, i),
-                            "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+                            "tab-expand", TRUE, "tab-fill", TRUE, (char *)NULL);
 }
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.

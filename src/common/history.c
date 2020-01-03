@@ -101,8 +101,8 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_image_reset_final_size(imgid);
 
   /* remove darktable|style|* tags */
-  dt_tag_detach_by_string("darktable|style%", imgid);
-  dt_tag_detach_by_string("darktable|changed", imgid);
+  dt_tag_detach_by_string("darktable|style%", imgid, FALSE, FALSE);
+  dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
 
   dt_unlock_image(imgid);
 
@@ -791,7 +791,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   /* attach changed tag reflecting actual change */
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
-  dt_tag_attach(tagid, dest_imgid);
+  dt_tag_attach(tagid, dest_imgid, FALSE, FALSE);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))
@@ -939,9 +939,9 @@ void dt_history_set_compress_problem(int32_t imgid, gboolean set)
   snprintf(tagname, sizeof(tagname), "darktable|problem|history-compress");
   dt_tag_new(tagname, &tagid);
   if (set)
-    dt_tag_attach(tagid, imgid);
+    dt_tag_attach(tagid, imgid, FALSE, FALSE);
   else
-    dt_tag_detach(tagid, imgid);
+    dt_tag_detach(tagid, imgid, FALSE, FALSE);
 }
 
 static int dt_history_end_attop(int32_t imgid)

@@ -237,7 +237,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw histogram
-  if(hist_max > 0.0f)
+  if(hist_max > 0.0f && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
@@ -568,8 +568,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
 
   /* set size of navigation draw area */
-  const int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width * 0.5f);
+  gtk_widget_set_size_request(self->widget, -1, 175);
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

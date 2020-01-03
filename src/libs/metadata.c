@@ -200,7 +200,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
 static void clear_button_clicked(GtkButton *button, gpointer user_data)
 {
-  dt_metadata_clear(-1);
+  dt_metadata_clear(-1, TRUE, TRUE);
   dt_image_synch_xmp(-1);
   update(user_data, FALSE);
 }
@@ -243,7 +243,7 @@ static void write_metadata(dt_lib_module_t *self)
      && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
     _append_kv(&key_value, "Xmp.dc.publisher", publisher);
 
-  dt_metadata_set_list(mouse_over_id, key_value);
+  dt_metadata_set_list(mouse_over_id, key_value, TRUE, TRUE);
 
   g_list_free(key_value);
   g_free(title);
@@ -525,7 +525,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(creator[0] != '\0') _append_kv(&key_value, "Xmp.dc.creator", creator);
   if(publisher[0] != '\0') _append_kv(&key_value, "Xmp.dc.publisher", publisher);
 
-  dt_metadata_set_list(-1, key_value);
+  dt_metadata_set_list(-1, key_value, TRUE, TRUE);
 
   g_list_free(key_value);
 

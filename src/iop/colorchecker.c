@@ -130,6 +130,25 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale_L));
+  dt_accel_connect_slider_iop(self, "green-red", GTK_WIDGET(g->scale_a));
+  dt_accel_connect_slider_iop(self, "blue-yellow", GTK_WIDGET(g->scale_b));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale_C));
+}
+
+
 int legacy_params(
     dt_iop_module_t  *self,
     const void *const old_params,
@@ -1236,7 +1255,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
         "click to select\n"
         "double click to reset\n"
         "right click to delete patch\n"
-        "shift-click while color picking to replace patch"),
+        "shift+click while color picking to replace patch"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;

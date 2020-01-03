@@ -23,6 +23,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -935,7 +936,8 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
         cairo_restore(cr);
       }
 
-      if(active && fabs(px - x - .5 * r1) <= .8 * r1 && fabs(py - y - .5 * r1) <= .8 * r1) ret = 1;
+      // mouse is over the audio icon
+      if(active && fabs(px - x - r1) <= .9 * r1 && fabs(py - y - r1) <= .9 * r1) ret = 1;
 
       break;
     }
@@ -1333,7 +1335,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       if(zoom == 1 && !image_only)
       {
-        const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+        const int32_t tb = darktable.develop->border_size;
         scale = fminf((width - 2 * tb) / (float)buf_wd, (height - 2 * tb) / (float)buf_ht) * fz;
       }
       else
@@ -1370,7 +1372,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         int h = height;
         if(zoom == 1 && !image_only)
         {
-          const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+          const int32_t tb = darktable.develop->border_size;
           w -= 2 * tb;
           h -= 2 * tb;
         }
@@ -1411,6 +1413,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
       cairo_rectangle(cr, rectx, recty, rectw, recth);
       cairo_fill(cr);
+
+      if(darktable.gui->show_focus_peaking)
+        dt_focuspeaking(cr, width, height, cairo_image_surface_get_data(surface),
+                                           cairo_image_surface_get_width(surface),
+                                           cairo_image_surface_get_height(surface));
 
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
     }
@@ -1999,6 +2006,14 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t views)
 {
   if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
+}
+
+dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm)
+{
+  if(vm->proxy.darkroom.view)
+    return vm->proxy.darkroom.get_layout(vm->proxy.darkroom.view);
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
 }
 
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)

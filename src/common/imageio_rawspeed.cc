@@ -367,7 +367,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // sraw aren't real raw, but not ldr either (need white balance and stuff)
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
-
+  img->flags |= DT_IMAGE_S_RAW;
   img->width = r->dim.x;
   img->height = r->dim.y;
 
@@ -383,15 +383,15 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // if buf is NULL, we quit the fct here
   if(!mbuf) return DT_IMAGEIO_OK;
 
-  // We test for monochrome before allocating the mipmap cache 
-  // We set the flag and add the tag only once. 
+  // We test for monochrome before allocating the mipmap cache
+  // We set the flag and add the tag only once.
   if((cpp == 1) && !(img->flags & DT_IMAGE_MONOCHROME))
     {
       guint tagid = 0;
       char tagname[64];
       snprintf(tagname, sizeof(tagname), "darktable|mode|monochrome");
       dt_tag_new(tagname, &tagid);
-      dt_tag_attach(tagid, img->id);
+      dt_tag_attach(tagid, img->id, FALSE, FALSE);
       img->flags |= DT_IMAGE_MONOCHROME;
     }
   void *buf = dt_mipmap_cache_alloc(mbuf, img);

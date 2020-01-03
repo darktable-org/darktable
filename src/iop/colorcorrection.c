@@ -269,7 +269,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag the line for split toning. "
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag the line for split-toning. "
                                                      "bright means highlights, dark means shadows. "
                                                      "use mouse wheel to change saturation."));
 

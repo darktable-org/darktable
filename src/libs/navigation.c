@@ -133,8 +133,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_navigation_leave_notify_callback), self);
 
   /* set size of navigation draw area */
-  int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width * .5);
+  gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
@@ -209,7 +208,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     {
       // Add a dark overlay on the picture to make it fade
       cairo_rectangle(cr, 0, 0, wd, ht);
-      cairo_set_source_rgba(cr, 0, 0, 0, 0.33);
+      cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
       cairo_fill(cr);
 
       float boxw = 1, boxh = 1;

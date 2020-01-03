@@ -663,12 +663,11 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
 static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, float opacity)
 {
-  if(opacity < 0.f || opacity > 1.f) return;
-
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
-    grpt->opacity = opacity;
+    grpt->opacity = CLAMP(opacity, 0.0f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
 
     dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
   }
@@ -2021,10 +2020,12 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  if(rt_get_selected_shape_id() > 0)
+  const int shape_id = rt_get_selected_shape_id();
+
+  if(shape_id > 0)
   {
-    float opacity = dt_bauhaus_slider_get(slider);
-    rt_masks_form_change_opacity(self, rt_get_selected_shape_id(), opacity);
+    const float opacity = dt_bauhaus_slider_get(slider);
+    rt_masks_form_change_opacity(self, shape_id, opacity);
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2039,11 +2040,13 @@ void gui_post_expose (struct dt_iop_module_t *self,
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  if(rt_get_selected_shape_id() > 0)
+  const int shape_id = rt_get_selected_shape_id();
+
+  if(shape_id > 0)
   {
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, rt_get_selected_shape_id()));
+    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
     darktable.gui->reset = reset;
   }
 }
@@ -2622,25 +2625,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
-/*
-  g->copied_scale = -1;
-  g->mask_display = 0;
-  g->suppress_mask = 0;
-  g->display_wavelet_scale = 0;
-  g->displayed_wavelet_scale = 0;
-  g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
-
-  g->preview_auto_levels = 0;
-  g->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
-  g->preview_levels[1] = 0.f;
-  g->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  g->is_dragging = 0;
-  g->wdbar_mouse_x = -1;
-  g->wdbar_mouse_y = -1;
-  g->lvlbar_mouse_x = -1;
-  g->lvlbar_mouse_y = -1;
-*/
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -3851,12 +3835,13 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = calloc(roi_mask_scaled->width * roi_mask_scaled->height, sizeof(float));
+  mask_tmp = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
+  memset(mask_tmp, 0, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -4292,7 +4277,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free_align(mask);
             continue;
           }
         }
@@ -4306,7 +4291,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free_align(mask);
           mask = NULL;
         }
 
@@ -4360,8 +4345,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
             rt_copy_mask_to_alpha(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free_align(mask);
+        if(mask_scaled) dt_free_align(mask_scaled);
 
         forms = g_list_next(forms);
       }
@@ -5106,7 +5091,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free_align(mask);
             continue;
           }
         }
@@ -5122,14 +5107,14 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         // only heal needs mask scaled
         if(algo != DT_IOP_RETOUCH_HEAL && mask_scaled != NULL)
         {
-          free(mask_scaled);
+          dt_free_align(mask_scaled);
           mask_scaled = NULL;
         }
 
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free_align(mask);
           mask = NULL;
         }
 
@@ -5189,8 +5174,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
                                      gd);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free_align(mask);
+        if(mask_scaled) dt_free_align(mask_scaled);
         if(dev_mask_scaled) dt_opencl_release_mem_object(dev_mask_scaled);
 
         forms = g_list_next(forms);

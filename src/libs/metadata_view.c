@@ -407,6 +407,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         { N_("GraphicsMagick"), 'g'},
         { N_("rawspeed"), 'r'},
         { N_("netpnm"), 'n'},
+        { N_("avif"), 'a'},
       };
 
       int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
@@ -752,6 +753,10 @@ void gui_init(dt_lib_module_t *self)
   /* signup for develop initialize to update info of current
      image in darkroom when enter */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for tags changes */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
 }
 

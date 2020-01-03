@@ -87,7 +87,7 @@ typedef enum dt_iop_splittoning_picker_t
 
 const char *name()
 {
-  return _("split toning");
+  return _("split-toning");
 }
 
 int flags()
@@ -110,6 +110,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick primary color"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick secondary color"), 0, 0);
 
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "balance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
 }
@@ -121,6 +125,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick primary color", GTK_WIDGET(g->shadow_colorpick));
   dt_accel_connect_button_iop(self, "pick secondary color", GTK_WIDGET(g->highlight_colorpick));
 
+  dt_accel_connect_slider_iop(self, "shadows-hue", GTK_WIDGET(g->shadow_hue_gslider));
+  dt_accel_connect_slider_iop(self, "shadows-saturation", GTK_WIDGET(g->shadow_sat_gslider));
+  dt_accel_connect_slider_iop(self, "highlights-hue", GTK_WIDGET(g->highlight_hue_gslider));
+  dt_accel_connect_slider_iop(self, "highlights-saturation", GTK_WIDGET(g->highlight_sat_gslider));
   dt_accel_connect_slider_iop(self, "balance", GTK_WIDGET(g->balance_scale));
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress_scale));
 }
@@ -681,7 +689,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->compress_scale, 0, line++, 2, 1);
 
 
-  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of splittoning"));
+  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
 
   g_signal_connect(G_OBJECT(g->shadow_hue_gslider), "value-changed", G_CALLBACK(hue_callback), self);

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2019 philippe weyland.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/undo.h"
+#include "common/grouping.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -28,51 +30,31 @@
 typedef struct dt_undo_ratings_t
 {
   int imgid;
-  int before_rating;
-  int after_rating;
+  int before;
+  int after;
 } dt_undo_ratings_t;
 
-static void _ratings_apply_to_image(int imgid, int rating, gboolean undo);
-
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+int dt_ratings_get(const int imgid)
 {
-  if(type == DT_UNDO_RATINGS)
+  int stars = 0;
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(image)
   {
-    dt_undo_ratings_t *ratings = (dt_undo_ratings_t *)data;
-
-    if(action == DT_ACTION_UNDO)
-      _ratings_apply_to_image(ratings->imgid, ratings->before_rating, FALSE);
-    else
-      _ratings_apply_to_image(ratings->imgid, ratings->after_rating, FALSE);
+    stars = 0x7 & image->flags;
+    dt_image_cache_read_release(darktable.image_cache, image);
   }
+  return stars;
 }
 
-static void _ratings_undo_data_free(gpointer data)
-{
-  free(data);
-}
-
-static void _ratings_apply_to_image(int imgid, int rating, gboolean undo)
+static void _ratings_apply_to_image(int imgid, int rating)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   if(image)
   {
-    if(undo)
-    {
-      dt_undo_ratings_t *ratings = malloc(sizeof(dt_undo_ratings_t));
-      ratings->imgid = imgid;
-      ratings->before_rating = 0x7 & image->flags;
-      ratings->after_rating = rating;
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, (dt_undo_data_t)ratings,
-                     _pop_undo, _ratings_undo_data_free);
-    }
-
     image->flags = (image->flags & ~0x7) | (0x7 & rating);
     // synch through:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-
-    dt_collection_hint_message(darktable.collection);
   }
   else
   {
@@ -80,117 +62,95 @@ static void _ratings_apply_to_image(int imgid, int rating, gboolean undo)
   }
 }
 
-void dt_ratings_apply_to_image(int imgid, int rating)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
-  _ratings_apply_to_image(imgid, rating, TRUE);
-}
-
-void dt_ratings_apply_to_image_or_group(int imgid, int rating)
-{
-  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  if(image)
+  if(type == DT_UNDO_RATINGS)
   {
-    int img_group_id = image->group_id;
+    GList *list = (GList *)data;
 
-    // one star is a toggle, so you can easily reject images by removing the last star:
-    if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+    while(list)
     {
-      rating = 0;
+      dt_undo_ratings_t *ratings = (dt_undo_ratings_t *)list->data;
+      _ratings_apply_to_image(ratings->imgid, (action == DT_ACTION_UNDO) ? ratings->before : ratings->after);
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(ratings->imgid));
+      list = g_list_next(list);
     }
-    else if(((image->flags & 0x7) == 6) && (rating == 6))
-    {
-      rating = 0;
-    }
-
-    dt_image_cache_read_release(darktable.image_cache, image);
-
-    dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-
-    // If we're clicking on a grouped image, apply the rating to all images in the group.
-    if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
-      int count = 0;
-
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
-        count++;
-      }
-      sqlite3_finalize(stmt);
-
-      if(count > 1)
-      {
-        if(rating == 6)
-          dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
-        else
-          dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
-                         rating, count);
-      }
-    }
-    else
-    {
-      dt_ratings_apply_to_image(imgid, rating);
-    }
-
-    dt_undo_end_group(darktable.undo);
+    dt_collection_hint_message(darktable.collection);
   }
 }
 
-void dt_ratings_apply_to_selection(int rating)
+static void _ratings_undo_data_free(gpointer data)
 {
-  uint32_t count = dt_collection_get_selected_count(darktable.collection);
-  if(count)
+  GList *l = (GList *)data;
+  g_list_free(l);
+}
+
+static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gboolean undo_on)
+{
+  GList *images = imgs;
+  while(images)
   {
+    const int image_id = GPOINTER_TO_INT(images->data);
+    if(undo_on)
+    {
+      dt_undo_ratings_t *undoratings = (dt_undo_ratings_t *)malloc(sizeof(dt_undo_ratings_t));
+      undoratings->imgid = image_id;
+      undoratings->before = dt_ratings_get(image_id);
+      undoratings->after = rating;
+      *undo = g_list_append(*undo, undoratings);
+    }
+
+    _ratings_apply_to_image(image_id, rating);
+
+    images = g_list_next(images);
+  }
+}
+
+void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on, const gboolean group_on)
+{
+  GList *undo = NULL;
+  GList *imgs = NULL;
+  guint count = 0;
+  if(imgid == -1)
+    imgs = dt_collection_get_selected(darktable.collection, -1);
+  else
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+
+  int new_rating = rating;
+  // one star is a toggle, so you can easily reject images by removing the last star:
+  // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
+  if(toggle_on && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+  {
+    if(dt_ratings_get(GPOINTER_TO_INT(imgs->data)) == 1)
+      new_rating = 0;
+  }
+
+  if(imgs)
+  {
+    if(group_on) dt_grouping_add_grouped_images(&imgs);
+    count = g_list_length(imgs);
     if(rating == 6)
       dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
     else
       dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
                      rating, count);
-#if 0 // not updating cache
-    gchar query[1024]= {0};
-    g_snprintf(query,sizeof(query), "UPDATE main.images SET flags=(flags & ~7) | (7 & %d) WHERE id IN "
-                                    "(SELECT imgid FROM main.selected_images)", rating);
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-#endif
 
-    /* for each selected image update rating */
-    sqlite3_stmt *stmt;
-    gboolean first = TRUE;
-    dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+    _ratings_apply(imgs, new_rating, &undo, undo_on);
+
+    g_list_free(imgs);
+    if(undo_on)
     {
-      if(first == TRUE)
-      {
-        first = FALSE;
-        const dt_image_t *image = dt_image_cache_get(darktable.image_cache, sqlite3_column_int(stmt, 0), 'r');
-
-        // one star is a toggle, so you can easily reject images by removing the last star:
-        // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
-        if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
-        {
-          rating = 0;
-        }
-
-        dt_image_cache_read_release(darktable.image_cache, image);
-      }
-
-      dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+      dt_undo_end_group(darktable.undo);
     }
-    sqlite3_finalize(stmt);
-    dt_undo_end_group(darktable.undo);
-
-    /* redraw view */
-    /* dt_control_queue_redraw_center() */
-    /* needs to be called in the caller function */
+    dt_collection_hint_message(darktable.collection);
   }
   else
     dt_control_log(_("no images selected to apply rating"));
+  /* redraw view */
+  /* dt_control_queue_redraw_center() */
+  /* needs to be called in the caller function */
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

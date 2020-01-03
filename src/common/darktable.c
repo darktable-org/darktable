@@ -120,7 +120,8 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder}\n");
+  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder\n");
+  printf("      imageio\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -174,8 +175,6 @@ static void strip_semicolons_from_keymap(const char *path)
   char pathtmp[PATH_MAX] = { 0 };
   FILE *fin = g_fopen(path, "rb");
   FILE *fout;
-  int i;
-  int c = '\0';
 
   if(!fin) return;
 
@@ -188,22 +187,30 @@ static void strip_semicolons_from_keymap(const char *path)
     return;
   }
 
+  int c = '\0';
   // First ignoring the first three lines
-  for(i = 0; i < 3; i++)
+  for(int i = 0; i < 3; i++)
   {
     while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
     while(c == '\n' || c == '\r') c = fgetc(fin);
+    ungetc(c, fin);
   }
 
   // Then ignore the first two characters of each line, copying the rest out
   while(c != EOF)
   {
     fseek(fin, 2, SEEK_CUR);
-    do
+    while(c != '\n' && c != '\r' && c != EOF)
     {
       c = fgetc(fin);
-      if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != '\r' && c != EOF);
+      if(c != '\n' && c != '\r' && c != EOF) fputc(c, fout);
+    }
+    while(c == '\n' || c == '\r')
+    {
+      fputc(c, fout);
+      c = fgetc(fin);
+    }
+    ungetc(c, fin);
   }
 
   fclose(fin);
@@ -642,7 +649,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
         else if(!strcmp(argv[k + 1], "ioporder"))
           darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
-        else
+        else if(!strcmp(argv[k + 1], "imageio")) {
+          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
+        } else
           return usage(argv[0]);
         k++;
         argv[k-1] = NULL;

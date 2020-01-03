@@ -203,7 +203,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.get_zoom_mode = _lib_lighttable_get_zoom_mode;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
-  darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 }
 
 void init_key_accels(dt_lib_module_t *self)

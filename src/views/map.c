@@ -909,9 +909,11 @@ static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acc
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
 
@@ -1192,11 +1194,10 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   _view_map_center_on_image(self, imgid);
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
-
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
@@ -1209,15 +1210,13 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 
     _set_image_location(self, geotag->imgid, pos, TRUE);
     g_signal_emit_by_name(lib->map, "changed");
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(geotag->imgid));
   }
 }
 
 static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation)
 {
-  if(set_elevation)
-    dt_image_set_location_and_elevation(imgid, geoloc);
-  else
-    dt_image_set_location(imgid, geoloc);
+  dt_image_set_location(imgid, geoloc, FALSE, FALSE);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
@@ -1240,7 +1239,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
 
   geotag->after.longitude = longitude;
   geotag->after.latitude = latitude;
-  geotag->after.elevation = 0.0;
+  geotag->after.elevation = NAN;
 
   dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t)geotag, _pop_undo, free);
 

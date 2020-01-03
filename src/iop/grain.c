@@ -433,11 +433,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones bias"));
+  
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -446,9 +447,8 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->scale3));
 }
-
-#endif
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
 // this is the modified bernstein
@@ -628,7 +628,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
-  dt_bauhaus_slider_set_format(g->scale1, "%.0fISO");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.0f ISO"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->scale1, _("the grain size (~ISO of the film)"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(scale_callback), self);
