@@ -1720,6 +1720,8 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
       dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
   }
 
+  g_list_free(current_iop_list);
+
   // process some more checks possibly; any sort data that can't be correct?
 
   // print complete history information
@@ -1784,6 +1786,8 @@ int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int cur
   GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version, FALSE);
 
   dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
+
+  g_list_free(iop_order_list);
 
   // finaly reload history
 
