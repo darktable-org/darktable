@@ -974,8 +974,14 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   gchar pattern[PATH_MAX] = { 0 };
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
+
+#ifdef _WIN32
+  static const gchar *glob_patterns[] // Windows only accepts generic wildcards for filename
+      = { "", "_????", NULL };
+#else
   static const gchar *glob_patterns[]
       = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+#endif
 
   const gchar **glob_pattern = glob_patterns;
   GList *files = NULL;
@@ -999,8 +1005,39 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       do
       {
         char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        files = g_list_append(files, g_build_filename(imgpath, file, NULL));
-        g_free(file);
+
+				// Windows only accepts generic wildcards for filename
+				// therefore we must filter out filenames that do not match the patterns
+				// valid filenames must have from 2 to 4 decimal digits between "-" and "."
+				// or no "_" for the primary version
+				bool valid_filename = true;
+
+				gchar *c4 = file + strlen(file);
+				while(*c4 != '.') c4--;
+				c4--;
+				while(*c4 != '.') c4--;
+				gchar *c3 = c4;
+				bool underscore_found = false; 
+				while(!underscore_found && c3 > file) 
+				{
+					c3--;
+					underscore_found = (*c3 == '_');
+				}
+				if (underscore_found)
+				{
+					c3++;
+					c4--;
+					valid_filename = (c3 != c4);
+			
+					while ((c3 <= c4) && valid_filename)
+					{
+						if (!( *c3 >= '0' && *c3 <= '9' )) valid_filename = false;
+						c3++;
+					}
+				
+				}
+				if (valid_filename) files = g_list_append(files, g_build_filename(imgpath, file, NULL));
+				g_free(file);
       }
       while(FindNextFileW(handle, &data));
     }
