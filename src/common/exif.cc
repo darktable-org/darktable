@@ -147,6 +147,7 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
     for (int i = 0; pl[i].name_ != 0; ++i)
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
     }
@@ -166,6 +167,11 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
     }
 #endif
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      *taglist = g_list_prepend(*taglist, tag);
+    }
+>>>>>>> add the code = in metadata export formula
   }
 }
 
@@ -193,13 +199,17 @@ GList *dt_get_exiv2_taglist()
           while(tagInfo->tag_ != 0xFFFF)
           {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //            std::printf("Exif.%s.%s type %s\n", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+>>>>>>> add the code = in metadata export formula
             char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
             taglist = g_list_prepend(taglist, tag);
             tagInfo++;
           }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 #if 0
@@ -213,10 +223,13 @@ GList *dt_get_exiv2_taglist()
           }
 #endif
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+>>>>>>> add the code = in metadata export formula
         }
       groupList++;
       }
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 #if 0
@@ -232,14 +245,19 @@ GList *dt_get_exiv2_taglist()
     }
 #endif
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+>>>>>>> add the code = in metadata export formula
 
     const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //      std::printf("Iptc.Envelope.%s type %s\n", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+>>>>>>> add the code = in metadata export formula
       char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcEnvelopeList++;
@@ -249,9 +267,12 @@ GList *dt_get_exiv2_taglist()
     while(iptcApplication2List->number_ != 0xFFFF)
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //      std::printf("Iptc.Application2.%s type %s\n", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+>>>>>>> add the code = in metadata export formula
       char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
       taglist = g_list_prepend(taglist, tag);
       iptcApplication2List++;
@@ -260,6 +281,9 @@ GList *dt_get_exiv2_taglist()
     _get_xmp_tags("dc", &taglist);
     _get_xmp_tags("xmp", &taglist);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add the code = in metadata export formula
     _get_xmp_tags("xmpRights", &taglist);
     _get_xmp_tags("xmpMM", &taglist);
     _get_xmp_tags("xmpBJ", &taglist);
@@ -268,6 +292,7 @@ GList *dt_get_exiv2_taglist()
     _get_xmp_tags("pdf", &taglist);
     _get_xmp_tags("photoshop", &taglist);
     _get_xmp_tags("crs", &taglist);
+<<<<<<< HEAD
     _get_xmp_tags("tiff", &taglist);
     _get_xmp_tags("exif", &taglist);
     _get_xmp_tags("exifEX", &taglist);
@@ -296,9 +321,30 @@ GList *dt_get_exiv2_taglist()
     std::string s(e.what());
     std::cerr << "[exiv2 taglist] " << s << std::endl;
 =======
+=======
+>>>>>>> add the code = in metadata export formula
     _get_xmp_tags("tiff", &taglist);
     _get_xmp_tags("exif", &taglist);
     _get_xmp_tags("exifEX", &taglist);
+    _get_xmp_tags("aux", &taglist);
+    _get_xmp_tags("iptc", &taglist);
+    _get_xmp_tags("iptcExt", &taglist);
+    _get_xmp_tags("plus", &taglist);
+    _get_xmp_tags("mwg-rs", &taglist);
+    _get_xmp_tags("mwg-kw", &taglist);
+    _get_xmp_tags("dwc", &taglist);
+    _get_xmp_tags("dcterms", &taglist);
+    _get_xmp_tags("digiKam", &taglist);
+    _get_xmp_tags("kipi", &taglist);
+    _get_xmp_tags("GPano", &taglist);
+    _get_xmp_tags("lr", &taglist);
+    _get_xmp_tags("MP", &taglist);
+    _get_xmp_tags("MPRI", &taglist);
+    _get_xmp_tags("MPReg", &taglist);
+    _get_xmp_tags("acdsee", &taglist);
+    _get_xmp_tags("mediapro", &taglist);
+    _get_xmp_tags("expressionmedia", &taglist);
+    _get_xmp_tags("MicrosoftPhoto", &taglist);
   }
   catch (Exiv2::AnyError& e)
   {
