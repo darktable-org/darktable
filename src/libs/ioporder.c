@@ -282,8 +282,243 @@ void gui_reset (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->widget, DT_IOP_ORDER_RECOMMENDED);
 }
 
+void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, int *size)
+{
+  // compute size of all modules
+  *size = sizeof(int32_t);
+
+  int k=0;
+  while(mod[k].operation[0])
+  {
+    *size += strlen(mod[k].operation) + sizeof(int32_t) + sizeof(double);
+    k++;
+  }
+
+  // allocate the parameter buffer
+  char *params = (char *)malloc(*size);
+
+  // set set preset iop-order version
+  int pos = 0;
+
+  memcpy(params+pos, &version, sizeof(int32_t));
+  pos += sizeof(int32_t);
+
+  k=0;
+  while(mod[k].operation[0])
+  {
+    // write the iop-order
+    memcpy(params+pos, &(mod[k].iop_order), sizeof(double));
+    pos += sizeof(double);
+
+    // write the len of the module name
+    const int32_t len = strlen(mod[k].operation);
+    memcpy(params+pos, &len, sizeof(int32_t));
+    pos += sizeof(int32_t);
+
+    // write the module name
+    memcpy(params+pos, mod[k].operation, len);
+    pos += len;
+
+    k++;
+  }
+
+  return params;
+}
+
 void init_presets(dt_lib_module_t *self)
 {
+  int size = 0;
+  char *params = NULL;
+
+  // ------------------------------------------------- IOP Order V2
+
+  const dt_iop_order_entry_t v2[] = {
+    {  1.0, "rawprepare"},
+    {  2.0, "invert"},
+    {  3.0, "temperature"},
+    {  4.0, "highlights"},
+    {  5.0, "cacorrect"},
+    {  6.0, "hotpixels"},
+    {  7.0, "rawdenoise"},
+    {  8.0, "demosaic"},
+    {  9.0, "mask_manager"},
+    { 10.0, "denoiseprofile"},
+    { 11.0, "tonemap"},
+    { 12.0, "exposure"},
+    { 13.0, "spots"},
+    { 14.0, "retouch"},
+    { 15.0, "lens"},
+    { 16.0, "ashift"},
+    { 17.0, "liquify"},
+    { 18.0, "rotatepixels"},
+    { 19.0, "scalepixels"},
+    { 20.0, "flip"},
+    { 21.0, "clipping"},
+    { 21.5, "toneequal"},
+    { 22.0, "graduatednd"},
+    { 23.0, "basecurve"},
+    { 24.0, "bilateral"},
+    { 25.0, "profile_gamma"},
+    { 26.0, "hazeremoval"},
+    { 27.0, "colorin"},
+    { 27.5, "basicadj"},
+    { 28.0, "colorreconstruct"},
+    { 29.0, "colorchecker"},
+    { 30.0, "defringe"},
+    { 31.0, "equalizer"},
+    { 32.0, "vibrance"},
+    { 33.0, "colorbalance"},
+    { 34.0, "colorize"},
+    { 35.0, "colortransfer"},
+    { 36.0, "colormapping"},
+    { 37.0, "bloom"},
+    { 38.0, "nlmeans"},
+    { 39.0, "globaltonemap"},
+    { 40.0, "shadhi"},
+    { 41.0, "atrous"},
+    { 42.0, "bilat"},
+    { 43.0, "colorzones"},
+    { 44.0, "lowlight"},
+    { 45.0, "monochrome"},
+    { 46.0, "filmic"},
+    { 46.5, "filmicrgb"},
+    { 47.0, "colisa"},
+    { 48.0, "zonesystem"},
+    { 49.0, "tonecurve"},
+    { 50.0, "levels"},
+    { 50.2, "rgblevels"},
+    { 50.5, "rgbcurve"},
+    { 51.0, "relight"},
+    { 52.0, "colorcorrection"},
+    { 53.0, "sharpen"},
+    { 54.0, "lowpass"},
+    { 55.0, "highpass"},
+    { 56.0, "grain"},
+    { 56.5, "lut3d"},
+    { 57.0, "colorcontrast"},
+    { 58.0, "colorout"},
+    { 59.0, "channelmixer"},
+    { 60.0, "soften"},
+    { 61.0, "vignette"},
+    { 62.0, "splittoning"},
+    { 63.0, "velvia"},
+    { 64.0, "clahe"},
+    { 65.0, "finalscale"},
+    { 66.0, "overexposed"},
+    { 67.0, "rawoverexposed"},
+    { 67.5, "dither"},
+    { 68.0, "borders"},
+    { 69.0, "watermark"},
+    { 71.0, "gamma"},
+    {  0.0, "" }
+  };
+
+  params = _serialize_preset(v2, 1002, &size);
+  dt_lib_presets_add("legPS", self->plugin_name, self->version(), (const char *)params, size);
+  free(params);
+
+  // ------------------------------------------------- IOP Order V5
+
+  const dt_iop_order_entry_t v5[] = {
+    {  1.0, "rawprepare"},
+    {  2.0, "invert"},
+    {  3.0, "temperature"},
+    {  4.0, "highlights"},
+    {  5.0, "cacorrect"},
+    {  6.0, "hotpixels"},
+    {  7.0, "rawdenoise"},
+    {  8.0, "demosaic"},
+    {  9.0, "denoiseprofile"},
+    { 10.0, "bilateral"},
+    { 11.0, "rotatepixels"},
+    { 12.0, "scalepixels"},
+    { 13.0, "lens"},
+    { 14.0, "hazeremoval"},
+    { 15.0, "ashift"},
+    { 16.0, "flip"},
+    { 17.0, "clipping"},
+    { 18.0, "liquify"},
+    { 19.0, "spots"},
+    { 20.0, "retouch"},
+    { 21.0, "exposure"},
+    { 22.0, "mask_manager"},
+    { 23.0, "tonemap"},
+    { 24.0, "toneequal"},
+    { 25.0, "graduatednd"},
+    { 26.0, "profile_gamma"},
+    { 27.0, "equalizer"},
+    { 28.0, "colorin"},
+
+    { 29.0, "nlmeans"},         // signal processing (denoising)
+                                //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+    { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
+                                //    -> improve colour calibration of colorin and reproductibility
+                                //    of further edits (styles etc.)
+    { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                //    in order for chromaticity to be meaningful,
+    { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+    { 33.0, "lowpass"},         // same
+    { 34.0, "highpass"},        // same
+    { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
+    { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
+                                //    so better move it after frequential ops that need L2 Hilbert spaces
+                                //    of square summable functions
+    { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
+                                //    colour exchange space, hence after colorin and colorcheckr,
+                                //    but apply after frequential ops in case it does non-linear witchcraft,
+                                //    just to be safe
+    { 59.0, "colormapping"},    // same
+    { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                //    Really versatile yet under-used module, doing linear ops,
+                                //    very good in scene-referred workflow
+    { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
+    { 40.0, "colorbalance"},    // scene-referred color manipulation
+    { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
+    { 42.0, "rgblevels"},       // same
+    { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
+                                //    on camera JPEG default look
+    { 44.0, "filmic"},          // same, but different (parametric) approach
+    { 45.0, "filmicrgb"},       // same, upgraded
+    { 46.0, "colisa"},          // edit contrast while damaging colour
+    { 47.0, "tonecurve"},       // same
+    { 48.0, "levels"},          // same
+    { 49.0, "shadhi"},          // same
+    { 50.0, "zonesystem"},      // same
+    { 51.0, "globaltonemap"},   // same
+    { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
+    { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
+                                //    to it with tonemapping
+    { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
+                                // try to recover them - global adjustment of white balance for shadows and highlights
+    { 55.0, "colorcontrast"},   // adjust chrominance globally
+    { 56.0, "velvia"},          // same
+    { 57.0, "vibrance"},        // same, but more subtle
+    { 58.0, "colorzones"},      // same, but locally
+    { 60.0, "bloom"},           // creative module
+    { 61.0, "colorize"},        // creative module
+    { 62.0, "lowlight"},        // creative module
+    { 63.0, "monochrome"},      // creative module
+    { 64.0, "grain"},           // creative module
+    { 65.0, "soften"},          // creative module
+    { 66.0, "splittoning"},     // creative module
+    { 67.0, "vignette"},        // creative module
+    { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+    { 69.0, "colorout"},
+    { 70.0, "clahe"},
+    { 71.0, "finalscale"},
+    { 72.0, "overexposed"},
+    { 73.0, "rawoverexposed"},
+    { 74.0, "dither"},
+    { 75.0, "borders"},
+    { 76.0, "watermark"},
+    { 77.0, "gamma"},
+    {  0.0, "" }
+  };
+
+  params = _serialize_preset(v5, 1005, &size);
+  dt_lib_presets_add("recPS", self->plugin_name, self->version(), (const char *)params, size);
+  free(params);
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
