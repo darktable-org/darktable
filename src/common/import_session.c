@@ -250,7 +250,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
-  gchar *result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+  gchar *result_fname = dt_variables_expand(self->vp, pattern, FALSE);
   previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
