@@ -34,6 +34,7 @@
 #include "common/undo.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
+#include "win/filepath.h"
 
 #include "gui/gtk.h"
 
@@ -957,8 +958,14 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       gchar pattern[PATH_MAX] = { 0 };
 
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
-      static const gchar *glob_patterns[]
-          = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+
+#ifdef _WIN32
+      // Windows only accepts generic wildcards for filename
+			static const gchar *glob_patterns[]	= { "", "_????", NULL };
+#else
+			static const gchar *glob_patterns[]
+					= { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+#endif
 
       const gchar **glob_pattern = glob_patterns;
       GList *files = NULL;
@@ -983,7 +990,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
           do
           {
             char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-            files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
+						if (win_valid_duplicate_filename(xmp_filename)) 
+                files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
             g_free(xmp_filename);
           }
           while(FindNextFileW(handle, &data));
