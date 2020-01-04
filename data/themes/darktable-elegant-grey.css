@@ -26,10 +26,10 @@
 @define-color selected_bg_color @grey_55; /* legacy stuff */
 @define-color border_color @grey_40; /* border, when used */
 @define-color bg_color @grey_45; /* general background */
-@define-color fg_color @grey_95; /* general text */
+@define-color fg_color @grey_90; /* general text */
 @define-color base_color @fg_color; /* legacy stuff */
 @define-color text_color @grey_35; /* same */
-@define-color disabled_fg_color @grey_70; /* disabled controls */
+@define-color disabled_fg_color @grey_65; /* disabled controls */
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_70;
@@ -55,7 +55,7 @@
 /* GTK Buttons and tabs */
 @define-color button_border @grey_60;
 @define-color button_bg @grey_55;
-@define-color button_fg @grey_95;
+@define-color button_fg @grey_90;
 @define-color button_checked_bg @grey_75;
 @define-color button_checked_fg @grey_100;
 @define-color button_hover_bg @grey_70;
@@ -99,7 +99,7 @@
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
-@define-color graph_border @grey_35;
+@define-color graph_border @grey_15;
 @define-color graph_fg @grey_100;
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_35;
@@ -121,11 +121,9 @@ menuitem arrow
 #history-switch:disabled
 {
     color: shade(@plugin_label_color, .9);
-    background-color: transparent;
 }
 
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.8);
-  background-color: transparent;
 }
