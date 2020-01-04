@@ -96,7 +96,7 @@
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
-@define-color graph_border @grey_35;
+@define-color graph_border @grey_15;
 @define-color graph_fg @grey_100;
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_35;
