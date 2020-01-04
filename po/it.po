@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-12-22 15:11+0100\n"
+"PO-Revision-Date: 2020-01-04 18:41+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -12467,7 +12467,7 @@ msgstr "velvia"
 #: ../src/iop/velvia.c:104 ../src/iop/vibrance.c:85
 msgctxt "accel"
 msgid "vibrance"
-msgstr "Vibranza"
+msgstr "vibranza"
 
 #: ../src/iop/velvia.c:105
 msgctxt "accel"
@@ -14037,7 +14037,7 @@ msgstr "Il file ha un formato sconosciuto!"
 
 #: ../src/libs/import.c:866
 msgid "import film"
-msgstr "Importa pellicola"
+msgstr "Importa cartella"
 
 #. add import single image buttons
 #: ../src/libs/import.c:982
