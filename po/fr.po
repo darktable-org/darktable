@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-02 11:18+0100\n"
-"PO-Revision-Date: 2020-01-02 11:25+0100\n"
+"POT-Creation-Date: 2020-01-04 18:48+0100\n"
+"PO-Revision-Date: 2020-01-04 18:51+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1126,8 +1126,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
-#: ../build/src/preferences_gen.h:3909 ../src/control/jobs/control_jobs.c:1558
-#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/preferences.c:1617
+#: ../build/src/preferences_gen.h:3909 ../src/control/jobs/control_jobs.c:1566
+#: ../src/control/jobs/control_jobs.c:1626 ../src/gui/preferences.c:1617
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
@@ -1223,8 +1223,8 @@ msgstr "%s/%s: %s"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1558
-#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/hist_dialog.c:171
+#: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1566
+#: ../src/control/jobs/control_jobs.c:1626 ../src/gui/hist_dialog.c:171
 #: ../src/gui/preferences.c:1157 ../src/gui/preferences.c:1183
 #: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1388
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
@@ -1408,7 +1408,7 @@ msgid "export profile"
 msgstr "profil d'exportation"
 
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
-#: ../src/views/darkroom.c:2139
+#: ../src/views/darkroom.c:2138
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
@@ -1563,31 +1563,31 @@ msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
 
-#: ../src/common/darktable.c:231
+#: ../src/common/darktable.c:237
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:248
+#: ../src/common/darktable.c:254
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:271
+#: ../src/common/darktable.c:277
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:284 ../src/libs/import.c:825
+#: ../src/common/darktable.c:290 ../src/libs/import.c:825
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:805
+#: ../src/common/darktable.c:811
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:806
+#: ../src/common/darktable.c:812
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1601,7 +1601,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:810 ../src/common/variables.c:380
+#: ../src/common/darktable.c:816 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2102 ../src/iop/filmicrgb.c:1574
 #: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
@@ -1609,7 +1609,7 @@ msgstr ""
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:810 ../src/common/variables.c:378
+#: ../src/common/darktable.c:816 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2103 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
@@ -1786,56 +1786,56 @@ msgstr ""
 "<h1>Merci,</h1><p>tout devrait s'être bien passé, vous pouvez <b>fermer</b> "
 "votre navigateur maintenant et <b>retourner</b> dans darktable.</p>"
 
-#: ../src/common/image.c:186
+#: ../src/common/image.c:187
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1559
+#: ../src/common/image.c:1566
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1565
+#: ../src/common/image.c:1572
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1572
+#: ../src/common/image.c:1579
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1588
+#: ../src/common/image.c:1595
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s », le fichier n'existe pas"
 
-#: ../src/common/image.c:1598
+#: ../src/common/image.c:1605
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s », le fichier existe"
 
-#: ../src/common/image.c:1602
+#: ../src/common/image.c:1609
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1859
+#: ../src/common/image.c:1866
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1873
+#: ../src/common/image.c:1880
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1939 ../src/control/jobs/control_jobs.c:659
+#: ../src/common/image.c:1946 ../src/control/jobs/control_jobs.c:660
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:2108
+#: ../src/common/image.c:2115
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1954,21 +1954,21 @@ msgstr "legal"
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
-#: ../src/common/ratings.c:133
+#: ../src/common/ratings.c:142
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "rejet de %d image"
 msgstr[1] "rejet de %d images"
 
-#: ../src/common/ratings.c:135
+#: ../src/common/ratings.c:144
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "application de %d étoile(s) à %d image"
 msgstr[1] "application de %d étoile(s) à %d images"
 
-#: ../src/common/ratings.c:150
+#: ../src/common/ratings.c:160
 msgid "no images selected to apply rating"
 msgstr "aucune image sélectionnée pour appliquer les étoiles"
 
@@ -2113,192 +2113,192 @@ msgstr[1] "importation de %d images depuis l'appareil photo"
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
-#: ../src/control/jobs/control_jobs.c:142
+#: ../src/control/jobs/control_jobs.c:143
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "échec de la création du dossier de destination, abandon du déplacement..."
 
-#: ../src/control/jobs/control_jobs.c:340
+#: ../src/control/jobs/control_jobs.c:341
 msgid "exposure bracketing only works on raw images."
 msgstr "bracketing d'exposition marche uniquement sur les images raw."
 
-#: ../src/control/jobs/control_jobs.c:347
+#: ../src/control/jobs/control_jobs.c:348
 msgid "images have to be of same size and orientation!"
 msgstr "les images doivent avoir les mêmes taille et orientation !"
 
-#: ../src/control/jobs/control_jobs.c:442
+#: ../src/control/jobs/control_jobs.c:443
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion  de %d images"
 
-#: ../src/control/jobs/control_jobs.c:504
+#: ../src/control/jobs/control_jobs.c:505
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR « %s » écrite"
 
-#: ../src/control/jobs/control_jobs.c:530
+#: ../src/control/jobs/control_jobs.c:531
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:560
+#: ../src/control/jobs/control_jobs.c:561
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:635
+#: ../src/control/jobs/control_jobs.c:636
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "enlèvement de %d image"
 msgstr[1] "enlèvement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:737
+#: ../src/control/jobs/control_jobs.c:738
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
-#: ../src/control/jobs/control_jobs.c:738
+#: ../src/control/jobs/control_jobs.c:739
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "impossible de supprimer du disque %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:748
+#: ../src/control/jobs/control_jobs.c:749
 msgid "physically delete"
 msgstr "supprime du disque définitivement"
 
-#: ../src/control/jobs/control_jobs.c:749
+#: ../src/control/jobs/control_jobs.c:750
 msgid "physically delete all files"
 msgstr "supprime physiquement tous les fichiers"
 
-#: ../src/control/jobs/control_jobs.c:751
+#: ../src/control/jobs/control_jobs.c:752
 msgid "only remove from the collection"
 msgstr "enlève uniquement de la collection"
 
-#: ../src/control/jobs/control_jobs.c:752
+#: ../src/control/jobs/control_jobs.c:753
 msgid "skip to next file"
 msgstr "passe au fichier suivant"
 
-#: ../src/control/jobs/control_jobs.c:753
+#: ../src/control/jobs/control_jobs.c:754
 msgid "stop process"
 msgstr "arrête l'effacement"
 
-#: ../src/control/jobs/control_jobs.c:758
+#: ../src/control/jobs/control_jobs.c:759
 msgid "trashing error"
 msgstr "erreur de la poubelle"
 
-#: ../src/control/jobs/control_jobs.c:759
+#: ../src/control/jobs/control_jobs.c:760
 msgid "deletion error"
 msgstr "erreur de suppression"
 
-#: ../src/control/jobs/control_jobs.c:902
+#: ../src/control/jobs/control_jobs.c:903
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "mise à la poubelle de %d image"
 msgstr[1] "mise à la poubelle de %d images"
 
-#: ../src/control/jobs/control_jobs.c:904
+#: ../src/control/jobs/control_jobs.c:905
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1077
+#: ../src/control/jobs/control_jobs.c:1085
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:1142
+#: ../src/control/jobs/control_jobs.c:1150
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1157
+#: ../src/control/jobs/control_jobs.c:1165
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1158
+#: ../src/control/jobs/control_jobs.c:1166
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1163
+#: ../src/control/jobs/control_jobs.c:1171
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1164
+#: ../src/control/jobs/control_jobs.c:1172
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1180
+#: ../src/control/jobs/control_jobs.c:1188
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1183
+#: ../src/control/jobs/control_jobs.c:1191
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "suppression de la copie locale de %d image"
 msgstr[1] "suppression des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1222
+#: ../src/control/jobs/control_jobs.c:1230
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "mise à jour des informations de %d image"
 msgstr[1] "mise à jour des informations de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1288
+#: ../src/control/jobs/control_jobs.c:1296
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
 
-#: ../src/control/jobs/control_jobs.c:1320
+#: ../src/control/jobs/control_jobs.c:1328
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1337 ../src/views/darkroom.c:653
+#: ../src/control/jobs/control_jobs.c:1345 ../src/views/darkroom.c:653
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1427
+#: ../src/control/jobs/control_jobs.c:1435
 msgid "merge hdr image"
 msgstr "fusion hdr d'images"
 
-#: ../src/control/jobs/control_jobs.c:1441
+#: ../src/control/jobs/control_jobs.c:1449
 msgid "duplicate images"
 msgstr "cloner les images"
 
-#: ../src/control/jobs/control_jobs.c:1448
+#: ../src/control/jobs/control_jobs.c:1456
 msgid "flip images"
 msgstr "retourne les images"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1455
+#: ../src/control/jobs/control_jobs.c:1463
 msgid "remove images"
 msgstr "enlever les images"
 
-#: ../src/control/jobs/control_jobs.c:1477
+#: ../src/control/jobs/control_jobs.c:1485
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -2309,16 +2309,16 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images "
 "sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1484
+#: ../src/control/jobs/control_jobs.c:1492
 msgid "remove images?"
 msgstr "enlever les images ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1500
+#: ../src/control/jobs/control_jobs.c:1508
 msgid "delete images"
 msgstr "supprimer les images"
 
-#: ../src/control/jobs/control_jobs.c:1524
+#: ../src/control/jobs/control_jobs.c:1532
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -2328,7 +2328,7 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
 "poubelle  ?"
 
-#: ../src/control/jobs/control_jobs.c:1526
+#: ../src/control/jobs/control_jobs.c:1534
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -2340,24 +2340,24 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
 "sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1533
+#: ../src/control/jobs/control_jobs.c:1541
 msgid "trash images?"
 msgstr "mise à la poubelle?"
 
-#: ../src/control/jobs/control_jobs.c:1533
+#: ../src/control/jobs/control_jobs.c:1541
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1554
+#: ../src/control/jobs/control_jobs.c:1562
 msgid "move images"
 msgstr "déplacer les images"
 
-#: ../src/control/jobs/control_jobs.c:1559
-#: ../src/control/jobs/control_jobs.c:1619
+#: ../src/control/jobs/control_jobs.c:1567
+#: ../src/control/jobs/control_jobs.c:1627
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1580
+#: ../src/control/jobs/control_jobs.c:1588
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -2372,17 +2372,17 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1589
+#: ../src/control/jobs/control_jobs.c:1597
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l'image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1614
+#: ../src/control/jobs/control_jobs.c:1622
 msgid "copy images"
 msgstr "copier les images"
 
-#: ../src/control/jobs/control_jobs.c:1640
+#: ../src/control/jobs/control_jobs.c:1648
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -2392,51 +2392,51 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
 "vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1646
+#: ../src/control/jobs/control_jobs.c:1654
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1666
-#: ../src/control/jobs/control_jobs.c:1673
+#: ../src/control/jobs/control_jobs.c:1674
+#: ../src/control/jobs/control_jobs.c:1681
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1680 ../src/libs/image.c:528
+#: ../src/control/jobs/control_jobs.c:1688 ../src/libs/image.c:528
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
-#: ../src/control/jobs/control_jobs.c:1743
+#: ../src/control/jobs/control_jobs.c:1751
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1758
+#: ../src/control/jobs/control_jobs.c:1766
 msgid "export images"
 msgstr "exporter les images"
 
-#: ../src/control/jobs/control_jobs.c:1783
+#: ../src/control/jobs/control_jobs.c:1791
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1798
+#: ../src/control/jobs/control_jobs.c:1806
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1837 ../src/libs/geotagging.c:781
+#: ../src/control/jobs/control_jobs.c:1845 ../src/libs/geotagging.c:781
 msgid "time offset"
 msgstr "décalage"
 
-#: ../src/control/jobs/control_jobs.c:1861 ../src/libs/copy_history.c:366
+#: ../src/control/jobs/control_jobs.c:1869 ../src/libs/copy_history.c:366
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
@@ -3510,40 +3510,49 @@ msgstr "fluorescent (blanc/jour)"
 msgid "high temp. mercury-vapor fluorescent"
 msgstr "fluorescent (mercure, haute T)"
 
+#. On Some Panasonic
 #: ../src/external/wb_presets.c:68
+msgid "D55"
+msgstr "D55"
+
+#: ../src/external/wb_presets.c:69
+msgid "ISO Studio Tungsten"
+msgstr "ISO tungstène studio"
+
+#: ../src/external/wb_presets.c:71
 msgid "flash"
 msgstr "flash"
 
 #. For Olympus with no real "Flash" preset:
-#: ../src/external/wb_presets.c:70
+#: ../src/external/wb_presets.c:73
 msgid "flash (auto mode)"
 msgstr "flash (mode auto)"
 
-#: ../src/external/wb_presets.c:71
+#: ../src/external/wb_presets.c:74
 msgid "evening sun"
 msgstr "lumière du soir"
 
-#: ../src/external/wb_presets.c:72
+#: ../src/external/wb_presets.c:75
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:2036
+#: ../src/external/wb_presets.c:76 ../src/views/darkroom.c:2035
 msgid "black & white"
 msgstr "noir et blanc"
 
-#: ../src/external/wb_presets.c:75
+#: ../src/external/wb_presets.c:78
 msgid "spot WB"
 msgstr "BdB spot"
 
-#: ../src/external/wb_presets.c:76
+#: ../src/external/wb_presets.c:79
 msgid "manual WB"
 msgstr "BdB manuelle"
 
-#: ../src/external/wb_presets.c:77
+#: ../src/external/wb_presets.c:80
 msgid "camera WB"
 msgstr "BdB du boîtier"
 
-#: ../src/external/wb_presets.c:78
+#: ../src/external/wb_presets.c:81
 msgid "auto WB"
 msgstr "BdB automatique"
 
@@ -5760,7 +5769,7 @@ msgstr "contrasté"
 #: ../src/iop/colorzones.c:2364 ../src/iop/denoiseprofile.c:3762
 #: ../src/iop/rawdenoise.c:837
 msgid "smooth"
-msgstr "flou"
+msgstr "doux"
 
 #: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3767
 #: ../src/iop/rawdenoise.c:842
@@ -6224,7 +6233,7 @@ msgstr "étendue tons-moyens"
 #: ../src/iop/profile_gamma.c:861 ../src/iop/rgbcurve.c:1539
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/image.c:520
-#: ../src/libs/print_settings.c:1510 ../src/views/darkroom.c:1971
+#: ../src/libs/print_settings.c:1510 ../src/views/darkroom.c:1970
 msgid "mode"
 msgstr "mode"
 
@@ -7608,30 +7617,30 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:2114 ../src/views/darkroom.c:2122
-#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
+#: ../src/views/darkroom.c:2113 ../src/views/darkroom.c:2121
+#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:2115 ../src/views/darkroom.c:2123
-#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
+#: ../src/views/darkroom.c:2114 ../src/views/darkroom.c:2122
+#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:2116 ../src/views/darkroom.c:2124
-#: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
+#: ../src/views/darkroom.c:2115 ../src/views/darkroom.c:2123
+#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:2117 ../src/views/darkroom.c:2125
-#: ../src/views/lighttable.c:4909 ../src/views/lighttable.c:4917
+#: ../src/views/darkroom.c:2116 ../src/views/darkroom.c:2124
+#: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -8513,7 +8522,7 @@ msgstr ""
 "pourcentage de valeurs hautes tronquées, utiliser la pipette pour définir"
 
 #: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1102
-#: ../src/views/darkroom.c:1999
+#: ../src/views/darkroom.c:1998
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -12580,7 +12589,7 @@ msgstr "modification de l'exportation des métadonnées"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3319
+#: ../src/views/darkroom.c:3318
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -12866,7 +12875,7 @@ msgstr ""
 "glisser pour changer l'exposition,\n"
 "le double-clic ré-initialise"
 
-#: ../src/libs/histogram.c:598
+#: ../src/libs/histogram.c:597
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
@@ -13985,39 +13994,39 @@ msgstr "groupe: modules techniques"
 msgid "navigation"
 msgstr "navigation"
 
-#: ../src/libs/navigation.c:504
+#: ../src/libs/navigation.c:503
 msgid "small"
 msgstr "petit"
 
-#: ../src/libs/navigation.c:508
+#: ../src/libs/navigation.c:507
 msgid "fit to screen"
 msgstr "ajuster à l'écran"
 
-#: ../src/libs/navigation.c:512
+#: ../src/libs/navigation.c:511
 msgid "50%"
 msgstr "50%"
 
-#: ../src/libs/navigation.c:516
+#: ../src/libs/navigation.c:515
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:520
+#: ../src/libs/navigation.c:519
 msgid "200%"
 msgstr "200%"
 
-#: ../src/libs/navigation.c:524
+#: ../src/libs/navigation.c:523
 msgid "400%"
 msgstr "400%"
 
-#: ../src/libs/navigation.c:528
+#: ../src/libs/navigation.c:527
 msgid "800%"
 msgstr "800%"
 
-#: ../src/libs/navigation.c:532
+#: ../src/libs/navigation.c:531
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/navigation.c:569
+#: ../src/libs/navigation.c:568
 msgctxt "accel"
 msgid "hide navigation thumbnail"
 msgstr "activer/désactiver la miniature de navigation"
@@ -15169,11 +15178,11 @@ msgstr "accès rapide à vos styles"
 msgid "display a second darkroom image window"
 msgstr "activer l'affichage secondaire de la chambre noire"
 
-#: ../src/views/darkroom.c:1938
+#: ../src/views/darkroom.c:1937
 msgid "toggle ISO 12646 colour assessment conditions"
 msgstr "activer/désactiver les conditions d'évaluation des couleurs ISO 12646"
 
-#: ../src/views/darkroom.c:1948
+#: ../src/views/darkroom.c:1947
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -15181,47 +15190,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1972
+#: ../src/views/darkroom.c:1971
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1973
+#: ../src/views/darkroom.c:1972
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1974
+#: ../src/views/darkroom.c:1973
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1976
+#: ../src/views/darkroom.c:1975
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:2035
+#: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:2034
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:1984
+#: ../src/views/darkroom.c:1983
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:1985
+#: ../src/views/darkroom.c:1984
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:1986
+#: ../src/views/darkroom.c:1985
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:1987
+#: ../src/views/darkroom.c:1986
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:1991
+#: ../src/views/darkroom.c:1990
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -15229,7 +15238,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:2001
+#: ../src/views/darkroom.c:2000
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -15239,7 +15248,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:2012
+#: ../src/views/darkroom.c:2011
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -15247,35 +15256,35 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:2037
+#: ../src/views/darkroom.c:2036
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:2038
+#: ../src/views/darkroom.c:2037
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:2040
+#: ../src/views/darkroom.c:2039
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:2049
+#: ../src/views/darkroom.c:2048
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:2050
+#: ../src/views/darkroom.c:2049
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:2058
+#: ../src/views/darkroom.c:2057
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:2059
+#: ../src/views/darkroom.c:2058
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
-#: ../src/views/darkroom.c:2070
+#: ../src/views/darkroom.c:2069
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -15283,7 +15292,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2084
+#: ../src/views/darkroom.c:2083
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -15291,195 +15300,195 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2112 ../src/views/lighttable.c:4904
+#: ../src/views/darkroom.c:2111 ../src/views/lighttable.c:4903
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:2120 ../src/views/lighttable.c:4912
+#: ../src/views/darkroom.c:2119 ../src/views/lighttable.c:4911
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2140 ../src/views/lighttable.c:4920
+#: ../src/views/darkroom.c:2139 ../src/views/lighttable.c:4919
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2141 ../src/views/lighttable.c:4924
+#: ../src/views/darkroom.c:2140 ../src/views/lighttable.c:4923
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
-#: ../src/views/darkroom.c:2142
+#: ../src/views/darkroom.c:2141
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2196 ../src/views/lighttable.c:4954
+#: ../src/views/darkroom.c:2195 ../src/views/lighttable.c:4953
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2199 ../src/views/lighttable.c:4957
+#: ../src/views/darkroom.c:2198 ../src/views/lighttable.c:4956
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
-#: ../src/views/darkroom.c:2202
+#: ../src/views/darkroom.c:2201
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2205
+#: ../src/views/darkroom.c:2204
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "profils ICC pour l'histogramme et la pipette dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3311 ../src/views/map.c:892 ../src/views/print.c:330
+#: ../src/views/darkroom.c:3310 ../src/views/map.c:892 ../src/views/print.c:330
 #: ../src/views/tethering.c:397
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3314
+#: ../src/views/darkroom.c:3313
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3315
+#: ../src/views/darkroom.c:3314
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3316
+#: ../src/views/darkroom.c:3315
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3322
+#: ../src/views/darkroom.c:3321
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3323
+#: ../src/views/darkroom.c:3322
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3326
+#: ../src/views/darkroom.c:3325
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3329
+#: ../src/views/darkroom.c:3328
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3332
+#: ../src/views/darkroom.c:3331
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3335
+#: ../src/views/darkroom.c:3334
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3338
+#: ../src/views/darkroom.c:3337
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3339
+#: ../src/views/darkroom.c:3338
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3342
+#: ../src/views/darkroom.c:3341
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3343
+#: ../src/views/darkroom.c:3342
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3346
+#: ../src/views/darkroom.c:3345
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3347
+#: ../src/views/darkroom.c:3346
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3350
+#: ../src/views/darkroom.c:3349
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3353 ../src/views/lighttable.c:4448
+#: ../src/views/darkroom.c:3352 ../src/views/lighttable.c:4448
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3354 ../src/views/lighttable.c:4449
+#: ../src/views/darkroom.c:3353 ../src/views/lighttable.c:4449
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3357
+#: ../src/views/darkroom.c:3356
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3360
+#: ../src/views/darkroom.c:3359
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
-#: ../src/views/darkroom.c:3459
+#: ../src/views/darkroom.c:3458
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3464 ../src/views/lighttable.c:4595
+#: ../src/views/darkroom.c:3463 ../src/views/lighttable.c:4595
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:3470
+#: ../src/views/darkroom.c:3469
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:3475
+#: ../src/views/darkroom.c:3474
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:3481
+#: ../src/views/darkroom.c:3480
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:3487
+#: ../src/views/darkroom.c:3486
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4201 ../src/views/darkroom.c:4219
+#: ../src/views/darkroom.c:4200 ../src/views/darkroom.c:4218
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
