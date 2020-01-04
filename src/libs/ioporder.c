@@ -42,6 +42,8 @@ typedef struct dt_lib_ioporder_t
   GtkWidget *widget;
 } dt_lib_ioporder_t;
 
+static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, size_t *size);
+
 const char *name(dt_lib_module_t *self)
 {
   return _("module order version");
@@ -268,7 +270,7 @@ void gui_reset (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->widget, DT_IOP_ORDER_RECOMMENDED);
 }
 
-void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, int *size)
+static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, size_t *size)
 {
   // compute size of all modules
   *size = sizeof(int32_t);
@@ -313,7 +315,7 @@ void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version,
 
 void init_presets(dt_lib_module_t *self)
 {
-  int size = 0;
+  size_t size = 0;
   char *params = NULL;
 
   // ------------------------------------------------- IOP Order V2
@@ -400,7 +402,7 @@ void init_presets(dt_lib_module_t *self)
   };
 
   params = _serialize_preset(v2, 2, &size);
-  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, size);
+  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 
   // ------------------------------------------------- IOP Order V5
@@ -503,7 +505,7 @@ void init_presets(dt_lib_module_t *self)
   };
 
   params = _serialize_preset(v5, 5, &size);
-  dt_lib_presets_add(_("recommended"), self->plugin_name, self->version(), (const char *)params, size);
+  dt_lib_presets_add(_("recommended"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 }
 
