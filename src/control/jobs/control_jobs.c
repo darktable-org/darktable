@@ -34,6 +34,7 @@
 #include "common/undo.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
+#include "win/filepath.h"
 
 #include "gui/gtk.h"
 
@@ -989,38 +990,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
           do
           {
             char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-						
-						// Windows only accepts generic wildcards for filename
-						// therefore we must filter out filenames that do not match the patterns
-						// valid filenames must have from 2 to 4 decimal digits between "-" and "."
-						// or no "_" for the primary version
-						bool valid_filename = true;
-
-						gchar *c4 = xmp_filename + strlen(xmp_filename);
-						while(*c4 != '.') c4--;
-						c4--;
-						while(*c4 != '.') c4--;
-						gchar *c3 = c4;
-						bool underscore_found = false; 
-						while(!underscore_found && c3 > xmp_filename) 
-						{
-							c3--;
-							underscore_found = (*c3 == '_');
-						}
-						if (underscore_found)
-						{
-							c3++;
-							c4--;
-							valid_filename = (c3 != c4);
-					
-							while ((c3 <= c4) && valid_filename)
-							{
-								if (!( *c3 >= '0' && *c3 <= '9' )) valid_filename = false;
-								c3++;
-							}
-						
-						}
-						if (valid_filename) files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
+						if (win_valid_duplicate_filename(xmp_filename)) files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
             g_free(xmp_filename);
           }
           while(FindNextFileW(handle, &data));

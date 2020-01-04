@@ -34,6 +34,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#include "win/filepath.h"
 #ifdef USE_LUA
 #include "lua/image.h"
 #endif
@@ -47,6 +48,7 @@
 #include <glob.h>
 #endif
 #include <glib/gstdio.h>
+
 
 static int64_t max_image_position()
 {
@@ -1005,38 +1007,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       do
       {
         char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-
-				// Windows only accepts generic wildcards for filename
-				// therefore we must filter out filenames that do not match the patterns
-				// valid filenames must have from 2 to 4 decimal digits between "-" and "."
-				// or no "_" for the primary version
-				bool valid_filename = true;
-
-				gchar *c4 = file + strlen(file);
-				while(*c4 != '.') c4--;
-				c4--;
-				while(*c4 != '.') c4--;
-				gchar *c3 = c4;
-				bool underscore_found = false; 
-				while(!underscore_found && c3 > file) 
-				{
-					c3--;
-					underscore_found = (*c3 == '_');
-				}
-				if (underscore_found)
-				{
-					c3++;
-					c4--;
-					valid_filename = (c3 != c4);
-			
-					while ((c3 <= c4) && valid_filename)
-					{
-						if (!( *c3 >= '0' && *c3 <= '9' )) valid_filename = false;
-						c3++;
-					}
-				
-				}
-				if (valid_filename) files = g_list_append(files, g_build_filename(imgpath, file, NULL));
+				if(win_valid_duplicate_filename(file)) files = g_list_append(files, g_build_filename(imgpath, file, NULL));
 				g_free(file);
       }
       while(FindNextFileW(handle, &data));
