@@ -6,7 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.4\n"
 "POT-Creation-Date: 2019-03-14 20:49+0100\n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2019-04-07 15:52+0200\n"
+=======
+"PO-Revision-Date: 2019-04-04 22:53+0200\n"
+>>>>>>> 96df396ac... second revision
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -16421,7 +16425,6 @@ msgstr ""
 "dell'elenco a discesa verrà considerata da darktable quella più idonea."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13648(para)
-#, fuzzy
 msgid ""
 "This module can eliminate noise with two different core algorithms. "
 "<quote>non-local means</quote> can tackle efficiently luma (lightness) noise "
@@ -16460,7 +16463,6 @@ msgid "patch size"
 msgstr "dimensione patch"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13665(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls the size of the patches being matched when deciding "
@@ -16664,7 +16666,6 @@ msgstr ""
 "risorse verranno impegnate."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13871(para)
-#, fuzzy
 msgid ""
 "This module reduces noise in your image but preserves sharp edges. This is "
 "accomplished by averaging pixels with their neighbors, taking into account "
@@ -16784,7 +16785,6 @@ msgid "warps and nodes count"
 msgstr "deformazioni e conteggio dei nodi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13993(para)
-#, fuzzy
 msgid ""
 "This information field displays the number of warps (individual distortion "
 "object) and nodes currently used."
@@ -17156,7 +17156,6 @@ msgstr ""
 "informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14364(para)
-#, fuzzy
 msgid ""
 "Lines marked in red or yellow are regarded as outliers and are not taken "
 "into account for the automatic fitting step. This outlier elimination "
@@ -17254,7 +17253,6 @@ msgstr ""
 "all'immagine che vi aiuteranno a valutare la qualità della correzione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14426(para)
-#, fuzzy
 msgid ""
 "When activated the automatic cropping feature clips the image to get rid of "
 "any black corners. At your choice you can either clip to the <quote>largest "
@@ -17752,7 +17750,6 @@ msgstr ""
 "\"drawn_mask\"/>."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14872(para)
-#, fuzzy
 msgid ""
 "Select the desired shape by clicking the corresponding icon, then click on "
 "the canvas to choose the area to be healed, i.e. the target area. A cross is "
@@ -17773,14 +17770,6 @@ msgid ""
 "shape will have the source created at that position and the subsequent ones "
 "will have the source created at the same relative position."
 msgstr ""
-
-#: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14887(para)
-#, fuzzy
-msgid ""
-"After creation source area and target area can be shifted independently "
-"until the result matches your expectations. An arrow helps to tell source "
-"from target area."
-msgstr ""
 "La sorgente ha due modalità: assoluta o relativa. Per impostare la modalità "
 "assoluta, mentre si crea una forma, occorre premere <emphasis>Maiusc+Ctrl"
 "+Click</emphasis> sulla posizione desiderata. Da questo momento in poi tutte "
@@ -17796,6 +17785,24 @@ msgid ""
 "until the result matches your expectations. An arrow helps to tell source "
 "from target area."
 msgstr ""
+<<<<<<< HEAD
+"La sorgente ha due modalità: assoluta o relativa. Per impostare la modalità "
+"assoluta, mentre si crea una forma, occorre premere <emphasis>Maiusc+Ctrl"
+"+Click</emphasis> sulla posizione desiderata. Da questo momento in poi tutte "
+"le nuove forme attingeranno dalla sorgente appena impostata. Per impostare "
+"invece la modalità relativa, mentre si crea una forma premere "
+"<emphasis>Maiusc+click</emphasis> sulla posizione desiderata. La forma "
+"appena creata attingerà dalla sorgente selezionata mente le successive "
+"avranno le loro sorgenti create alle diverse posizioni relative."
+
+#: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14887(para)
+msgid ""
+"After creation source area and target area can be shifted independently "
+"until the result matches your expectations. An arrow helps to tell source "
+"from target area."
+msgstr ""
+=======
+>>>>>>> 96df396ac... second revision
 "L'area sorgente e quella di destinazione potranno essere trascinate in "
 "diverse posizioni fino a trovare il risultato desiderato. Un segnaposto a "
 "croce vi aiuta a distinguere le due diverse aree."
@@ -17953,12 +17960,18 @@ msgstr ""
 "cui la scala dovesse cambiare, le forme verranno visualizzate di conseguenza."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15036(para)
+#, fuzzy
 msgid ""
 "A green line on top of each box indicates that the scale has shapes "
 "associated with it."
 msgstr ""
+<<<<<<< HEAD
 "Una sottile linea verde sul lato superiore di ogni riquadro significa che la "
 "scala ha delle forme associate."
+=======
+"Una linea verde sul lato superiore di ogni riquadro significa che la scala "
+"ha delle forme associate."
+>>>>>>> 96df396ac... second revision
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15039(para)
 msgid ""
@@ -18061,10 +18074,13 @@ msgid ""
 "\"center\"/> ) temporarily disables the processing of all shapes for a "
 "simple before/after comparison."
 msgstr ""
+<<<<<<< HEAD
 "Il pulsante disabilita forme ( <inlinegraphic fileref=\"images/"
 "darkroom_module_retouch_switch.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> ) impedisce temporaneamente di processare le forme per "
 "permettere una rapida comparazione del risultato prima e dopo."
+=======
+>>>>>>> 96df396ac... second revision
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15084(para)
 msgid ""
@@ -27063,7 +27079,6 @@ msgid "Using <filename moreinfo=\"none\">darktable-chart</filename>"
 msgstr "Utilizzare <filename moreinfo=\"none\">darktable-chart</filename>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23578(para)
-#, fuzzy
 msgid ""
 "With <filename moreinfo=\"none\">darktable-chart</filename> we provide a "
 "tool for extracting luminance and color values out of images taken from "
