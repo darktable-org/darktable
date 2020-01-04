@@ -1,8 +1,5 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2010--2012 tobias ellinghaus.
-
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -19,13 +16,12 @@
 
 #include "dtwin.h"
 
-
 gboolean win_valid_duplicate_filename(const char *filename)
 {
   // Windows only accepts generic wildcards for filename search
   // therefore we must filter out invalid duplicate filenames
-  // valid filenames must have from 2 to 4 decimal digits between "-" and "."
-  // or no "_" for the primary version
+  // valid filenames must have from 2 to 4 decimal digits between 
+  // last "_" and second last "." (or no "_" for the primary version)
 
   gboolean valid_filename = TRUE;
 
@@ -55,7 +51,6 @@ gboolean win_valid_duplicate_filename(const char *filename)
   }
   return valid_filename;
 }
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

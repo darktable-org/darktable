@@ -960,8 +960,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
 
 #ifdef _WIN32
-			static const gchar *glob_patterns[] // Windows only accepts generic wildcards for filename
-					= { "", "_????", NULL };
+      // Windows only accepts generic wildcards for filename
+			static const gchar *glob_patterns[]	= { "", "_????", NULL };
 #else
 			static const gchar *glob_patterns[]
 					= { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -990,7 +990,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
           do
           {
             char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-						if (win_valid_duplicate_filename(xmp_filename)) files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
+						if (win_valid_duplicate_filename(xmp_filename)) 
+                files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
             g_free(xmp_filename);
           }
           while(FindNextFileW(handle, &data));
