@@ -149,6 +149,14 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
   // This default is needed here to initialize the develop module before the presets are set. It is also
   // a fast way to create the current working iop-order version for new images.
   //
+
+  /* @@_NEW_MODULE: add the new module into the following table (dt_iop_order_entry_t default_order)
+
+     1. find the proper position in the table.
+     2. add the iop-order in first column to be in the middle of module before and after.
+     3. DO NOT CHANGE any other iop-order for any module.
+  */
+
   const dt_iop_order_entry_t default_order[] = {
     {  1.0, "rawprepare"},
     {  2.0, "invert"},

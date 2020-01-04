@@ -25,6 +25,15 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+/* @@_NEW_MODULE: increase the version for this module.
+
+   1. this is needed to force legacy_params() to be called.
+
+   NOTE FOR DEVS: A new params for a new version will still be compatible with a
+                  previous version as the manipulated data is just a list of
+                  iop-order entries.
+*/
+
 DT_MODULE(1)
 
 enum dt_ioporder_t
@@ -43,6 +52,12 @@ typedef struct dt_lib_ioporder_t
 } dt_lib_ioporder_t;
 
 static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, size_t *size);
+
+#if 0
+// @@_NEW_MODULE: uncomment the first time when a new module is created
+static void *_serialize_preset_list(GList *iop_order_list, const int32_t version, size_t *size);
+static GList *_insert_after(GList *iop_order_list, const char *module, const char *new_module);
+#endif
 
 const char *name(dt_lib_module_t *self)
 {
@@ -63,6 +78,39 @@ uint32_t container(dt_lib_module_t *self)
 int position()
 {
   return 880;
+}
+
+void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
+                    const int old_version, int *new_version, size_t *new_size)
+{
+  /* @@_NEW_MODULE: when a new module is added the iop-order presets must be migrated to contain this new module.
+
+     1. the iop-order list is deserialized
+     2. the new module is added into the list at the right position (using _insert_after, cannot be inserted in last
+        position which is the gamma module).
+     3. the new iop-order list is serialized back
+     4. the new version is set
+     5. the serialized data is returned.
+  */
+
+#if 0
+  if(old_version == 1)
+  {
+    int iop_order_version = 0;
+    GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(old_params, old_params_size, &iop_order_version);
+
+    iop_order_list = _insert_after(iop_order_list, "<CURRENT_MODULE_NAME>", "<NEW_MODULE_NAME>");
+
+    void *new_params = _serialize_preset_list(iop_order_list, iop_order_version, new_size);
+
+    g_list_free(iop_order_list);
+
+    *new_version = 2;
+    return new_params;
+  }
+#endif
+
+  return NULL;
 }
 
 void update(dt_lib_module_t *self)
@@ -313,10 +361,78 @@ static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t v
   return params;
 }
 
+// @@_NEW_MODULE: to be un-commented the first time a module is added
+#if 0
+static void *_serialize_preset_list(GList *iop_order_list, const int32_t version, size_t *size)
+{
+  const int len = g_list_length(iop_order_list + 1);
+  dt_iop_order_entry_t *entries = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t) * (len + 1));
+
+  int k = 0;
+  while(iop_order_list)
+  {
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)iop_order_list->data;
+    entries[k].iop_order = e->iop_order;
+    strncpy(entries[k].operation, e->operation, sizeof(entries[k].operation));
+
+    iop_order_list = g_list_next(iop_order_list);
+    k++;
+  }
+
+  entries[k].iop_order = 0;
+  entries[k].operation[0] = '\0';
+
+  void *params = _serialize_preset(entries, version, size);
+
+  free(entries);
+  return params;
+}
+
+static GList *_insert_after(GList *iop_order_list, const char *module, const char *new_module)
+{
+  double before_iop_order = 0.0f, after_iop_order = 0.0f;
+  GList *l = iop_order_list;
+
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+
+    if(before_iop_order > 0.0f)
+    {
+      // found before, we are on the after node
+      after_iop_order = entry->iop_order;
+      dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+
+      new_entry->iop_order = (before_iop_order + after_iop_order) / 2.0f;
+      strncpy(new_entry->operation, new_module, sizeof(new_entry->operation));
+      iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
+      break;
+    }
+    else if(!strcmp(entry->operation, module))
+    {
+      before_iop_order = entry->iop_order;
+    }
+
+    l = g_list_next(l);
+  }
+
+  return iop_order_list;
+}
+#endif
+
 void init_presets(dt_lib_module_t *self)
 {
   size_t size = 0;
   char *params = NULL;
+
+  /* @@_NEW_MODULE: add the new module into all the following tables (dt_iop_order_entry_t v?)
+
+     1. find the proper position in the table.
+     2. add the iop-order in first column to be in the middle of module before and after
+     3. DO NOT CHANGE any other iop-order for any module
+
+     NOTE: the same change must be done into iop_order.c for the default iop-order to use for new modules.
+   */
 
   // ------------------------------------------------- IOP Order V2
 
