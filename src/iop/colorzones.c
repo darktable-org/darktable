@@ -46,8 +46,8 @@ DT_MODULE_INTROSPECTION(4, dt_iop_colorzones_params_t)
 
 typedef enum dt_iop_colorzones_modes_t
 {
-  DT_IOP_COLORZONES_MODE_OLD = 0,
-  DT_IOP_COLORZONES_MODE_NEW = 1
+  DT_IOP_COLORZONES_MODE_SMOOTH = 0,
+  DT_IOP_COLORZONES_MODE_STRONG = 1
 } dt_iop_colorzones_modes_t;
 
 typedef enum dt_iop_colorzones_channel_t
@@ -216,7 +216,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       new->curve_type[c] = CATMULL_ROM;
     }
     new->strength = 0.0;
-    new->mode = DT_IOP_COLORZONES_MODE_OLD;
+    new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     return 0;
   }
   if(old_version == 2 && new_version == 4)
@@ -243,7 +243,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       new->curve_type[c] = CATMULL_ROM;
     }
     new->strength = 0.0;
-    new->mode = DT_IOP_COLORZONES_MODE_OLD;
+    new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     return 0;
   }
   if(old_version == 3 && new_version == 4)
@@ -273,7 +273,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       new->curve_type[c] = CATMULL_ROM;
     }
     new->strength = old->strength;
-    new->mode = DT_IOP_COLORZONES_MODE_OLD;
+    new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     return 0;
   }
 
@@ -442,7 +442,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  if(d->mode == DT_IOP_COLORZONES_MODE_OLD)
+  if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
   {
     process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
     return;
@@ -500,7 +500,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int kernel_colorzones
-      = (d->mode == DT_IOP_COLORZONES_MODE_OLD) ? gd->kernel_colorzones_v3 : gd->kernel_colorzones;
+      = (d->mode == DT_IOP_COLORZONES_MODE_SMOOTH) ? gd->kernel_colorzones_v3 : gd->kernel_colorzones;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
@@ -539,7 +539,7 @@ void init_presets(dt_iop_module_so_t *self)
   const int version = 4;
 
   p.strength = 0.0;
-  p.mode = DT_IOP_COLORZONES_MODE_OLD;
+  p.mode = DT_IOP_COLORZONES_MODE_SMOOTH;
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
@@ -2600,7 +2600,7 @@ void init(dt_iop_module_t *module)
   }
   tmp.strength = 0.0f;
   tmp.channel = DT_IOP_COLORZONES_h;
-  tmp.mode = DT_IOP_COLORZONES_MODE_NEW;
+  tmp.mode = DT_IOP_COLORZONES_MODE_SMOOTH;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_colorzones_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorzones_params_t));
