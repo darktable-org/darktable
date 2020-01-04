@@ -1256,6 +1256,14 @@ int dt_ioppr_convert_onthefly(const int imgid)
     // implementation the last/fixed version is v5.
     return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
   }
+  else
+  {
+    // some v2 could be broken, check it and if something still wrong try to migrate it
+    // note that here we do use dt_ioppr_migrate_iop_order() as we need to also update
+    // the dev->iop data which are broken.
+    if(!dt_ioppr_check_iop_order(darktable.develop, imgid, "dt_iopprr_convert_onthefly"))
+      return dt_ioppr_migrate_iop_order(darktable.develop, imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
+  }
 
   return my_iop_order_version;
 }
