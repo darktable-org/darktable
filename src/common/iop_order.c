@@ -1284,13 +1284,13 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     }
   }
 
-  // some other chacks
+  // some other checks
   {
     GList *modules = g_list_last(dev->iop);
     while(modules)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if(mod->iop_order == DBL_MAX)
+      if(!mod->default_enabled && mod->iop_order != DBL_MAX)
       {
         if(mod->enabled)
         {
