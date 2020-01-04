@@ -156,7 +156,11 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
 
   if(mode <= DT_IOP_ORDER_CUSTOM)
   {
+    // do not allow changing to the first two modes, reset back to previous value
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
     dt_bauhaus_combobox_set(widget, d->current_mode);
+    darktable.gui->reset = reset;
     return;
   }
 
