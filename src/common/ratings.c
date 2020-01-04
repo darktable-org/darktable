@@ -136,12 +136,15 @@ void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_o
 
     if(group_on) dt_grouping_add_grouped_images(&imgs);
     count = g_list_length(imgs);
-    if(new_rating == DT_VIEW_REJECT)
-      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
-    else
-      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
-                     new_rating, count);
-
+    if(count > 1)
+    {
+      if(new_rating == DT_VIEW_REJECT)
+        dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+      else
+        dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+                       new_rating, count);
+    }
+    
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     _ratings_apply(imgs, new_rating, &undo, undo_on);
 
