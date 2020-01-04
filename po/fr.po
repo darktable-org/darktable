@@ -3,11 +3,16 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "POT-Creation-Date: 2020-01-04 18:48+0100\n"
 "PO-Revision-Date: 2020-01-04 18:51+0100\n"
 =======
 "POT-Creation-Date: 2020-01-02 11:18+0100\n"
 "PO-Revision-Date: 2020-01-02 11:25+0100\n"
+>>>>>>> Update French translation.
+=======
+"POT-Creation-Date: 2020-01-04 18:48+0100\n"
+"PO-Revision-Date: 2020-01-04 18:51+0100\n"
 >>>>>>> Update French translation.
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -1414,9 +1419,13 @@ msgstr "profil d'exportation"
 
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2138
 =======
 #: ../src/views/darkroom.c:2139
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2138
 >>>>>>> Update French translation.
 msgid "softproof profile"
 msgstr "épreuvage écran"
@@ -2285,9 +2294,13 @@ msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/control/jobs/control_jobs.c:1345 ../src/views/darkroom.c:653
 =======
 #: ../src/control/jobs/control_jobs.c:1337 ../src/views/darkroom.c:653
+>>>>>>> Update French translation.
+=======
+#: ../src/control/jobs/control_jobs.c:1345 ../src/views/darkroom.c:653
 >>>>>>> Update French translation.
 #: ../src/views/print.c:261
 #, c-format
@@ -2417,9 +2430,13 @@ msgid "local copy images"
 msgstr "copie locale d'images"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/control/jobs/control_jobs.c:1688 ../src/libs/image.c:528
 =======
 #: ../src/control/jobs/control_jobs.c:1680 ../src/libs/image.c:528
+>>>>>>> Update French translation.
+=======
+#: ../src/control/jobs/control_jobs.c:1688 ../src/libs/image.c:528
 >>>>>>> Update French translation.
 msgid "refresh exif"
 msgstr "rafraîchir exif"
@@ -3554,9 +3571,13 @@ msgid "underwater"
 msgstr "sous l'eau"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/external/wb_presets.c:76 ../src/views/darkroom.c:2035
 =======
 #: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:2036
+>>>>>>> Update French translation.
+=======
+#: ../src/external/wb_presets.c:76 ../src/views/darkroom.c:2035
 >>>>>>> Update French translation.
 msgid "black & white"
 msgstr "noir et blanc"
@@ -6255,9 +6276,13 @@ msgstr "étendue tons-moyens"
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/image.c:520
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/libs/print_settings.c:1510 ../src/views/darkroom.c:1970
 =======
 #: ../src/libs/print_settings.c:1510 ../src/views/darkroom.c:1971
+>>>>>>> Update French translation.
+=======
+#: ../src/libs/print_settings.c:1510 ../src/views/darkroom.c:1970
 >>>>>>> Update French translation.
 msgid "mode"
 msgstr "mode"
@@ -7643,11 +7668,16 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2113 ../src/views/darkroom.c:2121
 #: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
 =======
 #: ../src/views/darkroom.c:2114 ../src/views/darkroom.c:2122
 #: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2113 ../src/views/darkroom.c:2121
+#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
 >>>>>>> Update French translation.
 msgid "perceptual"
 msgstr "perceptif"
@@ -7655,11 +7685,16 @@ msgstr "perceptif"
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2114 ../src/views/darkroom.c:2122
 #: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
 =======
 #: ../src/views/darkroom.c:2115 ../src/views/darkroom.c:2123
 #: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2114 ../src/views/darkroom.c:2122
+#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
 >>>>>>> Update French translation.
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
@@ -7667,11 +7702,16 @@ msgstr "colorimétrie relative"
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2115 ../src/views/darkroom.c:2123
 #: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
 =======
 #: ../src/views/darkroom.c:2116 ../src/views/darkroom.c:2124
 #: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2115 ../src/views/darkroom.c:2123
+#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
 >>>>>>> Update French translation.
 msgctxt "rendering intent"
 msgid "saturation"
@@ -7680,11 +7720,16 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2116 ../src/views/darkroom.c:2124
 #: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
 =======
 #: ../src/views/darkroom.c:2117 ../src/views/darkroom.c:2125
 #: ../src/views/lighttable.c:4909 ../src/views/lighttable.c:4917
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2116 ../src/views/darkroom.c:2124
+#: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
 >>>>>>> Update French translation.
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
@@ -8568,9 +8613,13 @@ msgstr ""
 
 #: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1102
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1998
 =======
 #: ../src/views/darkroom.c:1999
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1998
 >>>>>>> Update French translation.
 msgid "clipping threshold"
 msgstr "seuil de troncature"
@@ -12639,9 +12688,13 @@ msgstr "modification de l'exportation des métadonnées"
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3318
 =======
 #: ../src/views/darkroom.c:3319
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3318
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "export"
@@ -15256,6 +15309,7 @@ msgid "display a second darkroom image window"
 msgstr "activer l'affichage secondaire de la chambre noire"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1937
 msgid "toggle ISO 12646 colour assessment conditions"
 msgstr "activer/désactiver les conditions d'évaluation des couleurs ISO 12646"
@@ -15268,6 +15322,13 @@ msgstr "activer/désactiver les conditions d'évaluation des couleurs ISO 12646"
 
 #: ../src/views/darkroom.c:1948
 >>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1937
+msgid "toggle ISO 12646 colour assessment conditions"
+msgstr "activer/désactiver les conditions d'évaluation des couleurs ISO 12646"
+
+#: ../src/views/darkroom.c:1947
+>>>>>>> Update French translation.
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -15275,6 +15336,7 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #: ../src/views/darkroom.c:1971
 msgid "mark with CFA color"
@@ -15299,62 +15361,85 @@ msgstr "schéma de couleur"
 #: ../src/views/darkroom.c:1983
 =======
 #: ../src/views/darkroom.c:1972
+=======
+#: ../src/views/darkroom.c:1971
+>>>>>>> Update French translation.
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1973
+#: ../src/views/darkroom.c:1972
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1974
+#: ../src/views/darkroom.c:1973
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1976
+#: ../src/views/darkroom.c:1975
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:2035
+#: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:2034
 msgid "color scheme"
 msgstr "schéma de couleur"
 
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1984
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1983
 >>>>>>> Update French translation.
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1984
 =======
 #: ../src/views/darkroom.c:1985
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1984
 >>>>>>> Update French translation.
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1985
 =======
 #: ../src/views/darkroom.c:1986
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1985
 >>>>>>> Update French translation.
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1986
 =======
 #: ../src/views/darkroom.c:1987
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1986
 >>>>>>> Update French translation.
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:1990
 =======
 #: ../src/views/darkroom.c:1991
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:1990
 >>>>>>> Update French translation.
 msgid ""
 "select the solid color to indicate over exposure.\n"
@@ -15364,9 +15449,13 @@ msgstr ""
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2000
 =======
 #: ../src/views/darkroom.c:2001
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2000
 >>>>>>> Update French translation.
 msgid ""
 "threshold of what shall be considered overexposed\n"
@@ -15378,9 +15467,13 @@ msgstr ""
 "0.0 - niveau noir"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2011
 =======
 #: ../src/views/darkroom.c:2012
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2011
 >>>>>>> Update French translation.
 msgid ""
 "toggle over/under exposed indication\n"
@@ -15389,6 +15482,7 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #: ../src/views/darkroom.c:2036
 msgid "red & blue"
@@ -15421,34 +15515,41 @@ msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 #: ../src/views/darkroom.c:2069
 =======
 #: ../src/views/darkroom.c:2037
+=======
+#: ../src/views/darkroom.c:2036
+>>>>>>> Update French translation.
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:2038
+#: ../src/views/darkroom.c:2037
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:2040
+#: ../src/views/darkroom.c:2039
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:2049
+#: ../src/views/darkroom.c:2048
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:2050
+#: ../src/views/darkroom.c:2049
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:2058
+#: ../src/views/darkroom.c:2057
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:2059
+#: ../src/views/darkroom.c:2058
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2070
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2069
 >>>>>>> Update French translation.
 msgid ""
 "toggle softproofing\n"
@@ -15458,9 +15559,13 @@ msgstr ""
 "clic-droit pour les options de profil"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2083
 =======
 #: ../src/views/darkroom.c:2084
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2083
 >>>>>>> Update French translation.
 msgid ""
 "toggle gamut checking\n"
@@ -15469,6 +15574,7 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #: ../src/views/darkroom.c:2111 ../src/views/lighttable.c:4903
 msgid "display intent"
@@ -15493,53 +15599,72 @@ msgstr "profil de l'histogramme"
 #: ../src/views/darkroom.c:2195 ../src/views/lighttable.c:4953
 =======
 #: ../src/views/darkroom.c:2112 ../src/views/lighttable.c:4904
+=======
+#: ../src/views/darkroom.c:2111 ../src/views/lighttable.c:4903
+>>>>>>> Update French translation.
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:2120 ../src/views/lighttable.c:4912
+#: ../src/views/darkroom.c:2119 ../src/views/lighttable.c:4911
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2140 ../src/views/lighttable.c:4920
+#: ../src/views/darkroom.c:2139 ../src/views/lighttable.c:4919
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2141 ../src/views/lighttable.c:4924
+#: ../src/views/darkroom.c:2140 ../src/views/lighttable.c:4923
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
-#: ../src/views/darkroom.c:2142
+#: ../src/views/darkroom.c:2141
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2196 ../src/views/lighttable.c:4954
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2195 ../src/views/lighttable.c:4953
 >>>>>>> Update French translation.
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2198 ../src/views/lighttable.c:4956
 =======
 #: ../src/views/darkroom.c:2199 ../src/views/lighttable.c:4957
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2198 ../src/views/lighttable.c:4956
 >>>>>>> Update French translation.
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2201
 =======
 #: ../src/views/darkroom.c:2202
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2201
 >>>>>>> Update French translation.
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:2204
 =======
 #: ../src/views/darkroom.c:2205
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:2204
 >>>>>>> Update French translation.
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
@@ -15548,9 +15673,13 @@ msgstr "profils ICC pour l'histogramme et la pipette dans %s ou %s"
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3310 ../src/views/map.c:892 ../src/views/print.c:330
 =======
 #: ../src/views/darkroom.c:3311 ../src/views/map.c:892 ../src/views/print.c:330
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3310 ../src/views/map.c:892 ../src/views/print.c:330
 >>>>>>> Update French translation.
 #: ../src/views/tethering.c:397
 msgctxt "accel"
@@ -15559,27 +15688,39 @@ msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3313
 =======
 #: ../src/views/darkroom.c:3314
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3313
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3314
 =======
 #: ../src/views/darkroom.c:3315
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3314
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3315
 =======
 #: ../src/views/darkroom.c:3316
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3315
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "zoom fit"
@@ -15587,18 +15728,26 @@ msgstr "zoom ajusté"
 
 #. Shortcut to skip images
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3321
 =======
 #: ../src/views/darkroom.c:3322
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3321
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3322
 =======
 #: ../src/views/darkroom.c:3323
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3322
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "image back"
@@ -15606,9 +15755,13 @@ msgstr "image précédente"
 
 #. toggle raw overexposure indication
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3325
 =======
 #: ../src/views/darkroom.c:3326
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3325
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "raw overexposed"
@@ -15616,9 +15769,13 @@ msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3328
 =======
 #: ../src/views/darkroom.c:3329
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3328
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "overexposed"
@@ -15626,9 +15783,13 @@ msgstr "sur-exposition"
 
 #. toggle softproofing
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3331
 =======
 #: ../src/views/darkroom.c:3332
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3331
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "softproof"
@@ -15636,9 +15797,13 @@ msgstr "épreuvage"
 
 #. toggle gamut check
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3334
 =======
 #: ../src/views/darkroom.c:3335
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3334
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "gamut check"
@@ -15646,18 +15811,26 @@ msgstr "vérification de gamut"
 
 #. brush size +/-
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3337
 =======
 #: ../src/views/darkroom.c:3338
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3337
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3338
 =======
 #: ../src/views/darkroom.c:3339
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3338
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "decrease brush size"
@@ -15665,18 +15838,26 @@ msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3341
 =======
 #: ../src/views/darkroom.c:3342
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3341
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3342
 =======
 #: ../src/views/darkroom.c:3343
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3342
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "decrease brush hardness"
@@ -15684,18 +15865,26 @@ msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3345
 =======
 #: ../src/views/darkroom.c:3346
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3345
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3346
 =======
 #: ../src/views/darkroom.c:3347
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3346
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "decrease brush opacity"
@@ -15703,9 +15892,13 @@ msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3349
 =======
 #: ../src/views/darkroom.c:3350
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3349
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "full preview"
@@ -15713,9 +15906,13 @@ msgstr "aperçu complet"
 
 #. undo/redo
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3352 ../src/views/lighttable.c:4448
 =======
 #: ../src/views/darkroom.c:3353 ../src/views/lighttable.c:4448
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3352 ../src/views/lighttable.c:4448
 >>>>>>> Update French translation.
 #: ../src/views/map.c:889
 msgctxt "accel"
@@ -15723,9 +15920,13 @@ msgid "undo"
 msgstr "défaire"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3353 ../src/views/lighttable.c:4449
 =======
 #: ../src/views/darkroom.c:3354 ../src/views/lighttable.c:4449
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3353 ../src/views/lighttable.c:4449
 >>>>>>> Update French translation.
 #: ../src/views/map.c:890
 msgctxt "accel"
@@ -15734,9 +15935,13 @@ msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3356
 =======
 #: ../src/views/darkroom.c:3357
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3356
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
@@ -15744,14 +15949,19 @@ msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3359
 =======
 #: ../src/views/darkroom.c:3360
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3359
 >>>>>>> Update French translation.
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #: ../src/views/darkroom.c:3458
 msgid "switch to lighttable"
@@ -15776,35 +15986,46 @@ msgstr "[modules] déplie le module sans replier les autres"
 #: ../src/views/darkroom.c:3486
 =======
 #: ../src/views/darkroom.c:3459
+=======
+#: ../src/views/darkroom.c:3458
+>>>>>>> Update French translation.
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3464 ../src/views/lighttable.c:4595
+#: ../src/views/darkroom.c:3463 ../src/views/lighttable.c:4595
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:3470
+#: ../src/views/darkroom.c:3469
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:3475
+#: ../src/views/darkroom.c:3474
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:3481
+#: ../src/views/darkroom.c:3480
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:3487
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:3486
 >>>>>>> Update French translation.
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
 <<<<<<< HEAD
+<<<<<<< HEAD
 #: ../src/views/darkroom.c:4200 ../src/views/darkroom.c:4218
 =======
 #: ../src/views/darkroom.c:4201 ../src/views/darkroom.c:4219
+>>>>>>> Update French translation.
+=======
+#: ../src/views/darkroom.c:4200 ../src/views/darkroom.c:4218
 >>>>>>> Update French translation.
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
