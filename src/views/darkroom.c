@@ -495,6 +495,7 @@ void expose(
         cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
                         (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
         cairo_stroke(cri);
+        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
