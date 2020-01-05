@@ -240,14 +240,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     const int cpp = r->getCpp();
 
-    // checking for corrupted info supports cpp to be either 1 or 2
+    // checking for corrupted info supports cpp to be either 1 or 2 for TYPE_USHORT16
+    // for TYPE_FLOAT32 only cpp==1 is accepted
     if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if(((r->getBpp() / cpp) != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getBpp() != cpp * sizeof(uint16_t)) && (r->getBpp() != cpp * sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_USHORT16) && ((r->getBpp() / cpp) != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != cpp * sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+    // this also assures cpp==1
+    if((r->getDataType() == TYPE_FLOAT32)  && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
 
     if((cpp < 1) || (cpp>2)) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -369,6 +371,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       }
       else
       { 
+        // This code should never be reached because of a test above
         fprintf(stderr,"\n[rawspeed] (%s) has unsupported dual pixel FLOAT",img->filename);
         return DT_IMAGEIO_FILE_CORRUPTED;
       }
