@@ -2558,14 +2558,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       if(p->k_type == 3)
       {
         // determine extremity of the lines
-        const int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
-        const int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
-        const int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
-        const int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
-        const int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
-        const int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
-        const int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
-        const int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
+        const float v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        const float v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        const float v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        const float v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
+        const float h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        const float h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        const float h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        const float h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);
@@ -2610,10 +2610,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 2)
       {
         // determine extremity of the lines
-        const int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
-        const int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
-        const int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
-        const int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
+        const float h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        const float h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        const float h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        const float h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, 0, h1l);
@@ -2640,10 +2640,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 1)
       {
         // determine extremity of the lines
-        const int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
-        const int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
-        const int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
-        const int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
+        const float v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        const float v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        const float v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        const float v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);
