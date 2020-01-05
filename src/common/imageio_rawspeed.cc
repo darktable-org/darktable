@@ -237,21 +237,22 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
+    const int cpp = r->getCpp();
 
+    // checking for corrupted info supports cpp to be either 1 or 2
     if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if(((r->getBpp() / cpp) != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getDataType() == TYPE_USHORT16) && ((r->getBpp() / cpp) != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
 
     if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
 
-    const float cpp = r->getCpp();
-    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((cpp < 1) || (cpp>2)) return DT_IMAGEIO_FILE_CORRUPTED;
 
     img->buf_dsc.channels = 1;
 
-    switch(r->getBpp())
+    switch(r->getBpp() / cpp)
     {
       case sizeof(uint16_t):
         img->buf_dsc.datatype = TYPE_UINT16;
@@ -333,16 +334,43 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
-    const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
-    if(bufSize_mipmap == bufSize_rawspeed)
+
+    /*
+      For dual pixels we can't just copy or use the flip as data are interwoven.
+      Here we use the medium of both sub-pixels, not worth to use _OPENMP.
+      As there are no dual-float-pixel images we have them disabled.
+    */
+    if (cpp == 1)
     {
-      memcpy(buf, r->getDataUncropped(0, 0), bufSize_mipmap);
+      const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
+      const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
+      if(bufSize_mipmap == bufSize_rawspeed)
+      {
+        memcpy(buf, r->getDataUncropped(0, 0), bufSize_mipmap);
+      }
+      else
+      {
+        dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
+                                dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
+      }
     }
     else
     {
-      dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
-                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
+      if(img->buf_dsc.datatype == TYPE_UINT16)
+      {
+        for(int j = 0; j < img->height; j++)
+        {
+          const uint16_t *in = (uint16_t *) r->getDataUncropped(0, j);
+          uint16_t *out = ((uint16_t *)buf) + (size_t) j * img->width;
+          for(int i = 0; i < img->width; i++)
+            out[i] = (in[i*2] + in[i*2+1]) / 2;
+        }
+      }
+      else
+      { 
+        fprintf(stderr,"\n[rawspeed] (%s) has unsupported dual pixel FLOAT",img->filename);
+        return DT_IMAGEIO_FILE_CORRUPTED;
+      }
     }
   }
   catch(const std::exception &exc)
