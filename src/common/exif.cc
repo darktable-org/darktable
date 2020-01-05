@@ -235,7 +235,8 @@ GList *dt_get_exiv2_taglist()
   }
   catch (Exiv2::AnyError& e)
   {
-    std::printf("[exiv2 taglist] exception: \"%s\"\n", e.what());
+    std::string s(e.what());
+    std::cerr << "[exiv2 taglist] " << s << std::endl;
   }
   return taglist;
 }
