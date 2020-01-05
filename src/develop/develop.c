@@ -1520,18 +1520,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   sqlite3_stmt *stmt;
 
-  dev->iop_order_version = 0;
+  // possible convertion to another iop-order-version to unbreak some edits
+  const int iop_order_version = dt_ioppr_convert_onthefly(imgid);
 
-  dev->iop_order_version = dt_ioppr_convert_onthefly(imgid);
-
-  // free iop_order if any
-  if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
-  // read iop_order for this particular edit
-  dev->iop_order_list = dt_ioppr_get_iop_order_list(&dev->iop_order_version, FALSE);
-  // set the iop_order to the iop list
-  dt_ioppr_set_default_iop_order(&dev->iop, dev->iop_order_list);
-
-  //dt_ioppr_print_iop_order(dev->iop_order_list, "dt_dev_read_history_no_image 1");
+  dt_ioppr_set_default_iop_order(dev, iop_order_version);
 
   if(!no_image)
   {
