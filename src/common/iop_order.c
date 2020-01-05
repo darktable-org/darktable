@@ -1154,7 +1154,7 @@ int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_versio
       dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
   }
 
-  g_list_free(current_iop_list);
+  g_list_free_full(current_iop_list, free);
 
   // process some more checks possibly; any sort data that can't be correct?
 
@@ -1432,7 +1432,7 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *i
   return iop_order_list;
 
  error:
-  g_list_free(iop_order_list);
+  g_list_free_full(iop_order_list, free);
   *iop_order_version = 0;
   return NULL;
 }
