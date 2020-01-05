@@ -237,6 +237,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
+
     const int cpp = r->getCpp();
 
     // checking for corrupted info supports cpp to be either 1 or 2
@@ -363,7 +364,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
           const uint16_t *in = (uint16_t *) r->getDataUncropped(0, j);
           uint16_t *out = ((uint16_t *)buf) + (size_t) j * img->width;
           for(int i = 0; i < img->width; i++)
-            out[i] = (in[i*2] + in[i*2+1]) / 2;
+            out[i] = in[i*2];
         }
       }
       else
