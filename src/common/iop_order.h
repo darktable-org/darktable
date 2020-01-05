@@ -60,7 +60,7 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *i
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
 
 /** sets the default iop_order to iop_list */
-void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list);
+void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const int iop_order_version);
 
 /** returns 1 if there's a module_so without a iop_order defined */
 int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);

@@ -316,10 +316,13 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
 // sets the iop_order on each module of *_iop_list
 // iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
 // if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
-void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
+void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int iop_order_version)
 {
   if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
-  GList *iop_list = *_iop_list;
+  GList *iop_list = dev->iop;
+
+  dev->iop_order_version = iop_order_version;
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(&dev->iop_order_version, FALSE);
 
   GList *modules = g_list_first(iop_list);
   while(modules)
@@ -342,7 +345,11 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
   // we need to set the right order
   iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
-  *_iop_list = iop_list;
+  dev->iop = iop_list;
+
+  if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
+  dev->iop_order_list = iop_order_list;
+
   if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
 }
 
@@ -1216,12 +1223,7 @@ int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int cur
 {
   const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version);
 
-  int _version = new_iop_order_version;
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&_version, FALSE);
-
-  dt_ioppr_set_default_iop_order(&dev->iop, iop_order_list);
-
-  g_list_free(iop_order_list);
+  dt_ioppr_set_default_iop_order(dev, new_iop_order_version);
 
   // finaly reload history
 
