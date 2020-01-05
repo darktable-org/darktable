@@ -348,8 +348,13 @@ GList *dt_get_exiv2_taglist()
   }
   catch (Exiv2::AnyError& e)
   {
+<<<<<<< HEAD
     std::printf("[exiv2 taglist] exception: \"%s\"\n", e.what());
 >>>>>>> replace fixed tag list by exiv2 list for exported metadata
+=======
+    std::string s(e.what());
+    std::cerr << "[exiv2 taglist] " << s << std::endl;
+>>>>>>> fix build issue on windows #4036
   }
   return taglist;
 }
