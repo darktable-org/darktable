@@ -178,8 +178,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
-  // Get the mode and color buttons position
-  if(d->mode_x == 0)
+  // Get the mode and color buttons position on first expose or widget size change
+  if(d->mode_x == 0 || dev->histogram_waveform_width != width)
   {
     d->color_w = 0.06 * width;
     d->button_spacing = 0.02 * width;
@@ -196,14 +196,30 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // (again) allow to resize the side panels.
   const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
-  // this code assumes that the first expose comes before the first (preview) pipe is processed and that the
-  // size of the widget doesn't change!
+  // this code assumes that the first expose comes before the first (preview) pipe is processed
   if(dev->histogram_waveform_width == 0)
   {
     dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
     dev->histogram_waveform_stride = stride;
     dev->histogram_waveform_height = height;
     dev->histogram_waveform_width = width;
+  }
+
+  // the widget size has changed
+  if(dev->histogram_waveform_width != width)
+  {
+    free(dev->histogram_waveform);
+    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
+    dev->histogram_waveform_stride = stride;
+    dev->histogram_waveform_height = height;
+    dev->histogram_waveform_width = width;
+    // reprocess the preview pipe if necessary
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+    {
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      dev->preview_pipe->cache_obsolete = 1;
+      dt_control_queue_redraw();
+    }
   }
 
   // Draw frame and background
