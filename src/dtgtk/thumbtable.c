@@ -158,9 +158,16 @@ static gboolean _scroll_event_callback(GtkWidget *widget, GdkEvent *event, gpoin
 
 static gboolean _draw_event_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
+  // we don't really want to draw something, this is just to know when the flowbox is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   dt_thumbtable_full_redraw(table, FALSE);
-  return FALSE; // we don't really want to draw something, this is just to know when the flowbox is really ready
+  return FALSE; // let's propagate this event for childs
+}
+
+static gboolean _leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_control_set_mouse_over_id(-1);
+  return TRUE;
 }
 
 dt_thumbtable_t *dt_thumbtable_new()
@@ -178,6 +185,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(table->widget), GTK_POLICY_EXTERNAL, GTK_POLICY_EXTERNAL);
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_scroll_event_callback), table);
   g_signal_connect(G_OBJECT(table->flow), "draw", G_CALLBACK(_draw_event_callback), table);
+  g_signal_connect(G_OBJECT(table->flow), "leave-notify-event", G_CALLBACK(_leave_notify_callback), table);
 
   gtk_container_add(GTK_CONTAINER(table->widget), table->flow);
   gtk_widget_show_all(table->widget);
