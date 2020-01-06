@@ -33,6 +33,7 @@ typedef struct dt_guides_t
   dt_guides_widget_callback widget;
   void *user_data;
   GDestroyNotify free;
+  gboolean support_flip;
 } dt_guides_t;
 
 GList *dt_guides_init();
