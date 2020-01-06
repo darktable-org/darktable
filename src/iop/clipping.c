@@ -1913,14 +1913,12 @@ static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 // TODO once we depend on GTK3 >= 3.12 use the name as in 2f491cf8355a81554b98de538fe862d6ad9b62e5
 static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int which)
 {
-  if(which == 0)
-  {
     gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
     gtk_widget_hide(g->guides_widgets);
     gtk_widget_set_no_show_all(g->flip_guides, TRUE);
     gtk_widget_hide(g->flip_guides);
-  }
-  else
+
+  if(which != 0)
   {
     GtkWidget *widget = g_list_nth_data(g->guides_widgets_list, which - 1);
     if(widget)
@@ -1929,16 +1927,13 @@ static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int whi
       gtk_widget_show_all(g->guides_widgets);
       gtk_stack_set_visible_child(GTK_STACK(g->guides_widgets), widget);
     }
-    else
-    {
-      gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
-      gtk_widget_hide(g->guides_widgets);
-    }
-    gtk_widget_set_no_show_all(g->flip_guides, FALSE);
-    gtk_widget_show_all(g->flip_guides);
-  }
 
-  // TODO: add a support_flip flag to guides to hide the flip gui?
+    if(((dt_guides_t *)g_list_nth_data(darktable.guides, which - 1))->support_flip)
+    {
+      gtk_widget_set_no_show_all(g->flip_guides, FALSE);
+      gtk_widget_show_all(g->flip_guides);
+    }
+  }
 }
 
 static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
