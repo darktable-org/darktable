@@ -451,6 +451,25 @@ static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
   return TRUE; /* we handled this */
 }
 
+static gboolean view_onMouseScroll(GtkWidget *treeview, GdkEventScroll *event, dt_lib_collect_t *d)
+{
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow));
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
+    gint width, height;
+    
+    gtk_widget_get_size_request(GTK_WIDGET(d->scrolledwindow), &width, &height);
+    height = height + increment*event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+    gtk_widget_set_size_request(GTK_WIDGET(d->scrolledwindow), -1, height);
+
+    return TRUE;
+  }
+  return FALSE; 
+}
+
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num * sizeof(dt_lib_collect_rule_t));
@@ -2064,6 +2083,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
