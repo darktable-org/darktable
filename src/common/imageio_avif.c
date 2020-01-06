@@ -105,6 +105,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   dt_imageio_retval_t ret;
   avifROData raw = AVIF_DATA_EMPTY;
   avifImage *avif = NULL;
+  avifDecoder *decoder = NULL;
   avifResult result;
 
   ret = read_image(filename, &raw);
@@ -124,7 +125,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  avifDecoder *decoder = avifDecoderCreate();
+  decoder = avifDecoderCreate();
   if (decoder == NULL) {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to create AVIF decoder for image [%s]\n",
@@ -264,6 +265,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
 {
   dt_imageio_retval_t ret;
   avifROData raw = AVIF_DATA_EMPTY;
+  avifDecoder *decoder = NULL;
   avifResult result;
 
   ret = read_image(filename, &raw);
@@ -283,7 +285,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
     goto out;
   }
 
-  avifDecoder *decoder = avifDecoderCreate();
+  decoder = avifDecoderCreate();
   if (decoder == NULL) {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to create AVIF decoder for image [%s]\n",
