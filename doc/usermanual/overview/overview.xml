@@ -120,7 +120,7 @@
 	  
     <listitem><para>
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
-      that always just works&trade;. It's designed as a module where the denoising performance
+      that always just works. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
       well above 200 popular camera models.
     </para></listitem>
