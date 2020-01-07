@@ -35,6 +35,8 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
 void lut3d_add_lutname_to_list(void *g, const char *const lutname);
 
 void lut3d_clear_lutname_list(void *g);
+
+const unsigned int lut3d_gmic_version();
 }
 
 void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
@@ -221,6 +223,23 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
   image_list.assign(0);
   image_names.assign(0);
   return lut_found;
+}
+
+
+const unsigned int lut3d_gmic_version()
+{
+  gmic_list<float> image_list;                       // List of images, will contain all images pixel data
+  gmic_list<char> image_names;                       // List of images names. Can be left empty if no names
+  image_list.assign(1);                              // Assign list to contain 1 image
+  image_list[0].assign(1,1,1,1);                     // Will contain the version number.
+  gmic g_instance;
+  g_instance.verbosity = -1;
+
+  g_instance.run("f $_version", image_list, image_names);
+
+  const unsigned int version = (unsigned int)*image_list[0];
+  image_list.assign(0U);
+  return version;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
