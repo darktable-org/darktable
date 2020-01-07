@@ -193,10 +193,7 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
     // reprocess the preview pipe if necessary
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->preview_pipe->cache_obsolete = 1;
-      // FIXME; need this? only need to redraw center?
-      dt_control_queue_redraw();
+      dt_dev_process_preview(dev);
     }
   }
   oldw = event->width;
@@ -455,9 +452,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       // we need to reprocess the preview pipe
       if(darktable.develop->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
-        darktable.develop->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-        darktable.develop->preview_pipe->cache_obsolete = 1;
-        dt_control_queue_redraw();
+        dt_dev_process_preview(darktable.develop);
       }
     }
     else if(d->highlight == 4) // red button
