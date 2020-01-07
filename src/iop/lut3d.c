@@ -1616,6 +1616,7 @@ void gui_init(dt_iop_module_t *self)
 
     GtkTreeView *view = (GtkTreeView *)gtk_tree_view_new();
     g->lutname = (GtkWidget *)view;
+    gtk_widget_set_name((GtkWidget *)view, "lutname");
     gtk_tree_view_set_model(view, lutfilter);
     gtk_tree_view_set_hover_selection(view, FALSE);
     gtk_tree_view_set_headers_visible(view, FALSE);
