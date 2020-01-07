@@ -210,22 +210,27 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int width = allocation.width, height = allocation.height;
-  const gint stride = dev->histogram_waveform_stride;
 
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+
+  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                        : logf(1.0 + dev->histogram_max);
+  const gint stride = dev->histogram_waveform_stride;
   const size_t histsize = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM
                             ? sizeof(uint8_t) * height * stride
                             : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   void *buf = malloc(histsize);
-  if(buf == NULL) return FALSE;
 
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    memcpy(buf, dev->histogram_waveform, histsize);
-  else
-    memcpy(buf, dev->histogram, histsize);
-  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                        : logf(1.0 + dev->histogram_max);
+  if(buf)
+  {
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      memcpy(buf, dev->histogram_waveform, histsize);
+    else
+      memcpy(buf, dev->histogram, histsize);
+  }
+
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  if(buf == NULL) return FALSE;
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
