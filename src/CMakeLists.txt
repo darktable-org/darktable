@@ -429,6 +429,15 @@ if(USE_GRAPHICSMAGICK)
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
+if(USE_GMIC)
+  find_package(GMIC)
+  if(GMIC_FOUND)
+    add_definitions(-DHAVE_GMIC)
+    include_directories(SYSTEM ${GMIC_INCLUDE_DIRS})
+    list(APPEND LIBS ${GMIC_LIBRARIES})
+  endif(GMIC_FOUND)
+endif(USE_GMIC)
+
 #
 # Add HAVE_xxx defines used by darktable
 #

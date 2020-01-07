@@ -894,7 +894,7 @@ checkbutton check
 }
 
 /* arrow size of dropdown button arrow on filter collection */
-#left #lib-plugin-ui #dt-button 
+#left #lib-plugin-ui #dt-button
 {
   padding: 0px;
 }
@@ -1225,7 +1225,7 @@ button:disabled,
 }
 
 /* Treeviews and filechoosers states */
-treeview *:hover,
+treeview:not(#lutname) *:hover,
 filechooser *:hover
 {
     background-color: @field_hover_bg;
