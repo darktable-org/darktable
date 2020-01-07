@@ -205,21 +205,28 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
-  uint32_t *hist = malloc(histsize);
-  if(hist == NULL) return FALSE;
-
   dt_develop_t *dev = darktable.develop;
-
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-  memcpy(hist, dev->histogram, histsize);
-  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                        : logf(1.0 + dev->histogram_max);
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int width = allocation.width, height = allocation.height;
+  const gint stride = dev->histogram_waveform_stride;
+
+  const size_t histsize = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM
+                            ? sizeof(uint8_t) * height * stride
+                            : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  void *buf = malloc(histsize);
+  if(buf == NULL) return FALSE;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+    memcpy(buf, dev->histogram_waveform, histsize);
+  else
+    memcpy(buf, dev->histogram, histsize);
+  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                        : logf(1.0 + dev->histogram_max);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -262,31 +269,28 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
+      uint8_t *hist_wav = buf;
       // FIXME: use histogram_waveform_mutex?
-      const gint stride = dev->histogram_waveform_stride;
-
       // make the color channel selector work:
-      uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * height * stride);
       uint8_t mask[3] = { d->blue, d->green, d->red };
-      memcpy(buf, dev->histogram_waveform, sizeof(uint8_t) * height * stride);
       for(int y = 0; y < height; y++)
         for(int x = 0; x < width; x++)
           for(int k = 0; k < 3; k++)
           {
-            buf[y * stride + x * 4 + k] *= mask[k];
+            hist_wav[y * stride + x * 4 + k] *= mask[k];
           }
 
       cairo_surface_t *source
-          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width, height, stride);
+          = cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32, width, height, stride);
 
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
-      free(buf);
     }
     else
     {
+      uint32_t *hist = buf;
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -328,7 +332,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_paint(crf);
   cairo_surface_destroy(cst);
 
-  free(hist);
+  free(buf);
 
   return TRUE;
 }
