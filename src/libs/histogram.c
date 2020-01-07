@@ -153,6 +153,57 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_restore(cr);
 }
 
+static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
+{
+  // histogram height will never change after initial expose
+  static int oldw = 0;
+
+
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
+  const int width = event->width;
+  const int height = event->height;
+
+  if(oldw != width)
+  {
+    // mode and color buttons position on first expose or widget size change
+    // FIXME: can we right justify the buttons when rendering and not need all these width-based values?
+    d->color_w = 0.06 * width;
+    d->button_spacing = 0.02 * width;
+    d->button_h = 0.06 * width;
+    d->button_y = d->button_spacing;
+    d->mode_w = d->color_w;
+    d->mode_x = width - 3 * (d->color_w + d->button_spacing) - (d->mode_w + d->button_spacing);
+    d->red_x = width - 3 * (d->color_w + d->button_spacing);
+    d->green_x = width - 2 * (d->color_w + d->button_spacing);
+    d->blue_x = width - (d->color_w + d->button_spacing);
+
+    // this code assumes that the first expose comes before the first (preview) pipe is processed
+    // FIXME: do need to wrap this in histogram_waveform_mutex?
+    free(dev->histogram_waveform);
+    const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+    // FIXME: this blank waveform will be redrawn before the pixelpipe is redrawn resulting flicker -- either resize the old buffer onto the new waveform to make this smoother, or make a flag so don't redraw waveform before it is recalculated
+    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
+    dev->histogram_waveform_stride = stride;
+    dev->histogram_waveform_height = height;
+    dev->histogram_waveform_width = width;
+
+    // reprocess the preview pipe if necessary
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+    {
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      dev->preview_pipe->cache_obsolete = 1;
+      // FIXME; need this? only need to redraw center?
+      dt_control_queue_redraw();
+    }
+  }
+  oldw = event->width;
+
+  return TRUE;
+}
+
 static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -177,50 +228,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
-
-  // Get the mode and color buttons position on first expose or widget size change
-  if(d->mode_x == 0 || dev->histogram_waveform_width != width)
-  {
-    d->color_w = 0.06 * width;
-    d->button_spacing = 0.02 * width;
-    d->button_h = 0.06 * width;
-    d->button_y = d->button_spacing;
-    d->mode_w = d->color_w;
-    d->mode_x = width - 3 * (d->color_w + d->button_spacing) - (d->mode_w + d->button_spacing);
-    d->red_x = width - 3 * (d->color_w + d->button_spacing);
-    d->green_x = width - 2 * (d->color_w + d->button_spacing);
-    d->blue_x = width - (d->color_w + d->button_spacing);
-  }
-
-  // TODO: probably this should move to the configure-event callback! That would be future proof if we ever
-  // (again) allow to resize the side panels.
-  const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-
-  // this code assumes that the first expose comes before the first (preview) pipe is processed
-  if(dev->histogram_waveform_width == 0)
-  {
-    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
-    dev->histogram_waveform_stride = stride;
-    dev->histogram_waveform_height = height;
-    dev->histogram_waveform_width = width;
-  }
-
-  // the widget size has changed
-  if(dev->histogram_waveform_width != width)
-  {
-    free(dev->histogram_waveform);
-    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
-    dev->histogram_waveform_stride = stride;
-    dev->histogram_waveform_height = height;
-    dev->histogram_waveform_width = width;
-    // reprocess the preview pipe if necessary
-    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    {
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->preview_pipe->cache_obsolete = 1;
-      dt_control_queue_redraw();
-    }
-  }
 
   // Draw frame and background
   cairo_save(cr);
@@ -258,6 +265,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
+      // FIXME: use histogram_waveform_mutex?
+      const gint stride = dev->histogram_waveform_stride;
+
       // make the color channel selector work:
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * height * stride);
       uint8_t mask[3] = { d->blue, d->green, d->red };
@@ -582,6 +592,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
                    G_CALLBACK(_lib_histogram_enter_notify_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "configure-event",
+                   G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
   gtk_widget_set_size_request(self->widget, -1, 175);
