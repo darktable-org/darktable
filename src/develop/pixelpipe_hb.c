@@ -2540,12 +2540,10 @@ post_process_collect_info:
       // size (thus the weird gui stuff :().
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
-      //       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
       if(dev->histogram_waveform_width != 0 && input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }
-      //       dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
