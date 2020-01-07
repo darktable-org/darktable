@@ -158,7 +158,6 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   // histogram height will never change after initial expose
   static int oldw = 0;
 
-
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
@@ -181,14 +180,15 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
     d->blue_x = width - (d->color_w + d->button_spacing);
 
     // this code assumes that the first expose comes before the first (preview) pipe is processed
-    // FIXME: do need to wrap this in histogram_waveform_mutex?
+    // NOTE: a histogram_waveform_mutex (previously in code) could allow more fine grained locking here
+    dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
     free(dev->histogram_waveform);
     const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-    // FIXME: this blank waveform will be redrawn before the pixelpipe is redrawn resulting flicker -- either resize the old buffer onto the new waveform to make this smoother, or make a flag so don't redraw waveform before it is recalculated
     dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
     dev->histogram_waveform_stride = stride;
     dev->histogram_waveform_height = height;
     dev->histogram_waveform_width = width;
+    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
     // reprocess the preview pipe if necessary
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
@@ -270,7 +270,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
       uint8_t *hist_wav = buf;
-      // FIXME: use histogram_waveform_mutex?
       // make the color channel selector work:
       uint8_t mask[3] = { d->blue, d->green, d->red };
       for(int y = 0; y < height; y++)

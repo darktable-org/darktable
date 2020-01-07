@@ -180,11 +180,9 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  // we should process the waveform histogram in the correct size to make it not look like crap
   uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
       histogram_waveform_stride;
-  // we should process the waveform histogram in the correct size to make it not look like crap. since this
-  // requires gui knowledge we need this mutex
-  //   dt_pthread_mutex_t histogram_waveform_mutex;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
