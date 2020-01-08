@@ -2542,6 +2542,9 @@ void enter(dt_view_t *self)
 
   dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
+  // print a warning as long as we don't have proper dual pixel support in one of the modules
+  if (dev->image_storage.pixel_rawplanes > 1)
+    dt_control_log(_("`%s' is a dual pixel raw. No advanced processing implemented yet"),dev->image_storage.filename);
 
   /*
    * add IOP modules to plugin list

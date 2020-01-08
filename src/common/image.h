@@ -206,6 +206,10 @@ typedef struct dt_image_t
 
   /* DefaultUserCrop */
   float usercrop[4];
+
+  /* number of complete data planes as used by dual-pixel images and the size of one plane*/
+  uint32_t pixel_rawplanes;
+
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;

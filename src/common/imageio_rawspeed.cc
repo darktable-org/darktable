@@ -326,6 +326,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // if buf is NULL, we quit the fct here
     if(!mbuf) return DT_IMAGEIO_OK;
 
+    // we have to set the planes in the img struct now to allow a proper mipmapcache data size
+    if(img->buf_dsc.datatype == TYPE_UINT16) 
+      img->pixel_rawplanes = cpp;
+
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
@@ -340,7 +344,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     /*
       For dual pixels we can't just copy or use the flip as data are interwoven.
-      Here we use the medium of both sub-pixels, not worth to use _OPENMP.
+      Instead we copy the data organized in a way like standard cfa patterns so we can
+      use existing rawprepare algos.
       As there are no dual-float-pixel images we have them disabled.
     */
     if (cpp == 1)
@@ -361,12 +366,21 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     {
       if(img->buf_dsc.datatype == TYPE_UINT16)
       {
+        // we found a raw with SamplesPerPixel == 2
         for(int j = 0; j < img->height; j++)
         {
           const uint16_t *in = (uint16_t *) r->getDataUncropped(0, j);
+          // in the mipmap cache the data are aligned64 so we align32 the offset
+          const uint32_t offset = dt_round_size(img->height * img->width,32);
           uint16_t *out = ((uint16_t *)buf) + (size_t) j * img->width;
+ 
           for(int i = 0; i < img->width; i++)
-            out[i] = in[i*2];
+          {
+            // the first plane is populated from the first pixel data
+            // also we take the data and put them into the planes to support dual-pixel preprocessing
+            out[i] = out[i+offset] = in[i*2];
+            out[i+2*offset] = in[i*2+1];
+          }
         }
       }
       else
