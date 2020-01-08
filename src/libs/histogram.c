@@ -298,7 +298,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_set_line_width(cr, 1.);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
       if(d->red)
       {
         cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
@@ -599,7 +599,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, 175);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
