@@ -1626,6 +1626,9 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
     }
   }
 
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_focus_window();
+#endif
   gtk_main();
 
   return 0;
