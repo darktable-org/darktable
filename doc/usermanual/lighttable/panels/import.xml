@@ -77,7 +77,7 @@
     </para>
 
     <para>
-      As the name implies, checking <quote>import directories recursively</quote> will import
+      As the name implies, checking <quote>import folders recursively</quote> will import
       images in the currently selected directory, and all subdirectories. It is not recommended,
       and wastes resources, to do this on an exhaustive list of images. darktable would generate
       thumbnails for all of them, but in the end only keep the recent ones in its cache. It is
