@@ -18,6 +18,8 @@
 
 #define cimg_verbosity 0
 #include <gmic.h>
+#include <iostream>
+#include <string>
 
 extern "C" {
 
@@ -225,9 +227,18 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
   return lut_found;
 }
 
-
 const unsigned int lut3d_gmic_version()
 {
+  // some versions are expressed with 4 digits. Valid until there is no major or minor version above 10
+  unsigned int version = (gmic_version >= 1000) ? gmic_version / 10 : gmic_version;
+  // build time version
+  if(version < 270)
+  {
+    std::printf("[lut3d gmic] incompatible GMIC version %d (build)\n", version);
+    return gmic_version;
+  }
+
+  // run time version
   gmic_list<float> image_list;                       // List of images, will contain all images pixel data
   gmic_list<char> image_names;                       // List of images names. Can be left empty if no names
   image_list.assign(1);                              // Assign list to contain 1 image
@@ -235,10 +246,26 @@ const unsigned int lut3d_gmic_version()
   gmic g_instance;
   g_instance.verbosity = -1;
 
-  g_instance.run("f $_version", image_list, image_names);
+  try
+  {
+    g_instance.run("f $_version", image_list, image_names);
+  }
+  catch(gmic_exception &e) // In case something went wrong.
+  {
+    std::string s(e.what());
+    std::cerr << "[lut3d gmic] problem with gmic version " << s << std::endl;
+    image_list.assign(0);
+    return 0;
+  }
 
-  const unsigned int version = (unsigned int)*image_list[0];
+  version = (unsigned int)*image_list[0];
   image_list.assign(0U);
+
+  version = (version >= 1000) ? version / 10 : version;
+  if(version < 270)
+  {
+    std::printf("[lut3d gmic] incompatible GMIC version %d (runtime)\n", version);
+  }
   return version;
 }
 
