@@ -181,12 +181,14 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
     // this code assumes that the first expose comes before the first (preview) pipe is processed
     // NOTE: a histogram_waveform_mutex (previously in code) could allow more fine grained locking here
     dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+    const int waveform_width = width * darktable.gui->ppd;
+    const int waveform_height = height * darktable.gui->ppd;
     free(dev->histogram_waveform);
-    const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
+    const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, waveform_width);
+    dev->histogram_waveform = (uint32_t *)calloc(waveform_height * stride / 4, sizeof(uint32_t));
     dev->histogram_waveform_stride = stride;
-    dev->histogram_waveform_height = height;
-    dev->histogram_waveform_width = width;
+    dev->histogram_waveform_width = waveform_width;
+    dev->histogram_waveform_height = waveform_height;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
     // reprocess the preview pipe if necessary
@@ -214,9 +216,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
                                                                         : logf(1.0 + dev->histogram_max);
-  const gint stride = dev->histogram_waveform_stride;
+  const int waveform_width = dev->histogram_waveform_width;
+  const int waveform_height = dev->histogram_waveform_height;
+  const gint waveform_stride = dev->histogram_waveform_stride;
   const size_t histsize = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM
-                            ? sizeof(uint8_t) * height * stride
+                            ? sizeof(uint8_t) * waveform_height * waveform_stride
                             : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   void *buf = malloc(histsize);
 
@@ -276,15 +280,16 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       uint8_t *hist_wav = buf;
       // make the color channel selector work:
       uint8_t mask[3] = { d->blue, d->green, d->red };
-      for(int y = 0; y < height; y++)
-        for(int x = 0; x < width; x++)
+      for(int y = 0; y < waveform_height; y++)
+        for(int x = 0; x < waveform_width; x++)
           for(int k = 0; k < 3; k++)
           {
-            hist_wav[y * stride + x * 4 + k] *= mask[k];
+            hist_wav[y * waveform_stride + x * 4 + k] *= mask[k];
           }
 
       cairo_surface_t *source
-          = cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32, width, height, stride);
+          = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
+                                                   waveform_width, waveform_height, waveform_stride);
 
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
