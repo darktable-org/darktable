@@ -38,7 +38,12 @@ typedef struct
   GtkWidget *w_main;
   GtkWidget *w_back;
   cairo_surface_t *img_surf;
-  GtkWidget *w_bottom;
+  GtkWidget *w_info_back_eb;
+  GtkWidget *w_info_back;
+  GtkWidget *w_btn_audio;
+  GtkWidget *w_btn_group;
+  GtkWidget *w_btn_reject;
+  GtkWidget *w_stars;
 
 } dt_thumbnail;
 typedef struct

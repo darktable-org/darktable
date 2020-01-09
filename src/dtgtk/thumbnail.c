@@ -180,10 +180,10 @@ static gboolean _draw_main_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   return TRUE;
 }
-static gboolean _draw_bottom_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+/*static gboolean _draw_bottom_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-  return TRUE;
-}
+  return FALSE;
+}*/
 
 static gboolean _enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
@@ -203,6 +203,10 @@ static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(thumb->mouse_over || over_id == thumb->imgid)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
+    if(thumb->mouse_over)
+      gtk_widget_show(thumb->w_info_back_eb);
+    else
+      gtk_widget_hide(thumb->w_info_back_eb);
     gtk_widget_queue_draw(thumb->w_back);
   }
 }
@@ -228,6 +232,19 @@ static void _selection_changed_callback(gpointer instance, gpointer user_data)
     thumb->selected = selected;
     gtk_widget_queue_draw(thumb->w_back);
   }
+}
+
+static gboolean _info_back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  gtk_widget_set_name(thumb->w_info_back, "thumb_info_over");
+  return TRUE;
+}
+static gboolean _info_back_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  gtk_widget_set_name(thumb->w_info_back, "thumb_info");
+  return TRUE;
 }
 
 GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
@@ -258,16 +275,22 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
-    // the bottom part
-    thumb->w_bottom = gtk_drawing_area_new();
-    gtk_widget_set_events(thumb->w_bottom, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                               | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
-                                               | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                               | GDK_ENTER_NOTIFY_MASK);
-
-    gtk_widget_set_app_paintable(thumb->w_bottom, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_bottom), "draw", G_CALLBACK(_draw_bottom_callback), thumb);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom);
+    // the infos part
+    thumb->w_info_back_eb = gtk_event_box_new();
+    g_signal_connect(G_OBJECT(thumb->w_info_back_eb), "enter-notify-event",
+                     G_CALLBACK(_info_back_enter_notify_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_info_back_eb), "leave-notify-event",
+                     G_CALLBACK(_info_back_leave_notify_callback), thumb);
+    gtk_widget_set_valign(thumb->w_info_back_eb, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_info_back_eb, GTK_ALIGN_CENTER);
+    thumb->w_info_back = gtk_label_new("");
+    gtk_widget_set_name(thumb->w_info_back, "thumb_info");
+    gtk_widget_set_size_request(thumb->w_info_back, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
+                                0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
+                                                           // dependent of fontsize ?
+    gtk_widget_show(thumb->w_info_back);
+    gtk_container_add(GTK_CONTAINER(thumb->w_info_back_eb), thumb->w_info_back);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_info_back_eb);
   }
   return thumb->w_main;
 }
