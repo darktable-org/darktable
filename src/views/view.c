@@ -1007,6 +1007,133 @@ dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int
   return DT_VIEW_DESERT;
 }
 
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface)
+{
+  // get mipmap cahe imahe
+  dt_mipmap_cache_t *cache = darktable.mipmap_cache;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width, height);
+
+  // if needed, we load the mimap buffer
+  dt_mipmap_buffer_t buf;
+  gboolean buf_ok = TRUE;
+  int buf_wd = 0;
+  int buf_ht = 0;
+
+  dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  buf_wd = buf.width;
+  buf_ht = buf.height;
+  if(!buf.buf)
+    buf_ok = FALSE;
+  else if(mip != buf.size)
+    buf_ok = FALSE;
+
+  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
+  // this thumbnail as missing (to trigger re-exposure)
+  if(!buf_ok && buf_wd != 8 && buf_ht != 8) return 1;
+
+  // so we create a new image surface to return
+  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht);
+  const int img_width = buf_wd * scale;
+  const int img_height = buf_ht * scale;
+  *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+
+  // we transfer cahed image on a cairo_surface (with colorspace transform if needed)
+  cairo_surface_t *tmp_surface = NULL;
+  uint8_t *rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
+  if(rgbbuf)
+  {
+    gboolean have_lock = FALSE;
+    cmsHTRANSFORM transform = NULL;
+
+    if(dt_conf_get_bool("cache_color_managed"))
+    {
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      have_lock = TRUE;
+
+      // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the
+      // screen
+      if(buf.color_space == DT_COLORSPACE_SRGB && darktable.color_profiles->transform_srgb_to_display)
+      {
+        transform = darktable.color_profiles->transform_srgb_to_display;
+      }
+      else if(buf.color_space == DT_COLORSPACE_ADOBERGB && darktable.color_profiles->transform_adobe_rgb_to_display)
+      {
+        transform = darktable.color_profiles->transform_adobe_rgb_to_display;
+      }
+      else
+      {
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+        have_lock = FALSE;
+        if(buf.color_space == DT_COLORSPACE_NONE)
+        {
+          fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+        }
+        else if(buf.color_space != DT_COLORSPACE_DISPLAY && buf.color_space != DT_COLORSPACE_DISPLAY2)
+        {
+          fprintf(stderr,
+                  "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
+                  dt_colorspaces_get_name(buf.color_space, "from file"));
+        }
+      }
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
+#endif
+    for(int i = 0; i < buf.height; i++)
+    {
+      const uint8_t *in = buf.buf + i * buf.width * 4;
+      uint8_t *out = rgbbuf + i * buf.width * 4;
+
+      if(transform)
+      {
+        cmsDoTransform(transform, in, out, buf.width);
+      }
+      else
+      {
+        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        {
+          out[0] = in[2];
+          out[1] = in[1];
+          out[2] = in[0];
+        }
+      }
+    }
+    if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+    const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
+    tmp_surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, stride);
+  }
+
+  // draw the image scaled:
+  if(tmp_surface)
+  {
+    cairo_t *cr = cairo_create(*surface);
+    cairo_scale(cr, scale, scale);
+
+    cairo_set_source_surface(cr, tmp_surface, 0, 0);
+    // set filter no nearest:
+    // in skull mode, we want to see big pixels.
+    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+    // in between, filtering just makes stuff go unsharp.
+    if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    else
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
+
+    cairo_paint(cr);
+
+    if(darktable.gui->show_focus_peaking)
+      dt_focuspeaking(cr, img_width, img_height, cairo_image_surface_get_data(*surface),
+                      cairo_image_surface_get_width(*surface), cairo_image_surface_get_height(*surface));
+
+    cairo_surface_destroy(tmp_surface);
+    cairo_destroy(cr);
+  }
+
+  if(rgbbuf) free(rgbbuf);
+  return 0;
+}
 int dt_view_image_expose(dt_view_image_expose_t *vals)
 {
   int missing = 0;

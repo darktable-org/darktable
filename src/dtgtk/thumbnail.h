@@ -27,8 +27,18 @@ typedef struct
 
   int imgid;
   int width, height;
+  int img_width, img_height;
 
   gboolean mouse_over;
+  gboolean selected;
+
+  gboolean thumb_border; // TODO : replace with the corresponding state of the image (on-screen ?)
+  gboolean image_border; // TODO : replace with the corresponding state of the image (on-screen ?)
+
+  GtkWidget *w_main;
+  GtkWidget *w_back;
+  cairo_surface_t *img_surf;
+  GtkWidget *w_bottom;
 
 } dt_thumbnail;
 typedef struct
