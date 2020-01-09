@@ -235,9 +235,13 @@ box *
   color: @disabled_fg_color;
 }
 
-#testlb {
-  background-color: #ff0000;
+#thumb_info {
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
 }
+#thumb_info_over {
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
+}
+
 /* Side panels */
 
 /* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
