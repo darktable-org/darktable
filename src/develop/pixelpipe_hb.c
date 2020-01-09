@@ -999,6 +999,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
 
   uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
                                      sizeof(uint32_t));
+  uint8_t *weight = (uint8_t *)calloc(dev->histogram_waveform_width, sizeof(uint8_t));
   memset(dev->histogram_waveform, 0,
          sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
 
@@ -1007,6 +1008,13 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
                _height = (double)(dev->histogram_waveform_height - 1);
   const float *const pixel = (const float *const )input;
   //         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+
+  // count # of horizontal pixels in bin to eliminate banding
+  for(int x = 0; x < roi_in->width; x++)
+  {
+    const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
+    weight[out_x]++;
+  }
 
   // count the colors into buf ...
   for(int y = 0; y < roi_in->height; y++)
@@ -1052,7 +1060,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       for(int k = 0; k < 3; k++)
       {
         if(in[k] == 0) continue;
-        out[k] = CLAMP(powf(in[k] * scale, gamma) * 255.0, 0, 255);
+        out[k] = CLAMP(powf(in[k] * (bin_width / weight[x]) * scale, gamma) * 255.0, 0, 255);
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
@@ -1062,6 +1070,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   }
 
   free(buf);
+  free(weight);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
