@@ -1343,6 +1343,9 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   gtkosx_application_ready(g_object_new(GTKOSX_TYPE_APPLICATION, NULL));
 #endif
 #endif
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_focus_window();
+#endif
   /* start the event loop */
   gtk_main();
 
