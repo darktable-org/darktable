@@ -155,16 +155,12 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
 
 static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
 {
-  // histogram height will never change after initial expose
   static int oldw = 0;
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_develop_t *dev = darktable.develop;
 
   const int width = event->width;
-  const int height = event->height;
-
   if(oldw != width)
   {
     // mode and color buttons position on first expose or widget size change
@@ -177,25 +173,6 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
     d->green_x = d->blue_x - offset;
     d->red_x = d->green_x - offset;
     d->mode_x = d->red_x - offset;
- 
-    // this code assumes that the first expose comes before the first (preview) pipe is processed
-    // NOTE: a histogram_waveform_mutex (previously in code) could allow more fine grained locking here
-    dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-    const int waveform_width = width * darktable.gui->ppd;
-    const int waveform_height = height * darktable.gui->ppd;
-    free(dev->histogram_waveform);
-    const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, waveform_width);
-    dev->histogram_waveform = (uint32_t *)calloc(waveform_height * stride / 4, sizeof(uint32_t));
-    dev->histogram_waveform_stride = stride;
-    dev->histogram_waveform_width = waveform_width;
-    dev->histogram_waveform_height = waveform_height;
-    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-
-    // reprocess the preview pipe if necessary
-    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    {
-      dt_dev_process_preview(dev);
-    }
   }
   oldw = event->width;
 
@@ -291,6 +268,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
                                                    waveform_width, waveform_height, waveform_stride);
 
+      cairo_scale(cr, darktable.gui->ppd*width/waveform_width, 1.0);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
@@ -568,6 +546,16 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
 
 void gui_init(dt_lib_module_t *self)
 {
+  /* waveform buffer will be max width of preview image */
+  // this code assumes that the gui_init comes before the first (preview) pipe is processed
+  // and that the mipmap cache has already been set up
+  const int gui_height = 175;
+  dt_develop_t *dev = darktable.develop;
+  // _init_f() of mosaiced image may be twice the dimensions of DT_MIPMAP_F
+  dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] * 2;
+  dev->histogram_waveform_height = gui_height * darktable.gui->ppd;
+  dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, dev->histogram_waveform_width);
+  dev->histogram_waveform = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride / 4, sizeof(uint32_t));
   /* initialize ui widgets */
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
@@ -603,7 +591,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(gui_height));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
