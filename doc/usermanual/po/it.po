@@ -6,15 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "POT-Creation-Date: 2019-03-14 20:49+0100\n"
-<<<<<<< HEAD
-<<<<<<< HEAD
 "PO-Revision-Date: 2019-04-07 15:52+0200\n"
-=======
-"PO-Revision-Date: 2019-04-04 22:53+0200\n"
->>>>>>> 96df396ac... second revision
-=======
-"PO-Revision-Date: 2019-04-07 15:52+0200\n"
->>>>>>> e9abf7734... complete italian translation
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -17789,24 +17781,6 @@ msgid ""
 "until the result matches your expectations. An arrow helps to tell source "
 "from target area."
 msgstr ""
-<<<<<<< HEAD
-"La sorgente ha due modalità: assoluta o relativa. Per impostare la modalità "
-"assoluta, mentre si crea una forma, occorre premere <emphasis>Maiusc+Ctrl"
-"+Click</emphasis> sulla posizione desiderata. Da questo momento in poi tutte "
-"le nuove forme attingeranno dalla sorgente appena impostata. Per impostare "
-"invece la modalità relativa, mentre si crea una forma premere "
-"<emphasis>Maiusc+click</emphasis> sulla posizione desiderata. La forma "
-"appena creata attingerà dalla sorgente selezionata mente le successive "
-"avranno le loro sorgenti create alle diverse posizioni relative."
-
-#: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14887(para)
-msgid ""
-"After creation source area and target area can be shifted independently "
-"until the result matches your expectations. An arrow helps to tell source "
-"from target area."
-msgstr ""
-=======
->>>>>>> 96df396ac... second revision
 "L'area sorgente e quella di destinazione potranno essere trascinate in "
 "diverse posizioni fino a trovare il risultato desiderato. Un segnaposto a "
 "croce vi aiuta a distinguere le due diverse aree."
@@ -17968,18 +17942,8 @@ msgid ""
 "A green line on top of each box indicates that the scale has shapes "
 "associated with it."
 msgstr ""
-<<<<<<< HEAD
-<<<<<<< HEAD
 "Una sottile linea verde sul lato superiore di ogni riquadro significa che la "
 "scala ha delle forme associate."
-=======
-"Una linea verde sul lato superiore di ogni riquadro significa che la scala "
-"ha delle forme associate."
->>>>>>> 96df396ac... second revision
-=======
-"Una sottile linea verde sul lato superiore di ogni riquadro significa che la "
-"scala ha delle forme associate."
->>>>>>> e9abf7734... complete italian translation
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15039(para)
 msgid ""
@@ -18082,19 +18046,10 @@ msgid ""
 "\"center\"/> ) temporarily disables the processing of all shapes for a "
 "simple before/after comparison."
 msgstr ""
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e9abf7734... complete italian translation
 "Il pulsante disabilita forme ( <inlinegraphic fileref=\"images/"
 "darkroom_module_retouch_switch.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> ) impedisce temporaneamente di processare le forme per "
 "permettere una rapida comparazione del risultato prima e dopo."
-<<<<<<< HEAD
-=======
->>>>>>> 96df396ac... second revision
-=======
->>>>>>> e9abf7734... complete italian translation
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15084(para)
 msgid ""
