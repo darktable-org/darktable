@@ -31,12 +31,12 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 
   if(allocation.width <= 20 || allocation.height <= 20) return FALSE;
 
-  if(force || allocation.width != table->view_width || allocation.width != table->view_height
+  if(force || allocation.width != table->view_width || allocation.height != table->view_height
      || npr != table->thumbs_per_row)
   {
     table->thumbs_per_row = npr;
     table->view_width = allocation.width;
-    table->view_height = allocation.width;
+    table->view_height = allocation.height;
     table->thumb_size = table->view_width / table->thumbs_per_row;
     table->rows = table->view_height / table->thumb_size + 1;
     ret = TRUE;

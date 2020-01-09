@@ -226,6 +226,8 @@ typedef struct dt_view_image_expose_t
 } dt_view_image_expose_t;
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_expose(dt_view_image_expose_t *vals);
+/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface);
 
 /* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
    this routine does not output any meta-data as the version above.
