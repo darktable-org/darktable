@@ -591,14 +591,6 @@ void gui_cleanup(dt_lib_module_t *self)
   /* disconnect callback from  signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
 
-  dt_develop_t *dev = darktable.develop;
-
-  free(dev->histogram_waveform);
-  dev->histogram_waveform = NULL;
-  dev->histogram_waveform_stride = 0;
-  dev->histogram_waveform_height = 0;
-  dev->histogram_waveform_width = 0;
-
   g_free(self->data);
   self->data = NULL;
 }
