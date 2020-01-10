@@ -967,12 +967,12 @@ int dt_image_altered(const uint32_t imgid)
 }
 
 
-void dt_image_read_duplicates(const uint32_t id, const char *filename)
+GList* dt_image_find_duplicates(const char* filename)
 {
-  // Search for duplicate's sidecar files and import them if found and not in DB yet
-  gchar *imgfname = g_path_get_basename(filename);
-  gchar *imgpath = g_path_get_dirname(filename);
+  // find all duplicates of an image
   gchar pattern[PATH_MAX] = { 0 };
+  GList* files = NULL;
+  gchar *imgpath = g_path_get_dirname(filename);
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
 #ifdef _WIN32
@@ -984,7 +984,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 #endif
 
   const gchar **glob_pattern = glob_patterns;
-  GList *files = NULL;
+  files = NULL;
   while(*glob_pattern)
   {
     snprintf(pattern, sizeof(pattern), "%s", filename);
@@ -1005,7 +1005,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       do
       {
         char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        if(win_valid_duplicate_filename(file)) files = 
+        if(win_valid_duplicate_filename(file)) files =
           g_list_append(files, g_build_filename(imgpath, file, NULL));
         g_free(file);
       }
@@ -1024,6 +1024,18 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 
     glob_pattern++;
   }
+
+  g_free(imgpath);
+  return files;
+}
+
+
+void dt_image_read_duplicates(const uint32_t id, const char *filename)
+{
+  // Search for duplicate's sidecar files and import them if found and not in DB yet
+  gchar pattern[PATH_MAX] = { 0 };
+
+  GList *files = dt_image_find_duplicates(filename);
 
   // we store the xmp filename without version part in pattern to speed up string comparison later
   g_snprintf(pattern, sizeof(pattern), "%s.xmp", filename);
@@ -1067,8 +1079,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   g_list_free_full(files, g_free);
-  g_free(imgfname);
-  g_free(imgpath);
+
 }
 
 
