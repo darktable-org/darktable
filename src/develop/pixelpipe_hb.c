@@ -997,11 +997,16 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  dev->histogram_waveform_width = roi_in->width;
+  // Use integral sized bins for columns, as otherwise they will be
+  // unequal and have banding. Rely on GUI to smoothly do horizontal
+  // scaling.
+  const int bin_width = ceilf((float)(roi_in->width) / (float)dev->histogram_waveform_width);
+
+  dev->histogram_waveform_width = roi_in->width / bin_width;
   uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
                                      sizeof(uint32_t));
   memset(dev->histogram_waveform, 0,
-         sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
+         sizeof(uint8_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride);
 
   // 1.0 is at 8/9 of the height!
   const double _height = (double)(dev->histogram_waveform_height - 1);
@@ -1014,13 +1019,15 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   {
     for(int x = 0; x < roi_in->width; x++)
     {
+      // FIXME: do we need the MIN()?
+      const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
       for(int k = 0; k < 3; k++)
       {
         const float c = pixel[4 * y * roi_in->width + 4 * x + 2 - k];
         // catch NaNs as they don't convert well to integers
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
-        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width + x) * 3 + k;
+        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width + out_x) * 3 + k;
         (*out)++;
         //               mincol[k] = MIN(mincol[k], *out);
         //               maxcol[k] = MAX(maxcol[k], *out);
