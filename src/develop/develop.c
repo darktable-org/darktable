@@ -114,11 +114,17 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
 
-    // _init_f() of mosaiced image may be twice the dimensions of DT_MIPMAP_F
-    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] * 2;
-    // really needs to be the height of the histogram widget in device
-    // pixels (currently either 175 or 350)
-    dev->histogram_waveform_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
+    // mosaiced image may be twice the dimensions of DT_MIPMAP_F but
+    // half width still gives sufficient data and is reasonably fast
+    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] / 2;
+    //  GUI-indepdent way
+    //dev->histogram_waveform_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F] / 2;  // 225 px
+    // height of the histogram widget in device pixels (gui-dependent hack)
+    //dev->histogram_waveform_height = 175 * darktable.gui->ppd;
+    // this is sufficient visual information though the waveform
+    // widget will probably be either 175 or 350 pixels high depending
+    // on hidpi
+    dev->histogram_waveform_height = 128;
     dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
     dev->histogram_waveform = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
   }
