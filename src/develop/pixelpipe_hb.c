@@ -1000,7 +1000,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on GUI to smoothly do horizontal
   // scaling.
-  const int bin_width = ceilf((float)(roi_in->width) / (float)dev->histogram_waveform_width);
+  const int bin_width = ceilf((float)(roi_in->width) / (float)(dev->histogram_waveform_stride/4));
   dev->histogram_waveform_width = roi_in->width / bin_width;
 
   uint16_t *buf = (uint16_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
@@ -2541,7 +2541,7 @@ post_process_collect_info:
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
       // FIXME: is above comment true now that waveform is scaled via Cairo?
-      if(dev->histogram_waveform_width != 0 && input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      if(input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }
