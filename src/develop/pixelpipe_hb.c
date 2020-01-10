@@ -2535,10 +2535,9 @@ post_process_collect_info:
       else
         _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
 
-      // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct
-      // size (thus the weird gui stuff :().
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
+      // FIXME: is above comment true now that waveform is scaled via Cairo?
       if(dev->histogram_waveform_width != 0 && input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);

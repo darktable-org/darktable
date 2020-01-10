@@ -268,11 +268,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
                                                    waveform_width, waveform_height, waveform_stride);
 
-      cairo_scale(cr, darktable.gui->ppd*width/waveform_width, 1.0);
+      cairo_save(cr);
+      cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
+      cairo_restore(cr);
     }
     else
     {
@@ -546,16 +548,6 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
 
 void gui_init(dt_lib_module_t *self)
 {
-  /* waveform buffer will be max width of preview image */
-  // this code assumes that the gui_init comes before the first (preview) pipe is processed
-  // and that the mipmap cache has already been set up
-  const int gui_height = 175;
-  dt_develop_t *dev = darktable.develop;
-  // _init_f() of mosaiced image may be twice the dimensions of DT_MIPMAP_F
-  dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] * 2;
-  dev->histogram_waveform_height = gui_height * darktable.gui->ppd;
-  dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, dev->histogram_waveform_width);
-  dev->histogram_waveform = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride / 4, sizeof(uint32_t));
   /* initialize ui widgets */
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
@@ -591,7 +583,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(gui_height));
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

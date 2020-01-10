@@ -180,6 +180,7 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  // FIXME: no longer true if Cairo is rescaling it
   // we should process the waveform histogram in the correct size to make it not look like crap
   uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
       histogram_waveform_stride;
