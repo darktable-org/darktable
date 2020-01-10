@@ -1347,12 +1347,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     if(t < 0.0f) break;
   }
 
+  const int max_mult = 1u << max_scale;
   const int width = roi_in->width, height = roi_in->height;
   const size_t npixels = (size_t)width*height;
 
-  // corner case of extremely small image. this is not really likely to happen but would cause issues later
-  // when we divide by (n-1). so let's be prepared
-  if(npixels < 2)
+  // corner case of extremely small image. this is not really likely to happen but would
+  // lead to out of bounds memory access
+  if(width < 2 * max_mult || height < 2 * max_mult)
   {
     memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
     return;
