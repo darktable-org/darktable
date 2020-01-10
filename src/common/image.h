@@ -241,6 +241,8 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
 void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
+/** finds all xmp duplicates for the given image in the database. */
+GList* dt_image_find_duplicates(const char* filename);
 /** look for duplicate's xmp files and read them. */
 void dt_image_read_duplicates(uint32_t id, const char *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/

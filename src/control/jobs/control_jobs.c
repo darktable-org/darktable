@@ -34,7 +34,6 @@
 #include "common/undo.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
-#include "win/filepath.h"
 
 #include "gui/gtk.h"
 
@@ -955,59 +954,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
       // no need to keep them as the source data file is gone.
-      gchar pattern[PATH_MAX] = { 0 };
 
-      // NULL terminated list of glob patterns; should include "" and can be extended if needed
-
-#ifdef _WIN32
-      // Windows only accepts generic wildcards for filename
-			static const gchar *glob_patterns[]	= { "", "_????", NULL };
-#else
-			static const gchar *glob_patterns[]
-					= { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
-#endif
-
-      const gchar **glob_pattern = glob_patterns;
-      GList *files = NULL;
-      while(*glob_pattern)
-      {
-        snprintf(pattern, sizeof(pattern), "%s", filename);
-        gchar *c1 = pattern + strlen(pattern);
-        while(*c1 != '.' && c1 > pattern) c1--;
-        snprintf(c1, pattern + sizeof(pattern) - c1, "%s", *glob_pattern);
-        const gchar *c2 = filename + strlen(filename);
-        while(*c2 != '.' && c2 > filename) c2--;
-        snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp",
-                 c2);
-
-#ifdef _WIN32
-        wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
-        WIN32_FIND_DATAW data;
-        HANDLE handle = FindFirstFileW(wpattern, &data);
-        g_free(wpattern);
-        if(handle != INVALID_HANDLE_VALUE)
-        {
-          do
-          {
-            char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-						if (win_valid_duplicate_filename(xmp_filename)) 
-                files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
-            g_free(xmp_filename);
-          }
-          while(FindNextFileW(handle, &data));
-        }
-#else
-        glob_t globbuf;
-        if(!glob(pattern, 0, NULL, &globbuf))
-        {
-          for(size_t i = 0; i < globbuf.gl_pathc; i++)
-            files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
-          globfree(&globbuf);
-        }
-#endif
-
-        glob_pattern++;
-      }
+      GList *files = dt_image_find_duplicates(filename);
 
       GList *file_iter = g_list_first(files);
       while(file_iter != NULL)
