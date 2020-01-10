@@ -1000,11 +1000,15 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on GUI to smoothly do horizontal
   // scaling.
+  // Note that histogram_waveform_stride is pre-initialized/hardcoded,
+  // but histogram_waveform_width varies, depending on preview image
+  // width and # of bins.
   const int bin_width = ceilf((float)(roi_in->width) / (float)(dev->histogram_waveform_stride/4));
   dev->histogram_waveform_width = roi_in->width / bin_width;
 
-  uint16_t *buf = (uint16_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
-                                     sizeof(uint16_t));
+  // FIXME: better to pre-allocate this in dev?
+  uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
+                                     sizeof(uint32_t));
   memset(dev->histogram_waveform, 0,
          sizeof(uint8_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride);
 
@@ -1024,7 +1028,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         // catch NaNs as they don't convert well to integers
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
-        uint16_t *const out = buf + (out_y * dev->histogram_waveform_width + out_x) * 3 + k;
+        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width + out_x) * 3 + k;
         (*out)++;
         //               mincol[k] = MIN(mincol[k], *out);
         //               maxcol[k] = MAX(maxcol[k], *out);
@@ -1049,8 +1053,8 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   {
     for(int x = 0; x < dev->histogram_waveform_width; x++)
     {
-      uint16_t *const in = buf + (y * dev->histogram_waveform_width + x) * 3;
-      uint8_t *const out = dev->histogram_waveform + (y * dev->histogram_waveform_stride + x * 4);
+      uint32_t *const in = buf + (y * dev->histogram_waveform_width + x) * 3;
+      uint8_t *const out = dev->histogram_waveform + (y * dev->histogram_waveform_stride) + (x * 4);
       for(int k = 0; k < 3; k++)
       {
         if(in[k] == 0) continue;
