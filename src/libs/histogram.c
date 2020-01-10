@@ -155,26 +155,21 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
 
 static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
 {
-  static int oldw = 0;
-
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   const int width = event->width;
-  if(oldw != width)
-  {
-    // mode and color buttons position on first expose or widget size change
-    d->button_spacing = 0.02 * width;
-    d->button_w = 0.06 * width;
-    d->button_h = 0.06 * width;
-    d->button_y = d->button_spacing;
-    const float offset = d->button_w + d->button_spacing;
-    d->blue_x = width - offset;
-    d->green_x = d->blue_x - offset;
-    d->red_x = d->green_x - offset;
-    d->mode_x = d->red_x - offset;
-  }
-  oldw = event->width;
+  // mode and color buttons position on first expose or widget size change
+  // FIXME: should the button size depend on histogram width or just be set to something reasonable
+  d->button_spacing = 0.02 * width;
+  d->button_w = 0.06 * width;
+  d->button_h = 0.06 * width;
+  d->button_y = d->button_spacing;
+  const float offset = d->button_w + d->button_spacing;
+  d->blue_x = width - offset;
+  d->green_x = d->blue_x - offset;
+  d->red_x = d->green_x - offset;
+  d->mode_x = d->red_x - offset;
 
   return TRUE;
 }
@@ -256,13 +251,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     {
       uint8_t *hist_wav = buf;
       // make the color channel selector work:
+      // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
       uint8_t mask[3] = { d->blue, d->green, d->red };
-      for(int y = 0; y < waveform_height; y++)
-        for(int x = 0; x < waveform_width; x++)
-          for(int k = 0; k < 3; k++)
-          {
-            hist_wav[y * waveform_stride + x * 4 + k] *= mask[k];
-          }
+      for(int k = 0; k < 3; k++)
+        if(!mask[k])
+          for(int y = 0; y < waveform_height; y++)
+            for(int x = 0; x < waveform_width; x++)
+              hist_wav[y * waveform_stride + x * 4 + k] = 0;
 
       cairo_surface_t *source
           = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
@@ -442,6 +437,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_dev_histogram_type_names[darktable.develop->histogram_type]);
       // we need to reprocess the preview pipe
+      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
       if(darktable.develop->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
         dt_dev_process_preview(darktable.develop);
