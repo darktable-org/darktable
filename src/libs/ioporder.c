@@ -25,39 +25,13 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-/* @@_NEW_MODULE: increase the version for this module.
-
-   1. this is needed to force legacy_params() to be called.
-
-   NOTE FOR DEVS: A new params for a new version will still be compatible with a
-                  previous version as the manipulated data is just a list of
-                  iop-order entries.
-*/
-
 DT_MODULE(1)
-
-enum dt_ioporder_t
-{
-  DT_IOP_ORDER_UNSAFE      = 0,
-  DT_IOP_ORDER_CUSTOM      = 1,
-  DT_IOP_ORDER_LEGACY      = 2,
-  DT_IOP_ORDER_RECOMMENDED = 3,
-  DT_IOP_ORDER_LAST
-} dt_ioporder_t;
 
 typedef struct dt_lib_ioporder_t
 {
   int current_mode;
   GtkWidget *widget;
 } dt_lib_ioporder_t;
-
-static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, size_t *size);
-
-#if 0
-// @@_NEW_MODULE: uncomment the first time when a new module is created
-static void *_serialize_preset_list(GList *iop_order_list, const int32_t version, size_t *size);
-static GList *_insert_after(GList *iop_order_list, const char *module, const char *new_module);
-#endif
 
 const char *name(dt_lib_module_t *self)
 {
@@ -80,107 +54,45 @@ int position()
   return 880;
 }
 
-void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, int *new_version, size_t *new_size)
-{
-  /* @@_NEW_MODULE: when a new module is added the iop-order presets must be migrated to contain this new module.
-
-     1. the iop-order list is deserialized
-     2. the new module is added into the list at the right position (using _insert_after, cannot be inserted in last
-        position which is the gamma module).
-     3. the new iop-order list is serialized back
-     4. the new version is set
-     5. the serialized data is returned.
-  */
-
-#if 0
-  if(old_version == 1)
-  {
-    int iop_order_version = 0;
-    GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(old_params, old_params_size, &iop_order_version);
-
-    iop_order_list = _insert_after(iop_order_list, "<CURRENT_MODULE_NAME>", "<NEW_MODULE_NAME>");
-
-    void *new_params = _serialize_preset_list(iop_order_list, iop_order_version, new_size);
-
-    g_list_free(iop_order_list);
-
-    *new_version = 2;
-    return new_params;
-  }
-#endif
-
-  return NULL;
-}
-
 void update(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-  const int32_t imgid = darktable.develop->image_storage.id;
 
-  int current_iop_order_version = dt_image_get_iop_order_version(imgid);
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&current_iop_order_version, TRUE);
+  int mode = DT_IOP_ORDER_CUSTOM;
 
-  int mode = DT_IOP_ORDER_UNSAFE;
+  gchar *iop_order_list = dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
 
-  const GList *entries =  dt_bauhaus_combobox_get_entries(d->widget);
+  sqlite3_stmt *stmt;
 
-  // two first entries are built-in
-  for(int k=0; k<2; k++) entries = g_list_next(entries);
-  int count = 2;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT op_params"
+                              " FROM data.presets "
+                              " WHERE operation='ioporder'"
+                              " ORDER BY writeprotect DESC", -1, &stmt, NULL);
 
-  while(entries)
+  int index = 1;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
-    const int iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->widget), entry->label));
+    const char *params = (char *)sqlite3_column_blob(stmt, 0);
+    const int32_t params_len = sqlite3_column_bytes(stmt, 0);
+    GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
+    gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
+    g_list_free(iop_list);
 
-    if(current_iop_order_version == iop_order_version)
+    if(!strcmp(iop_order_list, iop_list_text))
     {
-      mode = count;
+      mode = index;
+      g_free(iop_list_text);
       break;
     }
-    entries = g_list_next(entries);
-    count++;
+
+    g_free(iop_list_text);
+    index ++;
   }
 
-  // preset not found, set to custom
-  if(mode == DT_IOP_ORDER_UNSAFE)
-    mode = DT_IOP_ORDER_CUSTOM;
+  sqlite3_finalize(stmt);
 
-  /*
-    Check if user has changed the order (custom order).
-    We do not check for iop-order but the actual order of modules
-    compared to the canonical order of modules for the given iop-order version.
-  */
-  GList *modules = g_list_first(darktable.develop->iop);
-  GList *iop = iop_order_list;
-
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    if(strcmp(mod->op, "mask_manager"))
-    {
-      // check module in iop_order_list
-      if(iop && !strcmp(((dt_iop_order_entry_t *)iop->data)->operation, "mask_manager")) iop = g_list_next(iop);
-
-      if(iop)
-      {
-        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)iop->data;
-        if(strcmp(entry->operation, mod->op))
-        {
-          mode = DT_IOP_ORDER_CUSTOM;
-          break;
-        }
-        iop = g_list_next(iop);
-      }
-    }
-
-    // skip all same modules (duplicate instances) if any
-    while(modules && !strcmp(((dt_iop_module_t *)modules->data)->op, mod->op)) modules = g_list_next(modules);
-  }
-
-  g_list_free(iop_order_list);
+  g_free(iop_order_list);
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -189,24 +101,20 @@ void update(dt_lib_module_t *self)
   d->current_mode = mode;
 
   darktable.gui->reset = reset;
-
-  if(mode == DT_IOP_ORDER_UNSAFE)
-    dt_control_log("this picture is using an unsafe iop-order, please select a proper one");
 }
 
 static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+  sqlite3_stmt *stmt;
 
   const int mode = dt_bauhaus_combobox_get(widget);
   const int32_t imgid = darktable.develop->image_storage.id;
-  const int current_iop_order_version = dt_image_get_iop_order_version(imgid);
-  int new_iop_order_version = DT_IOP_ORDER_UNSAFE;
 
-  if(mode <= DT_IOP_ORDER_CUSTOM)
+  if(mode == DT_IOP_ORDER_CUSTOM) // custom order
   {
-    // do not allow changing to the first two modes, reset back to previous value
+    // do not allow changing to the first mode, reset back to previous value
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_combobox_set(widget, d->current_mode);
@@ -215,26 +123,62 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   }
 
   const char *name = dt_bauhaus_combobox_get_text(widget);
-  new_iop_order_version = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), name));
 
-  if(current_iop_order_version != new_iop_order_version
+  if(d->current_mode != mode
      || d->current_mode == DT_IOP_ORDER_CUSTOM)
   {
+    // ensure current history is written
     dt_dev_write_history(darktable.develop);
 
-    dt_ioppr_migrate_iop_order(darktable.develop, imgid, current_iop_order_version, new_iop_order_version);
+    if(mode >= DT_IOP_ORDER_LAST)
+    {
+      const int preset_id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), name));
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT op_params"
+                                  " FROM data.presets "
+                                  " WHERE operation='ioporder' AND rowid=?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, preset_id);
+
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const char *params = (char *)sqlite3_column_blob(stmt, 0);
+        const int32_t params_len = sqlite3_column_bytes(stmt, 0);
+        GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
+        gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
+
+        sqlite3_finalize(stmt);
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE main.module_order"
+                                    " SET iop_list = ?2, version = ?3"
+                                    " WHERE imgid=?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, iop_list_text, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_IOP_ORDER_CUSTOM);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.module_order"
+                                  " SET iop_list = NULL, version = ?2"
+                                  " WHERE imgid=?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, mode);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+
+    dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(darktable.develop);
   }
 
   d->current_mode = mode;
-}
-
-static void _image_loaded_callback(gpointer instace, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  update(self);
 }
 
 static void _fill_iop_order(dt_lib_module_t *self)
@@ -246,7 +190,6 @@ static void _fill_iop_order(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_clear(d->widget);
 
-  dt_bauhaus_combobox_add(d->widget, _("unsafe, select one below"));
   dt_bauhaus_combobox_add(d->widget, _("custom order"));
 
   // fill preset iop-order
@@ -254,22 +197,29 @@ static void _fill_iop_order(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params"
+                              "SELECT rowid, name"
                               " FROM data.presets "
-                              " WHERE operation='ioporder'", -1, &stmt, NULL);
+                              " WHERE operation='ioporder'"
+                              " ORDER BY writeprotect DESC, name", -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
-    const char *buf = (char *)sqlite3_column_blob(stmt, 1);
-    const int iop_order_version = *(int32_t *)buf;
+    const int32_t rowid = sqlite3_column_int(stmt, 0);
+    const char *name = (char *)sqlite3_column_text(stmt, 1);
     dt_bauhaus_combobox_add(d->widget, name);
-    g_object_set_data(G_OBJECT(d->widget), name, GUINT_TO_POINTER(iop_order_version));
+    g_object_set_data(G_OBJECT(d->widget), name, GUINT_TO_POINTER(rowid));
   }
 
   sqlite3_finalize(stmt);
 
   darktable.gui->reset = reset;
+}
+
+static void _image_loaded_callback(gpointer instace, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  _fill_iop_order(self);
+  update(self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -280,7 +230,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   d->widget = dt_bauhaus_combobox_new(NULL);
-  d->current_mode = DT_IOP_ORDER_UNSAFE;
+  d->current_mode = -1;
 
   _fill_iop_order(self);
 
@@ -318,309 +268,19 @@ void gui_reset (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->widget, DT_IOP_ORDER_RECOMMENDED);
 }
 
-static void *_serialize_preset(const dt_iop_order_entry_t mod[], const int32_t version, size_t *size)
-{
-  // compute size of all modules
-  *size = sizeof(int32_t);
-
-  int k=0;
-  while(mod[k].operation[0])
-  {
-    *size += strlen(mod[k].operation) + sizeof(int32_t) + sizeof(double);
-    k++;
-  }
-
-  // allocate the parameter buffer
-  char *params = (char *)malloc(*size);
-
-  // set set preset iop-order version
-  int pos = 0;
-
-  memcpy(params+pos, &version, sizeof(int32_t));
-  pos += sizeof(int32_t);
-
-  k=0;
-  while(mod[k].operation[0])
-  {
-    // write the iop-order
-    memcpy(params+pos, &(mod[k].iop_order), sizeof(double));
-    pos += sizeof(double);
-
-    // write the len of the module name
-    const int32_t len = strlen(mod[k].operation);
-    memcpy(params+pos, &len, sizeof(int32_t));
-    pos += sizeof(int32_t);
-
-    // write the module name
-    memcpy(params+pos, mod[k].operation, len);
-    pos += len;
-
-    k++;
-  }
-
-  return params;
-}
-
-// @@_NEW_MODULE: to be un-commented the first time a module is added
-#if 0
-static void *_serialize_preset_list(GList *iop_order_list, const int32_t version, size_t *size)
-{
-  const int len = g_list_length(iop_order_list + 1);
-  dt_iop_order_entry_t *entries = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t) * (len + 1));
-
-  int k = 0;
-  while(iop_order_list)
-  {
-    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)iop_order_list->data;
-    entries[k].iop_order = e->iop_order;
-    strncpy(entries[k].operation, e->operation, sizeof(entries[k].operation));
-
-    iop_order_list = g_list_next(iop_order_list);
-    k++;
-  }
-
-  entries[k].iop_order = 0;
-  entries[k].operation[0] = '\0';
-
-  void *params = _serialize_preset(entries, version, size);
-
-  free(entries);
-  return params;
-}
-
-static GList *_insert_after(GList *iop_order_list, const char *module, const char *new_module)
-{
-  double before_iop_order = 0.0f, after_iop_order = 0.0f;
-  GList *l = iop_order_list;
-
-  while(l)
-  {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-
-    if(before_iop_order > 0.0f)
-    {
-      // found before, we are on the after node
-      after_iop_order = entry->iop_order;
-      dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-
-      new_entry->iop_order = (before_iop_order + after_iop_order) / 2.0f;
-      strncpy(new_entry->operation, new_module, sizeof(new_entry->operation));
-      iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
-      break;
-    }
-    else if(!strcmp(entry->operation, module))
-    {
-      before_iop_order = entry->iop_order;
-    }
-
-    l = g_list_next(l);
-  }
-
-  return iop_order_list;
-}
-#endif
-
 void init_presets(dt_lib_module_t *self)
 {
   size_t size = 0;
   char *params = NULL;
+  GList *list;
 
-  /* @@_NEW_MODULE: add the new module into all the following tables (dt_iop_order_entry_t v?)
-
-     1. find the proper position in the table.
-     2. add the iop-order in first column to be in the middle of module before and after
-     3. DO NOT CHANGE any other iop-order for any module
-
-     NOTE: the same change must be done into iop_order.c for the default iop-order to use for new modules.
-   */
-
-  // ------------------------------------------------- IOP Order V2
-
-  const dt_iop_order_entry_t v2[] = {
-    {  1.0, "rawprepare"},
-    {  2.0, "invert"},
-    {  3.0, "temperature"},
-    {  4.0, "highlights"},
-    {  5.0, "cacorrect"},
-    {  6.0, "hotpixels"},
-    {  7.0, "rawdenoise"},
-    {  8.0, "demosaic"},
-    {  9.0, "mask_manager"},
-    { 10.0, "denoiseprofile"},
-    { 11.0, "tonemap"},
-    { 12.0, "exposure"},
-    { 13.0, "spots"},
-    { 14.0, "retouch"},
-    { 15.0, "lens"},
-    { 16.0, "ashift"},
-    { 17.0, "liquify"},
-    { 18.0, "rotatepixels"},
-    { 19.0, "scalepixels"},
-    { 20.0, "flip"},
-    { 21.0, "clipping"},
-    { 21.5, "toneequal"},
-    { 22.0, "graduatednd"},
-    { 23.0, "basecurve"},
-    { 24.0, "bilateral"},
-    { 25.0, "profile_gamma"},
-    { 26.0, "hazeremoval"},
-    { 27.0, "colorin"},
-    { 27.5, "basicadj"},
-    { 28.0, "colorreconstruct"},
-    { 29.0, "colorchecker"},
-    { 30.0, "defringe"},
-    { 31.0, "equalizer"},
-    { 32.0, "vibrance"},
-    { 33.0, "colorbalance"},
-    { 34.0, "colorize"},
-    { 35.0, "colortransfer"},
-    { 36.0, "colormapping"},
-    { 37.0, "bloom"},
-    { 38.0, "nlmeans"},
-    { 39.0, "globaltonemap"},
-    { 40.0, "shadhi"},
-    { 41.0, "atrous"},
-    { 42.0, "bilat"},
-    { 43.0, "colorzones"},
-    { 44.0, "lowlight"},
-    { 45.0, "monochrome"},
-    { 46.0, "filmic"},
-    { 46.5, "filmicrgb"},
-    { 47.0, "colisa"},
-    { 48.0, "zonesystem"},
-    { 49.0, "tonecurve"},
-    { 50.0, "levels"},
-    { 50.2, "rgblevels"},
-    { 50.5, "rgbcurve"},
-    { 51.0, "relight"},
-    { 52.0, "colorcorrection"},
-    { 53.0, "sharpen"},
-    { 54.0, "lowpass"},
-    { 55.0, "highpass"},
-    { 56.0, "grain"},
-    { 56.5, "lut3d"},
-    { 57.0, "colorcontrast"},
-    { 58.0, "colorout"},
-    { 59.0, "channelmixer"},
-    { 60.0, "soften"},
-    { 61.0, "vignette"},
-    { 62.0, "splittoning"},
-    { 63.0, "velvia"},
-    { 64.0, "clahe"},
-    { 65.0, "finalscale"},
-    { 66.0, "overexposed"},
-    { 67.0, "rawoverexposed"},
-    { 67.5, "dither"},
-    { 68.0, "borders"},
-    { 69.0, "watermark"},
-    { 71.0, "gamma"},
-    {  0.0, "" }
-  };
-
-  params = _serialize_preset(v2, 2, &size);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
+  params = dt_ioppr_serialize_iop_order_list(list, &size);
   dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 
-  // ------------------------------------------------- IOP Order V5
-
-  const dt_iop_order_entry_t v5[] = {
-    {  1.0, "rawprepare"},
-    {  2.0, "invert"},
-    {  3.0, "temperature"},
-    {  4.0, "highlights"},
-    {  5.0, "cacorrect"},
-    {  6.0, "hotpixels"},
-    {  7.0, "rawdenoise"},
-    {  8.0, "demosaic"},
-    {  9.0, "denoiseprofile"},
-    { 10.0, "bilateral"},
-    { 11.0, "rotatepixels"},
-    { 12.0, "scalepixels"},
-    { 13.0, "lens"},
-    { 14.0, "hazeremoval"},
-    { 15.0, "ashift"},
-    { 16.0, "flip"},
-    { 17.0, "clipping"},
-    { 18.0, "liquify"},
-    { 19.0, "spots"},
-    { 20.0, "retouch"},
-    { 21.0, "exposure"},
-    { 22.0, "mask_manager"},
-    { 23.0, "tonemap"},
-    { 24.0, "toneequal"},
-    { 25.0, "graduatednd"},
-    { 26.0, "profile_gamma"},
-    { 27.0, "equalizer"},
-    { 28.0, "colorin"},
-
-    { 29.0, "nlmeans"},         // signal processing (denoising)
-                                //    -> needs a signal as scene-referred as possible (even if it works in Lab)
-    { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
-                                //    -> improve colour calibration of colorin and reproductibility
-                                //    of further edits (styles etc.)
-    { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
-                                //    in order for chromaticity to be meaningful,
-    { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
-    { 33.0, "lowpass"},         // same
-    { 34.0, "highpass"},        // same
-    { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
-    { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
-                                //    so better move it after frequential ops that need L2 Hilbert spaces
-                                //    of square summable functions
-    { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
-                                //    colour exchange space, hence after colorin and colorcheckr,
-                                //    but apply after frequential ops in case it does non-linear witchcraft,
-                                //    just to be safe
-    { 59.0, "colormapping"},    // same
-    { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
-                                //    but coefs are user-defined instead of calibrated and read from ICC profile.
-                                //    Really versatile yet under-used module, doing linear ops,
-                                //    very good in scene-referred workflow
-    { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
-    { 40.0, "colorbalance"},    // scene-referred color manipulation
-    { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
-    { 42.0, "rgblevels"},       // same
-    { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
-                                //    on camera JPEG default look
-    { 44.0, "filmic"},          // same, but different (parametric) approach
-    { 45.0, "filmicrgb"},       // same, upgraded
-    { 46.0, "colisa"},          // edit contrast while damaging colour
-    { 47.0, "tonecurve"},       // same
-    { 48.0, "levels"},          // same
-    { 49.0, "shadhi"},          // same
-    { 50.0, "zonesystem"},      // same
-    { 51.0, "globaltonemap"},   // same
-    { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
-    { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
-                                //    to it with tonemapping
-    { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
-                                // try to recover them - global adjustment of white balance for shadows and highlights
-    { 55.0, "colorcontrast"},   // adjust chrominance globally
-    { 56.0, "velvia"},          // same
-    { 57.0, "vibrance"},        // same, but more subtle
-    { 58.0, "colorzones"},      // same, but locally
-    { 60.0, "bloom"},           // creative module
-    { 61.0, "colorize"},        // creative module
-    { 62.0, "lowlight"},        // creative module
-    { 63.0, "monochrome"},      // creative module
-    { 64.0, "grain"},           // creative module
-    { 65.0, "soften"},          // creative module
-    { 66.0, "splittoning"},     // creative module
-    { 67.0, "vignette"},        // creative module
-    { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
-    { 69.0, "colorout"},
-    { 70.0, "clahe"},
-    { 71.0, "finalscale"},
-    { 72.0, "overexposed"},
-    { 73.0, "rawoverexposed"},
-    { 74.0, "dither"},
-    { 75.0, "borders"},
-    { 76.0, "watermark"},
-    { 77.0, "gamma"},
-    {  0.0, "" }
-  };
-
-  params = _serialize_preset(v5, 5, &size);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_RECOMMENDED);
+  params = dt_ioppr_serialize_iop_order_list(list, &size);
   dt_lib_presets_add(_("recommended"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 }
@@ -629,109 +289,47 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   if(!params) return 1;
 
-  const int32_t imgid = darktable.develop->image_storage.id;
+  GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(params, (size_t)size);
 
-  // get the parameters buffer
-  const char *buf = (char *)params;
+  if(iop_order_list)
+  {
+    const int32_t imgid = darktable.develop->image_storage.id;
 
-  // load all params and create the iop-list
+    dt_dev_write_history(darktable.develop);
 
-  const int current_iop_order = dt_image_get_iop_order_version(imgid);
+    dt_ioppr_write_iop_order_list(iop_order_list, imgid);
 
-  int32_t iop_order_version = 0;
+    // invalidate dev and force redraw of darkroom
 
-  GList *iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, size, &iop_order_version);
+    dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
-  if(iop_order_version < 0) return 1;
+    dt_dev_invalidate_all(darktable.develop);
 
-  // set pipe iop order
+    _fill_iop_order(self);
+    update(self);
 
-  dt_dev_write_history(darktable.develop);
-
-  dt_ioppr_migrate_iop_order(darktable.develop, imgid, current_iop_order, iop_order_version);
-
-  // invalidate buffers and force redraw of darkroom
-
-  dt_dev_invalidate_all(darktable.develop);
-
-  _fill_iop_order(self);
-  update(self);
-
-  if(iop_order_list) g_list_free(iop_order_list);
-
-  return 0;
+    g_list_free_full(iop_order_list, free);
+    return 0;
+  }
+  else
+  {
+    return 1;
+  }
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
 
+  void *params = NULL;
+
   // do not allow recording unsafe or built-in iop-order
   // only custom order can be recorded.
-  if(d->current_mode != DT_IOP_ORDER_CUSTOM) return NULL;
-
-  GList *modules = g_list_first(darktable.develop->iop);
-
-  // compute size of all modules
-  *size = sizeof(int32_t);
-
-  while(modules)
+  if(d->current_mode == DT_IOP_ORDER_CUSTOM)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    *size += strlen(mod->op) + sizeof(int32_t) + sizeof(double);
-    modules = g_list_next(modules);
-  }
-
-  // compute iop-order preset version
-
-  int32_t version = DT_IOP_ORDER_PRESETS_START_ID + 1;
-
-  // add the count of all current ioporder presets
-
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*)"
-                              " FROM data.presets "
-                              " WHERE operation='ioporder'", -1, &stmt, NULL);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    version += sqlite3_column_int(stmt, 0);
-  }
-
-  sqlite3_finalize(stmt);
-
-  // allocate the parameter buffer
-  char *params = (char *)malloc(*size);
-
-  // store all modules in proper order
-  modules = g_list_first(darktable.develop->iop);
-
-  // set set preset iop-order version
-  int pos = 0;
-
-  memcpy(params+pos, &version, sizeof(int32_t));
-  pos += sizeof(int32_t);
-
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    // write the iop-order
-    memcpy(params+pos, &(mod->iop_order), sizeof(double));
-    pos += sizeof(double);
-
-    // write the len of the module name
-    const int32_t len = strlen(mod->op);
-    memcpy(params+pos, &len, sizeof(int32_t));
-    pos += sizeof(int32_t);
-
-    // write the module name
-    memcpy(params+pos, mod->op, len);
-    pos += len;
-
-    modules = g_list_next(modules);
+    size_t p_size = 0;
+    params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list, &p_size);
+    *size = (int)p_size;
   }
 
   return params;

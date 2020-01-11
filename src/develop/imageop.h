@@ -294,7 +294,7 @@ typedef struct dt_iop_module_t
   /** used to identify this module in the history stack. */
   int32_t instance;
   /** order of the module on the pipe. the pipe will be sorted by iop_order. */
-  double iop_order;
+  int iop_order;
   /** module sets this if the enable checkbox should be hidden. */
   int32_t hide_enable_button;
   /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color picked during next eval. gui mode only. */

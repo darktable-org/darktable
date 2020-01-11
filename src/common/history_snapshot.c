@@ -61,7 +61,7 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_history SELECT ?1, imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order "
+                              "blendop_params, blendop_version, multi_priority, multi_name "
                               " FROM main.history WHERE imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -102,7 +102,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order "
+                              "blendop_params, blendop_version, multi_priority, multi_name "
                               " FROM memory.undo_history WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);

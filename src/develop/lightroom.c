@@ -1249,7 +1249,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     dt_iop_colorin_params_t pci = (dt_iop_colorin_params_t){ "cmatrix", DT_INTENT_PERCEPTUAL };
 
     dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_t), imported,
-                sizeof(imported), LRDT_COLORIN_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "colorin"));
+                sizeof(imported), LRDT_COLORIN_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "colorin", 0));
     refresh_needed = TRUE;
   }
 
@@ -1315,7 +1316,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.fratio = (data.pc.cw - data.pc.cx) / (data.pc.ch - data.pc.cy);
 
     dt_add_hist(imgid, "clipping", (dt_iop_params_t *)&data.pc, sizeof(dt_iop_clipping_params_t), imported,
-                sizeof(imported), LRDT_CLIPPING_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "clipping"));
+                sizeof(imported), LRDT_CLIPPING_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "clipping", 0));
     refresh_needed = TRUE;
   }
 
@@ -1324,14 +1326,16 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pf.orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
     dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_t), imported,
-                sizeof(imported), LRDT_FLIP_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "flip"));
+                sizeof(imported), LRDT_FLIP_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "flip", 0));
     refresh_needed = TRUE;
   }
 
   if(dev != NULL && data.has_exposure)
   {
     dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&data.pe, sizeof(dt_iop_exposure_params_t), imported,
-                sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "exposure"));
+                sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "exposure", 0));
     refresh_needed = TRUE;
   }
 
@@ -1340,7 +1344,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pg.channel = 0;
 
     dt_add_hist(imgid, "grain", (dt_iop_params_t *)&data.pg, sizeof(dt_iop_grain_params_t), imported,
-                sizeof(imported), LRDT_GRAIN_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "grain"));
+                sizeof(imported), LRDT_GRAIN_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "grain", 0));
     refresh_needed = TRUE;
   }
 
@@ -1376,7 +1381,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     }
 
     dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&data.pv, sizeof(dt_iop_vignette_params_t), imported,
-                sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "vignette"));
+                sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "vignette", 0));
     refresh_needed = TRUE;
   }
 
@@ -1395,7 +1401,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       }
 
     dt_add_hist(imgid, "spots", (dt_iop_params_t *)&data.ps, sizeof(dt_iop_spots_params_t), imported,
-                sizeof(imported), LRDT_SPOTS_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "spots"));
+                sizeof(imported), LRDT_SPOTS_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "spots", 0));
     refresh_needed = TRUE;
   }
 
@@ -1463,7 +1470,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     }
 
     dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&data.ptc, sizeof(dt_iop_tonecurve_params_t), imported,
-                sizeof(imported), LRDT_TONECURVE_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "tonecurve"));
+                sizeof(imported), LRDT_TONECURVE_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "tonecurve", 0));
     refresh_needed = TRUE;
   }
 
@@ -1476,7 +1484,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
         data.pcz.equalizer_x[i][k] = k / (DT_IOP_COLORZONES_BANDS - 1.0);
 
     dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&data.pcz, sizeof(dt_iop_colorzones_params_t), imported,
-                sizeof(imported), LRDT_COLORZONES_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "colorzones"));
+                sizeof(imported), LRDT_COLORZONES_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "colorzones", 0));
     refresh_needed = TRUE;
   }
 
@@ -1485,7 +1494,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pst.compress = 50.0;
 
     dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&data.pst, sizeof(dt_iop_splittoning_params_t), imported,
-                sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "splittoning"));
+                sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "splittoning", 0));
     refresh_needed = TRUE;
   }
 
@@ -1495,7 +1505,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pbl.sigma_s = 100.0;
 
     dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&data.pbl, sizeof(dt_iop_bilat_params_t), imported,
-                sizeof(imported), LRDT_BILAT_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "bilat"));
+                sizeof(imported), LRDT_BILAT_VERSION, &n_import,
+                dt_ioppr_get_iop_order(dev->iop_order_list, "bilat", 0));
     refresh_needed = TRUE;
   }
 

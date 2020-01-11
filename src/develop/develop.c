@@ -750,9 +750,10 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   // *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.history SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
-                              "blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = "
-                              "?10, iop_order = ?11 WHERE imgid = ?5 AND num = ?6",
+                              "UPDATE main.history"
+                              " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
+                              "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10"
+                              " WHERE imgid = ?5 AND num = ?6",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
@@ -764,7 +765,6 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, h->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, h->multi_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, h->iop_order);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -1123,10 +1123,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     memcpy(module->params, module->default_params, module->params_size);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
     module->enabled = module->default_enabled;
-    if(module->multi_priority == 0)
-      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op);
-    else
-      module->iop_order = DBL_MAX;
+    module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
     module->multi_name[0] = '\0';
     modules = g_list_next(modules);
   }
@@ -1148,7 +1145,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     history = g_list_next(history);
   }
 
-  dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
+  dt_ioppr_resync_modules_order(dev);
 
   dt_ioppr_check_duplicate_iop_order(&dev->iop, dev->history);
 
@@ -1251,11 +1248,15 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // write history entries
+
   GList *history = dev->history;
   if (DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
@@ -1265,7 +1266,8 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
     (void)dt_dev_write_history_item(imgid, hist, i);
     if (DT_IOP_ORDER_INFO)
     {
-      fprintf(stderr,"\n%20s, num %i, order %9.5f, v(%i), multiprio %i",hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
+      fprintf(stderr,"\n%20s, num %i, order %d, v(%i), multiprio %i",
+              hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
       if (hist->enabled) fprintf(stderr,", enabled");
     }
     history = g_list_next(history);
@@ -1273,14 +1275,19 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   if (DT_IOP_ORDER_INFO)
     fprintf(stderr,"\nvvvv\n");
 
+  // update history end
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,
+                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // write the current iop-order-list for this image
+
+  dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+
   dt_unlock_image(imgid);
 }
 
@@ -1314,9 +1321,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
-  snprintf(query, sizeof(query), "INSERT INTO memory.history SELECT ?1, 0, op_version, operation, op_params, "
-                                 "enabled, blendop_params, blendop_version, multi_priority, multi_name, 0 "
-                                 "FROM %s WHERE autoapply=1 AND "
+  snprintf(query, sizeof(query), "INSERT INTO memory.history"
+                                 " SELECT ?1, 0, op_version, operation, op_params,"
+                                 "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
+                                 " FROM %s WHERE autoapply=1 AND "
                                  "((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker)) AND "
                                  "?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max AND "
                                  "?8 BETWEEN exposure_min AND exposure_max AND "
@@ -1358,13 +1366,12 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '', ?5)",
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5,  dt_ioppr_get_iop_order(dev->iop_order_list, module->op));
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -1435,42 +1442,6 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
       g_list_free(rowids);
-      sqlite3_finalize(stmt);
-
-      // while we are here update the iop order
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num, operation FROM memory.history", -1,
-                                  &stmt, NULL);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        const int num = sqlite3_column_int(stmt, 0);
-        const char *op_name = (char *)sqlite3_column_text(stmt, 1);
-
-        double iop_order = -1.0;
-
-        GList *modules = g_list_first(dev->iop);
-        while(modules)
-        {
-          dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-          if(strcmp(mod->op, op_name) == 0)
-          {
-            iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op);
-            break;
-          }
-          modules = g_list_next(modules);
-        }
-
-        if(iop_order != DBL_MAX)
-        {
-          sqlite3_stmt *stmt2;
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                      "UPDATE memory.history SET iop_order=?1 WHERE num=?2", -1, &stmt2, NULL);
-          DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt2, 1, iop_order);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, num);
-          sqlite3_step(stmt2);
-          sqlite3_finalize(stmt2);
-        }
-      }
-      sqlite3_finalize(stmt);
     }
 
     // advance the current history by cnt amount, that is, make space for the preset/default iops that will be
@@ -1495,8 +1466,9 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
         sqlite3_finalize(stmt);
         DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
-          "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
-          "blendop_params, blendop_version, multi_priority, multi_name, iop_order FROM memory.history",
+          "INSERT INTO main.history"
+          " SELECT imgid, num, module, operation, op_params, enabled, "
+          "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
           -1, &stmt, NULL);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
@@ -1520,10 +1492,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   sqlite3_stmt *stmt;
 
-  // possible convertion to another iop-order-version to unbreak some edits
-  const int iop_order_version = dt_ioppr_convert_onthefly(imgid);
-
-  dt_ioppr_set_default_iop_order(dev, iop_order_version);
+  dt_ioppr_set_default_iop_order(dev, imgid);
 
   if(!no_image)
   {
@@ -1536,7 +1505,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // maybe add auto-presets to memory.history and commit everything into main.history
     const gboolean first_run = _dev_auto_apply_presets(dev);
 
-    // now merge memory.histroy into main.history
+    // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
     //  first time we are loading the image, try to import lightroom .xmp if any
@@ -1553,10 +1522,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   }
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, num, module, operation, "
-                                                             "op_params, enabled, blendop_params, "
-                                                             "blendop_version, multi_priority, multi_name, iop_order "
-                                                             "FROM main.history WHERE imgid = ?1 ORDER BY num",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid, num, module, operation,"
+                              "       op_params, enabled, blendop_params,"
+                              "       blendop_version, multi_priority, multi_name"
+                              " FROM main.history"
+                              " WHERE imgid = ?1"
+                              " ORDER BY num",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   dev->history_end = 0;
@@ -1610,8 +1582,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
         dt_iop_update_multi_priority(new_module, multi_priority);
-        // flag all multi-instances as not used
-        if(new_module->multi_priority != 0) new_module->iop_order = DBL_MAX;
+        new_module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, opname, multi_priority);
 
         snprintf(new_module->multi_name, sizeof(new_module->multi_name), "%s", multi_name);
 
@@ -1725,8 +1696,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   }
   sqlite3_finalize(stmt);
 
-  // sort the modules, as the iop_order may have changed
-  dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
+  dt_ioppr_resync_modules_order(dev);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
@@ -2087,6 +2057,9 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   pmax += 1;
   dt_iop_update_multi_priority(module, pmax);
 
+  // add this new module position into the iop-order-list
+  dt_ioppr_insert_module_instance(dev, module);
+
   // since we do not rename the module we need to check that an old module does not have the same name. Indeed
   // the multi_priority
   // are always rebased to start from 0, to it may be the case that the same multi_name be generated when
@@ -2126,7 +2099,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
 
   // always place the new instance after the base one
-  if(!dt_ioppr_move_iop_after(&base->dev->iop, module, base, 0, 1))
+  if(!dt_ioppr_move_iop_after(base->dev, module, base))
   {
     fprintf(stderr, "[dt_dev_module_duplicate] can't move new instance after the base one\n");
   }
@@ -2219,17 +2192,17 @@ void _dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *mod
   dt_iop_module_t *mod_prev = dt_iop_gui_get_previous_visible_module(module);
   dt_iop_module_t *mod_next = dt_iop_gui_get_next_visible_module(module);
 
-  const double iop_order_next = (mod_next && mod_next->iop_order != DBL_MAX) ? dt_ioppr_get_iop_order_after_iop(dev->iop, module, mod_next, 1, 0) : -1.0;
-  const double iop_order_prev = (mod_prev && mod_prev->iop_order != DBL_MAX) ? dt_ioppr_get_iop_order_before_iop(dev->iop, module, mod_prev, 1, 0) : -1.0;
+  const gboolean move_next = (mod_next && mod_next->iop_order != INT_MAX) ? dt_ioppr_check_can_move_after_iop(dev->iop, module, mod_next) : -1.0;
+  const gboolean move_prev = (mod_prev && mod_prev->iop_order != INT_MAX) ? dt_ioppr_check_can_move_before_iop(dev->iop, module, mod_prev) : -1.0;
 
   module->multi_show_new = !(module->flags() & IOP_FLAGS_ONE_INSTANCE);
   module->multi_show_close = (nb_instances > 1);
   if(mod_next)
-    module->multi_show_up = (iop_order_next >= 0.0);
+    module->multi_show_up = move_next;
   else
     module->multi_show_up = 0;
   if(mod_prev)
-    module->multi_show_down = (iop_order_prev >= 0.0);
+    module->multi_show_down = move_prev;
   else
     module->multi_show_down = 0;
 }
