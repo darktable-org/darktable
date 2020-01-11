@@ -549,7 +549,7 @@ static int sanity_check(dt_iop_module_t *self)
   // so the interactive editing will fail. Disable the module and issue a warning then.
 
   const double position_self = self->iop_order;
-  const double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip");
+  const double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip", 0);
 
   if(position_self < position_min && self->enabled)
   {

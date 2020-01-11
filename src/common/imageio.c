@@ -686,20 +686,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    int imgid_iop_order_version = dt_image_get_iop_order_version(imgid);
-    GList *current_iop_list = dt_ioppr_get_iop_order_list(&imgid_iop_order_version, FALSE);
-
     dt_dev_pop_history_items_ext(&dev, dev.history_end);
+
+    dt_ioppr_update_for_style_items(&dev, style_items);
 
     GList *st_items = g_list_last(style_items);
     while(st_items)
     {
       dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
-
-      // we need to adjust the iop-order for each item
-
       st_item->iop_order =
-        dt_ioppr_get_iop_order(current_iop_list, st_item->operation) + (double)st_item->multi_priority / 100.0f;
+        dt_ioppr_get_iop_order(dev.iop_order_list, st_item->operation, st_item->multi_priority);
 
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
 
@@ -708,7 +704,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
-    g_list_free_full(current_iop_list, free);
   }
 
   dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);

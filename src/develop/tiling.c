@@ -2031,7 +2031,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   if((self->flags() & IOP_FLAGS_TILING_FULL_ROI) == IOP_FLAGS_TILING_FULL_ROI) tiling->overlap = 4;
 
-  if(self->iop_order > dt_ioppr_get_iop_order(piece->pipe->iop_order_list, "demosaic")) return;
+  if(self->iop_order > dt_ioppr_get_iop_order(piece->pipe->iop_order_list, "demosaic", 0)) return;
 
   // all operations that work with mosaiced data should respect pattern size!
 
