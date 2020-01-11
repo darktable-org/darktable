@@ -39,8 +39,8 @@ typedef struct dt_lib_histogram_t
   int32_t button_down_x, button_down_y;
   int32_t highlight;
   gboolean red, green, blue;
-  float mode_x, mode_w, red_x, green_x, blue_x;
-  float color_w, button_h, button_y, button_spacing;
+  float mode_x, red_x, green_x, blue_x;
+  float button_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -168,17 +168,16 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   if(oldw != width)
   {
     // mode and color buttons position on first expose or widget size change
-    // FIXME: can we right justify the buttons when rendering and not need all these width-based values?
-    d->color_w = 0.06 * width;
     d->button_spacing = 0.02 * width;
+    d->button_w = 0.06 * width;
     d->button_h = 0.06 * width;
     d->button_y = d->button_spacing;
-    d->mode_w = d->color_w;
-    d->mode_x = width - 3 * (d->color_w + d->button_spacing) - (d->mode_w + d->button_spacing);
-    d->red_x = width - 3 * (d->color_w + d->button_spacing);
-    d->green_x = width - 2 * (d->color_w + d->button_spacing);
-    d->blue_x = width - (d->color_w + d->button_spacing);
-
+    const float offset = d->button_w + d->button_spacing;
+    d->blue_x = width - offset;
+    d->green_x = d->blue_x - offset;
+    d->red_x = d->green_x - offset;
+    d->mode_x = d->red_x - offset;
+ 
     // this code assumes that the first expose comes before the first (preview) pipe is processed
     // NOTE: a histogram_waveform_mutex (previously in code) could allow more fine grained locking here
     dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
@@ -298,7 +297,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_set_line_width(cr, 1.);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
       if(d->red)
       {
         cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
@@ -322,13 +321,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != 0)
   {
-    _draw_mode_toggle(cr, d->mode_x, d->button_y, d->mode_w, d->button_h, dev->histogram_type);
+    _draw_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->histogram_type);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
-    _draw_color_toggle(cr, d->red_x, d->button_y, d->color_w, d->button_h, d->red);
+    _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
     cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
-    _draw_color_toggle(cr, d->green_x, d->button_y, d->color_w, d->button_h, d->green);
+    _draw_color_toggle(cr, d->green_x, d->button_y, d->button_w, d->button_h, d->green);
     cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
-    _draw_color_toggle(cr, d->blue_x, d->button_y, d->color_w, d->button_h, d->blue);
+    _draw_color_toggle(cr, d->blue_x, d->button_y, d->button_w, d->button_h, d->blue);
   }
 
   cairo_destroy(cr);
@@ -373,7 +372,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 
     if(pos < 0 || pos > 1.0)
       ;
-    else if(x > d->mode_x && x < d->mode_x + d->mode_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 3;
       switch(darktable.develop->histogram_type)
@@ -391,18 +390,18 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
           g_assert_not_reached();
       }
     }
-    else if(x > d->red_x && x < d->red_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->red_x && x < d->red_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 4;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
     }
-    else if(x > d->green_x && x < d->green_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->green_x && x < d->green_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 5;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
                                                  : _("click to show green channel"));
     }
-    else if(x > d->blue_x && x < d->blue_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 6;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
@@ -599,7 +598,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, 175);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
