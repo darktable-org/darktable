@@ -38,7 +38,7 @@ typedef struct dt_dev_history_item_t
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
-  double iop_order;
+  int iop_order;
   int multi_priority;
   char multi_name[128];
   GList *forms; // snapshot of dt_develop_t->forms

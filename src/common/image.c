@@ -524,30 +524,15 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  double iop_order = DBL_MAX;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order FROM main.history "
-                                                             "WHERE imgid = ?1 AND operation = 'flip' ORDER BY num DESC", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) iop_order = sqlite3_column_double(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  if(iop_order == DBL_MAX)
-  {
-    iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, "flip");
-  }
-
-  if(iop_order != DBL_MAX)
-  {
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history (imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order) VALUES "
-                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '', ?5) ",
+                              "blendop_params, blendop_version, multi_priority, multi_name) VALUES "
+                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '') ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, iop_order);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -562,9 +547,6 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_image_reset_final_size(imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
-  }
-  else
-    fprintf(stderr, "[dt_image_set_flip] can't find history entry for operation flip on image %i\n", imgid);
 }
 
 dt_image_orientation_t dt_image_get_orientation(const int imgid)
@@ -937,7 +919,9 @@ int dt_image_altered(const uint32_t imgid)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation FROM main.history, main.images WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1",
+                              "SELECT operation"
+                              " FROM main.history, main.images"
+                              " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1185,9 +1169,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
-      "max_version, history_end, iop_order_version, position) "
-      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
-      "FROM images",
+      "                         max_version, history_end, position)"
+      " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+      " FROM images",
       -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
@@ -2247,24 +2231,6 @@ char *dt_image_get_text_path(const int32_t imgid)
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);
-}
-
-int dt_image_get_iop_order_version(const int32_t imgid)
-{
-  int iop_order_version = 0;
-
-  // check current iop order version
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-
-  return iop_order_version;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

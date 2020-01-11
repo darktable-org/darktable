@@ -21,6 +21,7 @@
 
 #include "common/darktable.h"
 #include "common/iop_order.h"
+#include "common/styles.h"
 #include "common/debug.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -34,6 +35,7 @@
 
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
+static void _ioppr_reset_iop_order(GList *iop_order_list);
 
 /** Note :
  * we do not use finite-math-only and fast-math because divisions by zero are not manually avoided in the code
@@ -52,12 +54,212 @@
                       "tree-vectorize")
 #endif
 
+// note legacy_order & recommended_order have the original iop-order double that is
+// used only for the initial database migration.
+//
+// in the new code only the iop-order as int is used to order the module on the GUI.
+
+const dt_iop_order_entry_t legacy_order[] = {
+  { { 1.0f }, "rawprepare", 0},
+  { { 2.0f }, "invert", 0},
+  { { 3.0f }, "temperature", 0},
+  { { 4.0f }, "highlights", 0},
+  { { 5.0f }, "cacorrect", 0},
+  { { 6.0f }, "hotpixels", 0},
+  { { 7.0f }, "rawdenoise", 0},
+  { { 8.0f }, "demosaic", 0},
+  { { 9.0f }, "mask_manager", 0},
+  { {10.0f }, "denoiseprofile", 0},
+  { {11.0f }, "tonemap", 0},
+  { {12.0f }, "exposure", 0},
+  { {13.0f }, "spots", 0},
+  { {14.0f }, "retouch", 0},
+  { {15.0f }, "lens", 0},
+  { {16.0f }, "ashift", 0},
+  { {17.0f }, "liquify", 0},
+  { {18.0f }, "rotatepixels", 0},
+  { {19.0f }, "scalepixels", 0},
+  { {20.0f }, "flip", 0},
+  { {21.0f }, "clipping", 0},
+  { {21.5f }, "toneequal", 0},
+  { {22.0f }, "graduatednd", 0},
+  { {23.0f }, "basecurve", 0},
+  { {24.0f }, "bilateral", 0},
+  { {25.0f }, "profile_gamma", 0},
+  { {26.0f }, "hazeremoval", 0},
+  { {27.0f }, "colorin", 0},
+  { {27.5f }, "basicadj", 0},
+  { {28.0f }, "colorreconstruct", 0},
+  { {29.0f }, "colorchecker", 0},
+  { {30.0f }, "defringe", 0},
+  { {31.0f }, "equalizer", 0},
+  { {32.0f }, "vibrance", 0},
+  { {33.0f }, "colorbalance", 0},
+  { {34.0f }, "colorize", 0},
+  { {35.0f }, "colortransfer", 0},
+  { {36.0f }, "colormapping", 0},
+  { {37.0f }, "bloom", 0},
+  { {38.0f }, "nlmeans", 0},
+  { {39.0f }, "globaltonemap", 0},
+  { {40.0f }, "shadhi", 0},
+  { {41.0f }, "atrous", 0},
+  { {42.0f }, "bilat", 0},
+  { {43.0f }, "colorzones", 0},
+  { {44.0f }, "lowlight", 0},
+  { {45.0f }, "monochrome", 0},
+  { {46.0f }, "filmic", 0},
+  { {46.5f }, "filmicrgb", 0},
+  { {47.0f }, "colisa", 0},
+  { {48.0f }, "zonesystem", 0},
+  { {49.0f }, "tonecurve", 0},
+  { {50.0f }, "levels", 0},
+  { {50.2f }, "rgblevels", 0},
+  { {50.5f }, "rgbcurve", 0},
+  { {51.0f }, "relight", 0},
+  { {52.0f }, "colorcorrection", 0},
+  { {53.0f }, "sharpen", 0},
+  { {54.0f }, "lowpass", 0},
+  { {55.0f }, "highpass", 0},
+  { {56.0f }, "grain", 0},
+  { {56.5f }, "lut3d", 0},
+  { {57.0f }, "colorcontrast", 0},
+  { {58.0f }, "colorout", 0},
+  { {59.0f }, "channelmixer", 0},
+  { {60.0f }, "soften", 0},
+  { {61.0f }, "vignette", 0},
+  { {62.0f }, "splittoning", 0},
+  { {63.0f }, "velvia", 0},
+  { {64.0f }, "clahe", 0},
+  { {65.0f }, "finalscale", 0},
+  { {66.0f }, "overexposed", 0},
+  { {67.0f }, "rawoverexposed", 0},
+  { {67.5f }, "dither", 0},
+  { {68.0f }, "borders", 0},
+  { {69.0f }, "watermark", 0},
+  { {71.0f }, "gamma", 0},
+  { { 0.0f }, "", 0}
+};
+
+const dt_iop_order_entry_t recommended_order[] = {
+  { { 1.0 }, "rawprepare", 0},
+  { { 2.0 }, "invert", 0},
+  { { 3.0f }, "temperature", 0},
+  { { 4.0f }, "highlights", 0},
+  { { 5.0f }, "cacorrect", 0},
+  { { 6.0f }, "hotpixels", 0},
+  { { 7.0f }, "rawdenoise", 0},
+  { { 8.0f }, "demosaic", 0},
+  { { 9.0f }, "denoiseprofile", 0},
+  { {10.0f }, "bilateral", 0},
+  { {11.0f }, "rotatepixels", 0},
+  { {12.0f }, "scalepixels", 0},
+  { {13.0f }, "lens", 0},
+  { {14.0f }, "hazeremoval", 0},
+  { {15.0f }, "ashift", 0},
+  { {16.0f }, "flip", 0},
+  { {17.0f }, "clipping", 0},
+  { {18.0f }, "liquify", 0},
+  { {19.0f }, "spots", 0},
+  { {20.0f }, "retouch", 0},
+  { {21.0f }, "exposure", 0},
+  { {22.0f }, "mask_manager", 0},
+  { {23.0f }, "tonemap", 0},
+  { {24.0f }, "toneequal", 0},
+  { {25.0f }, "graduatednd", 0},
+  { {26.0f }, "profile_gamma", 0},
+  { {27.0f }, "equalizer", 0},
+  { {28.0f }, "colorin", 0},
+  { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
+                                  //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+  { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
+                                  //    -> improve colour calibration of colorin and reproductibility
+                                  //    of further edits (styles etc.)
+  { {31.0f }, "defringe", 0},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                  //    in order for chromaticity to be meaningful,
+  { {32.0f }, "atrous", 0},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+  { {33.0f }, "lowpass", 0},         // same
+  { {34.0f }, "highpass", 0},        // same
+  { {35.0f }, "sharpen", 0},         // same, worst than atrous in same use-case, less control overall
+  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear,
+                                  //    so better move it after frequential ops that need L2 Hilbert spaces
+                                  //    of square summable functions
+  { {37.0f }, "colortransfer", 0},   // probably better if source and destination colours are neutralized in the same
+                                  //    colour exchange space, hence after colorin and colorcheckr,
+                                  //    but apply after frequential ops in case it does non-linear witchcraft,
+                                  //    just to be safe
+  { {38.0f }, "colormapping", 0},    // same
+  { {39.0f }, "channelmixer", 0},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                  //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                  //    Really versatile yet under-used module, doing linear ops,
+                                  //    very good in scene-referred workflow
+  { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
+  { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
+  { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
+  { {43.0f }, "rgblevels", 0},       // same
+  { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
+                                  //    on camera JPEG default look
+  { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
+  { {46.0f }, "filmicrgb", 0},       // same, upgraded
+  { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
+  { {48.0f }, "tonecurve", 0},       // same
+  { {49.0f }, "levels", 0},          // same
+  { {50.0f }, "shadhi", 0},          // same
+  { {51.0f }, "zonesystem", 0},      // same
+  { {52.0f }, "globaltonemap", 0},   // same
+  { {53.0f }, "relight", 0},         // flatten local contrast while pretending do add lightness
+  { {54.0f }, "bilat", 0},           // improve clarity/local contrast after all the bad things we have done
+                                  //    to it with tonemapping
+  { {55.0f }, "colorcorrection", 0}, // now that the colours have been damaged by contrast manipulations,
+                                  // try to recover them - global adjustment of white balance for shadows and highlights
+  { {56.0f }, "colorcontrast", 0},   // adjust chrominance globally
+  { {57.0f }, "velvia", 0},          // same
+  { {58.0f }, "vibrance", 0},        // same, but more subtle
+  { {60.0f }, "colorzones", 0},      // same, but locally
+  { {61.0f }, "bloom", 0},           // creative module
+  { {62.0f }, "colorize", 0},        // creative module
+  { {63.0f }, "lowlight", 0},        // creative module
+  { {64.0f }, "monochrome", 0},      // creative module
+  { {65.0f }, "grain", 0},           // creative module
+  { {66.0f }, "soften", 0},          // creative module
+  { {67.0f }, "splittoning", 0},     // creative module
+  { {68.0f }, "vignette", 0},        // creative module
+  { {69.0f }, "colorreconstruct", 0},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+  { {70.0f }, "colorout", 0},
+  { {71.0f }, "clahe", 0},
+  { {72.0f }, "finalscale", 0},
+  { {73.0f }, "overexposed", 0},
+  { {74.0f }, "rawoverexposed", 0},
+  { {75.0f }, "dither", 0},
+  { {76.0f }, "borders", 0},
+  { {77.0f }, "watermark", 0},
+  { {78.0f }, "gamma", 0},
+  { { 0.0f }, "", 0 }
+};
+
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
  *
  * Basically here there is two orders:
  *   v2 : legacy order used for edits done prior to 3.0
  *   v5 : new order for all edits starting with 3.0
  */
+
+dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
+{
+  dt_iop_order_t iop_order_version = DT_IOP_ORDER_RECOMMENDED;
+
+  // check current iop order version
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT version FROM main.module_order WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return iop_order_version;
+}
 
 // returns a list of dt_iop_order_rule_t
 // this do not have versions
@@ -96,36 +298,49 @@ GList *dt_ioppr_get_iop_order_rules()
   return rules;
 }
 
-// returns the first iop order entry that matches operation == op_name
-dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name)
+GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority)
 {
-  dt_iop_order_entry_t *iop_order_entry = NULL;
+  GList *link = NULL;
 
   GList *iops_order = g_list_first(iop_order_list);
   while(iops_order)
   {
-    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
 
-    if(strcmp(order_entry->operation, op_name) == 0)
+    if(strcmp(order_entry->operation, op_name) == 0 && order_entry->instance == multi_priority)
     {
-      iop_order_entry = order_entry;
+      link = iops_order;
       break;
     }
 
     iops_order = g_list_next(iops_order);
   }
 
-  return iop_order_entry;
+  return link;
+}
+
+// returns the first iop order entry that matches operation == op_name
+dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority)
+{
+  const GList *link = dt_ioppr_get_iop_order_link(iop_order_list, op_name, multi_priority);
+  if(link)
+    return (dt_iop_order_entry_t *)link->data;
+  else
+    return NULL;
 }
 
 // returns the iop_order associated with the iop order entry that matches operation == op_name
-double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
+int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority)
 {
-  double iop_order = DBL_MAX;
-  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
+  int iop_order = INT_MAX;
+  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name, multi_priority);
 
   if(order_entry)
-    iop_order = order_entry->iop_order;
+  {
+    iop_order = order_entry->o.iop_order;
+  }
+  else
+    fprintf(stderr, "cannot get iop-order for %s instance %d\n", op_name, multi_priority);
 
   return iop_order;
 }
@@ -134,14 +349,139 @@ gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 {
   const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
   const dt_iop_order_entry_t *bm = (const dt_iop_order_entry_t *)b;
-  if(am->iop_order > bm->iop_order) return 1;
-  if(am->iop_order < bm->iop_order) return -1;
+  if(am->o.iop_order > bm->o.iop_order) return 1;
+  if(am->o.iop_order < bm->o.iop_order) return -1;
   return 0;
 }
 
-// returns a list of dt_iop_order_entry_t
-// if *_version == 0 it returns the current version and updates *_version
-GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
+gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b)
+{
+  const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
+  const dt_iop_order_entry_t *bm = (const dt_iop_order_entry_t *)b;
+  if(am->o.iop_order_f > bm->o.iop_order_f) return 1;
+  if(am->o.iop_order_f < bm->o.iop_order_f) return -1;
+  return 0;
+}
+
+dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
+{
+  // first check if this is the recommended order
+  int k = 0;
+  GList *l = iop_order_list;
+  gboolean ok = TRUE;
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    if(strcmp(recommended_order[k].operation, entry->operation)
+       || recommended_order[k].instance != 0)
+    {
+      ok = FALSE;
+      break;
+    }
+    k++;
+    l = g_list_next(l);
+  }
+
+  if(ok) return DT_IOP_ORDER_RECOMMENDED;
+
+  // then check if this is the legacy order
+  k = 0;
+  l = iop_order_list;
+  ok = TRUE;
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    if(strcmp(legacy_order[k].operation, entry->operation)
+       || legacy_order[k].instance != 0)
+    {
+      ok = FALSE;
+      break;
+    }
+    k++;
+    l = g_list_next(l);
+  }
+
+  if(ok) return DT_IOP_ORDER_LEGACY;
+
+  return DT_IOP_ORDER_CUSTOM;
+}
+
+gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid)
+{
+  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(iop_order_list);
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT OR REPLACE INTO main.module_order VALUES (?1, 0, NULL)", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
+  sqlite3_finalize(stmt);
+
+  if(kind == DT_IOP_ORDER_CUSTOM)
+  {
+    gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.module_order SET version = ?2, iop_list = ?3 WHERE imgid = ?1", -1,
+                                &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, kind);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, iop_list_txt, -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
+    sqlite3_finalize(stmt);
+
+    g_free(iop_list_txt);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.module_order SET version = ?2, iop_list = NULL WHERE imgid = ?1", -1,
+                                &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, kind);
+    if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
+    sqlite3_finalize(stmt);
+  }
+
+  return TRUE;
+}
+
+GList *_table_to_list(const dt_iop_order_entry_t entries[])
+{
+  GList *iop_order_list = NULL;
+  int k = 0;
+  while(entries[k].operation[0])
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+
+    strncpy(entry->operation, entries[k].operation, sizeof(entry->operation) - 1);
+    entry->instance = 0;
+    entry->o.iop_order_f = entries[k].o.iop_order_f;
+    iop_order_list = g_list_append(iop_order_list, entry);
+
+    k++;
+  }
+
+  return iop_order_list;
+}
+
+GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version)
+{
+  GList *iop_order_list = NULL;
+
+  if(version == DT_IOP_ORDER_LEGACY)
+  {
+    iop_order_list = _table_to_list(legacy_order);
+  }
+  else if(version == DT_IOP_ORDER_RECOMMENDED)
+  {
+    iop_order_list = _table_to_list(recommended_order);
+  }
+
+  return iop_order_list;
+}
+
+GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
 {
   // This is the latest default iop order. it corresponds to version 5. The list below must be kept in
   // synch with the "recommended" preset in the ioporder module.
@@ -157,118 +497,9 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
      3. DO NOT CHANGE any other iop-order for any module.
   */
 
-  const dt_iop_order_entry_t default_order[] = {
-    {  1.0, "rawprepare"},
-    {  2.0, "invert"},
-    {  3.0, "temperature"},
-    {  4.0, "highlights"},
-    {  5.0, "cacorrect"},
-    {  6.0, "hotpixels"},
-    {  7.0, "rawdenoise"},
-    {  8.0, "demosaic"},
-    {  9.0, "denoiseprofile"},
-    { 10.0, "bilateral"},
-    { 11.0, "rotatepixels"},
-    { 12.0, "scalepixels"},
-    { 13.0, "lens"},
-    { 14.0, "hazeremoval"},
-    { 15.0, "ashift"},
-    { 16.0, "flip"},
-    { 17.0, "clipping"},
-    { 18.0, "liquify"},
-    { 19.0, "spots"},
-    { 20.0, "retouch"},
-    { 21.0, "exposure"},
-    { 22.0, "mask_manager"},
-    { 23.0, "tonemap"},
-    { 24.0, "toneequal"},
-    { 25.0, "graduatednd"},
-    { 26.0, "profile_gamma"},
-    { 27.0, "equalizer"},
-    { 28.0, "colorin"},
-
-    { 29.0, "nlmeans"},         // signal processing (denoising)
-                                //    -> needs a signal as scene-referred as possible (even if it works in Lab)
-    { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
-                                //    -> improve colour calibration of colorin and reproductibility
-                                //    of further edits (styles etc.)
-    { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
-                                //    in order for chromaticity to be meaningful,
-    { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
-    { 33.0, "lowpass"},         // same
-    { 34.0, "highpass"},        // same
-    { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
-    { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
-                                //    so better move it after frequential ops that need L2 Hilbert spaces
-                                //    of square summable functions
-    { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
-                                //    colour exchange space, hence after colorin and colorcheckr,
-                                //    but apply after frequential ops in case it does non-linear witchcraft,
-                                //    just to be safe
-    { 59.0, "colormapping"},    // same
-    { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
-                                //    but coefs are user-defined instead of calibrated and read from ICC profile.
-                                //    Really versatile yet under-used module, doing linear ops,
-                                //    very good in scene-referred workflow
-    { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
-    { 40.0, "colorbalance"},    // scene-referred color manipulation
-    { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
-    { 42.0, "rgblevels"},       // same
-    { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
-                                //    on camera JPEG default look
-    { 44.0, "filmic"},          // same, but different (parametric) approach
-    { 45.0, "filmicrgb"},       // same, upgraded
-    { 46.0, "colisa"},          // edit contrast while damaging colour
-    { 47.0, "tonecurve"},       // same
-    { 48.0, "levels"},          // same
-    { 49.0, "shadhi"},          // same
-    { 50.0, "zonesystem"},      // same
-    { 51.0, "globaltonemap"},   // same
-    { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
-    { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
-                                //    to it with tonemapping
-    { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
-                                // try to recover them - global adjustment of white balance for shadows and highlights
-    { 55.0, "colorcontrast"},   // adjust chrominance globally
-    { 56.0, "velvia"},          // same
-    { 57.0, "vibrance"},        // same, but more subtle
-    { 58.0, "colorzones"},      // same, but locally
-    { 60.0, "bloom"},           // creative module
-    { 61.0, "colorize"},        // creative module
-    { 62.0, "lowlight"},        // creative module
-    { 63.0, "monochrome"},      // creative module
-    { 64.0, "grain"},           // creative module
-    { 65.0, "soften"},          // creative module
-    { 66.0, "splittoning"},     // creative module
-    { 67.0, "vignette"},        // creative module
-    { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
-    { 69.0, "colorout"},
-    { 70.0, "clahe"},
-    { 71.0, "finalscale"},
-    { 72.0, "overexposed"},
-    { 73.0, "rawoverexposed"},
-    { 74.0, "dither"},
-    { 75.0, "borders"},
-    { 76.0, "watermark"},
-    { 77.0, "gamma"},
-    {  0.0, "" }
-  };
-
   GList *iop_order_list = NULL;
 
-  if(_version == NULL || *_version == 0)
-  {
-    for(int k=0; default_order[k].operation[0]; k++)
-    {
-      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-      entry->iop_order = default_order[k].iop_order;
-      strncpy(entry->operation, default_order[k].operation, sizeof(entry->operation));
-      iop_order_list = g_list_append(iop_order_list, entry);
-    }
-
-    if(_version) *_version = DT_IOP_ORDER_VERSION;
-  }
-  else
+  if(imgid > 0)
   {
     sqlite3_stmt *stmt;
 
@@ -278,34 +509,51 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
     // only when loading an image and when changing the iop-order.
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT op_params"
-                                " FROM data.presets"
-                                " WHERE operation='ioporder'", -1, &stmt, NULL);
+                                "SELECT version, iop_list"
+                                " FROM main.module_order"
+                                " WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-    while(sqlite3_step(stmt) == SQLITE_ROW)
+    if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char *buf = (char *)sqlite3_column_blob(stmt, 0);
+      const dt_iop_order_t version = sqlite3_column_int(stmt, 0);
 
-      int iop_order_version = buf ? *(int32_t *)buf : -1;
-
-      // found the proper version
-      if(iop_order_version == *_version)
+      if(version == DT_IOP_ORDER_CUSTOM)
       {
-        const int32_t buf_size = sqlite3_column_bytes(stmt, 0);
-
-        iop_order_list = dt_ioppr_deserialize_iop_order_list(buf, buf_size, &iop_order_version);
+        const char *buf = (char *)sqlite3_column_text(stmt, 1);
+        if(buf) iop_order_list = dt_ioppr_deserialize_text_iop_order_list(buf);
 
         if(!iop_order_list)
         {
           // preset not found, fall back to last built-in version, will be loaded below
-          fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list version %d\n", *_version);
-          *_version = 0;
+          fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list imgid %d\n", imgid);
         }
-        break;
+      }
+      else if(version == DT_IOP_ORDER_LEGACY)
+      {
+        iop_order_list = _table_to_list(legacy_order);
+      }
+      else if(version == DT_IOP_ORDER_RECOMMENDED)
+      {
+        iop_order_list = _table_to_list(recommended_order);
+      }
+      else
+        fprintf(stderr, "[dt_ioppr_get_iop_order_list] invalid iop order version %d for imgid %d\n", version, imgid);
+
+      if(iop_order_list)
+      {
+        _ioppr_reset_iop_order(iop_order_list);
       }
     }
 
     sqlite3_finalize(stmt);
+  }
+
+  // fallback to last iop order list (also used to initialize the pipe when imgid = 0)
+  // and new image not yet loaded or whose history has been reset.
+  if(!iop_order_list)
+  {
+    iop_order_list = _table_to_list(recommended_order);
   }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
@@ -313,44 +561,304 @@ GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted)
   return iop_order_list;
 }
 
-// sets the iop_order on each module of *_iop_list
-// iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
-// if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
-void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int iop_order_version)
+static void _ioppr_reset_iop_order(GList *iop_order_list)
 {
-  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
-  GList *iop_list = dev->iop;
+  int iop_order = 0;
+  GList *l = iop_order_list;
+  while(l)
+  {
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+    e->o.iop_order = iop_order++;
+    l = g_list_next(l);
+  }
+}
 
-  dev->iop_order_version = iop_order_version;
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(&dev->iop_order_version, FALSE);
+void dt_ioppr_resync_modules_order(dt_develop_t *dev)
+{
+  _ioppr_reset_iop_order(dev->iop_order_list);
 
-  GList *modules = g_list_first(iop_list);
+  GList *modules = g_list_first(dev->iop);
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
-    if(mod->multi_priority == 0)
-    {
-      mod->iop_order = dt_ioppr_get_iop_order(iop_order_list, mod->op);
-    }
-    // muti-instances will be set by read history
-    else
-    {
-      mod->iop_order = DBL_MAX;
-    }
-
-    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n  db: %14.11f   xmp %8.4f   %16s",mod->iop_order,mod->iop_order,mod->op);
+    mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
     modules = g_list_next(modules);
   }
-  // we need to set the right order
-  iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
-  dev->iop = iop_list;
+  dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
+}
+
+#if 0
+static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
+{
+  gboolean exists = FALSE;
+
+  // first check that new module is missing
+
+  GList *l = iop_order_list;
+
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(entry->operation, new_module))
+    {
+      exists = TRUE;
+      break;
+    }
+
+    l = g_list_next(l);
+  }
+
+  // the insert it if needed
+
+  if(!exists)
+  {
+    l = iop_order_list;
+    while(l)
+    {
+      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+
+      if(!strcmp(entry->operation, module))
+      {
+        dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+
+        memcpy(new_entry->operation, new_module, sizeof(new_entry->operation));
+        new_entry->instance = 0;
+        new_entry->iop_order = 0;
+
+        iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
+        break;
+      }
+
+      l = g_list_next(l);
+    }
+  }
+
+  return iop_order_list;
+}
+#endif
+
+// sets the iop_order on each module of *_iop_list
+// iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
+// if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
+void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int32_t imgid)
+{
+  // get the iop-order for this image
+
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+
+#if 0
+  // Adding a new module is done here
+  _insert_before(iop_order_list, "OLD_MODULE_NAME", "NEW_MODULE_NAME");
+#endif
+
+  // we assign a single iop-order to each module
+
+  _ioppr_reset_iop_order(iop_order_list);
 
   if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
   dev->iop_order_list = iop_order_list;
 
-  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
+  // we now set the module list given to this iop-order
+
+  dt_ioppr_resync_modules_order(dev);
+}
+
+void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
+{
+  dt_ioppr_set_default_iop_order(dev, imgid);
+  dt_dev_reload_history_items(dev);
+}
+
+static int _count_iop_module(GList *iop, const char *operation, int *max_multi_priority)
+{
+  int count = 0;
+
+  GList *modules = iop;
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(!strcmp(mod->op, operation)) count++;
+    if(*max_multi_priority < mod->multi_priority) *max_multi_priority = mod->multi_priority;
+    modules = g_list_next(modules);
+  }
+
+  return count;
+}
+
+static int _count_entries_operation(GList *e_list, const char *operation)
+{
+  int count = 0;
+
+  GList *l = g_list_first(e_list);
+  while(l)
+  {
+    dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(ep->operation, operation)) count++;
+    l = g_list_next(l);
+  }
+
+  return count;
+}
+
+static gboolean _operation_already_handled(GList *e_list, const char *operation)
+{
+  GList *l = g_list_previous(e_list);
+
+  while(l)
+  {
+    dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(ep->operation, operation)) return TRUE;
+    l = g_list_previous(l);
+  }
+  return FALSE;
+}
+
+void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
+{
+  GList *e_list = entry_list;
+
+  // for each priority list to be checked
+  while(e_list)
+  {
+    dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)e_list->data;
+
+    int max_multi_priority = 0;
+
+    // is it a currently active module and if so how many active instances we have
+    const int active_instances = _count_iop_module(dev->iop, ep->operation, &max_multi_priority);
+
+    // look for this operation into the target iop-order list and add there as much operation as needed
+
+    GList *l = g_list_last(dev->iop_order_list);
+
+    while(l)
+    {
+      dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+      if(!strcmp(e->operation, ep->operation) && !_operation_already_handled(e_list, ep->operation))
+      {
+        // how many instances of this module in the entry list, and re-number multi-priority accordingly
+        const int new_active_instances = _count_entries_operation(entry_list, ep->operation);
+
+        // update multi_priority to be unique in iop list
+        int multi_priority = (active_instances == 0) ? max_multi_priority : max_multi_priority + 1;
+        GList *s = entry_list;
+        while(s)
+        {
+          dt_iop_order_entry_t *item = (dt_iop_order_entry_t *)s->data;
+          if(!strcmp(item->operation, e->operation))
+          {
+            item->instance = multi_priority++;
+          }
+          s = g_list_next(s);
+        }
+
+        // the number of entries to add into the target list
+        const int add_count = (active_instances == 0) ? new_active_instances - 1 : new_active_instances;
+
+        multi_priority = (active_instances == 0) ? max_multi_priority : max_multi_priority + 1;
+
+        l = g_list_next(l);
+
+        for(int k = 0; k<add_count; k++)
+        {
+          dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+          strncpy(n->operation, ep->operation, sizeof(n->operation));
+          n->instance = ++multi_priority;
+          n->o.iop_order = 0;
+          dev->iop_order_list = g_list_insert_before(dev->iop_order_list, l, n);
+        }
+        break;
+      }
+
+      l = g_list_previous(l);
+    }
+
+    e_list = g_list_next(e_list);
+  }
+
+  _ioppr_reset_iop_order(dev->iop_order_list);
+
+//  dt_ioppr_print_iop_order(dev->iop_order_list, "upd sitem");
+}
+
+void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items)
+{
+  GList *si_list = g_list_first(st_items);
+  GList *e_list = NULL;
+
+  // for each priority list to be checked
+  while(si_list)
+  {
+    dt_style_item_t *si = (dt_style_item_t *)si_list->data;
+
+    dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+    memcpy(n->operation, si->operation, sizeof(n->operation));
+    n->instance = si->multi_priority;
+    n->o.iop_order = 0;
+    e_list = g_list_append(e_list, n);
+
+    si_list = g_list_next(si_list);
+  }
+
+  dt_ioppr_update_for_entries(dev, e_list);
+
+  // write back the multi-priority
+
+  si_list = g_list_first(st_items);
+  GList *el = g_list_first(e_list);
+  while(si_list)
+  {
+    dt_style_item_t *si = (dt_style_item_t *)si_list->data;
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)el->data;
+
+    si->multi_priority = e->instance;
+
+    el = g_list_next(el);
+    si_list = g_list_next(si_list);
+  }
+
+  g_list_free(e_list);
+}
+
+void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules)
+{
+  GList *m_list = g_list_first(modules);
+  GList *e_list = NULL;
+
+  // for each priority list to be checked
+  while(m_list)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m_list->data;
+
+    dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+    strncpy(n->operation, mod->op, sizeof(n->operation));
+    n->instance = mod->multi_priority;
+    n->o.iop_order = 0;
+    e_list = g_list_append(e_list, n);
+
+    m_list = g_list_next(m_list);
+  }
+
+  dt_ioppr_update_for_entries(dev, e_list);
+
+  // write back the multi-priority
+
+  m_list = g_list_first(modules);
+  GList *el = g_list_first(e_list);
+  while(m_list)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m_list->data;
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)el->data;
+
+    mod->multi_priority = e->instance;
+
+    el = g_list_next(el);
+    m_list = g_list_next(m_list);
+  }
+
+  g_list_free_full(e_list, free);
 }
 
 // returns the first dt_dev_history_item_t on history_list where hist->module == mod
@@ -440,7 +948,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           {
             can_move = 0;
             fprintf(stderr,
-                    "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                    "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
                     mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
@@ -453,7 +961,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
       if(!can_move)
       {
         fprintf(stderr,
-                "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+                "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
@@ -488,7 +996,7 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
   {
     dt_iop_module_so_t *mod = (dt_iop_module_so_t *)(modules->data);
 
-    dt_iop_order_entry_t *entry = dt_ioppr_get_iop_order_entry(iop_order_list, mod->op);
+    dt_iop_order_entry_t *entry = dt_ioppr_get_iop_order_entry(iop_order_list, mod->op, 0); // mod->multi_priority);
     if(entry == NULL)
     {
       iop_order_missing = 1;
@@ -528,18 +1036,14 @@ gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b)
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
 // this assumes that the order is always positive
-double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next,
-                                  const int validate_order, const int log_error)
+gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next)
 {
-  if((module->flags() & IOP_FLAGS_FENCE) && validate_order)
+  if(module->flags() & IOP_FLAGS_FENCE)
   {
-    if(log_error)
-      fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] module %s(%f) is a fence, can't move it before %s %s(%f)\n",
-          module->op, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
-    return -1.0;
+    return FALSE;
   }
 
-  double iop_order = -1.0;
+  gboolean can_move = FALSE;
 
   // module is before on the pipe
   // move it up
@@ -574,38 +1078,28 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
           break;
         }
 
-        // check for rules
-        if(validate_order)
+        // check if module can be moved around this one
+        if(mod->flags() & IOP_FLAGS_FENCE)
         {
-          // check if module can be moved around this one
-          if(mod->flags() & IOP_FLAGS_FENCE)
+          break;
+        }
+
+        // is there a rule about swapping this two?
+        int rule_found = 0;
+        GList *rules = g_list_first(darktable.iop_order_rules);
+        while(rules)
+        {
+          dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
+
+          if(strcmp(module->op, rule->op_prev) == 0 && strcmp(mod->op, rule->op_next) == 0)
           {
-            if(log_error)
-              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n",
-                  module->op, module->multi_name, module->iop_order, mod->op, mod->multi_name, mod->iop_order);
+            rule_found = 1;
             break;
           }
 
-          // is there a rule about swapping this two?
-          int rule_found = 0;
-          GList *rules = g_list_first(darktable.iop_order_rules);
-          while(rules)
-          {
-            dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
-
-            if(strcmp(module->op, rule->op_prev) == 0 && strcmp(mod->op, rule->op_next) == 0)
-            {
-              if(log_error)
-                fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] found rule %s %s while moving %s %s(%f) before %s %s(%f)\n",
-                        rule->op_prev, rule->op_next, module->op,  module->multi_name, module->iop_order, module_next->op,  module_next->multi_name, module_next->iop_order);
-              rule_found = 1;
-              break;
-            }
-
-            rules = g_list_next(rules);
-          }
-          if(rule_found) break;
+          rules = g_list_next(rules);
         }
+        if(rule_found) break;
 
         mod1 = mod;
         modules = g_list_next(modules);
@@ -617,21 +1111,16 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         // this is already the previous module!
         if(module == mod1)
         {
-          if(log_error)
-            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n",
-                module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
+          ;
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
         {
-          // calculate new iop_order
-          iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 2.0;
-          /* fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 2-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
-                 iop_order, module->op, module->iop_order, module_next->op, module_next->iop_order, mod->op, mod->iop_order); */
+          can_move = TRUE;
         }
       }
     }
@@ -672,37 +1161,28 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
 
         // check for rules
-        if(validate_order)
+        // check if module can be moved around this one
+        if(mod->flags() & IOP_FLAGS_FENCE)
         {
-          // check if module can be moved around this one
-          if(mod->flags() & IOP_FLAGS_FENCE)
+          break;
+        }
+
+        // is there a rule about swapping this two?
+        int rule_found = 0;
+        GList *rules = g_list_first(darktable.iop_order_rules);
+        while(rules)
+        {
+          dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
+
+          if(strcmp(mod->op, rule->op_prev) == 0 && strcmp(module->op, rule->op_next) == 0)
           {
-            if(log_error)
-              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n",
-                  module->op, module->multi_name, module->iop_order, mod->op, mod->multi_name, mod->iop_order);
+            rule_found = 1;
             break;
           }
 
-          // is there a rule about swapping this two?
-          int rule_found = 0;
-          GList *rules = g_list_first(darktable.iop_order_rules);
-          while(rules)
-          {
-            dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
-
-            if(strcmp(mod->op, rule->op_prev) == 0 && strcmp(module->op, rule->op_next) == 0)
-            {
-              if(log_error)
-                fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] found rule %s %s while moving %s %s(%f) before %s %s(%f)\n",
-                        rule->op_prev, rule->op_next, module->op,  module->multi_name, module->iop_order, module_next->op,  module_next->multi_name, module_next->iop_order);
-              rule_found = 1;
-              break;
-            }
-
-            rules = g_list_next(rules);
-          }
-          if(rule_found) break;
+          rules = g_list_next(rules);
         }
+        if(rule_found) break;
 
         if(mod == module_next) mod2 = mod;
         modules = g_list_previous(modules);
@@ -714,21 +1194,16 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         // this is already the previous module!
         if(module == mod2)
         {
-          if(log_error)
-            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n",
-                module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
+          ;
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
         {
-          // calculate new iop_order
-          iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 2.0;
-          /* fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 2-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
-                 iop_order, module->op, module->iop_order, module_next->op, module_next->iop_order, mod->op, mod->iop_order); */
+          can_move = TRUE;
         }
       }
     }
@@ -737,21 +1212,20 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
         module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
   }
 
-  return iop_order;
+  return can_move;
 }
 
 // if module can be placed after than module_prev on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
 // this assumes that the order is always positive
-double dt_ioppr_get_iop_order_after_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev,
-                                 const int validate_order, const int log_error)
+gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev)
 {
-  double iop_order = -1.0;
+  gboolean can_move = FALSE;
 
   // moving after module_prev is the same as moving before the very next one after module_prev
   GList *modules = g_list_last(iop_list);
@@ -768,122 +1242,65 @@ double dt_ioppr_get_iop_order_after_iop(GList *iop_list, dt_iop_module_t *module
   {
     fprintf(
         stderr,
-        "[dt_ioppr_get_iop_order_after_iop] can't find module previous to %s %s(%f) while moving %s %s(%f) after it\n",
+        "[dt_ioppr_get_iop_order_after_iop] can't find module previous to %s %s(%d) while moving %s %s(%d) after it\n",
         module_prev->op, module_prev->multi_name, module_prev->iop_order, module->op, module->multi_name,
         module->iop_order);
   }
   else
-    iop_order = dt_ioppr_get_iop_order_before_iop(iop_list, module, module_next, validate_order, log_error);
+    can_move = dt_ioppr_check_can_move_before_iop(iop_list, module, module_next);
 
-  return iop_order;
+  return can_move;
 }
 
 // changes the module->iop_order so it comes before in the pipe than module_next
 // sort dev->iop to reflect the changes
 // return 1 if iop_order is changed, 0 otherwise
-int dt_ioppr_move_iop_before(GList **_iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next,
-                       const int validate_order, const int log_error)
+int dt_ioppr_move_iop_before(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_next)
 {
-  GList *iop_list = *_iop_list;
-  int moved = 0;
+  GList *next = dt_ioppr_get_iop_order_link(dev->iop_order_list, module_next->op, module_next->multi_priority);
+  GList *current = dt_ioppr_get_iop_order_link(dev->iop_order_list, module->op, module->multi_priority);
 
-  // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_before begin");
+  if(!next || !current) return 0;
 
-  const double iop_order = dt_ioppr_get_iop_order_before_iop(iop_list, module, module_next, validate_order, log_error);
+  dev->iop_order_list = g_list_remove_link(dev->iop_order_list, current);
+  dev->iop_order_list = g_list_insert_before(dev->iop_order_list, next, current->data);
 
-  if(iop_order >= 0.0)
-  {
-    module->iop_order = iop_order;
-    iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
-    moved = 1;
-  }
-  else if(log_error)
-    fprintf(stderr, "[dt_ioppr_move_iop_before] module %s is already before %s\n", module->op, module_next->op);
+  g_list_free(current);
 
-  // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_before end");
+  dt_ioppr_resync_modules_order(dev);
 
-  *_iop_list = iop_list;
-
-  return moved;
+  return 1;
 }
 
 // changes the module->iop_order so it comes after in the pipe than module_prev
 // sort dev->iop to reflect the changes
 // return 1 if iop_order is changed, 0 otherwise
-int dt_ioppr_move_iop_after(GList **_iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev,
-                      const int validate_order, const int log_error)
+int dt_ioppr_move_iop_after(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_prev)
 {
-  GList *iop_list = *_iop_list;
-  int moved = 0;
+  GList *prev = dt_ioppr_get_iop_order_link(dev->iop_order_list, module_prev->op, module_prev->multi_priority);
+  GList *current = dt_ioppr_get_iop_order_link(dev->iop_order_list, module->op, module->multi_priority);
 
-  // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_after begin");
+  if(!prev || !current) return 0;
 
-  const double iop_order = dt_ioppr_get_iop_order_after_iop(iop_list, module, module_prev, validate_order, log_error);
-  if(iop_order >= 0.0)
-  {
-    module->iop_order = iop_order;
-    iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
-    moved = 1;
-  }
-  else if(log_error)
-    fprintf(stderr, "[dt_ioppr_move_iop_after] module %s is already after %s\n", module->op, module_prev->op);
+  dev->iop_order_list = g_list_remove_link(dev->iop_order_list, current);
 
-  // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_after end");
+  // we want insert after => so insert before the next item
+  GList *next = g_list_next(prev);
+  if(prev)
+    dev->iop_order_list = g_list_insert_before(dev->iop_order_list, next, current->data);
+  else
+    dev->iop_order_list = g_list_append(dev->iop_order_list, current->data);
 
-  *_iop_list = iop_list;
+  g_list_free(current);
 
-  return moved;
+  dt_ioppr_resync_modules_order(dev);
+
+  return 1;
 }
 
 //--------------------------------------------------------------------
 // from here just for debug
 //--------------------------------------------------------------------
-int dt_ioppr_check_db_integrity()
-{
-  int ret = 0;
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, operation, module FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
-                              -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    ret = 1;
-    fprintf(stderr, "\nThere are unassigned iop_order in the history!!!\n\n");
-
-    int count = 0;
-    do
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-      const char *opname = (const char *)sqlite3_column_text(stmt, 1);
-      const int modversion = sqlite3_column_int(stmt, 2);
-
-      fprintf(stderr, "image: %i module: %s version: %i\n", imgid, (opname) ? opname: "module is NULL", modversion);
-    } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
-  }
-
-  sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT styleid, operation FROM data.style_items WHERE iop_order <= 0 OR iop_order IS NULL",
-                              -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    ret = 1;
-    fprintf(stderr, "\nThere are unassigned iop_order in the styles!!!\n\n");
-
-    int count = 0;
-    do
-    {
-      const int styleid = sqlite3_column_int(stmt, 0);
-      const char *opname = (const char *)sqlite3_column_text(stmt, 1);
-
-      fprintf(stderr, "style: %i module: %s\n", styleid, (opname) ? opname: "module is NULL");
-    } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
-  }
-
-  sqlite3_finalize(stmt);
-
-  return ret;
-}
 
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg)
 {
@@ -892,7 +1309,8 @@ void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
-    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%f\n", msg, mod->op, mod->multi_name, mod->multi_priority, mod->iop_order);
+    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
+            msg, mod->op, mod->multi_name, mod->multi_priority, mod->iop_order);
 
     modules = g_list_next(modules);
   }
@@ -905,7 +1323,8 @@ void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
-    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%f\n", msg, hist->op_name, hist->multi_name, hist->multi_priority, hist->iop_order);
+    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
+            msg, hist->op_name, hist->multi_name, hist->multi_priority, hist->iop_order);
 
     history = g_list_next(history);
   }
@@ -918,7 +1337,8 @@ void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg)
   {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
 
-    fprintf(stderr, "[%s] operation %s iop_order=%f\n", msg, order_entry->operation, order_entry->iop_order);
+    fprintf(stderr, "[%s] op %20s (inst %d) iop_order=%d\n",
+            msg, order_entry->operation, order_entry->instance, order_entry->o.iop_order);
 
     iops_order = g_list_next(iops_order);
   }
@@ -992,13 +1412,13 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
     // now check if mod is between the fences
     if(fence_next && mod->iop_order > fence_next->iop_order)
     {
-      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%f) is after %s %s(%f) image %i (%s)\n",
+      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
               fence_next->op, fence_next->multi_name, mod->op, mod->multi_name, mod->iop_order, fence_next->op,
               fence_next->multi_name, fence_next->iop_order, imgid, msg);
     }
     if(fence_prev && mod->iop_order < fence_prev->iop_order)
     {
-      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%f) is before %s %s(%f) image %i (%s)\n",
+      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
               fence_prev->op, fence_prev->multi_name, mod->op, mod->multi_name, mod->iop_order, fence_prev->op,
               fence_prev->multi_name, fence_prev->iop_order, imgid, msg);
     }
@@ -1035,7 +1455,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 
           if(strcmp(mod_prev->op, rule->op_next) == 0)
           {
-            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%f) is after %s %s(%f) image %i (%s)\n",
+            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
                     rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order, mod_prev->op,
                     mod_prev->multi_name, mod_prev->iop_order, imgid, msg);
           }
@@ -1054,7 +1474,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 
           if(strcmp(mod_next->op, rule->op_prev) == 0)
           {
-            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%f) is before %s %s(%f) image %i (%s)\n",
+            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
                     rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order, mod_next->op,
                     mod_next->multi_name, mod_next->iop_order, imgid, msg);
           }
@@ -1072,202 +1492,34 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   if(fences) g_list_free(fences);
 }
 
-// migrate the given image to another iop_order version (new_iop_order_version)
-// note that this is actually a non exported routine but it will
-// be when dt GUI will provide a way to migrate to a new iop_order version.
-int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *module)
 {
-  int _iop_order_version = new_iop_order_version;
-  sqlite3_stmt *stmt;
+  const char *operation = module->op;
+  const int32_t instance = module->multi_priority;
 
-  // As we have to calculate within the images history data we will create a struct array holding all relevant data
-  // for housekeeping.
-  // Also this ensures we can write test output before we really write data to main.history
+  dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-  int history_size = 0;
-  // We need the size of the images history for the struct array
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) history_size = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  strncpy(entry->operation, operation, sizeof(entry->operation));
+  entry->instance = instance;
+  entry->o.iop_order = 0;
 
-  if (history_size <1)
+  GList *l = dev->iop_order_list;
+  GList *place = NULL;
+
+  int max_instance = -1;
+
+  while(l)
   {
-    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] for image %i has no valid history\n", imgid);
-    return current_iop_order_version;
-  }
-
-  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version, FALSE);
-
-  if(_iop_order_version != new_iop_order_version)
-  {
-    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] cannot get new iop-order list for image %i\n", imgid);
-    return current_iop_order_version;
-  }
-
-  // get the number of known iops
-  const int valid_iops = g_list_length (current_iop_list);
-
-  if(DT_IOP_ORDER_INFO)
-  {
-    fprintf(stderr,"\n*** checking for %d known iops ***\n", valid_iops);
-
-    GList *iops_order = g_list_last(current_iop_list);
-    while(iops_order)
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(e->operation, operation) && e->instance > max_instance)
     {
-      dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
-      fprintf(stderr, "  %s, %f\n", order_entry->operation,order_entry->iop_order);
-      iops_order = g_list_previous(iops_order);
+      place = l;
+      max_instance = e->instance;
     }
+    l = g_list_next(l);
   }
 
-  typedef struct dt_onthefly_history_t
-  {
-    int num;
-    char operation[20];
-    double old_iop_order;
-    double new_iop_order;
-    int multi_priority;
-  } dt_onthefly_history_t;
-
-  struct dt_onthefly_history_t *myhistory = (dt_onthefly_history_t *)calloc(history_size, sizeof(dt_onthefly_history_t));
-
-  // read in the history
-  for (int i=0;i<history_size;i++)
-  {
-    int hits=0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "SELECT num, operation, iop_order, multi_priority FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      struct dt_onthefly_history_t *this = &myhistory[hits];
-      this->num = sqlite3_column_int(stmt, 0);
-      g_strlcpy(this->operation, (char *)sqlite3_column_text(stmt, 1), 20);
-      this->old_iop_order = this->new_iop_order = sqlite3_column_double(stmt,2);
-      this->multi_priority = sqlite3_column_int(stmt, 3);
-      hits++;
-    }
-    sqlite3_finalize(stmt);
-  }
-
-  // process history, we assign iop-order to one from v4.
-  for (int i=0;i<history_size;i++)
-  {
-    struct dt_onthefly_history_t *this = &myhistory[i];
-    this->new_iop_order =
-      dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
-  }
-
-  g_list_free_full(current_iop_list, free);
-
-  // process some more checks possibly; any sort data that can't be correct?
-
-  // print complete history information
-  fprintf(stderr, "\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************\n",
-          current_iop_order_version, _iop_order_version, imgid);
-  for (int i=0;i<history_size;i++)
-  {
-    struct dt_onthefly_history_t *this = &myhistory[i];
-    fprintf(stderr, " %3i %20s multi%3i :: iop %14.11f -> %14.11f\n", this->num, this->operation,
-            this->multi_priority, this->old_iop_order, this->new_iop_order);
-  }
-
-  // Now write history
-
-  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
-  for (int i=0; i<history_size; i++)
-  {
-    struct dt_onthefly_history_t *this = &myhistory[i];
-    if (this->old_iop_order != this->new_iop_order)
-    {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.history SET iop_order = ?1 WHERE imgid = ?2 AND num = ?3", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, this->new_iop_order);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, this->num);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-  }
-
-  if(_iop_order_version != -1)
-  {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-
-  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-
-  free(myhistory);
-
-  // return back the actual iop_order_version as written above to be extra safe
-  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
-  if(my_iop_order_version > 0) _iop_order_version = my_iop_order_version;
-
-  // now let's write the corresponding sidecar file which is also
-  // broken. this is needed when the lighttable refresh a thumb and
-  // the conversion happens.
-  dt_image_write_sidecar_file(imgid);
-
-  return _iop_order_version;
-}
-
-int dt_ioppr_migrate_iop_order(dt_develop_t *dev, const int imgid, const int current_iop_order_version, const int new_iop_order_version)
-{
-  const int ret = _ioppr_migrate_iop_order(imgid, current_iop_order_version, new_iop_order_version);
-
-  dt_ioppr_set_default_iop_order(dev, new_iop_order_version);
-
-  // finaly reload history
-
-  dt_dev_reload_history_items(dev);
-
-  return ret;
-}
-
-// how is on-the-fly conversion done
-// Currently a hack to support v3/v4 history to later
-// returns the history version of imgid
-int dt_ioppr_convert_onthefly(const int imgid)
-{
-  // check current iop order version
-  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
-
-  // already latest
-  if (my_iop_order_version == DT_IOP_ORDER_VERSION)
-  {
-    return my_iop_order_version;
-  }
-  else if (my_iop_order_version == 1)
-  {
-    // if an original image edited before iop-order was introduced we migrate it to v2
-    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2);
-  }
-  else if (my_iop_order_version == 3 || my_iop_order_version == 4)
-  {
-    // ??? we handle only iop-version 3/4 (which have been broken) and move
-    // it to latest version whatever the latest version is. As v3 or v4 are quite
-    // broken it makes no difference to whatever order we move to. At the time if this
-    // implementation the last/fixed version is v5.
-    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
-  }
-  else
-  {
-    // some v2 could be broken, check it and if something still wrong try to migrate it
-    // note that here we do use dt_ioppr_migrate_iop_order() as we need to also update
-    // the dev->iop data which are broken.
-    if(!dt_ioppr_check_iop_order(darktable.develop, imgid, "dt_iopprr_convert_onthefly"))
-      return dt_ioppr_migrate_iop_order(darktable.develop, imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
-  }
-
-  return my_iop_order_version;
+  dev->iop_order_list = g_list_insert_before(dev->iop_order_list, place, entry);
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
@@ -1280,7 +1532,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     while(modules)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if(mod->iop_order != DBL_MAX)
+      if(mod->iop_order != INT_MAX)
         break;
 
       modules = g_list_previous(dev->iop);
@@ -1292,7 +1544,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
       if(strcmp(mod->op, "gamma") != 0)
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] gamma is not the last iop, last is %s %s(%f) image %i (%s)\n",
+        fprintf(stderr, "[dt_ioppr_check_iop_order] gamma is not the last iop, last is %s %s(%d) image %i (%s)\n",
                 mod->op, mod->multi_name, mod->iop_order,imgid, msg);
       }
     }
@@ -1308,18 +1560,18 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     while(modules)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if(!mod->default_enabled && mod->iop_order != DBL_MAX)
+      if(!mod->default_enabled && mod->iop_order != INT_MAX)
       {
         if(mod->enabled)
         {
           iop_order_ok = 0;
-          fprintf(stderr, "[dt_ioppr_check_iop_order] module not used but enabled!! %s %s(%f) image %i (%s)\n",
+          fprintf(stderr, "[dt_ioppr_check_iop_order] module not used but enabled!! %s %s(%d) image %i (%s)\n",
                   mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
         if(mod->multi_priority == 0)
         {
           iop_order_ok = 0;
-          fprintf(stderr, "[dt_ioppr_check_iop_order] base module set as not used %s %s(%f) image %i (%s)\n",
+          fprintf(stderr, "[dt_ioppr_check_iop_order] base module set as not used %s %s(%d) image %i (%s)\n",
                   mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
       }
@@ -1335,7 +1587,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     while(modules)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if(mod->iop_order != DBL_MAX)
+      if(mod->iop_order != INT_MAX)
       {
         if(mod_prev)
         {
@@ -1343,7 +1595,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
           {
             iop_order_ok = 0;
             fprintf(stderr,
-                    "[dt_ioppr_check_iop_order] module %s %s(%f) should be after %s %s(%f) image %i (%s)\n",
+                    "[dt_ioppr_check_iop_order] module %s %s(%d) should be after %s %s(%d) image %i (%s)\n",
                     mod->op, mod->multi_name, mod->iop_order, mod_prev->op, mod_prev->multi_name,
                     mod_prev->iop_order, imgid, msg);
           }
@@ -1352,7 +1604,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
             iop_order_ok = 0;
             fprintf(
                 stderr,
-                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) have the same order image %i (%s)\n",
+                "[dt_ioppr_check_iop_order] module %s %s(%i)(%d) and %s %s(%i)(%d) have the same order image %i (%s)\n",
                 mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
           }
@@ -1370,18 +1622,18 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
-    if(hist->iop_order == DBL_MAX)
+    if(hist->iop_order == INT_MAX)
     {
       if(hist->enabled)
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] history module not used but enabled!! %s %s(%f) image %i (%s)\n",
+        fprintf(stderr, "[dt_ioppr_check_iop_order] history module not used but enabled!! %s %s(%d) image %i (%s)\n",
             hist->op_name, hist->multi_name, hist->iop_order,imgid, msg);
       }
       if(hist->multi_priority == 0)
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] history base module set as not used %s %s(%f) image %i (%s)\n",
+        fprintf(stderr, "[dt_ioppr_check_iop_order] history base module set as not used %s %s(%d) image %i (%s)\n",
             hist->op_name, hist->multi_name, hist->iop_order,imgid, msg);
       }
     }
@@ -1392,50 +1644,150 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
   return iop_order_ok;
 }
 
-GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *iop_order_version)
+void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
+{
+  // compute size of all modules
+  *size = 0;
+
+  GList *l = iop_order_list;
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    *size += strlen(entry->operation) + sizeof(int32_t) * 2;
+    l = g_list_next(l);
+  }
+
+  // allocate the parameter buffer
+  char *params = (char *)malloc(*size);
+
+  // set set preset iop-order version
+  int pos = 0;
+
+  l = iop_order_list;
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    // write the len of the module name
+    const int32_t len = strlen(entry->operation);
+    memcpy(params+pos, &len, sizeof(int32_t));
+    pos += sizeof(int32_t);
+
+    // write the module name
+    memcpy(params+pos, entry->operation, len);
+    pos += len;
+
+    // write the instance number
+    memcpy(params+pos, &(entry->instance), sizeof(int32_t));
+    pos += sizeof(int32_t);
+
+    l = g_list_next(l);
+  }
+
+  return params;
+}
+
+char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
+{
+  gchar *text = g_strdup("");
+
+  GList *l = iop_order_list;
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    gchar buf[64];
+    snprintf(buf, sizeof(buf), "%s,%d,", entry->operation, entry->instance);
+    text = g_strconcat(text, buf, NULL);
+    l = g_list_next(l);
+  }
+
+  return text;
+}
+
+GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 {
   GList *iop_order_list = NULL;
+  const int len = strlen(buf);
+  int pos = 0;
+  int start = 0;
 
-  // read leading iop-order-version
-  *iop_order_version = *(int32_t *)buf;
-  buf += sizeof(int32_t);
-  size -= sizeof(int32_t);
+  while(buf[pos] && pos < len)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-  if(*iop_order_version < 0) goto error;
+    entry->o.iop_order = 0;
+
+    // set module name
+    start = pos;
+    while(buf[pos] != ',' && pos < len) pos++;
+    const int opname_len = pos-start;
+    if(opname_len > 20) { free(entry); goto error; }
+    memcpy(entry->operation, &buf[start], opname_len);
+    entry->operation[opname_len] = '\0';
+
+    pos++;
+    start = pos;
+    int inst;
+    sscanf(&buf[start], "%d", &inst);
+    entry->instance = inst;
+
+    if(entry->instance < 0 || entry->instance > 1000) { free(entry); goto error; }
+
+    while(buf[pos] != ',' && pos < len) pos++;
+    pos++;
+
+    // append to the list
+    iop_order_list = g_list_append(iop_order_list, entry);
+  }
+
+  _ioppr_reset_iop_order(iop_order_list);
+
+  return iop_order_list;
+
+ error:
+  g_list_free_full(iop_order_list, free);
+  return NULL;
+}
+
+GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size)
+{
+  GList *iop_order_list = NULL;
 
   // parse all modules
   while(size)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-    // get the iop-order
-    entry->iop_order = *(double *)buf;
-    buf += sizeof(double);
-
-    if(entry->iop_order<0.f || entry->iop_order>1000.0f) { free(entry); goto error; }
+    entry->o.iop_order = 0;
 
     // get length of module name
     const int32_t len = *(int32_t *)buf;
     buf += sizeof(int32_t);
 
-    if(len<0 || len>20) { free(entry); goto error; }
+    if(len < 0 || len > 20) { free(entry); goto error; }
 
     // set module name
     memcpy(entry->operation, buf, len);
     *(entry->operation + len) = '\0';
     buf += len;
 
+    // get the instance number
+    entry->instance = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+
+    if(entry->instance < 0 || entry->instance > 1000) { free(entry); goto error; }
+
     // append to the list
     iop_order_list = g_list_append(iop_order_list, entry);
 
-    size -= (sizeof(double) + sizeof(int32_t) + len);
+    size -= (2 * sizeof(int32_t) + len);
   }
+
+  _ioppr_reset_iop_order(iop_order_list);
 
   return iop_order_list;
 
  error:
   g_list_free_full(iop_order_list, free);
-  *iop_order_version = 0;
   return NULL;
 }
 

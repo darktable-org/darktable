@@ -40,7 +40,7 @@ typedef struct dt_style_t
 typedef struct dt_style_item_t
 {
   int num, selimg_num, enabled, multi_priority;
-  double iop_order;
+  int iop_order;
   gchar *name, *operation, *multi_name;
   int module_version, blendop_version;
   dt_iop_params_t *params;

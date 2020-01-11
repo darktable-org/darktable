@@ -381,7 +381,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
-  module->iop_order = 0.0;
+  module->iop_order = 0;
   for(int k = 0; k < 3; k++)
   {
     module->picked_color[k] = module->picked_output_color[k] = 0.0f;
@@ -505,22 +505,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 
-  // set the iop_order using the current version
-  dt_iop_order_entry_t *iop_order_entry = NULL;
-  if(dev && dev->iop_order_list)
-    iop_order_entry = dt_ioppr_get_iop_order_entry(dev->iop_order_list, module->op);
-  else
-    iop_order_entry = dt_ioppr_get_iop_order_entry(darktable.iop_order_list, module->op);
-  if(iop_order_entry)
-    module->iop_order = iop_order_entry->iop_order;
-  else
-    module->iop_order = -1.0;
-
-  if(module->iop_order <= 0.0)
-  {
-    fprintf(stderr, "[iop_load_module] `%s' needs to set iop_order!\n", so->op);
-    return 1; // this needs to be set
-  }
   if(module->params_size == 0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
@@ -724,7 +708,7 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   // dt_ioppr_check_iop_order(module->dev, "dt_iop_gui_movedown_callback 1");
   if(!prev) return;
 
-  const int moved = dt_ioppr_move_iop_before(&module->dev->iop, module, prev, 1, 1);
+  const int moved = dt_ioppr_move_iop_before(module->dev, module, prev);
   // dt_ioppr_check_iop_order(module->dev, "dt_iop_gui_movedown_callback 2");
   if(!moved) return;
 
@@ -764,7 +748,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_module_t *next = dt_iop_gui_get_next_visible_module(module);
   if(!next) return;
 
-  const int moved = dt_ioppr_move_iop_after(&module->dev->iop, module, next, 1, 1);
+  const int moved = dt_ioppr_move_iop_after(module->dev, module, next);
   if(!moved) return;
 
   // we move the headers
@@ -798,7 +782,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
-  uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
+  const uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
 
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);

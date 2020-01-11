@@ -33,10 +33,24 @@ struct dt_iop_module_t;
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 
+typedef enum dt_iop_order_t
+{
+  DT_IOP_ORDER_CUSTOM      = 0,
+  DT_IOP_ORDER_LEGACY      = 1,
+  DT_IOP_ORDER_RECOMMENDED = 2,
+  DT_IOP_ORDER_LAST        = 3
+} dt_iop_order_t;
+
 typedef struct dt_iop_order_entry_t
 {
-  double iop_order;
+  union {
+    double iop_order_f;
+    int iop_order;
+  } o;
+  // operation + instance is the unique id for an active module in the pipe
   char operation[20];
+  int32_t instance;
+  // to order the pipe (keep double for migrate legacy db)
 } dt_iop_order_entry_t;
 
 typedef struct dt_iop_order_rule_t
@@ -47,20 +61,47 @@ typedef struct dt_iop_order_rule_t
 
 #define DT_IOP_ORDER_PRESETS_START_ID 1000
 
+/** return the iop-order-version used by imgid (DT_IOP_ORDER_RECOMMENDED if unknown iop-order-version) */
+dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
+/** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
+    or a customr order  */
+dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);
+
 /** returns a list of dt_iop_order_entry_t and updates *_version */
-GList *dt_ioppr_get_iop_order_list(int *_version, gboolean sorted);
+GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted);
+/** return the iop-order list for the given version, this is used to get the built-in lists */
+GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
 /** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
-dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
+dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority);
 /** returns the iop_order from iop_order_list list with operation = op_name */
-double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
+int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);
+/* write iop-order list for the given image */
+gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid);
+
+/** serialize list, used for presets */
+void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size);
 /** returns the iop_order_list from the serialized form found in buf (blob in preset table) */
-GList *dt_ioppr_deserialize_iop_order_list(const char *buf, int size, int32_t *iop_order_version);
+GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size);
+/** likewise but a text serializer/deserializer */
+char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list);
+GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf);
+
+/** insert a match for module into the iop-order list */
+void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, struct dt_iop_module_t *module);
+void dt_ioppr_resync_modules_order(struct dt_develop_t *dev);
+
+/** update target_iop_order_list to ensure that modules in iop_order_list are in target_iop_order_list
+    note that iop_order_list contains a set of dt_iop_order_entry_t where order is the multi-priority */
+void dt_ioppr_update_for_entries(struct dt_develop_t *dev, GList *entry_list);
+void dt_ioppr_update_for_style_items(struct dt_develop_t *dev, GList *st_items);
+void dt_ioppr_update_for_modules(struct dt_develop_t *dev, GList *modules);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
 
 /** sets the default iop_order to iop_list */
-void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const int iop_order_version);
+void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const int32_t imgid);
+void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid);
 
 /** returns 1 if there's a module_so without a iop_order defined */
 int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
@@ -73,26 +114,16 @@ GList *dt_ioppr_iop_order_copy_deep(GList *iop_order_list);
 
 /** sort two modules by iop_order */
 gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b);
-
-/** convert images history v3->v4 on the fly; returns images history version */
-int dt_ioppr_convert_onthefly(int imgid);
-
-/** migrate imgid from current to new iop-order version */
-int dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int imgid,
-                               const int current_iop_order_version, const int new_iop_order_version);
+gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b);
 
 /** returns the iop_order before module_next if module can be moved */
-double dt_ioppr_get_iop_order_before_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next,
-                                  const int validate_order, const int log_error);
+gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
 /** returns the iop_order after module_prev if module can be moved */
-double dt_ioppr_get_iop_order_after_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev,
-                                 const int validate_order, const int log_error);
+gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 /** moves module before/after module_next/previous on pipe */
-int dt_ioppr_move_iop_before(GList **_iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next,
-                       const int validate_order, const int log_error);
-int dt_ioppr_move_iop_after(GList **_iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev,
-                      const int validate_order, const int log_error);
+int dt_ioppr_move_iop_before(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
+int dt_ioppr_move_iop_after(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
 #define DT_IOPPR_COLOR_ICC_LEN 512
@@ -442,7 +473,6 @@ static inline float dt_ioppr_uncompensate_middle_grey(const float x, const dt_io
 }
 
 // for debug only
-int dt_ioppr_check_db_integrity();
 int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const int imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);
