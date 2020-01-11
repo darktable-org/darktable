@@ -706,6 +706,10 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float boost[MAX_NUM_SCALES][4];
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+  const int max_mult = 1u << (max_scale - 1);
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
 
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
@@ -715,13 +719,18 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
+  // corner case of extremely small image. this is not really likely to happen but would
+  // lead to out of bounds memory access
+  if(width < 2 * max_mult || height < 2 * max_mult)
+  {
+    memcpy(o, i, width * height * 4 * sizeof(float));
+    return;
+  }
+
   float *detail[MAX_NUM_SCALES] = { NULL };
   float *tmp = NULL;
   float *buf2 = NULL;
   float *buf1 = NULL;
-
-  const int width = roi_out->width;
-  const int height = roi_out->height;
 
   tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
   if(tmp == NULL)
