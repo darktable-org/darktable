@@ -671,7 +671,7 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
-static int _count_iop_module(GList *iop, const char *operation, int *max_multi_priority)
+static int _count_enabled_iop_module(GList *iop, const char *operation, int *max_multi_priority)
 {
   int count = 0;
 
@@ -679,7 +679,7 @@ static int _count_iop_module(GList *iop, const char *operation, int *max_multi_p
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(!strcmp(mod->op, operation)) count++;
+    if(mod->enabled && !strcmp(mod->op, operation)) count++;
     if(*max_multi_priority < mod->multi_priority) *max_multi_priority = mod->multi_priority;
     modules = g_list_next(modules);
   }
@@ -727,7 +727,7 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
     int max_multi_priority = 0;
 
     // is it a currently active module and if so how many active instances we have
-    const int active_instances = _count_iop_module(dev->iop, ep->operation, &max_multi_priority);
+    const int active_instances = _count_enabled_iop_module(dev->iop, ep->operation, &max_multi_priority);
 
     // look for this operation into the target iop-order list and add there as much operation as needed
 
