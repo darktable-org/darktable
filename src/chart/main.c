@@ -1126,6 +1126,7 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
   gtk_widget_set_sensitive(self->export_button, TRUE);
+  gtk_widget_set_sensitive(self->export_raw_button, TRUE);
 
   free(target_L);
   free(target_a);
