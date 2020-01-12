@@ -200,8 +200,29 @@ static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t
 
   update_corner(image, closest_corner, &x, &y);
 
-  image->bb[closest_corner].x = x;
-  image->bb[closest_corner].y = y;
+  // check if the shape would turn concave by testing if the new location
+  // is inside the triangle formed by the other three. google barycentric coordinates to see how it's done.
+  const int prev_corner = (closest_corner + 3) % 4;
+  const int opposite_corner = (closest_corner + 2) % 4;
+  const int next_corner = (closest_corner + 1) % 4;
+
+  const float x1 = image->bb[prev_corner].x;
+  const float y1 = image->bb[prev_corner].y;
+  const float x2 = image->bb[next_corner].x;
+  const float y2 = image->bb[next_corner].y;
+  const float x3 = image->bb[opposite_corner].x;
+  const float y3 = image->bb[opposite_corner].y;
+
+  const float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  const float l1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denom;
+  const float l2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denom;
+  const float l3 = 1.0 - l1 - l2;
+
+  if(l1 < 0.0 || l2 < 0.0 || l3 < 0.0)
+  {
+    image->bb[closest_corner].x = x;
+    image->bb[closest_corner].y = y;
+  }
 
   gtk_widget_queue_draw(widget);
 
