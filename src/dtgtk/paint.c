@@ -1277,6 +1277,67 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   }
 }
 
+void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  const gint s = (w < h ? w : h);
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  // circle around (mouse over effect)
+  if(flags & CPF_PRELIGHT)
+  {
+    cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
+  }
+
+  if(flags & CPF_DIRECTION_RIGHT)
+  {
+    // that means the image is rejected, so we draw the cross in red bold
+    cairo_set_source_rgb(cr, 1.0, 0, 0);
+    cairo_set_line_width(cr, 2.0 / (float)s);
+  }
+  else
+  {
+    cairo_set_line_width(cr, 1.0 / (float)s);
+  }
+
+  // the cross
+  cairo_move_to(cr, 0.2, 0.2);
+  cairo_line_to(cr, 0.8, 0.8);
+  cairo_move_to(cr, 0.8, 0.2);
+  cairo_line_to(cr, 0.2, 0.8);
+  cairo_stroke(cr);
+}
+
+void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  const gint s = (w < h ? w : h);
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  // cairo_scale(cr, s, s);
+
+  // we create the path
+  cairo_save(cr);
+  dt_draw_star(cr, s / 2.0, s / 2.0, s / 2.0, s / 5.0);
+
+  // we fill the star if needed (mouseover or activated)
+  if(flags & CPF_PRELIGHT)
+  {
+    if(data)
+    {
+      GdkRGBA *bgc = (GdkRGBA *)data; // the inner star color is defined in data
+      double r, g, b, a;
+      if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
+      {
+        cairo_set_source_rgba(cr, bgc->red, bgc->green, bgc->blue, bgc->alpha);
+        cairo_fill_preserve(cr);
+        cairo_set_source_rgba(cr, r, g, b, a);
+      }
+    }
+  }
+
+  cairo_stroke(cr);
+  cairo_restore(cr);
+}
+
 void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   if(!flags) return;

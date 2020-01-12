@@ -43,7 +43,8 @@ typedef struct
   GtkWidget *w_btn_audio;
   GtkWidget *w_btn_group;
   GtkWidget *w_btn_reject;
-  GtkWidget *w_stars;
+  GtkWidget *w_stars[4];
+  GtkWidget *w_stars_box;
 
 } dt_thumbnail;
 typedef struct
