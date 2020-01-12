@@ -495,7 +495,8 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
   return res;
 }
 
-static char *get_export_filename(dt_lut_t *self, const char *extension, char **name, char **description)
+static char *get_export_filename(dt_lut_t *self, const char *extension, char **name, char **description,
+                                 gboolean *basecurve, gboolean *colorchecker, gboolean *colorin, gboolean *tonecurve)
 {
   GtkWidget *name_entry = NULL, *description_entry = NULL;
   GtkWidget *dialog
@@ -518,6 +519,7 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
   gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
 
   *name = g_strdup(self->reference_filename);
   *description = g_strdup_printf("fitted LUT style from %s", self->reference_filename);
@@ -534,10 +536,39 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   *name = NULL;
   *description = NULL;
 
-  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style name"), 0, 0, 1, 1);
+  GtkWidget *label;
+  label = gtk_label_new("style name");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), name_entry, 1, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style description"), 0, 1, 1, 1);
+  label = gtk_label_new("style description");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), description_entry, 1, 1, 1, 1);
+
+  // allow the user to decide what modules to include in the style
+  label = gtk_label_new("modules included in the style:");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  g_object_set(label, "margin-left", 50, NULL);
+
+  GtkWidget *cb_basecurve = gtk_check_button_new_with_label("base curve");
+  GtkWidget *cb_colorchecker = gtk_check_button_new_with_label("color look up table");
+  GtkWidget *cb_colorin = gtk_check_button_new_with_label("input color profile");
+  GtkWidget *cb_tonecurve = gtk_check_button_new_with_label("tone curve");
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_basecurve), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_colorchecker), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_colorin), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_tonecurve), TRUE);
+
+  if(basecurve)
+  {
+    gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_basecurve, label, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_colorchecker, cb_basecurve, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_colorin, cb_colorchecker, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_tonecurve, cb_colorin, GTK_POS_BOTTOM, 1, 1);
+  }
 
   gtk_widget_show_all(grid);
 
@@ -550,6 +581,14 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
     *name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
     *description = g_strdup(gtk_entry_get_text(GTK_ENTRY(description_entry)));
+    if(basecurve)
+    {
+      // either request all of them or none ...
+      *basecurve = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_basecurve));
+      *colorchecker = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_colorchecker));
+      *colorin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_colorin));
+      *tonecurve = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_tonecurve));
+    }
   }
   gtk_widget_destroy(dialog);
 
@@ -597,7 +636,9 @@ static void print_xml_plugin(FILE *fd, int num, int op_version, const char *oper
   fprintf(fd, "  </plugin>\n");
 }
 
-static void export_style(dt_lut_t *self, const char *filename, const char *name, const char *description)
+static void export_style(dt_lut_t *self, const char *filename, const char *name, const char *description,
+                         gboolean include_basecurve, gboolean include_colorchecker, gboolean include_colorin,
+                         gboolean include_tonecurve)
 {
   int num = 0;
 
@@ -613,17 +654,29 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
   fprintf(fd, "<style>\n");
 
   // 0: disable basecurve
-  print_xml_plugin(fd, num++, 2, "basecurve",
-                   "gz09eJxjYIAAM6vnNnqyn22E9n235b6aa3cy6rVdRaK9/Y970fYf95bbMzA0QPEoGEqADYnNhMQGAO0WEJo=", FALSE);
+  if(include_basecurve)
+  {
+    print_xml_plugin(fd, num++, 2, "basecurve",
+                     "gz09eJxjYIAAM6vnNnqyn22E9n235b6aa3cy6rVdRaK9/Y970fYf95bbMzA0QPEoGEqADYnNhMQGAO0WEJo=", FALSE);
+  }
   // 1: set colorin to standard matrix
-  // print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE); // no gamut clipping
-  // and enable gamut clipping. the it8 knows nothing about colours outside
-  // rec2020 (only reflectances, no neon lights for instance)
-  print_xml_plugin(fd, num++, 4, "colorin", "gz09eJzjZqAfYIHSAAWQABA=", TRUE); // gamut clipping to rec2020
+  if(include_colorin)
+  {
+    // print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE); // no gamut clipping
+    // and enable gamut clipping. the it8 knows nothing about colours outside
+    // rec2020 (only reflectances, no neon lights for instance)
+    print_xml_plugin(fd, num++, 4, "colorin", "gz09eJzjZqAfYIHSAAWQABA=", TRUE); // gamut clipping to rec2020
+  }
   // 2: add tonecurve
-  print_xml_plugin(fd, num++, 4, "tonecurve", self->tonecurve_encoded, TRUE);
+  if(include_tonecurve)
+  {
+    print_xml_plugin(fd, num++, 4, "tonecurve", self->tonecurve_encoded, TRUE);
+  }
   // 3: add lut
-  print_xml_plugin(fd, num++, 2, "colorchecker", self->colorchecker_encoded, TRUE);
+  if(include_colorchecker)
+  {
+    print_xml_plugin(fd, num++, 2, "colorchecker", self->colorchecker_encoded, TRUE);
+  }
 
   fprintf(fd, "</style>\n");
   fprintf(fd, "</darktable_style>\n");
@@ -662,7 +715,7 @@ static void export_raw_button_clicked_callback(GtkButton *button, gpointer user_
   if(!self->chart) return;
 
   char *name = NULL, *description = NULL;
-  char *filename = get_export_filename(self, ".csv", &name, &description);
+  char *filename = get_export_filename(self, ".csv", &name, &description, NULL, NULL, NULL, NULL);
   if(filename) export_raw(self, filename, name, description);
   g_free(name);
   g_free(description);
@@ -675,8 +728,11 @@ static void export_button_clicked_callback(GtkButton *button, gpointer user_data
   if(!self->tonecurve_encoded || !self->colorchecker_encoded) return;
 
   char *name = NULL, *description = NULL;
-  char *filename = get_export_filename(self, ".dtstyle", &name, &description);
-  if(filename) export_style(self, filename, name, description);
+  gboolean include_basecurve, include_colorchecker, include_colorin, include_tonecurve;
+  char *filename = get_export_filename(self, ".dtstyle", &name, &description,
+                                       &include_basecurve, &include_colorchecker, &include_colorin, &include_tonecurve);
+  if(filename) export_style(self, filename, name, description,
+                            include_basecurve, include_colorchecker, include_colorin, include_tonecurve);
   g_free(name);
   g_free(description);
   g_free(filename);
@@ -1815,7 +1871,8 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
   process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
-  export_style(self, filename_style, name, description);
+  // TODO: add command line options to control what modules to include
+  export_style(self, filename_style, name, description, TRUE, TRUE, TRUE, TRUE);
 
   free(target_L);
   free(target_a);
