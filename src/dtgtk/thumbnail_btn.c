@@ -1,0 +1,128 @@
+/*
+    This file is part of darktable,
+    copyright (c)2010 Henrik Andersson.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include "thumbnail_btn.h"
+#include "gui/gtk.h"
+#include <string.h>
+
+static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass);
+static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button);
+static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr);
+static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
+static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
+
+static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
+{
+  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+
+  widget_class->draw = _thumbnail_btn_draw;
+  widget_class->enter_notify_event = _thumbnail_btn_enter_notify_callback;
+  widget_class->leave_notify_event = _thumbnail_btn_leave_notify_callback;
+}
+
+static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
+{
+}
+
+static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
+{
+  g_return_val_if_fail(widget != NULL, FALSE);
+  g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
+
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+
+  GdkRGBA *fg_color, *bg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get(context, state, GTK_STYLE_PROPERTY_COLOR, &fg_color, GTK_STYLE_PROPERTY_BACKGROUND_COLOR,
+                        &bg_color, NULL);
+  gdk_cairo_set_source_rgba(cr, fg_color);
+
+  /* draw icon */
+  if(DTGTK_THUMBNAIL_BTN(widget)->icon)
+  {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+
+    int flags = DTGTK_THUMBNAIL_BTN(widget)->icon_flags;
+    if(state & GTK_STATE_FLAG_PRELIGHT)
+      flags |= CPF_PRELIGHT;
+    else
+      flags &= ~CPF_PRELIGHT;
+
+    DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.25 * allocation.width, 0.25 * allocation.height,
+                                      0.5 * allocation.width, 0.5 * allocation.height, flags, bg_color);
+  }
+  gdk_rgba_free(fg_color);
+  gdk_rgba_free(bg_color);
+  return TRUE;
+}
+
+static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
+{
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
+{
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+// Public functions
+GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
+{
+  GtkDarktableThumbnailBtn *button;
+  button = g_object_new(dtgtk_thumbnail_btn_get_type(), NULL);
+  button->icon = paint;
+  button->icon_flags = paintflags;
+  button->icon_data = paintdata;
+  gtk_widget_set_events(GTK_WIDGET(button), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
+                                                | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+                                                | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                                | GDK_ENTER_NOTIFY_MASK | GDK_ALL_EVENTS_MASK);
+  gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
+  gtk_widget_set_name(GTK_WIDGET(button), "thumbnail_btn");
+  return (GtkWidget *)button;
+}
+
+GType dtgtk_thumbnail_btn_get_type()
+{
+  static GType dtgtk_thumbnail_btn_type = 0;
+  if(!dtgtk_thumbnail_btn_type)
+  {
+    static const GTypeInfo dtgtk_thumbnail_btn_info = {
+      sizeof(GtkDarktableThumbnailBtnClass),
+      (GBaseInitFunc)NULL,
+      (GBaseFinalizeFunc)NULL,
+      (GClassInitFunc)_thumbnail_btn_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof(GtkDarktableThumbnailBtn),
+      0, /* n_preallocs */
+      (GInstanceInitFunc)_thumbnail_btn_init,
+    };
+    dtgtk_thumbnail_btn_type
+        = g_type_register_static(GTK_TYPE_DRAWING_AREA, "GtkDarktableThumbnailBtn", &dtgtk_thumbnail_btn_info, 0);
+  }
+  return dtgtk_thumbnail_btn_type;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
