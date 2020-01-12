@@ -573,9 +573,29 @@ static void _ioppr_reset_iop_order(GList *iop_order_list)
   }
 }
 
+void dt_ioppr_resync_iop_list(dt_develop_t *dev)
+{
+  // make sure that the iop_order_list does not contains possibly removed modules
+
+  GList *l = g_list_first(dev->iop_order_list);
+  while(l)
+  {
+    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+    dt_iop_module_t *mod = dt_iop_get_module_by_op_priority(dev->iop, e->operation, e->instance);
+    if(mod == NULL)
+    {
+      dev->iop_order_list = g_list_remove_link(dev->iop_order_list, l);
+    }
+
+    l = g_list_next(l);
+  }
+}
+
 void dt_ioppr_resync_modules_order(dt_develop_t *dev)
 {
   _ioppr_reset_iop_order(dev->iop_order_list);
+
+  // and reset all module iop_order
 
   GList *modules = g_list_first(dev->iop);
   while(modules)
@@ -583,6 +603,11 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
     mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
+    if(mod->iop_order == INT_MAX)
+    {
+      // module not found, probably removed instance, remote it
+      dev->iop = g_list_delete_link(dev->iop, modules);
+    }
     modules = g_list_next(modules);
   }
 
@@ -671,20 +696,33 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
-static int _count_enabled_iop_module(GList *iop, const char *operation, int *max_multi_priority)
+static void _count_iop_module(GList *iop, const char *operation, int *max_multi_priority, int *count,
+                              int *max_multi_priority_enabled, int *count_enabled)
 {
-  int count = 0;
+  *max_multi_priority = 0;
+  *count = 0;
+  *max_multi_priority_enabled = 0;
+  *count_enabled = 0;
 
   GList *modules = iop;
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod->enabled && !strcmp(mod->op, operation)) count++;
-    if(*max_multi_priority < mod->multi_priority) *max_multi_priority = mod->multi_priority;
+    if(!strcmp(mod->op, operation))
+    {
+      (*count)++;
+      if(*max_multi_priority < mod->multi_priority) *max_multi_priority = mod->multi_priority;
+
+      if(mod->enabled)
+      {
+        (*count_enabled)++;
+        if(*max_multi_priority_enabled < mod->multi_priority) *max_multi_priority_enabled = mod->multi_priority;
+      }
+    }
     modules = g_list_next(modules);
   }
 
-  return count;
+  assert(*count >= *count_enabled);
 }
 
 static int _count_entries_operation(GList *e_list, const char *operation)
@@ -715,7 +753,27 @@ static gboolean _operation_already_handled(GList *e_list, const char *operation)
   return FALSE;
 }
 
-void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
+// returns the nth module's priority being active or not
+int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, const gboolean only_disabled)
+{
+  GList *l = dev->iop;
+  int count = 0;
+  while(l)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
+    if((!only_disabled || mod->enabled == FALSE) && !strcmp(mod->op, operation))
+    {
+      count++;
+      if(count == n) return mod->multi_priority;
+    }
+
+    l = g_list_next(l);
+  }
+
+  return INT_MAX;
+}
+
+ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
   GList *e_list = entry_list;
 
@@ -724,10 +782,12 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
   {
     dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)e_list->data;
 
-    int max_multi_priority = 0;
+    int max_multi_priority = 0, count = 0;
+    int max_multi_priority_enabled = 0, count_enabled = 0;
 
     // is it a currently active module and if so how many active instances we have
-    const int active_instances = _count_enabled_iop_module(dev->iop, ep->operation, &max_multi_priority);
+    _count_iop_module(dev->iop, ep->operation,
+                      &max_multi_priority, &count, &max_multi_priority_enabled, &count_enabled);
 
     // look for this operation into the target iop-order list and add there as much operation as needed
 
@@ -741,23 +801,49 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
         // how many instances of this module in the entry list, and re-number multi-priority accordingly
         const int new_active_instances = _count_entries_operation(entry_list, ep->operation);
 
+        int add_count = 0;
+        int start_multi_priority = 0;
+        int nb_replace = 0;
+
+        if(append)
+        {
+          nb_replace = count - count_enabled;
+          add_count = MAX(0, new_active_instances - nb_replace);
+          start_multi_priority = max_multi_priority + 1;
+        }
+        else
+        {
+          nb_replace = count;
+          add_count = MAX(0, new_active_instances - count);
+          start_multi_priority = max_multi_priority + 1;
+        }
+
         // update multi_priority to be unique in iop list
-        int multi_priority = (active_instances == 0) ? max_multi_priority : max_multi_priority + 1;
+        int multi_priority = start_multi_priority;
+        int nb = 0;
+
         GList *s = entry_list;
         while(s)
         {
           dt_iop_order_entry_t *item = (dt_iop_order_entry_t *)s->data;
           if(!strcmp(item->operation, e->operation))
           {
-            item->instance = multi_priority++;
+            nb++;
+            if(nb <= nb_replace)
+            {
+              // this one replaces current module, get it's multi-priority
+              item->instance = _get_multi_priority(dev, item->operation, nb, append);
+            }
+            else
+            {
+              // otherwise create a new multi-priority
+              item->instance = multi_priority++;
+            }
           }
           s = g_list_next(s);
         }
 
-        // the number of entries to add into the target list
-        const int add_count = (active_instances == 0) ? new_active_instances - 1 : new_active_instances;
-
-        multi_priority = (active_instances == 0) ? max_multi_priority : max_multi_priority + 1;
+        multi_priority = start_multi_priority;
 
         l = g_list_next(l);
 
@@ -765,7 +851,7 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
         {
           dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
           strncpy(n->operation, ep->operation, sizeof(n->operation));
-          n->instance = ++multi_priority;
+          n->instance = multi_priority++;
           n->o.iop_order = 0;
           dev->iop_order_list = g_list_insert_before(dev->iop_order_list, l, n);
         }
@@ -783,7 +869,7 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list)
 //  dt_ioppr_print_iop_order(dev->iop_order_list, "upd sitem");
 }
 
-void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items)
+void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolean append)
 {
   GList *si_list = g_list_first(st_items);
   GList *e_list = NULL;
@@ -802,7 +888,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items)
     si_list = g_list_next(si_list);
   }
 
-  dt_ioppr_update_for_entries(dev, e_list);
+  dt_ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -822,7 +908,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items)
   g_list_free(e_list);
 }
 
-void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules)
+void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, gboolean append)
 {
   GList *m_list = g_list_first(modules);
   GList *e_list = NULL;
@@ -841,7 +927,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules)
     m_list = g_list_next(m_list);
   }
 
-  dt_ioppr_update_for_entries(dev, e_list);
+  dt_ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -853,6 +939,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules)
     dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)el->data;
 
     mod->multi_priority = e->instance;
+    mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
 
     el = g_list_next(el);
     m_list = g_list_next(m_list);
