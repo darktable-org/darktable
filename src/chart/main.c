@@ -319,7 +319,8 @@ static char *get_filename_base(const char *filename)
 
 static gboolean open_reference_image(dt_lut_t *self, const char *filename)
 {
-  gboolean res = open_image(&self->reference, filename);
+  const gboolean initial_loading = (self->reference.xyz == NULL);
+  const gboolean res = open_image(&self->reference, filename);
   gtk_widget_set_sensitive(self->process_button, res);
   gtk_widget_set_sensitive(self->export_button, FALSE);
   gtk_widget_set_sensitive(self->export_raw_button, FALSE);
@@ -327,6 +328,12 @@ static gboolean open_reference_image(dt_lut_t *self, const char *filename)
     gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(self->reference_image_button));
   else
   {
+    if(initial_loading)
+    {
+      // copy over the bounding box from the source image.
+      // when matching raw to jpeg this is in general what the user wants
+      memcpy(self->reference.bb, self->source.bb, sizeof(self->reference.bb));
+    }
     collect_reference_patches(self);
     update_table(self);
     free(self->reference_filename);
