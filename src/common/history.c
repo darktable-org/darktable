@@ -267,24 +267,6 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_m
   return mod_ret;
 }
 
-// returns a new multi_priority number for op_name
-static int _get_new_iop_multi_priority(dt_develop_t *dev, const char *op_name)
-{
-  int multi_priority_new = -1;
-  GList *modules = g_list_first(dev->iop);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-
-    if(strcmp(mod->op, op_name) == 0)
-    {
-      multi_priority_new = MAX(multi_priority_new, mod->multi_priority);
-    }
-    modules = g_list_next(modules);
-  }
-  return (multi_priority_new + 1);
-}
-
 // fills used with formid, if it is a group it recurs and fill all sub-forms
 static void _fill_used_forms(GList *forms_list, int formid, int *used, int nb)
 {
@@ -395,7 +377,8 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       else
       {
         module->instance = mod_src->instance;
-        dt_iop_update_multi_priority(module, _get_new_iop_multi_priority(dev_dest, base->op));
+        module->multi_priority = mod_src->multi_priority;
+        module->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list, module->op, module->multi_priority);
       }
     }
     else
@@ -504,6 +487,9 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       dt_dev_add_masks_history_item_ext(dev_dest, module, FALSE, TRUE);
     else
       dt_dev_add_history_item_ext(dev_dest, module, FALSE, TRUE);
+
+    dt_ioppr_resync_modules_order(dev_dest);
+
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
     if(forms_used_replace) free(forms_used_replace);
@@ -597,13 +583,12 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   // update iop-order list to have entries for the new modules
-  dt_ioppr_update_for_modules(dev_dest, mod_list);
+  dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
   GList *l = mod_list;
   while(l)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
-    mod->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list, mod->op, mod->multi_priority);
     dt_history_merge_module_into_history(dev_dest, dev_src, mod, &modules_used, FALSE);
     l = g_list_next(l);
   }

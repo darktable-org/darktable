@@ -1100,6 +1100,8 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   dt_dev_pop_history_items(dev, dev->history_end);
 
+  dt_ioppr_resync_iop_list(dev);
+
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
