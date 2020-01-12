@@ -31,7 +31,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-nogimp.patch | patch -d ~/ports -p0
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for pugixml and librsvg) and run:
+    to ~/ports/*/*/Portfile files you just copied (except for pugixml, librsvg and gmic) and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
