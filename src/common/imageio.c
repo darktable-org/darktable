@@ -688,15 +688,12 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     dt_dev_pop_history_items_ext(&dev, dev.history_end);
 
-    dt_ioppr_update_for_style_items(&dev, style_items);
+    dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
 
     GList *st_items = g_list_last(style_items);
     while(st_items)
     {
       dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
-      st_item->iop_order =
-        dt_ioppr_get_iop_order(dev.iop_order_list, st_item->operation, st_item->multi_priority);
-
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
 
       st_items = g_list_previous(st_items);

@@ -89,12 +89,13 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf);
 /** insert a match for module into the iop-order list */
 void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, struct dt_iop_module_t *module);
 void dt_ioppr_resync_modules_order(struct dt_develop_t *dev);
+void dt_ioppr_resync_iop_list(struct dt_develop_t *dev);
 
 /** update target_iop_order_list to ensure that modules in iop_order_list are in target_iop_order_list
     note that iop_order_list contains a set of dt_iop_order_entry_t where order is the multi-priority */
-void dt_ioppr_update_for_entries(struct dt_develop_t *dev, GList *entry_list);
-void dt_ioppr_update_for_style_items(struct dt_develop_t *dev, GList *st_items);
-void dt_ioppr_update_for_modules(struct dt_develop_t *dev, GList *modules);
+void dt_ioppr_update_for_entries(struct dt_develop_t *dev, GList *entry_list, gboolean append);
+void dt_ioppr_update_for_style_items(struct dt_develop_t *dev, GList *st_items, gboolean append);
+void dt_ioppr_update_for_modules(struct dt_develop_t *dev, GList *modules, gboolean append);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
