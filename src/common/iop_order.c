@@ -900,6 +900,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolea
     dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)el->data;
 
     si->multi_priority = e->instance;
+    si->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, si->operation, si->multi_priority);
 
     el = g_list_next(el);
     si_list = g_list_next(si_list);
