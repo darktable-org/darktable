@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 tobias ellinghaus.
+    copyright (c) 2016-2020 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@
 #endif
 
 const double thrs = 200.0;
+
+static const point_t bb_ref[] = {{.x=.0, .y=.0}, {.x=1., .y=0.}, {.x=1., .y=1.}, {.x=0., .y=1.}};
 
 enum
 {
@@ -90,7 +92,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
 static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink);
-static void get_corners(point_t *bb, box_t *box, point_t *corners);
+static void get_corners(const double *homography, box_t *box, point_t *corners);
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
@@ -134,16 +136,20 @@ static gboolean draw_image_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   // draw overlay
   point_t bb[4];
+  double homography[9];
   map_boundingbox_to_view(image, bb);
+  // calculating the homography takes hardly any time, so we do it here instead of the move handler.
+  // the benefits are that the window size is taken into account and image->bb can't disagree with the cached homography
+  get_homography(bb_ref, bb, homography);
 
   draw_boundingbox(cr, bb);
-  draw_f_boxes(cr, bb, chart);
-  draw_d_boxes(cr, bb, chart);
-  draw_color_boxes_outline(cr, bb, chart);
+  draw_f_boxes(cr, homography, chart);
+  draw_d_boxes(cr, homography, chart);
+  draw_color_boxes_outline(cr, homography, chart);
 
   stroke_boxes(cr, 1.0);
 
-  draw_color_boxes_inside(cr, bb, chart, image->shrink, 2.0, image->draw_colored);
+  draw_color_boxes_inside(cr, homography, chart, image->shrink, 2.0, image->draw_colored);
 
   return FALSE;
 }
@@ -1439,6 +1445,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
 static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz)
 {
   point_t bb[4];
+  double homography[9];
   point_t corners[4];
   box_t inner_box;
   int x_start, y_start, x_end, y_end;
@@ -1448,8 +1455,9 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
   if(!box) return;
 
   get_boundingbox(image, bb);
+  get_homography(bb_ref, bb, homography);
   inner_box = get_sample_box(*(image->chart), box, shrink);
-  get_corners(bb, &inner_box, corners);
+  get_corners(homography, &inner_box, corners);
   get_pixel_region(image, corners, &x_start, &y_start, &x_end, &y_end);
 
   float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
@@ -1513,7 +1521,7 @@ static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink)
   return inner_box;
 }
 
-static void get_corners(point_t *bb, box_t *box, point_t *corners)
+static void get_corners(const double *homography, box_t *box, point_t *corners)
 {
   corners[TOP_LEFT] = corners[TOP_RIGHT] = corners[BOTTOM_RIGHT] = corners[BOTTOM_LEFT] = box->p;
   corners[TOP_RIGHT].x += box->w;
@@ -1521,7 +1529,7 @@ static void get_corners(point_t *bb, box_t *box, point_t *corners)
   corners[BOTTOM_RIGHT].y += box->h;
   corners[BOTTOM_LEFT].y += box->h;
 
-  for(int i = 0; i < 4; i++) corners[i] = transform_coords(corners[i], bb);
+  for(int i = 0; i < 4; i++) corners[i] = apply_homography(corners[i], homography);
 }
 
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
