@@ -343,7 +343,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       GList *modules_dest = g_list_first(dev_dest->iop);
       while(modules_dest)
       {
-        dt_iop_module_t *mod_dest = (dt_iop_module_t *)(modules_dest->data);
+        dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
         if(strcmp(mod_src->op, mod_dest->op) == 0 && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
         {
@@ -1140,7 +1140,6 @@ int dt_history_compress_on_selection()
       dt_history_set_compress_problem(imgid, FALSE);
 
     dt_unlock_image(imgid);
-
   }
 
   sqlite3_finalize(stmt);
