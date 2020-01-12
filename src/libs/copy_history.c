@@ -172,7 +172,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     gtk_window_set_title(GTK_WINDOW(dialog), _("history compression warning"));
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    }
+  }
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
