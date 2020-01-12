@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/selection.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
@@ -153,7 +154,7 @@ static void _draw_image_border(cairo_t *cr, dt_thumbnail *thumb)
 
 }
 
-static gboolean _draw_main_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail *thumb = (dt_thumbnail *)user_data;
@@ -199,7 +200,7 @@ static gboolean _draw_main_callback(GtkWidget *widget, cairo_t *cr, gpointer use
   return FALSE;
 }*/
 
-static gboolean _enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail *thumb = (dt_thumbnail *)user_data;
@@ -208,7 +209,30 @@ static gboolean _enter_notify_callback(GtkWidget *widget, GdkEventCrossing *even
   return TRUE;
 }
 
-static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
+static void _back_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_view_manager_switch(darktable.view_manager, "darkroom");
+  }
+}
+static void _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+
+  if(event->button == 1)
+  {
+    printf("yop\n");
+    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
+      dt_selection_select_single(darktable.selection, thumb->imgid);
+    else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+      dt_selection_toggle(darktable.selection, thumb->imgid);
+    else if((event->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+      dt_selection_select_range(darktable.selection, thumb->imgid);
+  }
+}
+
+static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail *thumb = (dt_thumbnail *)user_data;
@@ -227,7 +251,7 @@ static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
   }
 }
 
-static void _selection_changed_callback(gpointer instance, gpointer user_data)
+static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail *thumb = (dt_thumbnail *)user_data;
@@ -243,7 +267,7 @@ static void _selection_changed_callback(gpointer instance, gpointer user_data)
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = TRUE;
 
   // if there's a change, update the thumb
-  if(selected == thumb->selected)
+  if(selected != thumb->selected)
   {
     thumb->selected = selected;
     gtk_widget_queue_draw(thumb->w_back);
@@ -267,9 +291,9 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
   {
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                              G_CALLBACK(_mouse_over_image_callback), thumb);
+                              G_CALLBACK(_dt_mouse_over_image_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                              G_CALLBACK(_selection_changed_callback), thumb);
+                              G_CALLBACK(_dt_selection_changed_callback), thumb);
     gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
     // the main drawing area
@@ -279,8 +303,10 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
                                              | GDK_ENTER_NOTIFY_MASK);
 
     gtk_widget_set_app_paintable(thumb->w_back, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_back), "draw", G_CALLBACK(_draw_main_callback), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_back), "enter-notify-event", G_CALLBACK(_enter_notify_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "draw", G_CALLBACK(_back_draw_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "enter-notify-event", G_CALLBACK(_back_enter_notify_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "button-press-event", G_CALLBACK(_back_press_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "button-release-event", G_CALLBACK(_back_release_callback), thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
@@ -339,8 +365,8 @@ static void dt_thumbnail_init(dt_thumbnail *self)
 static void dt_thumbnail_finalize(GObject *obj)
 {
   dt_thumbnail *thumb = (dt_thumbnail *)obj;
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_selection_changed_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mouse_over_image_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
 
