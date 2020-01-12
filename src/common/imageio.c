@@ -690,18 +690,20 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
 
-    GList *st_items = g_list_last(style_items);
+    GList *st_items = g_list_first(style_items);
     while(st_items)
     {
-      dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
+      dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
 
-      st_items = g_list_previous(st_items);
+      st_items = g_list_next(st_items);
     }
 
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
   }
+
+  dt_ioppr_resync_modules_order(&dev);
 
   dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);

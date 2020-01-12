@@ -582,9 +582,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   }
   if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
-  // update iop-order list to have entries for the new modules
-  dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
-
   GList *l = mod_list;
   while(l)
   {
@@ -592,6 +589,9 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
     dt_history_merge_module_into_history(dev_dest, dev_src, mod, &modules_used, FALSE);
     l = g_list_next(l);
   }
+
+  // update iop-order list to have entries for the new modules
+  dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
   dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge 2");
   dt_ioppr_check_iop_order(dev_dest, imgid, "_history_copy_and_paste_on_image_merge 2");
