@@ -2351,6 +2351,27 @@ gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
   return FALSE;
 }
 
+dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority)
+{
+  dt_iop_module_t *mod_ret = NULL;
+
+  GList *m = g_list_first(modules);
+  while(m)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+
+    if(strcmp(mod->op, operation) == 0
+       && (mod->multi_priority == multi_priority || multi_priority == -1))
+    {
+      mod_ret = mod;
+      break;
+    }
+
+    m = g_list_next(m);
+  }
+  return mod_ret;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
