@@ -267,25 +267,6 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_m
   return mod_ret;
 }
 
-// returns the first module on modules_list with operation = op_name
-static dt_iop_module_t *_search_list_iop_by_op(GList *modules_list, const char *op_name)
-{
-  dt_iop_module_t *mod_ret = NULL;
-  GList *modules = g_list_first(modules_list);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-
-    if(strcmp(mod->op, op_name) == 0)
-    {
-      mod_ret = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-  return mod_ret;
-}
-
 // returns a new multi_priority number for op_name
 static int _get_new_iop_multi_priority(dt_develop_t *dev, const char *op_name)
 {
@@ -344,7 +325,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   // one-instance modules always replace the existing one
   if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
   {
-    mod_replace = _search_list_iop_by_op(dev_dest->iop, mod_src->op);
+    mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
     if(mod_replace == NULL)
     {
       fprintf(stderr, "[dt_history_merge_module_into_history] can't find single instance module %s\n",
@@ -389,7 +370,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       if(_search_history_by_op(dev_dest, mod_src) == NULL)
       {
         // there should be only one instance of this iop (since is un-used)
-        mod_replace = _search_list_iop_by_op(dev_dest->iop, mod_src->op);
+        mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
         if(mod_replace == NULL)
         {
           fprintf(stderr, "[dt_history_merge_module_into_history] can't find base instance module %s\n", mod_src->op);
@@ -404,7 +385,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     // if we are creating a new instance, create a new module
     if(!mod_replace)
     {
-      dt_iop_module_t *base = _search_list_iop_by_op(dev_dest->iop, mod_src->op);
+      dt_iop_module_t *base = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
       module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module(module, base->so, dev_dest))
       {
