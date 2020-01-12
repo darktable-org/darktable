@@ -167,8 +167,11 @@ static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion 
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   gboolean res = handle_motion(widget, event, self, &self->source);
-  collect_source_patches(self);
-  update_table(self);
+  if(res)
+  {
+    collect_source_patches(self);
+    update_table(self);
+  }
   return res;
 }
 
@@ -176,8 +179,11 @@ static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMoti
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   gboolean res = handle_motion(widget, event, self, &self->reference);
-  collect_reference_patches(self);
-  update_table(self);
+  if(res)
+  {
+    collect_reference_patches(self);
+    update_table(self);
+  }
   return res;
 }
 
