@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-01-05 14:43-0600\n"
-"PO-Revision-Date: 2020-01-05 20:50-0600\n"
+"PO-Revision-Date: 2020-01-12 00:44-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -2715,6 +2715,12 @@ msgid ""
 "exactly like in culling layout (see <xref linkend=\"lighttable_culling_zoom"
 "\"/>)."
 msgstr ""
+"Si desea mantener la vista previa completa sin tener que dejar pulsada la "
+"tecla <emphasis>W</emphasis>, puede usar el modo de vista previa fija con la "
+"combinación <emphasis>Alt+W</emphasis> o con detección de "
+"enfoque<emphasis>Ctrl+Alt+W</emphasis>. En el modo de vista previa fija, "
+"puede ampliar y moverse por la imagen, tal como en el modo de selección (ver "
+"<xref linkend=\"lighttable_culling_zoom\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2014(title)
 msgid "Lighttable concepts"
@@ -3431,7 +3437,6 @@ msgstr ""
 "predeterminada."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2554(para)
-#, fuzzy
 msgid ""
 "For a given source image, multiple editing versions, called duplicates, can "
 "co-exist, sharing the same input (raw) data but each having their own "
@@ -3445,19 +3450,19 @@ msgid ""
 "duplicate is displayed in the image information panel in each of darktable's "
 "views (see an example in <xref linkend=\"image_information\"/>)."
 msgstr ""
-"Para una imagen de origen determinada, pueden coexistir múltiples versiones "
-"de edición, llamadas duplicados, compartiendo los mismos datos de entrada "
-"(sin procesar) pero cada uno con sus propios metadatos, etiquetas e "
-"historial de acciones. Cada duplicado está representado por un archivo "
-"asociado XMP separado con un nombre de archivo construido en la forma "
-"<quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</"
-"quote>, donde <emphasis>nn</emphasis> representa el número de versión "
-"(mínimo de dos dígitos) de esa edición. La información para la edición "
-"inicial, el <quote>duplicado</quote> con el número de versión cero, se "
-"almacena en el archivo asociado <quote>&lt;basename&gt;.&lt;extension&gt;."
-"xmp</quote>. El número de versión de un duplicado se muestra en el panel de "
-"información de la imagen en cada una de las vistas de darktable (vea un "
-"ejemplo en <xref linkend=\"image_information\"/>)."
+"Para una imagen de origen dada, pueden coexistir múltiples versiones de "
+"edición, llamadas duplicados, compartiendo los mismos datos de entrada (sin "
+"procesar) pero cada uno con sus propios metadatos, etiquetas e historial de "
+"acciones. Cada duplicado está representado por un archivo XMP separado con "
+"un nombre de archivo construido en la forma <quote>&lt;nombrebase&gt;"
+"<emphasis>_nn</emphasis>.&lt;extensión&gt;.xmp</quote>, donde <emphasis>nn</"
+"emphasis> representa el número de versión (mínimo de dos dígitos) de esa "
+"edición. La información para la edición inicial, el <quote>duplicado</quote> "
+"con el número de versión cero, se almacena en el archivo asociado <quote>&lt;"
+"nombrebase&gt;.&lt;extensión&gt;.xmp</quote>. El número de versión de un "
+"duplicado se muestra en el panel de información de la imagen en cada una de "
+"las vistas de darktable (vea un ejemplo en <xref linkend=\"image_information"
+"\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2568(para)
 msgid ""
@@ -4957,7 +4962,6 @@ msgid "rotation"
 msgstr "rotación"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3851(para)
-#, fuzzy
 msgid ""
 "Perform a counter-clockwise or clockwise rotation on selected images. The "
 "third button resets the image rotation to the value in the Exif data. This "
@@ -4967,8 +4971,8 @@ msgid ""
 msgstr ""
 "Realiza una rotación de las imágenes seleccionadas en dirección de las "
 "manecillas del reloj o en contra. El tercer botón reinicia la rotación de la "
-"imagen regresando al valor que tenía en los datos EXIF. Esta característica "
-"está enlazada directamente al módulo de orientación (ver <xref linkend="
+"imagen al valor que tenía en los datos Exif. Esta característica está "
+"directamente vinculada al módulo de orientación (ver <xref linkend="
 "\"orientation\"/>). Los ajustes se convierten en elementos del historial de "
 "acciones."
 
@@ -5440,7 +5444,7 @@ msgstr "Geoetiquetado"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4251(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4255(primary)
 msgid "geo tagging"
-msgstr "geo etiquetado"
+msgstr "geoetiquetado"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4264(entry)
 msgid ""
@@ -5453,7 +5457,6 @@ msgstr ""
 "la vista de <placeholder-1/> (ver <xref linkend=\"map_chapter\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4281(para)
-#, fuzzy
 msgid ""
 "A GPS receiver calculates its current position based on the information it "
 "receives from satellites and records them in a GPX file – together with the "
@@ -5465,11 +5468,10 @@ msgid ""
 msgstr ""
 "Un receptor GPS calcula su posición actual basándose en la información que "
 "recibe de los satélites y los graba en un archivo GPX, junto con la fecha y "
-"la hora actuales. Los datos Exif de las imágenes también contienen una marca "
-"de tiempo definida por la configuración de la cámara. darktable toma la "
-"marca de tiempo de la imagen, busca la posición en el archivo GPX en ese "
-"momento y almacena las coordenadas (latitud/longitud/elevación) en su base "
-"de datos y en el archivo asociado XMP de la imagen."
+"la hora actuales. darktable toma la marca de tiempo de la imagen, busca la "
+"posición en el archivo GPX en ese momento y almacena las coordenadas "
+"(latitud/longitud/elevación) en su base de datos y en el archivo asociado "
+"XMP de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4290(para)
 msgid ""
@@ -5537,18 +5539,17 @@ msgstr ""
 "que ingreso y la hora asociada a los datos Exif de la cámara."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4339(para)
-#, fuzzy
 msgid ""
 "Now you can select all the images you want to geotag and click the apply "
 "button (currently represented by a check mark). This will alter the time in "
 "darktable's internal database for these pictures – so you will also see the "
 "change in the image information module on the left."
 msgstr ""
-"Ahora puede seleccionar todas las imágenes que desee etiquetar "
-"geográficamente y pulsar en el botón Aplicar (actualmente representado por "
-"una marca de verificación). Al hacerlo, alterará el tiempo en la base de "
-"datos interna de darktable para estas imágenes y entonces verá el cambio en "
-"el módulo de información a la izquierda de la imagen."
+"Ahora puede seleccionar todas las imágenes que desee geoetiquetar y pulsar "
+"en el botón Aplicar (actualmente representado por una marca de "
+"verificación). Al hacerlo, alterará el tiempo en la base de datos interna de "
+"darktable para estas imágenes y entonces verá el cambio en el módulo de "
+"información a la izquierda de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4352(para)
 msgid ""
@@ -5667,6 +5668,10 @@ msgid ""
 "rather represent categories. For example, in the <quote>color|white</quote> "
 "tag <quote>color</quote> is a category for the <quote>white</quote> tag."
 msgstr ""
+"A diferencia de las etiquetas hijo, las etiquetas padre no añaden "
+"información a la imagen, sino que representan categorías. Por ejemplo, en la "
+"etiqueta <quote>color|blanco</quote> <quote>color</quote> es una categoría "
+"para la etiqueta <quote>blanco</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4486(para)
 msgid ""
@@ -5674,12 +5679,18 @@ msgid ""
 "currently attached to the image under the cursor or the selected image(s), "
 "if the cursor is outside the center area of the lighttable view."
 msgstr ""
+"La vista superior de las <quote>etiquetas adjuntas</quote> muestra las "
+"etiquetas que están actualmente adjuntas a la imagen bajo el cursor o a la "
+"imagen seleccionada, si el cursor está fuera del área central de la vista de "
+"la mesa de luz."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4491(para)
 msgid ""
 "The lower <quote>tag dictonary</quote> view displays all tags that are "
 "available in the database."
 msgstr ""
+"La vista inferior <quote>diccionario de etiquetas</quote> muestra todas las "
+"etiquetas disponibles en la base de datos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4482(para)
 msgid "The panel contains two views: <placeholder-1/>"
@@ -5696,6 +5707,11 @@ msgid ""
 "to exported images. These information are related to <quote>XMP-dc Subject</"
 "quote> and <quote>XMP-lr Hierarchical Subject</quote> metadata."
 msgstr ""
+"Además de su nombre, la etiqueta puede establecerse como privada o como una "
+"categoría. También se pueden adjuntar sinónimos. Estos atributos ayudan a "
+"controlar la información que se une a las imágenes exportadas. Esta "
+"información está relacionada con los metadatos <quote>XMP-dc Temática</"
+"quote> y <quote>XMP-lr Temática Jerárquica</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4508(para)
 msgid ""
@@ -5740,6 +5756,10 @@ msgid ""
 "selected image. In tree view, for a parent tag it also means that at least "
 "one child tag is attached to at least one of the selected images."
 msgstr ""
+"Un <quote>menos</quote> significa que la etiqueta se adjunta al menos a una "
+"imagen seleccionada. En la vista de árbol, para una etiqueta padre también "
+"significa que al menos una etiqueta hijo se adjunta al menos a una de las "
+"imágenes seleccionadas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4559(para)
 msgid ""
@@ -5792,11 +5812,10 @@ msgstr ""
 "aportar información a la imagen. Una categoría no se exporta."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4582(para)
-#, fuzzy
 msgid "Right-clicking on the tag opens a submenu with available commands."
 msgstr ""
-"Al hacer click-derecho sobre el ícono se abre un diálogo con los parámetros "
-"de configuración."
+"Al hacer clic con el botón secundario del ratón sobre la etiqueta se abre un "
+"submenú con los comandos disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4590(para)
 msgid ""
@@ -5821,37 +5840,34 @@ msgstr ""
 "darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4607(para)
-#, fuzzy
 msgid ""
 "the toggle button <inlinegraphic fileref=\"images/tagging_icon_dt_tag.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> hides or shows the automatic "
 "darktable tags."
 msgstr ""
-"Con el botón de reiniciar <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> puede colocar todos los ajustes de nuevo en su estado inicial."
+"El botón de conmutación <inlinegraphic fileref=\"images/tagging_icon_dt_tag."
+"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> muestra u oculta las "
+"etiquetas automáticas de darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4617(para)
-#, fuzzy
 msgid ""
 "the toggle button <inlinegraphic fileref=\"images/tagging_icon_sort.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> sorts the list alphabetically "
 "or by number of tagged images."
 msgstr ""
-"Con el botón de reiniciar <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> puede colocar todos los ajustes de nuevo en su estado inicial."
+"Con el botón <inlinegraphic fileref=\"images/tagging_icon_sort.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se ordena la lista "
+"alfabéticamente o por el número de imágenes etiquetadas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4627(para)
-#, fuzzy
 msgid ""
 "the toggle button <inlinegraphic fileref=\"images/tagging_icon_short_name.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> shows the short or long "
 "tag name."
 msgstr ""
-"Al hacer click en el símbolo <inlinegraphic fileref=\"images/shape_circle.png"
-"\" scalefit=\"1\" width=\"4%\" align=\"center\"/> se agrega otra figura de "
-"circulo."
+"Con el botón <inlinegraphic fileref=\"images/tagging_icon_short_name.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se muestra el nombre corto o "
+"largo de la etiqueta."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4637(para)
 msgid ""
@@ -5875,15 +5891,14 @@ msgstr ""
 "inferiores:"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4660(para)
-#, fuzzy
 msgid ""
 "the toggle button <inlinegraphic fileref=\"images/tagging_icon_tree.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> shows the tag dictionary as a "
 "list or as a tree."
 msgstr ""
-"Con el botón de reiniciar <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> puede colocar todos los ajustes de nuevo en su estado inicial."
+"Con el botón <inlinegraphic fileref=\"images/tagging_icon_tree.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se muestra el diccionario de "
+"etiquetas como una lista o como un árbol."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4665(para)
 msgid "Tip: Shift+click on tree node fully expands it (all sub-levels)."
@@ -5892,18 +5907,17 @@ msgstr ""
 "todos los subniveles)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4675(para)
-#, fuzzy
 msgid ""
 "the toggle button <inlinegraphic fileref=\"images/tagging_icon_suggestion.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> switches the list to "
 "suggestions or full dictionary tag list (inactive on tree view). The "
 "suggestions list is based on already attached tags on selected images."
 msgstr ""
-"Al hacer click en el ícono de <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> se abre un combobox que le da un rápido acceso a los ajustes de sus "
-"módulos favoritos. Haga click en el nombre del pre-ajuste para aplicarlo a "
-"la imagen."
+"Con el botoón <inlinegraphic fileref=\"images/tagging_icon_suggestion.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se cambia la lista a "
+"sugerencias o a la lista completa de etiquetas del diccionario (inactiva en "
+"la vista de árbol). La lista de sugerencias se basa en las etiquetas ya "
+"adjuntas en las imágenes seleccionadas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4694(title)
 msgid "text entry"
@@ -5923,6 +5937,12 @@ msgid ""
 "<quote>down</quote> arrow to highlight it, press twice <quote>enter</quote> "
 "to get the tag attached !"
 msgstr ""
+"En primer lugar, para aquellos que no quieren dejar el teclado, cuando la "
+"vista del diccionario está en modo de lista, tan pronto como empiece a "
+"introducir una palabra clave, se abre una lista de las etiquetas "
+"correspondientes. Cuando vea la que busca, use <quote>la tecla de cursor "
+"abajo</quote> para resaltarla, y presione dos veces la tecla <quote>Entrar</"
+"quote> para que la etiqueta se adjunte."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4707(para)
 msgid ""
@@ -5992,6 +6012,8 @@ msgid ""
 "In submenu <quote>create tag</quote>. A tag can be created manually, under "
 "an existing one (hierarchical) or at the root level."
 msgstr ""
+"En el submenú <quote>crear etiqueta</quote>, una etiqueta puede ser creada "
+"manualmente, bajo una existente (jerárquica) o a nivel de raíz."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4768(para)
 msgid ""
@@ -6124,9 +6146,10 @@ msgstr "Haga doble clic en una etiqueta de la vista adjunta."
 msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
 msgstr ""
+"Pulse el botón secundario en una etiqueta de la vista adjunta y el submenú "
+"<quote>separar</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4887(para)
-#, fuzzy
 msgid ""
 "Delete a tag from the list and from all images. A warning will be displayed "
 "on how many images have this tag attached. Take this warning seriously as "
@@ -6135,24 +6158,32 @@ msgid ""
 msgstr ""
 "Eliminar una etiqueta de la lista y de todas las imágenes. Se mostrará una "
 "advertencia sobre cuántas imágenes tienen esta etiqueta adjunta. Tome en "
-"serio esta advertencia, ya que no hay manera de recuperar o encontrar las "
-"imágenes afectadas posteriormente."
+"serio esta advertencia, ya que no hay manera de recuperar o encontrar más "
+"tarde las imágenes afectadas (excepto las de la copia de seguridad). Una "
+"etiqueta en la vista de diccionario puede ser eliminada de las siguientes "
+"maneras."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4894(para)
 msgid "Click on button <quote>delete</quote> delete the selected one."
 msgstr ""
+"Pulse en el botón <quote>eliminar</quote> para eliminar el seleccionado."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4898(para)
 msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>delete tag</"
 "quote>."
 msgstr ""
+"Pulse el botón secundario en una etiqueta de la vista y el submenú del "
+"diccionario <quote>borrar etiqueta</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4902(para)
 msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>delete branch</"
 "quote>. In that case the tag itself and sub tags are deleted."
 msgstr ""
+"Pulse el botón secundario en una etiqueta de la vista del diccionario y en "
+"el submenú <quote>eliminar rama</quote>. En dado caso, se eliminan la "
+"etiqueta en sí y las etiquetas secundarias."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4911(title)
 msgid "import - export"
@@ -6185,6 +6216,11 @@ msgid ""
 "have this tag attached. It is possible to jump from one tag collection to "
 "the other."
 msgstr ""
+"Pulsar el botón secundario del ratón en una etiqueta adjunta (recuento no "
+"nulo) en la vista del diccionario hace aparecer en el submenú una entrada "
+"<quote>ir a la colección de etiquetas</quote>. Se abre la colección asociada "
+"a esta etiqueta y permite ver las imágenes que tienen esta etiqueta adjunta. "
+"Es posible saltar de una colección de etiquetas a otra."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4938(para)
 msgid ""
@@ -6337,10 +6373,9 @@ msgstr "$(MAX_HEIGHT)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5091(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21743(entry)
-#, fuzzy
 msgid "maximum image height to limit within export session"
 msgstr ""
-"altura máxima de la imagen a limitar dentro de la sesión de exportación"
+"altura máxima de la imagen por determinar dentro de la sesión de exportación"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5097(code)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21756(entry)
@@ -7197,6 +7232,14 @@ msgid ""
 "<emphasis>category</emphasis> are not exported. Tags and Categories are "
 "displayed separately in image information."
 msgstr ""
+"Las fórmulas permiten aprovechar al máximo la función de etiquetado. Puede "
+"definir virtualmente todos los metadatos necesarios para puntuar las "
+"imágenes en el etiquetado y, gracias a estas fórmulas, exportar los valores "
+"en las etiquetas XMP o IPTC de su elección. Las etiquetas exportadas pueden "
+"ser diferentes de una a otra exportación dependiendo del destino de las "
+"imágenes. Sólo recuerde que las etiquetas establecidas como "
+"<emphasis>categoría</emphasis> no se exportan. Las etiquetas y las "
+"categorías se muestran por separado en la información de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5804(para)
 msgid ""
@@ -7293,18 +7336,17 @@ msgstr ""
 "presionada, le da un rango mas extenso entre 2:1 y 1:10."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5900(para)
-#, fuzzy
 msgid ""
 "You normally export multiple images from the lighttable view but you can "
 "also export the current image directly from the darkroom by using the "
 "shortcut <emphasis>Ctrl+E</emphasis>. Export parameters are then those "
 "currently selected in the lighttable."
 msgstr ""
-"Normalmente exportará varias imágenes desde la vista de mesa de luz, pero "
-"también puede exportar la imagen seleccionada directamente desde el cuarto "
-"oscuro utilizando el atajo <emphasis>Ctrl+e</emphasis>. Los parámetros de "
-"exportación serán aquellos que estén actualmente seleccionados en la mesa de "
-"luz."
+"Normalmente se exportan múltiples imágenes desde la vista de mesa de luz, "
+"pero también se puede exportar la imagen seleccionada directamente desde el "
+"cuarto oscuro utilizando el atajo <emphasis>Ctrl+E</emphasis>. Los "
+"parámetros de exportación serán aquellos que estén seleccionados de momento "
+"en la mesa de luz."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5913(title)
 msgid "Darkroom concepts"
@@ -8100,7 +8142,6 @@ msgid "blending"
 msgstr "mezclado"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6494(para)
-#, fuzzy
 msgid ""
 "By default a module takes its input from the preceding module, performs its "
 "calculations and hands its output over to the next module in the pixelpipe. "
@@ -8110,16 +8151,15 @@ msgid ""
 "processed with different algorithms, called blending operators or blend "
 "modes."
 msgstr ""
-"Por defecto, un módulo toma su entrada del módulo precedente, realiza un "
-"calculo y maneja su salida por encima del próximo módulo en la secuencia del "
-"proceso de imagen. Si lo requiere, puede activar pasos adicionales donde la "
-"salida de un módulo es reprocesada con su entrada antes de pasar su "
-"resultado al próximo módulo. Este paso adicional de procesamiento es llamado "
-"mezcla. La entrada y salida pueden ser procesadas por dos algoritmos "
-"diferentes, llamados operadores de mezcla o modos de mezcla."
+"Por defecto, un módulo toma su entrada del módulo precedente, realiza los "
+"cálculos y entrega su salida al siguiente módulo en la secuencia del proceso "
+"de imagen. Si lo requiere, puede activar pasos adicionales donde la salida "
+"de un módulo es reprocesada con su entrada antes de pasar su resultado al "
+"próximo módulo. Este paso adicional de procesamiento se denomina fusión. La "
+"entrada y salida pueden ser procesadas por dos algoritmos diferentes, "
+"llamados operadores de fusión o modos de fusión."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6503(para)
-#, fuzzy
 msgid ""
 "Each blend mode is further controlled by a parameter called opacity, which "
 "can have a value between 0% and 100% and defines how input and output image "
@@ -8128,12 +8168,12 @@ msgid ""
 "without effect. An opacity value of 100% delivers the maximum effect of the "
 "module with the blend mode chosen."
 msgstr ""
-"Cada modo de mezcla se controla mediante un parámetro llamado opacidad, que "
+"Cada modo de fusión se controla mediante un parámetro llamado opacidad, que "
 "puede tener un valor entre 0% y 100% y define cómo la imagen de entrada y "
 "salida contribuye al resultado final. Por lo general, un valor de opacidad "
 "del 0% da como resultado una imagen que es idéntica a la imagen de entrada: "
 "el módulo permanece sin efecto alguno. Un valor de opacidad del 100% "
-"proporciona el efecto máximo del módulo con el modo de fusión elegido."
+"proporciona el máximo efecto del módulo con el modo de fusión elegido."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6511(para)
 msgid ""
@@ -8192,7 +8232,6 @@ msgid "uniformily"
 msgstr "uniformemente"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6562(para)
-#, fuzzy
 msgid ""
 "reprocessing takes place with the chosen blend mode and opacity value – the "
 "same for all pixels. Additional controls to select blend mode and opacity "
@@ -8201,7 +8240,7 @@ msgid ""
 msgstr ""
 "El reprocesado se realiza con el modo de fusión y el valor de opacidad "
 "elegidos, el mismo para todos los pixeles. Se muestran controles adicionales "
-"para seleccionar el modo de mezcla y el valor de opacidad. El modo de mezcla "
+"para seleccionar el modo de fusión y el valor de opacidad. El modo de fusión "
 "predeterminado es <quote>normal</quote> con una opacidad del 100%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6570(title)
@@ -9642,7 +9681,6 @@ msgid "combined masks"
 msgstr "máscaras combinadas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7619(para)
-#, fuzzy
 msgid ""
 "This section describes how darktable combines individual masks to form the "
 "final mask of a module. Individual masks are the drawn mask and all the "
@@ -9652,7 +9690,7 @@ msgid ""
 msgstr ""
 "Esta sección describe cómo darktable combina máscaras individuales para "
 "formar la máscara final de un módulo. Las máscaras individuales son la "
-"máscara dibujada y todos los canales individuales de la máscara paramétrica. "
+"máscara trazada y todos los canales individuales de la máscara paramétrica. "
 "El tema es bastante avanzado: si no quiere ver todos los detalles teóricos, "
 "solo tiene que pasar a la parte donde describimos dos casos de uso típicos."
 
@@ -10112,14 +10150,13 @@ msgid "Color management"
 msgstr "Manejo de color"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7962(para)
-#, fuzzy
 msgid ""
 "Input color specifications are taken from embedded or user supplied ICC "
 "profiles or – in the case of raw files – from a library of camera specific "
 "color matrices."
 msgstr ""
 "Las especificaciones de color de entrada se toman de perfiles ICC "
-"incorporados o provistos por el usuario o, en el caso de archivos en bruto, "
+"incrustados o provistos por el usuario o, en el caso de archivos en bruto, "
 "de una librería de matrices de color específicas de la cámara."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7968(para)
@@ -11715,15 +11752,14 @@ msgid "display intent"
 msgstr "intención de pantalla"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9415(para)
-#, fuzzy
 msgid ""
 "Sets the rendering intent for your display – only available if rendering "
 "with LittleCMS2 is activated. See <xref linkend=\"rendering_intent\"/> for "
 "available options."
 msgstr ""
-"Establece la representación para la pantalla: solo está disponible si la "
-"representación con LittleCMS2 está activada. Consulte <xref linkend="
-"\"rendering_intent\"/> para ver las opciones disponibles."
+"Establece el procesado para la pantalla: solo disponible si está activado el "
+"procesado con LittleCMS2. Consulte <xref linkend=\"rendering_intent\"/> para "
+"ver las opciones disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9420(bridgehead)
 msgid "softproof profile"
@@ -11797,14 +11833,13 @@ msgstr ""
 "gamut y la prueba en pantalla son modos mutuamente exclusivos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9466(para)
-#, fuzzy
 msgid ""
 "Right-clicking on the icon opens a dialog with configuration parameters – "
 "they are the same as for the soft proof option (see <xref linkend=\"softproof"
 "\"/>)."
 msgstr ""
-"Al hacer clic con el botón derecho en el ícono, se abre un cuadro de diálogo "
-"con los parámetros de configuración; son los mismos que para la opción de "
+"Al pulsar con el botón secundario en el ícono, se abre un cuadro de diálogo "
+"con los parámetros de configuración; son los mismos que los de la opción de "
 "prueba en pantalla (consulte <xref linkend=\"softproof\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9482(para)
@@ -11828,17 +11863,16 @@ msgstr ""
 "tira de imágenes arrastrando su parte superior."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9492(para)
-#, fuzzy
 msgid ""
 "You can scroll with your mouse to quickly navigate through the images. You "
 "can change the photo being processed by double clicking on another picture. "
 "You can also use Spacebar to process the next photo and use Backspace key to "
 "process the previous photo."
 msgstr ""
-"Puede desplazarse con el mouse para navegar rápidamente a través de las "
-"imágenes. Puede cambiar a otra foto haciéndole doble clic. También puede "
-"usar la barra espaciadora para procesar la siguiente foto o usar la tecla de "
-"retroceso para procesar la foto anterior."
+"Puede desplazarse con el ratón para navegar rápidamente por las imágenes. "
+"Puede cambiar la foto que se está procesando a otra haciéndole doble "
+"pulsación. También puede usar la tecla de Espacio para procesar la siguiente "
+"foto o usar la tecla de Retroceso para procesar la foto anterior."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9498(para)
 #, fuzzy
@@ -12445,7 +12479,6 @@ msgid "shadows color adjustment"
 msgstr "reconstrucción de sombras"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10067(para)
-#, fuzzy
 msgid ""
 "This slider controls the color saturation adjustment made to shadows; high "
 "values cause saturation enhancements on lightened shadows; low values cause "
@@ -12457,7 +12490,7 @@ msgstr ""
 "Este control deslizante controla el ajuste de saturación de color realizado "
 "en las sombras; los valores altos causan mejoras de saturación en sombras "
 "iluminadas; los valores bajos causan desaturación en sombras iluminadas. "
-"Normalmente es seguro dejar esto en su valor predeterminado del 100%. Esto "
+"Normalmente es seguro dejar esto en su valor predeterminado del 100%. Así "
 "proporciona un aumento natural de la saturación en las sombras, similar al "
 "que también se esperaría en la naturaleza si las sombras recibieran más luz."
 
@@ -13321,7 +13354,6 @@ msgstr ""
 "tener efectos indeseados."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10779(para)
-#, fuzzy
 msgid ""
 "Additionally, darktable supports a special demosaicing algorithm – "
 "passthrough (monochrome). It is not a general-purpose algorithm that is "
@@ -13336,17 +13368,17 @@ msgid ""
 "present should one of the standard demosaicing algorithm be used."
 msgstr ""
 "Además, darktable es compatible con un algoritmo especial de interpolación "
-"cromática: atravesar (monocromo). No es un algoritmo de uso general que sea "
-"útil para todas las imágenes. Solo es útil para cámaras con la matriz de "
-"filtros de color físicamente eliminada del sensor, como sería en uno rayado "
-"físicamente. Normalmente, interpolación cromática reconstruye los canales de "
-"color faltantes interpolando datos de los pixeles vecinos. Pero como la "
-"matriz de filtros de color no está presente, no hay nada que interpolar. Por "
-"lo que este algoritmo simplemente establece todos los canales de color en el "
-"mismo valor; hace que los pixeles sean de color gris produciendo una imagen "
-"monocromática. Este método garantiza que no hay anomalías de interpolación "
-"que normalmente se encontrarían utilizando uno de los algoritmos de "
-"interpolación estándar."
+"cromática: atravesar (monocromo). No es un algoritmo de propósito general "
+"que sea útil para todas las imágenes. Solo es útil para cámaras con la "
+"matriz de filtros de color removida físicamente del sensor, como sería en "
+"uno rayado físicamente. Normalmente, la interpolación cromática reconstruye "
+"los canales de color faltantes interpolando datos de los pixeles vecinos. "
+"Pero como la matriz de filtros de color no está presente, no hay nada que "
+"interpolar. Por lo que este algoritmo simplemente establece todos los "
+"canales de color al mismo valor; lo que resulta en que los pixeles sean de "
+"grises, produciendo así una imagen monocromática. Este método garantiza que "
+"no haya anomalías de interpolación que normalmente se estarían presentes "
+"utilizando uno de los algoritmos de interpolación estándar."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10791(para)
 msgid ""
@@ -13691,7 +13723,6 @@ msgid "color of film material"
 msgstr "color de la película"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11123(para)
-#, fuzzy
 msgid ""
 "The only control element of this module is a color selector which allows to "
 "adjust for different colors of your film material. Clicking on the colored "
@@ -13703,14 +13734,14 @@ msgid ""
 "border of your negative."
 msgstr ""
 "El único elemento de control de este módulo es un selector de color que "
-"permite ajustar diferentes colores de su material de película. Al pulsar en "
-"el campo de color, se abrirá un cuadro de diálogo con un selector de color "
-"que le ofrece la opción de escoger colores ordinarios, o le permite definir "
-"un color en el espacio de color RGB. También puede activar un selector de "
-"color presionando <inlinegraphic fileref=\"images/"
+"permite ajustar los diferentes colores del material de la película. Al "
+"pulsar en el campo de color, se abrirá un cuadro de diálogo con un selector "
+"de color que le ofrece la opción de escoger los colores más utilizados, o le "
+"permite definir un color en el espacio de color RGB. También puede activar "
+"un selector de color pulsando <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> y tomar una muestra de color de la imagen, preferiblemente del borde "
-"sin exposición del negativo."
+"\"/> y tomar una muestra de color de la imagen, preferiblemente del borde no "
+"expuesto del negativo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11140(title)
 msgid "Raw black/white point"
@@ -14068,7 +14099,6 @@ msgstr ""
 "tres espacios de color diferentes: <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11515(para)
-#, fuzzy
 msgid ""
 "Lab is a perceptual color space that is designed to approximate the way "
 "human beings perceive colors and lightness, and representing the color "
@@ -14082,18 +14112,18 @@ msgid ""
 "applied, but gives increasingly inaccurate saturation correction as the "
 "contrast gets more dramatically enhanced."
 msgstr ""
-"Lab es un espacio de color de percepción que está diseñado para aproximarse "
-"a la forma en que los seres humanos perciben los colores y la luminosidad, y "
+"Lab es un espacio de color perceptivo que está diseñado para aproximarse a "
+"la forma en que los seres humanos perciben los colores y la luminosidad, y "
 "representa la información del color independientemente de la información de "
-"la claridad. En <quote>Lab, canales separados</quote>, obtienes un control "
-"totalmente independiente sobre la crominancia (canales a/b) y la luminancia "
-"(canal L). En <quote>Lab, canales vinculados</quote>, solo está disponible "
-"el control de luminancia (canal L). La corrección de saturación de color se "
-"calculará automáticamente, para cada pixel, a partir de la corrección de "
-"contraste aplicada al canal de luminancia. Esto funciona mejor en los casos "
-"en los que se aplica una corrección de contraste sutil, sin embargo "
-"proporciona una corrección de saturación cada vez más inexacta a medida que "
-"el contraste se realza drásticamente."
+"la luminosidad. En <quote>Lab, canales separados</quote>, se obtiene un "
+"control totalmente independiente de la crominancia (canales a/b) y la "
+"luminancia (canal L). En <quote>Lab, canales vinculados</quote>, solo está "
+"disponible el control de luminancia (canal L). La corrección de saturación "
+"de color se calculará automáticamente, para cada pixel, a partir de la "
+"corrección de contraste aplicada al canal de luminancia. Esto funciona mejor "
+"en los casos en los que se aplica una corrección de contraste sutil, sin "
+"embargo proporciona una corrección de saturación cada vez más inexacta a "
+"medida que el contraste se realza drásticamente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11529(para)
 msgid ""
@@ -14146,7 +14176,6 @@ msgstr ""
 "\"/>), excepto que este último funciona en el espacio RGB de la cámara."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11554(para)
-#, fuzzy
 msgid ""
 "Notice that the interface is controlled in Lab in all cases. This means that "
 "the middle gray coordinate is always 50% in the graph, no matter what color "
@@ -14156,7 +14185,7 @@ msgid ""
 "is therefore remapped from 50% to 18%."
 msgstr ""
 "Observe que la interfaz está controlada en Lab en todos los casos. Esto "
-"significa que la coordenada gris central siempre es del 50% en el gráfico, "
+"significa que la coordenada del gris medio siempre es del 50% en el gráfico, "
 "sin importar qué espacio de color se use. Lo mismo se aplica al histograma "
 "de inserción que se muestra en el fondo de la curva. Los controles se "
 "convierten al espacio de color relevante antes de que se apliquen las "
@@ -14454,15 +14483,14 @@ msgstr ""
 "marcada. Utilice el click derecho para remover un punto de control."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11779(para)
-#, fuzzy
 msgid ""
 "The preview shows the image broken down in zones. When hovering above a zone "
 "on the zonebar, that zone – either from input or output – is highlighted on "
 "the preview."
 msgstr ""
-"La vista previa muestra la imagen cortada en zonas. Cuando pase el puntero "
-"de su ratón sobre una zona de la barra, esa zona – bien sea de entrada o "
-"salida – se iluminará en la vista previa."
+"La vista previa muestra la imagen dividida en zonas. Cuando se pasa el "
+"cursor por encima de una zona (ya sea de entrada o de salida) en la barra de "
+"zonas, se resaltará en la vista previa."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11801(entry)
 msgid "The original image."
@@ -14848,7 +14876,6 @@ msgid "filmic rgb"
 msgstr "película rgb"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12203(para)
-#, fuzzy
 msgid ""
 "This module compresses the tonal range of an image by reproducing the tone "
 "and color response of classic film. Doing so, it protects the colors and the "
@@ -14857,16 +14884,15 @@ msgid ""
 "lighting situations, but needs extra care when details need to be preserved "
 "in highlights (e.g. clouds)."
 msgstr ""
-"Este módulo comprime el rango tonal de una imagen reproduciendo el tono y la "
-"respuesta de color de la película clásica. Al hacerlo, protegerá los colores "
-"y el contraste en los tonos medios, recuperará las sombras y comprimirá los "
-"reflejos brillantes. Es muy adecuado para la fotografía de retrato, "
+"Este módulo comprime la gama tonal de una imagen reproduciendo la respuesta "
+"de tono y color de una película clásica. De esta manera, protege los colores "
+"y el contraste de los tonos medios, recupera las sombras y comprime las "
+"luces brillantes. Es muy adecuado para la fotografía de retratos, "
 "especialmente en situaciones de contraluz, pero deberá tenerse especial "
-"cuidado con los detalles que sean importantes preservar de las luces altas "
-"(por ejemplo en las nubes)."
+"cuidado cuando los detalles deben conservarse en las luces (por ejemplo en "
+"las nubes)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12212(para)
-#, fuzzy
 msgid ""
 "The module is derived from the same named module in Blender 3D modeller by "
 "T. J. Sobotka. While it is primarily intended to recover high-dynamic range "
@@ -14878,11 +14904,10 @@ msgstr ""
 "El módulo se deriva de uno del mismo nombre (filmic) en el modelador Blender "
 "3D por T. J. Sobotka. Si bien el objetivo principal es recuperar un rango "
 "dinámico amplio de los datos no procesados del sensor, se puede usar con "
-"cualquier imagen en lugar del módulo de curva base. Puede encontrar un "
-"tutorial completo con ejemplos y comentarios sobre los resultados en <ulink "
-"url=\"https://eng.aurelienpierre.com/2018/11/30/filmic-darktable-and-the-"
-"quest-of-the-hdr-tone-mapping/\"><emphasis>el sitio web del desarrollador</"
-"emphasis></ulink>."
+"cualquier imagen en lugar del módulo de curva base. El desarrollador "
+"proporcionó una explicación detallada del módulo en un video llamado <ulink "
+"url=\"https://www.youtube.com/watch?v=zbPj_TqTF88\">Película RGB: remapea "
+"cualquier rango dinámico en darktable 3.0</ulink>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12222(para)
 msgid ""
@@ -14901,7 +14926,6 @@ msgid "Prerequisites"
 msgstr "Prerrequisitos"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12247(para)
-#, fuzzy
 msgid ""
 "In-camera, expose the shot <quote>to the right</quote>. This implies under "
 "exposing the shot so that the highlights are at the right of the histogram, "
@@ -14912,15 +14936,15 @@ msgid ""
 "clipping alert preview to help you diagnose this, and some even have an "
 "highlight-priority exposure mode."
 msgstr ""
-"En la cámara, <quote>exponga a la derecha</quote> la exposición de la toma. "
-"Esto significa exponer de tal manera que las luces altas estén a la derecha "
-"del histograma, justo al borde del recorte, pero no recortadas. No importa "
-"si la vista previa de la imagen es muy oscura en la pantalla de la cámara: "
-"siempre que no se recorten las luces, el módulo película debe poder "
-"recuperar los detalles de los datos del archivo en crudo. Tenga en cuenta "
-"que los datos recortados no son recuperables. Algunas cámaras tienen una "
-"alerta de recorte en la vista previa  para prevenirlo, y algunos modelos "
-"incluso tienen un modo de exposición con prioridad a las luces altas."
+"Con la cámara, exponga la toma <quote>a la derecha</quote> . Esto implica "
+"subexponer la toma de manera que las luces se encuentren a la derecha del "
+"histograma, justo al borde del recorte, pero sin recortar. No importa si la "
+"vista previa de la imagen es muy oscura en la pantalla de la cámara: "
+"mientras las luces no estén recortadas, el módulo película rgb debería ser "
+"capaz de recuperar los detalles de los datos en bruto. Tenga en cuenta que "
+"los datos recortados no son recuperables. Algunas cámaras tienen una vista "
+"previa de alerta de recorte para ayudarle a diagnosticar esto, e incluso "
+"algunos modelos tienen un modo de exposición con prioridad a las luces altas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12257(para)
 #, fuzzy
@@ -14965,7 +14989,6 @@ msgstr ""
 "use una interpolación cromática de alta calidad."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12279(para)
-#, fuzzy
 msgid ""
 "If you plan on using filmic rgb's chrominance preservation mode, avoid using "
 "any tone mapping module as well as the base curve module. These may produce "
@@ -14973,10 +14996,10 @@ msgid ""
 "useless. Neither of these modules is usually needed if you use filmic rgb."
 msgstr ""
 "Si se tiene en mente usar el modo de preservación de la crominancia en "
-"película, evite usar cualquier módulo de mapeo de tonos, así como el módulo "
-"de curva base. Estos pueden producir cambios de color imprevisibles que "
-"harían inútil la conservación de la crominancia. Ninguno de estos módulos "
-"suele ser necesario al usar película."
+"película rgb, evite usar cualquier módulo de mapeo de tonos, así como el "
+"módulo de curva base. Estos pueden producir cambios de color imprevisibles "
+"que harían inútil la conservación de la crominancia. Ninguno de estos "
+"módulos suele ser necesario al usar película rgb."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12243(para)
 msgid ""
@@ -14992,6 +15015,9 @@ msgid ""
 "<quote>input</quote> settings of the scene: what constitutes middle grey, "
 "white and black in the photographed scene."
 msgstr ""
+"La pestaña <guilabel moreinfo=\"none\">escena</guilabel> contiene los "
+"ajustes de la escena: lo que constituye el gris medio, el blanco y el negro "
+"en la escena fotografiada."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12308(para)
 #, fuzzy
@@ -15013,6 +15039,10 @@ msgid ""
 "settings to map the transformed image to the display. In typical use cases, "
 "this tab should only be used very rarely."
 msgstr ""
+"En la pestaña <guilabel moreinfo=\"none\">pantalla</guilabel> se definen los "
+"ajustes de salida para realizar una correspondencia de la imagen "
+"transformada a la pantalla. Esta pestaña se usa muy raramente en los casos "
+"más comunes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12295(para)
 msgid ""
@@ -15021,13 +15051,13 @@ msgid ""
 "defined in three steps, each handled in a separate tab in the interface: "
 "<placeholder-1/>"
 msgstr ""
-"El módulo película rgb tiene como objetivo mapear el rango dinámico de la "
-"escena fotografiada (imagen RAW) al rango dinámico de la pantalla (más "
-"pequeño). Este mapeo se define en tres pasos, cada uno de los cuales se "
-"maneja en una pestaña separada en la interfaz: <placeholder-1/>"
+"El módulo película rgb tiene como objetivo hacer una correspondencia del "
+"rango dinámico de la escena fotografiada (imagen RAW) al rango dinámico de "
+"la pantalla (más pequeño). Este correspondencia se define en tres pasos, "
+"cada uno de los cuales se maneja en una pestaña separada en la interfaz: "
+"<placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12329(para)
-#, fuzzy
 msgid ""
 "The sliders' ranges of filmic rgb are limited to usual and safe values, but "
 "values are allowed out of these ranges by clicking on the sliders with the "
@@ -15035,14 +15065,12 @@ msgid ""
 "parameters resulting in a no-operation: as soon as the module is enabled, "
 "the image is always at least slightly affected."
 msgstr ""
-"Los rangos de los controles deslizantes del módulo película están limitados "
-"a los valores habituales y seguros, aunque los valores pueden salir de estos "
-"rangos pulsando en los controles deslizantes con el botón derecho e "
-"ingresando valores en el teclado. Película no tiene parámetros neutros que "
-"darían un punto de edición nulo: tan pronto como se habilita el módulo, la "
-"imagen siempre se ve afectada al menos ligeramente. Los parámetros "
-"predeterminados están sintonizados para tener un impacto mínimo en la "
-"mayoría de las imágenes."
+"Los rangos de los controles deslizantes del módulo película rgb están "
+"limitados a los valores habituales y seguros, aunque se permiten valores "
+"fuera de rango pulsando sobre los controles deslizantes el botón secundario "
+"e ingresando los valores. Película rgb no tiene parámetros neutros que "
+"equivalgan a la edición nula: tan pronto como se habilita el módulo, la "
+"imagen siempre se verá afectada aunque sea sólo un poco."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12336(para)
 msgid ""
@@ -15054,19 +15082,19 @@ msgid ""
 "exposure."
 msgstr ""
 "Las curvas de la parte superior del módulo son de sólo lectura y sirven como "
-"guía para las operaciones que se realizan en los deslizadores. La curva de "
-"luminosidad es la curva del mapa de tonos, donde la abscisa representa la "
-"exposición de la escena y la ordenada representa la exposición de la "
-"pantalla. La curva oscura es la curva de desaturación, que representa el "
-"porcentaje de saturación en función de la exposición de la escena."
+"guía para las operaciones que se realizan en los controles deslizantes. La "
+"curva de luminosidad es la curva del mapa de tonos, donde la abscisa "
+"representa la exposición de la escena y la ordenada representa la exposición "
+"de la pantalla. La curva oscura es la curva de desaturación, que representa "
+"el porcentaje de saturación en función de la exposición de la escena."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12345(title)
 msgid ""
 "Middle-grey luminance (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"Luminancia gris medio (pestaña <guilabel moreinfo=\"none\">escena</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12346(para)
-#, fuzzy
 msgid ""
 "The middle-grey luminance is the luminance in RGB space of the scene "
 "referred 18% grey. Its color picker tool reads the average luminance over "
@@ -15079,10 +15107,10 @@ msgstr ""
 "La luminancia de gris medio es la luminancia en el espacio XYZ de la escena "
 "referida al 18% de gris. La herramienta de selección de color lee la "
 "luminancia promedio sobre el área dibujada. Si tiene una tarjeta gris o una "
-"tarjeta de color (tarjeta IT8 o tarjeta de calibración de color) en las "
-"condiciones de iluminación de la escena, puede utilizar la herramienta de "
-"selección de color gris para muestrear rápidamente la luminancia del parche "
-"gris en la imagen. En otras situaciones, el selector de color se puede "
+"tarjeta de color (tarjeta IT8 o tarjeta de calibración de color) tomada en "
+"las condiciones de iluminación de la escena, puede utilizar la herramienta "
+"de selección de color gris para muestrear rápidamente la luminancia de la "
+"zona gris en la imagen. En otras situaciones, el selector de color se puede "
 "utilizar para muestrear la luminancia promedio del sujeto."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12354(para)
@@ -15132,6 +15160,8 @@ msgstr ""
 msgid ""
 "White relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"Exposición blanca relativa (pestaña <guilabel moreinfo=\"none\">escena</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12375(para)
 #, fuzzy
@@ -15165,9 +15195,10 @@ msgstr ""
 msgid ""
 "Black relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"Exposición negra relativa (pestaña <guilabel moreinfo=\"none\">escena</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12390(para)
-#, fuzzy
 msgid ""
 "The black relative exposure is the number of stops (EV) between pure black "
 "and the middle grey. It is the left bound of the dynamic range. The black "
@@ -15180,17 +15211,17 @@ msgid ""
 "the black exposure at -16EV, it is a sign that the measure failed and you "
 "need to adjust it manually."
 msgstr ""
-"La exposición relativa del negro es el número de pasos (EV) entre el negro "
-"puro y el gris medio. Es el límite izquierdo del rango dinámico. La "
-"herramienta de selección de color de la exposición en negro lee la "
-"luminancia mínima en el espacio XYZ sobre el área dibujada, asume que es de "
-"color negro puro y establece el parámetro de exposición en negro para "
-"reasignar la lectura mínima a 0% de luminancia. La medida del selector de "
-"color negro es muy sensible al ruido y no puede identificar si la luminancia "
-"mínima es negro puro (datos reales) o solo ruido. Funciona mejor en imágenes "
-"con bajo ISO y con interpolación cromática de alta calidad. Cuando el "
-"selector de color pone la exposición del negro en -16EV, es una señal de que "
-"la medida falló y que necesita ajustarlo manualmente."
+"La exposición negra relativa es el número de pasos (EV) entre el negro puro "
+"y el gris medio. Es el límite izquierdo del rango dinámico. La herramienta "
+"de selección de color de la exposición en negro lee la luminancia mínima en "
+"el espacio RGB sobre el área dibujada, asume que es negro puro, y establece "
+"el parámetro de exposición negra para reasignar la lectura mínima a 0% de "
+"luminancia. La medida del selector de color de la exposición negra es muy "
+"sensible al ruido, y no puede identificar si la luminancia mínima es negro "
+"puro (datos reales) o solo ruido. Funciona mejor en imágenes con bajo ISO y "
+"con interpolación cromática de alta calidad. Cuando el selector de color "
+"pone la exposición negra en -16EV, es una señal de que la medición falló y "
+"que será necesario ajustarla manualmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12402(para)
 #, fuzzy
@@ -15231,6 +15262,8 @@ msgid ""
 "Dynamic range scaling and auto-tune (<guilabel moreinfo=\"none\">Scene</"
 "guilabel> tab)"
 msgstr ""
+"Escala de rango dinámico y niveles automáticos (pestaña <guilabel moreinfo="
+"\"none\">escena</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12418(para)
 msgid ""
@@ -15264,7 +15297,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12434(title)
 msgid "Contrast (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr ""
+msgstr "Contraste (pestaña <guilabel moreinfo=\"none\">apariencia</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12435(para)
 msgid ""
@@ -15304,7 +15337,7 @@ msgstr "Cuando el contraste se ajusta a 1, se desactiva la curva S."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12459(title)
 msgid "Latitude (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr ""
+msgstr "Latitud (pestaña <guilabel moreinfo=\"none\">apariencia</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12460(para)
 msgid ""
@@ -15327,11 +15360,16 @@ msgid ""
 "the extremities of the luminance range (see <xref linkend=\"filmicrgb-"
 "saturation\"/>)."
 msgstr ""
+"La latitud también define el rango de luminancias que no está desaturado en "
+"los extremos del rango de luminancias (ver <xref linkend=\"filmicrgb-"
+"saturation\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12480(title)
 msgid ""
 "Shadows/highlight balance (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
 msgstr ""
+"Equilibrio entre sombras y luces (pestaña <guilabel moreinfo=\"none"
+"\">apariencia</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12481(para)
 msgid ""
@@ -15353,6 +15391,8 @@ msgid ""
 "Extreme luminance saturation (<guilabel moreinfo=\"none\">Look</guilabel> "
 "tab)"
 msgstr ""
+"Saturación de luminancia extrema (pestaña <guilabel moreinfo=\"none"
+"\">apariencia</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12492(para)
 msgid ""
@@ -15387,6 +15427,8 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12508(title)
 msgid "Preserve chrominance (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
 msgstr ""
+"Preservar crominancia (pestaña <guilabel moreinfo=\"none\">apariencia</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12509(para)
 msgid ""
@@ -15394,6 +15436,9 @@ msgid ""
 "indicates how the chrominance should be handled by filmic rgb: either not at "
 "all, or using one of the provided three norms."
 msgstr ""
+"El ajuste <guilabel moreinfo=\"none\">preservar crominancia</guilabel> "
+"indica cómo debe tratarse la crominancia con película rgb: o bien no se "
+"trata en absoluto, o bien se utiliza una de las tres normas previstas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12515(para)
 msgid ""
@@ -15442,6 +15487,10 @@ msgid ""
 "(R³ + G³ + B³)/(R² + G² + B²). It is usally a good compromise between the "
 "max RGB and the luminance Y values."
 msgstr ""
+"La <emphasis>norma de potencia RGB</emphasis> es la suma de los cubos de los "
+"tres canales R, G y B, dividida entre la suma de sus cuadrados, es decir, "
+"(R³ + G³ + B³)/(R² + G² + B²). Normalmente es un buen equilibrio entre los "
+"valores máximos de RGB y la luminancia Y."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12531(para)
 msgid ""
@@ -15449,6 +15498,9 @@ msgid ""
 "chrominance</guilabel> parameter indicate which norm is used (the value used "
 "for N): <placeholder-1/>"
 msgstr ""
+"Los diferentes valores del parámetro <guilabel moreinfo=\"none\">preservar "
+"crominancia</guilabel> indican qué norma se utiliza (el valor utilizado para "
+"N): <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12558(para)
 msgid ""
@@ -15463,6 +15515,8 @@ msgstr ""
 msgid ""
 "Target black luminance (<guilabel moreinfo=\"none\">Display</guilabel> tab)"
 msgstr ""
+"Luminosidad negra de destino (pestaña <guilabel moreinfo=\"none\">pantalla</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12566(para)
 msgid ""
@@ -15487,13 +15541,15 @@ msgid ""
 "the target medium. Set it greater than 0% if you want raised, faded blacks "
 "to achieve a retro look."
 msgstr ""
-"El parámetro de luminancia negra destino se utiliza para definir el nivel "
+"El parámetro de luminancia negra de destino se utiliza para definir el nivel "
 "base de negro del medio de destino. Ajústelo a un valor mayor de 0% si desea "
 "que los negros resaltados y descoloridos logren un aspecto retro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12580(title)
 msgid "Target middle-grey (<guilabel moreinfo=\"none\">Display</guilabel> tab)"
 msgstr ""
+"Gris medio de destino (pestaña <guilabel moreinfo=\"none\">pantalla</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12581(para)
 msgid ""
@@ -15513,6 +15569,8 @@ msgstr ""
 msgid ""
 "Target white luminance (<guilabel moreinfo=\"none\">Display</guilabel> tab)"
 msgstr ""
+"Luminancia blanca de destino (pestaña <guilabel moreinfo=\"none\">pantalla</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12591(para)
 msgid ""
@@ -15520,7 +15578,7 @@ msgid ""
 "of the target medium. Set it lower than 100% if you want dampened, muted "
 "whites to achieve a retro look."
 msgstr ""
-"El parámetro de luminancia blanca destino permite configurar el tope del "
+"El parámetro de luminancia blanca de destino permite configurar el tope del "
 "nivel blanco del medio de destino. Ajústelo por debajo del 100% si desea que "
 "los blancos tenues tengan un aspecto retro."
 
@@ -15529,7 +15587,6 @@ msgid "Target power factor function"
 msgstr "Función de factor de potencia de destino"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12600(para)
-#, fuzzy
 msgid ""
 "The power of the output transfer function, often improperly called the gamma "
 "(only screen have a gamma), is the parameter used to raise or compress the "
@@ -15543,32 +15600,31 @@ msgid ""
 "double up, and the middle-grey will be remapped to 76% instead of 45% as it "
 "should."
 msgstr ""
-"El poder de la función de transferencia de salida, a menudo llamada de "
-"manera inadecuada gamma (solo la pantalla tiene gamma), es el parámetro "
-"utilizado para aumentar o comprimir los tonos medios para dar cuenta de las "
-"no linealidades de la pantalla o para evitar anomalías de cuantificación "
+"La potencia de la función de transferencia de salida, a menudo llamada de "
+"manera inadecuada gamma (solo las pantallas tienen gamma), es el parámetro "
+"utilizado para aumentar o comprimir los tonos medios para tener en cuenta "
+"las no linealidades de la pantalla o para evitar anomalías de cuantificación "
 "cuando se codifica en formatos de archivo de 8 bits. Esta es una operación "
 "común cuando se aplican perfiles de color ICC (excepto para espacios RGB "
 "lineales, como REC 709 o REC 2020, que tienen un <quote>gamma</quote> lineal "
-"de 1.0). Sin embargo, en la salida del módulo película, la señal se codifica "
-"logarítmicamente, lo que no es algo que los perfiles de color ICC deban "
-"manejar. Como consecuencia, si les permitimos que apliquen un gamma 1/2.2 en "
-"la parte superior, se duplicará y el gris medio se volverá a asignar al 76% "
-"en lugar del 45% como debería."
+"de 1.0). Sin embargo, en la salida del módulo película rgb, la señal se "
+"codifica logarítmicamente, lo cual no es algo que los perfiles de color ICC "
+"sepan manejar. Como consecuencia, si les permitimos que apliquen un gamma "
+"1/2.2 en la parte superior, se duplicará y el gris medio se volverá a "
+"asignar al 76% en lugar del 45% como debería."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12611(para)
-#, fuzzy
 msgid ""
 "To avoid double ups and washed pictures, filmic rgb applies a <quote>gamma</"
 "quote> compression reverting the output ICC gamma correction, so the middle-"
 "grey is correctly remapped at the end. To remove this compression, set the "
 "destination power factor to 1.0 and the middle-grey destination to 45%."
 msgstr ""
-"Para evitar duplicaciones e imágenes deslavadas, película aplica una "
-"compresión <quote>gamma</quote> que revierte la corrección de gamma ICC de "
-"salida, por lo que el gris medio se vuelve a asignar correctamente al final. "
-"Para eliminar esta compresión, establezca el factor de potencia de destino "
-"en 1.0 y el destino de color gris medio en 45%."
+"Para evitar duplicaciones e imágenes deslavadas, película rgb aplica una "
+"compresión <quote>gamma</quote> que revierte la corrección gamma de la ICC "
+"de salida, por lo que el gris medio se vuelve a asignar correctamente al "
+"final. Para eliminar esta compresión, establezca el factor de potencia de "
+"destino en 1.0 y el gris medio de destino en 45%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12623(title)
 msgid "Workflow"
@@ -15591,6 +15647,10 @@ msgid ""
 "about losing details in the highlights: they will be recovered by the next "
 "steps of the processing."
 msgstr ""
+"Modifique la exposición en el módulo <link linkend=\"exposure"
+"\"><emphasis>exposición</emphasis></link> para que los tonos medios sean lo "
+"suficientemente claros. No se preocupe por la pérdida de detalles en las "
+"luces: se recuperarán en los siguientes pasos del proceso."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12639(para)
 msgid ""
@@ -15621,6 +15681,9 @@ msgid ""
 "that using the <link linkend=\"local_contrast\"><emphasis>local contrast</"
 "emphasis></link> module."
 msgstr ""
+"Película rgb tiende a comprimir el contraste local (puedes compensarlo "
+"usando el módulo <link linkend=\"local_contrast\"><emphasis>contraste local</"
+"emphasis></link>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12671(para)
 msgid ""
@@ -15748,6 +15811,9 @@ msgid ""
 "prophoto RGB in the <link linkend=\"input_color_profile\"><emphasis>input "
 "color profile</emphasis></link> module."
 msgstr ""
+"Si experimenta cambios de color extraños, cambie el espacio de color de "
+"trabajo a ProPhoto RGB en el módulo <link linkend=\"input_color_profile"
+"\"><emphasis>perfil de color de entrada</emphasis></link>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12727(para)
 msgid ""
@@ -16721,16 +16787,15 @@ msgstr ""
 "\"global_color_picker\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13591(para)
-#, fuzzy
 msgid ""
 "To reset a patch, double-click it. Right-click a patch to delete it. Shift"
 "+click on empty space to add a new patch (with the currently picked color as "
 "source color)."
 msgstr ""
-"Para restablecer un parche, pulse dos veces en él. Haga clic derecho en un "
-"parche para eliminarlo. Con la combinación de la tecla Mayús y un clic en el "
-"espacio vacío, se agrega un nuevo parche (con el color actualmente "
-"seleccionado como color de origen)."
+"Para restablecer un parche, pulse dos veces en él. Haga clic secundario en "
+"un parche para eliminarlo. Con la combinación Mayús+Clic en el espacio "
+"vacío, se agrega un nuevo parche (con el color elegido en ese momento como "
+"color de origen)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13603(title)
 msgid "Color contrast"
@@ -17080,6 +17145,10 @@ msgid ""
 "<emphasis>REC.709</emphasis> while most of others are related to "
 "<emphasis>sRGB</emphasis>."
 msgstr ""
+"Un LUT 3D es relativo a un espacio de color específico. Hay que seleccionar "
+"aquel para el que ha sido construido. Los archivos CUBE suelen estar "
+"relacionados con <emphasis>REC.709</emphasis> mientras que la mayoría del "
+"resto están relacionados con <emphasis>sRGB</emphasis>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14047(title)
 msgid "interpolation"
@@ -17241,18 +17310,17 @@ msgid "output profile"
 msgstr "perfil de salida"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14228(para)
-#, fuzzy
 msgid ""
 "Sets the color profile for output/export, causing darktable to render colors "
 "with this profile. darktable embeds the profile data into the output file if "
 "supported by the file format – this allows other applications reading the "
 "file to correctly interpret its colors."
 msgstr ""
-"Ajusta el perfil de color para la salida/exportado, causando que darktable "
-"procese los colores con este perfil. darktable anexa la información del "
-"perfil al archivo de salida si este formato es soportado – esto permite que "
-"otras aplicaciones lean el archivo para interpretar correctamente sus "
-"colores."
+"Establece el perfil de color para la salida/exportación, haciendo que "
+"darktable genere los colores con este perfil. darktable incrusta los datos "
+"del perfil en el archivo de salida si el formato de archivo es compatible, "
+"permitiendo que otras aplicaciones que lean el archivo interpreten "
+"correctamente los colores."
 
 #. <para>
 #. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
@@ -17294,7 +17362,6 @@ msgstr ""
 "módulo <link linkend=\"input_color_profile\"><placeholder-1/></link>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14302(para)
-#, fuzzy
 msgid ""
 "If you decide in module <link linkend=\"input_color_profile"
 "\"><emphasis>input color profile</emphasis></link> to use an ICC profile "
@@ -17309,15 +17376,15 @@ msgid ""
 msgstr ""
 "Si decide que el módulo <link linkend=\"input_color_profile"
 "\"><emphasis>perfil de color de entrada</emphasis></link> utilice un perfil "
-"ICC del fabricante de la cámara, frecuentemente se requiere que una curva de "
-"corrección sea pre-aplicada a la información de la imagen – o sino, el "
-"resultado final lucirá mucho más oscuro. Este procesamiento extra no es "
-"requerido si utiliza los estándares de darktable o las matrices de "
-"mejoramiento de color. La curva de corrección es definida con una parte "
-"lineal que se extiende de las sombras hasta a ciertos limites superiores "
-"mientras que la curva de gama cubre los tonos medios y las luces. Para una "
-"lectura mas profunda, por favor de un vistazo al proyecto vecino de "
-"darktable <ulink url=\"http://ufraw.sourceforge.net\">UFRaw</ulink>."
+"ICC del fabricante de la cámara, con mucha frecuencia es necesario aplicar "
+"previamente una curva de corrección a los datos de la imagen; de lo "
+"contrario la salida final se verá demasiado oscura. Este procedimiento extra "
+"no es necesario si se utilizan las matrices de color estándar o de "
+"mejoramiento de color de darktable. La curva de corrección es definida con "
+"una parte lineal que se extiende de las sombras hasta a ciertos limites "
+"superiores mientras que la curva de gamma cubre los tonos medios y las "
+"luces. Para una lectura mas profunda, visite el proyecto vecino de darktable "
+"<ulink url=\"http://ufraw.sourceforge.net\">UFRaw</ulink>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14314(title)
 msgid "linear"
@@ -17653,18 +17720,17 @@ msgid "noise removal"
 msgstr "reducción de ruido"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14754(entry)
-#, fuzzy
 msgid ""
 "This module offers an easy to use and – at the same time – highly efficient "
 "denoise operation. Under the hood it applies (your choice of) a non-local "
 "means or edge-aware wavelet denoise algorithm with parameters specifically "
 "profiled for certain camera models and ISO settings."
 msgstr ""
-"Este módulo ofrece una operación de reducción de ruido fácil de usar – y al "
-"mismo tiempo – y altamente eficiente. Bajo la cama aplica (según su "
-"elección) un algoritmo de reducción de ruido de medias no locales o una onda "
-"consciente de los bordes con parámetros específicamente perfilados para "
-"ciertos modelos de cámara y ajustes de ISO."
+"Este módulo ofrece una operación de reducción de ruido fácil de usar, y al "
+"mismo tiempo, altamente eficiente. En el interior aplica (a su elección) un "
+"algoritmo de reducción de ruido de medias no locales o una de ondículas con "
+"parámetros específicamente perfilados para ciertos modelos de cámara y "
+"ajustes de ISO."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14774(para)
 msgid ""
@@ -17710,12 +17776,17 @@ msgid ""
 "/!\\ WARNING /!\\ The darkroom zoomed out preview is not completely "
 "accurate. Always check your result at 100% zoom level!"
 msgstr ""
+"ADVERTENCIA: La vista previa del cuarto oscuro no es totalmente precisa. "
+"Compruebe siempre el resultado a un nivel de ampliación del 100%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14797(para)
 msgid ""
 "Note that (almost) all sliders of this module can take values higher than "
 "their visible bounds by entering values using Right-click and keyboard."
 msgstr ""
+"Tenga en cuenta que (casi) todos los controles deslizantes de este módulo "
+"pueden tomar valores más altos que sus límites visibles pulsando el botón "
+"secundario del ratón e introduciendo valores."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14804(para)
 msgid ""
@@ -17741,7 +17812,6 @@ msgstr ""
 "considera que se ajuste mejor."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14817(para)
-#, fuzzy
 msgid ""
 "This module can eliminate noise by two different core algorithms. Both "
 "<quote>non-local means</quote> and <quote>wavelet</quote> can tackle "
@@ -17759,21 +17829,24 @@ msgid ""
 "several parameters from the profile. All sliders of this module can take "
 "values higher than their bounds if needed using Right-click."
 msgstr ""
-"Este módulo puede eliminar el ruido con dos algoritmos medulares diferentes. "
-"<quote> medias no locales</quote> puede afrontar el ruido de luz "
-"(luminosidad) de manera eficiente, mientras que es menos eficiente con croma "
-"(ruido de color). <quote>ondículas</quote> es particularmente eficaz para "
-"eliminar el ruido de croma (color) y también puede dar buenos resultados "
-"para el ruido de luma. Incluso le permite ajustar la fuerza de la reducción "
-"de ruido dependiendo de la aspereza del ruido. Si es necesario, puede "
-"aplicar dos instancias de este módulo (consulte <xref linkend="
-"\"multiple_instances\"/>): una instancia para tratar al ruido de luma con el "
-"modo de mezcla <quote>luminosidad</quote> o <quote>luminosidad HSV</quote> , "
-"y otro para tratar al ruido de croma con el modo de mezcla <quote>color</"
-"quote> o <quote>color HSV</quote>. Un ejemplo del uso de dos instancias con "
-"modos de fusión está disponible dentro de los ajustes preestablecidos de "
-"este módulo. Para obtener más información sobre los modos de mezcla, dé una "
-"ojeada a <xref linkend=\"blending_operators\"/>."
+"Este módulo puede eliminar el ruido mediante dos algoritmos medulares "
+"diferentes. Tanto <quote> medias no locales</quote> como <quote>ondículas</"
+"quote> pueden tratar eficientemente los ruidos de luma (luminosidad) y de "
+"croma (color). El modo <quote>ondículas</quote> incluso le permite ajustar "
+"la fuerza de la reducción de ruido dependiendo de la aspereza del ruido. Si "
+"es necesario, puede aplicarse dos instancias (duplicación) de este módulo "
+"(consulte <xref linkend=\"multiple_instances\"/>): una instancia para tratar "
+"al ruido de luma con el modo de fusión <quote>luminosidad</quote> o "
+"<quote>luminosidad HSV</quote> , y otro para tratar al ruido de croma con el "
+"modo de fusión <quote>color</quote> o <quote>color HSV</quote>. Un ejemplo "
+"del uso de dos instancias con modos de fusión está disponible dentro de los "
+"ajustes preestablecidos de este módulo. Para obtener más información sobre "
+"los modos de fusión, dé una ojeada a <xref linkend=\"blending_operators\"/>. "
+"El módulo también ofrece un modo automático para cada algoritmo. Los modos "
+"automáticos permiten establecer los parámetros del módulo de una forma más "
+"sencilla, ya que hace una estimación de varios parámetros del perfil. Si "
+"fuera necesario, todos los controles deslizantes de este módulo pueden tomar "
+"valores superiores a sus límites usando el botón secundario del ratón."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14836(title)
 msgid "whitebalance-adaptive transform"
@@ -17798,7 +17871,6 @@ msgid "patch size"
 msgstr "tamaño del cuadro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14847(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls the size of the patches being matched when deciding "
@@ -17810,16 +17882,16 @@ msgstr ""
 "Este control deslizante solo está disponible si se selecciona el modo "
 "<quote>medias no locales</quote>. Controla el tamaño de los parches que se "
 "comparan al decidir qué pixeles promediar (consulte también <xref linkend="
-"\"denoise_non_local_means\"/>). Establecerlo con valores más altos puede dar "
-"más nitidez, especialmente en bordes fuertes, pero también puede generar más "
-"anomalías. El tiempo de procesado se mantendrá casi igual."
+"\"denoise_non_local_means\"/>). A medida que aumente el ruido, habrá que "
+"ajustarlo con valores más altos. Sin embargo, hay que tener en cuenta que "
+"los valores altos pueden suavizar los bordes reducidos. El tiempo de "
+"procesado se mantendrá aproximadamente igual."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14857(title)
 msgid "search radius"
 msgstr "radio de búsqueda"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14858(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls how far from a pixel the algorithm will try to find "
@@ -17830,20 +17902,19 @@ msgid ""
 "make execution faster, a higher value will make it slower."
 msgstr ""
 "Este control deslizante solo está disponible si se selecciona el modo "
-"<quote>medias no locales</quote>. Controla qué tan lejos de un pixel "
-"intentará encontrar parches similares el algoritmo. El tiempo de "
-"procesamiento se ve enormemente afectado por este parámetro: depende del "
-"cuadrado del parámetro. Un valor más bajo hará que la ejecución sea más "
-"rápida, un valor más alto lo hará más lento. Aumentar el valor puede dar "
-"mejores resultados para imágenes muy ruidosas cuando el ruido de grano "
-"grueso es visible."
+"<quote>medias no locales</quote>. Controla la magnitud de la distancia de un "
+"pixel, en la que el algoritmo intentará encontrar parches similares. "
+"Aumentar el valor puede dar mejores resultados para imágenes muy ruidosas "
+"cuando el ruido de grano grueso es visible. El tiempo de procesamiento se ve "
+"enormemente afectado por este parámetro: depende del cuadrado del parámetro. "
+"Un valor más bajo hará que la ejecución sea más rápida, un valor más alto lo "
+"hará más lento."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14869(title)
 msgid "scattering"
 msgstr "diseminar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14870(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. Like the search radius, it controls how far from a pixel the "
@@ -17854,13 +17925,13 @@ msgid ""
 "chroma noise."
 msgstr ""
 "Este control deslizante solo está disponible si se selecciona el modo "
-"<quote>medias no locales</quote>. Controla qué tan lejos de un pixel "
-"intentará encontrar parches similares el algoritmo. El tiempo de "
-"procesamiento se ve enormemente afectado por este parámetro: depende del "
-"cuadrado del parámetro. Un valor más bajo hará que la ejecución sea más "
-"rápida, un valor más alto lo hará más lento. Aumentar el valor puede dar "
-"mejores resultados para imágenes muy ruidosas cuando el ruido de grano "
-"grueso es visible."
+"<quote>medias no locales</quote>. Al igual que el radio de búsqueda, "
+"controla la magnitud de la distancia de un pixel, en la que el algoritmo "
+"intentará encontrar parches similares, pero lo hace sin aumentar el número "
+"de parches considerados. Por lo que el tiempo de procesamiento se mantendrá "
+"aproximadamente igual. Aumentar el valor reducirá el ruido de grano grueso, "
+"con el riesgo de disminuir el contraste local. Este control es "
+"particularmente eficaz para reducir el ruido cromático."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14881(title)
 msgid "central pixel weight"
@@ -17875,6 +17946,13 @@ msgid ""
 "slider will result mostly in chroma noise smoothing with little smoothing of "
 "luma noise. This slider has no effect if patch-size is set to 0."
 msgstr ""
+"Este control deslizante sólo está disponible si se selecciona el modo "
+"<quote>medias no locales</quote> o <quote>medias no locales automático</"
+"quote>. Controla la cantidad de detalles que deben ser preservados por el "
+"algoritmo. Se puede usar como una forma de controlar la cantidad de "
+"suavizado de ruido de luma: si se le asigna un gran valor, se obtendrá un "
+"suavizado de ruido de croma con poco suavizado de ruido de luma. No tendrá "
+"ningún efecto si el tamaño del parche se ajusta a 0."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14892(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16502(title)
@@ -17960,6 +18038,11 @@ msgid ""
 "the highlights. Lower the value to denoise more the shadows than the "
 "highlights. Usually, as noise increases, you will need to lower this value."
 msgstr ""
+"Esta opción está disponible en los modos <quote>ondículas</quote> y "
+"<quote>medias no locales</quote>. Permite reducir el ruido con mayor fuerza "
+"las sombras o las luces. Reduzca el valor para reducir el ruido más en las "
+"sombras que en las luces. Normalmente, a medida que el ruido aumenta, es "
+"necesario bajar este valor."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14955(title)
 msgid "bias correction"
@@ -17972,6 +18055,10 @@ msgid ""
 "the shadows. Increase this value if dark shadows appear too greenish, "
 "decrease it if they appear purple-ish."
 msgstr ""
+"Esta opción está disponible en los modos <quote>ondículas</quote> y "
+"<quote>medias no locales</quote>. Permite corregir el tinte de color que "
+"puede aparecer en las sombras. Incremente este valor si las sombras "
+"profundas aparecen demasiado verdosas, disminúyalo si aparecen púrpuras."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14964(title)
 msgid "adjust autoset parameters"
@@ -17988,6 +18075,15 @@ msgid ""
 "image: if you add 1EV of exposure, the signal is multiplied by 2, so this "
 "parameter should be set to 2."
 msgstr ""
+"Esta opción está disponible en los modos <quote>automáticos</quote>. En "
+"estos modos, darktable intenta obtener los parámetros de reducción de ruido "
+"desde el perfil de la cámara. Dependiendo de la imagen, los parámetros "
+"obtenidos automáticamente pueden no ser óptimos. Por ejemplo, si la imagen "
+"está muy subexpuesta y ha aumentado la exposición, tendrá que aumentar este "
+"parámetro para obtener una eliminación de ruido adecuada. Este parámetro "
+"debe reflejar el incremento que añade a su imagen: si añade 1 EV de "
+"exposición, la señal se multiplica por 2, por lo que este parámetro debe "
+"estar ajustado a 2."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14981(title)
 msgid "Denoise – non local means"
@@ -18337,15 +18433,14 @@ msgstr ""
 "por lo que el efecto se interpola por un conjunto vectores de fuerza."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15365(para)
-#, fuzzy
 msgid ""
 "It is possible to add a control point on a line by Ctrl+Click on a segment. "
 "You may remove a control point from a line by Ctrl+right click on the node "
 "center."
 msgstr ""
-"Es posible agregar un punto de control en una línea haciendo Ctrl+clic en un "
-"segmento. Puede eliminarse un punto de control de la línea con pulsación "
-"derecha en el centro del nodo."
+"Es posible añadir un punto de control en una línea mediante Ctrl+Clic en un "
+"segmento. Puede eliminar un punto de control de una recta mediante Ctrl+Clic "
+"en el centro del nodo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15369(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15409(para)
@@ -18385,15 +18480,14 @@ msgstr ""
 "fuerza."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15405(para)
-#, fuzzy
 msgid ""
 "It is possible to add a control point on a curve by Ctrl+click on a segment. "
 "You may remove a control point from a curve by Ctrl+right click on the node "
 "center."
 msgstr ""
-"Es posible agregar un punto de control en una curva presionando Ctrl+clic en "
-"un segmento. Puede eliminar un punto de control de una curva haciendo clic "
-"con el botón derecho en el centro del nodo."
+"Es posible añadir un punto de control en una curva mediante Ctrl+Clic en un "
+"segmento. Puede eliminar un punto de control de una curva mediante Ctrl+Clic "
+"en el centro del nodo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15412(para)
 msgid "A Ctrl+Alt+click on a segment will change it to a line segment."
@@ -18923,16 +19017,14 @@ msgstr ""
 "manualmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15858(para)
-#, fuzzy
 msgid ""
 "You can manually override all automatically selected parameters. Either take "
 "one of the predefined values from the pull-down menu; or – with the pull-"
 "down menu still open – just type in your own value."
 msgstr ""
-"Puede sobrescribir manualmente todos los parámetros seleccionados "
-"automáticamente. Bien sea tomar uno de los valores pre-definidos del menú "
-"desplegable; o – con el menú desplegable aún abierto – solo escriba sus "
-"propios valores."
+"Puede sustituir manualmente todos los parámetros seleccionados "
+"automáticamente. Tome uno de los valores predefinidos del menú desplegable; "
+"o, con el menú desplegable aún abierto, simplemente escriba su propio valor."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15863(para)
 msgid ""
@@ -20629,7 +20721,6 @@ msgid "split-toning"
 msgstr "variaciones tonales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17709(entry)
-#, fuzzy
 msgid ""
 "darktable's split-toning method creates a two color linear toning effect "
 "where the shadows and highlights are represented by two different colors. In "
@@ -20637,11 +20728,12 @@ msgid ""
 "one where a split-toning effect is applied with blue in shadows and a "
 "yellowish color in highlights."
 msgstr ""
-"El método de variaciones tonales de darktable crea dos efectos de tonos de "
-"color lineal donde las sombras y las luces se representan como dos colores "
-"diferentes. En la imagen de ejemplo puede ver una imagen original en blanco "
-"y negro y una donde el efecto de variaciones tonales ha sido aplicado con "
-"azul en as sombras y amarillo en las luces."
+"El método de variaciones tonales de darktable crea un efecto de tono lineal "
+"de dos colores donde las sombras y los toques de luz están representados por "
+"dos colores diferentes. En la imagen de ejemplo que se muestra a "
+"continuación se puede ver una imagen original en blanco y negro y otra en la "
+"que se aplica un efecto de variaciones tonales con azul en las sombras y "
+"amarillo en las luces."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17724(para)
 #, fuzzy
@@ -20663,7 +20755,6 @@ msgstr ""
 "sin cambios."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17733(para)
-#, fuzzy
 msgid ""
 "The split-toning module does not convert images to black and white and has "
 "limited benefits on color images. So, if you want to do traditional split-"
@@ -20674,9 +20765,9 @@ msgstr ""
 "El módulo de variaciones tonales no convierte las imágenes a blanco y negro, "
 "y tiene beneficios limitados sobre las imágenes a color. Así que, si quiere "
 "realizar una variación tonal tradicional, utilice el módulo "
-"<emphasis>monocromo</emphasis> (ver <xref linkend=\"monochrome\"/>) para que "
-"su imagen sea blanca y negra antes de jugar con el efecto de variaciones "
-"tonales."
+"<emphasis>monocromo</emphasis> (ver <xref linkend=\"monochrome\"/>) para "
+"hacer que la imagen sea en blanco y negro antes de jugar con el efecto de "
+"variaciones tonales."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17747(title)
 msgid "shadows and highlights color"
@@ -20718,7 +20809,6 @@ msgid "compression"
 msgstr "compresión"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17767(para)
-#, fuzzy
 msgid ""
 "Compression is a percentage of total lightness range that is not affected by "
 "color toning. Default value is set to 33%; this is not the default behavior "
@@ -20727,11 +20817,11 @@ msgid ""
 "extends the original split-toning method."
 msgstr ""
 "La compresión es un porcentaje del rango total de la luminosidad que no es "
-"afectada por el tono de color. El valor por defecto se ajusta a 33%; este no "
-"es el comportamiento por defecto de la variación tonal original, la cual "
-"sería 0% de compresión. La selección de 33% como valor por defecto se ajustó "
-"para invitarle a experimentar con estos parámetros y como para que vea como "
-"se extiende el método de variación tonal original."
+"afectada por el tono de color. El valor predeterminado es el 33%; este no es "
+"el comportamiento predeterminado de la variación tonal original, la cual "
+"sería 0% de compresión. La elección del 33% como valor predeterminado es "
+"para invitarle a experimentar con estos parámetros y cómo extiende el método "
+"el método de variación tonal original."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17792(entry)
 msgid "Original black and white image."
@@ -21465,7 +21555,6 @@ msgid "color dominance"
 msgstr "dominancia de color"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18797(para)
-#, fuzzy
 msgid ""
 "This parameter controls the mapping between source and target clusters. At "
 "the lowest value mapping is based on color proximity. This typically leads "
@@ -21476,12 +21565,13 @@ msgid ""
 "between the extremes."
 msgstr ""
 "Este parámetro controla el mapeo entre los grupos fuente y objetivo. En su "
-"valor más bajo, el mapeo se basa en proximidad de color. Esto generalmente "
-"resulta en efectos muy sutiles sobre la imagen objetivo. En su valor máximo, "
-"el mapeo se basa la fuerza relativa del grupo de color – los colores "
-"dominantes de la imagen fuente son mapeados a colores dominantes de la "
-"imagen objetivo. Esto generalmente resulta en un efecto muy fuerte. Valores "
-"intermedio varían incrementalmente entre los extremos."
+"valor más bajo, el mapeo se basa en la proximidad de color. Esto "
+"generalmente resulta en efectos muy sutiles sobre la imagen de destino. En "
+"el valor máximo, el mapeo se basa en el peso relativo del grupo de color "
+"(los colores dominantes de la imagen de origen se asignan a los colores "
+"dominantes de la imagen destino). Esto generalmente resulta en un efecto muy "
+"fuerte. Los valores intermedios se desplazan de forma incremental entre los "
+"extremos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18808(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18852(quote)
@@ -22690,7 +22780,7 @@ msgstr "env LANG=C gphoto2 --port usb: --capture-tethered"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20220(title)
 msgid "So, now what?"
-msgstr "Entonces, ¿Ahora que?"
+msgstr "¿Y ahora qué procede?"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20222(para)
 msgid ""
@@ -22713,7 +22803,6 @@ msgid "--debug --debug-file gphoto2_debug.log"
 msgstr "--debug --debug-file gphoto2_debug.log"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20235(para)
-#, fuzzy
 msgid ""
 "If you successfully went through all the tests above, your camera will most "
 "likely be supported by darktable. Even if successful, if you stumble upon a "
@@ -22722,12 +22811,13 @@ msgid ""
 "log outputs from the steps above and the log file output generated after "
 "starting darktable with the following command."
 msgstr ""
-"Si realizó con éxito todas las pruebas anteriores, lo más probable es que su "
-"cámara sea compatible con darktable. Incluso teniendo éxito, si se encuentra "
-"con un problema en darktable, envíe un informe de error a <ulink url="
-"\"https://www.darktable.org/redmine\">redmine</ulink>. Adjunte las salidas "
-"de registro de los pasos anteriores y la salida del archivo de registro "
-"generada después de iniciar darktable con el siguiente comando."
+"Si realizó exitosamente todas las pruebas anteriores, lo más probable es que "
+"su cámara sea compatible con darktable. Incluso teniendo éxito, si se "
+"encuentra con un problema en darktable, envíe un informe de error al <ulink "
+"url=\"https://github.com/darktable-org/darktable/issues\">rastreador de "
+"errores</ulink>. Adjunte las salidas de registro de los pasos anteriores y "
+"la salida del archivo de registro generada después de iniciar darktable con "
+"el siguiente comando."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20244(programlisting)
 msgid "darktable -d camctl 2&gt;1 &gt;camctl.log"
@@ -23025,7 +23115,6 @@ msgstr ""
 "\"filtering_and_sort_order\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20604(para)
-#, fuzzy
 msgid ""
 "The image display is optimized to take full advantage of your screen size. "
 "You should therefore put darktable into fullscreen mode which is toggled by "
@@ -23033,11 +23122,11 @@ msgid ""
 "key in order to hide all remaining panels – namely the filtering option in "
 "the top panel."
 msgstr ""
-"La visualización de imágenes está optimizada para tomar completa ventaja del "
-"tamaño de su pantalla. por ende, debería colocar darktable en pantalla "
-"completa, lo cual se activa al presionar <emphasis>F11</emphasis>. También "
-"puede presionar <emphasis>TAB</emphasis> para esconder todos los paneles "
-"remanentes – el panel superior con las opciones de filtrado."
+"La visualización de la imagen está optimizada para aprovechar al máximo el "
+"tamaño de la pantalla. Por ende, debería poner darktable en pantalla "
+"completa, la cual se activa al pulsar <emphasis>F11</emphasis>. También "
+"puede pulsar <emphasis>Tab</emphasis> para ocultar todos los paneles "
+"restantes, es decir, la opción de filtrado en el panel superior."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20617(para)
 #, fuzzy
@@ -23145,7 +23234,6 @@ msgstr ""
 "el área de impresión (la página menos los bordes) no llenada por la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20745(para)
-#, fuzzy
 msgid ""
 "On the left side you find the <emphasis>collect images</emphasis> panel "
 "which is described in more detail in <xref linkend=\"collect_images\"/>. "
@@ -23161,7 +23249,7 @@ msgstr ""
 "emphasis> que se describe con más detalle en <xref linkend=\"collect_images"
 "\"/>. Este panel le permite definir qué imágenes están presentes en la tira "
 "de imágenes. Ubicada en el panel inferior, la visibilidad de la tira de "
-"imágenes se alterna combinando <emphasis>Ctrl+F</emphasis> (consulte <xref "
+"imágenes se alterna pulsando <emphasis>Ctrl+F</emphasis> (consulte <xref "
 "linkend=\"filmstrip_overview\"/>). En el lado izquierdo también tiene un "
 "panel <emphasis>información de la imagen</emphasis> que muestra datos Exif "
 "útiles de la imagen en el área central, o la imagen de la tira de imágenes "
@@ -24031,7 +24119,6 @@ msgid "overlay txt sidecar over zoomed images"
 msgstr "solapar txt asociado sobre las imágenes aumentadas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21333(para)
-#, fuzzy
 msgid ""
 "When there is a text file next to an image it can be shown as an overlay "
 "over zoomed images on the lighttable. The text file has the same base name "
@@ -24040,13 +24127,13 @@ msgid ""
 "<quote>look for updated xmp files on startup</quote> in <xref linkend="
 "\"core_options\"/> (default off)."
 msgstr ""
-"Cuando hay un archivo de texto adjunto a la imagen, este puede ser mostrado "
-"de forma solapada sobre la imagen aumentada en la mesa de luz. El archivo de "
-"texto tiene el mismo nombre base de la imagen con la extensión <quote>.txt</"
-"quote>. Tiene que estar en el momento de importar la imagen o el rastreador "
-"debe estar activado – vea la opción <quote>buscar archivos xmp actualizados "
-"al iniciar</quote> en las <xref linkend=\"core_options\"/> (apagado por "
-"defecto)."
+"Cuando hay un archivo de texto adjunto a la imagen, se puede mostrar como "
+"una superposición sobre las imágenes ampliadas en la mesa de luz. El archivo "
+"de texto tiene el mismo nombre base de la imagen con la extensión <quote>."
+"txt</quote>. Tiene que estar en el momento de importar la imagen o el "
+"rastreador debe estar habilitado. Vea la opción <quote>buscar archivos xmp "
+"actualizados al iniciar</quote> en las <xref linkend=\"core_options\"/> (por "
+"defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21341(bridgehead)
 msgid "mouse wheel scrolls modules side panel by default"
@@ -24311,7 +24398,6 @@ msgid "look for updated xmp files on startup"
 msgstr "buscar archivos xmp actualizados al iniciar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21489(para)
-#, fuzzy
 msgid ""
 "Check file modification times of all XMP files on startup to find out if any "
 "got updated in the meantime by some other software. If updated XMP files are "
@@ -24326,14 +24412,13 @@ msgstr ""
 "Verifica el tiempo de modificación de todos los archivos XMP al iniciar, "
 "para encontrar si alguno fue actualizado por algún software externo. Si se "
 "encuentran archivos XMP actualizados, un menú se abrirá para que el usuario "
-"decida cuales de los archivos XMP desea recargar – reemplazando las entradas "
-"en la base de datos de darktable por el nuevo contenido del archivo XMP – y "
-"cuales de los archivos XMP serán sobrescritos por la base de datos de "
-"darktable. Al activar esta opción, también causará que darktable revise si "
-"hay archivos asociados que hayan sido agregados luego del momento de "
-"importado – vea la opción <quote>solapa el txt asociado sobre las imágenes "
-"aumentadas</quote> en la <xref linkend=\"gui_options\"/> (apagado por "
-"defecto)."
+"decida cuales de los archivos XMP desea recargar, reemplazando las entradas "
+"en la base de datos de darktable por el nuevo contenido del archivo XMP, y "
+"cuál de los archivos XMP serán sobrescritos por la base de datos de "
+"darktable. Al activar esta opción, también hará que darktable compruebe si "
+"hay archivos asociados que hayan sido añadidos después del importado. Vea la "
+"opción <quote>superponer el txt asociado sobre las imágenes ampliadas</"
+"quote> en la <xref linkend=\"gui_options\"/> (por defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21504(title)
 msgid "cpu/gpu/memory"
@@ -24528,6 +24613,8 @@ msgid ""
 "This option force darktable to export synonyms along with tags to XMP-dc "
 "Subject (default off)."
 msgstr ""
+"Esta opción obliga a darktable a exportar los sinónimos junto con las "
+"etiquetas a Tema XMP-dc (por defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21606(bridgehead)
 msgid "disable the entry completion"
@@ -24806,6 +24893,10 @@ msgid ""
 "darkroom module sliders. This allow you to change the value of the mapped "
 "slider with <emphasis>key + mouse scroll</emphasis>."
 msgstr ""
+"Además de los atajos clásicos, puede establecer atajos dinámicos para "
+"algunos controles deslizantes de los módulos del cuarto oscuro. Esto le "
+"permite cambiar el valor del control deslizante asignado con <emphasis>tecla "
+"+ rueda del ratón</emphasis>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21914(para)
 msgid ""
@@ -25572,7 +25663,7 @@ msgstr "vistas/mesa de luz/seleccionar imagen activa"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22762(entry)
 msgid "views/lighttable/sticky preview"
-msgstr "vistas/mesa de luz/vista previa"
+msgstr "vistas/mesa de luz/vista previa fija"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22765(entry)
 msgid "Alt+W"
@@ -25580,7 +25671,7 @@ msgstr "Alt+W"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22770(entry)
 msgid "views/lighttable/sticky preview with focus detection"
-msgstr "vistas/mesa de luz/vista previa con detección de enfoque"
+msgstr "vistas/mesa de luz/vista previa fija con detección de enfoque"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22773(entry)
 msgid "Ctrl+Alt+W"
