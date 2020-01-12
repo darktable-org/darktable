@@ -110,6 +110,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
   "dtgtk/thumbnail.c"
+  "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
   "gui/accelerators.c"

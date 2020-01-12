@@ -22,10 +22,24 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "control/control.h"
+#include "dtgtk/button.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/thumbnail_btn.h"
 #include "views/view.h"
 
 G_DEFINE_TYPE(dt_thumbnail, dt_thumbnail, G_TYPE_OBJECT)
 
+
+static void _set_over_flag(GtkWidget *w, gboolean over)
+{
+  int flags = gtk_widget_get_state_flags(w);
+  if(over)
+    flags |= GTK_STATE_FLAG_PRELIGHT;
+  else
+    flags &= ~GTK_STATE_FLAG_PRELIGHT;
+
+  gtk_widget_set_state_flags(w, flags, TRUE);
+}
 
 static gboolean _expose_again(gpointer user_data)
 {
@@ -190,6 +204,7 @@ static gboolean _enter_notify_callback(GtkWidget *widget, GdkEventCrossing *even
   if(!user_data) return TRUE;
   dt_thumbnail *thumb = (dt_thumbnail *)user_data;
   dt_control_set_mouse_over_id(thumb->imgid);
+  _set_over_flag(thumb->w_info_back_eb, FALSE);
   return TRUE;
 }
 
@@ -203,10 +218,11 @@ static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(thumb->mouse_over || over_id == thumb->imgid)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
-    if(thumb->mouse_over)
-      gtk_widget_show(thumb->w_info_back_eb);
-    else
-      gtk_widget_hide(thumb->w_info_back_eb);
+    gtk_widget_set_visible(thumb->w_info_back_eb, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_btn_reject, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_stars_box, thumb->mouse_over);
+
+    if(!thumb->mouse_over) _set_over_flag(thumb->w_info_back_eb, FALSE);
     gtk_widget_queue_draw(thumb->w_back);
   }
 }
@@ -236,14 +252,7 @@ static void _selection_changed_callback(gpointer instance, gpointer user_data)
 
 static gboolean _info_back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
-  gtk_widget_set_name(thumb->w_info_back, "thumb_info_over");
-  return TRUE;
-}
-static gboolean _info_back_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
-  gtk_widget_set_name(thumb->w_info_back, "thumb_info");
+  _set_over_flag(widget, TRUE);
   return TRUE;
 }
 
@@ -275,22 +284,50 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
-    // the infos part
+    // we need to squeeze 5 stars + 2 symbols on a thumbnail width
+    // each of them having a width of 2 * r1 and spaced by r1
+    // that's 14 * r1 of content + 6 * r1 of spacing
+    // inner margins are 0.045 * width
+    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * thumb->width / 20.0f);
+
+    // the infos background
     thumb->w_info_back_eb = gtk_event_box_new();
     g_signal_connect(G_OBJECT(thumb->w_info_back_eb), "enter-notify-event",
                      G_CALLBACK(_info_back_enter_notify_callback), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_info_back_eb), "leave-notify-event",
-                     G_CALLBACK(_info_back_leave_notify_callback), thumb);
     gtk_widget_set_valign(thumb->w_info_back_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_info_back_eb, GTK_ALIGN_CENTER);
     thumb->w_info_back = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_info_back, "thumb_info");
+    gtk_widget_set_name(thumb->w_info_back_eb, "thumb_info");
     gtk_widget_set_size_request(thumb->w_info_back, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
                                 0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
                                                            // dependent of fontsize ?
     gtk_widget_show(thumb->w_info_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_info_back_eb), thumb->w_info_back);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_info_back_eb);
+
+    // the reject icon
+    thumb->w_btn_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
+    gtk_widget_set_size_request(thumb->w_btn_reject, 4.0 * r1, 4.0 * r1);
+    gtk_widget_set_valign(thumb->w_btn_reject, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_btn_reject, GTK_ALIGN_START);
+    gtk_widget_set_margin_start(thumb->w_btn_reject, 0.045 * thumb->width - r1);
+    gtk_widget_set_margin_bottom(thumb->w_btn_reject, 0.045 * thumb->width - r1);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_btn_reject);
+
+    // the stars
+    thumb->w_stars_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    for(int i = 0; i < 4; i++)
+    {
+      thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
+      gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
+      gtk_box_pack_start(GTK_BOX(thumb->w_stars_box), thumb->w_stars[i], FALSE, FALSE, 0);
+      gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
+      gtk_widget_show(thumb->w_stars[i]);
+    }
+    gtk_widget_set_valign(thumb->w_stars_box, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_stars_box, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_bottom(thumb->w_stars_box, 0.045 * thumb->width - r1);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars_box);
   }
   return thumb->w_main;
 }
