@@ -1054,31 +1054,6 @@ void dt_history_compress_on_image(int32_t imgid)
   dt_unlock_image(imgid);
 }
 
-static void _history_reorder(int32_t imgid)
-{
-  int32_t dummy = 0x7fffffff;
-  sqlite3_stmt *stmt;
-
-  // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
-  // and also intends to have a "properly" orderered database
-  dt_lock_image_pair(imgid,dummy);
-
-  _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
-  _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
-
-  // make sure a cleanup
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  dt_unlock_image_pair(imgid,dummy);
-}
-
 int dt_history_compress_on_selection()
 {
   int uncompressed=0;
@@ -1096,7 +1071,6 @@ int dt_history_compress_on_selection()
     {
       dt_history_set_compress_problem(imgid, FALSE);
       dt_history_compress_on_image(imgid);
-      _history_reorder(imgid);
 
       // now the modules are in right order but need renumbering to remove leaks
       int max=0;    // the maximum num in main_history for an image
