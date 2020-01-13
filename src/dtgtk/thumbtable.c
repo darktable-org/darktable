@@ -25,21 +25,40 @@
 static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 {
   gboolean ret = FALSE; // return value to show if something as changed
-  const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
   GtkAllocation allocation;
   gtk_widget_get_allocation(table->widget, &allocation);
-
   if(allocation.width <= 20 || allocation.height <= 20) return FALSE;
 
-  if(force || allocation.width != table->view_width || allocation.height != table->view_height
-     || npr != table->thumbs_per_row)
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    table->thumbs_per_row = npr;
-    table->view_width = allocation.width;
-    table->view_height = allocation.height;
-    table->thumb_size = table->view_width / table->thumbs_per_row;
-    table->rows = table->view_height / table->thumb_size + 1;
-    ret = TRUE;
+    const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
+
+    if(force || allocation.width != table->view_width || allocation.height != table->view_height
+       || npr != table->thumbs_per_row)
+    {
+      table->thumbs_per_row = npr;
+      table->view_width = allocation.width;
+      table->view_height = allocation.height;
+      table->thumb_size = table->view_width / table->thumbs_per_row;
+      table->rows = table->view_height / table->thumb_size + 1;
+      ret = TRUE;
+    }
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
+    if(force || allocation.width != table->view_width || allocation.height != table->view_height)
+    {
+      table->thumbs_per_row = 1;
+      table->view_width = allocation.width;
+      table->view_height = allocation.height;
+      table->thumb_size = table->view_height;
+      table->rows = table->view_width / table->thumb_size;
+      if(table->rows % 2)
+        table->rows += 2;
+      else
+        table->rows += 1;
+      ret = TRUE;
+    }
   }
   return ret;
 }
@@ -205,8 +224,30 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     g_list_store_remove_all(table->fstore);
 
+    int offset = table->offset;
+    int empty_start = 0;
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      offset = MAX(0, table->offset - table->rows / 2);
+      empty_start = -MIN(0, table->offset - table->rows / 2);
+    }
+
+    // we add empty thumbs at the beginning
+    int nb = 0;
+    for(int i = 0; i < empty_start; i++)
+    {
+      dt_thumbnail *thumb = g_object_new(TYPE_DT_THUMBNAIL, NULL);
+      thumb->imgid = -1;
+      thumb->width = table->thumb_size;
+      thumb->height = table->thumb_size;
+      g_list_store_append(table->fstore, thumb);
+      g_object_unref(thumb);
+      nb++;
+    }
+    printf(" redraw %d %d %d\n", offset, table->rows, empty_start);
+    // and the real thumbs after
     gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
-                                   table->offset, table->rows * table->thumbs_per_row);
+                                   offset, table->rows * table->thumbs_per_row - empty_start);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -217,7 +258,28 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       thumb->height = table->thumb_size;
       g_list_store_append(table->fstore, thumb);
       g_object_unref(thumb);
+      nb++;
     }
+
+    // eventually, we can have empty thumbs after
+    for(int i = nb; i < table->rows * table->thumbs_per_row; i++)
+    {
+      dt_thumbnail *thumb = g_object_new(TYPE_DT_THUMBNAIL, NULL);
+      thumb->imgid = -1;
+      thumb->width = table->thumb_size;
+      thumb->height = table->thumb_size;
+      g_list_store_append(table->fstore, thumb);
+      g_object_unref(thumb);
+      nb++;
+    }
+
+    // for filmstrip, we have to move manually the thumbtable to ensure we have a thumb exactly in the middle
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      const int delta = (table->rows * table->thumb_size - table->view_width) / 2;
+      gtk_adjustment_set_value(gtk_scrolled_window_get_hadjustment(GTK_SCROLLED_WINDOW(table->widget)), delta);
+    }
+
     printf("done\n");
     g_free(query);
     sqlite3_finalize(stmt);

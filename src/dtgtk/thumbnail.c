@@ -286,6 +286,7 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
 
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
+  gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
   {
@@ -294,7 +295,6 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
                               G_CALLBACK(_dt_mouse_over_image_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
-    gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
     // the main drawing area
     thumb->w_back = gtk_drawing_area_new();
