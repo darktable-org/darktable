@@ -348,6 +348,11 @@ static void check_layout(dt_view_t *self)
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
+    // we want to reacquire the thumbtable if needed
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_FILEMANAGER);
+    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+
     if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
       lib->first_visible_filemanager = lib->offset = lib->first_visible_zoomable;
@@ -1070,6 +1075,9 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
                                int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  return 0;
+
   const gboolean offset_changed = lib->offset_changed;
   int missing = 0;
 
@@ -2776,12 +2784,10 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  return;
   const double start = dt_get_wtime();
   const dt_lighttable_layout_t layout = get_layout();
 
   // Let's show full preview if in that state...
-  // dt_library_t *lib = (dt_library_t *)self->data;
 
   lib->missing_thumbnails = 0;
 
@@ -3318,9 +3324,9 @@ void enter(dt_view_t *self)
 {
   // we add the flowbox and hide the main drawingarea
   dt_library_t *lib = (dt_library_t *)self->data;
-  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
-                          dt_ui_thumbtable(darktable.gui->ui)->widget);
-  gtk_widget_hide(dt_ui_center(darktable.gui->ui));
+  // we want to reacquire the thumbtable if needed
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                           DT_THUMBTABLE_MODE_FILEMANAGER);
   gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
   // clean the undo list

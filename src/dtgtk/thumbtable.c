@@ -286,7 +286,39 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   }
 }
 
+void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode)
+{
+  if(!GTK_IS_CONTAINER(new_parent)) return;
 
+  // if table already has parent, then we remove it
+  GtkWidget *parent = gtk_widget_get_parent(table->widget);
+  if(parent)
+  {
+    if(parent == new_parent) return;
+    gtk_container_remove(GTK_CONTAINER(parent), table->widget);
+  }
+
+  // we change the settings
+  table->mode = mode;
+  if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(table->flow), GTK_ORIENTATION_VERTICAL);
+  }
+  else if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(table->flow), GTK_ORIENTATION_HORIZONTAL);
+  }
+
+  // we reparent the table
+  if(GTK_IS_OVERLAY(new_parent))
+  {
+    gtk_overlay_add_overlay(GTK_OVERLAY(new_parent), table->widget);
+  }
+  else
+  {
+    gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
+  }
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
