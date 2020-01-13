@@ -4567,6 +4567,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a RAW file.</para>
+<para>WARNING: This is a flag that gets set the first time the image is opened, either by an edit or thumbnail generation.  If images are imported using
+darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be correct.</para>
 
 </section>
 
