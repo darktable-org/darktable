@@ -341,7 +341,7 @@ void gui_init(dt_lib_module_t *self)
                                       | GDK_LEAVE_NOTIFY_MASK);
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(d->filmstrip), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
   /*g_signal_connect(G_OBJECT(d->filmstrip), "button-press-event",
                    G_CALLBACK(_lib_filmstrip_button_press_callback), self);
   g_signal_connect(G_OBJECT(d->filmstrip), "button-release-event",
@@ -609,10 +609,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   {
     printf(" on ajoute\n");
     dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
-    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(tt->widget)), tt->widget);
-    tt->mode = DT_THUMBTABLE_MODE_FILMSTRIP;
-    gtk_orientable_set_orientation(GTK_ORIENTABLE(tt->flow), GTK_ORIENTATION_VERTICAL);
-    gtk_container_add(GTK_CONTAINER(strip->filmstrip), tt->widget);
+    dt_thumbtable_set_parent(tt, strip->filmstrip, DT_THUMBTABLE_MODE_FILMSTRIP);
     gtk_widget_show_all(strip->filmstrip);
     gtk_widget_queue_draw(tt->widget);
   }
