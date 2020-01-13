@@ -997,41 +997,42 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
+  const int waveform_height = dev->histogram_waveform_height;
+  const int waveform_stride = dev->histogram_waveform_stride;
+  uint8_t *const waveform = dev->histogram_waveform;
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on GUI to smoothly do horizontal
   // scaling.
   // Note that histogram_waveform_stride is pre-initialized/hardcoded,
   // but histogram_waveform_width varies, depending on preview image
   // width and # of bins.
-  const int bin_width = ceilf((float)(roi_in->width) / (float)(dev->histogram_waveform_stride/4));
-  dev->histogram_waveform_width = roi_in->width / bin_width;
+  const int bin_width = ceilf((float)(roi_in->width) / (float)(waveform_stride/4));
+  const int waveform_width = roi_in->width / bin_width;
+  dev->histogram_waveform_width = waveform_width;
 
   // FIXME: better to pre-allocate this in dev?
-  uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
-                                     sizeof(uint32_t));
-  memset(dev->histogram_waveform, 0,
-         sizeof(uint8_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride);
+  uint32_t *buf = (uint32_t *)calloc(waveform_width * waveform_height * 3, sizeof(uint32_t));
+  memset(dev->histogram_waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride);
 
   // 1.0 is at 8/9 of the height!
-  const double _height = (double)(dev->histogram_waveform_height - 1);
-  //         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+  const double _height = (double)(waveform_height - 1);
 
   // count the colors into buf ...
-  for(int y = 0; y < roi_in->height; y++)
+  for(int in_y = 0; in_y < roi_in->height; in_y++)
   {
-    for(int x = 0; x < roi_in->width; x++)
+    // FIXME: does this skip some final columns -- or use too many?
+    for(int in_x = 0; in_x < roi_in->width; in_x++)
     {
-      const int out_x = x / bin_width;
+      const int out_x = in_x / bin_width;
+      const float *const in = input + 4 * (in_y*roi_in->width + in_x);
       for(int k = 0; k < 3; k++)
       {
-        const float c = input[4 * y * roi_in->width + 4 * x + 2 - k];
+        const float c = in[2 - k];
         // catch NaNs as they don't convert well to integers
+        // FIXME: skip NaN's rather than treating as 0?
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
-        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width + out_x) * 3 + k;
-        (*out)++;
-        //               mincol[k] = MIN(mincol[k], *out);
-        //               maxcol[k] = MAX(maxcol[k], *out);
+        buf[(out_x + waveform_width * out_y) * 3 + k]++;
       }
     }
   }
@@ -1043,20 +1044,24 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
 
   // ... and scale that into a nice image. putting the pixels into the image directly gets too
   // saturated/clips.
+
   // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
-  // FIXME: can simplify if roi_in->width == dev->histogram_waveform_width
   const float scale = 0.5 * 1e6f/(roi_in->height*roi_in->width) *
-    (dev->histogram_waveform_width*dev->histogram_waveform_height) / (350.0f*233.)
+    (waveform_width*waveform_height) / (350.0f*233.)
     / 255.0f; // normalization to 0..1 for gamma correction
   const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
-  for(int y = 0; y < dev->histogram_waveform_height; y++)
+  //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+
+  for(int out_y = 0; out_y < waveform_height; out_y++)
   {
-    for(int x = 0; x < dev->histogram_waveform_width; x++)
+    for(int out_x = 0; out_x < waveform_width; out_x++)
     {
-      uint32_t *const in = buf + (y * dev->histogram_waveform_width + x) * 3;
-      uint8_t *const out = dev->histogram_waveform + (y * dev->histogram_waveform_stride) + (x * 4);
+      uint32_t *const in = buf + (waveform_width * out_y + out_x) * 3;
+      uint8_t *const out = waveform + (out_y * waveform_stride) + (out_x * 4);
       for(int k = 0; k < 3; k++)
       {
+        //mincol[k] = MIN(mincol[k], in[k]);
+        //maxcol[k] = MAX(maxcol[k], in[k]);
         if(in[k] == 0) continue;
         out[k] = CLAMP(powf(in[k] * scale, gamma) * 255.0, 0, 255);
         //               if(in[k] == 0)
@@ -1066,6 +1071,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       }
     }
   }
+  //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
 
   free(buf);
 
