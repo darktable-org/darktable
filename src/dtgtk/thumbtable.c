@@ -65,28 +65,51 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 
 static void _move_up(dt_thumbtable_t *table)
 {
-  const int new_rowid = MAX(0, table->offset - table->thumbs_per_row);
+  const int new_rowid = MAX(1, table->offset - table->thumbs_per_row);
+  if(new_rowid == table->offset) return;
+
+  int offset = new_rowid;
+  int empty_start = 0;
+  if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
+    offset = MAX(1, new_rowid - table->rows / 2);
+    empty_start = -MIN(0, new_rowid - table->rows / 2 - 1);
+  }
 
   // we insert the images at the beginning
   const int nb = table->offset - new_rowid;
   dt_thumbnail **thumbs = g_newa(dt_thumbnail *, nb);
 
-  sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(
-      NULL, "SELECT imgid FROM memory.collected_images WHERE rowid>=%d ORDER BY rowid LIMIT %d", new_rowid, nb);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  // we add eventual empty thumbs at the beginning
   int pos = 0;
-  while(sqlite3_step(stmt) == SQLITE_ROW && pos < nb)
+  for(int i = 0; i < empty_start && i < nb; i++)
   {
-    int imgid_sel = sqlite3_column_int(stmt, 0);
     thumbs[pos] = g_object_new(TYPE_DT_THUMBNAIL, NULL);
-    thumbs[pos]->imgid = imgid_sel;
+    thumbs[pos]->imgid = -1;
     thumbs[pos]->width = table->thumb_size;
     thumbs[pos]->height = table->thumb_size;
     pos++;
   }
-  g_free(query);
-  sqlite3_finalize(stmt);
+
+  // and we add regular thumbs if needed
+  if(pos < nb)
+  {
+    sqlite3_stmt *stmt;
+    gchar *query = dt_util_dstrcat(
+        NULL, "SELECT imgid FROM memory.collected_images WHERE rowid>=%d ORDER BY rowid LIMIT %d", offset, nb);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW && pos < nb)
+    {
+      int imgid_sel = sqlite3_column_int(stmt, 0);
+      thumbs[pos] = g_object_new(TYPE_DT_THUMBNAIL, NULL);
+      thumbs[pos]->imgid = imgid_sel;
+      thumbs[pos]->width = table->thumb_size;
+      thumbs[pos]->height = table->thumb_size;
+      pos++;
+    }
+    g_free(query);
+    sqlite3_finalize(stmt);
+  }
 
   g_list_store_splice(table->fstore, 0, 0, (gpointer *)thumbs, nb);
 
@@ -194,6 +217,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->fstore = g_list_store_new(TYPE_DT_THUMBNAIL);
   table->flow = gtk_flow_box_new();
+  table->offset = 1; // TODO retrieve it from rc file ?
   gtk_widget_set_events(table->flow, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                          | GDK_ENTER_NOTIFY_MASK);
@@ -228,8 +252,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     int empty_start = 0;
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      offset = MAX(0, table->offset - table->rows / 2);
-      empty_start = -MIN(0, table->offset - table->rows / 2);
+      offset = MAX(1, table->offset - table->rows / 2);
+      empty_start = -MIN(0, table->offset - table->rows / 2 - 1);
     }
 
     // we add empty thumbs at the beginning
@@ -244,7 +268,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       g_object_unref(thumb);
       nb++;
     }
-    printf(" redraw %d %d %d\n", offset, table->rows, empty_start);
+
     // and the real thumbs after
     gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
                                    offset, table->rows * table->thumbs_per_row - empty_start);
