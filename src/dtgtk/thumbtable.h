@@ -18,8 +18,16 @@
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 #include <gtk/gtk.h>
 
+typedef enum dt_thumbtable_mode_t
+{
+  DT_THUMBTABLE_MODE_FILEMANAGER,
+  DT_THUMBTABLE_MODE_FILMSTRIP
+} dt_thumbtable_mode_t;
+
 typedef struct dt_thumbtable_t
 {
+  dt_thumbtable_mode_t mode;
+
   GtkWidget *widget; // main widget
   GtkWidget *flow;   // flowbox which cantain the thumbnails
 
@@ -31,6 +39,7 @@ typedef struct dt_thumbtable_t
   int rows;                    // number of rows (the last one is not fully visible)
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
   int view_width, view_height; // last view size
+
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

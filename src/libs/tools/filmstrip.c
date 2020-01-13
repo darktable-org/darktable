@@ -28,6 +28,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
@@ -88,22 +89,22 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self);
 
-/* motion notify event handler */
+/*
 static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data);
-/* motion leave event handler */
+
 static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data);
-/* scroll event */
+
 static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data);
-/* expose function for filmstrip module */
+*/
 static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-/* button press callback */
+/*
 static gboolean _lib_filmstrip_button_press_callback(GtkWidget *widget, GdkEventButton *event,
                                                      gpointer user_data);
-/* button release callback */
+
 static gboolean _lib_filmstrip_button_release_callback(GtkWidget *widget, GdkEventButton *event,
                                                        gpointer user_data);
-/* signal callback for collection change */
-static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data);
+
+static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data);*/
 
 /* key accelerators callback */
 static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
@@ -136,10 +137,10 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
                                                          gpointer data);
 
 /* drag'n'drop callbacks */
-static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
+/*static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
                                             GtkSelectionData *selection_data, guint target_type, guint time,
                                             gpointer user_data);
-static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data);
+static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data);*/
 
 const char *name(dt_lib_module_t *self)
 {
@@ -325,14 +326,14 @@ void gui_init(dt_lib_module_t *self)
 
   /* allow drag&drop of images from the filmstrip. this has to come before the other callbacks are registered!
    */
-  gtk_drag_source_set(d->filmstrip, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
+  /*gtk_drag_source_set(d->filmstrip, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
 #ifdef HAVE_MAP
   gtk_drag_dest_set(d->filmstrip, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
                     GDK_ACTION_COPY);
 #endif
 
   g_signal_connect_after(d->filmstrip, "drag-begin", G_CALLBACK(_lib_filmstrip_dnd_begin_callback), self);
-  g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
+  g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);*/
 
   gtk_widget_add_events(d->filmstrip, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -341,7 +342,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->filmstrip), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
-  g_signal_connect(G_OBJECT(d->filmstrip), "button-press-event",
+  /*g_signal_connect(G_OBJECT(d->filmstrip), "button-press-event",
                    G_CALLBACK(_lib_filmstrip_button_press_callback), self);
   g_signal_connect(G_OBJECT(d->filmstrip), "button-release-event",
                    G_CALLBACK(_lib_filmstrip_button_release_callback), self);
@@ -349,7 +350,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->filmstrip), "motion-notify-event",
                    G_CALLBACK(_lib_filmstrip_motion_notify_callback), self);
   g_signal_connect(G_OBJECT(d->filmstrip), "leave-notify-event",
-                   G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);
+                   G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);*/
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, TRUE, TRUE, 0);
 
@@ -360,10 +361,10 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
 
   /* connect signal handler */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  /*dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_filmstrip_collection_changed_callback), (gpointer)self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_lib_filmstrip_collection_changed_callback), (gpointer)self);
+                            G_CALLBACK(_lib_filmstrip_collection_changed_callback), (gpointer)self);*/
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -371,8 +372,8 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* disconnect from signals */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_filmstrip_collection_changed_callback),
-                               (gpointer)self);
+  // dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_filmstrip_collection_changed_callback),
+  //                             (gpointer)self);
 
   /* unset viewmanager proxy */
   darktable.view_manager->proxy.filmstrip.module = NULL;
@@ -385,14 +386,14 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 
-static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+/*static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   dt_control_set_mouse_over_id(strip->activated_image);
 
-  /* suppress mouse over highlight upon leave */
+  // suppress mouse over highlight upon leave
   strip->pointery = -1;
   gtk_widget_queue_draw(strip->filmstrip);
 
@@ -437,7 +438,7 @@ static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMoti
     }
   }
 
-  /* redraw */
+  // redraw
   if(do_redraw) gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
@@ -447,7 +448,7 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  /* change the offset */
+  // change the offset
   int delta;
   if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
@@ -457,7 +458,7 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   }
 
   return TRUE;
-}
+}*/
 
 static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
 {
@@ -483,7 +484,7 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   return image_in_collection;
 }
 
-static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+/*static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -495,11 +496,11 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
-      /* let check if any thumb controls was clicked */
+      // let check if any thumb controls was clicked
       switch(strip->image_over)
       {
         case DT_VIEW_DESERT:
-          /* is this an activation of image */
+          // is this an activation of image
           if((e->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
             strip->select = DT_LIB_FILMSTRIP_SELECT_SINGLE;
           else if((e->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
@@ -579,10 +580,10 @@ static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventBut
   strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
   strip->select_id = -1;
 
-  /* redraw filmstrip */
+  // redraw filmstrip
   gtk_widget_queue_draw(strip->filmstrip);
   return result;
-}
+}*/
 
 static gboolean _expose_again(gpointer user_data)
 {
@@ -604,6 +605,19 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
+  if(!gtk_bin_get_child(GTK_BIN(strip->filmstrip)))
+  {
+    printf(" on ajoute\n");
+    dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(tt->widget)), tt->widget);
+    tt->mode = DT_THUMBTABLE_MODE_FILMSTRIP;
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(tt->flow), GTK_ORIENTATION_VERTICAL);
+    gtk_container_add(GTK_CONTAINER(strip->filmstrip), tt->widget);
+    gtk_widget_show_all(strip->filmstrip);
+    gtk_widget_queue_draw(tt->widget);
+  }
+  printf("filmstrip draw\n");
+  return FALSE;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const float width = allocation.width;
@@ -800,19 +814,19 @@ failure:
   return TRUE;
 }
 
-static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data)
+/*static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
   strip->force_expose_all = TRUE;
   dt_control_queue_redraw_widget(strip->filmstrip);
-}
+}*/
 
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  /* if no imgid just bail out */
+  // if no imgid just bail out
   if(imgid <= 0) return;
 
   strip->activated_image = imgid;
@@ -828,7 +842,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
   }
 
-  /* redraw filmstrip. since this is a proxy function it could be used from another thread */
+  // redraw filmstrip. since this is a proxy function it could be used from another thread
   strip->force_expose_all = TRUE;
   dt_control_queue_redraw_widget(self->widget);
 }
@@ -1053,7 +1067,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
   return TRUE;
 }
 
-static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
+/*static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
                                             GtkSelectionData *selection_data, guint target_type, guint time,
                                             gpointer user_data)
 {
@@ -1136,7 +1150,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     dt_selection_select_single(darktable.selection, imgid);
-    /* redraw filmstrip */
+    // redraw filmstrip
     if(darktable.view_manager->proxy.filmstrip.module)
       gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
   }
@@ -1172,7 +1186,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
-}
+}*/
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
