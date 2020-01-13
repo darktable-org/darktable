@@ -113,6 +113,16 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
+
+    // mosaiced image may be twice the dimensions of DT_MIPMAP_F but
+    // half width still gives sufficient data and is reasonably fast
+    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] / 2;
+    // this is sufficient visual information though the waveform
+    // widget will probably be either 175 or 350 pixels high depending
+    // on hidpi
+    dev->histogram_waveform_height = 128;
+    dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
+    dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
@@ -195,6 +205,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+  free(dev->histogram_waveform);
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
