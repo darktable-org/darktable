@@ -236,12 +236,17 @@ const dt_iop_order_entry_t recommended_order[] = {
   { { 0.0f }, "", 0 }
 };
 
-/* migrates *_iop_order_list from old_version to the next version (version + 1)
- *
- * Basically here there is two orders:
- *   v2 : legacy order used for edits done prior to 3.0
- *   v5 : new order for all edits starting with 3.0
- */
+static void* _ioppr_copy_entry(const void *entry, void *user_data)
+{
+  dt_iop_order_entry_t* copy = (dt_iop_order_entry_t*)malloc(sizeof(dt_iop_order_entry_t));
+  memcpy(copy, entry, sizeof(dt_iop_order_entry_t));
+  return (void *)copy;
+}
+
+GList *dt_ioppr_iop_order_list_duplicate(GList *iop_order_list)
+{
+  return g_list_copy_deep(iop_order_list, _ioppr_copy_entry, NULL);
+}
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
