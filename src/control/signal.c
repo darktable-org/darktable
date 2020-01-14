@@ -50,7 +50,7 @@ static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
 static GType history_will_change_arg[]
-    = { G_TYPE_POINTER, G_TYPE_UINT };
+= { G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_POINTER };
 
 
 
@@ -98,7 +98,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
-  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
+  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3,
     history_will_change_arg, NULL, FALSE }, // DT_SIGNAL_HISTORY_WILL_CHANGE
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_HISTORY_CHANGE
