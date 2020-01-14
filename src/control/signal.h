@@ -122,7 +122,8 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised when develop history is about to be changed
     1 : GList *  the current history
-    1 : uint32_t the correpsing history end
+    2 : uint32_t the correpsing history end
+    3 : GList *  the current iop-order list
   no returned value
     */
   DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
