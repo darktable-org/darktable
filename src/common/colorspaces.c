@@ -308,6 +308,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
                                         const cmsCIExyY *whitepoint, const cmsCIExyYTRIPLE *primaries, cmsToneCurve *trc,
                                         gboolean v2)
 {
+  const cmsCIEXYZ black = { 0, 0, 0 };
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
@@ -316,15 +317,11 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsToneCurve *out_curves[3] = { trc, trc, trc };
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
+  if(v2) cmsSetProfileVersion(profile, 2.1);
 
-  if(v2)
-  {
-    cmsSetProfileVersion(profile, 2.1);
-    const cmsCIEXYZ black = { 0, 0, 0 };
-    cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
-    cmsWriteTag(profile, cmsSigMediaWhitePointTag, whitepoint);
-    cmsSetDeviceClass(profile, cmsSigDisplayClass);
-  }
+  cmsSetDeviceClass(profile, cmsSigDisplayClass);
+  cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
+  cmsWriteTag(profile, cmsSigMediaWhitePointTag, whitepoint);
 
   cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue | cmsUseAnywhere);
 
