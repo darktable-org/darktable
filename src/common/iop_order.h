@@ -59,7 +59,6 @@ typedef struct dt_iop_order_rule_t
   char op_next[20];
 } dt_iop_order_rule_t;
 
-#define DT_IOP_ORDER_PRESETS_START_ID 1000
 
 /** return the iop-order-version used by imgid (DT_IOP_ORDER_RECOMMENDED if unknown iop-order-version) */
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
