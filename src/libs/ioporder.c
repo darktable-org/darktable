@@ -126,21 +126,10 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
     {
       // last custom is defined, restore it
 
-      gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(d->last_custom_iop_order);
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.module_order"
-                                    " SET iop_list = ?2, version = ?3"
-                                  " WHERE imgid=?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, iop_list_text, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_IOP_ORDER_CUSTOM);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, d->last_custom_iop_order, imgid);
 
       g_list_free_full(d->last_custom_iop_order, free);
       d->last_custom_iop_order = NULL;
-      g_free(iop_list_text);
 
       dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
@@ -184,34 +173,17 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
         const char *params = (char *)sqlite3_column_blob(stmt, 0);
         const int32_t params_len = sqlite3_column_bytes(stmt, 0);
         GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
-        gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
 
         sqlite3_finalize(stmt);
 
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE main.module_order"
-                                    " SET iop_list = ?2, version = ?3"
-                                    " WHERE imgid=?1", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, iop_list_text, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_IOP_ORDER_CUSTOM);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
 
         g_list_free_full(iop_list, free);
-        g_free(iop_list_text);
       }
     }
     else
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.module_order"
-                                  " SET iop_list = NULL, version = ?2"
-                                  " WHERE imgid=?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, mode);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_ioppr_write_iop_order(mode, NULL, imgid);
     }
 
     dt_ioppr_migrate_iop_order(darktable.develop, imgid);
