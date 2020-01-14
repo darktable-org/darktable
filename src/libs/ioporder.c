@@ -30,6 +30,7 @@ DT_MODULE(1)
 typedef struct dt_lib_ioporder_t
 {
   int current_mode;
+  GList *last_custom_iop_order;
   GtkWidget *widget;
 } dt_lib_ioporder_t;
 
@@ -112,13 +113,51 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   const int mode = dt_bauhaus_combobox_get(widget);
   const int32_t imgid = darktable.develop->image_storage.id;
 
+  if(d->current_mode == DT_IOP_ORDER_CUSTOM && mode != DT_IOP_ORDER_CUSTOM)
+  {
+    // changing from custom to something else, keep this custom iop-order to
+    // restore it if needed.
+    d->last_custom_iop_order = dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list);
+  }
+
   if(mode == DT_IOP_ORDER_CUSTOM) // custom order
   {
-    // do not allow changing to the first mode, reset back to previous value
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
-    dt_bauhaus_combobox_set(widget, d->current_mode);
-    darktable.gui->reset = reset;
+    if(d->last_custom_iop_order)
+    {
+      // last custom is defined, restore it
+
+      gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(d->last_custom_iop_order);
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.module_order"
+                                    " SET iop_list = ?2, version = ?3"
+                                  " WHERE imgid=?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, iop_list_text, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_IOP_ORDER_CUSTOM);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      g_list_free_full(d->last_custom_iop_order, free);
+      d->last_custom_iop_order = NULL;
+      g_free(iop_list_text);
+
+      dt_ioppr_migrate_iop_order(darktable.develop, imgid);
+
+      // invalidate buffers and force redraw of darkroom
+      dt_dev_invalidate_all(darktable.develop);
+
+      d->current_mode = DT_IOP_ORDER_CUSTOM;
+    }
+    else
+    {
+      // do not allow changing to the first mode, reset back to previous value
+      const int reset = darktable.gui->reset;
+      darktable.gui->reset = 1;
+      dt_bauhaus_combobox_set(widget, d->current_mode);
+      darktable.gui->reset = reset;
+    }
+
     return;
   }
 
@@ -158,6 +197,9 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_IOP_ORDER_CUSTOM);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+
+        g_list_free_full(iop_list, free);
+        g_free(iop_list_text);
       }
     }
     else
@@ -231,6 +273,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->widget = dt_bauhaus_combobox_new(NULL);
   d->current_mode = -1;
+  d->last_custom_iop_order = NULL;
 
   _fill_iop_order(self);
 
