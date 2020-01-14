@@ -78,6 +78,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);
 /* write iop-order list for the given image */
 gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid);
+gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_list, const int32_t imgid);
 
 /** serialize list, used for presets */
 void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size);
