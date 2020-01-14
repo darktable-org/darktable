@@ -411,9 +411,8 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   return DT_IOP_ORDER_CUSTOM;
 }
 
-gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid)
+gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_list, const int32_t imgid)
 {
-  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(iop_order_list);
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -449,6 +448,12 @@ gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgi
   }
 
   return TRUE;
+}
+
+gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid)
+{
+  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(iop_order_list);
+  return dt_ioppr_write_iop_order(kind, iop_order_list, imgid);
 }
 
 GList *_table_to_list(const dt_iop_order_entry_t entries[])
