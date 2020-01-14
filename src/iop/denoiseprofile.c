@@ -65,6 +65,11 @@ typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_WAVELETS_AUTO = 4
 } dt_iop_denoiseprofile_mode_t;
 
+typedef enum dt_iop_denoiseprofile_wavelet_mode_t {
+  MODE_RGB = 0,
+  MODE_Y0U0V0 = 1
+} dt_iop_denoiseprofile_wavelet_mode_t;
+
 typedef enum dt_iop_denoiseprofile_channel_t
 {
   DT_DENOISE_PROFILE_ALL = 0,
@@ -76,7 +81,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(9, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(10, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -155,7 +160,7 @@ typedef struct dt_iop_denoiseprofile_params_v8_t
   gboolean use_new_vst;
 } dt_iop_denoiseprofile_params_v8_t;
 
-typedef struct dt_iop_denoiseprofile_params_t
+typedef struct dt_iop_denoiseprofile_params_v9_t
 {
   float radius;     // patch size
   float nbhood;     // search radius
@@ -173,6 +178,26 @@ typedef struct dt_iop_denoiseprofile_params_t
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
   gboolean use_new_vst;
+} dt_iop_denoiseprofile_params_v9_t;
+
+typedef struct dt_iop_denoiseprofile_params_t
+{
+  float radius;     // patch size
+  float nbhood;     // search radius
+  float strength;   // noise level after equalization
+  float shadows;    // control the impact on shadows
+  float bias;       // allows to reduce backtransform bias
+  float scattering; // spread the patch search zone without increasing number of patches
+  float central_pixel_weight; // increase central pixel's weight in patch comparison
+  float overshooting; // adjusts the way parameters are autoset
+  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // backward compatibility options
+  gboolean use_new_vst; // backward compatibility options
+  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; // switch between RGB and Y0U0V0 modes.
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -187,6 +212,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *scattering;
   GtkWidget *central_pixel_weight;
   GtkWidget *overshooting;
+  GtkWidget *wavelet_color_mode;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
   GtkWidget *box_nlm;
@@ -232,10 +258,10 @@ typedef struct dt_iop_denoiseprofile_data_t
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
   float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
-  // backward compatibility options
-  gboolean fix_anscombe_and_nlmeans_norm;
-  gboolean use_new_vst;
+  gboolean wb_adaptive_anscombe;          // whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // backward compatibility options
+  gboolean use_new_vst;                   // backward compatibility options
+  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; // switch between RGB and Y0U0V0 modes.
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -487,6 +513,45 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v9->bias = v8.shadows;
     v9->use_new_vst = v8.use_new_vst;
     v9->overshooting = v8.overshooting;
+    return 0;
+  }
+  else if(new_version == 10)
+  {
+    dt_iop_denoiseprofile_params_t v9;
+    if(old_version < 9)
+    {
+      // first update to v9
+      if(legacy_params(self, old_params, old_version, &v9, 9)) return 1;
+    }
+    else
+      memcpy(&v9, old_params, sizeof(v9)); // was v9 already
+    dt_iop_denoiseprofile_params_t *v10 = new_params;
+    v10->radius = v9.radius;
+    v10->strength = v9.strength;
+    v10->mode = v9.mode;
+    v10->nbhood = v9.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v10->a[k] = v9.a[k];
+      v10->b[k] = v9.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v10->x[c][b] = v9.x[c][b];
+        v10->y[c][b] = v9.y[c][b];
+      }
+    }
+    v10->scattering = v9.scattering;
+    v10->central_pixel_weight = v9.central_pixel_weight;
+    v10->fix_anscombe_and_nlmeans_norm = v9.fix_anscombe_and_nlmeans_norm;
+    v10->wb_adaptive_anscombe = v9.wb_adaptive_anscombe;
+    v10->shadows = v9.shadows;
+    v10->bias = v9.shadows;
+    v10->use_new_vst = v9.use_new_vst;
+    v10->overshooting = v9.overshooting;
+    v10->wavelet_color_mode = MODE_RGB;
     return 0;
   }
   return 1;
@@ -3105,6 +3170,7 @@ void init(dt_iop_module_t *module)
   tmp.fix_anscombe_and_nlmeans_norm = TRUE;
   tmp.wb_adaptive_anscombe = TRUE;
   tmp.use_new_vst = TRUE;
+  tmp.wavelet_color_mode = MODE_Y0U0V0;
   memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
 }
@@ -3206,6 +3272,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->b[i] = p->b[i];
   }
   d->mode = p->mode;
+  d->wavelet_color_mode = p->wavelet_color_mode;
 
   // compare if a[0] in params is set to "magic value" -1.0 for autodetection
   if(p->a[0] == -1.0)
@@ -3335,6 +3402,14 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   gtk_widget_set_visible(g->shadows, !auto_mode);
   gtk_widget_set_visible(g->bias, !auto_mode);
   gtk_widget_set_visible(g->overshooting, auto_mode);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void wavelet_color_mode_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  const unsigned mode = dt_bauhaus_combobox_get(w);
+  p->wavelet_color_mode = mode;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3953,6 +4028,7 @@ void gui_init(dt_iop_module_t *self)
   g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.1f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
+  g->wavelet_color_mode = dt_bauhaus_combobox_new(self);
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3962,6 +4038,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->nbhood, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->scattering, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->central_pixel_weight, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), g->wavelet_color_mode, TRUE, TRUE, 0);
 
   g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
                                            "uniform image if you want to\n"
@@ -4088,6 +4165,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(g->wavelet_color_mode, NULL, _("color mode"));
   dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
@@ -4102,6 +4180,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
+  dt_bauhaus_combobox_add(g->wavelet_color_mode, _("RGB"));
+  dt_bauhaus_combobox_add(g->wavelet_color_mode, _("Y0U0V0"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
   if(compute_variance)
   {
@@ -4111,6 +4191,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
                                          "non-local means works best for `lightness' blending, "
                                          "wavelets work best for `color' blending"));
+  gtk_widget_set_tooltip_text(g->wavelet_color_mode, _("color representation used within the algorithm.\n"
+                                                       "RGB keeps the RGB channels separated,\n"
+                                                       "while Y0U0V0 combine the channels to\n"
+                                                       "denoise chroma and luma separately."));
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
                                            "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
                                            "if details are oversmoothed, reduce this value or increase the details slider."));
@@ -4135,6 +4219,7 @@ void gui_init(dt_iop_module_t *self)
                                          "increase if shadows are too green."));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
+  g_signal_connect(G_OBJECT(g->wavelet_color_mode), "value-changed", G_CALLBACK(wavelet_color_mode_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->nbhood), "value-changed", G_CALLBACK(nbhood_callback), self);
   g_signal_connect(G_OBJECT(g->scattering), "value-changed", G_CALLBACK(scattering_callback), self);
