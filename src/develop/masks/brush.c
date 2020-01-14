@@ -2063,14 +2063,15 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index,
                                         int nb)
 {
+  if(!gui) return;
+  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  if(!gpt) return;
+
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
-  if(!gui) return;
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  if(!gpt) return;
   float dx = 0, dy = 0, dxs = 0, dys = 0;
   if((gui->group_selected == index) && gui->form_dragging)
   {
@@ -2265,7 +2266,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_restore(cr);
     }
     return;
-  }
+  } // creation
 
   // draw path
   if(gpt->points_count > nb * 3 + 2)
