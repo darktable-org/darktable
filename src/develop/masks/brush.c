@@ -2137,7 +2137,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       cairo_save(cr);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
-      if(opacity < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -2167,7 +2167,6 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_save(cr);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      const float linewidth = cairo_get_line_width(cr);
       masks_border = guipoints_payload[0];
       masks_hardness = guipoints_payload[1];
       masks_density = guipoints_payload[2];
@@ -2251,9 +2250,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
       if(!stroked) cairo_stroke(cr);
 
-      cairo_set_line_width(cr, linewidth);
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
-      if(opacity < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
                 guipoints[2 * (gui->guipoints_count - 1) + 1], radius, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
