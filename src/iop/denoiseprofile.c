@@ -929,6 +929,77 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
   }
 }
 
+// perform precondition and conversion to Y0U0V0
+// (as defined in secrets of image denoising cuisine)
+static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
+                                   const float a, const float p[3], const float b, const float toY0U0V0[9])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, toY0U0V0) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    const float *in2 = in + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      float tmp[3];
+      for(int c = 0; c < 3; c++)
+      {
+        tmp[c] = 2.0f * powf(MAX(in2[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
+      }
+      for(int c = 0; c < 3; c++)
+      {
+        buf2[c] = 0.0f;
+        for(int k = 0; k < 3; k++)
+        {
+          buf2[c] += toY0U0V0[3 * c + k] * tmp[k];
+        }
+      }
+      buf2 += 4;
+      in2 += 4;
+    }
+  }
+}
+
+static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[3],
+                                    const float b, const float bias, const float wb[3], const float toRGB[9])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, wd, a, p, b, bias, wb, toRGB) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      float rgb[3];
+      for(int c = 0; c < 3; c++)
+      {
+        rgb[c] = 0.0f;
+        for(int k = 0; k < 3; k++)
+        {
+          rgb[c] += toRGB[3 * c + k] * buf2[k];
+        }
+      }
+      for(int c = 0; c < 3; c++)
+      {
+        const float x = MAX(rgb[c], 0.0f);
+        const float delta = x * x + bias * wb[c];
+        const float denominator = 4.0f / (sqrt(a) * (2.0f - p[c]));
+        const float z1 = (x + sqrt(MAX(delta, 0.0f))) / denominator;
+        buf2[c] = powf(z1, 1.0f / (1.0f - p[c] / 2.0f)) - b;
+      }
+      buf2 += 4;
+    }
+  }
+}
+
+
 // =====================================================================================
 // begin wavelet code:
 // =====================================================================================
@@ -1392,6 +1463,37 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 
 // =====================================================================================
 
+static gboolean invertMatrix(const float in[9], float out[9])
+{
+  // use same notation as https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
+  float biga = in[4] * in[8] - in[5] * in[7];
+  float bigb = -in[3] * in[8] + in[5] * in[6];
+  float bigc = in[3] * in[7] - in[4] * in[6];
+  float bigd = -in[1] * in[8] + in[2] * in[7];
+  float bige = in[0] * in[8] - in[2] * in[6];
+  float bigf = -in[0] * in[7] + in[1] * in[6];
+  float bigg = in[1] * in[5] - in[2] * in[4];
+  float bigh = -in[0] * in[5] + in[2] * in[3];
+  float bigi = in[0] * in[4] - in[1] * in[3];
+
+  float det = in[0] * biga + in[1] * bigb + in[2] * bigc;
+  if(det == 0.0f)
+  {
+    return FALSE;
+  }
+
+  out[0] = 1.0f / det * biga;
+  out[1] = 1.0f / det * bigd;
+  out[2] = 1.0f / det * bigg;
+  out[3] = 1.0f / det * bigb;
+  out[4] = 1.0f / det * bige;
+  out[5] = 1.0f / det * bigh;
+  out[6] = 1.0f / det * bigc;
+  out[7] = 1.0f / det * bigf;
+  out[8] = 1.0f / det * bigi;
+  return TRUE;
+}
+
 static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out, const eaw_decompose_t decompose,
@@ -1479,13 +1581,45 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
+
+  float sum_invwb = 1.0f/(2.0f*wb[0]) + 1.0f/wb[1] + 1.0f/(2.0f*wb[2]);
+  // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
+  float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
+                       0.5f,      0.0f,      -0.5f,
+                       0.25f,     -0.5f,     0.25f};
+  // we change the coefs to Y0, but keeping the same spirit:
+  // they were all equal to 1/3 to get the Y0 the less noisy possible, assuming
+  // that all channels have equal noise variance.
+  // as white balance influence noise variance, we do a weighted mean depending
+  // on white balance. Note that it is equivalent to keeping the 1/3 coefficients
+  // if we divide by the white balance coefficients beforehand.
+  toY0U0V0[0] = sum_invwb / wb[0];
+  toY0U0V0[1] = sum_invwb / wb[1];
+  toY0U0V0[2] = sum_invwb / wb[2];
+  float toRGB[9] = {0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f};
+  gboolean is_invertible = invertMatrix(toY0U0V0, toRGB);
+  if(!is_invertible)
+  {
+    // use standard form if whitebalance adapted matrix is not invertible
+    toY0U0V0[0] = 1.0f/3.0f;
+    toY0U0V0[1] = 1.0f/3.0f;
+    toY0U0V0[2] = 1.0f/3.0f;
+    invertMatrix(toY0U0V0, toRGB);
+  }
+
   if(!d->use_new_vst)
   {
     precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
   }
-  else
+  else if(d->wavelet_color_mode == MODE_RGB)
   {
     precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
+  }
+  else
+  {
+    precondition_Y0U0V0((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
   }
 
 #if 0 // DEBUG: see what variance we have after transform
@@ -1605,9 +1739,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   {
     backtransform((float *)ovoid, width, height, aa, bb);
   }
-  else
+  else if(d->wavelet_color_mode == MODE_RGB)
   {
     backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb);
+  }
+  else
+  {
+    backtransform_Y0U0V0((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
   }
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
