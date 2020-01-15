@@ -613,51 +613,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "central pixel weight", GTK_WIDGET(g->central_pixel_weight));
 }
 
-static void add_preset(
-    dt_iop_module_so_t *self, const char *name,
-    const char *pi,  const int version,
-    const char *bpi, const int blendop_version)
-{
-  int len, blen;
-  uint8_t *p  = dt_exif_xmp_decode(pi, strlen(pi), &len);
-  uint8_t *bp = dt_exif_xmp_decode(bpi, strlen(bpi), &blen);
-  if(blendop_version != dt_develop_blend_version())
-  {
-    // update to current blendop params format
-    void *bp_new = malloc(sizeof(dt_develop_blend_params_t));
-
-    if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
-      blen) == 0)
-    {
-      free(bp);
-      bp = bp_new;
-      blen = sizeof(dt_develop_blend_params_t);
-    }
-    else
-    {
-      free(bp);
-      free(bp_new);
-      bp = NULL;
-    }
-  }
-
-  if(p && bp)
-    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
-  free(bp);
-  free(p);
-}
-
-void init_presets(dt_iop_module_so_t *self)
-{
-  // these blobs were exported as dtstyle and copied from there:
-  add_preset(self, _("chroma (use on 1st instance)"),
-             "gz03eJxjYGiwZ2B44MAApmEYBsD8/dti91vWKRhZcYsxmibv5THN2n3XhAWqYvUqLbvVq1bZAZn2QLZ9aGgo3AwayIGxeNQ/u+7l/+zMOFntD7wztpc9Ug+XoyZmBBIwDAC4Ejr7", 9,
-             "gz11eJxjZGBgkGUAgRNODGiAEV0AJ2iwh+CRyscOAA9yGQo=", 9);
-  add_preset(self, _("luma (use on 2nd instance)"),
-             "gz03eJxjYGiwZ2B44DBr5kw7BjAbhGEAzN/vZxlg6T53n+UlPVXTRI7nJuGZ1qYsUBWrV2nZrV61CqiXwR7Itg8NDYWbQW25Svb/tvZCv22/6Py1PaGqbfe7fKGdYfYPu8LWpWC1NMAMjFAMAAFgQFE=", 9,
-             "gz11eJxjZGBgkGEAgR4nBjTAiC6AEzTYQ/BI5WMHAL7TGM0=", 9);
-}
-
 typedef union floatint_t
 {
   float f;
