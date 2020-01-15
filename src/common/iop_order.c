@@ -59,6 +59,8 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
 //
 // in the new code only the iop-order as int is used to order the module on the GUI.
 
+// @@_NEW_MOUDLE: For new module it is required to insert the new module name in both lists below.
+
 const dt_iop_order_entry_t legacy_order[] = {
   { { 1.0f }, "rawprepare", 0},
   { { 2.0f }, "invert", 0},
@@ -235,6 +237,56 @@ const dt_iop_order_entry_t recommended_order[] = {
   { {78.0f }, "gamma", 0},
   { { 0.0f }, "", 0 }
 };
+
+#if 0
+static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
+{
+  gboolean exists = FALSE;
+
+  // first check that new module is missing
+
+  GList *l = iop_order_list;
+
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    if(!strcmp(entry->operation, new_module))
+    {
+      exists = TRUE;
+      break;
+    }
+
+    l = g_list_next(l);
+  }
+
+  // the insert it if needed
+
+  if(!exists)
+  {
+    l = iop_order_list;
+    while(l)
+    {
+      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+
+      if(!strcmp(entry->operation, module))
+      {
+        dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+
+        strncpy(new_entry->operation, new_module, sizeof(new_entry->operation));
+        new_entry->instance = 0;
+        new_entry->o.iop_order = 0;
+
+        iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
+        break;
+      }
+
+      l = g_list_next(l);
+    }
+  }
+
+  return iop_order_list;
+}
+#endif
 
 static void* _ioppr_copy_entry(const void *entry, void *user_data)
 {
@@ -493,20 +545,6 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version)
 
 GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
 {
-  // This is the latest default iop order. it corresponds to version 5. The list below must be kept in
-  // synch with the "recommended" preset in the ioporder module.
-  //
-  // This default is needed here to initialize the develop module before the presets are set. It is also
-  // a fast way to create the current working iop-order version for new images.
-  //
-
-  /* @@_NEW_MODULE: add the new module into the following table (dt_iop_order_entry_t default_order)
-
-     1. find the proper position in the table.
-     2. add the iop-order in first column to be in the middle of module before and after.
-     3. DO NOT CHANGE any other iop-order for any module.
-  */
-
   GList *iop_order_list = NULL;
 
   if(imgid > 0)
@@ -537,6 +575,14 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         {
           // preset not found, fall back to last built-in version, will be loaded below
           fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list imgid %d\n", imgid);
+        }
+        else
+        {
+          // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
+          //                The insertion can be done depending on the current iop-order list kind.
+#if 0
+          _insert_before(iop_order_list, "<CURRENT_MODULE>", "<NEW_MODULE>");
+#endif
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
@@ -624,56 +670,6 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
   dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
 }
 
-#if 0
-static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
-{
-  gboolean exists = FALSE;
-
-  // first check that new module is missing
-
-  GList *l = iop_order_list;
-
-  while(l)
-  {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    if(!strcmp(entry->operation, new_module))
-    {
-      exists = TRUE;
-      break;
-    }
-
-    l = g_list_next(l);
-  }
-
-  // the insert it if needed
-
-  if(!exists)
-  {
-    l = iop_order_list;
-    while(l)
-    {
-      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-
-      if(!strcmp(entry->operation, module))
-      {
-        dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-
-        memcpy(new_entry->operation, new_module, sizeof(new_entry->operation));
-        new_entry->instance = 0;
-        new_entry->iop_order = 0;
-
-        iop_order_list = g_list_insert_before(iop_order_list, l, new_entry);
-        break;
-      }
-
-      l = g_list_next(l);
-    }
-  }
-
-  return iop_order_list;
-}
-#endif
-
 // sets the iop_order on each module of *_iop_list
 // iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
 // if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
@@ -682,11 +678,6 @@ void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int32_t imgid)
   // get the iop-order for this image
 
   GList *iop_order_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
-
-#if 0
-  // Adding a new module is done here
-  _insert_before(iop_order_list, "OLD_MODULE_NAME", "NEW_MODULE_NAME");
-#endif
 
   // we assign a single iop-order to each module
 
