@@ -370,7 +370,7 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
     }
     while(t->minute < 0)
     {
-      t->hour += 60;
+      t->minute += 60;
       _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_HOUR);
     }
   }
