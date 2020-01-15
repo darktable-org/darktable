@@ -808,8 +808,6 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
     {
 #ifdef __APPLE__
       delete_success = dt_osx_file_trash(filename, &gerror);
-#elif defined(_WIN32)
-      delete_success = dt_win_file_trash(gfile, NULL /*cancellable*/, &gerror);
 #else
       delete_success = g_file_trash(gfile, NULL /*cancellable*/, &gerror);
 #endif
@@ -925,10 +923,6 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-#ifdef _WIN32
-    char *dirname = g_path_get_dirname(filename);
-#endif
-
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) duplicates = sqlite3_column_int(stmt, 0);
@@ -986,10 +980,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     }
 
 delete_next_file:
-#ifdef _WIN32
-    g_free(dirname);
-#endif
-    t = g_list_delete_link(t, t);
+
+t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
