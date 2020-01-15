@@ -221,6 +221,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   dt_draw_curve_t *transition_curve; // curve for gui to draw
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
+  GtkNotebook *channel_tabs_Y0U0V0;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
   dt_iop_denoiseprofile_params_t drag_params;
@@ -3408,8 +3409,11 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
 static void wavelet_color_mode_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   const unsigned mode = dt_bauhaus_combobox_get(w);
   p->wavelet_color_mode = mode;
+  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (mode == MODE_RGB));
+  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (mode == MODE_Y0U0V0));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3602,9 +3606,13 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
   const gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+  const gboolean wavelet_mode = (p->mode == MODE_WAVELETS) || (p->mode == MODE_WAVELETS_AUTO);
   gtk_widget_set_visible(g->overshooting, auto_mode);
+  gtk_widget_set_visible(g->wavelet_color_mode, p->use_new_vst && wavelet_mode);
   gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
   gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
+  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
+  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -4087,6 +4095,19 @@ void gui_init(dt_iop_module_t *self)
   gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
 
+  g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
+
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+                           gtk_label_new(_("all")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+                           gtk_label_new(_("Y0")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+                           gtk_label_new(_("U0V0")));
+
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs_Y0U0V0, g->channel)));
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel);
+  g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
+
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0f,
@@ -4103,6 +4124,7 @@ void gui_init(dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
   gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
