@@ -31,7 +31,7 @@ if(GMIC_LIBRARY AND GMIC_INCLUDE_DIR)
   set(CMAKE_REQUIRED_INCLUDES ${GMIC_INCLUDE_DIR})
   check_cxx_source_compiles("
   #include <gmic.h>
-  #if gmic_version < ${GMIC_VERSION_NEEDED}
+  #if gmic_version < ${GMIC_VERSION_NEEDED} || gmic_version >= 1000
   #error OLD_VERSION
   #endif
   int main() { return 0; }

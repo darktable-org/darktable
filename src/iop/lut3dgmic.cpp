@@ -229,7 +229,8 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
 
 const unsigned int lut3d_gmic_version()
 {
-  return gmic_version;
+  // some versions are expressed with 4 digits. Valid until there is no major or minor version above 9
+  return (gmic_version >= 1000) ? gmic_version / 10 : gmic_version;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
