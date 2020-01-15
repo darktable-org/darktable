@@ -1574,15 +1574,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                        MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
                        MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f)};
 
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
-  // only use green channel + wb for now:
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 
-  float sum_invwb = 1.0f/(2.0f*wb[0]) + 1.0f/wb[1] + 1.0f/(2.0f*wb[2]);
+  float sum_invwb = 1.0f/wb[0] + 1.0f/wb[1] + 1.0f/wb[2];
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
   float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
                        0.5f,      0.0f,      -0.5f,
@@ -1596,6 +1590,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   toY0U0V0[0] = sum_invwb / wb[0];
   toY0U0V0[1] = sum_invwb / wb[1];
   toY0U0V0[2] = sum_invwb / wb[2];
+  // update the coeffs with strength and scale
+  for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * in_scale);
+
   float toRGB[9] = {0.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 0.0f};
@@ -1603,11 +1600,17 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(!is_invertible)
   {
     // use standard form if whitebalance adapted matrix is not invertible
-    toY0U0V0[0] = 1.0f/3.0f;
-    toY0U0V0[1] = 1.0f/3.0f;
-    toY0U0V0[2] = 1.0f/3.0f;
+    toY0U0V0[0] = 1.0f / (3.0f * d->strength * in_scale);
+    toY0U0V0[1] = 1.0f / (3.0f * d->strength * in_scale);
+    toY0U0V0[2] = 1.0f / (3.0f * d->strength * in_scale);
     invertMatrix(toY0U0V0, toRGB);
   }
+
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
+
+  // only use green channel + wb for now:
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
   if(!d->use_new_vst)
   {
@@ -1691,32 +1694,48 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
     int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
-    // current scale number is scale+offset_scale
-    // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
-    // max_scale only indicates the number of scales to process at THIS
-    // zoom level, it does NOT corresponds to the the maximum number of scales.
-    // in other words, max_scale is the maximum number of VISIBLE scales.
-    // That is why we have this "scale+offset_scale"
-    float band_force_exp_2
-        = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    for(int ch = 0; ch < 3; ch++)
+
+    if(d->wavelet_color_mode == MODE_RGB)
     {
-      adjt[ch] *= band_force_exp_2;
+      // current scale number is scale+offset_scale
+      // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
+      // max_scale only indicates the number of scales to process at THIS
+      // zoom level, it does NOT corresponds to the the maximum number of scales.
+      // in other words, max_scale is the maximum number of VISIBLE scales.
+      // That is why we have this "scale+offset_scale"
+      float band_force_exp_2
+          = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      for(int ch = 0; ch < 3; ch++)
+      {
+        adjt[ch] *= band_force_exp_2;
+      }
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[0] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[1] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[2] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[2] *= band_force_exp_2;
+    else
+    {
+      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[0] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[1] *= band_force_exp_2;
+      adjt[2] *= band_force_exp_2;
+    }
 
     const float thrs[4] = { adjt[0] * sb2 / std_x[0], adjt[1] * sb2 / std_x[1], adjt[2] * sb2 / std_x[2], 0.0f };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
