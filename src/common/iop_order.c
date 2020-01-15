@@ -364,7 +364,8 @@ GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, c
   {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
 
-    if(strcmp(order_entry->operation, op_name) == 0 && order_entry->instance == multi_priority)
+    if(strcmp(order_entry->operation, op_name) == 0
+       && (order_entry->instance == multi_priority || multi_priority == -1))
     {
       link = iops_order;
       break;
