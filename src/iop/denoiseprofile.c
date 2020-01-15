@@ -3139,6 +3139,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = infer_shadows_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = infer_bias_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->wavelet_color_mode = MODE_Y0U0V0;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->use_new_vst = TRUE;
     for(int k = 0; k < 3; k++)
@@ -3385,12 +3386,16 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       gtk_widget_hide(g->box_nlm);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_wavelets);
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
       break;
     case 3:
       p->mode = MODE_WAVELETS_AUTO;
       gtk_widget_hide(g->box_nlm);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_wavelets);
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
       break;
     case 4:
       p->mode = MODE_VARIANCE;
@@ -3414,6 +3419,7 @@ static void wavelet_color_mode_callback(GtkWidget *w, dt_iop_module_t *self)
   p->wavelet_color_mode = mode;
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (mode == MODE_RGB));
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (mode == MODE_Y0U0V0));
+  g->channel = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3582,6 +3588,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_default(g->shadows, infer_shadows_from_profile(a));
   dt_bauhaus_slider_set_default(g->bias, infer_bias_from_profile(a));
   dt_bauhaus_combobox_set(g->mode, combobox_index);
+  dt_bauhaus_combobox_set(g->wavelet_color_mode, p->wavelet_color_mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3748,20 +3755,38 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
     ch = ((int)c->channel + i + 1) % DT_DENOISE_PROFILE_NONE;
     float alpha = 0.3;
     if(i == DT_DENOISE_PROFILE_NONE - 1) alpha = 1.0;
-    switch(ch)
+    if(p.wavelet_color_mode == MODE_RGB)
     {
-      case 0:
-        cairo_set_source_rgba(cr, .7, .7, .7, alpha);
-        break;
-      case 1:
-        cairo_set_source_rgba(cr, .7, .1, .1, alpha);
-        break;
-      case 2:
-        cairo_set_source_rgba(cr, .1, .7, .1, alpha);
-        break;
-      case 3:
-        cairo_set_source_rgba(cr, .1, .1, .7, alpha);
-        break;
+      switch(ch)
+      {
+        case 0:
+          cairo_set_source_rgba(cr, .7, .7, .7, alpha);
+          break;
+        case 1:
+            cairo_set_source_rgba(cr, .7, .1, .1, alpha);
+          break;
+        case 2:
+          cairo_set_source_rgba(cr, .1, .7, .1, alpha);
+          break;
+        case 3:
+          cairo_set_source_rgba(cr, .1, .1, .7, alpha);
+          break;
+      }
+    }
+    else
+    {
+      switch(ch)
+      {
+        case 0:
+          cairo_set_source_rgba(cr, .7, .7, .7, alpha);
+          break;
+        case 1:
+          cairo_set_source_rgba(cr, .8, .4, .0, alpha);
+          break;
+        default:
+          cairo_set_source_rgba(cr, .7, .7, .7, 0.0f);
+          break;
+      }
     }
 
     p = *(dt_iop_denoiseprofile_params_t *)self->params;
@@ -4097,8 +4122,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("all")));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("Y0")));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
