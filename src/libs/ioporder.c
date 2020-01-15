@@ -110,7 +110,7 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
   sqlite3_stmt *stmt;
 
-  const int mode = dt_bauhaus_combobox_get(widget);
+  int mode = dt_bauhaus_combobox_get(widget);
   const int32_t imgid = darktable.develop->image_storage.id;
 
   if(d->current_mode == DT_IOP_ORDER_CUSTOM && mode != DT_IOP_ORDER_CUSTOM)
@@ -155,8 +155,30 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(d->current_mode != mode
      || d->current_mode == DT_IOP_ORDER_CUSTOM)
   {
+    GList *mi = NULL;
+
     // ensure current history is written
     dt_dev_write_history(darktable.develop);
+
+    // if we where on a custom order, then we will need to add back any multi-instances
+
+    if(d->current_mode == DT_IOP_ORDER_CUSTOM)
+    {
+      GList *l = g_list_first(darktable.develop->iop_order_list);
+      while(l)
+      {
+        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+        if(entry->instance > 0)
+        {
+          dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+          memcpy(e, entry, sizeof(dt_iop_order_entry_t));
+          mi = g_list_append(mi, e);
+        }
+        l = g_list_next(l);
+      }
+    }
+
+    // this is a preset as all built-in orders are filed before (see _fill_iop_order)
 
     if(mode >= DT_IOP_ORDER_LAST)
     {
@@ -176,15 +198,56 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
 
         sqlite3_finalize(stmt);
 
-        dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
+        if(mi)
+        {
+          iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+          dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
+          d->current_mode = DT_IOP_ORDER_CUSTOM;
+
+          // and then we are back to custom mode in this case
+
+          const int reset = darktable.gui->reset;
+          darktable.gui->reset = 1;
+          dt_bauhaus_combobox_set(widget, d->current_mode);
+          darktable.gui->reset = reset;
+
+          dt_control_log(_("image migrated to custom order based on %s preset order"), name);
+
+          mode = DT_IOP_ORDER_CUSTOM;
+        }
+        else
+          dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
 
         g_list_free_full(iop_list, free);
       }
     }
     else
     {
-      dt_ioppr_write_iop_order(mode, NULL, imgid);
+      if(mi)
+      {
+        GList *iop_list = dt_ioppr_get_iop_order_list_version(mode);
+        iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+        dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
+
+        d->current_mode = DT_IOP_ORDER_CUSTOM;
+
+        // and then we are back to custom mode in this case
+
+        const int reset = darktable.gui->reset;
+        darktable.gui->reset = 1;
+        dt_bauhaus_combobox_set(widget, d->current_mode);
+        darktable.gui->reset = reset;
+
+        dt_control_log(_("image migrated to custom order based on %s order"),
+                       mode == DT_IOP_ORDER_LEGACY ? _("legacy") : _("recommended"));
+
+        mode = DT_IOP_ORDER_CUSTOM;
+      }
+      else
+        dt_ioppr_write_iop_order(mode, NULL, imgid);
     }
+
+    g_list_free(mi);
 
     dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
@@ -229,7 +292,7 @@ static void _fill_iop_order(dt_lib_module_t *self)
   darktable.gui->reset = reset;
 }
 
-static void _image_loaded_callback(gpointer instace, gpointer user_data)
+static void _image_loaded_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   _fill_iop_order(self);
@@ -251,12 +314,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_set_tooltip_text
     (d->widget,
-     _("information:\n"
-       "  unsafe\t\t: an unsafe/broken iop-order, select one below\n"
-       "  custom\t\t: a customr iop-order\n"
-       "or select an iop-order version either:\n"
-       "  legacy\t\t\t: legacy iop order used prior to 3.0\n"
-       "  recommended\t: newly iop-order introduced in v3.0"));
+     _("custom\t\t: a customr iop-order\n"
+       "legacy\t\t\t: legacy iop order used prior to 3.0\n"
+       "recommended\t: newly iop-order introduced in v3.0"));
   g_signal_connect(G_OBJECT(d->widget), "value-changed",
                    G_CALLBACK(change_order_callback), (gpointer)self);
 
