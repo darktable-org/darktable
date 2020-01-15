@@ -1587,9 +1587,23 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // as white balance influence noise variance, we do a weighted mean depending
   // on white balance. Note that it is equivalent to keeping the 1/3 coefficients
   // if we divide by the white balance coefficients beforehand.
+  // we then normalize the line so that variance becomes equal to 1:
+  // var(Y0) = 1/9 * (var(R) + var(G) + var(B)) = 1/3
+  // var(sqrt(3)Y0) = 1
+  sum_invwb *= sqrt(3);
   toY0U0V0[0] = sum_invwb / wb[0];
   toY0U0V0[1] = sum_invwb / wb[1];
   toY0U0V0[2] = sum_invwb / wb[2];
+  // we also normalize the other line in a way that should give a variance of 1
+  // if var(B/wb[B]) == 1, then var(B) = wb[B]^2
+  float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
+  float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
+  toY0U0V0[3] /= stddevU0;
+  toY0U0V0[4] /= stddevU0;
+  toY0U0V0[5] /= stddevU0;
+  toY0U0V0[6] /= stddevV0;
+  toY0U0V0[7] /= stddevV0;
+  toY0U0V0[8] /= stddevV0;
   // update the coeffs with strength and scale
   for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * in_scale);
 
@@ -1600,9 +1614,10 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(!is_invertible)
   {
     // use standard form if whitebalance adapted matrix is not invertible
-    toY0U0V0[0] = 1.0f / (3.0f * d->strength * in_scale);
-    toY0U0V0[1] = 1.0f / (3.0f * d->strength * in_scale);
-    toY0U0V0[2] = 1.0f / (3.0f * d->strength * in_scale);
+    float stddevY0 = sqrt(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
+    toY0U0V0[0] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
+    toY0U0V0[1] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
+    toY0U0V0[2] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
     invertMatrix(toY0U0V0, toRGB);
   }
 
