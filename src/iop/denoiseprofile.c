@@ -1418,7 +1418,7 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 
 // =====================================================================================
 
-static gboolean invertMatrix(const float in[9], float out[9])
+static gboolean invert_matrix(const float in[9], float out[9])
 {
   // use same notation as https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
   float biga = in[4] * in[8] - in[5] * in[7];
@@ -1447,6 +1447,46 @@ static gboolean invertMatrix(const float in[9], float out[9])
   out[7] = 1.0f / det * bigf;
   out[8] = 1.0f / det * bigi;
   return TRUE;
+}
+
+// create the white balance adaptative conversion matrices
+// supposes toY0U0V0 already contains the "normal" conversion matrix
+static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float wb[3])
+{
+  float sum_invwb = 1.0f/wb[0] + 1.0f/wb[1] + 1.0f/wb[2];
+  // we change the coefs to Y0, but keeping the same spirit:
+  // they were all equal to 1/3 to get the Y0 the less noisy possible, assuming
+  // that all channels have equal noise variance.
+  // as white balance influence noise variance, we do a weighted mean depending
+  // on white balance. Note that it is equivalent to keeping the 1/3 coefficients
+  // if we divide by the white balance coefficients beforehand.
+  // we then normalize the line so that variance becomes equal to 1:
+  // var(Y0) = 1/9 * (var(R) + var(G) + var(B)) = 1/3
+  // var(sqrt(3)Y0) = 1
+  sum_invwb *= sqrt(3);
+  toY0U0V0[0] = sum_invwb / wb[0];
+  toY0U0V0[1] = sum_invwb / wb[1];
+  toY0U0V0[2] = sum_invwb / wb[2];
+  // we also normalize the other line in a way that should give a variance of 1
+  // if var(B/wb[B]) == 1, then var(B) = wb[B]^2
+  float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
+  float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
+  toY0U0V0[3] /= stddevU0;
+  toY0U0V0[4] /= stddevU0;
+  toY0U0V0[5] /= stddevU0;
+  toY0U0V0[6] /= stddevV0;
+  toY0U0V0[7] /= stddevV0;
+  toY0U0V0[8] /= stddevV0;
+  gboolean is_invertible = invert_matrix(toY0U0V0, toRGB);
+  if(!is_invertible)
+  {
+    // use standard form if whitebalance adapted matrix is not invertible
+    float stddevY0 = sqrt(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
+    toY0U0V0[0] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[1] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[2] = 1.0f / (3.0f * stddevY0);
+    invert_matrix(toY0U0V0, toRGB);
+  }
 }
 
 static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1531,50 +1571,17 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 
-  float sum_invwb = 1.0f/wb[0] + 1.0f/wb[1] + 1.0f/wb[2];
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
   float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
                        0.5f,      0.0f,      -0.5f,
                        0.25f,     -0.5f,     0.25f};
-  // we change the coefs to Y0, but keeping the same spirit:
-  // they were all equal to 1/3 to get the Y0 the less noisy possible, assuming
-  // that all channels have equal noise variance.
-  // as white balance influence noise variance, we do a weighted mean depending
-  // on white balance. Note that it is equivalent to keeping the 1/3 coefficients
-  // if we divide by the white balance coefficients beforehand.
-  // we then normalize the line so that variance becomes equal to 1:
-  // var(Y0) = 1/9 * (var(R) + var(G) + var(B)) = 1/3
-  // var(sqrt(3)Y0) = 1
-  sum_invwb *= sqrt(3);
-  toY0U0V0[0] = sum_invwb / wb[0];
-  toY0U0V0[1] = sum_invwb / wb[1];
-  toY0U0V0[2] = sum_invwb / wb[2];
-  // we also normalize the other line in a way that should give a variance of 1
-  // if var(B/wb[B]) == 1, then var(B) = wb[B]^2
-  float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
-  float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
-  toY0U0V0[3] /= stddevU0;
-  toY0U0V0[4] /= stddevU0;
-  toY0U0V0[5] /= stddevU0;
-  toY0U0V0[6] /= stddevV0;
-  toY0U0V0[7] /= stddevV0;
-  toY0U0V0[8] /= stddevV0;
+  float toRGB[9] = {0.0f, 0.0f, 0.0f,
+                   0.0f, 0.0f, 0.0f,
+                   0.0f, 0.0f, 0.0f};
+  set_up_conversion_matrices(toY0U0V0, toRGB, wb);
   // update the coeffs with strength and scale
   for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * in_scale);
-
-  float toRGB[9] = {0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f};
-  gboolean is_invertible = invertMatrix(toY0U0V0, toRGB);
-  if(!is_invertible)
-  {
-    // use standard form if whitebalance adapted matrix is not invertible
-    float stddevY0 = sqrt(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
-    toY0U0V0[0] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
-    toY0U0V0[1] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
-    toY0U0V0[2] = 1.0f / (3.0f * d->strength * in_scale * stddevY0);
-    invertMatrix(toY0U0V0, toRGB);
-  }
+  for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * in_scale);
 
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
 
