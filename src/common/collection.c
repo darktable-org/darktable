@@ -338,9 +338,7 @@ int dt_collection_update(const dt_collection_t *collection)
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT) ? " " LIMIT_QUERY : "");
   result = _dt_collection_store(collection, query, query_no_group);
 
-#ifdef _DEBUG
-  printf("SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sort_second_order,query);/*only for debugging*/
-#endif
+  dt_print(DT_DEBUG_SQL, "SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sort_second_order,query);
 
 
   /* free memory used */

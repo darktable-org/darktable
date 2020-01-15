@@ -649,9 +649,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
         else if(!strcmp(argv[k + 1], "ioporder"))
           darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
-        else if(!strcmp(argv[k + 1], "imageio")) {
+        else if(!strcmp(argv[k + 1], "imageio"))
           darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
-        } else
+        else if(!strcmp(argv[k + 1], "win"))
+          darktable.unmuted |= DT_DEBUG_WIN; // Windows OS debug info
+        else
           return usage(argv[0]);
         k++;
         argv[k-1] = NULL;
