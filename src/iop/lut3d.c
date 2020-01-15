@@ -41,7 +41,7 @@
 #include "win/getdelim.h"
 #endif // defined (_WIN32)
 
-DT_MODULE_INTROSPECTION(2, dt_iop_lut3d_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_lut3d_params_t)
 
 #define DT_IOP_LUT3D_MAX_PATHNAME 512
 #define DT_IOP_LUT3D_MAX_LUTNAME 128
@@ -72,7 +72,6 @@ typedef struct dt_iop_lut3d_params_t
   int nb_keypoints; // >0 indicates the presence of compressed lut
   char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
   char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
-  uint32_t gmic_version;
 } dt_iop_lut3d_params_t;
 
 typedef struct dt_iop_lut3d_gui_data_t
@@ -124,8 +123,6 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
 gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints, const char *const filename,
               int *const nb_lut, void *g, const char *const lutname, const gboolean newlutname);
 
-const unsigned int lut3d_gmic_version();
-
 #endif // HAVE_GMIC
 
 const char *name()
@@ -151,7 +148,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_lut3d_params_v1_t
     {
@@ -162,19 +159,33 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
     dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
-    dt_iop_lut3d_params_t *d = (dt_iop_lut3d_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
-
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
     n->colorspace = o->colorspace;
     n->interpolation = o->interpolation;
     n->nb_keypoints = 0;
     memset(&n->c_clut, 0, sizeof(n->c_clut));
     memset(&n->lutname, 0, sizeof(n->lutname));
-    n->gmic_version = 0;
     return 0;
   }
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_lut3d_params_v2_t
+    {
+      char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
+      int colorspace;
+      int interpolation;
+      int nb_keypoints; // >0 indicates the presence of compressed lut
+      char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
+      char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
+      uint32_t gmic_version;
+    } dt_iop_lut3d_params_v2_t;
+
+    dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
+    dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_lut3d_params_t));
+    return 0;
+  }
+
   return 1;
 }
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
@@ -951,8 +962,7 @@ void init(dt_iop_module_t *self)
     DT_IOP_TETRAHEDRAL,
     0, // not compressed - nb_keypoints = 0
     {0}, // no keypoints
-    {0}, // no lut name
-    0   // gmic version
+    {0} // no lut name
     };
 
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
@@ -1148,7 +1158,6 @@ static void get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
       gboolean lut_found = lut3d_read_gmz(&p->nb_keypoints, (unsigned char *const)p->c_clut, fullpath,
               &nb_lut, (void *)g, p->lutname, newlutname);
       // to be able to fix evolution issue, keep the gmic version with the compressed lut
-      p->gmic_version = lut3d_gmic_version();
       if (lut_found)
       {
         if (!newlutname)

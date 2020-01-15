@@ -37,8 +37,6 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
 void lut3d_add_lutname_to_list(void *g, const char *const lutname);
 
 void lut3d_clear_lutname_list(void *g);
-
-const unsigned int lut3d_gmic_version();
 }
 
 void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
@@ -225,12 +223,6 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
   image_list.assign(0);
   image_names.assign(0);
   return lut_found;
-}
-
-const unsigned int lut3d_gmic_version()
-{
-  // some versions are expressed with 4 digits. Valid until there is no major or minor version above 9
-  return (gmic_version >= 1000) ? gmic_version / 10 : gmic_version;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
