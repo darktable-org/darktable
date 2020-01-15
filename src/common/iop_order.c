@@ -698,6 +698,43 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
+GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list, GList *multi_instance_list)
+{
+  GList *l = g_list_first(multi_instance_list);
+
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    GList *link = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, entry->instance);
+
+    // if this multi-instance is not found, add it
+
+    if(!link)
+    {
+      // get any instance
+
+      link = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
+
+      if(link)
+      {
+        // move to last operation
+        do
+        {
+          link = g_list_next(link);
+        } while(link && strcmp(entry->operation, ((dt_iop_order_entry_t *)link)->operation) == 0);
+
+        // finaly insert the link
+
+        if (link) iop_order_list = g_list_insert_before(iop_order_list, link, entry);
+      }
+    }
+
+    l = g_list_next(l);
+  }
+
+  return iop_order_list;
+}
+
 static void _count_iop_module(GList *iop, const char *operation, int *max_multi_priority, int *count,
                               int *max_multi_priority_enabled, int *count_enabled)
 {
