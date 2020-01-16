@@ -1824,7 +1824,7 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
     gchar buf[64];
-    snprintf(buf, sizeof(buf), "%s,%d,", entry->operation, entry->instance);
+    snprintf(buf, sizeof(buf), "%s,%d%s", entry->operation, entry->instance, l == g_list_last(iop_order_list) ? "" : ",");
     text = g_strconcat(text, buf, NULL);
     l = g_list_next(l);
   }
@@ -1835,38 +1835,37 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
 GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 {
   GList *iop_order_list = NULL;
-  const int len = strlen(buf);
-  int pos = 0;
-  int start = 0;
 
-  while(buf[pos] && pos < len)
+  GList *list = dt_util_str_to_glist(",", buf);
+  GList *l = g_list_first(list);
+
+  while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-
     entry->o.iop_order = 0;
 
-    // set module name
-    start = pos;
-    while(buf[pos] != ',' && pos < len) pos++;
-    const int opname_len = pos-start;
-    if(opname_len > 20) { free(entry); goto error; }
-    memcpy(entry->operation, &buf[start], opname_len);
-    entry->operation[opname_len] = '\0';
+    // first operation name
 
-    pos++;
-    start = pos;
-    int inst;
-    sscanf(&buf[start], "%d", &inst);
+    strncpy(entry->operation, (char *)l->data, sizeof(entry->operation) - 1);
+
+    // then operation instance
+
+    l = g_list_next(l);
+    if(!l) goto error;
+
+    const char *data = (char *)l->data;
+    int inst = 0;
+    sscanf(data, "%d", &inst);
     entry->instance = inst;
 
-    if(entry->instance < 0 || entry->instance > 1000) { free(entry); goto error; }
-
-    while(buf[pos] != ',' && pos < len) pos++;
-    pos++;
-
     // append to the list
+
     iop_order_list = g_list_append(iop_order_list, entry);
+
+    l = g_list_next(l);
   }
+
+  g_list_free(list);
 
   _ioppr_reset_iop_order(iop_order_list);
 
