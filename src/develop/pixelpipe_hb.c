@@ -1077,13 +1077,12 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
         const uint32_t v = in[k];
-        // cache result+1, so common case of 0 count giving 0 output gets cached and cache misses are quick to find
-        // NOTE: for result==255, integer math will wrap to 0, hence it'll always be a chache miss
+        // cache XORd resul so common casees cached and cache misses are quick to find
         if(!cache[v])
         {
-          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) + 1;
+          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
         }
-        out[k] = cache[v] - 1;
+        out[k] = cache[v] ^ 1;
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
