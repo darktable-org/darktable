@@ -1022,17 +1022,18 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   const double _height = (double)(waveform_height - 1);
 
   // count the colors into buf ...
+  // work bin-wise so omp threads won't conflict
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
   dt_omp_firstprivate(roi_in, bin_width, _height, waveform_width, input, buf) \
-  schedule(static)
+  schedule(static,bin_width*64)
 #endif
-  for(int in_y = 0; in_y < roi_in->height; in_y++)
+  // FIXME: does this skip some final columns -- or use too many?
+  for(int in_x = 0; in_x < roi_in->width; in_x++)
   {
-    // FIXME: does this skip some final columns -- or use too many?
-    for(int in_x = 0; in_x < roi_in->width; in_x++)
+    const int out_x = in_x / bin_width;
+    for(int in_y = 0; in_y < roi_in->height; in_y++)
     {
-      const int out_x = in_x / bin_width;
       const float *const in = input + 4 * (in_y*roi_in->width + in_x);
       for(int k = 0; k < 3; k++)
       {
@@ -1042,9 +1043,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
         uint16_t *const out = buf + (out_x + waveform_width * out_y) * 3 + k;
-#ifdef _OPENMP
-#pragma omp atomic update
-#endif
         (*out)++;
       }
     }
@@ -1085,12 +1083,11 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
         const uint32_t v = in[k];
-        // cache XORd resul so common casees cached and cache misses are quick to find
+        // cache XORd result so common casees cached and cache misses are quick to find
         if(!cache[v])
         {
-#ifdef _OPENMP
-#pragma omp atomic write
-#endif
+          // multiple threads may be writing to cache[v], but as
+          // they're writing the same value, don't declare omp atomic
           cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
         }
         out[k] = cache[v] ^ 1;
