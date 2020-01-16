@@ -272,6 +272,7 @@ typedef struct dt_iop_denoiseprofile_global_data_t
 {
   int kernel_denoiseprofile_precondition;
   int kernel_denoiseprofile_precondition_v2;
+  int kernel_denoiseprofile_precondition_Y0U0V0;
   int kernel_denoiseprofile_init;
   int kernel_denoiseprofile_dist;
   int kernel_denoiseprofile_horiz;
@@ -281,6 +282,7 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_finish_v2;
   int kernel_denoiseprofile_backtransform;
   int kernel_denoiseprofile_backtransform_v2;
+  int kernel_denoiseprofile_backtransform_Y0U0V0;
   int kernel_denoiseprofile_decompose;
   int kernel_denoiseprofile_synthesize;
   int kernel_denoiseprofile_reduce_first;
@@ -2877,6 +2879,18 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                        MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
                        MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f), 1.0f};
 
+  // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
+  float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
+                      0.5f,      0.0f,      -0.5f,
+                      0.25f,     -0.5f,     0.25f};
+  float toRGB[9] = {0.0f, 0.0f, 0.0f,
+                  0.0f, 0.0f, 0.0f,
+                  0.0f, 0.0f, 0.0f};
+  set_up_conversion_matrices(toY0U0V0, toRGB, wb);
+  // update the coeffs with strength and scale
+  for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * scale);
+  for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * scale);
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
@@ -2907,7 +2921,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
     if(err != CL_SUCCESS) goto error;
   }
-  else
+  else if(d->wavelet_color_mode == MODE_RGB)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -2919,6 +2933,30 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 7, 4 * sizeof(float), (void *)&wb);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_v2, sizes);
     if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    cl_mem dev_Y0U0V0 = NULL;
+    dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
+    if(dev_Y0U0V0 != NULL)
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 4, 4 * sizeof(float), (void *)&aa);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 5, 4 * sizeof(float), (void *)&p);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 6, 4 * sizeof(float), (void *)&bb);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 7, sizeof(cl_mem), (void *)&dev_Y0U0V0);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, sizes);
+      dt_opencl_release_mem_object(dev_Y0U0V0);
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      dt_opencl_release_mem_object(dev_Y0U0V0);
+      goto error;
+    }
   }
 
   dev_buf1 = dev_out;
@@ -3025,31 +3063,47 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
     int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
-    // current scale number is s+offset_scale
-    // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
-    // max_scale only indicates the number of scales to process at THIS
-    // zoom level, it does NOT corresponds to the the maximum number of scales.
-    // in other words, max_scale is the maximum number of VISIBLE scales.
-    // That is why we have this "s+offset_scale"
-    float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    for(int ch = 0; ch < 3; ch++)
+
+    if(d->wavelet_color_mode == MODE_RGB)
     {
-      adjt[ch] *= band_force_exp_2;
+      // current scale number is s+offset_scale
+      // for instance, largest s is DT_IOP_DENOISE_PROFILE_BANDS
+      // max_scale only indicates the number of scales to process at THIS
+      // zoom level, it does NOT corresponds to the the maximum number of scales.
+      // in other words, max_s is the maximum number of VISIBLE scales.
+      // That is why we have this "s+offset_scale"
+      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      for(int ch = 0; ch < 3; ch++)
+      {
+        adjt[ch] *= band_force_exp_2;
+      }
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[0] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[1] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[2] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
-    band_force_exp_2 *= band_force_exp_2;
-    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    adjt[2] *= band_force_exp_2;
+    else
+    {
+      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[0] *= band_force_exp_2;
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 *= band_force_exp_2;
+      band_force_exp_2 *= 4;
+      adjt[1] *= band_force_exp_2;
+      adjt[2] *= band_force_exp_2;
+    }
 
     const float thrs[4] = { adjt[0] * sb2 / std_x[0], adjt[1] * sb2 / std_x[1], adjt[2] * sb2 / std_x[2], 0.0f };
     // fprintf(stderr, "scale %d thrs %f %f %f\n", s, thrs[0], thrs[1], thrs[2]);
@@ -3108,7 +3162,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform, sizes);
     if(err != CL_SUCCESS) goto error;
   }
-  else
+  else if(d->wavelet_color_mode == MODE_RGB)
   {
     const float bias = d->bias - 0.5 * logf(scale);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -3122,6 +3176,33 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 8, 4 * sizeof(float), (void *)&wb);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform_v2, sizes);
     if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    cl_mem dev_RGB = NULL;
+    dev_RGB = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toRGB);
+    if(dev_RGB != NULL)
+    {
+      const float bias = d->bias - 0.5 * logf(scale);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 4, 4 * sizeof(float), (void *)&aa);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 5, 4 * sizeof(float), (void *)&p);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 6, 4 * sizeof(float), (void *)&bb);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 7, sizeof(float), (void *)&bias);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 8, 4 * sizeof(float), (void *)&wb);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 9, sizeof(cl_mem), (void *)&dev_RGB);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, sizes);
+      dt_opencl_release_mem_object(dev_RGB);
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      dt_opencl_release_mem_object(dev_RGB);
+      goto error;
+    }
   }
 
   if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
@@ -3335,6 +3416,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_denoiseprofile_precondition = dt_opencl_create_kernel(program, "denoiseprofile_precondition");
   gd->kernel_denoiseprofile_precondition_v2 = dt_opencl_create_kernel(program, "denoiseprofile_precondition_v2");
+  gd->kernel_denoiseprofile_precondition_Y0U0V0 = dt_opencl_create_kernel(program, "denoiseprofile_precondition_Y0U0V0");
   gd->kernel_denoiseprofile_init = dt_opencl_create_kernel(program, "denoiseprofile_init");
   gd->kernel_denoiseprofile_dist = dt_opencl_create_kernel(program, "denoiseprofile_dist");
   gd->kernel_denoiseprofile_horiz = dt_opencl_create_kernel(program, "denoiseprofile_horiz");
@@ -3344,6 +3426,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_denoiseprofile_finish_v2 = dt_opencl_create_kernel(program, "denoiseprofile_finish_v2");
   gd->kernel_denoiseprofile_backtransform = dt_opencl_create_kernel(program, "denoiseprofile_backtransform");
   gd->kernel_denoiseprofile_backtransform_v2 = dt_opencl_create_kernel(program, "denoiseprofile_backtransform_v2");
+  gd->kernel_denoiseprofile_backtransform_Y0U0V0 = dt_opencl_create_kernel(program, "denoiseprofile_backtransform_Y0U0V0");
   gd->kernel_denoiseprofile_decompose = dt_opencl_create_kernel(program, "denoiseprofile_decompose");
   gd->kernel_denoiseprofile_synthesize = dt_opencl_create_kernel(program, "denoiseprofile_synthesize");
   gd->kernel_denoiseprofile_reduce_first = dt_opencl_create_kernel(program, "denoiseprofile_reduce_first");
