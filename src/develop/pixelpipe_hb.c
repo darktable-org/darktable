@@ -1018,6 +1018,11 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   const double _height = (double)(waveform_height - 1);
 
   // count the colors into buf ...
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(roi_in, bin_width, _height, waveform_width, input, buf) \
+  schedule(static)
+#endif
   for(int in_y = 0; in_y < roi_in->height; in_y++)
   {
     // FIXME: does this skip some final columns -- or use too many?
@@ -1054,6 +1059,12 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   const int cache_size = 4096;
   uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
 
+  // FIXME: does each thread need its own cache?
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
+  schedule(static)
+#endif
   for(int out_y = 0; out_y < waveform_height; out_y++)
   {
     for(int out_x = 0; out_x < waveform_width; out_x++)
