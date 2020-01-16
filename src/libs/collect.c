@@ -673,6 +673,9 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
         if((visible = (g_strrstr(haystack, (char *)l->data) != NULL))) break;
       }
     }
+
+    g_list_free(list);
+
   }
   else
   {
