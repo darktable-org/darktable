@@ -2077,21 +2077,33 @@ void dt_iop_nap(int32_t usec)
   g_usleep(usec);
 }
 
-dt_iop_module_t *get_colorout_module(void)
+dt_iop_module_t *dt_iop_get_colorout_module(void)
 {
-  return get_module_by_name("colorout");
+  return dt_iop_get_module_from_list(darktable.develop->iop, "colorout");
 }
 
-dt_iop_module_t *get_module_by_name(const char *op)
+dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op)
 {
-  GList *modules = darktable.develop->iop;
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(iop_list);
   while(modules)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-    if(!strcmp(module->op, op)) return module;
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op, op) == 0)
+    {
+      result = mod;
+      break;
+    }
     modules = g_list_next(modules);
   }
-  return NULL;
+
+  return result;
+}
+
+dt_iop_module_t *dt_iop_get_module(const char *op)
+{
+  return dt_iop_get_module_from_list(darktable.develop->iop, op);
 }
 
 int get_module_flags(const char *op)
