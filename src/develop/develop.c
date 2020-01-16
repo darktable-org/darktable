@@ -1546,8 +1546,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     hist->enabled = sqlite3_column_int(stmt, 5);
 
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
-    const double iop_order = sqlite3_column_double(stmt, 10);
-    int multi_priority = sqlite3_column_int(stmt, 8);
+    const int multi_priority = sqlite3_column_int(stmt, 8);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 9);
     if(!opname)
     {
@@ -1556,6 +1555,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       free(hist);
       continue;
     }
+
+    const int iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, opname, multi_priority);
 
     hist->module = NULL;
     dt_iop_module_t *find_op = NULL;
@@ -1587,7 +1588,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
         dt_iop_update_multi_priority(new_module, multi_priority);
-        new_module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, opname, multi_priority);
+        new_module->iop_order = iop_order;
 
         snprintf(new_module->multi_name, sizeof(new_module->multi_name), "%s", multi_name);
 
