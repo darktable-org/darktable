@@ -620,7 +620,9 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
 
 static void _ioppr_reset_iop_order(GList *iop_order_list)
 {
-  int iop_order = 0;
+  // iop-order must start with a number > 0 and be incremented. There is no
+  // other constraints.
+  int iop_order = 1;
   GList *l = iop_order_list;
   while(l)
   {
