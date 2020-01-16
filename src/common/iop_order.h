@@ -132,8 +132,8 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, struct dt_iop_modul
 gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 /** moves module before/after module_next/previous on pipe */
-int dt_ioppr_move_iop_before(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
-int dt_ioppr_move_iop_after(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
+gboolean dt_ioppr_move_iop_before(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
+gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
 #define DT_IOPPR_COLOR_ICC_LEN 512

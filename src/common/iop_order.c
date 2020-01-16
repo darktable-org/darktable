@@ -1392,12 +1392,12 @@ gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, dt_iop_module_t *mod
 // changes the module->iop_order so it comes before in the pipe than module_next
 // sort dev->iop to reflect the changes
 // return 1 if iop_order is changed, 0 otherwise
-int dt_ioppr_move_iop_before(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_next)
+gboolean dt_ioppr_move_iop_before(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_next)
 {
   GList *next = dt_ioppr_get_iop_order_link(dev->iop_order_list, module_next->op, module_next->multi_priority);
   GList *current = dt_ioppr_get_iop_order_link(dev->iop_order_list, module->op, module->multi_priority);
 
-  if(!next || !current) return 0;
+  if(!next || !current) return FALSE;
 
   dev->iop_order_list = g_list_remove_link(dev->iop_order_list, current);
   dev->iop_order_list = g_list_insert_before(dev->iop_order_list, next, current->data);
@@ -1406,18 +1406,18 @@ int dt_ioppr_move_iop_before(struct dt_develop_t *dev, dt_iop_module_t *module, 
 
   dt_ioppr_resync_modules_order(dev);
 
-  return 1;
+  return TRUE;
 }
 
 // changes the module->iop_order so it comes after in the pipe than module_prev
 // sort dev->iop to reflect the changes
 // return 1 if iop_order is changed, 0 otherwise
-int dt_ioppr_move_iop_after(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_prev)
+gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev, dt_iop_module_t *module, dt_iop_module_t *module_prev)
 {
   GList *prev = dt_ioppr_get_iop_order_link(dev->iop_order_list, module_prev->op, module_prev->multi_priority);
   GList *current = dt_ioppr_get_iop_order_link(dev->iop_order_list, module->op, module->multi_priority);
 
-  if(!prev || !current) return 0;
+  if(!prev || !current) return FALSE;
 
   dev->iop_order_list = g_list_remove_link(dev->iop_order_list, current);
 
@@ -1432,7 +1432,7 @@ int dt_ioppr_move_iop_after(struct dt_develop_t *dev, dt_iop_module_t *module, d
 
   dt_ioppr_resync_modules_order(dev);
 
-  return 1;
+  return TRUE;
 }
 
 //--------------------------------------------------------------------
