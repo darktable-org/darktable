@@ -110,6 +110,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
+    // FIXME: these are uint32_t, setting to -1 is confusing
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
