@@ -1037,6 +1037,9 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         // FIXME: skip NaN's rather than treating as 0?
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
+#ifdef _OPENMP
+#pragma omp atomic update
+#endif
         buf[(out_x + waveform_width * out_y) * 3 + k]++;
       }
     }
@@ -1080,6 +1083,9 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         // cache XORd resul so common casees cached and cache misses are quick to find
         if(!cache[v])
         {
+#ifdef _OPENMP
+#pragma omp atomic write
+#endif
           cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
         }
         out[k] = cache[v] ^ 1;
