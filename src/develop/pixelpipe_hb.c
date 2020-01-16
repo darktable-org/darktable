@@ -1051,6 +1051,8 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
     / 255.0f; // normalization to 0..1 for gamma correction
   const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
   //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+  const int cache_size = 4096;
+  uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
 
   for(int out_y = 0; out_y < waveform_height; out_y++)
   {
@@ -1062,8 +1064,21 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       {
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
-        if(in[k] == 0) continue;
-        out[k] = CLAMP(powf(in[k] * scale, gamma) * 255.0, 0, 255);
+        const uint32_t v = in[k];
+        // cache result+1, so common case of 0 count giving 0 output gets cached and cache misses are quick to find
+        // NOTE: for result==255, integer math will wrap to 0, hence it'll always be a chache miss
+        if(v < cache_size)
+        {
+          if(!cache[v])
+          {
+            cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) + 1;
+          }
+          out[k] = cache[v] - 1;
+        }
+        else
+        {
+          out[k] = CLAMP(powf(v * scale, gamma) * 255.0, 0, 255);
+        }
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
@@ -1073,6 +1088,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   }
   //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
 
+  free(cache);
   free(buf);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
