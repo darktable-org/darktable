@@ -423,8 +423,6 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
-/* returns the iop-module found in list with the given name */
-struct dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op);
 
 /*
  * distort functions

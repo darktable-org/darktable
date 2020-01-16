@@ -1258,7 +1258,7 @@ GList *dt_history_duplicate(GList *hist)
     }
     else
     {
-      dt_iop_module_t *base = dt_dev_get_base_module(darktable.develop->iop, old->op_name);
+      dt_iop_module_t *base = dt_iop_get_module(old->op_name);
       if(base)
       {
         params_size = base->params_size;
