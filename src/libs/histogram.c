@@ -186,8 +186,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
 
-  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                        : logf(1.0 + dev->histogram_max);
   const int waveform_width = dev->histogram_waveform_width;
   const int waveform_height = dev->histogram_waveform_height;
   const gint waveform_stride = dev->histogram_waveform_stride;
@@ -244,7 +242,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw histogram
-  if(hist_max > 0.0f && dev->image_storage.id == dev->preview_pipe->output_imgid)
+  if(dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
@@ -263,17 +261,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
                                                    waveform_width, waveform_height, waveform_stride);
 
-      cairo_save(cr);
       cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
-      cairo_restore(cr);
     }
-    else
+    else if(dev->histogram_max)
     {
       uint32_t *hist = buf;
+      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                            : logf(1.0 + dev->histogram_max);
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
