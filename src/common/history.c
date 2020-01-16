@@ -316,48 +316,43 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     }
   }
 
-  if(module_added && !append)
+  if(module_added && mod_replace == NULL && !append)
   {
     // we haven't found a module to replace
-    if(mod_replace == NULL)
+    // check if there's a module with the same (operation, multi_name) on dev->iop
+    GList *modules_dest = g_list_first(dev_dest->iop);
+    while(modules_dest)
     {
-      // check if there's a module with the same (operation, multi_name) on dev->iop
-      GList *modules_dest = g_list_first(dev_dest->iop);
-      while(modules_dest)
-      {
-        dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
+      dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
-        if(strcmp(mod_src->op, mod_dest->op) == 0 && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      if(strcmp(mod_src->op, mod_dest->op) == 0 && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      {
+        // but only if it hasn't been used already
+        if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
         {
-          // but only if it hasn't been used already
-          if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
-          {
-            // we will replace this module
-            modules_used = g_list_append(modules_used, mod_dest);
-            mod_replace = mod_dest;
-            break;
-          }
+          // we will replace this module
+          modules_used = g_list_append(modules_used, mod_dest);
+          mod_replace = mod_dest;
+          break;
         }
-        modules_dest = g_list_next(modules_dest);
       }
+      modules_dest = g_list_next(modules_dest);
     }
   }
 
-  if(module_added)
+  if(module_added && mod_replace == NULL)
   {
     // we haven't found a module to replace, so we will create a new instance
-    if(mod_replace == NULL)
+    // but if there's an un-used instance on dev->iop we will use that
+
+    if(_search_history_by_op(dev_dest, mod_src) == NULL)
     {
-      // but if there's an un-used instance on dev->iop we will use that
-      if(_search_history_by_op(dev_dest, mod_src) == NULL)
+      // there should be only one instance of this iop (since is un-used)
+      mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
+      if(mod_replace == NULL)
       {
-        // there should be only one instance of this iop (since is un-used)
-        mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-        if(mod_replace == NULL)
-        {
-          fprintf(stderr, "[dt_history_merge_module_into_history] can't find base instance module %s\n", mod_src->op);
-          module_added = 0;
-        }
+        fprintf(stderr, "[dt_history_merge_module_into_history] can't find base instance module %s\n", mod_src->op);
+        module_added = 0;
       }
     }
   }
@@ -365,7 +360,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   if(module_added)
   {
     // if we are creating a new instance, create a new module
-    if(!mod_replace)
+    if(mod_replace == NULL)
     {
       dt_iop_module_t *base = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
       module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));

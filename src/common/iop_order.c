@@ -1755,13 +1755,13 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
       {
         iop_order_ok = 0;
         fprintf(stderr, "[dt_ioppr_check_iop_order] history module not used but enabled!! %s %s(%d) image %i (%s)\n",
-            hist->op_name, hist->multi_name, hist->iop_order,imgid, msg);
+            hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
       if(hist->multi_priority == 0)
       {
         iop_order_ok = 0;
         fprintf(stderr, "[dt_ioppr_check_iop_order] history base module set as not used %s %s(%d) image %i (%s)\n",
-            hist->op_name, hist->multi_name, hist->iop_order,imgid, msg);
+            hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
     }
 
