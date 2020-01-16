@@ -1056,13 +1056,14 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
     / 255.0f; // normalization to 0..1 for gamma correction
   const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
   //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
-  const int cache_size = 4096;
+  // even bin_width 12 and height 900 image gives 10,800 byte cache, more normal will ~1K
+  const int cache_size = (roi_in->height * bin_width) + 1;
   uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
 
   // FIXME: does each thread need its own cache?
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
+  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, cache_size, scale, gamma) \
   schedule(static)
 #endif
   for(int out_y = 0; out_y < waveform_height; out_y++)
@@ -1078,18 +1079,11 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         const uint32_t v = in[k];
         // cache result+1, so common case of 0 count giving 0 output gets cached and cache misses are quick to find
         // NOTE: for result==255, integer math will wrap to 0, hence it'll always be a chache miss
-        if(v < cache_size)
+        if(!cache[v])
         {
-          if(!cache[v])
-          {
-            cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) + 1;
-          }
-          out[k] = cache[v] - 1;
+          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) + 1;
         }
-        else
-        {
-          out[k] = CLAMP(powf(v * scale, gamma) * 255.0, 0, 255);
-        }
+        out[k] = cache[v] - 1;
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
