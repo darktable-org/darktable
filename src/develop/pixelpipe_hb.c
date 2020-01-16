@@ -1010,7 +1010,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   const int waveform_width = roi_in->width / bin_width;
   dev->histogram_waveform_width = waveform_width;
 
-  // FIXME: better to pre-allocate this in dev?
   // max input size should be 1440x900, and with a bin_width of 1,
   // that makes a maximum possible count of 900 in buf, while even if
   // waveform buffer is 128 (about smallest possible), bin_width is
@@ -1028,7 +1027,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dt_omp_firstprivate(roi_in, bin_width, _height, waveform_width, input, buf) \
   schedule(static,bin_width*64)
 #endif
-  // FIXME: does this skip some final columns -- or use too many?
   for(int in_x = 0; in_x < roi_in->width; in_x++)
   {
     const int out_x = in_x / bin_width;
@@ -1066,10 +1064,9 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   const int cache_size = (roi_in->height * bin_width) + 1;
   uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
 
-  // FIXME: does each thread need its own cache?
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, cache_size, scale, gamma) \
+  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale) \
   schedule(static)
 #endif
   for(int out_y = 0; out_y < waveform_height; out_y++)

@@ -115,15 +115,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_levels_max = -1;
 
     // FIXME: allow setting these via dt_conf system?
-    // useless once it exceeds width of DT_MIPMAP_F, (which is
-    // darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2 for mosaiced
-    // imaages)
-    //dev->histogram_waveform_width = 768;
-    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] * 2;
-    // this is sufficient visual information though the waveform
-    // widget will probably be either 175 or 350 pixels high depending
-    // on hidpi
-    dev->histogram_waveform_height = 512;
+    // Calculate more pixels for hidpi. Don't exceed width of
+    // DT_MIPMAP_F (darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
+    // for mosaiced images) or make it too slow to calculate
+    // (regardless of ppd)
+    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F] * MAX(2, darktable.gui->ppd);
+    // Hardcoded hack: histogram widget will probably be either 175 or
+    // 350 pixels high depending on hidpi
+    dev->histogram_waveform_height = 175 * MAX(2, darktable.gui->ppd);
     dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
     dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
   }
