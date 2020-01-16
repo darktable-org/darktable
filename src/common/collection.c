@@ -1446,8 +1446,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      query = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", escaped_text);
+    {
+      GList *list, *l;
+      list = dt_util_str_to_glist(",", escaped_text);
+
+      for (l = list; l != NULL; l = l->next)
+        l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
+
+      query = dt_util_glist_to_str(" OR ", list);
+
       break;
+    }
 
     case DT_COLLECTION_PROP_DAY:
     // query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
