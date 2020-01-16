@@ -1011,7 +1011,11 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dev->histogram_waveform_width = waveform_width;
 
   // FIXME: better to pre-allocate this in dev?
-  uint32_t *buf = (uint32_t *)calloc(waveform_width * waveform_height * 3, sizeof(uint32_t));
+  // max input size should be 1440x900, and with a bin_width of 1,
+  // that makes a maximum possible count of 900 in buf, while even if
+  // waveform buffer is 128 (about smallest possible), bin_width is
+  // 12, making max count of 10,800, still much smaller than uint16_t
+  uint16_t *buf = (uint16_t *)calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
   memset(dev->histogram_waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride);
 
   // 1.0 is at 8/9 of the height!
@@ -1037,10 +1041,11 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
         // FIXME: skip NaN's rather than treating as 0?
         const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
+        uint16_t *const out = buf + (out_x + waveform_width * out_y) * 3 + k;
 #ifdef _OPENMP
 #pragma omp atomic update
 #endif
-        buf[(out_x + waveform_width * out_y) * 3 + k]++;
+        (*out)++;
       }
     }
   }
@@ -1073,7 +1078,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   {
     for(int out_x = 0; out_x < waveform_width; out_x++)
     {
-      uint32_t *const in = buf + (waveform_width * out_y + out_x) * 3;
+      const uint16_t *const in = buf + (waveform_width * out_y + out_x) * 3;
       uint8_t *const out = waveform + (out_y * waveform_stride) + (out_x * 4);
       for(int k = 0; k < 3; k++)
       {
