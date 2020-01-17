@@ -886,8 +886,6 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
   }
 }
 
-// perform precondition and conversion to Y0U0V0
-// (as defined in secrets of image denoising cuisine)
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
                                    const float a, const float p[3], const float b, const float toY0U0V0[9])
 {
@@ -1455,11 +1453,17 @@ static gboolean invert_matrix(const float in[9], float out[9])
 // supposes toY0U0V0 already contains the "normal" conversion matrix
 static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float wb[3])
 {
+  // for an explanation of the spirit of the choice of the coefficients of the
+  // Y0U0V0 conversion matrix, see part 12.3.3 page 190 of
+  // "From Theory to Practice, a Tour of Image Denoising"
+  // https://hal.archives-ouvertes.fr/tel-01114299
+  // we adapt a bit the coefficients, in a way that follows the same spirit.
+
   float sum_invwb = 1.0f/wb[0] + 1.0f/wb[1] + 1.0f/wb[2];
-  // we change the coefs to Y0, but keeping the same spirit:
-  // they were all equal to 1/3 to get the Y0 the less noisy possible, assuming
+  // we change the coefs to Y0, but keeping the goal of making SNR higher:
+  // these were all equal to 1/3 to get the Y0 the least noisy possible, assuming
   // that all channels have equal noise variance.
-  // as white balance influence noise variance, we do a weighted mean depending
+  // as white balance influences noise variance, we do a weighted mean depending
   // on white balance. Note that it is equivalent to keeping the 1/3 coefficients
   // if we divide by the white balance coefficients beforehand.
   // we then normalize the line so that variance becomes equal to 1:
@@ -1471,6 +1475,10 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   toY0U0V0[2] = sum_invwb / wb[2];
   // we also normalize the other line in a way that should give a variance of 1
   // if var(B/wb[B]) == 1, then var(B) = wb[B]^2
+  // note that we don't change the coefs of U0 and V0 depending on white balance,
+  // apart of the normalization: these coefficients do differences of RGB channels
+  // to try to reduce or cancel the signal. If we change these depending on white
+  // balance, we will not reduce/cancel the signal anymore.
   float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
   float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
   toY0U0V0[3] /= stddevU0;
