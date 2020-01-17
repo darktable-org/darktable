@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 
+#include "common/iop_profile.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
