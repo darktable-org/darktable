@@ -967,7 +967,6 @@ static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
 {
   const dt_image_t *img = &module->dev->image_storage;
 
-  dt_print(DT_DEBUG_WIN, "reading WB for %s\n", img->filename); //marco
   // the raw should provide wb coeffs:
   int ok = 1;
   // Only check the first three values, the fourth is usually NAN for RGB
