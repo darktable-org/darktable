@@ -550,8 +550,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
       for(int c = DT_DENOISE_PROFILE_NONE_V9; c < DT_DENOISE_PROFILE_NONE; c++)
       {
-        v10->x[c][b] = 1.0f;
-        v10->y[c][b] = 1.0f;
+        v10->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
+        v10->y[c][b] = 0.5f;
       }
     }
     v10->scattering = v9.scattering;
@@ -3619,16 +3619,18 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       gtk_widget_hide(g->box_nlm);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_wavelets);
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
+      gtk_widget_set_visible(GTK_WIDGET(g->wavelet_color_mode), p->use_new_vst);
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), p->use_new_vst && (p->wavelet_color_mode == MODE_RGB));
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), p->use_new_vst && (p->wavelet_color_mode == MODE_Y0U0V0));
       break;
     case 3:
       p->mode = MODE_WAVELETS_AUTO;
       gtk_widget_hide(g->box_nlm);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_wavelets);
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
+      gtk_widget_set_visible(GTK_WIDGET(g->wavelet_color_mode), p->use_new_vst);
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), p->use_new_vst && (p->wavelet_color_mode == MODE_RGB));
+      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), p->use_new_vst && (p->wavelet_color_mode == MODE_Y0U0V0));
       break;
     case 4:
       p->mode = MODE_VARIANCE;
@@ -3638,8 +3640,8 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       break;
   }
   const gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
-  gtk_widget_set_visible(g->shadows, !auto_mode);
-  gtk_widget_set_visible(g->bias, !auto_mode);
+  gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
+  gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
   gtk_widget_set_visible(g->overshooting, auto_mode);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -4283,6 +4285,9 @@ static void use_new_vst_callback(GtkWidget *widget, dt_iop_module_t *self)
   const gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
   gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
   gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
+  gtk_widget_set_visible(g->wavelet_color_mode, p->use_new_vst);
+  if(!p->use_new_vst && p->wavelet_color_mode == MODE_Y0U0V0)
+    p->wavelet_color_mode = MODE_RGB;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
