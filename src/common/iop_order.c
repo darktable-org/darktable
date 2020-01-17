@@ -436,12 +436,19 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    if(strcmp(recommended_order[k].operation, entry->operation)
-       || recommended_order[k].instance != 0)
+    if(strcmp(recommended_order[k].operation, entry->operation))
     {
       ok = FALSE;
       break;
     }
+    else
+    {
+      // skip all the other instance of same module if any
+      while(g_list_next(l)
+            && !strcmp(recommended_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
+        l = g_list_next(l);
+    }
+
     k++;
     l = g_list_next(l);
   }
@@ -455,12 +462,19 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    if(strcmp(legacy_order[k].operation, entry->operation)
-       || legacy_order[k].instance != 0)
+    if(strcmp(legacy_order[k].operation, entry->operation))
     {
       ok = FALSE;
       break;
     }
+    else
+    {
+      // skip all the other instance of same module if any
+      while(g_list_next(l)
+            && !strcmp(recommended_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
+        l = g_list_next(l);
+    }
+
     k++;
     l = g_list_next(l);
   }
@@ -468,6 +482,24 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   if(ok) return DT_IOP_ORDER_LEGACY;
 
   return DT_IOP_ORDER_CUSTOM;
+}
+
+static gboolean _has_multiple_instances(GList *iop_order_list)
+{
+  GList *l = iop_order_list;
+
+  while(l)
+  {
+    GList *next = g_list_next(l);
+    if(next
+       && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                 ((dt_iop_order_entry_t *)(next->data))->operation))
+    {
+      return TRUE;
+    }
+    l = next;
+  }
+  return FALSE;
 }
 
 gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_list, const int32_t imgid)
@@ -481,7 +513,7 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_li
   if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
   sqlite3_finalize(stmt);
 
-  if(kind == DT_IOP_ORDER_CUSTOM)
+  if(kind == DT_IOP_ORDER_CUSTOM || _has_multiple_instances(iop_order_list))
   {
     gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -572,8 +604,9 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const dt_iop_order_t version = sqlite3_column_int(stmt, 0);
+      const gboolean has_iop_list = (sqlite3_column_type(stmt, 1) != SQLITE_NULL);
 
-      if(version == DT_IOP_ORDER_CUSTOM)
+      if(version == DT_IOP_ORDER_CUSTOM || has_iop_list)
       {
         const char *buf = (char *)sqlite3_column_text(stmt, 1);
         if(buf) iop_order_list = dt_ioppr_deserialize_text_iop_order_list(buf);
