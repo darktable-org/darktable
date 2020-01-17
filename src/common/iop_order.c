@@ -317,35 +317,34 @@ dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
   return iop_order_version;
 }
 
-// returns a list of dt_iop_order_rule_t
-// this do not have versions
+// a rule prevents operations to be switched,
+// that is a prev operation will not be allowed to be moved on top of the next operation.
 GList *dt_ioppr_get_iop_order_rules()
 {
   GList *rules = NULL;
 
-  const dt_iop_order_rule_t rule_entry[] = { { "rawprepare", "invert" },
-                                                { "invert", "temperature" },
-                                                { "temperature", "highlights" },
-                                                { "highlights", "cacorrect" },
-                                                { "cacorrect", "hotpixels" },
-                                                { "hotpixels", "rawdenoise" },
-                                                { "rawdenoise", "demosaic" },
-                                                { "demosaic", "colorin" },
-                                                { "colorin", "colorout" },
-                                                { "colorout", "gamma" },
-                                                /* clipping GUI broken if flip is done on top */
-                                                { "flip", "clipping" },
-                                                /* clipping GUI broken if ashift is done on top */
-                                                { "ashift", "clipping" },
-                                                { "\0", "\0" } };
+  const dt_iop_order_rule_t rule_entry[] = {
+    { .op_prev = "rawprepare",  .op_next = "invert"      },
+    { .op_prev = "invert",      .op_next = "temperature" },
+    { .op_prev = "temperature", .op_next = "highlights"  },
+    { .op_prev = "highlights",  .op_next = "cacorrect"   },
+    { .op_prev = "cacorrect",   .op_next = "hotpixels"   },
+    { .op_prev = "hotpixels",   .op_next = "rawdenoise"  },
+    { .op_prev = "rawdenoise",  .op_next = "demosaic"    },
+    { .op_prev = "demosaic",    .op_next = "colorin"     },
+    { .op_prev = "colorin",     .op_next = "colorout"    },
+    { .op_prev = "colorout",    .op_next = "gamma"       },
+    { .op_prev = "flip",        .op_next = "clipping"    }, // clipping GUI broken if flip is done on top
+    { .op_prev = "ashift",      .op_next = "clipping"    }, // clipping GUI broken if ashift is done on top
+    { "\0", "\0" } };
 
   int i = 0;
   while(rule_entry[i].op_prev[0])
   {
     dt_iop_order_rule_t *rule = calloc(1, sizeof(dt_iop_order_rule_t));
 
-    snprintf(rule->op_prev, sizeof(rule->op_prev), "%s", rule_entry[i].op_prev);
-    snprintf(rule->op_next, sizeof(rule->op_next), "%s", rule_entry[i].op_next);
+    memcpy(rule->op_prev, rule_entry[i].op_prev, sizeof(rule->op_prev));
+    memcpy(rule->op_next, rule_entry[i].op_next, sizeof(rule->op_next));
 
     rules = g_list_append(rules, rule);
     i++;
