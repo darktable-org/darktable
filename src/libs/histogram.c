@@ -220,16 +220,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
+  // exposure change regions
   if(d->highlight == 1)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    cairo_rectangle(cr, 0, 0, .2 * width, height);
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
+    else
+      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
     cairo_fill(cr);
   }
   else if(d->highlight == 2)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    cairo_rectangle(cr, 0.2 * width, 0, width, height);
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
+    else
+      cairo_rectangle(cr, 0.2 * width, 0, width, height);
     cairo_fill(cr);
   }
 
@@ -323,6 +330,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
   /* check if exposure hooks are available */
   gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
@@ -331,29 +339,36 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->dragging && d->highlight == 2)
+  if(d->dragging)
   {
-    float exposure = d->exposure + (event->x - d->button_down_x) * 4.0f / (float)allocation.width;
-    dt_dev_exposure_set_exposure(darktable.develop, exposure);
-  }
-  else if(d->dragging && d->highlight == 1)
-  {
-    float black = d->black - (event->x - d->button_down_x) * .1f / (float)allocation.width;
-    dt_dev_exposure_set_black(darktable.develop, black);
+    const float diff = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM ? d->button_down_y - event->y
+                                                                        : event->x - d->button_down_x;
+    const int range = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM ? allocation.height
+                                                                       : allocation.width;
+    if (d->highlight == 2)
+    {
+      float exposure = d->exposure + diff * 4.0f / (float)range;
+      dt_dev_exposure_set_exposure(darktable.develop, exposure);
+    }
+    else if(d->highlight == 1)
+    {
+      float black = d->black - diff * .1f / (float)range;
+      dt_dev_exposure_set_black(darktable.develop, black);
+    }
   }
   else
   {
     const float x = event->x;
     const float y = event->y;
-    const float pos = x / (float)(allocation.width);
+    const float posx = x / (float)(allocation.width);
+    const float posy = y / (float)(allocation.height);
 
-
-    if(pos < 0 || pos > 1.0)
+    if(posx < 0.0f || posx > 1.0f || posy < 0.0f || posy > 1.0f)
       ;
     else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 3;
-      switch(darktable.develop->histogram_type)
+      switch(dev->histogram_type)
       {
         case DT_DEV_HISTOGRAM_LOGARITHMIC:
           gtk_widget_set_tooltip_text(widget, _("set histogram mode to linear"));
@@ -384,7 +399,8 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       d->highlight = 6;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
     }
-    else if(pos < 0.2)
+    else if((posx < 0.2f && dev->histogram_type != DT_DEV_HISTOGRAM_WAVEFORM) ||
+            (posy > 7.0f/9.0f && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM))
     {
       d->highlight = 1;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
