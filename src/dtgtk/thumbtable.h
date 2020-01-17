@@ -29,9 +29,9 @@ typedef struct dt_thumbtable_t
   dt_thumbtable_mode_t mode;
 
   GtkWidget *widget; // main widget
-  GtkWidget *flow;   // flowbox which cantain the thumbnails
+  GtkWidget *area;   // GtkFixed which cantain the thumbnails
 
-  GListStore *fstore; // list of thumbnails object drawn at screen
+  GList *list; // list of thumbnails struct drawn at screen
 
   int offset; // index of the first shown image
 
