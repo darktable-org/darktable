@@ -28,9 +28,6 @@
 #include "dtgtk/thumbnail_btn.h"
 #include "views/view.h"
 
-G_DEFINE_TYPE(dt_thumbnail, dt_thumbnail, G_TYPE_OBJECT)
-
-
 static void _set_over_flag(GtkWidget *w, gboolean over)
 {
   int flags = gtk_widget_get_state_flags(w);
@@ -51,7 +48,7 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE;
 }
 
-static void _draw_background(cairo_t *cr, dt_thumbnail *thumb)
+static void _draw_background(cairo_t *cr, dt_thumbnail_t *thumb)
 {
   // we draw the thumbtable background (the space between thumbnails)
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
@@ -140,7 +137,7 @@ static void _draw_background(cairo_t *cr, dt_thumbnail *thumb)
   }
 }
 
-static void _draw_image(cairo_t *cr, dt_thumbnail *thumb)
+static void _draw_image(cairo_t *cr, dt_thumbnail_t *thumb)
 {
   if(!thumb->img_surf) return;
 
@@ -149,7 +146,7 @@ static void _draw_image(cairo_t *cr, dt_thumbnail *thumb)
   cairo_paint(cr);
 }
 
-static void _draw_image_border(cairo_t *cr, dt_thumbnail *thumb)
+static void _draw_image_border(cairo_t *cr, dt_thumbnail_t *thumb)
 {
 
 }
@@ -157,7 +154,7 @@ static void _draw_image_border(cairo_t *cr, dt_thumbnail *thumb)
 static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(thumb->imgid <= 0)
   {
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
@@ -181,7 +178,6 @@ static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer use
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
   }
-
   // we draw the background with thumb border and image type
   _draw_background(cr, thumb);
 
@@ -203,7 +199,7 @@ static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 static gboolean _back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   if(!user_data) return TRUE;
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   dt_control_set_mouse_over_id(thumb->imgid);
   _set_over_flag(thumb->w_info_back_eb, FALSE);
   return TRUE;
@@ -218,7 +214,7 @@ static void _back_press_callback(GtkWidget *widget, GdkEventButton *event, gpoin
 }
 static void _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
   if(event->button == 1)
   {
@@ -235,7 +231,7 @@ static void _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpo
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb || !thumb->w_back || !GTK_IS_WIDGET(thumb->w_back)) return;
 
   int over_id = dt_control_get_mouse_over_id();
@@ -254,7 +250,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
-  dt_thumbnail *thumb = (dt_thumbnail *)user_data;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
 
   gboolean selected = FALSE;
@@ -280,10 +276,8 @@ static gboolean _info_back_enter_notify_callback(GtkWidget *widget, GdkEventCros
   return TRUE;
 }
 
-GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 {
-  dt_thumbnail *thumb = (dt_thumbnail *)item;
-
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
@@ -355,29 +349,30 @@ GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data)
     gtk_widget_set_margin_bottom(thumb->w_stars_box, 0.045 * thumb->width - r1);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars_box);
   }
+  gtk_widget_show_all(thumb->w_main);
   return thumb->w_main;
 }
 
-static void dt_thumbnail_init(dt_thumbnail *self)
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid)
 {
+  dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
+  thumb->width = width;
+  thumb->height = height;
+  thumb->imgid = imgid;
+
+  dt_thumbnail_create_widget(thumb);
+
+  return thumb;
 }
 
-static void dt_thumbnail_finalize(GObject *obj)
+void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
-  dt_thumbnail *thumb = (dt_thumbnail *)obj;
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mouse_over_image_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
 
-  G_OBJECT_CLASS(dt_thumbnail_parent_class)->finalize(obj);
-}
-
-static void dt_thumbnail_class_init(dt_thumbnailClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS(class);
-
-  object_class->finalize = dt_thumbnail_finalize;
+  free(thumb);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

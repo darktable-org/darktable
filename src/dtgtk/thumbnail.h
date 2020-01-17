@@ -19,15 +19,12 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#define TYPE_DT_THUMBNAIL (dt_thumbnail_get_type())
-
 typedef struct
 {
-  GObject parent;
-
   int imgid;
-  int width, height;
-  int img_width, img_height;
+  int width, height;         // current thumb size (with the background and the border)
+  int x, y;                  // current position at screen
+  int img_width, img_height; // current image only size
 
   gboolean mouse_over;
   gboolean selected;
@@ -46,15 +43,11 @@ typedef struct
   GtkWidget *w_stars[4];
   GtkWidget *w_stars_box;
 
-} dt_thumbnail;
-typedef struct
-{
-  GObjectClass parent_class;
-} dt_thumbnailClass;
+} dt_thumbnail_t;
 
-GType dt_thumbnail_get_type();
-
-GtkWidget *dt_thumbnail_get_widget(gpointer item, gpointer user_data);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid);
+void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
