@@ -77,6 +77,7 @@ FILE(GLOB SOURCE_FILES
   "common/usermanual_url.c"
   "common/iop_group.c"
   "common/iop_order.c"
+  "common/iop_profile.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -669,7 +670,7 @@ if(NOT SOURCE_PACKAGE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # do not error out on "loop not vectorized" clang OpenMP warnings 
+  # do not error out on "loop not vectorized" clang OpenMP warnings
   add_definitions("-Wno-error=pass-failed")
 endif()
 

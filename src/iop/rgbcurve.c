@@ -21,6 +21,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
