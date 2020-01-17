@@ -21,7 +21,7 @@
 
 typedef struct
 {
-  int imgid;
+  int imgid, rowid;
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
   int img_width, img_height; // current image only size
@@ -45,7 +45,7 @@ typedef struct
 
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 
