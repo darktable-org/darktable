@@ -35,22 +35,21 @@ struct dt_dev_pixelpipe_t;
 
 typedef enum dt_iop_order_t
 {
-  DT_IOP_ORDER_CUSTOM      = 0,
-  DT_IOP_ORDER_LEGACY      = 1,
-  DT_IOP_ORDER_RECOMMENDED = 2,
+  DT_IOP_ORDER_CUSTOM      = 0, // a customr order (re-ordering the pipe)
+  DT_IOP_ORDER_LEGACY      = 1, // up to dt 2.6.3
+  DT_IOP_ORDER_RECOMMENDED = 2, // starts with dt 3.0
   DT_IOP_ORDER_LAST        = 3
 } dt_iop_order_t;
 
 typedef struct dt_iop_order_entry_t
 {
   union {
-    double iop_order_f;
-    int iop_order;
+    double iop_order_f;  // only used for backward compatibility while migrating db
+    int iop_order;       // order from 1 and incrementing
   } o;
   // operation + instance is the unique id for an active module in the pipe
   char operation[20];
-  int32_t instance;
-  // to order the pipe (keep double for migrate legacy db)
+  int32_t instance;      // or previously named multi_priority
 } dt_iop_order_entry_t;
 
 typedef struct dt_iop_order_rule_t
