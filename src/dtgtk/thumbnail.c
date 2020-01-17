@@ -350,15 +350,17 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars_box);
   }
   gtk_widget_show_all(thumb->w_main);
+  g_object_ref(G_OBJECT(thumb->w_main));
   return thumb->w_main;
 }
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid)
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
   thumb->height = height;
   thumb->imgid = imgid;
+  thumb->rowid = rowid;
 
   dt_thumbnail_create_widget(thumb);
 
