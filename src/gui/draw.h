@@ -163,24 +163,22 @@ static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int
                                           const int bottom)
 {
   //   float width = right - left;
-  float height = bottom - top;
-
-  int num = 9, middle = 5;
+  const float height = bottom - top;
+  const int num = 9, middle = 5, white = 1;
+  // FIXME: should this vary with ppd?
+  const double dashes = 4.0;
 
   cairo_save(cr);
 
+  // FIXME: should be using DT_PIXEL_APPLY_DPI()?
+  const double wd = cairo_get_line_width(cr);
   for(int k = 1; k < num; k++)
   {
-    if(k == middle) continue;
+    cairo_set_dash(cr, &dashes, k == white || k == middle, 0);
+    cairo_set_line_width(cr, k == white ? wd*3 : k == middle ? wd*2 : wd);
     dt_draw_line(cr, left, top + k / (float)num * height, right, top + k / (float)num * height);
     cairo_stroke(cr);
   }
-
-  double dashes = 4.0;
-  cairo_set_dash(cr, &dashes, 1, 0);
-
-  dt_draw_line(cr, left, top + middle / (float)num * height, right, top + middle / (float)num * height);
-  cairo_stroke(cr);
 
   cairo_restore(cr);
 }
