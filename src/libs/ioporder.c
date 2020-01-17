@@ -61,39 +61,48 @@ void update(dt_lib_module_t *self)
 
   int mode = DT_IOP_ORDER_CUSTOM;
 
-  gchar *iop_order_list = dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
+  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
 
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT op_params"
-                              " FROM data.presets "
-                              " WHERE operation='ioporder'"
-                              " ORDER BY writeprotect DESC", -1, &stmt, NULL);
-
-  int index = 1;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  if(kind == DT_IOP_ORDER_CUSTOM)
   {
-    const char *params = (char *)sqlite3_column_blob(stmt, 0);
-    const int32_t params_len = sqlite3_column_bytes(stmt, 0);
-    GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
-    gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
-    g_list_free(iop_list);
+    gchar *iop_order_list = dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
 
-    if(!strcmp(iop_order_list, iop_list_text))
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT op_params"
+                                " FROM data.presets "
+                                " WHERE operation='ioporder'"
+                                " ORDER BY writeprotect DESC", -1, &stmt, NULL);
+
+    int index = 1;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      mode = index;
-      g_free(iop_list_text);
-      break;
+      const char *params = (char *)sqlite3_column_blob(stmt, 0);
+      const int32_t params_len = sqlite3_column_bytes(stmt, 0);
+      GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
+      gchar *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
+      g_list_free(iop_list);
+
+      if(!strcmp(iop_order_list, iop_list_text))
+      {
+        mode = index;
+        g_free(iop_list_text);
+        break;
     }
 
-    g_free(iop_list_text);
-    index ++;
+      g_free(iop_list_text);
+      index ++;
+    }
+
+    sqlite3_finalize(stmt);
+
+    g_free(iop_order_list);
   }
-
-  sqlite3_finalize(stmt);
-
-  g_free(iop_order_list);
+  else
+  {
+    mode = kind;
+  }
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -160,22 +169,19 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
     // ensure current history is written
     dt_dev_write_history(darktable.develop);
 
-    // if we where on a custom order, then we will need to add back any multi-instances
+    // if we have multi-instances, save them as we will need to add them back into the iop-list order
 
-    if(d->current_mode == DT_IOP_ORDER_CUSTOM)
+    GList *l = g_list_first(darktable.develop->iop_order_list);
+    while(l)
     {
-      GList *l = g_list_first(darktable.develop->iop_order_list);
-      while(l)
+      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+      if(entry->instance > 0)
       {
-        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-        if(entry->instance > 0)
-        {
-          dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-          memcpy(e, entry, sizeof(dt_iop_order_entry_t));
-          mi = g_list_append(mi, e);
-        }
-        l = g_list_next(l);
+        dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+        memcpy(e, entry, sizeof(dt_iop_order_entry_t));
+        mi = g_list_append(mi, e);
       }
+      l = g_list_next(l);
     }
 
     // this is a preset as all built-in orders are filed before (see _fill_iop_order)
@@ -198,25 +204,9 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
 
         sqlite3_finalize(stmt);
 
-        if(mi)
-        {
-          iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
-          dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
-          d->current_mode = DT_IOP_ORDER_CUSTOM;
+        if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
 
-          // and then we are back to custom mode in this case
-
-          const int reset = darktable.gui->reset;
-          darktable.gui->reset = 1;
-          dt_bauhaus_combobox_set(widget, d->current_mode);
-          darktable.gui->reset = reset;
-
-          dt_control_log(_("image migrated to custom order based on %s preset order"), name);
-
-          mode = DT_IOP_ORDER_CUSTOM;
-        }
-        else
-          dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
+        dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
 
         g_list_free_full(iop_list, free);
       }
@@ -227,21 +217,10 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
       {
         GList *iop_list = dt_ioppr_get_iop_order_list_version(mode);
         iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+
         dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
 
-        d->current_mode = DT_IOP_ORDER_CUSTOM;
-
-        // and then we are back to custom mode in this case
-
-        const int reset = darktable.gui->reset;
-        darktable.gui->reset = 1;
-        dt_bauhaus_combobox_set(widget, d->current_mode);
-        darktable.gui->reset = reset;
-
-        dt_control_log(_("image migrated to custom order based on %s order"),
-                       mode == DT_IOP_ORDER_LEGACY ? _("legacy") : _("recommended"));
-
-        mode = DT_IOP_ORDER_CUSTOM;
+        g_list_free_full(iop_list, free);
       }
       else
         dt_ioppr_write_iop_order(mode, NULL, imgid);
