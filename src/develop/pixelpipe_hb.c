@@ -1066,7 +1066,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale) \
+  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
   schedule(static)
 #endif
   for(int out_y = 0; out_y < waveform_height; out_y++)
