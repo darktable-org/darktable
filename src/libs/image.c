@@ -54,6 +54,7 @@ typedef struct dt_lib_image_t
       *cache_button, *uncache_button, *refresh_button,
       *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
+  GtkWidget *page1; // saved here for lua extensions
   int imageid;
 } dt_lib_image_t;
 
@@ -347,6 +348,7 @@ void gui_init(dt_lib_module_t *self)
   // Init GTK notebook
   GtkNotebook *notebook = GTK_NOTEBOOK(gtk_notebook_new());
   GtkWidget *page1 = GTK_WIDGET(gtk_grid_new());
+  d->page1 = page1;
   GtkWidget *page2 = GTK_WIDGET(gtk_grid_new());
 
   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page1, gtk_label_new(_("images")));
@@ -659,7 +661,8 @@ static int lua_register_action(lua_State *L)
   if(tooltip)  {
     gtk_widget_set_tooltip_text(button, tooltip);
   }
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 4, 1);
+  dt_lib_image_t *d = self->data;
+  gtk_grid_attach_next_to(GTK_GRID(d->page1), button, NULL, GTK_POS_BOTTOM, 4, 1);
 
 
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
