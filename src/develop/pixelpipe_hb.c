@@ -1079,7 +1079,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       {
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
-        const uint32_t v = in[k];
+        const uint16_t v = in[k];
         // cache XORd result so common casees cached and cache misses are quick to find
         if(!cache[v])
         {
