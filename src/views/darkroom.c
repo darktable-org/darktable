@@ -495,6 +495,7 @@ void expose(
         cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
                         (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
         cairo_stroke(cri);
+        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
@@ -1928,8 +1929,7 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int panel_width = dt_conf_get_int("panel_width");
-  const int dialog_width = panel_width > 350 ? panel_width : 350;
+  const int dialog_width = 350;
 
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
@@ -3322,6 +3322,9 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "image forward"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
 
+  // toggle ISO 12646 color assessment condition
+  dt_accel_register_view(self, NC_("accel", "color assessment"), GDK_KEY_b, GDK_CONTROL_MASK);
+
   // toggle raw overexposure indication
   dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_o, GDK_SHIFT_MASK);
 
@@ -3403,6 +3406,10 @@ void connect_key_accels(dt_view_t *self)
 
   closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "image back", closure);
+
+  // toggle ISO 12646 color assessment condition
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->iso_12646.button, NULL);
+  dt_accel_connect_view(self, "color assessment", closure);
 
   // toggle raw overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->rawoverexposed.button, NULL);

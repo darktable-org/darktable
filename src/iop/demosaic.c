@@ -2205,7 +2205,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   for(int row = 0; row < size; row++)
     for(int col = 0; col < size; col++)
     {
-      int *ip = lookup[row][col] + 1;
+      int *ip = &(lookup[row][col][1]);
       int sum[4] = { 0 };
       const int f = fcol(row + roi_in->y, col + roi_in->x, filters, xtrans);
       // make list of adjoining pixel offsets by weight & color
@@ -2220,7 +2220,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
           *ip++ = color;
           sum[color] += weight;
         }
-      lookup[row][col][0] = (ip - lookup[row][col]) / 3; /* # of neighboring pixels found */
+      lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
       for(int c = 0; c < colors; c++)
         if(c != f)
         {
@@ -2243,7 +2243,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
     for(int col = 1; col < roi_out->width - 1; col++)
     {
       float sum[4] = { 0.0f };
-      int *ip = lookup[row % size][col % size];
+      int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for(int i = *ip++; i--; ip += 3) sum[ip[2]] += buf_in[ip[0]] * ip[1];
       // for each interpolated color, load it into the pixel
@@ -3523,7 +3523,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     for(int row = 0; row < size; row++)
       for(int col = 0; col < size; col++)
       {
-        int32_t *ip = lookup[row][col] + 1;
+        int32_t *ip = &(lookup[row][col][1]);
         int sum[4] = { 0 };
         const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
         // make list of adjoining pixel offsets by weight & color
@@ -3538,7 +3538,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
             *ip++ = color;
             sum[color] += weight;
           }
-        lookup[row][col][0] = (ip - lookup[row][col]) / 3; /* # of neighboring pixels found */
+        lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
         for(int c = 0; c < colors; c++)
           if(c != f)
           {

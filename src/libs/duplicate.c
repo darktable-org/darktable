@@ -354,6 +354,9 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self)
 {
+  //block signals to avoid concurrent calls
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self);
+
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
@@ -447,6 +450,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   // and we store the final size of the current image
   if(dev->image_storage.id >= 0)
     dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
+
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self); //unblock signals
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)

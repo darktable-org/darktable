@@ -34,6 +34,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#include "win/filepath.h"
 #ifdef USE_LUA
 #include "lua/image.h"
 #endif
@@ -966,19 +967,24 @@ int dt_image_altered(const uint32_t imgid)
 }
 
 
-void dt_image_read_duplicates(const uint32_t id, const char *filename)
+GList* dt_image_find_duplicates(const char* filename)
 {
-  // Search for duplicate's sidecar files and import them if found and not in DB yet
-  gchar *imgfname = g_path_get_basename(filename);
-  gchar *imgpath = g_path_get_dirname(filename);
+  // find all duplicates of an image
   gchar pattern[PATH_MAX] = { 0 };
+  GList* files = NULL;
+  gchar *imgpath = g_path_get_dirname(filename);
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
+#ifdef _WIN32
+  // Windows only accepts generic wildcards for filename
+  static const gchar *glob_patterns[] = { "", "_????", NULL };
+#else
   static const gchar *glob_patterns[]
       = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+#endif
 
   const gchar **glob_pattern = glob_patterns;
-  GList *files = NULL;
+  files = NULL;
   while(*glob_pattern)
   {
     snprintf(pattern, sizeof(pattern), "%s", filename);
@@ -999,7 +1005,8 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       do
       {
         char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        files = g_list_append(files, g_build_filename(imgpath, file, NULL));
+        if(win_valid_duplicate_filename(file)) files =
+          g_list_append(files, g_build_filename(imgpath, file, NULL));
         g_free(file);
       }
       while(FindNextFileW(handle, &data));
@@ -1017,6 +1024,18 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 
     glob_pattern++;
   }
+
+  g_free(imgpath);
+  return files;
+}
+
+
+void dt_image_read_duplicates(const uint32_t id, const char *filename)
+{
+  // Search for duplicate's sidecar files and import them if found and not in DB yet
+  gchar pattern[PATH_MAX] = { 0 };
+
+  GList *files = dt_image_find_duplicates(filename);
 
   // we store the xmp filename without version part in pattern to speed up string comparison later
   g_snprintf(pattern, sizeof(pattern), "%s.xmp", filename);
@@ -1060,8 +1079,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   g_list_free_full(files, g_free);
-  g_free(imgfname);
-  g_free(imgpath);
+
 }
 
 
@@ -1510,7 +1528,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         GFile *goldxmp = g_file_new_for_path(oldxmp);
         GFile *gnewxmp = g_file_new_for_path(newxmp);
 
-	g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+  g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
 
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
@@ -1548,32 +1566,32 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         GFile *cnew = g_file_new_for_path(copydestpath);
 
         g_clear_error(&moveError);
-	moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
+  moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
         if(!moveStatus)
         {
           fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
 
-	  if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+    if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
           {
-	    gchar *oldBasename = g_path_get_basename(copysrcpath);
-	    dt_control_log(_("cannot access local copy `%s'"), oldBasename);
-	    g_free(oldBasename);
+      gchar *oldBasename = g_path_get_basename(copysrcpath);
+      dt_control_log(_("cannot access local copy `%s'"), oldBasename);
+      g_free(oldBasename);
           }
           else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
           {
-	    gchar *newBasename = g_path_get_basename(copydestpath);
-	    dt_control_log(_("cannot write local copy `%s'"), newBasename);
-	    g_free(newBasename);
-	  }
+      gchar *newBasename = g_path_get_basename(copydestpath);
+      dt_control_log(_("cannot write local copy `%s'"), newBasename);
+      g_free(newBasename);
+    }
           else
           {
-	    gchar *oldBasename = g_path_get_basename(copysrcpath);
-	    gchar *newBasename = g_path_get_basename(copydestpath);
-	    dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
-	    g_free(oldBasename);
-	    g_free(newBasename);
-	  }
-	}
+      gchar *oldBasename = g_path_get_basename(copysrcpath);
+      gchar *newBasename = g_path_get_basename(copydestpath);
+      dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
+      g_free(oldBasename);
+      g_free(newBasename);
+    }
+  }
 
         g_object_unref(cold);
         g_object_unref(cnew);
@@ -1585,7 +1603,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     {
       if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
       {
-	dt_control_log(_("error moving `%s': file not found"), oldimg);
+  dt_control_log(_("error moving `%s': file not found"), oldimg);
       }
       // only display error message if newname is set (renaming and
       // not moving) as when moving it can be the case where a
@@ -1595,11 +1613,11 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
               && (g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS)
                   || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)))
       {
-	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
+  dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
       }
       else if(newname)
       {
-	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
+  dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
       }
     }
 
