@@ -347,12 +347,12 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
                                                                        : allocation.width;
     if (d->highlight == 2)
     {
-      float exposure = d->exposure + diff * 4.0f / (float)range;
+      const float exposure = d->exposure + diff * 4.0f / (float)range;
       dt_dev_exposure_set_exposure(darktable.develop, exposure);
     }
     else if(d->highlight == 1)
     {
-      float black = d->black - diff * .1f / (float)range;
+      const float black = d->black - diff * .1f / (float)range;
       dt_dev_exposure_set_black(darktable.develop, black);
     }
   }
