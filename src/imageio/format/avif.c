@@ -177,7 +177,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 {
   dt_imageio_avif_t *d = (dt_imageio_avif_t *)data;
 
-  avifPixelFormat format;
+  avifPixelFormat format = AVIF_PIXEL_FORMAT_NONE;
   avifImage *image = NULL;
   avifEncoder *encoder = NULL;
   uint8_t *icc_profile_data = NULL;

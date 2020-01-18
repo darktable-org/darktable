@@ -5432,6 +5432,15 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GH4", Incandescent, 0,	{ 1.734375, 1, 2.781250, 0 } },
   { "Panasonic", "DMC-GH4", Flash, 0,		{ 2.445313, 1, 1.773438, 0 } },
 
+  /* Firmware version 2.6 */
+  { "Panasonic", "DC-GH5", Daylight, 0, { 2.2421875, 1, 1.953125, 0 } },
+  { "Panasonic", "DC-GH5", Cloudy, 0, { 2.38671875, 1, 1.83203125, 0 } },
+  { "Panasonic", "DC-GH5", Shade, 0, { 2.52734375, 1, 1.7421875, 0 } },
+  { "Panasonic", "DC-GH5", Incandescent, 0, { 1.58203125, 1, 2.87109375, 0 } },
+  { "Panasonic", "DC-GH5", Flash, 0, { 2.27734375, 1, 1.890625, 0 } },
+  { "Panasonic", "DC-GH5", D55, 0, { 2.125, 1, 1.98828125, 0 } },
+  { "Panasonic", "DC-GH5", ISO_Studio_Tungsten, 0, { 1.58203125, 1, 2.87109375, 0 } },
+
   /* Firmware version 1.1 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
   { "Panasonic", "DMC-GX1", Daylight, -9,	{ 2.256604, 1, 1.916981, 0 } },

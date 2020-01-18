@@ -997,15 +997,23 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
+  // Use integral sized bins for columns, as otherwise they will be
+  // unequal and have banding. Rely on GUI to smoothly do horizontal
+  // scaling.
+  // Note that histogram_waveform_stride is pre-initialized/hardcoded,
+  // but histogram_waveform_width varies, depending on preview image
+  // width and # of bins.
+  const int bin_width = ceilf((float)(roi_in->width) / (float)(dev->histogram_waveform_stride/4));
+  dev->histogram_waveform_width = roi_in->width / bin_width;
+
+  // FIXME: better to pre-allocate this in dev?
   uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
                                      sizeof(uint32_t));
   memset(dev->histogram_waveform, 0,
-         sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
+         sizeof(uint8_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride);
 
   // 1.0 is at 8/9 of the height!
-  const double bin_width = (double)(roi_in->width) / (double)dev->histogram_waveform_width,
-               _height = (double)(dev->histogram_waveform_height - 1);
-  const float *const pixel = (const float *const )input;
+  const double _height = (double)(dev->histogram_waveform_height - 1);
   //         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
 
   // count the colors into buf ...
@@ -1013,16 +1021,14 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   {
     for(int x = 0; x < roi_in->width; x++)
     {
-      float rgb[3];
-      for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * y * roi_in->width + 4 * x + 2 - k];
-
-      const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
+      const int out_x = x / bin_width;
       for(int k = 0; k < 3; k++)
       {
-        const float v = isnan(rgb[k]) ? 0.0f
-                                      : rgb[k]; // catch NaNs as they don't convert well to integers
+        const float c = input[4 * y * roi_in->width + 4 * x + 2 - k];
+        // catch NaNs as they don't convert well to integers
+        const float v = isnan(c) ? 0.0f : c;
         const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
-        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width * 3 + out_x * 3 + k);
+        uint32_t *const out = buf + (out_y * dev->histogram_waveform_width + out_x) * 3 + k;
         (*out)++;
         //               mincol[k] = MIN(mincol[k], *out);
         //               maxcol[k] = MAX(maxcol[k], *out);
@@ -1038,6 +1044,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // ... and scale that into a nice image. putting the pixels into the image directly gets too
   // saturated/clips.
   // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
+  // FIXME: can simplify if roi_in->width == dev->histogram_waveform_width
   const float scale = 0.5 * 1e6f/(roi_in->height*roi_in->width) *
     (dev->histogram_waveform_width*dev->histogram_waveform_height) / (350.0f*233.)
     / 255.0f; // normalization to 0..1 for gamma correction
@@ -1047,8 +1054,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
     for(int x = 0; x < dev->histogram_waveform_width; x++)
     {
       uint32_t *const in = buf + (y * dev->histogram_waveform_width + x) * 3;
-      uint8_t *const out
-          = (uint8_t *)(dev->histogram_waveform + (y * dev->histogram_waveform_width + x));
+      uint8_t *const out = dev->histogram_waveform + (y * dev->histogram_waveform_stride) + (x * 4);
       for(int k = 0; k < 3; k++)
       {
         if(in[k] == 0) continue;
@@ -2536,16 +2542,13 @@ post_process_collect_info:
       else
         _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
 
-      // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct
-      // size (thus the weird gui stuff :().
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
-      //       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
-      if(dev->histogram_waveform_width != 0 && input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      // FIXME: is above comment true now that waveform is scaled via Cairo?
+      if(input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }
-      //       dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }

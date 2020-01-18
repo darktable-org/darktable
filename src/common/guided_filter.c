@@ -556,16 +556,15 @@ static int cl_generate_result(const int devid, const int width, const int height
 }
 
 
-static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width,
-                                  const int height, const int ch,
-                                  const int w,              // window size
-                                  const float sqrt_eps,     // regularization parameter
-                                  const float guide_weight, // to balance the amplitudes in the guiding image and
-                                                            // the input// image
-                                  const float min, const float max)
+static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
+                                 const int ch,
+                                 const int w,              // window size
+                                 const float sqrt_eps,     // regularization parameter
+                                 const float guide_weight, // to balance the amplitudes in the guiding image and
+                                                           // the input// image
+                                 const float min, const float max)
 {
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
-  int err = CL_SUCCESS;
 
   void *temp1 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *temp2 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -586,6 +585,18 @@ static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out
   void *a_g = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *a_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *b = temp2;
+
+  int err = CL_SUCCESS;
+  if(temp1 == NULL || temp2 == NULL ||                                                        //
+     imgg_mean_r == NULL || imgg_mean_g == NULL || imgg_mean_b == NULL || img_mean == NULL || //
+     cov_imgg_img_r == NULL || cov_imgg_img_g == NULL || cov_imgg_img_b == NULL ||            //
+     var_imgg_rr == NULL || var_imgg_gg == NULL || var_imgg_bb == NULL ||                     //
+     var_imgg_rg == NULL || var_imgg_rb == NULL || var_imgg_gb == NULL ||                     //
+     a_r == NULL || a_g == NULL || a_b == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = cl_split_rgb(devid, width, height, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
   if(err != CL_SUCCESS) goto error;
@@ -661,8 +672,7 @@ static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out
   err = cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
 
 error:
-  if (err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
 
   dt_opencl_release_mem_object(a_r);
   dt_opencl_release_mem_object(a_g);
@@ -682,6 +692,8 @@ error:
   dt_opencl_release_mem_object(imgg_mean_b);
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
+
+  return err;
 }
 
 
@@ -726,12 +738,13 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
 
   const cl_ulong max_global_mem = dt_opencl_get_max_global_mem(devid);
   const size_t reserved_memory = (size_t)(dt_conf_get_float("opencl_memory_headroom") * 1024 * 1024);
-  // estimate required memory for OpenCL code path with an safety factor of 9/8
+  // estimate required memory for OpenCL code path with a safety factor of 5/4
   const size_t required_memory
-      = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 9 / 8;
+      = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 5 / 4;
+  int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(max_global_mem - reserved_memory > required_memory)
-    guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
-  else
+    err = guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+  if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[guided filter] fall back to cpu implementation due to insufficient gpu memory\n");
     guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);

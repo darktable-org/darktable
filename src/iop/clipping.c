@@ -1913,14 +1913,12 @@ static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 // TODO once we depend on GTK3 >= 3.12 use the name as in 2f491cf8355a81554b98de538fe862d6ad9b62e5
 static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int which)
 {
-  if(which == 0)
-  {
     gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
     gtk_widget_hide(g->guides_widgets);
     gtk_widget_set_no_show_all(g->flip_guides, TRUE);
     gtk_widget_hide(g->flip_guides);
-  }
-  else
+
+  if(which != 0)
   {
     GtkWidget *widget = g_list_nth_data(g->guides_widgets_list, which - 1);
     if(widget)
@@ -1929,16 +1927,13 @@ static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int whi
       gtk_widget_show_all(g->guides_widgets);
       gtk_stack_set_visible_child(GTK_STACK(g->guides_widgets), widget);
     }
-    else
-    {
-      gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
-      gtk_widget_hide(g->guides_widgets);
-    }
-    gtk_widget_set_no_show_all(g->flip_guides, FALSE);
-    gtk_widget_show_all(g->flip_guides);
-  }
 
-  // TODO: add a support_flip flag to guides to hide the flip gui?
+    if(((dt_guides_t *)g_list_nth_data(darktable.guides, which - 1))->support_flip)
+    {
+      gtk_widget_set_no_show_all(g->flip_guides, FALSE);
+      gtk_widget_show_all(g->flip_guides);
+    }
+  }
 }
 
 static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
@@ -2558,14 +2553,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       if(p->k_type == 3)
       {
         // determine extremity of the lines
-        const int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
-        const int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
-        const int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
-        const int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
-        const int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
-        const int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
-        const int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
-        const int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
+        const float v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        const float v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        const float v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        const float v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
+        const float h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        const float h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        const float h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        const float h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);
@@ -2610,10 +2605,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 2)
       {
         // determine extremity of the lines
-        const int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
-        const int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
-        const int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
-        const int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
+        const float h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        const float h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        const float h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        const float h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, 0, h1l);
@@ -2640,10 +2635,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 1)
       {
         // determine extremity of the lines
-        const int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
-        const int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
-        const int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
-        const int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
+        const float v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        const float v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        const float v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        const float v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);

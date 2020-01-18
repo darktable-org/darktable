@@ -180,11 +180,8 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
-      histogram_waveform_stride;
-  // we should process the waveform histogram in the correct size to make it not look like crap. since this
-  // requires gui knowledge we need this mutex
-  //   dt_pthread_mutex_t histogram_waveform_mutex;
+  uint8_t *histogram_waveform;
+  uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
@@ -426,8 +423,6 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
-/* returns the iop-module found in list with the given name */
-struct dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op);
 
 /*
  * distort functions

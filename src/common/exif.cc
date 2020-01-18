@@ -65,6 +65,7 @@ extern "C" {
 #include "common/tags.h"
 #include "common/iop_order.h"
 #include "common/variables.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -72,6 +73,173 @@ extern "C" {
 }
 
 #include "external/adobe_coeff.c"
+
+static const char *_get_exiv2_type(const int type)
+{
+  switch(type)
+  {
+    case 1:
+      return "Byte";
+    case 2:
+      return "Ascii";
+    case 3:
+      return "Short";
+    case 4:
+      return "Long";
+    case 5:
+      return "Rational"; // two LONGs: numerator and denumerator of a fraction
+    case 6:
+      return "SByte";
+    case 7:
+      return "Undefined";
+    case 8:
+      return "SShort";
+    case 9:
+      return "SLong";
+    case 10:
+      return "SRational"; // two SLONGs: numerator and denumerator of a fraction.
+    case 11:
+      return "Float"; //  single precision (4-byte) IEEE format
+    case 12:
+      return "Double"; // double precision (8-byte) IEEE format.
+    case 13:
+      return "Ifd";  // 32-bit (4-byte) unsigned integer
+    case 16:
+      return "LLong"; // 64-bit (8-byte) unsigned integer
+    case 17:
+      return "LLong"; // 64-bit (8-byte) signed integer
+    case 18:
+      return "Ifd8"; // 64-bit (8-byte) unsigned integer
+    case 0x10000:
+      return "String";
+    case 0x10001:
+      return "Date";
+    case 0x10002:
+      return "Time";
+    case 0x10003:
+      return "Comment";
+    case 0x10004:
+      return "Directory";
+    case 0x10005:
+      return "XmpText";
+    case 0x10006:
+      return "XmpAlt";
+    case 0x10007:
+      return "XmpBag";
+    case 0x10008:
+      return "XmpSeq";
+    case 0x10009:
+      return "LangAlt";
+    case 0x1fffe:
+      return "Invalid";
+    case 0x1ffff:
+      return "LastType";
+    default:
+      return "Invalid";
+  }
+}
+
+static void _get_xmp_tags(const char *prefix, GList **taglist)
+{
+  const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList(prefix);
+  if(pl)
+  {
+    for (int i = 0; pl[i].name_ != 0; ++i)
+    {
+      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
+      *taglist = g_list_prepend(*taglist, tag);
+    }
+  }
+}
+
+GList *dt_get_exiv2_taglist()
+{
+  Exiv2::XmpParser::initialize();
+  ::atexit(Exiv2::XmpParser::terminate);
+  GList *taglist = NULL;
+
+  try
+  {
+    const Exiv2::GroupInfo *groupList = Exiv2::ExifTags::groupList();
+    if(groupList)
+    {
+      while(groupList->tagList_)
+      {
+        const std::string groupName(groupList->groupName_);
+        if(groupName.substr(0, 3) != "Sub" &&
+            groupName != "Image2" &&
+            groupName != "Image3" &&
+            groupName != "Thumbnail"
+            )
+        {
+          const Exiv2::TagInfo *tagInfo = groupList->tagList_();
+          while(tagInfo->tag_ != 0xFFFF)
+          {
+            char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
+            taglist = g_list_prepend(taglist, tag);
+            tagInfo++;
+          }
+        }
+      groupList++;
+      }
+    }
+
+    const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
+    while(iptcEnvelopeList->number_ != 0xFFFF)
+    {
+      char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
+      taglist = g_list_prepend(taglist, tag);
+      iptcEnvelopeList++;
+    }
+
+    const Exiv2::DataSet *iptcApplication2List = Exiv2::IptcDataSets::application2RecordList();
+    while(iptcApplication2List->number_ != 0xFFFF)
+    {
+      char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
+      taglist = g_list_prepend(taglist, tag);
+      iptcApplication2List++;
+    }
+
+    _get_xmp_tags("dc", &taglist);
+    _get_xmp_tags("xmp", &taglist);
+    _get_xmp_tags("xmpRights", &taglist);
+    _get_xmp_tags("xmpMM", &taglist);
+    _get_xmp_tags("xmpBJ", &taglist);
+    _get_xmp_tags("xmpTPg", &taglist);
+    _get_xmp_tags("xmpDM", &taglist);
+    _get_xmp_tags("pdf", &taglist);
+    _get_xmp_tags("photoshop", &taglist);
+    _get_xmp_tags("crs", &taglist);
+    _get_xmp_tags("tiff", &taglist);
+    _get_xmp_tags("exif", &taglist);
+    _get_xmp_tags("exifEX", &taglist);
+    _get_xmp_tags("aux", &taglist);
+    _get_xmp_tags("iptc", &taglist);
+    _get_xmp_tags("iptcExt", &taglist);
+    _get_xmp_tags("plus", &taglist);
+    _get_xmp_tags("mwg-rs", &taglist);
+    _get_xmp_tags("mwg-kw", &taglist);
+    _get_xmp_tags("dwc", &taglist);
+    _get_xmp_tags("dcterms", &taglist);
+    _get_xmp_tags("digiKam", &taglist);
+    _get_xmp_tags("kipi", &taglist);
+    _get_xmp_tags("GPano", &taglist);
+    _get_xmp_tags("lr", &taglist);
+    _get_xmp_tags("MP", &taglist);
+    _get_xmp_tags("MPRI", &taglist);
+    _get_xmp_tags("MPReg", &taglist);
+    _get_xmp_tags("acdsee", &taglist);
+    _get_xmp_tags("mediapro", &taglist);
+    _get_xmp_tags("expressionmedia", &taglist);
+    _get_xmp_tags("MicrosoftPhoto", &taglist);
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2 taglist] " << s << std::endl;
+  }
+  return taglist;
+}
 
 // exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
 // wrap it into some c++ magic to make sure we unlock in all cases. well, actually not magic but basic raii.
@@ -3168,9 +3336,9 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   dt_set_xmp_dt_metadata(xmpData, imgid);
 
   // get tags from db, store in dublin core
-  std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+  std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpBag));
 
-  std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+  std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpBag));
 
   GList *tags = dt_tag_get_list(imgid);
   while(tags)
@@ -3259,7 +3427,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   if (metadata->flags & DT_META_TAG)
   {
     // get tags from db, store in dublin core
-    std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+    std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpBag));
     GList *tags = dt_tag_get_list_export(imgid, metadata->flags);
     while(tags)
     {
@@ -3272,7 +3440,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
 
   if (metadata->flags & DT_META_HIERARCHICAL_TAG)
   {
-    std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+    std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpBag));
     GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
     while(hierarchical)
     {
@@ -3456,13 +3624,20 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     // make sure to remove all geotags if necessary
     if(m)
     {
-      if (!(m->flags & DT_META_EXIF))
+      Exiv2::ExifData exifOldData;
+      Exiv2::ExifData &exifData = img->exifData();
+      if(!(m->flags & DT_META_EXIF))
+      {
+        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end() ; ++i)
+        {
+          exifOldData[i->key()] = i->value();
+        }
         img->clearExifData();
+      }
 
       dt_exif_xmp_read_data_export(xmpData, imgid, m);
 
       Exiv2::IptcData &iptcData = img->iptcData();
-      Exiv2::ExifData &exifData = img->exifData();
 
       if(!(m->flags & DT_META_GEOTAG))
         dt_remove_exif_geotag(exifData);
@@ -3483,17 +3658,28 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         gchar *formula = (gchar *)tags->data;
         if (formula[0])
         {
-          gchar *result = dt_variables_expand(params, formula, FALSE);
-          if (result && result[0])
+          if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
           {
-            if (g_str_has_prefix(tagname, "Xmp."))
-              xmpData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Iptc."))
-              iptcData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Exif."))
-              exifData[tagname] = result;
+            Exiv2::ExifData::const_iterator pos;
+            if(dt_exif_read_exif_tag(exifOldData, &pos, tagname))
+            {
+              exifData[tagname] = pos->value();
+            }
           }
-          g_free(result);
+          else
+          {
+            gchar *result = dt_variables_expand(params, formula, FALSE);
+            if(result && result[0])
+            {
+              if(g_str_has_prefix(tagname, "Xmp."))
+                xmpData[tagname] = result;
+              else if(g_str_has_prefix(tagname, "Iptc."))
+                iptcData[tagname] = result;
+              else if(g_str_has_prefix(tagname, "Exif."))
+                exifData[tagname] = result;
+            }
+            g_free(result);
+          }
         }
         else
         {

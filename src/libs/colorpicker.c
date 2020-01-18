@@ -136,7 +136,7 @@ static void _update_picker_output(dt_lib_module_t *self)
   dt_lib_colorpicker_t *data = self->data;
   char text[128] = { 0 };
   char tooltip[128] = { 0 };
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
     const int reset = darktable.gui->reset;
@@ -201,7 +201,7 @@ static void _picker_button_toggled(GtkToggleButton *button, gpointer p)
   dt_lib_colorpicker_t *data = ((dt_lib_module_t *)p)->data;
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
   if(darktable.gui->reset) return;
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
     dt_iop_request_focus(module);
@@ -375,7 +375,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
   darktable.lib->proxy.colorpicker.live_samples
       = g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   int i;
 
   sample->locked = 0;

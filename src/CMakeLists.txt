@@ -146,6 +146,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/dtwin.c")
   list(APPEND HEADER_FILES "win/dtwin.h")
 
+  list(APPEND SOURCE_FILES "win/filepath.c")
+  list(APPEND HEADER_FILES "win/filepath.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
@@ -425,6 +428,15 @@ if(USE_GRAPHICSMAGICK)
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
+
+if(USE_GMIC)
+  find_package(GMIC)
+  if(GMIC_FOUND)
+    add_definitions(-DHAVE_GMIC)
+    include_directories(SYSTEM ${GMIC_INCLUDE_DIRS})
+    list(APPEND LIBS ${GMIC_LIBRARIES})
+  endif(GMIC_FOUND)
+endif(USE_GMIC)
 
 #
 # Add HAVE_xxx defines used by darktable

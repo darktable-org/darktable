@@ -451,6 +451,26 @@ static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
   return TRUE; /* we handled this */
 }
 
+static gboolean view_onMouseScroll(GtkWidget *treeview, GdkEventScroll *event, dt_lib_collect_t *d)
+{
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow));
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
+    gint width, height;
+    
+    gtk_widget_get_size_request(GTK_WIDGET(d->scrolledwindow), &width, &height);
+    height = height + increment*event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+    gtk_widget_set_size_request(GTK_WIDGET(d->scrolledwindow), -1, height);
+    dt_conf_set_int("plugins/lighttable/collect/windowheight", height);
+
+    return TRUE;
+  }
+  return FALSE; 
+}
+
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num * sizeof(dt_lib_collect_rule_t));
@@ -583,7 +603,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
   gchar *str = NULL;
-  gboolean visible;
+  gboolean visible = FALSE;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
 
@@ -636,6 +656,26 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     g_free(operator);
     g_free(number);
     g_free(number2);
+  }
+  else if (property == DT_COLLECTION_PROP_FILENAME)
+  {
+    GList *list, *l;
+    list = dt_util_str_to_glist(",", needle);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+      if(g_str_has_prefix((char *)l->data, "%"))
+      {
+        if((visible = (g_strrstr(haystack, (char *)l->data + 1) != NULL))) break;
+      }
+      else
+      {
+        if((visible = (g_strrstr(haystack, (char *)l->data) != NULL))) break;
+      }
+    }
+
+    g_list_free(list);
+
   }
   else
   {
@@ -1615,6 +1655,10 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
                                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
                                   "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
+  else if(property == DT_COLLECTION_PROP_FILENAME)
+  {
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
+  }
   else
   {
     /* xgettext:no-c-format */
@@ -2056,7 +2100,9 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow), DT_PIXEL_APPLY_DPI(300));
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), DT_PIXEL_APPLY_DPI(200));
+  gint height = dt_conf_get_int("plugins/lighttable/collect/windowheight");
+  gtk_widget_set_size_request(sw, -1, DT_PIXEL_APPLY_DPI(height));
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view_rule = -1;
   d->view = view;
@@ -2064,6 +2110,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);

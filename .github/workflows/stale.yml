@@ -1,0 +1,23 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+  - cron: "0 0 * * *"
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/stale@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: 'This issue did not get any activity in the past 30 days and will be automatically closed in 7 days if no update occurs. Please check if the master branch has fixed it since then.'
+        stale-pr-message: 'This pull request did not get any activity in the past 30 days and will be automatically closed in 7 days if no update occurs. Please verify it has no conflicts with the master branch and rebase if needed.'
+        stale-issue-label: 'no-issue-activity'
+        stale-pr-label: 'no-pr-activity'
+        days-before-stale: 30
+        days-before-close: 7
+        exempt-pr-label: 'bugfix'
+        exempt-issue-label: 'scope: camera support'

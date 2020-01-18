@@ -43,7 +43,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 20
+#define CURRENT_DATABASE_VERSION_LIBRARY 21
 #define CURRENT_DATABASE_VERSION_DATA 4
 
 typedef struct dt_database_t
@@ -1177,6 +1177,16 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 20;
   }
+  else if(version == 20)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("DROP INDEX IF EXISTS main.used_tags_idx", "[init] can't drop index `used_tags_idx' from database\n");
+    TRY_EXEC("DROP TABLE used_tags", "[init] can't delete table used_tags\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 21;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1428,9 +1438,6 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, "
                            "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
-  ////////////////////////////// used_tags
-  sqlite3_exec(db->handle, "CREATE TABLE main.used_tags (id INTEGER, name VARCHAR NOT NULL)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.used_tags_idx ON used_tags (id, name)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
@@ -1593,66 +1600,6 @@ static void _sanitize_db(dt_database_t *db)
   {                                                                                \
     sqlite3_finalize(stmt); stmt = NULL; /* NULL so that finalize becomes a NOP */ \
   } while(0)
-
-static gboolean _synchronize_tags(dt_database_t *db)
-{
-  sqlite3_stmt *stmt = NULL;
-
-  sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
-
-  // create temporary tables -- that has to be done outside the if() as the db is locked inside
-  TRY_EXEC("CREATE TEMPORARY TABLE temp_used_tags (id INTEGER, name VARCHAR)",
-           "[synchronize tags] can't create temporary table for used tags\n");
-  TRY_EXEC("CREATE TEMPORARY TABLE temp_tagged_images (imgid INTEGER, tagid INTEGER)",
-           "[synchronize tags] can't create temporary table for tagged images\n");
-
-  // are the two databases in sync already?
-  TRY_PREPARE(stmt, "SELECT COUNT(*) FROM main.used_tags AS u LEFT JOIN data.tags AS t USING (id, name) "
-                    "WHERE u.id IS NULL OR t.id IS NULL",
-              "[synchronize tags] can't prepare querying the number of tags that need to be synced\n");
-
-  TRY_STEP(stmt, SQLITE_ROW, "[synchronize tags] can't query the number of tags that need to be synced\n");
-  if(sqlite3_column_int(stmt, 0) > 0)
-  {
-    // insert tags that are only present in main.used_tags into data.tags
-    TRY_EXEC("INSERT OR IGNORE INTO data.tags (name) SELECT name FROM main.used_tags",
-             "[synchronize tags] can't import new tags from the library\n");
-
-    // insert id, name for the tags in main.used_tags according to data.tags
-    TRY_EXEC("INSERT INTO temp_used_tags (id, name) SELECT t.id, t.name FROM main.used_tags, data.tags "
-             "AS t USING (name)", "[synchronize tags] can't collect used tags into temporary table\n");
-
-    // insert updated valued into temp_tagged_images
-    // FIXME: slowish!
-    TRY_EXEC("INSERT INTO temp_tagged_images (imgid, tagid) SELECT imgid, new_id FROM main.tagged_images, "
-             "(SELECT u.id AS old_id, tu.id AS new_id, name FROM used_tags AS u, temp_used_tags AS tu "
-             "USING (name)) ON old_id = tagid",
-             "[synchronize tags] can't insert updated image tagging into temporary table\n");
-
-    // clear table to not get in conflict with indices
-    TRY_EXEC("DELETE FROM main.tagged_images", "[synchronize tags] can't clear table `tagged_images'\n");
-    TRY_EXEC("DELETE FROM main.used_tags", "[synchronize tags] can't clear table `used_tags'\n");
-
-    // copy back to main.tagged_images
-    // FIXME: slow with huge db! dropping the index first and adding it back in the end speeds it up a little
-    TRY_EXEC("INSERT INTO main.tagged_images (imgid, tagid) SELECT imgid, tagid FROM temp_tagged_images",
-             "[synchronize tags] can't update table `tagged_images`\n");
-
-    // copy back to main.used_tags
-    TRY_EXEC("INSERT INTO main.used_tags (id, name) SELECT id, name FROM temp_used_tags",
-             "[synchronize tags] can't update table `used_tags'\n");
-  }
-
-  FINALIZE; // we need to finalize before dropping the tables due to locking issues!
-
-  // drop temporary tables
-  TRY_EXEC("DROP TABLE temp_tagged_images", "[synchronize tags] can't drop temporary table for tagged_images\n");
-  TRY_EXEC("DROP TABLE temp_used_tags", "[synchronize tags] can't drop temporary table for used_tags\n");
-
-  sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
-
-  return TRUE;
-}
 
 #undef TRY_EXEC
 #undef TRY_STEP
@@ -2223,15 +2170,6 @@ start:
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
-
-  // make sure that the tag ids in the library match the ones in data
-  if(!_synchronize_tags(db))
-  {
-    fprintf(stderr, "[init] couldn't synchronize tags between library and data. aborting\n");
-    dt_database_destroy(db);
-    db = NULL;
-    goto error;
-  }
 
 error:
   g_free(dbname);
