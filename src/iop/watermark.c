@@ -895,22 +895,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   /* setup stride for performance */
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
-  /* create cairo memory surface */
+  /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
                                                                  roi_out->height, stride);
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
-
-  /* create cairo context and setup transformation/scale */
-  cairo_t *cr = cairo_create(surface);
 
   // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -921,6 +918,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   g_free(svgdoc);
   if(!svg || error)
   {
+    cairo_surface_destroy(surface);
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -1011,6 +1009,39 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
+  /* For the rotation we need an extra cairo image as rotations are buggy  via rsvg_handle_render_cairo.
+     distortions and blurred images are obvious but you also can easily have crashes.
+  */
+
+  /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
+  const float svg_offset_x = ceilf(3.0f * scale);
+  const float svg_offset_y = ceilf(3.0f * scale);
+
+  const int watermark_width =  (int)((dimension.width  * scale) + 3* svg_offset_x);
+  const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
+
+  const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
+  guint8 *image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
+
+  cairo_surface_t *surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
+                                                                 watermark_height, stride_two);
+  if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
+  {
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface_two)));
+    cairo_surface_destroy(surface);
+    g_object_unref(svg);
+    g_free(image);
+    g_free(image_two);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    return;
+  }
+
+  /* create cairo context and setup transformation/scale */
+  cairo_t *cr = cairo_create(surface);
+  /* create cairo context for the scaled watermark */
+  cairo_t *cr_two = cairo_create(surface_two);
+
   // compute bounding box of rotated watermark
   const float bb_width = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
   const float bb_height = fabsf(svg_width * sinf(angle)) + fabsf(svg_height * cosf(angle));
@@ -1051,16 +1082,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_rotate(cr, angle);
   cairo_translate(cr, -cX, -cY);
 
-  // now set proper scale for the watermark itself
-  cairo_scale(cr, scale, scale);
-
+  // now set proper scale and translationfor the watermark itself
+  cairo_translate(cr_two, svg_offset_x,svg_offset_y);
+  cairo_scale(cr_two, scale, scale);
   /* render svg into surface*/
-  rsvg_handle_render_cairo(svg, cr);
+  rsvg_handle_render_cairo(svg, cr_two);
+  cairo_surface_flush(surface_two);
+
+  cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);
+  cairo_paint(cr);
 
   // no more non-thread safe rsvg usage
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   cairo_destroy(cr);
+  cairo_destroy(cr_two);
 
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
@@ -1091,8 +1127,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* clean up */
   cairo_surface_destroy(surface);
+  cairo_surface_destroy(surface_two);
   g_object_unref(svg);
   g_free(image);
+  g_free(image_two);
 }
 
 static void watermark_callback(GtkWidget *tb, gpointer user_data)
