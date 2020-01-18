@@ -1197,16 +1197,16 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // for all images:
     sqlite3_stmt *mig_stmt;
-    TRY_PREPARE(mig_stmt, "SELECT imgid, operation, multi_priority, iop_order,"
-                          " (SELECT iop_order_version FROM main.images AS mi WHERE mi.id = hi.imgid)"
-                          " FROM main.history AS hi "
+    TRY_PREPARE(mig_stmt, "SELECT imgid, operation, multi_priority, iop_order, mi.iop_order_version"
+                          " FROM main.history AS hi, main.images AS mi"
+                          " WHERE hi.imgid = mi.id"
                           " GROUP BY imgid, operation, multi_priority"
                           " ORDER BY imgid, iop_order",
                 "[init] can't prepare selecting history for iop_order migration (v21)\n");
 
     GList *item_list = NULL;
     int current_imgid = -1;
-    int current_version = -1;
+    int current_order_version = -1;
 
     gboolean has_row = (sqlite3_step(mig_stmt) == SQLITE_ROW);
 
@@ -1227,20 +1227,16 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         // new image, let's handle it
         if(item_list != NULL)
         {
-          // fake dev, just neded for the iop_order_list
-          dt_develop_t dev;
-          dev.iop = NULL;
-
           // we keep legacy, everything else is migrated to recommended
-          const dt_iop_order_t new_order_version = current_version == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_RECOMMENDED;
+          const dt_iop_order_t new_order_version = current_order_version == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_RECOMMENDED;
 
-          dev.iop_order_list = dt_ioppr_get_iop_order_list_version(new_order_version);
+          GList *iop_order_list = dt_ioppr_get_iop_order_list_version(new_order_version);
 
-          // merge entries into dev.iop_order_list
+          // merge entries into iop_order_list
 
           // first remove all item_list iop from the iop_order_list
 
-          GList *e = item_list;
+          GList *e = g_list_first(item_list);
           GList *n = NULL;
           dt_iop_order_entry_t *n_entry = NULL;
 
@@ -1248,14 +1244,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
 
-            GList *s = dev.iop_order_list;
+            GList *s = g_list_first(iop_order_list);
             while(s && strcmp(((dt_iop_order_entry_t *)s->data)->operation, e_entry->operation))
             {
               s = g_list_next(s);
             }
             if(s)
             {
-              dev.iop_order_list = g_list_delete_link(dev.iop_order_list, s);
+              iop_order_list = g_list_delete_link(iop_order_list, s);
             }
 
             // skip all multipe instances
@@ -1271,26 +1267,44 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           // then add all item_list into iop_order_list
 
-          e = item_list;
+          e = g_list_first(item_list);
           while(e)
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
-            dev.iop_order_list = g_list_append(dev.iop_order_list, e_entry);
+            iop_order_list = g_list_append(iop_order_list, e_entry);
             e = g_list_next(e);
           }
 
           // and finally reoder the full list based on the iop-order
 
-          dev.iop_order_list = g_list_sort(dev.iop_order_list, dt_sort_iop_list_by_order_f);
+          iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order_f);
 
-          const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(dev.iop_order_list);
+          const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(iop_order_list);
+
+          // check if we have some multi-instances
+
+          gboolean has_multiple_instances = FALSE;
+          GList *l = g_list_first(iop_order_list);
+
+          while(l)
+          {
+            GList *next = g_list_next(l);
+            if(next
+               && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                         ((dt_iop_order_entry_t *)(next->data))->operation))
+            {
+              has_multiple_instances = TRUE;
+              break;
+            }
+            l = next;
+          }
 
           // write iop_order_list and/or version into module_order
 
           sqlite3_stmt *ins_stmt = NULL;
-          if(kind == DT_IOP_ORDER_CUSTOM)
+          if(kind == DT_IOP_ORDER_CUSTOM || has_multiple_instances)
           {
-            char *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(dev.iop_order_list);
+            char *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
 
             sqlite3_prepare_v2(db->handle,
                                "INSERT INTO module_order VALUES (?1, ?2, ?3)", -1,
@@ -1315,13 +1329,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           }
 
           g_list_free(item_list);
-          g_list_free(dev.iop_order_list);
+          g_list_free(iop_order_list);
 
           item_list = NULL;
         }
 
         current_imgid = imgid;
-        current_version = iop_order_version;
+        current_order_version = iop_order_version;
       }
 
       dt_iop_order_entry_t *item = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
