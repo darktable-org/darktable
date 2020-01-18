@@ -57,20 +57,19 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
     }
     if(!same || different)
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "%d,", atoi(b->data));
+      metadata_list = dt_util_dstrcat(metadata_list, "%d", atoi(b->data));
     }
     b = g_list_next(b);
     b = g_list_next(b);
   }
-  if(metadata_list) metadata_list[strlen(metadata_list) - 1] = '\0';
   return metadata_list;
 }
 
-static gchar *_get_tb_added_metadata_string_values(const int img, GList *before, GList *after)
+static GList *_get_tb_added_metadata_string_values(int img, GList *before, GList *after)
 {
   GList *b = before;
   GList *a = after;
-  gchar *metadata_list = NULL;
+  GList *metadata_list = NULL;
 
   while(a)
   {
@@ -84,12 +83,15 @@ static gchar *_get_tb_added_metadata_string_values(const int img, GList *before,
     }
     if(!same || different)
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,\'%s\'),", GPOINTER_TO_INT(img), atoi(a->data), (char *)a2->data);
+      char *img_str = NULL;
+      img_str = dt_util_dstrcat(img_str, "%d", GPOINTER_TO_INT(img));
+      metadata_list = g_list_append(metadata_list, img_str);
+      metadata_list = g_list_append(metadata_list, g_strdup(a->data));
+      metadata_list = g_list_append(metadata_list, g_strdup((char *)a2->data));
     }
     a = g_list_next(a);
     a = g_list_next(a);
   }
-  if(metadata_list) metadata_list[strlen(metadata_list) - 1] = '\0';
   return metadata_list;
 }
 
@@ -107,30 +109,32 @@ static void _bulk_remove_metadata(const int img, const gchar *metadata_list)
   }
 }
 
-static void _bulk_add_metadata(const gchar *metadata_list)
+static void _bulk_add_metadata(GList *metadata_list)
 {
   if(metadata_list)
   {
     char *query = NULL;
     sqlite3_stmt *stmt;
-    query = dt_util_dstrcat(query, "INSERT INTO main.meta_data (id, key, value) VALUES %s", metadata_list);
+    query = "INSERT INTO main.meta_data (id, key, value) VALUES (?, ?, ?)";
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, g_list_nth_data(metadata_list, 0), -1, 0);
+    sqlite3_bind_text(stmt, 2, g_list_nth_data(metadata_list, 1), -1, 0);
+    sqlite3_bind_text(stmt, 3, g_list_nth_data(metadata_list, 2), -1, 0);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    g_free(query);
   }
 }
 
 static void _pop_undo_execute(const int imgid, GList *before, GList *after)
 {
   gchar *tobe_removed_list = _get_tb_removed_metadata_string_values(before, after);
-  gchar *tobe_added_list = _get_tb_added_metadata_string_values(imgid, before, after);
+  GList *tobe_added_list = _get_tb_added_metadata_string_values(imgid, before, after);
 
   _bulk_remove_metadata(imgid, tobe_removed_list);
   _bulk_add_metadata(tobe_added_list);
 
   g_free(tobe_removed_list);
-  g_free(tobe_added_list);
+  g_list_free_full(tobe_added_list, g_free);
 }
 
 static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
