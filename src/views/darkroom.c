@@ -2681,6 +2681,16 @@ void leave(dt_view_t *self)
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  // reset color assesment mode
+  if(dev->iso_12646.enabled)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
+    dev->iso_12646.enabled = FALSE;
+    dev->width = dev->orig_width;
+    dev->height = dev->orig_height;
+    dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
+
   // commit image ops to db
   dt_dev_write_history(dev);
 
