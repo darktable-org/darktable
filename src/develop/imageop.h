@@ -618,8 +618,10 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 void dt_iop_nap(int32_t usec);
 
 /** get module by name and colorout, works only with a dev mode */
-dt_iop_module_t *get_colorout_module(void);
-dt_iop_module_t *get_module_by_name(const char *op);
+dt_iop_module_t *dt_iop_get_colorout_module(void);
+/* returns the iop-module found in list with the given name */
+dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
+dt_iop_module_t *dt_iop_get_module(const char *op);
 
 /** get module flags, works in dev and lt mode */
 int get_module_flags(const char *op);
