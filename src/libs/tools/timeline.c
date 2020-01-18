@@ -431,7 +431,8 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
       }
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
       {
-        tt.minute = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        int nb = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        _time_add(&tt, nb, DT_LIB_TIMELINE_ZOOM_MINUTE);
         if(tt.minute < 0) tt.minute = 0;
       }
 
