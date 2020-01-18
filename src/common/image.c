@@ -752,21 +752,21 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "INSERT INTO main.images "
-      "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
-      "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
-      "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
-      "raw_auto_bright_threshold, raw_black, raw_maximum, "
-      "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, iop_order_version, "
-      "position, aspect_ratio) "
-      "SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens, "
-      "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
-      "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
-      "raw_auto_bright_threshold, raw_black, raw_maximum, "
-      "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, 0, ?1, aspect_ratio "
-      "FROM main.images WHERE id = ?2",
+      "INSERT INTO main.images"
+      "  (id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
+      "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
+      "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
+      "   raw_auto_bright_threshold, raw_black, raw_maximum,"
+      "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
+      "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end,"
+      "   position, aspect_ratio)"
+      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
+      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
+      "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
+      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
+      "       caption, description, license, sha1sum, orientation, histogram, lightmap,"
+      "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1, aspect_ratio"
+      " FROM main.images WHERE id = ?2",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
