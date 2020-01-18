@@ -735,9 +735,11 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
   dt_collection_shift_image_positions(1, new_image_position);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT a.id FROM main.images AS a JOIN main.images AS b WHERE "
-                              "a.film_id = b.film_id AND a.filename = b.filename AND "
-                              "b.id = ?1 AND a.version = ?2 ORDER BY a.id DESC",
+                              "SELECT a.id"
+                              "  FROM main.images AS a JOIN main.images AS b"
+                              "  WHERE a.film_id = b.film_id AND a.filename = b.filename"
+                              "   AND b.id = ?1 AND a.version = ?2"
+                              "  ORDER BY a.id DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, newversion);
@@ -774,9 +776,10 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT a.id, a.film_id, a.filename, b.max_version FROM main.images AS a JOIN main.images AS b WHERE "
-      "a.film_id = b.film_id AND a.filename = b.filename AND "
-      "b.id = ?1 ORDER BY a.id DESC",
+      "SELECT a.id, a.film_id, a.filename, b.max_version"
+      "  FROM main.images AS a JOIN main.images AS b"
+      "  WHERE a.film_id = b.film_id AND a.filename = b.filename AND b.id = ?1"
+      "  ORDER BY a.id DESC",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
@@ -795,24 +798,24 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
   if(newid != -1)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.color_labels (imgid, color) SELECT ?1, color FROM "
-                                "main.color_labels WHERE imgid = ?2",
+                                "INSERT INTO main.color_labels (imgid, color)"
+                                "  SELECT ?1, color FROM main.color_labels WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.meta_data (id, key, value) SELECT ?1, key, value "
-                                "FROM main.meta_data WHERE id = ?2",
+                                "INSERT INTO main.meta_data (id, key, value)"
+                                "  SELECT ?1, key, value FROM main.meta_data WHERE id = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.tagged_images (imgid, tagid) SELECT ?1, tagid FROM "
-                                "main.tagged_images WHERE imgid = ?2",
+                                "INSERT INTO main.tagged_images (imgid, tagid)"
+                                "  SELECT ?1, tagid FROM main.tagged_images WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
