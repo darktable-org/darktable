@@ -293,9 +293,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_set_tooltip_text
     (d->widget,
-     _("custom\t\t: a customr iop-order\n"
-       "legacy\t\t\t: legacy iop order used prior to 3.0\n"
-       "recommended\t: newly iop-order introduced in v3.0"));
+     _("custom\t: a customr iop-order\n"
+       "legacy\t\t: legacy iop order used prior to v3.0\n"
+       "v3.0\t\t: iop-order introduced in v3.0"));
   g_signal_connect(G_OBJECT(d->widget), "value-changed",
                    G_CALLBACK(change_order_callback), (gpointer)self);
 
@@ -318,8 +318,8 @@ void gui_cleanup(dt_lib_module_t *self)
 void gui_reset (dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-  // the module reset is use to select the recommended iop-order
-  dt_bauhaus_combobox_set(d->widget, DT_IOP_ORDER_RECOMMENDED);
+  // the module reset is use to select the v3.0 iop-order
+  dt_bauhaus_combobox_set(d->widget, DT_IOP_ORDER_V30);
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -333,9 +333,9 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 
-  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_RECOMMENDED);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("recommended"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
+  dt_lib_presets_add(_("v3.0 (default)"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
   free(params);
 }
 

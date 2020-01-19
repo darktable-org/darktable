@@ -1227,8 +1227,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         // new image, let's handle it
         if(item_list != NULL)
         {
-          // we keep legacy, everything else is migrated to recommended
-          const dt_iop_order_t new_order_version = current_order_version == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_RECOMMENDED;
+          // we keep legacy, everything else is migrated to v3.0
+          const dt_iop_order_t new_order_version = current_order_version == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
 
           GList *iop_order_list = dt_ioppr_get_iop_order_list_version(new_order_version);
 
