@@ -1007,7 +1007,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // but histogram_waveform_width varies, depending on preview image
   // width and # of bins.
   const int bin_width = ceilf((float)(roi_in->width) / (float)(waveform_stride/4));
-  const int waveform_width = roi_in->width / bin_width;
+  const int waveform_width = ceilf(roi_in->width / (float)bin_width);
   dev->histogram_waveform_width = waveform_width;
 
   // max input size should be 1440x900, and with a bin_width of 1,
