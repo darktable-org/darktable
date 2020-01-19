@@ -1306,11 +1306,13 @@ static gboolean _block_autoscroll(gpointer user_data)
     return FALSE;
   }
 
+  dt_lib_timeline_time_t old_pos = strip->time_pos;
   _time_add(&(strip->time_pos), move, strip->zoom);
   // we ensure that the fimlstrip stay in the bounds
   dt_lib_timeline_time_t tt = _selection_scroll_to(strip->time_pos, strip);
   if(_time_compare(tt, strip->time_pos) != 0)
   {
+    strip->time_pos = old_pos; //no scroll, so we restore the previous position
     strip->autoscroll = FALSE;
     return FALSE;
   }
