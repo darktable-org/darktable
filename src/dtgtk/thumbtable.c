@@ -60,7 +60,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
   gboolean ret = FALSE; // return value to show if something as changed
   GtkAllocation allocation;
   gtk_widget_get_allocation(table->widget, &allocation);
-  printf("compute %d %d\n", allocation.width, allocation.height);
+
   if(allocation.width <= 20 || allocation.height <= 20) return FALSE;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -148,7 +148,7 @@ static void _thumbs_load_needed(dt_thumbtable_t *table)
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_prepend(table->list, thumb);
-        gtk_fixed_put(GTK_FIXED(table->area), thumb->w_main, posx, posy);
+        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         _pos_get_previous(table, &posx, &posy);
       }
       g_free(query);
@@ -180,7 +180,7 @@ static void _thumbs_load_needed(dt_thumbtable_t *table)
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_append(table->list, thumb);
-        gtk_fixed_put(GTK_FIXED(table->area), thumb->w_main, posx, posy);
+        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         _pos_get_next(table, &posx, &posy);
       }
       g_free(query);
@@ -228,7 +228,8 @@ static void _move(dt_thumbtable_t *table, int x, int y)
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     th->y += posy;
     th->x += posx;
-    gtk_fixed_move(GTK_FIXED(table->area), th->w_main, th->x, th->y);
+    // gtk_fixed_move(GTK_FIXED(table->area), th->w_main, th->x, th->y);
+    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
     l = g_list_next(l);
   }
 
@@ -283,20 +284,19 @@ static gboolean _leave_notify_callback(GtkWidget *widget, GdkEventCrossing *even
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
-  table->area = gtk_fixed_new();
+  table->widget = gtk_layout_new(NULL, NULL);
   table->offset = 1; // TODO retrieve it from rc file ?
-  gtk_widget_set_events(table->area, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_ENTER_NOTIFY_MASK);
-  gtk_widget_set_app_paintable(table->area, TRUE);
-  table->widget = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(table->widget), GTK_POLICY_EXTERNAL, GTK_POLICY_EXTERNAL);
+  gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK);
+  gtk_widget_set_app_paintable(table->widget, TRUE);
+  gtk_scrollable_set_vscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
+  gtk_scrollable_set_hscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_scroll_event_callback), table);
-  g_signal_connect(G_OBJECT(table->area), "draw", G_CALLBACK(_draw_event_callback), table);
-  g_signal_connect(G_OBJECT(table->area), "leave-notify-event", G_CALLBACK(_leave_notify_callback), table);
+  g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_draw_event_callback), table);
+  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_leave_notify_callback), table);
 
-  gtk_container_add(GTK_CONTAINER(table->widget), table->area);
-  gtk_widget_show_all(table->widget);
+  gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
   return table;
@@ -333,7 +333,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       posx = (table->view_width - table->rows * table->thumb_size) / 2;
       posx += empty_start * table->thumb_size;
     }
-    printf(" suite offset=%d =%d, empty_start=%d posx=%d\n", table->offset, offset, empty_start, posx);
+
     // we add the thumbs
     gchar *query
         = dt_util_dstrcat(NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
@@ -345,10 +345,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
                                                sqlite3_column_int(stmt, 0));
       thumb->x = posx;
       thumb->y = posy;
-      printf(" add %d   %d %dx%d  %dx%d %p %p\n", thumb->imgid, table->thumb_size, table->view_width,
-             table->view_height, posx, posy, table->area, thumb->w_main);
       table->list = g_list_append(table->list, thumb);
-      gtk_fixed_put(GTK_FIXED(table->area), thumb->w_main, posx, posy);
+      gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
       _pos_get_next(table, &posx, &posy);
     }
 
