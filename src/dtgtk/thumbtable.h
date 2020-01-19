@@ -21,7 +21,8 @@
 typedef enum dt_thumbtable_mode_t
 {
   DT_THUMBTABLE_MODE_FILEMANAGER,
-  DT_THUMBTABLE_MODE_FILMSTRIP
+  DT_THUMBTABLE_MODE_FILMSTRIP,
+  DT_THUMBTABLE_MODE_ZOOM
 } dt_thumbtable_mode_t;
 
 typedef struct dt_thumbtable_t
@@ -39,6 +40,8 @@ typedef struct dt_thumbtable_t
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
   int view_width, view_height; // last view size
 
+  gboolean dragging;
+  int last_x, last_y;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

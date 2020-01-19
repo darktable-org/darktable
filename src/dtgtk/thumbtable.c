@@ -22,6 +22,8 @@
 #include "dtgtk/thumbnail.h"
 #include "views/view.h"
 
+#define ZOOM_MAX 13
+
 static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
 {
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -36,6 +38,16 @@ static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
   {
     *x += table->thumb_size;
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+    *x += table->thumb_size;
+    if(*x + table->thumb_size > first->x + table->thumbs_per_row * table->thumb_size)
+    {
+      *x = first->x;
+      *y += table->thumb_size;
+    }
   }
 }
 static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
@@ -52,6 +64,16 @@ static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
   {
     *x -= table->thumb_size;
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+    *x -= table->thumb_size;
+    if(*x < first->x)
+    {
+      *x = first->x + (table->thumbs_per_row - 1) * table->thumb_size;
+      *y -= table->thumb_size;
+    }
   }
 }
 
@@ -94,6 +116,20 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       ret = TRUE;
     }
   }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
+
+    if(force || allocation.width != table->view_width || allocation.height != table->view_height)
+    {
+      table->thumbs_per_row = ZOOM_MAX;
+      table->view_width = allocation.width;
+      table->view_height = allocation.height;
+      table->thumb_size = table->view_width / npr;
+      table->rows = table->view_height / table->thumb_size + 1;
+      ret = TRUE;
+    }
+  }
   return ret;
 }
 
@@ -104,8 +140,9 @@ static void _thumbs_remove_unneeded(dt_thumbtable_t *table)
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->x + table->thumb_size < 0 || th->y + table->thumb_size < 0 || th->x > table->view_width
-       || th->y > table->view_height)
+    if(th->y + table->thumb_size < 0 || th->y > table->view_height
+       || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+           && (th->x + table->thumb_size < 0 || th->x > table->view_width)))
     {
       table->list = g_list_remove_link(table->list, l);
       gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
@@ -123,12 +160,13 @@ static void _thumbs_load_needed(dt_thumbtable_t *table)
   if(g_list_length(table->list) == 0) return;
   sqlite3_stmt *stmt;
 
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  // if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
   {
     // we load image at the beginning
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
     if(first->rowid > 1
-       && ((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && first->y > 0)
+       && (((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
+            && first->y > 0)
            || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && first->x > 0)))
     {
       int space = first->y;
@@ -159,7 +197,8 @@ static void _thumbs_load_needed(dt_thumbtable_t *table)
     dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
     // if there's space under the last image, we have rows to load
     // if the last line is not full, we have already reached the end of the collection
-    if((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && last->y + table->thumb_size < table->view_height
+    if(((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
+        && last->y + table->thumb_size < table->view_height
         && last->x == table->thumb_size * (table->thumbs_per_row - 1))
        || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && last->x + table->thumb_size < table->view_width))
     {
@@ -246,38 +285,78 @@ static void _move(dt_thumbtable_t *table, int x, int y)
     table->offset = MAX(1, table->offset - posx / table->thumb_size);
 }
 
-static gboolean _scroll_event_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   gdouble delta_y;
 
   if(dt_gui_get_scroll_delta(e, &delta_y))
   {
-    dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-    if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-      _move(table, 0, table->thumb_size);
-    else if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-      _move(table, table->thumb_size, 0);
-    if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-      _move(table, 0, -table->thumb_size);
-    else if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-      _move(table, -table->thumb_size, 0);
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+        _move(table, 0, table->thumb_size);
+      else if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+        _move(table, table->thumb_size, 0);
+      if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+        _move(table, 0, -table->thumb_size);
+      else if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+        _move(table, -table->thumb_size, 0);
+    }
   }
   // we stop here to avoid scrolledwindow to move
   return TRUE;
 }
 
-static gboolean _draw_event_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-  // we don't really want to draw something, this is just to know when the flowbox is really ready
+  // we don't really want to draw something, this is just to know when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   dt_thumbtable_full_redraw(table, FALSE);
   return FALSE; // let's propagate this event for childs
 }
 
-static gboolean _leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_control_set_mouse_over_id(-1);
+  return TRUE;
+}
+
+static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    table->dragging = TRUE;
+    table->last_x = event->x_root;
+    table->last_y = event->y_root;
+  }
+  return TRUE;
+}
+static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  table->dragging = FALSE;
+  return TRUE;
+}
+static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  if(table->dragging)
+  {
+    int dx = event->x_root - table->last_x;
+    int dy = event->y_root - table->last_y;
+    table->last_x = event->x_root;
+    table->last_y = event->y_root;
+    _move(table, dx, dy);
+  }
   return TRUE;
 }
 
@@ -292,9 +371,12 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_widget_set_app_paintable(table->widget, TRUE);
   gtk_scrollable_set_vscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
   gtk_scrollable_set_hscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_scroll_event_callback), table);
-  g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_draw_event_callback), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_leave_notify_callback), table);
+  g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
+  g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
+  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
+  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
 
   gtk_widget_show(table->widget);
 
@@ -362,9 +444,8 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
 
   // if table already has parent, then we remove it
   GtkWidget *parent = gtk_widget_get_parent(table->widget);
-  if(parent)
+  if(parent && parent != new_parent)
   {
-    if(parent == new_parent) return;
     gtk_container_remove(GTK_CONTAINER(parent), table->widget);
   }
 
@@ -372,13 +453,12 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
   table->mode = mode;
 
   // we reparent the table
-  if(GTK_IS_OVERLAY(new_parent))
+  if(!parent || parent != new_parent)
   {
-    gtk_overlay_add_overlay(GTK_OVERLAY(new_parent), table->widget);
-  }
-  else
-  {
-    gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
+    if(GTK_IS_OVERLAY(new_parent))
+      gtk_overlay_add_overlay(GTK_OVERLAY(new_parent), table->widget);
+    else
+      gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
   }
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
