@@ -1157,7 +1157,11 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       else
       {
         strip->start_x = strip->stop_x = e->x;
-        strip->start_t = strip->stop_t = _time_get_from_pos(e->x, strip);
+        dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
+        if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+          strip->start_t = strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+        else
+          strip->start_t = strip->stop_t = tt;
         strip->move_edge = FALSE;
       }
       strip->selecting = TRUE;
@@ -1194,18 +1198,24 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
   if(strip->selecting)
   {
     strip->stop_x = e->x;
-    strip->stop_t = _time_get_from_pos(e->x, strip);
-    // we want to be at the "end" of this date
-    if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
+    dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
+    if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+      strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+    else
     {
-      strip->stop_t.minute = 59;
-      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
+      strip->stop_t = tt;
+      // we want to be at the "end" of this date
+      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
       {
-        strip->stop_t.hour = 23;
-        if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
-        {
-          strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
-        }
+	strip->stop_t.minute = 59;
+	if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
+	{
+	  strip->stop_t.hour = 23;
+	  if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
+	  {
+	    strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	  }
+	}
       }
     }
     strip->selecting = FALSE;
@@ -1226,8 +1236,11 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
 
   strip->start_x = strip->current_x;
-  strip->start_t = _time_get_from_pos(strip->current_x, strip);
-
+  dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
+  if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+    strip->start_t = strip->time_maxi; //we are past the end so selection extends until the end
+  else
+    strip->start_t = _time_get_from_pos(strip->current_x, strip);
   strip->stop_x = strip->start_x;
   strip->stop_t = strip->start_t;
   strip->selecting = TRUE;
@@ -1239,19 +1252,25 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
                                 GdkModifierType modifier, gpointer data)
 {
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
+  dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
 
   strip->stop_x = strip->current_x;
-  strip->stop_t = _time_get_from_pos(strip->current_x, strip);
-  // we want to be at the "end" of this date
-  if(strip->zoom < DT_LIB_TIMELINE_ZOOM_HOUR)
+  if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+    strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+  else
   {
-    strip->stop_t.minute = 59;
-    if(strip->zoom < DT_LIB_TIMELINE_ZOOM_DAY)
+    strip->stop_t = tt;
+    // we want to be at the "end" of this date
+    if(strip->zoom < DT_LIB_TIMELINE_ZOOM_HOUR)
     {
-      strip->stop_t.hour = 23;
-      if(strip->zoom < DT_LIB_TIMELINE_ZOOM_MONTH)
+      strip->stop_t.minute = 59;
+      if(strip->zoom < DT_LIB_TIMELINE_ZOOM_DAY)
       {
-        strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	strip->stop_t.hour = 23;
+	if(strip->zoom < DT_LIB_TIMELINE_ZOOM_MONTH)
+	{
+	  strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	}
       }
     }
   }
@@ -1261,6 +1280,7 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
 }
+
 static gboolean _block_autoscroll(gpointer user_data)
 {
   // this function is called repetidly until the pointer is not more in the autoscoll zone
