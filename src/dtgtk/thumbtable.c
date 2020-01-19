@@ -60,6 +60,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
   gboolean ret = FALSE; // return value to show if something as changed
   GtkAllocation allocation;
   gtk_widget_get_allocation(table->widget, &allocation);
+  printf("compute %d %d\n", allocation.width, allocation.height);
   if(allocation.width <= 20 || allocation.height <= 20) return FALSE;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -280,11 +281,12 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(_compute_sizes(table, force))
   {
     sqlite3_stmt *stmt;
-    printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d ...\n", force, table->view_width, table->view_height,
-           table->thumbs_per_row);
+    printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d ...\n", force, table->view_width,
+           table->view_height, table->thumbs_per_row, table->rows, table->thumb_size);
 
     // we drop all the widgets
     g_list_free_full(table->list, _thumb_remove);
+    table->list = NULL;
 
     int posx = 0;
     int posy = 0;
@@ -294,10 +296,10 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     {
       offset = MAX(1, table->offset - table->rows / 2);
       empty_start = -MIN(0, table->offset - table->rows / 2 - 1);
-      posx = (table->rows * table->thumb_size - table->view_width) / 2;
+      posx = (table->view_width - table->rows * table->thumb_size) / 2;
       posx += empty_start * table->thumb_size;
     }
-
+    printf(" suite offset=%d =%d, empty_start=%d posx=%d\n", table->offset, offset, empty_start, posx);
     // we add the thumbs
     gchar *query
         = dt_util_dstrcat(NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
@@ -309,6 +311,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
                                                sqlite3_column_int(stmt, 0));
       thumb->x = posx;
       thumb->y = posy;
+      printf(" add %d   %d %dx%d  %dx%d %p %p\n", thumb->imgid, table->thumb_size, table->view_width,
+             table->view_height, posx, posy, table->area, thumb->w_main);
       table->list = g_list_append(table->list, thumb);
       gtk_fixed_put(GTK_FIXED(table->area), thumb->w_main, posx, posy);
       _pos_get_next(table, &posx, &posy);
