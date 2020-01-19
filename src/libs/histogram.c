@@ -425,7 +425,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
 
   if(!hooks_available) return TRUE;
 
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(event->type == GDK_2BUTTON_PRESS && (d->highlight == 1 || d->highlight ==2))
   {
     dt_dev_exposure_reset_defaults(darktable.develop);
   }
