@@ -2709,7 +2709,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
       if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.iop_order_version"))) != xmpData.end())
       {
-        iop_order_version = pos->toLong() == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_RECOMMENDED;
+        iop_order_version = pos->toLong() == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
       }
     }

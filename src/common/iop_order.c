@@ -53,7 +53,7 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
                       "tree-vectorize")
 #endif
 
-// note legacy_order & recommended_order have the original iop-order double that is
+// note legacy_order & v30_order have the original iop-order double that is
 // used only for the initial database migration.
 //
 // in the new code only the iop-order as int is used to order the module on the GUI.
@@ -141,7 +141,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 0.0f }, "", 0}
 };
 
-const dt_iop_order_entry_t recommended_order[] = {
+const dt_iop_order_entry_t v30_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
@@ -301,7 +301,7 @@ GList *dt_ioppr_iop_order_list_duplicate(GList *iop_order_list)
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
-  dt_iop_order_t iop_order_version = DT_IOP_ORDER_RECOMMENDED;
+  dt_iop_order_t iop_order_version = DT_IOP_ORDER_V30;
 
   // check current iop order version
   sqlite3_stmt *stmt;
@@ -429,14 +429,14 @@ gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b)
 
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
 {
-  // first check if this is the recommended order
+  // first check if this is the v30 order
   int k = 0;
   GList *l = iop_order_list;
   gboolean ok = TRUE;
   while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    if(strcmp(recommended_order[k].operation, entry->operation))
+    if(strcmp(v30_order[k].operation, entry->operation))
     {
       ok = FALSE;
       break;
@@ -445,7 +445,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     {
       // skip all the other instance of same module if any
       while(g_list_next(l)
-            && !strcmp(recommended_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
+            && !strcmp(v30_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
         l = g_list_next(l);
     }
 
@@ -453,7 +453,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     l = g_list_next(l);
   }
 
-  if(ok) return DT_IOP_ORDER_RECOMMENDED;
+  if(ok) return DT_IOP_ORDER_V30;
 
   // then check if this is the legacy order
   k = 0;
@@ -471,7 +471,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     {
       // skip all the other instance of same module if any
       while(g_list_next(l)
-            && !strcmp(recommended_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
+            && !strcmp(v30_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
         l = g_list_next(l);
     }
 
@@ -574,9 +574,9 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version)
   {
     iop_order_list = _table_to_list(legacy_order);
   }
-  else if(version == DT_IOP_ORDER_RECOMMENDED)
+  else if(version == DT_IOP_ORDER_V30)
   {
-    iop_order_list = _table_to_list(recommended_order);
+    iop_order_list = _table_to_list(v30_order);
   }
 
   return iop_order_list;
@@ -629,9 +629,9 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
       {
         iop_order_list = _table_to_list(legacy_order);
       }
-      else if(version == DT_IOP_ORDER_RECOMMENDED)
+      else if(version == DT_IOP_ORDER_V30)
       {
-        iop_order_list = _table_to_list(recommended_order);
+        iop_order_list = _table_to_list(v30_order);
       }
       else
         fprintf(stderr, "[dt_ioppr_get_iop_order_list] invalid iop order version %d for imgid %d\n", version, imgid);
@@ -649,7 +649,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
-    iop_order_list = _table_to_list(recommended_order);
+    iop_order_list = _table_to_list(v30_order);
   }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);

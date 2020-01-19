@@ -29,10 +29,10 @@ struct dt_dev_pixelpipe_t;
 
 typedef enum dt_iop_order_t
 {
-  DT_IOP_ORDER_CUSTOM      = 0, // a customr order (re-ordering the pipe)
-  DT_IOP_ORDER_LEGACY      = 1, // up to dt 2.6.3
-  DT_IOP_ORDER_RECOMMENDED = 2, // starts with dt 3.0
-  DT_IOP_ORDER_LAST        = 3
+  DT_IOP_ORDER_CUSTOM  = 0, // a customr order (re-ordering the pipe)
+  DT_IOP_ORDER_LEGACY  = 1, // up to dt 2.6.3
+  DT_IOP_ORDER_V30     = 2, // starts with dt 3.0
+  DT_IOP_ORDER_LAST    = 3
 } dt_iop_order_t;
 
 typedef struct dt_iop_order_entry_t
@@ -55,7 +55,7 @@ typedef struct dt_iop_order_rule_t
 /** do a deep copy the iop-order list */
 GList *dt_ioppr_iop_order_list_duplicate(GList *iop_order_list);
 
-/** return the iop-order-version used by imgid (DT_IOP_ORDER_RECOMMENDED if unknown iop-order-version) */
+/** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
 /** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
     or a customr order  */
