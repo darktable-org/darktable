@@ -1158,7 +1158,7 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       {
         strip->start_x = strip->stop_x = e->x;
         dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
-        if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+        if(_time_compare(tt, _time_init()) == 0)
           strip->start_t = strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
         else
           strip->start_t = strip->stop_t = tt;
@@ -1199,7 +1199,7 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
   {
     strip->stop_x = e->x;
     dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
-    if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+    if(_time_compare(tt, _time_init()) == 0)
       strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
     else
     {
@@ -1237,7 +1237,7 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
 
   strip->start_x = strip->current_x;
   dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
-  if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+  if(_time_compare(tt, _time_init()) == 0)
     strip->start_t = strip->time_maxi; //we are past the end so selection extends until the end
   else
     strip->start_t = _time_get_from_pos(strip->current_x, strip);
@@ -1256,7 +1256,7 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
 
   strip->stop_x = strip->current_x;
-  if(tt.year == 0 && tt.month == 1 && tt.day == 1)
+  if(_time_compare(tt, _time_init()) == 0)
     strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
   else
   {
