@@ -1244,6 +1244,7 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
   strip->stop_x = strip->start_x;
   strip->stop_t = strip->start_t;
   strip->selecting = TRUE;
+  strip->has_selection = TRUE;
 
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
