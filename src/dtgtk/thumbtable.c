@@ -194,6 +194,32 @@ static void _move(dt_thumbtable_t *table, int x, int y)
   // we check bounds to allow or not the move
   int posx = x;
   int posy = y;
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    posx = 0; // to be sure, we don't want horizontal move
+    if(posy == 0) return;
+
+    // we stop when first rowid image is fully shown
+    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+    if(first->rowid == 1 && posy > 0 && first->y >= 0) return;
+
+    // we stop when last image is fully shown (that means empty space at the bottom)
+    dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+    if(last->y + table->thumb_size < table->view_height && posy < 0) return;
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
+    posy = 0; // to be sure, we don't want vertical move
+    if(posx == 0) return;
+
+    // we stop when first rowid image is fully shown
+    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+    if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return;
+
+    // we stop when last image is fully shown (that means empty space at the bottom)
+    dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+    if(last->x < table->view_width / 2 && posx < 0) return;
+  }
 
   // we move all current thumbs
   GList *l = table->list;
@@ -214,9 +240,9 @@ static void _move(dt_thumbtable_t *table, int x, int y)
 
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-    table->offset = table->offset + posy / table->thumb_size;
+    table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-    table->offset = table->offset + posx / table->thumb_size;
+    table->offset = MAX(1, table->offset - posx / table->thumb_size);
 }
 
 static gboolean _scroll_event_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
