@@ -971,6 +971,15 @@ static char *_dt_collection_compute_datetime(const char *operator, const char *i
     tm1.tm_min = 59;
     tm1.tm_sec = 59;
   }
+  if(strcmp(operator, "<") == 0 || strcmp(operator, ">=") == 0)
+  {
+    // we set all values to their minimum
+    tm1.tm_mon = 1;
+    tm1.tm_mday = 1;
+    tm1.tm_hour = 0;
+    tm1.tm_min = 0;
+    tm1.tm_sec = 0;
+  }
 
   // we read the input date, depending of his length
   if(len < 7)
