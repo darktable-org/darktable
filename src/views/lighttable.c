@@ -392,6 +392,13 @@ static void check_layout(dt_view_t *self)
   {
     _culling_check_scrolling_mode(self);
   }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    // we want to reacquire the thumbtable if needed
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_ZOOM);
+    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  }
 
   // make sure we reset culling layout
   _culling_destroy_slots(self);
@@ -3325,9 +3332,18 @@ void enter(dt_view_t *self)
   // we add the flowbox and hide the main drawingarea
   dt_library_t *lib = (dt_library_t *)self->data;
   // we want to reacquire the thumbtable if needed
-  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                           DT_THUMBTABLE_MODE_FILEMANAGER);
-  gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+  {
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_FILEMANAGER);
+    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  }
+  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_ZOOM);
+    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  }
 
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
