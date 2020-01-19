@@ -1421,17 +1421,17 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 static gboolean invert_matrix(const float in[9], float out[9])
 {
   // use same notation as https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
-  float biga = in[4] * in[8] - in[5] * in[7];
-  float bigb = -in[3] * in[8] + in[5] * in[6];
-  float bigc = in[3] * in[7] - in[4] * in[6];
-  float bigd = -in[1] * in[8] + in[2] * in[7];
-  float bige = in[0] * in[8] - in[2] * in[6];
-  float bigf = -in[0] * in[7] + in[1] * in[6];
-  float bigg = in[1] * in[5] - in[2] * in[4];
-  float bigh = -in[0] * in[5] + in[2] * in[3];
-  float bigi = in[0] * in[4] - in[1] * in[3];
+  const float biga = in[4] * in[8] - in[5] * in[7];
+  const float bigb = -in[3] * in[8] + in[5] * in[6];
+  const float bigc = in[3] * in[7] - in[4] * in[6];
+  const float bigd = -in[1] * in[8] + in[2] * in[7];
+  const float bige = in[0] * in[8] - in[2] * in[6];
+  const float bigf = -in[0] * in[7] + in[1] * in[6];
+  const float bigg = in[1] * in[5] - in[2] * in[4];
+  const float bigh = -in[0] * in[5] + in[2] * in[3];
+  const float bigi = in[0] * in[4] - in[1] * in[3];
 
-  float det = in[0] * biga + in[1] * bigb + in[2] * bigc;
+  const float det = in[0] * biga + in[1] * bigb + in[2] * bigc;
   if(det == 0.0f)
   {
     return FALSE;
@@ -1479,15 +1479,15 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   // apart of the normalization: these coefficients do differences of RGB channels
   // to try to reduce or cancel the signal. If we change these depending on white
   // balance, we will not reduce/cancel the signal anymore.
-  float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
-  float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
+  const float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
+  const float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
   toY0U0V0[3] /= stddevU0;
   toY0U0V0[4] /= stddevU0;
   toY0U0V0[5] /= stddevU0;
   toY0U0V0[6] /= stddevV0;
   toY0U0V0[7] /= stddevV0;
   toY0U0V0[8] /= stddevV0;
-  gboolean is_invertible = invert_matrix(toY0U0V0, toRGB);
+  const gboolean is_invertible = invert_matrix(toY0U0V0, toRGB);
   if(!is_invertible)
   {
     // use standard form if whitebalance adapted matrix is not invertible

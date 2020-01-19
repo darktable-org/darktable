@@ -97,7 +97,7 @@ denoiseprofile_precondition_Y0U0V0(read_only image2d_t in, write_only image2d_t 
   const float alpha = pixel.w;
 
 
-  float4 t = 2.0f * native_powr(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a));
+  const float4 t = 2.0f * native_powr(fmax((float4)0.0f, pixel + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a));
 
   float4 outpx = (float4)0.0f;
   outpx.x += toY0U0V0[0] * t.x;
@@ -404,9 +404,9 @@ denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out
   const float alpha = px.w;
 
   px = fmax((float4)0.0f, px);
-  float4 delta = px * px + (float4)bias;
-  float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
-  float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
+  const float4 delta = px * px + (float4)bias;
+  const float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
+  const float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
   px = native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b;
   px = px * wb;
   px.w = alpha;
@@ -424,7 +424,7 @@ denoiseprofile_backtransform_Y0U0V0(read_only image2d_t in, write_only image2d_t
 
   if(x >= width || y >= height) return;
 
-  float4 t = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 t = read_imagef(in, sampleri, (int2)(x, y));
   const float alpha = t.w;
 
   float4 px = (float4)0.0f;
@@ -439,9 +439,9 @@ denoiseprofile_backtransform_Y0U0V0(read_only image2d_t in, write_only image2d_t
   px.z += toRGB[8] * t.z;
 
   px = fmax((float4)0.0f, px);
-  float4 delta = px * px + (float4)bias * wb;
-  float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
-  float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
+  const float4 delta = px * px + (float4)bias * wb;
+  const float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
+  const float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
   px = native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b;
   px.w = alpha;
 
