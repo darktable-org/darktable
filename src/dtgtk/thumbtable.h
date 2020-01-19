@@ -29,7 +29,6 @@ typedef struct dt_thumbtable_t
   dt_thumbtable_mode_t mode;
 
   GtkWidget *widget; // main widget
-  GtkWidget *area;   // GtkFixed which cantain the thumbnails
 
   GList *list; // list of thumbnails struct drawn at screen
 
