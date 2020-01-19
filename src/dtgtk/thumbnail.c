@@ -205,14 +205,16 @@ static gboolean _back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing 
   return TRUE;
 }
 
-static void _back_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _back_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
+    return TRUE;
   }
+  return FALSE;
 }
-static void _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
@@ -226,6 +228,7 @@ static void _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpo
     else if((event->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
       dt_selection_select_range(darktable.selection, thumb->imgid);
   }
+  return FALSE;
 }
 
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
