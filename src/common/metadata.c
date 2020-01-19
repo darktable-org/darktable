@@ -57,11 +57,12 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
     }
     if(!same || different)
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "%d", atoi(b->data));
+      metadata_list = dt_util_dstrcat(metadata_list, "%d,", atoi(b->data));
     }
     b = g_list_next(b);
     b = g_list_next(b);
   }
+  if(metadata_list) metadata_list[strlen(metadata_list) - 1] = '\0';
   return metadata_list;
 }
 
@@ -81,7 +82,7 @@ static GList *_get_tb_added_metadata_string_values(int img, GList *before, GList
       GList *same2 = g_list_next(same);
       different = g_strcmp0(same2->data, a2->data);
     }
-    if(!same || different)
+    if((!same || different) && a2->data)
     {
       char *img_str = NULL;
       img_str = dt_util_dstrcat(img_str, "%d", GPOINTER_TO_INT(img));
@@ -115,13 +116,21 @@ static void _bulk_add_metadata(GList *metadata_list)
   {
     char *query = NULL;
     sqlite3_stmt *stmt;
-    query = "INSERT INTO main.meta_data (id, key, value) VALUES (?, ?, ?)";
+    query = dt_util_dstrcat(query,
+        "INSERT INTO main.meta_data (id, key, value) VALUES ");
+
+    for(int i = 0; i < g_list_length(metadata_list); i+= 3)
+      query = dt_util_dstrcat(query, "(?, ?, ?),");
+
+    query[strlen(query) - 1] = '\0';
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    sqlite3_bind_text(stmt, 1, g_list_nth_data(metadata_list, 0), -1, 0);
-    sqlite3_bind_text(stmt, 2, g_list_nth_data(metadata_list, 1), -1, 0);
-    sqlite3_bind_text(stmt, 3, g_list_nth_data(metadata_list, 2), -1, 0);
+    for(int i = 0; i < g_list_length(metadata_list); i++)
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, i + 1, g_list_nth_data(metadata_list, i), -1, 0);
+
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    g_free(query);
   }
 }
 
