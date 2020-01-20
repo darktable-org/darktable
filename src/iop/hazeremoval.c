@@ -757,7 +757,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   const float *const c_A0 = A0;
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
@@ -1008,7 +1008,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
 
   dt_opencl_release_mem_object(trans_map);
