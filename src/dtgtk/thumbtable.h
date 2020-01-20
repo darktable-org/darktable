@@ -39,6 +39,7 @@ typedef struct dt_thumbtable_t
   int rows;                    // number of rows (the last one is not fully visible)
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
   int view_width, view_height; // last view size
+  GdkRectangle thumbs_area;    // coordinate of the currently loaded thumbs area
 
   gboolean dragging;
   int last_x, last_y;
