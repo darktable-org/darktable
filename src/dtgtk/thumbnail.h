@@ -48,6 +48,7 @@ typedef struct
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height);
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

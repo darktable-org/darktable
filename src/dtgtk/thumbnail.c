@@ -220,7 +220,6 @@ static gboolean _back_release_callback(GtkWidget *widget, GdkEventButton *event,
 
   if(event->button == 1)
   {
-    printf("yop\n");
     if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
       dt_selection_select_single(darktable.selection, thumb->imgid);
     else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
@@ -380,6 +379,31 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   free(thumb);
 }
 
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
+{
+  // new size unit
+  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
+
+  // widget resizing
+  gtk_widget_set_size_request(thumb->w_main, width, height);
+  gtk_widget_set_size_request(thumb->w_info_back, width - 2 * DT_PIXEL_APPLY_DPI(1.0), 0.147125 * height);
+  gtk_widget_set_size_request(thumb->w_btn_reject, 4.0 * r1, 4.0 * r1);
+  gtk_widget_set_margin_start(thumb->w_btn_reject, 0.045 * width - r1);
+  gtk_widget_set_margin_bottom(thumb->w_btn_reject, 0.045 * width - r1);
+  gtk_widget_set_margin_bottom(thumb->w_stars_box, 0.045 * width - r1);
+  for(int i = 0; i < 4; i++)
+  {
+    gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
+  }
+
+  // update values
+  thumb->width = width;
+  thumb->height = height;
+
+  // reset surface
+  if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+  thumb->img_surf = NULL;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -292,7 +292,6 @@ static void _move(dt_thumbtable_t *table, int x, int y)
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     th->y += posy;
     th->x += posx;
-    // gtk_fixed_move(GTK_FIXED(table->area), th->w_main, th->x, th->y);
     gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
     l = g_list_next(l);
   }
@@ -322,24 +321,80 @@ static void _move(dt_thumbtable_t *table, int x, int y)
   }
 }
 
+static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
+{
+  // we determine the zoom ratio
+  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
+  int new = old;
+  if(delta < 0)
+    new = MIN(ZOOM_MAX, new + 1);
+  else
+    new = MAX(1, new - 1);
+
+  if(old == new) return;
+  const int new_size = table->view_width / new;
+  const double ratio = (double)new_size / (double)table->thumb_size;
+
+  // we get row/collumn numbers of the image under cursor
+  const int anchor_x = (x - table->thumbs_area.x) / table->thumb_size;
+  const int anchor_y = (y - table->thumbs_area.y) / table->thumb_size;
+  // we compute the new position of this image. This will be our reference to compute sizes of other thumbs
+  const int anchor_posx = x - (x - anchor_x * table->thumb_size - table->thumbs_area.x) * ratio;
+  const int anchor_posy = y - (y - anchor_y * table->thumb_size - table->thumbs_area.y) * ratio;
+
+  // we move and resize each thumbs
+  GList *l = g_list_first(table->list);
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    // we get row/collumn numbers
+    const int posx = (th->x - table->thumbs_area.x) / table->thumb_size;
+    const int posy = (th->y - table->thumbs_area.y) / table->thumb_size;
+    // we compute new position taking anchor image as reference
+    th->x = anchor_posx - (anchor_x - posx) * new_size;
+    th->y = anchor_posy - (anchor_y - posy) * new_size;
+    gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
+    dt_thumbnail_resize(th, new_size, new_size);
+    l = g_list_next(l);
+  }
+
+  // we update table values
+  table->thumb_size = new_size;
+  _pos_compute_area(table);
+
+  // and we load/unload thumbs if needed
+  int changed = _thumbs_load_needed(table);
+  changed += _thumbs_remove_unneeded(table);
+  if(changed > 0) _pos_compute_area(table);
+
+  dt_view_lighttable_set_zoom(darktable.view_manager, new);
+  gtk_widget_queue_draw(table->widget);
+}
+
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  gdouble delta_y;
+  gdouble delta;
 
-  if(dt_gui_get_scroll_delta(e, &delta_y))
+  if(dt_gui_get_scroll_delta(e, &delta))
   {
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+      // for filemanger and filmstrip, scrolled = move
+      if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
         _move(table, 0, table->thumb_size);
-      else if(delta_y < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+      else if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         _move(table, table->thumb_size, 0);
-      if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+      if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
         _move(table, 0, -table->thumb_size);
-      else if(delta_y >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+      else if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         _move(table, -table->thumb_size, 0);
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    {
+      // for zoomable, scroll = zoom
+      _zoomable_zoom(table, delta, e->x, e->y);
     }
   }
   // we stop here to avoid scrolledwindow to move
@@ -406,8 +461,6 @@ dt_thumbtable_t *dt_thumbtable_new()
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                            | GDK_ENTER_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
-  gtk_scrollable_set_vscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
-  gtk_scrollable_set_hscroll_policy(GTK_SCROLLABLE(table->widget), GTK_POLICY_EXTERNAL);
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
   g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
