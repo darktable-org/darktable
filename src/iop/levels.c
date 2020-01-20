@@ -857,10 +857,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
-  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
-    dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
+  dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
 
   // Drawing the vertical line indicators
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
