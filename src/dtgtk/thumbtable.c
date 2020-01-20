@@ -24,6 +24,28 @@
 
 #define ZOOM_MAX 13
 
+static void _pos_compute_area(dt_thumbtable_t *table)
+{
+  GList *l = g_list_first(table->list);
+  int x1 = INT_MAX;
+  int y1 = INT_MAX;
+  int x2 = INT_MIN;
+  int y2 = INT_MIN;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    x1 = MIN(x1, th->x);
+    y1 = MIN(y1, th->y);
+    x2 = MAX(x2, th->x);
+    y2 = MAX(y2, th->x);
+    l = g_list_next(l);
+  }
+  table->thumbs_area.x = x1;
+  table->thumbs_area.y = y1;
+  table->thumbs_area.width = x2 + table->thumb_size - x1;
+  table->thumbs_area.height = y2 + table->thumb_size - y1;
+}
+
 static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
 {
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -41,11 +63,10 @@ static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
     *x += table->thumb_size;
-    if(*x + table->thumb_size > first->x + table->thumbs_per_row * table->thumb_size)
+    if(*x + table->thumb_size > table->thumbs_area.x + table->thumbs_per_row * table->thumb_size)
     {
-      *x = first->x;
+      *x = table->thumbs_area.x;
       *y += table->thumb_size;
     }
   }
@@ -67,11 +88,10 @@ static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
     *x -= table->thumb_size;
-    if(*x < first->x)
+    if(*x < table->thumbs_area.x)
     {
-      *x = first->x + (table->thumbs_per_row - 1) * table->thumb_size;
+      *x = table->thumbs_area.x + (table->thumbs_per_row - 1) * table->thumb_size;
       *y -= table->thumb_size;
     }
   }
@@ -133,9 +153,10 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
   return ret;
 }
 
-static void _thumbs_remove_unneeded(dt_thumbtable_t *table)
+static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
 {
   int pos = 0;
+  int changed = 0;
   GList *l = g_list_nth(table->list, pos);
   while(l)
   {
@@ -148,84 +169,88 @@ static void _thumbs_remove_unneeded(dt_thumbtable_t *table)
       gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
       dt_thumbnail_destroy(th);
       g_list_free(l);
+      changed++;
     }
     else
       pos++;
     l = g_list_nth(table->list, pos);
   }
+  return changed;
 }
 
-static void _thumbs_load_needed(dt_thumbtable_t *table)
+static int _thumbs_load_needed(dt_thumbtable_t *table)
 {
-  if(g_list_length(table->list) == 0) return;
+  if(g_list_length(table->list) == 0) return 0;
   sqlite3_stmt *stmt;
+  int changed = 0;
 
-  // if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  // we load image at the beginning
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  if(first->rowid > 1
+     && (((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM) && first->y > 0)
+         || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && first->x > 0)))
   {
-    // we load image at the beginning
-    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-    if(first->rowid > 1
-       && (((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
-            && first->y > 0)
-           || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && first->x > 0)))
-    {
-      int space = first->y;
-      if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = first->x;
-      const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
-      gchar *query = dt_util_dstrcat(
-          NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid<%d ORDER BY rowid DESC LIMIT %d",
-          first->rowid, nb_to_load * table->thumbs_per_row);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      int posx = first->x;
-      int posy = first->y;
-      _pos_get_previous(table, &posx, &posy);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0));
-        thumb->x = posx;
-        thumb->y = posy;
-        table->list = g_list_prepend(table->list, thumb);
-        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
-        _pos_get_previous(table, &posx, &posy);
-      }
-      g_free(query);
-      sqlite3_finalize(stmt);
-    }
 
-    // we load images at the end
-    dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-    // if there's space under the last image, we have rows to load
-    // if the last line is not full, we have already reached the end of the collection
-    if(((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
-        && last->y + table->thumb_size < table->view_height
-        && last->x == table->thumb_size * (table->thumbs_per_row - 1))
-       || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && last->x + table->thumb_size < table->view_width))
+    int space = first->y;
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = first->x;
+    const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
+    gchar *query = dt_util_dstrcat(
+        NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid<%d ORDER BY rowid DESC LIMIT %d",
+        first->rowid, nb_to_load * table->thumbs_per_row);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    int posx = first->x;
+    int posy = first->y;
+    _pos_get_previous(table, &posx, &posy);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int space = table->view_height - (last->y + table->thumb_size);
-      if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = table->view_width - (last->x + table->thumb_size);
-      const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
-      gchar *query = dt_util_dstrcat(
-          NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid>%d ORDER BY rowid LIMIT %d",
-          last->rowid, nb_to_load * table->thumbs_per_row);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      int posx = last->x;
-      int posy = last->y;
-      _pos_get_next(table, &posx, &posy);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0));
-        thumb->x = posx;
-        thumb->y = posy;
-        table->list = g_list_append(table->list, thumb);
-        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
-        _pos_get_next(table, &posx, &posy);
-      }
-      g_free(query);
-      sqlite3_finalize(stmt);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                                               sqlite3_column_int(stmt, 0));
+      thumb->x = posx;
+      thumb->y = posy;
+      table->list = g_list_prepend(table->list, thumb);
+      gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+      _pos_get_previous(table, &posx, &posy);
+      changed++;
     }
+    g_free(query);
+    sqlite3_finalize(stmt);
   }
+
+  // we load images at the end
+  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+  // if there's space under the last image, we have rows to load
+  // if the last line is not full, we have already reached the end of the collection
+  if((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && last->y + table->thumb_size < table->view_height
+      && last->x == table->thumb_size * (table->thumbs_per_row - 1))
+     || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && last->x + table->thumb_size < table->view_width)
+     || (table->mode == DT_THUMBTABLE_MODE_ZOOM && last->y + table->thumb_size < table->view_height))
+  {
+    int space = table->view_height - (last->y + table->thumb_size);
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = table->view_width - (last->x + table->thumb_size);
+    const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
+    gchar *query = dt_util_dstrcat(
+        NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid>%d ORDER BY rowid LIMIT %d",
+        last->rowid, nb_to_load * table->thumbs_per_row);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    int posx = last->x;
+    int posy = last->y;
+    _pos_get_next(table, &posx, &posy);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                                               sqlite3_column_int(stmt, 0));
+      thumb->x = posx;
+      thumb->y = posy;
+      table->list = g_list_append(table->list, thumb);
+      gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+      _pos_get_next(table, &posx, &posy);
+      changed++;
+    }
+    g_free(query);
+    sqlite3_finalize(stmt);
+  }
+
+  return changed;
 }
 
 static void _move(dt_thumbtable_t *table, int x, int y)
@@ -272,17 +297,29 @@ static void _move(dt_thumbtable_t *table, int x, int y)
     l = g_list_next(l);
   }
 
+  // we update the thumbs_area
+  table->thumbs_area.x += posx;
+  table->thumbs_area.y += posy;
+
   // we load all needed thumbs
-  _thumbs_load_needed(table);
+  int changed = _thumbs_load_needed(table);
 
   // we remove the images not visible on screen
-  _thumbs_remove_unneeded(table);
+  changed += _thumbs_remove_unneeded(table);
+
+  // if there has been changed, we recompute thumbs area
+  if(changed > 0) _pos_compute_area(table);
 
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     table->offset = MAX(1, table->offset - posx / table->thumb_size);
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+    table->offset = first->rowid;
+  }
 }
 
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -431,6 +468,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
       _pos_get_next(table, &posx, &posy);
     }
+
+    _pos_compute_area(table);
 
     printf("done\n");
     g_free(query);

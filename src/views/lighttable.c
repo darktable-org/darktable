@@ -1674,6 +1674,9 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
                             int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  return 0;
+
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
   int missing = 0;
