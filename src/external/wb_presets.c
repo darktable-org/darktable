@@ -5227,12 +5227,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DC-G9", Incandescent, 0,      { 1.632813, 1, 2.839844, 0 } },
   { "Panasonic", "DC-G9", Flash, 0,             { 2.566406, 1, 1.734375, 0 } },
 
-  /* Panasonic DC-G90 Firmware Version 1.0 */
-  { "Panasonic", "DC-G90", Daylight, 0,                { 2.226563, 1, 1.902344, 0 } },
-  { "Panasonic", "DC-G90", Cloudy, 0,                  { 2.367188, 1, 1.777344, 0 } },
-  { "Panasonic", "DC-G90", Shade, 0,                   { 2.511719, 1, 1.679688, 0 } },
-  { "Panasonic"; "DC-G90", Incandescent, 0,            { 1.601563, 1, 2.859375, 0 } },
-  { "Panasonic", "DC-G90", Flash, 0,                   { 2.304688, 1, 1.867188, 0 } },
+  /* Panasonic DC-G95 Firmware Version 1.0 */
+  { "Panasonic", "DC-G95", "Daylight", 0,                { 2.2265625, 1, 1.90234375, 0 } },
+  { "Panasonic", "DC-G95", "Cloudy", 0,                  { 2.3671875, 1, 1.77734375, 0 } },
+  { "Panasonic", "DC-G95", "Shade", 0,                   { 2.51171875, 1, 1.6796875, 0 } },
+  { "Panasonic", "DC-G95", "Incandescent", 0,            { 1.6015625, 1, 2.859375, 0 } },
+  { "Panasonic", "DC-G95", "Flash", 0,                   { 2.3046875, 1, 1.8671875, 0 } },
 
   /* Panasonic DC-TZ96 Firmware Version 1.0 */
 
