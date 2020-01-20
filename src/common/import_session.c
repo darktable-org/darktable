@@ -152,7 +152,7 @@ void dt_import_session_destroy(struct dt_import_session_t *self)
 {
   if(--self->ref != 0) return;
 
-  /* cleanup of session import folder */
+  /* cleanup of session import film roll */
   _import_session_cleanup_filmroll(self);
 
   dt_variables_params_destroy(self->vp);
