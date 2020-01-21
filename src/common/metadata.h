@@ -20,7 +20,19 @@
 
 #include "common/darktable.h"
 #include "gui/gtk.h"
-#include "metadata_gen.h"
+
+typedef enum dt_metadata_t
+{
+    DT_METADATA_XMP_DC_CREATOR,
+    DT_METADATA_XMP_DC_PUBLISHER,
+    DT_METADATA_XMP_DC_TITLE,
+    DT_METADATA_XMP_DC_DESCRIPTION,
+    DT_METADATA_XMP_DC_RIGHTS
+}
+dt_metadata_t;
+
+dt_metadata_t dt_metadata_get_keyid(const char* key);
+
 
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // exif.cc, ligthroom.c, duplicate.c, lua/image.c

@@ -27,6 +27,21 @@
 
 #include <stdlib.h>
 
+dt_metadata_t dt_metadata_get_keyid(const char* key)
+{
+    if(strncmp(key, "Xmp.dc.creator", 14) == 0)
+        return DT_METADATA_XMP_DC_CREATOR;
+    if(strncmp(key, "Xmp.dc.publisher", 16) == 0)
+        return DT_METADATA_XMP_DC_PUBLISHER;
+    if(strncmp(key, "Xmp.dc.title", 12) == 0)
+        return DT_METADATA_XMP_DC_TITLE;
+    if(strncmp(key, "Xmp.dc.description", 18) == 0)
+        return DT_METADATA_XMP_DC_DESCRIPTION;
+    if(strncmp(key, "Xmp.dc.rights", 13) == 0)
+        return DT_METADATA_XMP_DC_RIGHTS;
+    return -1;
+}
+
 typedef struct dt_undo_metadata_t
 {
   int imgid;
