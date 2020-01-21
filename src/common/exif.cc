@@ -2050,7 +2050,7 @@ typedef struct history_entry_t
   unsigned char *blendop_params;
   int blendop_params_len;
   int num;
-  double iop_order;
+  double iop_order; // kept for compatibility with xmp version < 4
 
   // sanity checking
   gboolean have_operation, have_params, have_modversion;
@@ -2855,6 +2855,45 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       num++;
     }
     sqlite3_finalize(stmt);
+
+    // we now need to create and store the proper iop-order taking into account all multi-instances
+    // for previous xmp versions.
+
+    if(version < 4)
+    {
+      // in this version we had iop-order, use it
+
+      for(GList *iter = history_entries; iter; iter = g_list_next(iter))
+      {
+        history_entry_t *entry = (history_entry_t *)iter->data;
+        if(entry->multi_priority != 0)
+        {
+          dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+          memcpy(e->operation, entry->operation, sizeof(e->operation));
+          e->instance = entry->multi_priority;
+
+          if(version < 3)
+          {
+            // prior to v3 there was no iop-order, all multi instances where grouped, use the multièpriority
+            // to restore the order.
+            GList *base_order = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
+            e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
+              - entry->multi_priority / 100.0f;
+          }
+          else
+          {
+            // otherwise use the iop_order for the entry
+            e->o.iop_order_f = entry->iop_order; // legacy iop-order is used to insert item at the right location
+          }
+
+          iop_order_list = g_list_append(iop_order_list, e);
+        }
+      }
+
+      // and finally reoder the full list based on the iop-order
+
+      iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order_f);
+    }
 
     // if masks have been read, create a mask manager entry in history
     if(version < 3)
