@@ -474,7 +474,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     {
       // skip all the other instance of same module if any
       while(g_list_next(l)
-            && !strcmp(v30_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
+            && !strcmp(legacy_order[k].operation, ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
         l = g_list_next(l);
     }
 
