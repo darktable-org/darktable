@@ -1492,9 +1492,9 @@ static void init_widgets(dt_gui_gtk_t *gui)
 
   if(dt_conf_key_exists("ui/cairo_filter"))
   {
-    if(strcmp(dt_conf_get_string("ui/cairo_filter"), "best"))
+    if(strcmp(dt_conf_get_string("ui/cairo_filter"), "best") == 0)
       gui->filter_image = CAIRO_FILTER_BEST;
-    else if (strcmp(dt_conf_get_string("ui/cairo_filter"), "good"))
+    else if (strcmp(dt_conf_get_string("ui/cairo_filter"), "good") == 0)
       gui->filter_image = CAIRO_FILTER_GOOD;
   }
   else
