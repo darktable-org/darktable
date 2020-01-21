@@ -164,25 +164,12 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(d->current_mode != mode
      || d->current_mode == DT_IOP_ORDER_CUSTOM)
   {
-    GList *mi = NULL;
-
     // ensure current history is written
     dt_dev_write_history(darktable.develop);
 
     // if we have multi-instances, save them as we will need to add them back into the iop-list order
 
-    GList *l = g_list_first(darktable.develop->iop_order_list);
-    while(l)
-    {
-      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-      if(entry->instance > 0)
-      {
-        dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-        memcpy(e, entry, sizeof(dt_iop_order_entry_t));
-        mi = g_list_append(mi, e);
-      }
-      l = g_list_next(l);
-    }
+    GList *mi = dt_ioppr_extract_multi_instances_list(darktable.develop->iop_order_list);
 
     // this is a preset as all built-in orders are filed before (see _fill_iop_order)
 
