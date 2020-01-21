@@ -1486,6 +1486,19 @@ static void init_widgets(dt_gui_gtk_t *gui)
 
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
+
+  // Fetch the cairo filter to draw scaled surfaces where exact 1:1 buffer/viewport size is not guaranteed
+  gui->filter_image = CAIRO_FILTER_FAST;
+
+  if(dt_conf_key_exists("ui/cairo_filter"))
+  {
+    if(strcmp(dt_conf_get_string("ui/cairo_filter"), "best") == 0)
+      gui->filter_image = CAIRO_FILTER_BEST;
+    else if (strcmp(dt_conf_get_string("ui/cairo_filter"), "good") == 0)
+      gui->filter_image = CAIRO_FILTER_GOOD;
+  }
+  else
+    dt_conf_set_string("ui/cairo_filter", "fast");
 }
 
 static void init_main_table(GtkWidget *container)
