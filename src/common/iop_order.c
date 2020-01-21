@@ -237,6 +237,9 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 0.0f }, "", 0 }
 };
 
+static void *_dup_iop_order_entry(const void *src, gpointer data);
+static int _count_entries_operation(GList *e_list, const char *operation);
+
 #if 0
 static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
 {
@@ -739,38 +742,59 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
+GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list)
+{
+  GList *mi = NULL;
+
+  GList *l = g_list_first(iop_order_list);
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+
+    if(_count_entries_operation(iop_order_list, entry->operation) > 1)
+    {
+      dt_iop_order_entry_t *copy = (dt_iop_order_entry_t *)_dup_iop_order_entry((void *)entry, NULL);
+      mi = g_list_append(mi, copy);
+    }
+
+    l = g_list_next(l);
+  }
+
+  return mi;
+}
+
 GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list, GList *multi_instance_list)
 {
-  GList *l = g_list_first(multi_instance_list);
+  GList *l = g_list_first(iop_order_list);
 
   while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    GList *link = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, entry->instance);
+    GList *next = g_list_next(l);
 
-    // if this multi-instance is not found, add it
-
-    if(!link)
+    GList *mi = g_list_first(multi_instance_list);
+    GList *insert = NULL;
+    while(mi)
     {
-      // get any instance
+      dt_iop_order_entry_t *mi_entry = (dt_iop_order_entry_t *)mi->data;
 
-      link = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
-
-      if(link)
+      if(!strcmp(entry->operation, mi_entry->operation))
       {
-        // move to last operation
-        do
+        if(insert)
         {
-          link = g_list_next(link);
-        } while(link && strcmp(entry->operation, ((dt_iop_order_entry_t *)link)->operation) == 0);
-
-        // finaly insert the link
-
-        if (link) iop_order_list = g_list_insert_before(iop_order_list, link, entry);
+          iop_order_list = g_list_insert_before(iop_order_list, insert, mi_entry);
+        }
+        else
+        {
+          entry->instance = mi_entry->instance;
+          insert = g_list_next(l);
+        }
       }
+
+      mi = g_list_next(mi);
     }
 
-    l = g_list_next(l);
+    l = next;
   }
 
   return iop_order_list;
