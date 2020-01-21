@@ -329,9 +329,9 @@ void expose(
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     if(closeup)
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
 
     cairo_fill(cr);
 
@@ -390,7 +390,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -3609,7 +3609,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -3648,7 +3648,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
