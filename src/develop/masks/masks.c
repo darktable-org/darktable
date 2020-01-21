@@ -1180,6 +1180,31 @@ static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
   return 0;
 }
 
+static int dt_masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting gradient
+   * up to v5: linear transition
+   * after v5: linear or sigmoidal transition
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  GList *p = g_list_first(m->points);
+
+  if(!p) return 1;
+
+  if(m->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+    gradient->state = DT_MASKS_GRADIENT_STATE_LINEAR;
+  }
+
+  m->version = 6;
+
+  return 0;
+}
+
 
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
@@ -1191,27 +1216,35 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   }
 #endif
 
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && new_version == 6)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
     if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
-  else if(old_version == 2 && new_version == 5)
+  else if(old_version == 2 && new_version == 6)
   {
     res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
-  else if(old_version == 3 && new_version == 5)
+  else if(old_version == 3 && new_version == 6)
   {
     res = dt_masks_legacy_params_v3_to_v4(dev, params);
     if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
-  else if(old_version == 4 && new_version == 5)
+  else if(old_version == 4 && new_version == 6)
   {
     res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+  }
+  else if(old_version == 5 && new_version == 6)
+  {
+    res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
 
   return res;
@@ -1769,7 +1802,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging
-      = dev->form_gui->form_rotating = dev->form_gui->border_toggling = FALSE;
+      = dev->form_gui->form_rotating = dev->form_gui->border_toggling = dev->form_gui->gradient_toggling = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
   dev->form_gui->pivot_selected = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected = dev->form_gui->point_selected
