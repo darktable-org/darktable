@@ -161,6 +161,15 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
 
     return 1;
   }
+  else if(!gui->creation && ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK))
+  {
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    gui->gradient_toggling = TRUE;
+
+    return 1;
+  }
   else if(!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -288,6 +297,31 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 
     return 1;
   }
+  else if(gui->gradient_toggling)
+  {
+    // we get the gradient
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+
+    // we end the gradient toggling
+    gui->gradient_toggling = FALSE;
+
+    // toggle transition type of gradient
+    if(gradient->state == DT_MASKS_GRADIENT_STATE_LINEAR)
+      gradient->state = DT_MASKS_GRADIENT_STATE_SIGMOIDAL;
+    else
+      gradient->state = DT_MASKS_GRADIENT_STATE_LINEAR;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index);
+
+    // we save the new parameters
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
   else if(gui->creation)
   {
     const float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -337,13 +371,12 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     }
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    const float steepness = 0.0f; // MIN(1.0f,dt_conf_get_float("plugins/darkroom/masks/gradient/steepness"));
-                                  // // currently not used
 
     gradient->rotation = -rotation / M_PI * 180.0f;
     gradient->compression = MAX(0.0f, compression);
-    gradient->steepness = MAX(0.0f, steepness);
+    gradient->steepness = 0.0f;
     gradient->curvature = 0.0f;
+    gradient->state = DT_MASKS_GRADIENT_STATE_SIGMOIDAL;
     // not used for masks
     form->source[0] = form->source[1] = 0.0f;
 
@@ -1018,6 +1051,14 @@ static int dt_gradient_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   return 1;
 }
 
+// caller needs to make sure that input remains within bounds
+static inline float dt_gradient_lookup(const float *lut, const float i)
+{
+  const int bin0 = i;
+  const int bin1 = i + 1;
+  const float f = i - bin0;
+  return lut[bin1] * f + lut[bin0] * (1.0f - f);
+}
 
 static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                                 float **buffer, int *width, int *height, int *posx, int *posy)
@@ -1084,22 +1125,51 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const float wd = piece->pipe->iwidth;
   const float ht = piece->pipe->iheight;
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
+  const float ihwscale = 1.0f / hwscale;
   const float v = (-gradient->rotation / 180.0f) * M_PI;
   const float sinv = sin(v);
   const float cosv = cos(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
   const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
-  const float cs = powf(10.0f, gradient->steepness);
-  const float steepness = cs * cs - 1.0f;
-  const float normf = 0.5f * cs / compression;
+  const float normf = 1.0f / compression;
   const float curvature = gradient->curvature;
+  const dt_masks_gradient_states_t state = gradient->state;
+
+  const int lutmax = 2 * compression * ihwscale;
+  const int lutsize = 2 * lutmax + 2;
+  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  if(lut == NULL)
+  {
+    dt_free_align(points);
+    return 0;
+  }
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, normf, steepness, curvature) \
-  shared(points)
+  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
+  shared(lut)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
+  for(int n = 0; n < lutsize; n++)
+  {
+    const float distance = (n - lutmax) * hwscale;
+    const float value = 0.5f + 0.5f * ((state == DT_MASKS_GRADIENT_STATE_LINEAR) ? normf * distance: erff(distance / compression));
+    lut[n] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
+  }
+
+  // center lut around zero
+  float *clut = lut + lutmax;
+
+
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
+  shared(points, clut)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1116,11 +1186,12 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
       const float distance = y0 - curvature * x0 * x0;
 
-      float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
-
-      points[(j * gw + i) * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
+      points[(j * gw + i) * 2] = (distance < -2.0f * compression) ? 0.0f :
+                                    ((distance > 2.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
     }
   }
+
+  dt_free_align(lut);
 
   // we allocate the buffer
   *buffer = dt_alloc_align(64, w * h * sizeof(float));
@@ -1228,22 +1299,50 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const float wd = piece->pipe->iwidth;
   const float ht = piece->pipe->iheight;
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
+  const float ihwscale = 1.0f / hwscale;
   const float v = (-gradient->rotation / 180.0f) * M_PI;
   const float sinv = sin(v);
   const float cosv = cos(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
   const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
-  const float cs = powf(10.0f, gradient->steepness);
-  const float steepness = cs * cs - 1.0f;
-  const float normf = 0.5f * cs / compression;
+  const float normf = 1.0f / compression;
   const float curvature = gradient->curvature;
+  const dt_masks_gradient_states_t state = gradient->state;
+
+  const int lutmax = 2 * compression * ihwscale;
+  const int lutsize = 2 * lutmax + 2;
+  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  if(lut == NULL)
+  {
+    dt_free_align(points);
+    return 0;
+  }
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, normf, steepness, curvature) \
-  shared(points)
+  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
+  shared(lut)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
+  for(int n = 0; n < lutsize; n++)
+  {
+    const float distance = (n - lutmax) * hwscale;
+    const float value = 0.5f + 0.5f * ((state == DT_MASKS_GRADIENT_STATE_LINEAR) ? normf * distance: erff(distance / compression));
+    lut[n] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
+  }
+
+  // center lut around zero
+  float *clut = lut + lutmax;
+
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
+  shared(points, clut)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1261,11 +1360,11 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
       const float distance = y0 - curvature * x0 * x0;
 
-      const float value = normf * distance / sqrtf(1.0f + steepness * distance * distance) + 0.5f;
-
-      points[index * 2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
+      points[index * 2] = (distance < -2.0f * compression) ? 0.0f : ((distance > 2.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
     }
   }
+
+  dt_free_align(lut);
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
