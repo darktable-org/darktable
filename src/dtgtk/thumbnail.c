@@ -48,110 +48,7 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE;
 }
 
-static void _draw_background(cairo_t *cr, dt_thumbnail_t *thumb)
-{
-  return;
-  // we draw the thumbtable background (the space between thumbnails)
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
-  cairo_paint(cr);
-
-  // we draw the thumbnail background
-  const int delimiter = DT_PIXEL_APPLY_DPI(1.0);
-  dt_gui_color_t bgcol = DT_GUI_COLOR_THUMBNAIL_BG;
-  dt_gui_color_t fontcol = DT_GUI_COLOR_THUMBNAIL_FONT;
-  dt_gui_color_t outlinecol = DT_GUI_COLOR_THUMBNAIL_OUTLINE;
-  if(thumb->selected)
-  {
-    bgcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_BG;
-    fontcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT;
-    outlinecol = DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE;
-  }
-  if(thumb->mouse_over)
-  {
-    bgcol = DT_GUI_COLOR_THUMBNAIL_HOVER_BG;
-    fontcol = DT_GUI_COLOR_THUMBNAIL_HOVER_FONT;
-    outlinecol = DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE;
-  }
-
-  cairo_rectangle(cr, delimiter, delimiter, thumb->width - 2.0 * delimiter, thumb->height - 2.0 * delimiter);
-  dt_gui_gtk_set_source_rgb(cr, bgcol);
-  cairo_fill_preserve(cr);
-  if(thumb->thumb_border)
-  {
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
-    dt_gui_gtk_set_source_rgb(cr, outlinecol);
-    cairo_stroke(cr);
-  }
-
-  // we try to acquire the image structure
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-
-  // we write the file extension
-  if(img)
-  {
-    const char *ext = img->filename + strlen(img->filename);
-    while(ext > img->filename && *ext != '.') ext--;
-    ext++;
-    gchar *upcase_ext = g_ascii_strup(ext, -1); // extension in capital letters to avoid character descenders
-    dt_image_cache_read_release(darktable.image_cache, img);
-
-    PangoLayout *layout;
-    PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    const int fontsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * thumb->width);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
-
-    dt_gui_gtk_set_source_rgb(cr, fontcol);
-
-    if(thumb->img_height > thumb->img_width)
-    {
-      int max_chr_width = 0;
-      for(int i = 0; upcase_ext[i] != 0; i++)
-      {
-        pango_layout_set_text(layout, &upcase_ext[i], 1);
-        pango_layout_get_pixel_extents(layout, &ink, NULL);
-        max_chr_width = MAX(max_chr_width, ink.width);
-      }
-
-      for(int i = 0, yoffs = fontsize; upcase_ext[i] != 0; i++, yoffs -= fontsize)
-      {
-        pango_layout_set_text(layout, &upcase_ext[i], 1);
-        pango_layout_get_pixel_extents(layout, &ink, NULL);
-        cairo_move_to(cr, .045 * thumb->width - ink.x + (max_chr_width - ink.width) / 2,
-                      .045 * thumb->height - yoffs + fontsize);
-        pango_cairo_show_layout(cr, layout);
-      }
-    }
-    else
-    {
-      pango_layout_set_text(layout, upcase_ext, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-      cairo_move_to(cr, .045 * thumb->width - ink.x, .045 * thumb->height);
-      pango_cairo_show_layout(cr, layout);
-    }
-    g_free(upcase_ext);
-    pango_font_description_free(desc);
-    g_object_unref(layout);
-  }
-}
-
-static void _draw_image(cairo_t *cr, dt_thumbnail_t *thumb)
-{
-  if(!thumb->img_surf) return;
-
-  cairo_set_source_surface(cr, thumb->img_surf, 0, 0);
-  cairo_paint(cr);
-}
-
-static void _draw_image_border(cairo_t *cr, dt_thumbnail_t *thumb)
-{
-
-}
-
-static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -207,34 +104,23 @@ static gboolean _back_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer use
     return TRUE;
   }
 
-  // we draw the background with thumb border and image type
-  _draw_background(cr, thumb);
-
   // we draw the image
-  _draw_image(cr, thumb);
-
-  // we draw the image border
-  _draw_image_border(cr, thumb);
-
-  // we draw the "not bottom" decorations
+  cairo_set_source_surface(cr, thumb->img_surf, 0, 0);
+  cairo_paint(cr);
 
   return TRUE;
 }
-/*static gboolean _draw_bottom_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-  return FALSE;
-}*/
 
-static gboolean _back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_main_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   dt_control_set_mouse_over_id(thumb->imgid);
-  _set_flag(thumb->w_info_back_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
   return TRUE;
 }
 
-static gboolean _back_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
@@ -243,7 +129,7 @@ static gboolean _back_press_callback(GtkWidget *widget, GdkEventButton *event, g
   }
   return FALSE;
 }
-static gboolean _back_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
@@ -258,7 +144,7 @@ static gboolean _back_release_callback(GtkWidget *widget, GdkEventButton *event,
   }
   return FALSE;
 }
-static gboolean _reject_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_reject_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   return TRUE;
 }
@@ -274,14 +160,14 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
     printf(" hover %d %d\n", thumb->imgid, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_info_back_eb, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_btn_reject, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
     for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
 
     _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
     _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
     _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-    if(!thumb->mouse_over) _set_flag(thumb->w_info_back_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
+    if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_main);
   }
 }
@@ -312,11 +198,11 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   }
 }
 
-static gboolean _info_back_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_bottom_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
-  _set_flag(thumb->w_info_back_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
   return FALSE;
 }
 
@@ -325,11 +211,12 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
-  g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event", G_CALLBACK(_back_press_callback), thumb);
-  g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_back_release_callback), thumb);
 
   if(thumb->imgid > 0)
   {
+    g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event", G_CALLBACK(_event_main_press), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
+
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                               G_CALLBACK(_dt_mouse_over_image_callback), thumb);
@@ -339,7 +226,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the background
     thumb->w_back = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_back, "thumb_back");
-    g_signal_connect(G_OBJECT(thumb->w_back), "enter-notify-event", G_CALLBACK(_back_enter_notify_callback), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "enter-notify-event", G_CALLBACK(_event_main_enter), thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
@@ -355,7 +242,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_ext, TRUE);
 
-    // the main drawing area
+    // the image drawing area
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     gtk_widget_set_size_request(thumb->w_image, thumb->width, thumb->height);
@@ -363,9 +250,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK);
-    g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_back_draw_callback), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_back_enter_notify_callback),
-                     thumb);
+    g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_event_main_enter), thumb);
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
@@ -376,40 +262,36 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * thumb->width / 20.0f);
 
     // the infos background
-    thumb->w_info_back_eb = gtk_event_box_new();
-    g_signal_connect(G_OBJECT(thumb->w_info_back_eb), "enter-notify-event",
-                     G_CALLBACK(_info_back_enter_notify_callback), thumb);
-    gtk_widget_set_valign(thumb->w_info_back_eb, GTK_ALIGN_END);
-    gtk_widget_set_halign(thumb->w_info_back_eb, GTK_ALIGN_CENTER);
-    thumb->w_info_back = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_info_back_eb, "thumb_info");
-    gtk_widget_set_size_request(thumb->w_info_back, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
+    thumb->w_bottom_eb = gtk_event_box_new();
+    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
+    gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+    thumb->w_bottom = gtk_label_new("");
+    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_info");
+    gtk_widget_set_size_request(thumb->w_bottom, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
                                 0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
                                                            // dependent of fontsize ?
-    gtk_widget_show(thumb->w_info_back);
-    gtk_container_add(GTK_CONTAINER(thumb->w_info_back_eb), thumb->w_info_back);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_info_back_eb);
+    gtk_widget_show(thumb->w_bottom);
+    gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom_eb);
 
     // the reject icon
-    thumb->w_btn_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
-    gtk_widget_set_size_request(thumb->w_btn_reject, 4.0 * r1, 4.0 * r1);
-    gtk_widget_set_valign(thumb->w_btn_reject, GTK_ALIGN_END);
-    gtk_widget_set_halign(thumb->w_btn_reject, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_btn_reject, 0.045 * thumb->width - r1);
-    gtk_widget_set_margin_bottom(thumb->w_btn_reject, 0.045 * thumb->width - r1);
-    g_signal_connect(G_OBJECT(thumb->w_btn_reject), "enter-notify-event",
-                     G_CALLBACK(_info_back_enter_notify_callback), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_btn_reject), "button-release-event", G_CALLBACK(_reject_release_callback),
-                     thumb);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_btn_reject);
+    thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
+    gtk_widget_set_size_request(thumb->w_reject, 4.0 * r1, 4.0 * r1);
+    gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
+    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1);
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1);
+    g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_reject_release), thumb);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
 
     // the stars
     for(int i = 0; i < 4; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
       gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event",
-                       G_CALLBACK(_info_back_enter_notify_callback), thumb);
+      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
@@ -453,10 +335,10 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
 
   // widget resizing
   gtk_widget_set_size_request(thumb->w_main, width, height);
-  gtk_widget_set_size_request(thumb->w_info_back, width - 2 * DT_PIXEL_APPLY_DPI(1.0), 0.147125 * height);
-  gtk_widget_set_size_request(thumb->w_btn_reject, 4.0 * r1, 4.0 * r1);
-  gtk_widget_set_margin_start(thumb->w_btn_reject, 0.045 * width - r1);
-  gtk_widget_set_margin_bottom(thumb->w_btn_reject, 0.045 * width - r1);
+  gtk_widget_set_size_request(thumb->w_bottom, width - 2 * DT_PIXEL_APPLY_DPI(1.0), 0.147125 * height);
+  gtk_widget_set_size_request(thumb->w_reject, 4.0 * r1, 4.0 * r1);
+  gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1);
+  gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * width - r1);
   for(int i = 0; i < 4; i++)
   {
     gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
