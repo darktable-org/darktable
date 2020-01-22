@@ -876,8 +876,8 @@ entry
 #left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry items in clone manager without touching other parts of the UI */
 {
   padding: 0px;
-  margin: 40px 3px;
-  min-width: 150px;
+  margin: 45px 3px;
+  min-width: 100px;
 }
 
 #right #lib-plugin-ui entry /* This will adjust entry height on right panel */
