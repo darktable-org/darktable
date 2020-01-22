@@ -369,10 +369,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   int count = 0;
 
   // we get a summarize of all versions of the image
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT i.version, i.id, m.value FROM images AS "
-                                                             "i LEFT JOIN meta_data AS m ON m.id = i.id AND "
-                                                             "m.key = ?3 WHERE film_id = ?1 AND filename = "
-                                                             "?2 ORDER BY i.version",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT i.version, i.id, m.value"
+                              " FROM images AS i"
+                              " LEFT JOIN meta_data AS m ON m.id = i.id AND m.key = ?3"
+                              " WHERE film_id = ?1 AND filename = ?2"
+                              " ORDER BY i.version",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
@@ -390,7 +392,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     if (first_imgid == -1) first_imgid = imgid;
 
     gtk_widget_set_size_request (dr, 100, 100);
-    g_object_set_data (G_OBJECT (dr),"imgid",GINT_TO_POINTER(imgid));
+    g_object_set_data (G_OBJECT (dr), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_add_events(dr, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
     g_signal_connect (G_OBJECT (dr), "draw", G_CALLBACK (_lib_duplicate_thumb_draw_callback), self);
     if (imgid != dev->image_storage.id)
@@ -406,7 +408,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
     gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
-    g_object_set_data (G_OBJECT (tb),"imgid",GINT_TO_POINTER(imgid));
+    g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
