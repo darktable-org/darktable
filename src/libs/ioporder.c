@@ -113,6 +113,20 @@ void update(dt_lib_module_t *self)
   darktable.gui->reset = reset;
 }
 
+static void _invalidate_pipe(dt_develop_t *dev)
+{
+  // we rebuild the pipe
+  dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->pipe->cache_obsolete = 1;
+  dev->preview_pipe->cache_obsolete = 1;
+  dev->preview2_pipe->cache_obsolete = 1;
+
+  // invalidate buffers and force redraw of darkroom
+  dt_dev_invalidate_all(dev);
+}
+
 static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -143,7 +157,7 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
       dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
       // invalidate buffers and force redraw of darkroom
-      dt_dev_invalidate_all(darktable.develop);
+      _invalidate_pipe(darktable.develop);
 
       d->current_mode = DT_IOP_ORDER_CUSTOM;
     }
@@ -218,7 +232,7 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
     dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 
     // invalidate buffers and force redraw of darkroom
-    dt_dev_invalidate_all(darktable.develop);
+    _invalidate_pipe(darktable.develop);
   }
 
   d->current_mode = mode;
