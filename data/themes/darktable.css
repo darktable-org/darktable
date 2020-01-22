@@ -1396,3 +1396,30 @@ scale contents trough slider:hover
   color: @thumbnail_hover_outline_color;
   background-color: @grey_90;
 }
+
+#thumb_back {
+  background-color: @thumbnail_bg_color;
+  border: 1px solid @lighttable_bg_color;
+}
+#thumb_back:selected {
+  background-color: @thumbnail_selected_bg_color;
+}
+#thumb_back:hover {
+  background-color: @thumbnail_hover_bg_color;
+}
+#thumb_image {
+  border: 1px solid red;
+}
+#thumb_image:hover {
+  border: 2px solid green;
+}
+#thumb_ext {
+  font-weight: bold;
+  color: @thumbnail_font_color;
+}
+#thumb_ext:selected {
+  color: @thumbnail_selected_font_color;
+}
+#thumb_ext:hover {
+  color: @thumbnail_hover_font_color;
+}
