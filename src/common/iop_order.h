@@ -52,9 +52,6 @@ typedef struct dt_iop_order_rule_t
   char op_next[20];
 } dt_iop_order_rule_t;
 
-/** do a deep copy the iop-order list */
-GList *dt_ioppr_iop_order_list_duplicate(GList *iop_order_list);
-
 /** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
 /** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version

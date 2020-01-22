@@ -552,7 +552,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   if(dev->gui_attached)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   // we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);

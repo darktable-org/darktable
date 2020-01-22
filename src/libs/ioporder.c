@@ -126,7 +126,7 @@ static void change_order_callback(GtkWidget *widget, dt_lib_module_t *self)
   {
     // changing from custom to something else, keep this custom iop-order to
     // restore it if needed.
-    d->last_custom_iop_order = dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list);
+    d->last_custom_iop_order = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
   }
 
   if(mode == DT_IOP_ORDER_CUSTOM) // custom order
