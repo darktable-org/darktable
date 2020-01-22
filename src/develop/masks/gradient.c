@@ -1146,19 +1146,30 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     return 0;
   }
 
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
+  shared(lut)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
     const float value = 0.5f + 0.5f * ((state == DT_MASKS_GRADIENT_STATE_LINEAR) ? normf * distance: erff(distance / compression));
     lut[n] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
   }
+
+  // center lut around zero
   float *clut = lut + lutmax;
 
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature) \
+  dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
   shared(points, clut)
 #else
 #pragma omp parallel for shared(points)
@@ -1309,12 +1320,23 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
     return 0;
   }
 
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
+  shared(lut)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
   for(int n = 0; n < lutsize; n++)
   {
     const float distance = (n - lutmax) * hwscale;
     const float value = 0.5f + 0.5f * ((state == DT_MASKS_GRADIENT_STATE_LINEAR) ? normf * distance: erff(distance / compression));
     lut[n] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
   }
+
+  // center lut around zero
   float *clut = lut + lutmax;
 
 #ifdef _OPENMP
