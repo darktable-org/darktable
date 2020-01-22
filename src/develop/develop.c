@@ -923,7 +923,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if(dev->gui_attached)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1003,7 +1003,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
   if(dev->gui_attached)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1491,7 +1491,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   if(dev->gui_attached)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   int history_end_current = 0;
 
@@ -2136,7 +2136,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
