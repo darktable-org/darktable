@@ -17,7 +17,12 @@ endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
+if(DEFINED PROJECT_VERSION)
+  project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
+else()
+  # Actual version string will be generated from git later
+  project(darktable VERSION 0 LANGUAGES CXX C)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
