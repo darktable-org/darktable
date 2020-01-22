@@ -159,7 +159,6 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(thumb->mouse_over || over_id == thumb->imgid)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
-    printf(" hover %d %d\n", thumb->imgid, thumb->mouse_over);
     gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
     gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
     for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
@@ -203,6 +202,33 @@ static gboolean _event_bottom_enter(GtkWidget *widget, GdkEventCrossing *event, 
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  return FALSE;
+}
+
+static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
+  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
+
+  // we prelight all stars before the current one
+  gboolean pre = TRUE;
+  for(int i = 0; i < 4; i++)
+  {
+    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, pre);
+    gtk_widget_queue_draw(thumb->w_stars[i]);
+    if(thumb->w_stars[i] == widget) pre = FALSE;
+  }
+  return FALSE;
+}
+static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  for(int i = 0; i < 4; i++)
+  {
+    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
+    gtk_widget_queue_draw(thumb->w_stars[i]);
+  }
   return FALSE;
 }
 
@@ -291,7 +317,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
       gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
-      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
+      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
+      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event", G_CALLBACK(_event_star_leave), thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
