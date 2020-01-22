@@ -23,16 +23,21 @@
 
 typedef enum dt_metadata_t
 {
-    DT_METADATA_XMP_DC_CREATOR,
-    DT_METADATA_XMP_DC_PUBLISHER,
-    DT_METADATA_XMP_DC_TITLE,
-    DT_METADATA_XMP_DC_DESCRIPTION,
-    DT_METADATA_XMP_DC_RIGHTS
+  // do change the order. Must match with dt_xmp_keys[] in metadata.c.
+  // just add new metadata before DT_METADATA_NUMBER when needed
+  DT_METADATA_XMP_DC_CREATOR,
+  DT_METADATA_XMP_DC_PUBLISHER,
+  DT_METADATA_XMP_DC_TITLE,
+  DT_METADATA_XMP_DC_DESCRIPTION,
+  DT_METADATA_XMP_DC_RIGHTS,
+  DT_METADATA_NUMBER
 }
 dt_metadata_t;
 
-dt_metadata_t dt_metadata_get_keyid(const char* key);
+/** return the id of the metadata name */
+const dt_metadata_t dt_metadata_get_keyid(const char* key);
 
+const char *dt_metadata_get_key(const uint32_t keyid);
 
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // exif.cc, ligthroom.c, duplicate.c, lua/image.c
