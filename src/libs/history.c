@@ -553,13 +553,13 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     {
       history_temp = dt_history_duplicate(hist->before_snapshot);
       hist_end = hist->before_end;
-      dev->iop_order_list = dt_ioppr_iop_order_list_duplicate(hist->before_iop_order_list);
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->before_iop_order_list);
     }
     else
     {
       history_temp = dt_history_duplicate(hist->after_snapshot);
       hist_end = hist->after_end;
-      dev->iop_order_list = dt_ioppr_iop_order_list_duplicate(hist->after_iop_order_list);
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->after_iop_order_list);
     }
 
     GList *iop_temp = g_list_copy(dev->iop);
@@ -685,11 +685,11 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
     hist->before_snapshot = dt_history_duplicate(d->previous_snapshot);
     hist->before_end = d->previous_history_end;
-    hist->before_iop_order_list = dt_ioppr_iop_order_list_duplicate(d->previous_iop_order_list);
+    hist->before_iop_order_list = dt_ioppr_iop_order_copy_deep(d->previous_iop_order_list);
 
     hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
     hist->after_end = darktable.develop->history_end;
-    hist->after_iop_order_list = dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list);
+    hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
 
     dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
@@ -739,7 +739,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                           dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                          dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   // As dt_history_compress_on_image does *not* use the history stack data at all
   // make sure the current stack is in the database
@@ -802,7 +802,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                           dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                          dt_ioppr_iop_order_list_duplicate(darktable.develop->iop_order_list));
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   /* revert to given history item. */
   const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));

@@ -290,18 +290,6 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 }
 #endif
 
-static void* _ioppr_copy_entry(const void *entry, void *user_data)
-{
-  dt_iop_order_entry_t* copy = (dt_iop_order_entry_t*)malloc(sizeof(dt_iop_order_entry_t));
-  memcpy(copy, entry, sizeof(dt_iop_order_entry_t));
-  return (void *)copy;
-}
-
-GList *dt_ioppr_iop_order_list_duplicate(GList *iop_order_list)
-{
-  return g_list_copy_deep(iop_order_list, _ioppr_copy_entry, NULL);
-}
-
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
   dt_iop_order_t iop_order_version = DT_IOP_ORDER_V30;
