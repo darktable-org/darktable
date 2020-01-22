@@ -75,13 +75,13 @@ static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEvent
 {
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
   gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
   gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
   gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 
 // Public functions
