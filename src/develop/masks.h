@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (5)
+#define DEVELOP_MASKS_VERSION (6)
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -59,6 +59,12 @@ typedef enum dt_masks_points_states_t
   DT_MASKS_POINT_STATE_NORMAL = 1,
   DT_MASKS_POINT_STATE_USER = 2
 } dt_masks_points_states_t;
+
+typedef enum dt_masks_gradient_states_t
+{
+  DT_MASKS_GRADIENT_STATE_LINEAR = 1,
+  DT_MASKS_GRADIENT_STATE_SIGMOIDAL = 2
+} dt_masks_gradient_states_t;
 
 typedef enum dt_masks_edit_mode_t
 {
@@ -138,6 +144,7 @@ typedef struct dt_masks_point_gradient_t
   float compression;
   float steepness;
   float curvature;
+  dt_masks_gradient_states_t state;
 } dt_masks_point_gradient_t;
 
 /** structure used to store all forms's id for a group */
@@ -216,6 +223,7 @@ typedef struct dt_masks_form_gui_t
   gboolean source_dragging;
   gboolean form_rotating;
   gboolean border_toggling;
+  gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;
