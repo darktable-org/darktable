@@ -152,7 +152,6 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
 
     gradient->curvature = 0.0f;
-    gradient->state = DT_MASKS_GRADIENT_STATE_LINEAR;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     dt_masks_gui_form_remove(form, gui, index);
