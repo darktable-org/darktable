@@ -28,9 +28,17 @@ typedef struct
 
   gboolean mouse_over;
   gboolean selected;
+  gboolean active; // used for filmstrip to mark images worked on
 
-  gboolean thumb_border; // TODO : replace with the corresponding state of the image (on-screen ?)
-  gboolean image_border; // TODO : replace with the corresponding state of the image (on-screen ?)
+  int rating;
+  int colorlabels;
+  gchar *filename;
+  gchar info_line[50];
+  gboolean is_altered;
+  gboolean has_audio;
+  gboolean is_grouped;
+  gboolean has_localcopy;
+  int groupid;
 
   GtkWidget *w_main;
   GtkWidget *w_back;
