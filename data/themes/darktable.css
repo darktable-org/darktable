@@ -1393,8 +1393,14 @@ scale contents trough slider:hover
   background-color: transparent;
 }
 #thumb_star {
-  color: @thumbnail_hover_outline_color;
-  background-color: @grey_90;
+  color: @thumbnail_outline_color;
+  background-color: transparent;
+}
+#thumb_star:active,
+#thumb_star:hover
+{
+  color: @grey_90;
+  background-color: @thumbnail_outline_color;
 }
 
 #thumb_back {

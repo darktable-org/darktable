@@ -63,6 +63,11 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     else
       flags &= ~CPF_PRELIGHT;
 
+    if(state & GTK_STATE_FLAG_ACTIVE)
+      flags |= CPF_ACTIVE;
+    else
+      flags &= ~CPF_ACTIVE;
+
     if(flags & CPF_DO_NOT_USE_BORDER)
     {
       DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags, bg_color);
@@ -80,13 +85,19 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
 static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
-  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  int flags = gtk_widget_get_state_flags(widget);
+  flags |= GTK_STATE_FLAG_PRELIGHT;
+
+  gtk_widget_set_state_flags(widget, flags, TRUE);
   gtk_widget_queue_draw(widget);
   return FALSE;
 }
 static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
-  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
+  int flags = gtk_widget_get_state_flags(widget);
+  flags &= ~GTK_STATE_FLAG_PRELIGHT;
+
+  gtk_widget_set_state_flags(widget, flags, TRUE);
   gtk_widget_queue_draw(widget);
   return FALSE;
 }
