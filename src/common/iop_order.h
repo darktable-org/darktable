@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2018 edgardo hoszowski.
+    copyright (c) 2018-2019 Pascal Obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -15,6 +16,107 @@
     You should have received a copy of the GNU Lesser General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/**
+   What is the IOP order ?
+
+      The IOP order support is the way to order the modules in the
+      pipe. There was the pre-3.0 version which is called "legacy" and
+      the post-3.0 called v3.0 which has been introduced to keep a
+      clean linear part in the pipe to avoid different issues about
+      color shift.
+
+   How is this stored in the DB ?
+
+      For each image we keep record of the iop-order, there is
+      basically three cases:
+
+      1. order is legacy (built-in)
+
+         All modules are sorted using the legacy order (see table
+         below). We still have a legacy order if all multiple
+         instances of the same module are grouped together.
+
+      2. order is v3.0 (built-in)
+
+         All modules are sorted using the v3.0 order (see table
+         below). We still have a v3.0 order if all multiple
+         instances of the same module are grouped together.
+
+      3. order is custom
+
+         All other cases. Either:
+         - the modules are not sorted using one of the order above.
+         - some instances have been moved and so not grouped together.
+
+      The order for each image is stored into the table module_order,
+      the table contains:
+         - imgid    : the id of the image
+         - iop_list : the ordered list of modules + the multi-priority
+         - version  : the iop order version
+
+       For each version we set:
+
+         - legacy : iop_list = NULL / version = 1
+         - v3.0   : iop_list = NULL / version = 2
+         - custom : iop_list to ordered list of each modules / version = 0
+
+         This writing is done with dt_ioppr_write_iop_order.
+
+   How to ensure the order is correct ?
+
+      Initial implementation:
+
+         We used to have a double value to sort the modules in memory
+         for the final part order. Adding a new instance meant to use
+         a value (double) in middle of the before and after modules'
+         iop-order. Also this double was stored with the history and
+         we supposed to be stable for all the life the picture. This
+         did not worked as expected as with each instance created,
+         removed or moved the gap between each modules was shrinking
+         and finally created clashes (multiple modules with the same
+         order).
+
+         Also the history had only the active modules and no
+         information at all about other modules. It was impossible to
+         properly migrate some pictures because of this.
+
+      New (this) implementation:
+
+         The iop-order is a simple chained list and only this list is
+         used to order the module. One can create, delete or move
+         instances at will. There won't be clashes. We still have an
+         iop-order integer used to reorder the module in memory by
+         using a simple sort. But this is not used to map the history
+         at all. This makes it possible to migrate from one order to
+         another. (see below for a discussion about the history
+         mapping).
+
+         The iop-order list kept into the database contains all known
+         modules. So we can migrate and/or copy/paste with better
+         respect of the source or target order for example.
+
+         For example we can copy an history from an image using a
+         legacy order and paste it to an image using the v3.0 order
+         and place the module at the proper position in the pipe for
+         the target. Likewise for styles.
+
+   How is this used to read an image (setup the iop-order) ?
+
+      Loading and image means:
+
+         - getting the iop-order list (dt_ioppr_get_iop_order_list)
+         - reading the history and mapping it to the iop-order list
+
+      How is the mapping of history and iop-order list done ?
+
+         Each history item contains the name of the operation
+         (e.g. exposure, clip) and the multi-instance number. Both
+         information are used as the stable key to map the history
+         item into the iop-list.
+
+         This is done by using the dt_ioppr_get_iop_order.
+ */
 
 #ifndef DT_IOP_ORDER_H
 #define DT_IOP_ORDER_H
