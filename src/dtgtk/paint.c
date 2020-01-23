@@ -1319,18 +1319,15 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   dt_draw_star(cr, s / 2.0, s / 2.0, s / 2.0, s / 5.0);
 
   // we fill the star if needed (mouseover or activated)
-  if(flags & CPF_PRELIGHT)
+  if(data)
   {
-    if(data)
+    GdkRGBA *bgc = (GdkRGBA *)data; // the inner star color is defined in data
+    double r, g, b, a;
+    if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
     {
-      GdkRGBA *bgc = (GdkRGBA *)data; // the inner star color is defined in data
-      double r, g, b, a;
-      if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
-      {
-        cairo_set_source_rgba(cr, bgc->red, bgc->green, bgc->blue, bgc->alpha);
-        cairo_fill_preserve(cr);
-        cairo_set_source_rgba(cr, r, g, b, a);
-      }
+      cairo_set_source_rgba(cr, bgc->red, bgc->green, bgc->blue, bgc->alpha);
+      cairo_fill_preserve(cr);
+      cairo_set_source_rgba(cr, r, g, b, a);
     }
   }
 
@@ -1410,25 +1407,40 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
 
-  cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
-  cairo_set_source_rgba(cr, 0.9, 0, 0, 1.0);
-  cairo_fill(cr);
+  if(flags & CPF_DIRECTION_UP)
+  {
+    cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
+    cairo_set_source_rgba(cr, 0.9, 0, 0, 1.0);
+    cairo_fill(cr);
+  }
 
-  cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
-  cairo_set_source_rgba(cr, 0.9, 0.9, 0, 1.0);
-  cairo_fill(cr);
+  if(flags & CPF_DIRECTION_DOWN)
+  {
+    cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
+    cairo_set_source_rgba(cr, 0.9, 0.9, 0, 1.0);
+    cairo_fill(cr);
+  }
 
-  cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
-  cairo_set_source_rgba(cr, 0.0, 0.9, 0, 1.0);
-  cairo_fill(cr);
+  if(flags & CPF_DIRECTION_LEFT)
+  {
+    cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
+    cairo_set_source_rgba(cr, 0.0, 0.9, 0, 1.0);
+    cairo_fill(cr);
+  }
 
-  cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
-  cairo_set_source_rgba(cr, 0, 0, 0.9, 1.0);
-  cairo_fill(cr);
+  if(flags & CPF_DIRECTION_RIGHT)
+  {
+    cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
+    cairo_set_source_rgba(cr, 0, 0, 0.9, 1.0);
+    cairo_fill(cr);
+  }
 
-  cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
-  cairo_set_source_rgba(cr, 0.9, 0, 0.9, 1.0);
-  cairo_fill(cr);
+  if(flags & CPF_BG_TRANSPARENT)
+  {
+    cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
+    cairo_set_source_rgba(cr, 0.9, 0, 0.9, 1.0);
+    cairo_fill(cr);
+  }
 }
 
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)

@@ -39,6 +39,63 @@ static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
   gtk_widget_set_state_flags(w, flags, TRUE);
 }
 
+static void _get_image_infos(dt_thumbnail_t *thumb)
+{
+  if(thumb->imgid <= 0) return;
+
+  // we only get here infos that might change, others(exif, ...) are cached on widget creation
+
+  thumb->rating = 0;
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  if(img)
+  {
+    if((img->flags & 0x7) == 6)
+      thumb->rating = -1;
+    else
+      thumb->rating = (img->flags & 0x7);
+
+    thumb->groupid = img->group_id;
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  // colorlabels
+  thumb->colorlabels = 0;
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, thumb->imgid);
+  while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
+  {
+    const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
+    // we reuse CPF_* flags, as we'll pass them to the paint fct after
+    if(col == 0)
+      thumb->colorlabels |= CPF_DIRECTION_UP;
+    else if(col == 1)
+      thumb->colorlabels |= CPF_DIRECTION_DOWN;
+    else if(col == 2)
+      thumb->colorlabels |= CPF_DIRECTION_LEFT;
+    else if(col == 3)
+      thumb->colorlabels |= CPF_DIRECTION_RIGHT;
+    else if(col == 4)
+      thumb->colorlabels |= CPF_BG_TRANSPARENT;
+  }
+  if(thumb->w_color)
+  {
+    GtkDarktableThumbnailBtn *btn = (GtkDarktableThumbnailBtn *)thumb->w_color;
+    btn->icon_flags = thumb->colorlabels;
+  }
+
+  // altered
+  thumb->is_altered = dt_image_altered(thumb->imgid);
+
+  // grouping
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, thumb->imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, thumb->imgid);
+  thumb->is_grouped = (sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW);
+}
+
 static gboolean _expose_again(gpointer user_data)
 {
   if(!user_data || !GTK_IS_WIDGET(user_data)) return FALSE;
@@ -77,29 +134,24 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     gtk_widget_set_size_request(widget, thumb->img_width, thumb->img_height);
 
     // now that we know image ratio, we can fill the extension label
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-    if(img)
+    const char *ext = thumb->filename + strlen(thumb->filename);
+    gchar *ext2 = NULL;
+    while(ext > thumb->filename && *ext != '.') ext--;
+    ext++;
+    if(thumb->img_width < thumb->img_height)
     {
-      const char *ext = img->filename + strlen(img->filename);
-      gchar *ext2 = NULL;
-      while(ext > img->filename && *ext != '.') ext--;
-      ext++;
-      if(thumb->img_width < thumb->img_height)
-      {
-        // vertical disposition
-        for(int i = 0; i < strlen(ext); i++) ext2 = dt_util_dstrcat(ext2, "%.1s\n", &ext[i]);
-      }
-      else
-        ext2 = dt_util_dstrcat(ext2, "%s", ext);
-      gchar *upcase_ext = g_ascii_strup(ext2, -1); // extension in capital letters to avoid character descenders
-      dt_image_cache_read_release(darktable.image_cache, img);
-      const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * thumb->width);
-      gchar *ext_final = dt_util_dstrcat(NULL, "<span size=\"%d\">%s</span>", fsize * PANGO_SCALE, upcase_ext);
-      gtk_label_set_markup(GTK_LABEL(thumb->w_ext), ext_final);
-      g_free(upcase_ext);
-      g_free(ext_final);
-      g_free(ext2);
+      // vertical disposition
+      for(int i = 0; i < strlen(ext); i++) ext2 = dt_util_dstrcat(ext2, "%.1s\n", &ext[i]);
     }
+    else
+      ext2 = dt_util_dstrcat(ext2, "%s", ext);
+    gchar *upcase_ext = g_ascii_strup(ext2, -1); // extension in capital letters to avoid character descenders
+    const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * thumb->width);
+    gchar *ext_final = dt_util_dstrcat(NULL, "<span size=\"%d\">%s</span>", fsize * PANGO_SCALE, upcase_ext);
+    gtk_label_set_markup(GTK_LABEL(thumb->w_ext), ext_final);
+    g_free(upcase_ext);
+    g_free(ext_final);
+    g_free(ext2);
 
     return TRUE;
   }
@@ -149,6 +201,28 @@ static gboolean _event_reject_release(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+static void _image_update_icons(dt_thumbnail_t *thumb)
+{
+  gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
+  gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
+  for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
+  gtk_widget_set_visible(thumb->w_local_copy, thumb->mouse_over && thumb->has_localcopy);
+  gtk_widget_set_visible(thumb->w_altered, thumb->mouse_over && thumb->is_altered);
+  gtk_widget_set_visible(thumb->w_group, thumb->mouse_over && thumb->is_grouped);
+  gtk_widget_set_visible(thumb->w_audio, thumb->mouse_over && thumb->has_audio);
+  gtk_widget_set_visible(thumb->w_color, thumb->mouse_over && thumb->colorlabels != 0);
+
+  _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+
+  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating < 0));
+  for(int i = 0; i < 4; i++) _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i));
+
+  _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
+  _set_flag(thumb->w_ext, GTK_STATE_FLAG_SELECTED, thumb->selected);
+  _set_flag(thumb->w_image, GTK_STATE_FLAG_SELECTED, thumb->selected);
+}
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
@@ -159,18 +233,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(thumb->mouse_over || over_id == thumb->imgid)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
-    gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
-    for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_local_copy, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_altered, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_group, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_audio, thumb->mouse_over);
-    gtk_widget_set_visible(thumb->w_color, thumb->mouse_over);
+    _image_update_icons(thumb);
 
-    _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-    _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-    _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
     if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_main);
   }
@@ -195,9 +259,7 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   if(selected != thumb->selected)
   {
     thumb->selected = selected;
-    _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
-    _set_flag(thumb->w_ext, GTK_STATE_FLAG_SELECTED, thumb->selected);
-    _set_flag(thumb->w_image, GTK_STATE_FLAG_SELECTED, thumb->selected);
+    _image_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
   }
 }
@@ -224,7 +286,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
     gtk_widget_queue_draw(thumb->w_stars[i]);
     if(thumb->w_stars[i] == widget) pre = FALSE;
   }
-  return FALSE;
+  return TRUE;
 }
 static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
@@ -234,7 +296,7 @@ static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gp
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_stars[i]);
   }
-  return FALSE;
+  return TRUE;
 }
 
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
@@ -333,8 +395,9 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     }
 
     // the color labels
-    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, CPF_DO_NOT_USE_BORDER, NULL);
-    gtk_widget_set_name(thumb->w_color, "thumb_local_copy");
+    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower,
+                                             CPF_DO_NOT_USE_BORDER | thumb->colorlabels, NULL);
+    gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
     gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
@@ -395,7 +458,26 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
   thumb->imgid = imgid;
   thumb->rowid = rowid;
 
+  // we read and cache all the infos from dt_image_t that we need
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  if(img)
+  {
+    thumb->filename = g_strdup(img->filename);
+    dt_image_print_exif(img, thumb->info_line, sizeof(thumb->info_line));
+    thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
+    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  // we read all other infos
+  _get_image_infos(thumb);
+
+  // we create the widget
   dt_thumbnail_create_widget(thumb);
+
+  // we update the icons state
+  _image_update_icons(thumb);
 
   return thumb;
 }
