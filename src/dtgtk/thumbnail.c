@@ -162,6 +162,11 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
     gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
     gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
     for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_local_copy, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_altered, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_group, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_audio, thumb->mouse_over);
+    gtk_widget_set_visible(thumb->w_color, thumb->mouse_over);
 
     _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
     _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
@@ -326,6 +331,56 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 16.0 * r1) * 0.5 + i * 4.0 * r1);
       gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars[i]);
     }
+
+    // the color labels
+    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(thumb->w_color, "thumb_local_copy");
+    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
+    gtk_widget_set_margin_bottom(thumb->w_color, 0.045 * thumb->width);
+    gtk_widget_set_margin_end(thumb->w_color, 0.045 * thumb->width);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_color);
+
+    // the local copy indicator
+    thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(thumb->w_local_copy, "thumb_local_copy");
+    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_local_copy, 1);
+    gtk_widget_set_margin_end(thumb->w_local_copy, 1); // TODO : extract border size from css
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_local_copy);
+
+    // the altered icon
+    thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(thumb->w_altered, "thumb_altered");
+    gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_altered, 0.045 * thumb->width);
+    gtk_widget_set_margin_end(thumb->w_altered, 0.045 * thumb->width);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_altered);
+
+    // the group bouton
+    thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(thumb->w_group, "thumb_group");
+    gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_group, 0.045 * thumb->width);
+    gtk_widget_set_margin_end(thumb->w_group, 0.045 * thumb->width + 3.0 * r1);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_group);
+
+    // the sound icon
+    thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(thumb->w_audio, "thumb_audio");
+    gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_audio, 0.045 * thumb->width);
+    gtk_widget_set_margin_end(thumb->w_audio, 0.045 * thumb->width + 6.0 * r1);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_audio);
   }
   gtk_widget_show(thumb->w_main);
   g_object_ref(G_OBJECT(thumb->w_main));

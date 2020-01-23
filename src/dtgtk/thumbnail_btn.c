@@ -63,8 +63,15 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     else
       flags &= ~CPF_PRELIGHT;
 
-    DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.25 * allocation.width, 0.25 * allocation.height,
-                                      0.5 * allocation.width, 0.5 * allocation.height, flags, bg_color);
+    if(flags & CPF_DO_NOT_USE_BORDER)
+    {
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags, bg_color);
+    }
+    else
+    {
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.25 * allocation.width, 0.25 * allocation.height,
+                                        0.5 * allocation.width, 0.5 * allocation.height, flags, bg_color);
+    }
   }
   gdk_rgba_free(fg_color);
   gdk_rgba_free(bg_color);

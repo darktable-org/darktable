@@ -1423,3 +1423,25 @@ scale contents trough slider:hover
 #thumb_ext:hover {
   color: @thumbnail_hover_font_color;
 }
+#thumb_local_copy {
+  color: white;
+  background-color: white;
+}
+#thumb_altered,
+#thumb_group,
+#thumb_audio
+{
+  color: @thumbnail_outline_color;
+}
+#thumb_altered:selected,
+#thumb_group:selected,
+#thumb_audio:selected
+{
+  color: @thumbnail_selected_outline_color;
+}
+#thumb_altered:hover,
+#thumb_group:hover,
+#thumb_audio:hover
+{
+  color: @thumbnail_hover_outline_color;
+}
