@@ -348,7 +348,7 @@ GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, c
 {
   GList *link = NULL;
 
-  GList *iops_order = g_list_first(iop_order_list);
+  GList *iops_order = iop_order_list;
   while(iops_order)
   {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
@@ -751,38 +751,103 @@ GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list)
   return mi;
 }
 
-GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list, GList *multi_instance_list)
+GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list,
+                                                           const char *operation, GList *multi_instance_list)
 {
-  GList *l = g_list_first(iop_order_list);
+  const int count_to = _count_entries_operation(iop_order_list, operation);
+  const int count_from = g_list_length(multi_instance_list);
+
+  int item_nb = 0;
+
+  GList *link = g_list_first(iop_order_list);
+
+  GList *l = g_list_first(multi_instance_list);
 
   while(l)
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
-    GList *next = g_list_next(l);
 
-    GList *mi = g_list_first(multi_instance_list);
-    GList *insert = NULL;
-    while(mi)
+    item_nb++;
+
+    if(item_nb <= count_to)
     {
-      dt_iop_order_entry_t *mi_entry = (dt_iop_order_entry_t *)mi->data;
+      link = dt_ioppr_get_iop_order_link(link, operation, -1);
+      dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)link->data;
+      e->instance = entry->instance;
 
-      if(!strcmp(entry->operation, mi_entry->operation))
-      {
-        if(insert)
-        {
-          iop_order_list = g_list_insert_before(iop_order_list, insert, mi_entry);
-        }
-        else
-        {
-          entry->instance = mi_entry->instance;
-          insert = g_list_next(l);
-        }
-      }
+      // free this entry as not merged into the list
+      free(entry);
 
-      mi = g_list_next(mi);
+      // next replace should happen to any module after this one
+      link = g_list_next(link);
+    }
+    else
+    {
+      iop_order_list = g_list_insert_before(iop_order_list, link, entry);
     }
 
-    l = next;
+    l= g_list_next(l);
+  }
+
+  // if needed removes all other instance of this operation which are superfluous
+  if(count_from < count_to)
+  {
+    while(link)
+    {
+      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)link->data;
+      GList *next = g_list_next(link);
+      if(strcmp(operation, entry->operation) == 0)
+      {
+        iop_order_list = g_list_remove_link(iop_order_list, link);
+      }
+
+      link = next;
+    }
+  }
+
+  return iop_order_list;
+}
+
+GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list, GList *multi_instance_list)
+{
+  GList *op = NULL;
+
+  GList *copy = dt_ioppr_iop_order_copy_deep(multi_instance_list);
+  GList *l = g_list_first(copy);
+
+  while(l)
+  {
+    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    GList *l_next = g_list_next(l);
+
+    op = g_list_append(op, entry);
+
+    copy = g_list_remove_link(copy, l);
+
+    GList *mi = l_next;
+    while(mi)
+    {
+      GList *next = g_list_next(mi);
+      dt_iop_order_entry_t *mi_entry = (dt_iop_order_entry_t *)mi->data;
+      if(strcmp(entry->operation, mi_entry->operation) == 0)
+      {
+        op = g_list_append(op, mi_entry);
+        copy = g_list_remove_link(copy, mi);
+      }
+
+      mi = next;
+    }
+
+    // copy operation as entry may be freed
+    char operation[20];
+    memcpy(operation, entry->operation, sizeof(entry->operation));
+
+    iop_order_list = dt_ioppr_merge_module_multi_instance_iop_order_list(iop_order_list, operation, op);
+
+    g_list_free(op);
+    op = NULL;
+
+    l = g_list_first(copy);
   }
 
   return iop_order_list;
