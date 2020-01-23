@@ -1136,7 +1136,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const float curvature = gradient->curvature;
   const dt_masks_gradient_states_t state = gradient->state;
 
-  const int lutmax = 2 * compression * ihwscale;
+  const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
   float *lut = dt_alloc_align(64, lutsize * sizeof(float));
   if(lut == NULL)
@@ -1186,8 +1186,8 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
       const float distance = y0 - curvature * x0 * x0;
 
-      points[(j * gw + i) * 2] = (distance < -2.0f * compression) ? 0.0f :
-                                    ((distance > 2.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
+      points[(j * gw + i) * 2] = (distance <= -4.0f * compression) ? 0.0f :
+                                    ((distance >= 4.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
     }
   }
 
@@ -1310,7 +1310,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const float curvature = gradient->curvature;
   const dt_masks_gradient_states_t state = gradient->state;
 
-  const int lutmax = 2 * compression * ihwscale;
+  const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
   float *lut = dt_alloc_align(64, lutsize * sizeof(float));
   if(lut == NULL)
@@ -1360,7 +1360,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
       const float distance = y0 - curvature * x0 * x0;
 
-      points[index * 2] = (distance < -2.0f * compression) ? 0.0f : ((distance > 2.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
+      points[index * 2] = (distance <= -4.0f * compression) ? 0.0f : ((distance >= 4.0f * compression) ? 1.0f : dt_gradient_lookup(clut, distance * ihwscale));
     }
   }
 
