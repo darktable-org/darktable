@@ -74,8 +74,8 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     }
     else
     {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.25 * allocation.width, 0.25 * allocation.height,
-                                        0.5 * allocation.width, 0.5 * allocation.height, flags, bg_color);
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.125 * allocation.width, 0.125 * allocation.height,
+                                        0.75 * allocation.width, 0.75 * allocation.height, flags, bg_color);
     }
   }
   gdk_rgba_free(fg_color);
