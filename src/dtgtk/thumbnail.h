@@ -50,7 +50,7 @@ typedef struct
   GtkWidget *w_bottom_eb;
   GtkWidget *w_bottom;
   GtkWidget *w_reject;
-  GtkWidget *w_stars[4];
+  GtkWidget *w_stars[5];
   GtkWidget *w_color;
 
   GtkWidget *w_local_copy;

@@ -1331,6 +1331,7 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
     }
   }
 
+  cairo_set_line_width(cr, 1.0);
   cairo_stroke(cr);
   cairo_restore(cr);
 }
