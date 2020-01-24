@@ -160,6 +160,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   cairo_set_source_surface(cr, thumb->img_surf, 0, 0);
   cairo_paint(cr);
 
+  // and eventually the image border
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+  gtk_render_frame(context, cr, 0, 0, thumb->img_width, thumb->img_height);
+
   return TRUE;
 }
 
@@ -203,14 +207,15 @@ static gboolean _event_reject_release(GtkWidget *widget, GdkEventButton *event, 
 
 static void _image_update_icons(dt_thumbnail_t *thumb)
 {
-  gtk_widget_set_visible(thumb->w_bottom_eb, thumb->mouse_over);
-  gtk_widget_set_visible(thumb->w_reject, thumb->mouse_over);
-  for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], thumb->mouse_over);
-  gtk_widget_set_visible(thumb->w_local_copy, thumb->mouse_over && thumb->has_localcopy);
-  gtk_widget_set_visible(thumb->w_altered, thumb->mouse_over && thumb->is_altered);
-  gtk_widget_set_visible(thumb->w_group, thumb->mouse_over && thumb->is_grouped);
-  gtk_widget_set_visible(thumb->w_audio, thumb->mouse_over && thumb->has_audio);
-  gtk_widget_set_visible(thumb->w_color, thumb->mouse_over && thumb->colorlabels != 0);
+  gboolean show = (thumb->mouse_over || darktable.gui->show_overlays);
+  gtk_widget_set_visible(thumb->w_bottom_eb, show);
+  gtk_widget_set_visible(thumb->w_reject, show);
+  for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], show);
+  gtk_widget_set_visible(thumb->w_local_copy, show && thumb->has_localcopy);
+  gtk_widget_set_visible(thumb->w_altered, show && thumb->is_altered);
+  gtk_widget_set_visible(thumb->w_group, show && thumb->is_grouped);
+  gtk_widget_set_visible(thumb->w_audio, show && thumb->has_audio);
+  gtk_widget_set_visible(thumb->w_color, show && thumb->colorlabels != 0);
 
   _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
@@ -218,6 +223,7 @@ static void _image_update_icons(dt_thumbnail_t *thumb)
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating < 0));
   for(int i = 0; i < 4; i++) _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i));
+  _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
   _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
   _set_flag(thumb->w_ext, GTK_STATE_FLAG_SELECTED, thumb->selected);
@@ -303,6 +309,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 {
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
+  gtk_widget_set_name(thumb->w_main, "thumb_main");
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
@@ -360,7 +367,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     thumb->w_bottom = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_info");
+    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
     gtk_widget_set_size_request(thumb->w_bottom, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
                                 0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
                                                            // dependent of fontsize ?
@@ -370,6 +377,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
+    gtk_widget_set_name(thumb->w_reject, "thumb_reject");
     gtk_widget_set_size_request(thumb->w_reject, 4.0 * r1, 4.0 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
@@ -407,7 +415,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
-    gtk_widget_set_name(thumb->w_local_copy, "thumb_local_copy");
+    gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
     gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);

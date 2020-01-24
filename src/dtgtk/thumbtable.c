@@ -456,6 +456,7 @@ dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
+  gtk_widget_set_name(table->widget, "thumbtable");
   table->offset = 1; // TODO retrieve it from rc file ?
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK

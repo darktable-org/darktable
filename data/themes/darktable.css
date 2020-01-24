@@ -1382,54 +1382,132 @@ scale contents trough slider:hover
   color: @grey_100;
 }
 
-#thumb_info {
+/* thumbtable css
+  #thumbtable
+    #thumb_main
+    #thumb_back is the thumbnail background widgets. it can have 3 specials states :
+      - :selected : if the thumb is in current selection
+      - :active : if the thumb correspond to one of the images worked on (filmstrip)
+      - :hover : if the mouse hover the widget
+      you may want to use for example #thumb_back:hover ~ #thumb_star to tweak stars css in case of the mouse hover the thumb
+    #thumb_ext : extension (this is a label)
+    #thumb_image : same as #thumb_back. only the border is used
+    #thumb_bottom / #thumb_bottom_ext : background of the infos area (this is a label)
+    #thumb_reject :
+      - :active if the image is rejected
+      - :hover : the mouse is hover the icon
+    #thumb_star :
+      - color is the color of the star outline.
+      - background-color is the inner part of the star
+      - :active : the rating of the image is >=
+      - :hover : the mouse is hovering the star
+    #thumb_colorlabels
+    #thumb_localcopy
+    #thumb_altered
+    #thumb_group :
+      - :active : the image is the group leader
+    #thumb_audio
+
+*/
+#thumb_bottom
+{
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
 }
-#thumb_info:hover {
+#thumb_bottom:hover
+{
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
 }
-#thumbnail_btn {
+#thumbnail_btn
+{
   color: @thumbnail_hover_outline_color;
   background-color: transparent;
 }
-#thumb_star {
+
+#thumb_back ~ #thumb_star
+{
   color: @thumbnail_outline_color;
   background-color: transparent;
 }
-#thumb_star:active,
-#thumb_star:hover
+#thumb_back ~ #thumb_star:active
 {
   color: @grey_90;
   background-color: @thumbnail_outline_color;
 }
+#thumb_back ~ #thumb_star:hover
+{
+  color: @grey_90;
+  background-color: @grey_70;
+}
 
-#thumb_back {
+#thumb_back:selected ~ #thumb_star
+{
+  color: @thumbnail_selected_outline_color;
+  background-color: transparent;
+}
+#thumb_back:selected ~ #thumb_star:active
+{
+  color: @grey_90;
+  background-color: @thumbnail_selected_outline_color;
+}
+#thumb_back:selected ~ #thumb_star:hover
+{
+  color: @grey_90;
+  background-color: @grey_70;
+}
+
+#thumb_back:hover ~ #thumb_star
+{
+  color: @thumbnail_hover_outline_color;
+  background-color: transparent;
+}
+#thumb_back:hover ~ #thumb_star:active
+{
+  color: @grey_90;
+  background-color: @thumbnail_hover_outline_color;
+}
+#thumb_back:hover ~ #thumb_star:hover
+{
+  color: @grey_90;
+  background-color: @grey_70;
+}
+
+#thumb_back
+{
   background-color: @thumbnail_bg_color;
   border: 1px solid @lighttable_bg_color;
 }
-#thumb_back:selected {
+#thumb_back:selected
+{
   background-color: @thumbnail_selected_bg_color;
 }
-#thumb_back:hover {
+#thumb_back:hover
+{
   background-color: @thumbnail_hover_bg_color;
 }
-#thumb_image {
-  border: 1px solid red;
+#thumb_image,
+#thumb_image:hover
+{
+  border: none;
 }
-#thumb_image:hover {
-  border: 2px solid green;
+#thumb_image:active
+{
+  border: 2px solid @grey_20;
 }
-#thumb_ext {
+#thumb_ext
+{
   font-weight: bold;
   color: @thumbnail_font_color;
 }
-#thumb_ext:selected {
+#thumb_ext:selected
+{
   color: @thumbnail_selected_font_color;
 }
-#thumb_ext:hover {
+#thumb_ext:hover
+{
   color: @thumbnail_hover_font_color;
 }
-#thumb_local_copy {
+#thumb_localcopy
+{
   color: white;
   background-color: white;
 }
@@ -1439,15 +1517,9 @@ scale contents trough slider:hover
 {
   color: @thumbnail_outline_color;
 }
-#thumb_altered:selected,
-#thumb_group:selected,
-#thumb_audio:selected
-{
-  color: @thumbnail_selected_outline_color;
-}
-#thumb_altered:hover,
 #thumb_group:hover,
+#thumb_group:active,
 #thumb_audio:hover
 {
-  color: @thumbnail_hover_outline_color;
+  color: @grey_70;
 }
