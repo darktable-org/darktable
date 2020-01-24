@@ -210,7 +210,7 @@ static void _image_update_icons(dt_thumbnail_t *thumb)
   gboolean show = (thumb->mouse_over || darktable.gui->show_overlays);
   gtk_widget_set_visible(thumb->w_bottom_eb, show);
   gtk_widget_set_visible(thumb->w_reject, show);
-  for(int i = 0; i < 4; i++) gtk_widget_set_visible(thumb->w_stars[i], show);
+  for(int i = 0; i < 5; i++) gtk_widget_set_visible(thumb->w_stars[i], show);
   gtk_widget_set_visible(thumb->w_local_copy, show && thumb->has_localcopy);
   gtk_widget_set_visible(thumb->w_altered, show && thumb->is_altered);
   gtk_widget_set_visible(thumb->w_group, show && thumb->is_grouped);
@@ -222,7 +222,7 @@ static void _image_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating < 0));
-  for(int i = 0; i < 4; i++) _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i));
+  for(int i = 0; i < 5; i++) _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i));
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
   _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
@@ -286,7 +286,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
 
   // we prelight all stars before the current one
   gboolean pre = TRUE;
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < 5; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, pre);
     gtk_widget_queue_draw(thumb->w_stars[i]);
@@ -297,7 +297,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
 static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < 5; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_stars[i]);
@@ -355,11 +355,11 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
-    // we need to squeeze 5 stars + 2 symbols on a thumbnail width
-    // each of them having a width of 2 * r1 and spaced by r1
-    // that's 14 * r1 of content + 6 * r1 of spacing
+    // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
+    // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
+    // colorlabels => 3 * r1 + space r1
     // inner margins are 0.045 * width
-    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * thumb->width / 20.0f);
+    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * thumb->width / 22.0f);
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
@@ -378,27 +378,27 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
     gtk_widget_set_name(thumb->w_reject, "thumb_reject");
-    gtk_widget_set_size_request(thumb->w_reject, 4.0 * r1, 4.0 * r1);
+    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1);
-    gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1);
+    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_reject_release), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
 
     // the stars
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 5; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
-      gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
+      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event", G_CALLBACK(_event_star_leave), thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
-      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * thumb->width - r1);
-      gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 16.0 * r1) * 0.5 + i * 4.0 * r1);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * thumb->width - r1 * 0.75);
+      gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
       gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars[i]);
     }
 

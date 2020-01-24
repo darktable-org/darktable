@@ -607,13 +607,11 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
 
   if(!gtk_bin_get_child(GTK_BIN(strip->filmstrip)))
   {
-    printf(" on ajoute\n");
     dt_thumbtable_t *tt = dt_ui_thumbtable(darktable.gui->ui);
     dt_thumbtable_set_parent(tt, strip->filmstrip, DT_THUMBTABLE_MODE_FILMSTRIP);
     gtk_widget_show_all(strip->filmstrip);
     gtk_widget_queue_draw(tt->widget);
   }
-  printf("filmstrip draw\n");
   return FALSE;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
