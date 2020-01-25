@@ -66,9 +66,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* fetch flags */
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
 
-  /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 4 : 6);
-
   /* update active state paint flag */
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(active)
@@ -137,19 +134,16 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
-    int icon_width = text ? height - (border * 2) : width - (border * 2);
-    int icon_height = height - (border * 2);
+    /* set inner border and icon size */
+    float f_border = (1 + 0.66 * (darktable.gui->dpi_factor-1)) * ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
+    int border = round(f_border);
+    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
+    int icon_height = round(height - (f_border * 2));
+
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
     if(icon_width > 0 && icon_height > 0)
-    {
-      if(text)
-        DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
-      else
-        DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
-    }
+        DTGTK_TOGGLEBUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
   }
 
 
