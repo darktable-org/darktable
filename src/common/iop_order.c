@@ -693,12 +693,11 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
     GList *next = g_list_next(modules);
 
-    mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
-    if(mod->iop_order == INT_MAX)
-    {
-      // module not found, probably removed instance, remote it
-      dev->iop = g_list_delete_link(dev->iop, modules);
-    }
+    // modules with iop_order set to INT_MAX we keep them as they will be removed (non visible)
+    // _lib_modulegroups_update_iop_visibility.
+    if(mod->iop_order != INT_MAX)
+      mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
+
     modules = next;
   }
 
@@ -706,8 +705,8 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
 }
 
 // sets the iop_order on each module of *_iop_list
-// iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
-// if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
+// iop_order is set only for base modules, multi-instances will be flagged as unused with INT_MAX
+// if a module do not exists on iop_order_list it is flagged as unused with INT_MAX
 void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int32_t imgid)
 {
   // get the iop-order for this image
@@ -1165,7 +1164,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
     int reset_list = 0;
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
-    if(mod->iop_order == mod_prev->iop_order && mod->iop_order != DBL_MAX)
+    if(mod->iop_order == mod_prev->iop_order && mod->iop_order != INT_MAX)
     {
       int can_move = 0;
 
@@ -1636,7 +1635,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod->iop_order == DBL_MAX)
+    if(mod->iop_order == INT_MAX)
     {
       modules = g_list_next(modules);
       continue;
@@ -1693,7 +1692,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod->iop_order == DBL_MAX)
+    if(mod->iop_order == INT_MAX)
     {
       modules = g_list_next(modules);
       continue;
