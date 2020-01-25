@@ -403,6 +403,8 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 
 static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
+  if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget))) return TRUE;
+
   // we don't really want to draw something, this is just to know when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   dt_thumbtable_full_redraw(table, FALSE);
@@ -533,10 +535,18 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode)
 {
-  if(!GTK_IS_CONTAINER(new_parent)) return;
+  GtkWidget *parent = gtk_widget_get_parent(table->widget);
+  if(!GTK_IS_CONTAINER(new_parent))
+  {
+    if(parent)
+    {
+      // we just want to remove thumbtable from its parent
+      gtk_container_remove(GTK_CONTAINER(parent), table->widget);
+    }
+    return;
+  }
 
   // if table already has parent, then we remove it
-  GtkWidget *parent = gtk_widget_get_parent(table->widget);
   if(parent && parent != new_parent)
   {
     gtk_container_remove(GTK_CONTAINER(parent), table->widget);
