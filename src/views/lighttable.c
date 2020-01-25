@@ -351,7 +351,7 @@ static void check_layout(dt_view_t *self)
     // we want to reacquire the thumbtable if needed
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_FILEMANAGER);
-    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
@@ -390,6 +390,8 @@ static void check_layout(dt_view_t *self)
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // ensure that thumbtable is not visible in the main view
+    gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
     _culling_check_scrolling_mode(self);
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
@@ -397,7 +399,7 @@ static void check_layout(dt_view_t *self)
     // we want to reacquire the thumbtable if needed
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_ZOOM);
-    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
 
   // make sure we reset culling layout
@@ -3337,13 +3339,13 @@ void enter(dt_view_t *self)
   {
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_FILEMANAGER);
-    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
   else if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_ZOOM);
-    gtk_widget_show_all(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
 
   // clean the undo list
@@ -3433,6 +3435,12 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
     lib->slots = NULL;
     lib->slots_count = 0;
   }
+  else
+  {
+    // ensure that thumbtable is not visible in the main view
+    gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
+  }
+
 
   lib->full_preview_sticky = sticky;
   lib->full_preview_id = mouse_over_id;
@@ -3529,6 +3537,19 @@ static void _preview_quit(dt_view_t *self)
   }
   else
   {
+    // we need to show thumbtable
+    if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_FILEMANAGER);
+    }
+    else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_ZOOM);
+    }
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
                        TRUE); // always on, visibility is driven by panel state
@@ -3549,10 +3570,9 @@ static void _preview_quit(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  // we remove the flowbox
+  // we remove the thumbtable from main view
   dt_library_t *lib = (dt_library_t *)self->data;
-  gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)),
-                       dt_ui_thumbtable(darktable.gui->ui)->widget);
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
   gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
 
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
