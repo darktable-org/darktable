@@ -57,14 +57,10 @@ typedef enum dt_signal_t
   DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 
   /** \brief This signal is raised when collection changed
-  no param, no returned value
+    1 : dt_collection_change_t the reason why the collection has changed
+    no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
-
-  /** \brief This signal is raised when collection query is changed
-  no param, no returned value
-    */
-  DT_SIGNAL_COLLECTION_QUERY_CHANGED,
 
   /** \brief This signal is raised when the selection is changed
   no param, no returned value

@@ -900,7 +900,7 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops, strip->dg.copy_iop_order);
 
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -925,7 +925,7 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops, strip->dg.copy_iop_order);
 
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -938,7 +938,7 @@ static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup 
   if(mouse_over_id <= 0) return FALSE;
 
   dt_history_delete_on_image(mouse_over_id);
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -958,7 +958,7 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
   if(newimgid != -1)
   {
     dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL, TRUE);
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   }
 
   dt_control_queue_redraw_center();
@@ -999,7 +999,8 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 
       dt_ratings_apply(image_id, num, TRUE, TRUE, TRUE);
 
-      dt_collection_update_query(darktable.collection); // update the counter and selection
+      dt_collection_update_query(darktable.collection,
+                                 DT_COLLECTION_CHANGE_RELOAD); // update the counter and selection
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 
       if(mouse_over_id == activated_image)

@@ -95,7 +95,8 @@ static GObject *_view_map_add_marker(const dt_view_t *view, dt_geo_map_display_t
 static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
 
 /* callback when the collection changs */
-static void _view_map_collection_changed(gpointer instance, gpointer user_data);
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change,
+                                         gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -1089,7 +1090,7 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
   if(_view_map_prefs_changed(lib)) g_signal_emit_by_name(lib->map, "changed");
 }
 
-static void _view_map_collection_changed(gpointer instance, gpointer user_data)
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
    dt_map_t *lib = (dt_map_t *)self->data;

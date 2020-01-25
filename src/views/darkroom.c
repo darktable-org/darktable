@@ -2780,7 +2780,7 @@ void leave(dt_view_t *self)
 
   darktable.develop->image_storage.id = -1;
   // darkroom development could have changed a collection, so update that before being back in lightroom
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

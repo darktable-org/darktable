@@ -158,7 +158,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 
   const int missing = dt_history_compress_on_selection();
 
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -236,7 +236,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
     else
       dt_history_delete_on_image(img);
 
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
     dt_control_queue_redraw_center();
   }
 }
@@ -259,7 +259,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   else
     dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
 
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   /* redraw */
   dt_control_queue_redraw_center();
 }

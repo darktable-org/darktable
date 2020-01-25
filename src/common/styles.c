@@ -847,7 +847,8 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
       dt_image_reset_aspect_ratio(newimgid);
 
     /* if we have created a duplicate, reset collected images */
-    if(duplicate) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    if(duplicate)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
 
     /* redraw center view to update visible mipmaps */
     dt_control_queue_redraw_center();

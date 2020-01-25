@@ -121,6 +121,14 @@ typedef enum dt_collection_rating_comperator_t
   DT_COLLECTION_RATING_N_COMPS = 6
 } dt_collection_rating_comperator_t;
 
+typedef enum dt_collection_change_t
+{
+  DT_COLLECTION_CHANGE_NONE = 0,
+  DT_COLLECTION_CHANGE_NEW_QUERY = 1, // a completly different query
+  DT_COLLECTION_CHANGE_FILTER = 2,    // base query has been finetuned (filter, ...)
+  DT_COLLECTION_CHANGE_RELOAD = 3 // we have just reload the collection after images changes (query is identical)
+} dt_collection_change_t;
+
 typedef struct dt_collection_params_t
 {
   /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */
@@ -226,7 +234,7 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit);
 uint32_t dt_collection_get_selected_count(const dt_collection_t *collection);
 
 /** update query by conf vars */
-void dt_collection_update_query(const dt_collection_t *collection);
+void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change);
 
 /** updates the hint message for collection */
 void dt_collection_hint_message(const dt_collection_t *collection);

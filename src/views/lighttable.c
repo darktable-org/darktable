@@ -603,7 +603,7 @@ static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self
   }
 }
 
-static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
+/*static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
 {
   // this will always happen in conjunction with the _view_lighttable_collection_listener_callback
   // so we only need to reset the offset
@@ -625,9 +625,10 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   {
     _culling_recreate_slots(self);
   }
-}
+}*/
 
-static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
+static void _view_lighttable_collection_listener_callback(gpointer instance, dt_collection_change_t query_change,
+                                                          gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1034,13 +1035,11 @@ void init(dt_view_t *self)
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_collection_listener_callback), (gpointer)self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED,
-                            G_CALLBACK(_view_lighttable_query_listener_callback), (gpointer)self);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_selection_listener_callback), (gpointer)self);
 
-  _view_lighttable_collection_listener_callback(NULL, self);
+  _view_lighttable_collection_listener_callback(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, self);
 
   /* initialize reusable sql statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid != ?1",
@@ -1054,7 +1053,6 @@ void init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_collection_listener_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_query_listener_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_selection_listener_callback), self);
 
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -3188,7 +3186,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   dt_ratings_apply(mouse_over_id, num, TRUE, TRUE, TRUE);
   _update_collected_images(self);
 
-  dt_collection_update_query(darktable.collection); // update the counter
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD); // update the counter
 
   if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
@@ -4107,7 +4105,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         }
         else // expand the group
           darktable.gui->expanded_group_id = group_id;
-        dt_collection_update_query(darktable.collection);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
         break;
       }
       case DT_VIEW_AUDIO:
