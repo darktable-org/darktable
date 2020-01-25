@@ -1127,8 +1127,13 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     memcpy(module->params, module->default_params, module->params_size);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
     module->enabled = module->default_enabled;
-    module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
-    module->multi_name[0] = '\0';
+
+    if(module->multi_priority == 0)
+      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
+    else
+    {
+      module->iop_order = INT_MAX;
+    }
     modules = g_list_next(modules);
   }
 
