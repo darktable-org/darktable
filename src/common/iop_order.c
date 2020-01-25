@@ -730,6 +730,20 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
+void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GList *new_iop_list)
+{
+  GList *iop_list = dt_ioppr_iop_order_copy_deep(new_iop_list);
+  GList *mi = dt_ioppr_extract_multi_instances_list(darktable.develop->iop_order_list);
+
+  if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+
+  dt_dev_write_history(darktable.develop);
+  dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
+  g_list_free_full(iop_list, free);
+
+  dt_ioppr_migrate_iop_order(darktable.develop, imgid);
+}
+
 GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list)
 {
   GList *mi = NULL;
