@@ -39,7 +39,7 @@ static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
   gtk_widget_set_state_flags(w, flags, TRUE);
 }
 
-static void _get_image_infos(dt_thumbnail_t *thumb)
+static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(thumb->imgid <= 0) return;
 
@@ -49,10 +49,7 @@ static void _get_image_infos(dt_thumbnail_t *thumb)
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
   if(img)
   {
-    if((img->flags & 0x7) == 6)
-      thumb->rating = -1;
-    else
-      thumb->rating = (img->flags & 0x7);
+    thumb->rating = (img->flags & 0x7);
 
     thumb->groupid = img->group_id;
 
@@ -96,7 +93,7 @@ static void _get_image_infos(dt_thumbnail_t *thumb)
   thumb->is_grouped = (sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW);
 }
 
-static gboolean _expose_again(gpointer user_data)
+static gboolean _thumb_expose_again(gpointer user_data)
 {
   if(!user_data || !GTK_IS_WIDGET(user_data)) return FALSE;
 
@@ -124,7 +121,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     if(res)
     {
       // if the image is missing, we reload it again
-      g_timeout_add(250, _expose_again, widget);
+      g_timeout_add(250, _thumb_expose_again, widget);
       return TRUE;
     }
 
@@ -205,7 +202,7 @@ static gboolean _event_reject_release(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
-static void _image_update_icons(dt_thumbnail_t *thumb)
+static void _thumb_update_icons(dt_thumbnail_t *thumb)
 {
   gboolean show = (thumb->mouse_over || darktable.gui->show_overlays);
   gtk_widget_set_visible(thumb->w_bottom_eb, show);
@@ -221,8 +218,9 @@ static void _image_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
 
-  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating < 0));
-  for(int i = 0; i < 5; i++) _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i));
+  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
+  for(int i = 0; i < 5; i++)
+    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
   _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
@@ -239,7 +237,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(thumb->mouse_over || over_id == thumb->imgid)
   {
     thumb->mouse_over = (over_id == thumb->imgid);
-    _image_update_icons(thumb);
+    _thumb_update_icons(thumb);
 
     if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_main);
@@ -265,7 +263,7 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   if(selected != thumb->selected)
   {
     thumb->selected = selected;
-    _image_update_icons(thumb);
+    _thumb_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
   }
 }
@@ -479,13 +477,13 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
   }
 
   // we read all other infos
-  _get_image_infos(thumb);
+  _image_get_infos(thumb);
 
   // we create the widget
   dt_thumbnail_create_widget(thumb);
 
   // we update the icons state
-  _image_update_icons(thumb);
+  _thumb_update_icons(thumb);
 
   return thumb;
 }
@@ -496,6 +494,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
+  if(thumb->filename) g_free(thumb->filename);
 
   free(thumb);
 }
