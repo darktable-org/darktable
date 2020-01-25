@@ -112,7 +112,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
 }
@@ -123,8 +123,8 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
-  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE);
-  dt_collection_update_query(darktable.collection);
+  dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
 }
@@ -132,7 +132,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
 static void _lib_duplicate_filmrolls_updated(gpointer instance, gpointer self)
 {
   _lib_duplicate_init_callback(NULL, self);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -460,6 +460,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self); //unblock signals
 }
 
+static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_change_t query_change,
+                                              dt_lib_module_t *self)
+{
+  _lib_duplicate_init_callback(instance, self);
+}
+
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
@@ -520,7 +526,7 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED, G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE, G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_lib_duplicate_init_callback), self);
+                            G_CALLBACK(_lib_duplicate_collection_changed), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(_lib_duplicate_filmrolls_updated), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

@@ -56,35 +56,33 @@ static GType history_will_change_arg[]
 
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
-  { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
+  { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
-  { "dt-control-redraw-all", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_REDRAW_ALL
-  { "dt-control-redraw-center", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
+  { "dt-control-redraw-all", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_CONTROL_REDRAW_ALL
+  { "dt-control-redraw-center", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
-  { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
-    pointer_2arg, NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
-  { "dt-viewmanager-filmstrip-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
+  { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
+    FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  { "dt-viewmanager-filmstrip-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
-  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
-  { "dt-collection-query-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_QUERY_CHANGED
-  { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_SELECTION_CHANGED
-  { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_TAG_CHANGED
-  { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_STYLE_CHANGED
-  { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
-  { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-    uint_arg, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
-  { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
+  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
+    FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
+  { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_SELECTION_CHANGED
+  { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_TAG_CHANGED
+  { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_STYLE_CHANGED
+  { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
+  { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
+    FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
+  { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */

@@ -141,7 +141,41 @@ static char * and_operator(int *term)
   assert(0); // Not reached.
 }
 
+static void _memory_collection_update()
+{
+  if(!darktable.collection || !darktable.db) return;
+  sqlite3_stmt *stmt;
 
+  /* check if we can get a query from collection */
+  gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
+  if(!query) return;
+
+  // we have a new query for the collection of images to display. For speed reason we collect all images into
+  // a temporary (in-memory) table (collected_images).
+
+  // 1. drop previous data
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL, NULL);
+  // reset autoincrement. need in star_key_accel_callback
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM memory.sqlite_sequence WHERE "
+                        "name='collected_images'",
+                        NULL, NULL, NULL);
+
+  // 2. insert collected images into the temporary table
+
+  gchar *ins_query = NULL;
+  ins_query = dt_util_dstrcat(ins_query, "INSERT INTO memory.collected_images (imgid) %s", query);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), ins_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  g_free(query);
+  g_free(ins_query);
+}
 
 int dt_collection_update(const dt_collection_t *collection)
 {
@@ -381,7 +415,7 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
-  dt_collection_update_query(collection);
+  dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY);
 }
 
 const gchar *dt_collection_get_query(const dt_collection_t *collection)
@@ -1671,10 +1705,10 @@ void dt_collection_deserialize(char *buf)
       if(buf[0] == '$') buf++;
     }
   }
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY);
 }
 
-void dt_collection_update_query(const dt_collection_t *collection)
+void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change)
 {
   char confname[200];
 
@@ -1742,7 +1776,11 @@ void dt_collection_update_query(const dt_collection_t *collection)
   }
 
   /* raise signal of collection change, only if this is an original */
-  if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  if(!collection->clone)
+  {
+    _memory_collection_update();
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change);
+  }
 }
 
 gboolean dt_collection_hint_message_internal(void *message)
@@ -1839,7 +1877,7 @@ static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_da
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
   }
 }
 
@@ -1852,7 +1890,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
   }
 }
 

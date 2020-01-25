@@ -103,7 +103,7 @@ static void _group_helper_function(void)
     darktable.gui->expanded_group_id = new_group_id;
   else
     darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
 }
 
@@ -120,7 +120,7 @@ static void _ungroup_helper_function(void)
   }
   sqlite3_finalize(stmt);
   darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
 }
 
@@ -269,7 +269,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(undo_type)
   {
     dt_undo_end_group(darktable.undo);
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
     dt_control_queue_redraw_center();
     dt_image_synch_xmp(img);
   }

@@ -662,7 +662,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
     if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
   }
 }
 
@@ -685,7 +685,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_r
       dt_image_cache_read_release(darktable.image_cache, image);
 
     if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
   }
 }
 
@@ -701,7 +701,7 @@ void dt_image_reset_aspect_ratio(const int32_t imgid)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
   if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
 }
 
 double dt_image_set_aspect_ratio(const int32_t imgid)
@@ -878,7 +878,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       darktable.gui->expanded_group_id = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);
     }
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   }
   return newid;
 }
@@ -1857,7 +1857,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         // write xmp file
         dt_image_write_sidecar_file(newid);
 
-        dt_collection_update_query(darktable.collection);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
       }
 
       g_free(filename);
