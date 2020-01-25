@@ -669,6 +669,7 @@ void dt_ioppr_resync_iop_list(dt_develop_t *dev)
   GList *l = g_list_first(dev->iop_order_list);
   while(l)
   {
+    GList *next = g_list_next(l);
     dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
     dt_iop_module_t *mod = dt_iop_get_module_by_op_priority(dev->iop, e->operation, e->instance);
     if(mod == NULL)
@@ -676,7 +677,7 @@ void dt_ioppr_resync_iop_list(dt_develop_t *dev)
       dev->iop_order_list = g_list_remove_link(dev->iop_order_list, l);
     }
 
-    l = g_list_next(l);
+    l = next;
   }
 }
 
@@ -690,6 +691,7 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+    GList *next = g_list_next(modules);
 
     mod->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op, mod->multi_priority);
     if(mod->iop_order == INT_MAX)
@@ -697,7 +699,7 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
       // module not found, probably removed instance, remote it
       dev->iop = g_list_delete_link(dev->iop, modules);
     }
-    modules = g_list_next(modules);
+    modules = next;
   }
 
   dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
