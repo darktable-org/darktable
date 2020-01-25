@@ -532,7 +532,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     if(newimgid != -1)
     {
       dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
-      dt_collection_update_query(darktable.collection);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
     }
     t = g_list_delete_link(t, t);
     const double fraction = 1.0 / total;
@@ -563,7 +563,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
   return 0;
 }
