@@ -434,6 +434,11 @@ if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_
   endif()
 endif()
 
+if(BUILD_TESTING)
+  find_package(cmocka 1.1.0 CONFIG REQUIRED)
+  include(AddCMockaTest)
+endif(BUILD_TESTING)
+
 #
 # Test SSE level
 #
