@@ -33,6 +33,11 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
+  /** \brief This signal is raised when image shown in the main view change
+      no param, no returned value
+   */
+  DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+
   /** \brief This signal is raised when dt_control_queue_redraw() is called.
     no param, no returned value
   */
