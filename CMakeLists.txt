@@ -437,6 +437,7 @@ endif()
 if(BUILD_TESTING)
   find_package(cmocka 1.1.0 CONFIG REQUIRED)
   include(AddCMockaTest)
+  include(AddCMockaMockTest)
 endif(BUILD_TESTING)
 
 #
