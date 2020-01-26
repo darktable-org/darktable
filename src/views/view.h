@@ -256,6 +256,9 @@ typedef struct dt_view_manager_t
   GList *views;
   dt_view_t *current_view;
 
+  // images currently active in the main view (there can be more than 1 in culling)
+  GSList *active_images;
+
   struct
   {
     GtkWidget *window;
