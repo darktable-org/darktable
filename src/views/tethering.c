@@ -82,7 +82,7 @@ typedef struct dt_capture_t
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
@@ -98,9 +98,9 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  if(dt_view_filmstrip_get_activated_imgid(darktable.view_manager) >= 0) dt_control_queue_redraw_center();
+  if(imgid >= 0) dt_control_queue_redraw_center();
 }
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -304,7 +304,7 @@ void enter(dt_view_t *self)
 
 
   /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
