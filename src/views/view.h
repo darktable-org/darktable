@@ -288,6 +288,12 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *get_grouped;
   } statements;
 
+  struct
+  {
+    GPid audio_player_pid;   // the pid of the child process
+    int32_t audio_player_id; // the imgid of the image the audio is played for
+    guint audio_player_event_source;
+  } audio;
 
   /*
    * Proxy
@@ -509,6 +515,10 @@ void dt_view_filmstrip_prefetch();
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
+
+/* audio */
+void dt_view_audio_start(dt_view_manager_t *vm, int imgid);
+void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy
