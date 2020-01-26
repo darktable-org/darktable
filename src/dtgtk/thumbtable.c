@@ -458,7 +458,7 @@ dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
-  gtk_widget_set_name(table->widget, "thumbtable");
+  gtk_widget_set_name(table->widget, "thumbtable_filemanager");
   table->offset = 1; // TODO retrieve it from rc file ?
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
@@ -554,6 +554,12 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
 
   // we change the settings
   table->mode = mode;
+  if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+  else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    gtk_widget_set_name(table->widget, "thumbtable_filmstrip");
+  else if(mode == DT_THUMBTABLE_MODE_ZOOM)
+    gtk_widget_set_name(table->widget, "thumbtable_zoom");
 
   // we reparent the table
   if(!parent || parent != new_parent)

@@ -1383,30 +1383,30 @@ scale contents trough slider:hover
 }
 
 /* thumbtable css
-  #thumbtable
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
     #thumb_main
-    #thumb_back is the thumbnail background widgets. it can have 3 specials states :
-      - :selected : if the thumb is in current selection
-      - :active : if the thumb correspond to one of the images worked on (filmstrip)
-      - :hover : if the mouse hover the widget
-      you may want to use for example #thumb_back:hover ~ #thumb_star to tweak stars css in case of the mouse hover the thumb
-    #thumb_ext : extension (this is a label)
-    #thumb_image : same as #thumb_back. only the border is used
-    #thumb_bottom / #thumb_bottom_ext : background of the infos area (this is a label)
-    #thumb_reject :
-      - :active if the image is rejected
-      - :hover : the mouse is hover the icon
-    #thumb_star :
-      - color is the color of the star outline.
-      - background-color is the inner part of the star
-      - :active : the rating of the image is >=
-      - :hover : the mouse is hovering the star
-    #thumb_colorlabels
-    #thumb_localcopy
-    #thumb_altered
-    #thumb_group :
-      - :active : the image is the group leader
-    #thumb_audio
+      #thumb_back is the thumbnail background widgets. it can have 3 specials states :
+        - :selected : if the thumb is in current selection
+        - :active : if the thumb correspond to one of the images worked on (filmstrip)
+        - :hover : if the mouse hover the widget
+        you may want to use for example #thumb_back:hover ~ #thumb_star to tweak stars css in case of the mouse hover the thumb
+      #thumb_ext : extension (this is a label)
+      #thumb_image : same as #thumb_back. only the border is used
+      #thumb_bottom / #thumb_bottom_ext : background of the infos area (this is a label)
+      #thumb_reject :
+        - :active if the image is rejected
+        - :hover : the mouse is hover the icon
+      #thumb_star :
+        - color is the color of the star outline.
+        - background-color is the inner part of the star
+        - :active : the rating of the image is >=
+        - :hover : the mouse is hovering the star
+      #thumb_colorlabels
+      #thumb_localcopy
+      #thumb_altered
+      #thumb_group :
+        - :active : the image is the group leader
+      #thumb_audio
 
 */
 #thumb_bottom
