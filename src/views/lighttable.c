@@ -3363,16 +3363,14 @@ static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, i
   dt_library_t *lib = (dt_library_t *)self->data;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id > 0)
+  if(lib->full_preview_id > 0 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // nothing to do, the case is handled before by the selection change signal
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     // we switch to darkroom
     dt_view_manager_switch(darktable.view_manager, "darkroom");
-  }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
   }
 }
 

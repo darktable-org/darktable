@@ -17,6 +17,7 @@
 */
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 #include "dtgtk/thumbtable.h"
+#include "common/collection.h"
 #include "common/debug.h"
 #include "control/control.h"
 #include "dtgtk/thumbnail.h"
@@ -454,6 +455,26 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   return TRUE;
 }
 
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
+                                            gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  if(query_change == DT_COLLECTION_CHANGE_RELOAD)
+  {
+    // if it's a simple reload (no query change, but the collection content may have changed)
+    // we keep the rowid offset as it is
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
+  else
+  {
+    // otherwise we reset the offset to the beginning
+    table->offset = 1;
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
+}
+
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
@@ -470,6 +491,10 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
+
+  // we register globals signals
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_dt_collection_changed_callback), table);
 
   gtk_widget_show(table->widget);
 

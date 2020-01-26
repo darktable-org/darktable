@@ -19,8 +19,10 @@
 #include "dtgtk/thumbnail.h"
 
 #include "bauhaus/bauhaus.h"
+#include "common/collection.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -198,8 +200,28 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
   }
   return FALSE;
 }
-static gboolean _event_reject_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  dt_view_image_over_t rating = DT_VIEW_DESERT;
+  if(widget == thumb->w_reject)
+    rating = DT_VIEW_REJECT;
+  else if(widget == thumb->w_stars[0])
+    rating = DT_VIEW_STAR_1;
+  else if(widget == thumb->w_stars[1])
+    rating = DT_VIEW_STAR_2;
+  else if(widget == thumb->w_stars[2])
+    rating = DT_VIEW_STAR_3;
+  else if(widget == thumb->w_stars[3])
+    rating = DT_VIEW_STAR_4;
+  else if(widget == thumb->w_stars[4])
+    rating = DT_VIEW_STAR_5;
+
+  if(rating != DT_VIEW_DESERT)
+  {
+    dt_ratings_apply(thumb->imgid, rating, TRUE, TRUE, TRUE);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  }
   return TRUE;
 }
 
@@ -417,7 +439,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_reject_release), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
 
     // the stars
@@ -427,6 +449,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event", G_CALLBACK(_event_star_leave), thumb);
+      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event", G_CALLBACK(_event_rating_release),
+                       thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);

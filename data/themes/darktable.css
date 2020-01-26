@@ -1471,6 +1471,11 @@ scale contents trough slider:hover
   background-color: @grey_70;
 }
 
+#thumb_reject:active
+{
+  color: red;
+}
+
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
