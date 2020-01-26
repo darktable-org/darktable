@@ -18,5 +18,6 @@ jobs:
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
         days-before-stale: 30
+        days-before-close: 365 
         exempt-pr-label: 'bugfix'
         exempt-issue-label: 'scope: camera support'
