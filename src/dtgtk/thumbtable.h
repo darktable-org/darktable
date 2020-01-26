@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
+#include "dtgtk/thumbnail.h"
 #include <gtk/gtk.h>
 
 typedef enum dt_thumbtable_mode_t
@@ -43,6 +44,8 @@ typedef struct dt_thumbtable_t
 
   gboolean dragging;
   int last_x, last_y;
+  int drag_dx, drag_dy; // distance of move of the current dragging session
+  dt_thumbnail_t *drag_thumb;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

@@ -58,6 +58,7 @@ typedef struct
   GtkWidget *w_group;
   GtkWidget *w_audio;
 
+  gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
