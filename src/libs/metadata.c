@@ -28,7 +28,6 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(2)
@@ -38,7 +37,7 @@ typedef struct dt_lib_metadata_t
   int imgsel;
   GtkComboBox *metadata_cb[DT_METADATA_NUMBER];
   gboolean multi_metadata[DT_METADATA_NUMBER];
-  GtkWidget *hbox[DT_METADATA_NUMBER];
+  GtkGrid *metadata_grid;
   gboolean editing;
   GtkWidget *clear_button;
   GtkWidget *apply_button;
@@ -75,36 +74,50 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void fill_combo_box_entry(GtkComboBox *box, uint32_t count, GList *items, gboolean *multi)
+static void _entry_set_style(GtkEntry *entry, PangoStyle style)
 {
-  gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(box));
+  PangoAttribute *attr = pango_attr_style_new(style);
+  PangoLayout *layout = gtk_entry_get_layout(entry);
+  PangoAttrList *attrs = pango_layout_get_attributes(layout);
+  if (!attrs) attrs = pango_attr_list_new();
+  pango_attr_list_insert(attrs, attr);
+  gtk_entry_set_attributes(entry, attrs);
+}
 
-  if(count == 0)
+static void fill_combo_box_entry(GtkComboBox *combobox, uint32_t count, GList *items, gboolean *multi)
+{
+  GtkListStore *model = (GtkListStore *)gtk_combo_box_get_model(combobox);
+  gtk_list_store_clear(GTK_LIST_STORE(model));
+  GtkTreeIter iter;
+  GtkEntry *entry = (GtkEntry *)gtk_bin_get_child(GTK_BIN(combobox));
+
+  if(count == 0)  // no metadata value
   {
-    gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(box))), "");
+    gtk_entry_set_text(entry, "");
+    _entry_set_style(entry, PANGO_STYLE_NORMAL);
     *multi = FALSE;
     return;
   }
-
-  if(count == 1)
+  if(count == 1) // images with different metadata values
   {
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(box),
-                                   _("<leave unchanged>")); // FIXME: should be italic!
-    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(box), GTK_SENSITIVITY_AUTO);
+    gtk_list_store_append(model, &iter);
+    gtk_list_store_set(model, &iter, 0, _("<leave unchanged>"), -1);
+    gtk_combo_box_set_button_sensitivity(combobox, GTK_SENSITIVITY_AUTO);
+    _entry_set_style(entry, PANGO_STYLE_ITALIC);
     *multi = TRUE;
   }
-  else
+  else // one or several images with the same metadata value
   {
-    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(box), GTK_SENSITIVITY_OFF);
+    gtk_combo_box_set_button_sensitivity(combobox, GTK_SENSITIVITY_OFF);
+    _entry_set_style(entry, PANGO_STYLE_NORMAL);
     *multi = FALSE;
   }
-  for(GList *iter = items; iter; iter = g_list_next(iter))
+  for(GList *item = items; item; item = g_list_next(item))
   {
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(box), iter->data); // FIXME: dt segfaults when there
-                                                                         // are illegal characters in the
-                                                                         // string.
+    gtk_list_store_append(model, &iter);
+    gtk_list_store_set(model, &iter, 0, (char *)item->data, -1);
   }
-  gtk_combo_box_set_active(GTK_COMBO_BOX(box), 0);
+  gtk_combo_box_set_active(combobox, 0);
 }
 
 static void update(dt_lib_module_t *self, gboolean early_bark_out)
@@ -155,7 +168,7 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
       const uint32_t key = sqlite3_column_int(stmt, 0);
       char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
       const uint32_t count = sqlite3_column_int(stmt, 2);
-      metadata_count[key] = (count == imgs_count) ? 2 : 1;
+      metadata_count[key] = (count == imgs_count) ? 2 : 1;  // if = all images have the same metadata
       metadata[key] = g_list_append(metadata[key], value);
     }
   }
@@ -163,7 +176,6 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-//    printf("update2 i %d value %s key %s\n", i, metadata[i], dt_metadata_get_key(i));
     fill_combo_box_entry(d->metadata_cb[i], metadata_count[i], metadata[i], &(d->multi_metadata[i]));
     g_list_free_full(metadata[i], g_free);
   }
@@ -204,7 +216,7 @@ static void write_metadata(dt_lib_module_t *self)
   GList *key_value = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata[i] = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->metadata_cb[i]));
+    metadata[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i])))));
     if(metadata[i] != NULL && (d->multi_metadata[i] == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->metadata_cb[i])) != 0))
     {
       _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
@@ -228,7 +240,7 @@ static void apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
   write_metadata(self);
 }
 
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
@@ -248,8 +260,23 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, dt_lib_module
       break;
     default:
       d->editing = TRUE;
+      _entry_set_style(GTK_ENTRY(entry), PANGO_STYLE_NORMAL);
   }
   return FALSE;
+}
+
+static void combobox_changed(GtkComboBox *combobox, dt_lib_module_t *self)
+{
+  GtkEntry *entry = (GtkEntry*)gtk_bin_get_child(GTK_BIN(combobox));
+  gchar *value;
+  GtkTreeModel *model = gtk_combo_box_get_model(combobox);
+  GtkTreeIter iter;
+  if(gtk_combo_box_get_active_iter(combobox, &iter))
+  {
+    gtk_tree_model_get(model, &iter, 0, &value, -1);
+    const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>")) == 0;
+    _entry_set_style(entry, leave_unchanged ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
+  }
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -262,7 +289,7 @@ int position()
   return 510;
 }
 
-static void _mouse_over_image_callback(gpointer instace, dt_lib_module_t *self)
+static void mouse_over_image_callback(gpointer instace, dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
@@ -284,18 +311,15 @@ static void update_layout(dt_lib_module_t *self)
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
     const gboolean hidden = dt_conf_get_bool(setting);
     if(hidden)
-      gtk_widget_hide(d->hbox[i]);
+    {
+      gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,0,i));
+      gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,1,i));
+    }
     else
-      gtk_widget_show(d->hbox[i]);
-    g_free(setting);
-
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lines", entries[i].name);
-    const unsigned int lines = dt_conf_get_int(setting) ? dt_conf_get_int(setting) : 1;
-    GtkRequisition size;
-    GtkWidget *entry = gtk_bin_get_child(GTK_BIN(d->metadata_cb[i]));
-    gtk_widget_get_preferred_size(GTK_WIDGET(entry), NULL, &size);
-    printf("lines %d height %d\n", lines, size.height);
-    gtk_widget_set_size_request(GTK_WIDGET(d->metadata_cb[entries[i].keyid]), -1, (gint)(size.height * lines));
+    {
+      gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,0,i));
+      gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,1,i));
+    }
     g_free(setting);
   }
 }
@@ -311,22 +335,13 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(area), grid);
   GtkWidget *label = gtk_label_new(_("hidden metadata"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
-  label = gtk_label_new(_("height"));
-  gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
   GtkWidget *metadata[DT_METADATA_NUMBER];
-  GtkSpinButton *lines[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     metadata[i] = gtk_check_button_new_with_label(entries[i].name);
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata[i]), dt_conf_get_bool(setting));
     gtk_grid_attach(GTK_GRID(grid), metadata[i], 0, i+1, 1, 1);
-    g_free(setting);
-    lines[i] = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 10, 1));
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lines", entries[i].name);
-    const int conf_lines = dt_conf_get_int(setting) ? dt_conf_get_int(setting) : 1;
-    gtk_spin_button_set_value(lines[i], conf_lines);
-    gtk_grid_attach(GTK_GRID(grid), GTK_WIDGET(lines[i]), 1, i+1, 1, 1);
     g_free(setting);
   }
 
@@ -341,9 +356,6 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
     {
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
       dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata[i])));
-      g_free(setting);
-      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lines", entries[i].name);
-      dt_conf_set_int(setting, gtk_spin_button_get_value(lines[i]));
       g_free(setting);
     }
   }
@@ -365,91 +377,142 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "apply", d->apply_button);
 }
 
+static void _set_combobox_style(GtkCellLayout *cell_layout, GtkCellRenderer *renderer,
+                          GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+  gchar *value;
+  gtk_tree_model_get(model, iter, 0, &value, -1);
+  const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>"));
+  g_object_set(renderer, "style", leave_unchanged ? PANGO_STYLE_ITALIC
+                                                  : PANGO_STYLE_NORMAL, NULL);
+  g_free(value);
+}
+
+static gboolean _combobox_tooltip_setup(GtkWidget *combobox, gint x, gint y, gboolean kb_mode,
+                                        GtkTooltip* tooltip, dt_lib_module_t *self)
+{
+  gboolean res = FALSE;
+  GtkEntry *entry = (GtkEntry*)gtk_bin_get_child(GTK_BIN(combobox));
+  PangoLayout *layout = gtk_entry_get_layout(entry);
+  gint width;
+  pango_layout_get_size(layout, &width, NULL);
+  width = width / PANGO_SCALE;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(entry), &allocation);
+  if(allocation.width < width)  // the full text is not visible
+  {
+    gchar *value;
+    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(combobox));
+    GtkTreeIter iter;
+    if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(combobox), &iter))
+    {
+      gtk_tree_model_get(model, &iter, 0, &value, -1);
+      gtk_tooltip_set_text(tooltip, value);
+      res = TRUE;
+    }
+  }
+  return res;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   GtkWidget *button;
   GtkWidget *label;
-  GtkEntryCompletion *completion;
+  int line = 0;
 
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   d->imgsel = -1;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkGrid *grid = (GtkGrid *)gtk_grid_new();
+  self->widget = GTK_WIDGET(grid);
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  grid = (GtkGrid *)gtk_grid_new();
+  d->metadata_grid = grid;
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 0, 1, 1);
+
   dt_gui_add_help_link(self->widget, "metadata_editor.html#metadata_editor_usage");
-  gtk_box_set_spacing(GTK_BOX(self->widget), DT_PIXEL_APPLY_DPI(5));
-//  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(10));
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
-  for(uint32_t i = 0; i < DT_METADATA_NUMBER; i++)
+  for(line = 0; line < DT_METADATA_NUMBER; line++)
   {
-    label = gtk_label_new(_(entries[i].name));
-    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
+    label = gtk_label_new(_(entries[line].name));
+    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
 
-    GtkWidget *combobox = gtk_combo_box_text_new_with_entry();
-    d->metadata_cb[entries[i].keyid] = GTK_COMBO_BOX(combobox);
-//    gtk_widget_set_name(combobox, "metadata-combobox");
-
-    gtk_widget_set_hexpand(combobox, TRUE);
+    GtkListStore *model = gtk_list_store_new(1, G_TYPE_STRING);
+    GtkWidget *combobox = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(model));
+    g_signal_connect(combobox, "changed", G_CALLBACK(combobox_changed), self);
+    GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(combobox));
+    GtkCellRenderer *renderer = (GtkCellRenderer *)renderers->data;
 
     GtkWidget *entry = gtk_bin_get_child(GTK_BIN(combobox));
     dt_gui_key_accel_block_on_focus_connect(entry);
-    completion = gtk_entry_completion_new();
+    g_signal_connect(entry, "key-press-event", G_CALLBACK(key_pressed), self);
+    gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
+
+    g_object_set(G_OBJECT(combobox), "has-tooltip", TRUE, NULL);
+    g_signal_connect(G_OBJECT(combobox), "query-tooltip", G_CALLBACK(_combobox_tooltip_setup), self);
+    g_object_unref(model);
+    gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(combobox), 0);
+    gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(combobox), renderer, _set_combobox_style, NULL, NULL);
+
+    d->metadata_cb[entries[line].keyid] = GTK_COMBO_BOX(combobox);
+
+    gtk_widget_set_hexpand(combobox, TRUE);
+
+    GtkEntryCompletion *completion = gtk_entry_completion_new();
     gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(combobox)));
     gtk_entry_completion_set_text_column(completion, 0);
     gtk_entry_completion_set_inline_completion(completion, TRUE);
     gtk_entry_set_completion(GTK_ENTRY(entry), completion);
     g_object_unref(completion);
 
-    g_signal_connect(entry, "key-press-event", G_CALLBACK(key_pressed), self);
-
-    gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
-
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_set_spacing(GTK_BOX(hbox), DT_PIXEL_APPLY_DPI(10));
-    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), combobox, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-    d->hbox[i] = hbox;
+    g_object_set(G_OBJECT(label), "no-show-all", TRUE, NULL);
+    g_object_set(G_OBJECT(combobox), "no-show-all", TRUE, NULL);
+    gtk_grid_attach(grid, label, 0, line, 1, 1);
+    gtk_grid_attach_next_to(grid, combobox, label, GTK_POS_RIGHT, 1, 1);
   }
   update_layout(self);
 
   // clear/apply buttons
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  grid = (GtkGrid *)gtk_grid_new();
+  gtk_grid_set_column_homogeneous(grid, TRUE);
 
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
-  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, 0, 4, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
   gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
-  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 4, 0, 4, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
       CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
   d->config_button = button;
   gtk_widget_set_tooltip_text(button, _("configure metadata"));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_grid_attach(grid, button, 8, 0, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(config_button_clicked), (gpointer)self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+                            G_CALLBACK(mouse_over_image_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(mouse_over_image_callback), self);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i]))));
