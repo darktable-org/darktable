@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/grouping.h"
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
@@ -200,6 +201,7 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
   }
   return FALSE;
 }
+
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -224,6 +226,61 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     {
       dt_ratings_apply(thumb->imgid, rating, TRUE, TRUE, TRUE);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    }
+  }
+  return FALSE;
+}
+
+static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  if(event->button == 1 && !thumb->moved)
+  {
+    if(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
+                                                           // make this also work for collapsed groups.
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt,
+          NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    else if(!darktable.gui->grouping
+            || thumb->groupid == darktable.gui->expanded_group_id) // the group is already expanded, so ...
+    {
+      if(thumb->imgid == darktable.gui->expanded_group_id && darktable.gui->grouping) // ... collapse it
+        darktable.gui->expanded_group_id = -1;
+      else // ... make the image the new representative of the group
+        darktable.gui->expanded_group_id = dt_grouping_change_representative(thumb->imgid);
+    }
+    else // expand the group
+      darktable.gui->expanded_group_id = thumb->groupid;
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  }
+  return FALSE;
+}
+
+static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  if(event->button == 1 && !thumb->moved)
+  {
+    gboolean start_audio = TRUE;
+    if(darktable.view_manager->audio.audio_player_id != -1)
+    {
+      // don't start the audio for the image we just killed it for
+      if(darktable.view_manager->audio.audio_player_id == thumb->imgid) start_audio = FALSE;
+      dt_view_audio_stop(darktable.view_manager);
+    }
+
+    if(start_audio)
+    {
+      dt_view_audio_start(darktable.view_manager, thumb->imgid);
     }
   }
   return FALSE;
@@ -498,6 +555,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_group, "thumb_group");
+    g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
@@ -508,6 +566,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_audio, "thumb_audio");
+    g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);

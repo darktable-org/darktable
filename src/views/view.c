@@ -2569,6 +2569,62 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
 
   gtk_widget_show_all(vm->accels_window.flow_box);
 }
+
+static void _audio_child_watch(GPid pid, gint status, gpointer data)
+{
+  dt_view_manager_t *vm = (dt_view_manager_t *)data;
+  vm->audio.audio_player_id = -1;
+  g_spawn_close_pid(pid);
+}
+
+void dt_view_audio_start(dt_view_manager_t *vm, int imgid)
+{
+  char *player = dt_conf_get_string("plugins/lighttable/audio_player");
+  if(player && *player)
+  {
+    char *filename = dt_image_get_audio_path(imgid);
+    if(filename)
+    {
+      char *argv[] = { player, filename, NULL };
+      gboolean ret = g_spawn_async(NULL, argv, NULL,
+                                   G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL
+                                       | G_SPAWN_STDERR_TO_DEV_NULL,
+                                   NULL, NULL, &vm->audio.audio_player_pid, NULL);
+
+      if(ret)
+      {
+        vm->audio.audio_player_id = imgid;
+        vm->audio.audio_player_event_source
+            = g_child_watch_add(vm->audio.audio_player_pid, (GChildWatchFunc)_audio_child_watch, vm);
+      }
+      else
+        vm->audio.audio_player_id = -1;
+
+      g_free(filename);
+    }
+  }
+  g_free(player);
+}
+void dt_view_audio_stop(dt_view_manager_t *vm)
+{
+  // make sure that the process didn't finish yet and that _audio_child_watch() hasn't run
+  if(vm->audio.audio_player_id == -1) return;
+  // we don't want to trigger the callback due to a possible race condition
+  g_source_remove(vm->audio.audio_player_event_source);
+#ifdef _WIN32
+// TODO: add Windows code to actually kill the process
+#else  // _WIN32
+  if(vm->audio.audio_player_id != -1)
+  {
+    if(getpgid(0) != getpgid(vm->audio.audio_player_pid))
+      kill(-vm->audio.audio_player_pid, SIGKILL);
+    else
+      kill(vm->audio.audio_player_pid, SIGKILL);
+  }
+#endif // _WIN32
+  g_spawn_close_pid(vm->audio.audio_player_pid);
+  vm->audio.audio_player_id = -1;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
