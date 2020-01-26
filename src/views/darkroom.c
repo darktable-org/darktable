@@ -686,6 +686,13 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // change active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // disable color picker when changing image
   if(dev->gui_module)
   {
@@ -2526,6 +2533,13 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
 
+  // change active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(dev->image_storage.id));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   select_this_image(dev->image_storage.id);
 
   dt_control_set_dev_zoom(DT_ZOOM_FIT);
@@ -2653,6 +2667,14 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   _unregister_modules_drag_n_drop(self);
+
+  // ensure we have no active image remaining
+  if(darktable.view_manager->active_images)
+  {
+    g_slist_free(darktable.view_manager->active_images);
+    darktable.view_manager->active_images = NULL;
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  }
 
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),

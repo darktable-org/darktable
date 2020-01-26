@@ -346,6 +346,17 @@ static void check_layout(dt_view_t *self)
   // layout has changed, let restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+  {
+    // ensure we have no active image remaining
+    if(darktable.view_manager->active_images)
+    {
+      g_slist_free(darktable.view_manager->active_images);
+      darktable.view_manager->active_images = NULL;
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    }
+  }
+
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     // we want to reacquire the thumbtable if needed
@@ -2496,6 +2507,16 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
     if(!_culling_compute_slots(self, width, height, layout)) return 0;
     lib->slots_changed = FALSE;
     prefetch = TRUE;
+
+    // we update the active images list
+    g_slist_free(darktable.view_manager->active_images);
+    darktable.view_manager->active_images = NULL;
+    for(int i = 0; i < lib->slots_count; i++)
+    {
+      darktable.view_manager->active_images
+          = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->slots[i].imgid));
+    }
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
   }
 
   const int max_in_memory_images = _get_max_in_memory_images();
@@ -2652,6 +2673,12 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
         lib->full_preview_id = sqlite3_column_int(stmt, 0);
         lib->full_preview_rowid = sqlite3_column_int(stmt, 1);
         dt_control_set_mouse_over_id(lib->full_preview_id);
+        // set the active image
+        g_slist_free(darktable.view_manager->active_images);
+        darktable.view_manager->active_images = NULL;
+        darktable.view_manager->active_images
+            = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
+        dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
       }
       /* Store the image details for preloading, see below. */
       preload_stack[count] = sqlite3_column_int(stmt, 0);
@@ -3445,6 +3472,13 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   lib->full_preview_sticky = sticky;
   lib->full_preview_id = mouse_over_id;
 
+  // set the active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(mouse_over_id));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // set corresponding rowid in the collected images
   {
     sqlite3_stmt *stmt;
@@ -3515,6 +3549,11 @@ static void _preview_quit(dt_view_t *self)
   lib->full_preview_rowid = -1;
   if(!lib->using_arrows) dt_control_set_mouse_over_id(-1);
 
+  // reset the active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   lib->display_focus = 0;
   _full_preview_destroy(self);
   lib->full_zoom = 1.0f;
@@ -3573,7 +3612,13 @@ void leave(dt_view_t *self)
   // we remove the thumbtable from main view
   dt_library_t *lib = (dt_library_t *)self->data;
   dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
-  gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
+  // ensure we have no active image remaining
+  if(darktable.view_manager->active_images)
+  {
+    g_slist_free(darktable.view_manager->active_images);
+    darktable.view_manager->active_images = NULL;
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  }
 
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
 

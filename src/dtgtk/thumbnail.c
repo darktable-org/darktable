@@ -217,6 +217,9 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_back, GTK_STATE_FLAG_ACTIVE, thumb->active);
+  _set_flag(thumb->w_ext, GTK_STATE_FLAG_ACTIVE, thumb->active);
+  _set_flag(thumb->w_image, GTK_STATE_FLAG_ACTIVE, thumb->active);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
   for(int i = 0; i < 5; i++)
@@ -227,6 +230,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_ext, GTK_STATE_FLAG_SELECTED, thumb->selected);
   _set_flag(thumb->w_image, GTK_STATE_FLAG_SELECTED, thumb->selected);
 }
+
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
@@ -263,6 +267,34 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   if(selected != thumb->selected)
   {
     thumb->selected = selected;
+    _thumb_update_icons(thumb);
+    gtk_widget_queue_draw(thumb->w_main);
+  }
+}
+
+static void _dt_active_images_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb) return;
+
+  gboolean active = FALSE;
+  GSList *l = darktable.view_manager->active_images;
+  while(l)
+  {
+    int id = GPOINTER_TO_INT(l->data);
+    if(id == thumb->imgid)
+    {
+      active = TRUE;
+      break;
+    }
+    l = g_slist_next(l);
+  }
+
+  // if there's a change, update the thumb
+  if(active != thumb->active)
+  {
+    thumb->active = active;
     _thumb_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
   }
@@ -318,6 +350,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                               G_CALLBACK(_dt_mouse_over_image_callback), thumb);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                              G_CALLBACK(_dt_active_images_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
 
@@ -482,8 +516,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
   // we create the widget
   dt_thumbnail_create_widget(thumb);
 
-  // we update the icons state
-  _thumb_update_icons(thumb);
+  // let's see if the images are selected or active
+  _dt_active_images_callback(NULL, thumb);
+  _dt_selection_changed_callback(NULL, thumb);
 
   return thumb;
 }
@@ -492,6 +527,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mouse_over_image_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
