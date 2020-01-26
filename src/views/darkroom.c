@@ -99,7 +99,7 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 
@@ -956,11 +956,9 @@ static void film_strip_activated(const int imgid, void *data)
   dt_control_queue_redraw();
 }
 
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  int32_t imgid = 0;
-  if((imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) > 0)
-    film_strip_activated(imgid, user_data);
+  if(imgid > 0) film_strip_activated(imgid, user_data);
 }
 
 static void dt_dev_jump_image(dt_develop_t *dev, int diff)
@@ -2628,7 +2626,7 @@ void enter(dt_view_t *self)
   dt_control_set_dev_zoom_y(zoom_y);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_darkroom_filmstrip_activate_callback), self);
 
   // prefetch next few from first selected image on.

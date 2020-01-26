@@ -75,11 +75,9 @@ static void _film_strip_activated(const int imgid, void *data)
   dt_control_queue_redraw();
 }
 
-static void _view_print_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+static void _view_print_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  int32_t imgid = 0;
-  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
-    _film_strip_activated(imgid,user_data);
+  if(imgid > 0) _film_strip_activated(imgid, user_data);
 }
 
 static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo)
@@ -287,10 +285,8 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_view_print_filmstrip_activate_callback),
-                            self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_view_print_filmstrip_activate_callback), self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 

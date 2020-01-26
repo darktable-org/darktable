@@ -98,7 +98,7 @@ static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_displa
 static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change,
                                          gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
-static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                                    GtkSelectionData *selection_data, guint target_type, guint time,
@@ -847,7 +847,7 @@ void enter(dt_view_t *self)
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback), self);
 
   /* scroll filmstrip to the first selected image */
@@ -1188,10 +1188,9 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *sel
     return FALSE;
 }
 
-static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
-  const int32_t imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
   _view_map_center_on_image(self, imgid);
 }
 

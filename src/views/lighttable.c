@@ -3357,6 +3357,25 @@ static void _culling_scroll(dt_library_t *lib, const int up)
   }
 }
 
+static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, int imgid, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(lib->full_preview_id > 0)
+  {
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    // we switch to darkroom
+    dt_view_manager_switch(darktable.view_manager, "darkroom");
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+  }
+}
+
 void enter(dt_view_t *self)
 {
   // we add the flowbox and hide the main drawingarea
@@ -3390,6 +3409,8 @@ void enter(dt_view_t *self)
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_lighttable_mipmaps_updated_signal_callback), (gpointer)self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_lighttable_thumbtable_activate_signal_callback), (gpointer)self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
@@ -3629,6 +3650,8 @@ void leave(dt_view_t *self)
 
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipmaps_updated_signal_callback),
+                               (gpointer)self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_thumbtable_activate_signal_callback),
                                (gpointer)self);
 
   // clear some state variables

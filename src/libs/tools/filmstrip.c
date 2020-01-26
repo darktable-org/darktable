@@ -834,7 +834,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
   if(activate)
   {
     strip->activated_image = imgid;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
   }
 
   // redraw filmstrip. since this is a proxy function it could be used from another thread

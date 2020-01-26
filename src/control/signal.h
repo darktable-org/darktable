@@ -56,10 +56,11 @@ typedef enum dt_signal_t
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
   /** \bief This signal is raised when a thumb is doubleclicked in
-    no param, no returned value
-      filmstrip module.
+    thumbtable (filemananger, filmstrip)
+    1 : int the imageid of the thubnail
+    no returned value
    */
-  DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
 
   /** \brief This signal is raised when collection changed
     1 : dt_collection_change_t the reason why the collection has changed
