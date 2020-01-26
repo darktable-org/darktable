@@ -876,9 +876,9 @@ endif(BUILD_CMSTEST)
 add_subdirectory(chart)
 
 # have some test programs for unit testing, ...
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
-endif(BUILD_TESTS)
+endif(BUILD_TESTING)
 
 #
 # build darktable executable
