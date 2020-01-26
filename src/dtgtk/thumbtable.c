@@ -541,16 +541,25 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(!table) return;
   if(_compute_sizes(table, force))
   {
+    table->dragging = FALSE;
+
     sqlite3_stmt *stmt;
     printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d ...\n", force, table->view_width,
            table->view_height, table->thumbs_per_row, table->rows, table->thumb_size);
 
+    int posx = 0;
+    int posy = 0;
+    // in zoomable, we want the first thumb at the same position as the old one
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM && table->list && g_list_length(table->list) > 0)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      posx = thumb->x;
+      posy = thumb->y;
+    }
     // we drop all the widgets
     g_list_free_full(table->list, _thumb_remove);
     table->list = NULL;
 
-    int posx = 0;
-    int posy = 0;
     int offset = table->offset;
     int empty_start = 0;
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
