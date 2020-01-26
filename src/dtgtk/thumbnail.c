@@ -177,7 +177,8 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
 {
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_view_manager_switch(darktable.view_manager, "darkroom");
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, thumb->imgid);
     return TRUE;
   }
   return FALSE;
