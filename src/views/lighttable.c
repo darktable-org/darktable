@@ -34,7 +34,6 @@
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "dtgtk/button.h"
-#include "dtgtk/thumbnail.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
