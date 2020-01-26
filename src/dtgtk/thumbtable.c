@@ -20,10 +20,22 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "control/control.h"
-#include "dtgtk/thumbnail.h"
 #include "views/view.h"
 
 #define ZOOM_MAX 13
+
+static dt_thumbnail_t *_thumb_get_mouse_over(dt_thumbtable_t *table)
+{
+  const int imgid = dt_control_get_mouse_over_id();
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->imgid == imgid) return th;
+    l = g_list_next(l);
+  }
+  return NULL;
+}
 
 static void _pos_compute_area(dt_thumbtable_t *table)
 {
@@ -428,6 +440,8 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     table->dragging = TRUE;
     table->last_x = event->x_root;
     table->last_y = event->y_root;
+    table->drag_dx = table->drag_dy = 0;
+    table->drag_thumb = _thumb_get_mouse_over(table);
   }
   return TRUE;
 }
@@ -437,6 +451,15 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
   table->dragging = FALSE;
+
+  // we ensure that all thumbnails moved property is reset
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->moved = FALSE;
+    l = g_list_next(l);
+  }
   return TRUE;
 }
 static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -446,11 +469,15 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 
   if(table->dragging)
   {
-    int dx = event->x_root - table->last_x;
-    int dy = event->y_root - table->last_y;
-    table->last_x = event->x_root;
-    table->last_y = event->y_root;
+    int dx = ceil(event->x_root) - table->last_x;
+    int dy = ceil(event->y_root) - table->last_y;
+    table->last_x = ceil(event->x_root);
+    table->last_y = ceil(event->y_root);
     _move(table, dx, dy);
+    table->drag_dx += dx;
+    table->drag_dy += dy;
+    if(table->drag_thumb)
+      table->drag_thumb->moved = ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
   }
   return TRUE;
 }

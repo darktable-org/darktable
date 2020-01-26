@@ -189,7 +189,7 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->button == 1)
+  if(event->button == 1 && !thumb->moved)
   {
     if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
       dt_selection_select_single(darktable.selection, thumb->imgid);
@@ -203,26 +203,30 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  dt_view_image_over_t rating = DT_VIEW_DESERT;
-  if(widget == thumb->w_reject)
-    rating = DT_VIEW_REJECT;
-  else if(widget == thumb->w_stars[0])
-    rating = DT_VIEW_STAR_1;
-  else if(widget == thumb->w_stars[1])
-    rating = DT_VIEW_STAR_2;
-  else if(widget == thumb->w_stars[2])
-    rating = DT_VIEW_STAR_3;
-  else if(widget == thumb->w_stars[3])
-    rating = DT_VIEW_STAR_4;
-  else if(widget == thumb->w_stars[4])
-    rating = DT_VIEW_STAR_5;
 
-  if(rating != DT_VIEW_DESERT)
+  if(event->button == 1 && !thumb->moved)
   {
-    dt_ratings_apply(thumb->imgid, rating, TRUE, TRUE, TRUE);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    dt_view_image_over_t rating = DT_VIEW_DESERT;
+    if(widget == thumb->w_reject)
+      rating = DT_VIEW_REJECT;
+    else if(widget == thumb->w_stars[0])
+      rating = DT_VIEW_STAR_1;
+    else if(widget == thumb->w_stars[1])
+      rating = DT_VIEW_STAR_2;
+    else if(widget == thumb->w_stars[2])
+      rating = DT_VIEW_STAR_3;
+    else if(widget == thumb->w_stars[3])
+      rating = DT_VIEW_STAR_4;
+    else if(widget == thumb->w_stars[4])
+      rating = DT_VIEW_STAR_5;
+
+    if(rating != DT_VIEW_DESERT)
+    {
+      dt_ratings_apply(thumb->imgid, rating, TRUE, TRUE, TRUE);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    }
   }
-  return TRUE;
+  return FALSE;
 }
 
 static void _thumb_update_icons(dt_thumbnail_t *thumb)
@@ -404,7 +408,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                              | GDK_ENTER_NOTIFY_MASK);
+                                              | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                              | GDK_POINTER_MOTION_MASK);
     g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_event_main_enter), thumb);
     gtk_widget_show(thumb->w_image);
