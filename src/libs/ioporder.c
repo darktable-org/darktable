@@ -36,7 +36,7 @@ typedef struct dt_lib_ioporder_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("module order version");
+  return _("module order");
 }
 
 const char **views(dt_lib_module_t *self)
