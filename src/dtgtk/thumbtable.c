@@ -556,6 +556,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       posx = thumb->x;
       posy = thumb->y;
     }
+
     // we drop all the widgets
     g_list_free_full(table->list, _thumb_remove);
     table->list = NULL;
