@@ -1330,17 +1330,19 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
-  snprintf(query, sizeof(query), "INSERT INTO memory.history"
-                                 " SELECT ?1, 0, op_version, operation, op_params,"
-                                 "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
-                                 " FROM %s WHERE autoapply=1 AND "
-                                 "((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker)) AND "
-                                 "?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max AND "
-                                 "?8 BETWEEN exposure_min AND exposure_max AND "
-                                 "?9 BETWEEN aperture_min AND aperture_max AND "
-                                 "?10 BETWEEN focal_length_min AND focal_length_max AND "
-                                 "(format = 0 OR format&?11!=0) ORDER BY writeprotect DESC, "
-                                 "LENGTH(model), LENGTH(maker), LENGTH(lens)",
+  snprintf(query, sizeof(query),
+           "INSERT INTO memory.history"
+           " SELECT ?1, 0, op_version, operation, op_params,"
+           "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
+           " FROM %s"
+           " WHERE autoapply=1 AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "       AND ?8 BETWEEN exposure_min AND exposure_max"
+           "       AND ?9 BETWEEN aperture_min AND aperture_max"
+           "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "       AND (format = 0 OR format&?11!=0)"
+           "       AND operation NOT IN ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect')"
+           " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy]);
   // query for all modules at once:
   sqlite3_stmt *stmt;
