@@ -3152,7 +3152,7 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData, double longitude, do
   }
 }
 
-static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)
+static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid, const gboolean export_flag)
 {
   sqlite3_stmt *stmt;
   // metadata
@@ -3162,7 +3162,17 @@ static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+    if(export_flag)
+    {
+      const gchar *name = dt_metadata_get_name(keyid);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name);
+      const gboolean private_flag =  dt_conf_get_bool(setting);
+      g_free(setting);
+      if(!private_flag)
+        xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+    }
+    else
+      xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
   }
   sqlite3_finalize(stmt);
 
@@ -3239,7 +3249,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
 
   // the meta data
-  dt_set_xmp_dt_metadata(xmpData, imgid);
+  dt_set_xmp_dt_metadata(xmpData, imgid, FALSE);
 
   // get tags from db, store in dublin core
   std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpBag));
@@ -3338,7 +3348,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
 
   // the meta data
   if (metadata->flags & DT_META_METADATA)
-    dt_set_xmp_dt_metadata(xmpData, imgid);
+    dt_set_xmp_dt_metadata(xmpData, imgid, TRUE);
 
   // tags
   if (metadata->flags & DT_META_TAG)

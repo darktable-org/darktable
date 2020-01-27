@@ -23,19 +23,20 @@
 
 typedef enum dt_metadata_t
 {
-  // do change the order. Must match with dt_xmp_keys[] in metadata.c.
+  // do change the order. Must match with dt_metadata_def[] in metadata.c.
   // just add new metadata before DT_METADATA_NUMBER when needed
   DT_METADATA_XMP_DC_CREATOR,
   DT_METADATA_XMP_DC_PUBLISHER,
   DT_METADATA_XMP_DC_TITLE,
   DT_METADATA_XMP_DC_DESCRIPTION,
   DT_METADATA_XMP_DC_RIGHTS,
+  DT_METADATA_XMP_DC_NOTES,
   DT_METADATA_NUMBER
 }
 dt_metadata_t;
 
 /** return the metadata key by display order */
-const char *dt_metadata_get_short_name_by_display_order(const uint32_t order);
+const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 
 /** return the metadata keyid by display order */
 const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);

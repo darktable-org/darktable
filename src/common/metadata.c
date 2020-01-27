@@ -42,11 +42,12 @@ static const struct
   {"Xmp.dc.publisher", N_("publisher"), 3},
   {"Xmp.dc.title", N_("title"), 0},
   {"Xmp.dc.description", N_("description"), 1},
-  {"Xmp.dc.rights", N_("rights"), 4}
+  {"Xmp.dc.rights", N_("rights"), 4},
+  {"Xmp.acdsee.notes", N_("notes"), 5}
   // clang-format on
 };
 
-const char *dt_metadata_get_short_name_by_display_order(const uint32_t order)
+const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 {
   if(order < DT_METADATA_NUMBER)
   {

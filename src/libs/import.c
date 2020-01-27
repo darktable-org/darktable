@@ -479,7 +479,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     metadata[i] = gtk_entry_new();
-    metadata_name[i] = (gchar *)dt_metadata_get_short_name_by_display_order(i);
+    metadata_name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
     char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name[i]);
     gchar *str = dt_conf_get_string(setting);
     gtk_entry_set_text(GTK_ENTRY(metadata[i]), str);
@@ -608,7 +608,7 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->apply_metadata)));
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    const gchar *metadata_name = dt_metadata_get_short_name_by_display_order(i);
+    const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
     char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
     dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(data->metadata[i])));
     g_free(setting);
