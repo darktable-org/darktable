@@ -1717,19 +1717,19 @@ msgstr "effacer la base de données"
 
 #: ../src/common/fast_guided_filter.h:488
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
-msgstr "le filtre guidé n'a pas assez de mémoire, vérifier votre RAM"
+msgstr "le filtre guidé n'a pas assez de mémoire, vérifier la configuration de votre RAM"
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "êtes-vous sûr de vouloir supprimer ce répertoire vide?"
-msgstr[1] "êtes-vous sûr de vouloir supprimer ces répertoires vides?"
+msgstr[0] "êtes-vous sûr de vouloir supprimer ce répertoire vide ?"
+msgstr[1] "êtes-vous sûr de vouloir supprimer ces répertoires vides ?"
 
 #: ../src/common/film.c:318
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "supprimer le répertoire vide?"
-msgstr[1] "supprimer les répertoires vides?"
+msgstr[0] "supprimer le répertoire vide ?"
+msgstr[1] "supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:337 ../src/gui/preferences.c:503
 #: ../src/gui/styles_dialog.c:309
@@ -1776,7 +1776,7 @@ msgstr "darktable » %s"
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
 msgstr ""
-"<h1>Désolé,</h1><p>quelque chose c'est mal passée. Veuillez réessayer.</p>"
+"<h1>Désolé,</h1><p>quelque chose s'est mal passé. Veuillez réessayer.</p>"
 
 #: ../src/common/http_server.c:102
 msgid ""
@@ -2131,7 +2131,7 @@ msgstr "les images doivent avoir les mêmes taille et orientation !"
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
-msgstr[1] "fusion  de %d images"
+msgstr[1] "fusion de %d images"
 
 #: ../src/control/jobs/control_jobs.c:504
 #, c-format
@@ -2156,8 +2156,8 @@ msgstr[1] "rotation de %d images"
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "enlèvement de %d image"
-msgstr[1] "enlèvement de %d images"
+msgstr[0] "suppression de %d image"
+msgstr[1] "suppression de %d images"
 
 #: ../src/control/jobs/control_jobs.c:737
 #, c-format
@@ -2291,7 +2291,7 @@ msgstr "cloner les images"
 
 #: ../src/control/jobs/control_jobs.c:1404
 msgid "flip images"
-msgstr "retourne les images"
+msgstr "retourner les images"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1411
@@ -2323,10 +2323,10 @@ msgstr "supprimer les images"
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
 msgstr[0] ""
-"êtes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle  ?"
+"êtes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
 msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
-"poubelle  ?"
+"poubelle ?"
 
 #: ../src/control/jobs/control_jobs.c:1482
 #, c-format
@@ -2335,14 +2335,14 @@ msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
 msgstr[0] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement %d image "
-"sélectionnée  ?"
+"sélectionnée ?"
 msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
-"sélectionnées  ?"
+"sélectionnées ?"
 
 #: ../src/control/jobs/control_jobs.c:1489
 msgid "trash images?"
-msgstr "mise à la poubelle?"
+msgstr "mise à la poubelle ?"
 
 #: ../src/control/jobs/control_jobs.c:1489
 msgid "delete images?"
@@ -2366,10 +2366,10 @@ msgid_plural ""
 "do you really want to physically move %d selected images to %s?\n"
 "(all unselected duplicates will be moved along)"
 msgstr[0] ""
-"êtes-vous sûr de vouloir déplacer %d image sélectionnée vers %s  ?\n"
+"êtes-vous sûr de vouloir déplacer %d image sélectionnée vers %s ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 msgstr[1] ""
-"êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
+"êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
 #: ../src/control/jobs/control_jobs.c:1545
@@ -2387,10 +2387,10 @@ msgstr "copier les images"
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] ""
-"êtes-vous sûr de vouloir copier physiquement %d image sélectionnée vers %s  ?"
+"êtes-vous sûr de vouloir copier physiquement %d image sélectionnée vers %s ?"
 msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
-"vers %s  ?"
+"vers %s ?"
 
 #: ../src/control/jobs/control_jobs.c:1602
 msgid "copy image?"
@@ -2446,7 +2446,7 @@ msgstr "importer les images"
 
 #: ../src/control/jobs/film_jobs.c:145
 msgid "no supported images were found to be imported"
-msgstr "aucune image supportée n'a été importée"
+msgstr "aucun format d'image supporté n'a été trouvé"
 
 #: ../src/control/jobs/film_jobs.c:199
 #, c-format
@@ -3172,7 +3172,7 @@ msgstr "[CHEMIN création] ajouter un nœud doux"
 
 #: ../src/develop/masks/masks.c:170
 msgid "[PATH creation] add a sharp node"
-msgstr "[CHEMIN création] ajout d'un nœud"
+msgstr "[CHEMIN création] ajout d'un nœud dur"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
@@ -3180,7 +3180,7 @@ msgstr "[CHEMIN création] terminer création"
 
 #: ../src/develop/masks/masks.c:181
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "[CHEMIN sur nœud] changer le nœud doux/aiguë"
+msgstr "[CHEMIN sur nœud] changer le nœud doux/dur"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
