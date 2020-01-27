@@ -1817,14 +1817,24 @@ void dt_database_backup(const char *filename)
 
   gchar *backup = g_strdup_printf("%s-pre-%s", filename, version);
 
+  GError *gerror = NULL;
   if(!g_file_test(backup, G_FILE_TEST_EXISTS))
   {
-    GError *gerror = NULL;
     GFile *src = g_file_new_for_path(filename);
     GFile *dest = g_file_new_for_path(backup);
-    gboolean copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-    if (!copyStatus)
-      fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+    gboolean copyStatus = TRUE;
+    if(g_file_test(filename, G_FILE_TEST_EXISTS))
+    {
+      copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+      if(copyStatus) copyStatus = g_chmod(backup, S_IRUSR) == 0;
+    }
+    else
+    {
+      // there is nothing to backup, create an empty file to prevent further backup attempts
+      int fd = g_open(backup, O_CREAT, S_IRUSR);
+      if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+    }
+    if(!copyStatus) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
   }
 
   g_free(version);
