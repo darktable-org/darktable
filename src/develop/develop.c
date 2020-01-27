@@ -1368,7 +1368,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT op_params"
                               " FROM data.presets"
-                              " WHERE autoapply=1 AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+                              " WHERE autoapply=1"
+                              "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
                               "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
                               "       AND ?8 BETWEEN exposure_min AND exposure_max"
                               "       AND ?9 BETWEEN aperture_min AND aperture_max"
