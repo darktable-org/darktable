@@ -234,18 +234,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-
-  void *params = NULL;
-
-  // do not allow recording unsafe or built-in iop-order
-  // only custom order can be recorded.
-  if(d->current_mode == DT_IOP_ORDER_CUSTOM)
-  {
-    size_t p_size = 0;
-    params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list, &p_size);
-    *size = (int)p_size;
-  }
+  size_t p_size = 0;
+  void *params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list, &p_size);
+  *size = (int)p_size;
 
   return params;
 }
