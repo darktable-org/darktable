@@ -314,10 +314,12 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
         { 77.0, "gamma"},
       };
 
-      if(g_list_length(*_iop_order_list) != 77)
+      const size_t num_modules = sizeof(iop_v5) / sizeof(iop_v5[0]);
+
+      if(g_list_length(*_iop_order_list) != num_modules)
       {
-        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have 77 entries found %d\n",
-                g_list_length(*_iop_order_list));
+        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have %zu entries, found %u\n",
+                num_modules, g_list_length(*_iop_order_list));
         return 4;
       }
 
