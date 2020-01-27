@@ -1398,6 +1398,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
     dt_ioppr_write_iop_order_list(iop_list, imgid);
     g_list_free_full(iop_list, free);
+    dt_ioppr_set_default_iop_order(dev, imgid);
   }
 
   sqlite3_finalize(stmt);
