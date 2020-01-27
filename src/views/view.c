@@ -1029,7 +1029,11 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
   // if we got a different mip than requested, and it's not a skull (8x8 px), we count
   // this thumbnail as missing (to trigger re-exposure)
-  if(!buf_ok && buf_wd != 8 && buf_ht != 8) return 1;
+  if(!buf_ok && buf_wd != 8 && buf_ht != 8)
+  {
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    return 1;
+  }
 
   // so we create a new image surface to return
   const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht);
@@ -1131,6 +1135,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     cairo_destroy(cr);
   }
 
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   if(rgbbuf) free(rgbbuf);
   return 0;
 }
