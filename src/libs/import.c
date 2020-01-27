@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/mipmap_cache.h"
+#include "common/metadata.h"
 #include "control/conf.h"
 #include "control/control.h"
 #ifdef HAVE_GPHOTO2
@@ -87,9 +88,7 @@ typedef struct dt_lib_import_metadata_t
   GtkWidget *expander;
   GtkWidget *apply_metadata;
   GtkWidget *presets;
-  GtkWidget *creator;
-  GtkWidget *publisher;
-  GtkWidget *rights;
+  GtkWidget *metadata[DT_METADATA_NUMBER];
   GtkWidget *tags;
 } dt_lib_import_metadata_t;
 
@@ -371,32 +370,18 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
     };
     gchar *sv;
 
-    gtk_tree_model_get_value(model, &iter, CREATOR_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
-      g_signal_handlers_block_by_func(data->creator, _lib_import_metadata_changed, data->presets);
-      gtk_entry_set_text(GTK_ENTRY(data->creator), sv);
-      g_signal_handlers_unblock_by_func(data->creator, _lib_import_metadata_changed, data->presets);
+      gtk_tree_model_get_value(model, &iter, i+1, &value);
+      if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
+      {
+        const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+        g_signal_handlers_block_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
+        gtk_entry_set_text(GTK_ENTRY(data->metadata[keyid]), sv);
+        g_signal_handlers_unblock_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
+      }
+      g_value_unset(&value);
     }
-    g_value_unset(&value);
-
-    gtk_tree_model_get_value(model, &iter, PUBLISHER_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
-    {
-      g_signal_handlers_block_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
-      gtk_entry_set_text(GTK_ENTRY(data->publisher), sv);
-      g_signal_handlers_unblock_by_func(data->publisher, _lib_import_metadata_changed, data->presets);
-    }
-    g_value_unset(&value);
-
-    gtk_tree_model_get_value(model, &iter, RIGHTS_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
-    {
-      g_signal_handlers_block_by_func(data->rights, _lib_import_metadata_changed, data->presets);
-      gtk_entry_set_text(GTK_ENTRY(data->rights), sv);
-      g_signal_handlers_unblock_by_func(data->rights, _lib_import_metadata_changed, data->presets);
-    }
-    g_value_unset(&value);
   }
 }
 
@@ -464,7 +449,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
 
   // default metadata
   GtkWidget *apply_metadata;
-  GtkWidget *grid, *label, *creator, *publisher, *rights, *tags;
+  GtkWidget *grid, *label, *tags;
   apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
   gtk_widget_set_tooltip_text(apply_metadata, _("apply some metadata to all newly imported images."));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
@@ -489,24 +474,22 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
 #endif
 
-  creator = gtk_entry_new();
-  gtk_widget_set_size_request(creator, DT_PIXEL_APPLY_DPI(300), -1);
-  gchar *str = dt_conf_get_string("ui_last/import_last_creator");
-  gtk_entry_set_text(GTK_ENTRY(creator), str);
-  g_free(str);
-
-  publisher = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_publisher");
-  gtk_entry_set_text(GTK_ENTRY(publisher), str);
-  g_free(str);
-
-  rights = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_rights");
-  gtk_entry_set_text(GTK_ENTRY(rights), str);
-  g_free(str);
+  GtkWidget *metadata[DT_METADATA_NUMBER];
+  gchar *metadata_name[DT_METADATA_NUMBER];
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    metadata[i] = gtk_entry_new();
+    metadata_name[i] = (gchar *)dt_metadata_get_short_name_by_display_order(i);
+    char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name[i]);
+    gchar *str = dt_conf_get_string(setting);
+    gtk_entry_set_text(GTK_ENTRY(metadata[i]), str);
+    g_free(str);
+    g_free(setting);
+  }
 
   tags = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_tags");
+  gtk_widget_set_size_request(tags, DT_PIXEL_APPLY_DPI(300), -1);
+  gchar *str = dt_conf_get_string("ui_last/import_last_tags");
   gtk_widget_set_tooltip_text(tags, _("comma separated list of tags"));
   gtk_entry_set_text(GTK_ENTRY(tags), str);
   g_free(str);
@@ -514,8 +497,12 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   // presets from the metadata plugin
   GtkCellRenderer *renderer;
   GtkTreeIter iter;
-  GtkListStore *model = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING /*name*/, G_TYPE_STRING /*creator*/,
-                                           G_TYPE_STRING /*publisher*/, G_TYPE_STRING /*rights*/);
+  GType types[DT_METADATA_NUMBER + 1];
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER+1; i++)
+  {
+    types[i] = G_TYPE_STRING;
+  }
+  GtkListStore *model = gtk_list_store_newv(DT_METADATA_NUMBER + 1, types);
 
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   renderer = gtk_cell_renderer_text_new();
@@ -532,23 +519,25 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
 
     char *buf = (char *)op_params;
-    char *title_str = buf;
-    buf += strlen(title_str) + 1;
-    char *description_str = buf;
-    buf += strlen(description_str) + 1;
-    char *rights_str = buf;
-    buf += strlen(rights_str) + 1;
-    char *creator_str = buf;
-    buf += strlen(creator_str) + 1;
-    char *publisher_str = buf;
+    char *metadata_param[DT_METADATA_NUMBER];
+    uint32_t metadata_len[DT_METADATA_NUMBER];
+    uint32_t total_len = 0;
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      metadata_param[i] = buf;
+      metadata_len[i] = strlen(metadata_param[i]) + 1;
+      buf += metadata_len[i];
+      total_len +=  metadata_len[i];
+    }
 
-    if(op_params_size
-       == strlen(title_str) + strlen(description_str) + strlen(rights_str) + strlen(creator_str)
-              + strlen(publisher_str) + 5)
+    if(op_params_size == total_len)
     {
       gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), CREATOR_COLUMN,
-                         creator_str, PUBLISHER_COLUMN, publisher_str, RIGHTS_COLUMN, rights_str, -1);
+      gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), -1);
+      for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+      {
+        gtk_list_store_set(model, &iter, i+1, metadata_param[i], -1);
+      }
     }
   }
   sqlite3_finalize(stmt);
@@ -562,20 +551,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
 
-  label = gtk_label_new(_("creator"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), creator, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("publisher"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), publisher, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("rights"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), rights, label, GTK_POS_RIGHT, 1, 1);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    label = gtk_label_new(_(metadata_name[i]));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], label, GTK_POS_RIGHT, 1, 1);
+  }
 
   label = gtk_label_new(_("tags"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -592,9 +574,10 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     data->expander = expander;
     data->apply_metadata = apply_metadata;
     data->presets = presets;
-    data->creator = creator;
-    data->publisher = publisher;
-    data->rights = rights;
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      data->metadata[i] = metadata[i];
+    }
     data->tags = tags;
   }
 
@@ -603,10 +586,11 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   _lib_import_apply_metadata_toggled(apply_metadata, grid);
 
   g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
-  g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
-  g_signal_connect(GTK_ENTRY(publisher), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
-  g_signal_connect(GTK_ENTRY(rights), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
-
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    g_signal_connect(GTK_ENTRY(metadata[i]), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
+  }
+// todo - signal for tags is missing
   return frame;
 }
 
@@ -622,9 +606,13 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
   dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER(data->expander)));
   dt_conf_set_bool("ui_last/import_apply_metadata",
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->apply_metadata)));
-  dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(data->creator)));
-  dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(data->publisher)));
-  dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(data->rights)));
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const gchar *metadata_name = dt_metadata_get_short_name_by_display_order(i);
+    char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+    dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(data->metadata[i])));
+    g_free(setting);
+  }
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }
 

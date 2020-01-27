@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/undo.h"
 #include "common/grouping.h"
+#include "control/conf.h"
 #include "views/view.h"
 #include "control/signal.h"
 
@@ -30,15 +31,60 @@
 // this array should contain all dt metadata
 // do change the order. Must match with dt_metadata_t in metadata.h.
 // just add new metadata at the end when needed
-const char *dt_metadata_keys[]
-    = { "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description",
-        "Xmp.dc.rights"};
+static const struct
+{
+  char *key;
+  char *name;
+  uint32_t display_order;
+} dt_metadata_def[] = {
+  // clang-format off
+  {"Xmp.dc.creator", N_("creator"), 2},
+  {"Xmp.dc.publisher", N_("publisher"), 3},
+  {"Xmp.dc.title", N_("title"), 0},
+  {"Xmp.dc.description", N_("description"), 1},
+  {"Xmp.dc.rights", N_("rights"), 4}
+  // clang-format on
+};
+
+const char *dt_metadata_get_short_name_by_display_order(const uint32_t order)
+{
+  if(order < DT_METADATA_NUMBER)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      if(order == dt_metadata_def[i].display_order)
+        return dt_metadata_def[i].name;
+    }
+  }
+  return NULL;
+}
+
+const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
+{
+  if(order < DT_METADATA_NUMBER)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      if(order == dt_metadata_def[i].display_order)
+        return i;
+    }
+  }
+  return -1;
+}
+
+const char *dt_metadata_get_name(const uint32_t keyid)
+{
+  if(keyid < DT_METADATA_NUMBER)
+    return dt_metadata_def[keyid].name;
+  else
+    return NULL;
+}
 
 const dt_metadata_t dt_metadata_get_keyid(const char* key)
 {
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    if(strncmp(key, dt_metadata_keys[i], strlen(dt_metadata_keys[i])) == 0)
+    if(strncmp(key, dt_metadata_def[i].key, strlen(dt_metadata_def[i].key)) == 0)
       return i;
   }
   return -1;
@@ -47,7 +93,7 @@ const dt_metadata_t dt_metadata_get_keyid(const char* key)
 const char *dt_metadata_get_key(const uint32_t keyid)
 {
   if(keyid < DT_METADATA_NUMBER)
-    return dt_metadata_keys[keyid];
+    return dt_metadata_def[keyid].key;
   else
     return NULL;
 }
@@ -418,33 +464,40 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   int keyid = dt_metadata_get_keyid(key);
   if(keyid != -1) // known key
   {
-    GList *imgs = NULL;
-    if(imgid == -1)
-      imgs = dt_collection_get_selected(darktable.collection, -1);
-    else
-      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-    if(imgs)
+    const gchar *name = dt_metadata_get_name(keyid);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+    const gboolean hidden = dt_conf_get_bool(setting);
+    g_free(setting);
+    if(!hidden)
     {
-      GList *undo = NULL;
-      if(group_on) dt_grouping_add_grouped_images(&imgs);
-      if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
-
-      const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
-      const gchar *cvalue = _cleanup_metadata_value(value);
-      GList *metadata = NULL;
-      metadata = g_list_append(metadata, (gpointer)ckey);
-      metadata = g_list_append(metadata, (gpointer)cvalue);
-
-      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
-
-      g_list_free_full(metadata, g_free);
-      g_list_free(imgs);
-      if(undo_on)
+      GList *imgs = NULL;
+      if(imgid == -1)
+        imgs = dt_collection_get_selected(darktable.collection, -1);
+      else
+        imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+      if(imgs)
       {
-        dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
-        dt_undo_end_group(darktable.undo);
+        GList *undo = NULL;
+        if(group_on) dt_grouping_add_grouped_images(&imgs);
+        if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+        const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+        const gchar *cvalue = _cleanup_metadata_value(value);
+        GList *metadata = NULL;
+        metadata = g_list_append(metadata, (gpointer)ckey);
+        metadata = g_list_append(metadata, (gpointer)cvalue);
+
+        _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
+
+        g_list_free_full(metadata, g_free);
+        g_list_free(imgs);
+        if(undo_on)
+        {
+          dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+          dt_undo_end_group(darktable.undo);
+        }
+        dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
       }
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     }
   }
 }
