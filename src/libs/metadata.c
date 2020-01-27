@@ -203,10 +203,11 @@ static void write_metadata(dt_lib_module_t *self)
   GList *key_value = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
     metadata[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i])))));
     if(metadata[i] != NULL && (d->multi_metadata[i] == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->metadata_cb[i])) != 0))
     {
-      _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
+      _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
     }
   }
 
@@ -217,6 +218,8 @@ static void write_metadata(dt_lib_module_t *self)
     g_free(metadata[i]);
   }
   g_list_free(key_value);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 
   dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);
@@ -294,7 +297,7 @@ static void update_layout(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    const gchar *metadata_name = dt_metadata_get_short_name_by_display_order(i);
+    const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name);
     const gboolean hidden = dt_conf_get_bool(setting);
     if(hidden)
@@ -320,17 +323,33 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
   GtkWidget *grid = gtk_grid_new();
   gtk_container_add(GTK_CONTAINER(area), grid);
-  GtkWidget *label = gtk_label_new(_("hidden metadata"));
+  GtkWidget *label = gtk_label_new(_("metadata"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
+  label = gtk_label_new(_("hidden"));
+  gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
+  label = gtk_label_new(_("private"));
+  gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
   GtkWidget *metadata[DT_METADATA_NUMBER];
+  GtkWidget *private[DT_METADATA_NUMBER];
   gchar *metadata_name[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata_name[i] = (gchar *)dt_metadata_get_short_name_by_display_order(i);
-    metadata[i] = gtk_check_button_new_with_label(_(metadata_name[i]));
+    metadata_name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
+    label = gtk_label_new(_(metadata_name[i]));
+    gtk_grid_attach(GTK_GRID(grid), label, 0, i+1, 1, 1);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_widget_set_hexpand(label, TRUE);
+    metadata[i] = gtk_check_button_new();
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata[i]), dt_conf_get_bool(setting));
-    gtk_grid_attach(GTK_GRID(grid), metadata[i], 0, i+1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), metadata[i], 1, i+1, 1, 1);
+    gtk_widget_set_halign(metadata[i], GTK_ALIGN_CENTER);
+    g_free(setting);
+    private[i] = gtk_check_button_new();
+    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", metadata_name[i]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), dt_conf_get_bool(setting));
+    gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
+    gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
     g_free(setting);
   }
 
@@ -345,6 +364,9 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
     {
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
       dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata[i])));
+      g_free(setting);
+      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", metadata_name[i]);
+      dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i])));
       g_free(setting);
     }
   }
@@ -425,8 +447,8 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    GtkWidget *label = gtk_label_new(_(dt_metadata_get_short_name_by_display_order(i)));
-    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+    GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
 
     GtkListStore *model = gtk_list_store_new(1, G_TYPE_STRING);
     GtkWidget *combobox = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(model));
