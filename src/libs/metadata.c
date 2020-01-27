@@ -44,20 +44,6 @@ typedef struct dt_lib_metadata_t
   GtkWidget *config_button;
 } dt_lib_metadata_t;
 
-static const struct
-{
-  char *name;
-  uint32_t keyid;
-} entries[] = {
-  // clang-format off
-  {N_("title"), DT_METADATA_XMP_DC_TITLE},
-  {N_("description"), DT_METADATA_XMP_DC_DESCRIPTION},
-  {N_("creator"), DT_METADATA_XMP_DC_CREATOR},
-  {N_("publisher"), DT_METADATA_XMP_DC_PUBLISHER},
-  {N_("rights"), DT_METADATA_XMP_DC_RIGHTS}
-  // clang-format on
-};
-
 const char *name(dt_lib_module_t *self)
 {
   return _("metadata editor");
@@ -176,8 +162,9 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    fill_combo_box_entry(d->metadata_cb[i], metadata_count[i], metadata[i], &(d->multi_metadata[i]));
-    g_list_free_full(metadata[i], g_free);
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    fill_combo_box_entry(d->metadata_cb[i], metadata_count[keyid], metadata[keyid], &(d->multi_metadata[i]));
+    g_list_free_full(metadata[keyid], g_free);
   }
 }
 
@@ -292,7 +279,6 @@ int position()
 static void mouse_over_image_callback(gpointer instace, dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
   /* lets trigger an expose for a redraw of widget */
   if(d->editing)
   {
@@ -308,7 +294,8 @@ static void update_layout(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
+    const gchar *metadata_name = dt_metadata_get_short_name_by_display_order(i);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name);
     const gboolean hidden = dt_conf_get_bool(setting);
     if(hidden)
     {
@@ -336,10 +323,12 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   GtkWidget *label = gtk_label_new(_("hidden metadata"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
   GtkWidget *metadata[DT_METADATA_NUMBER];
+  gchar *metadata_name[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata[i] = gtk_check_button_new_with_label(entries[i].name);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
+    metadata_name[i] = (gchar *)dt_metadata_get_short_name_by_display_order(i);
+    metadata[i] = gtk_check_button_new_with_label(_(metadata_name[i]));
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata[i]), dt_conf_get_bool(setting));
     gtk_grid_attach(GTK_GRID(grid), metadata[i], 0, i+1, 1, 1);
     g_free(setting);
@@ -354,7 +343,7 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   {
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", entries[i].name);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
       dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata[i])));
       g_free(setting);
     }
@@ -382,7 +371,7 @@ static void _set_combobox_style(GtkCellLayout *cell_layout, GtkCellRenderer *ren
 {
   gchar *value;
   gtk_tree_model_get(model, iter, 0, &value, -1);
-  const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>"));
+  const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>")) == 0;
   g_object_set(renderer, "style", leave_unchanged ? PANGO_STYLE_ITALIC
                                                   : PANGO_STYLE_NORMAL, NULL);
   g_free(value);
@@ -416,10 +405,6 @@ static gboolean _combobox_tooltip_setup(GtkWidget *combobox, gint x, gint y, gbo
 
 void gui_init(dt_lib_module_t *self)
 {
-  GtkWidget *button;
-  GtkWidget *label;
-  int line = 0;
-
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
@@ -438,9 +423,9 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
-  for(line = 0; line < DT_METADATA_NUMBER; line++)
+  for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    label = gtk_label_new(_(entries[line].name));
+    GtkWidget *label = gtk_label_new(_(dt_metadata_get_short_name_by_display_order(i)));
     g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
 
     GtkListStore *model = gtk_list_store_new(1, G_TYPE_STRING);
@@ -460,7 +445,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(combobox), 0);
     gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(combobox), renderer, _set_combobox_style, NULL, NULL);
 
-    d->metadata_cb[entries[line].keyid] = GTK_COMBO_BOX(combobox);
+    d->metadata_cb[i] = GTK_COMBO_BOX(combobox);
 
     gtk_widget_set_hexpand(combobox, TRUE);
 
@@ -473,7 +458,7 @@ void gui_init(dt_lib_module_t *self)
 
     g_object_set(G_OBJECT(label), "no-show-all", TRUE, NULL);
     g_object_set(G_OBJECT(combobox), "no-show-all", TRUE, NULL);
-    gtk_grid_attach(grid, label, 0, line, 1, 1);
+    gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_grid_attach_next_to(grid, combobox, label, GTK_POS_RIGHT, 1, 1);
   }
   update_layout(self);
@@ -483,7 +468,7 @@ void gui_init(dt_lib_module_t *self)
   grid = (GtkGrid *)gtk_grid_new();
   gtk_grid_set_column_homogeneous(grid, TRUE);
 
-  button = gtk_button_new_with_label(_("clear"));
+  GtkWidget *button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
   gtk_grid_attach(grid, button, 0, 0, 4, 1);
@@ -503,6 +488,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(config_button_clicked), (gpointer)self);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
+  gtk_widget_set_hexpand(GTK_WIDGET(grid), TRUE);
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -594,11 +580,14 @@ void *get_params(dt_lib_module_t *self, int *size)
   *size = 0;
   char *metadata[DT_METADATA_NUMBER];
   int32_t metadata_len[DT_METADATA_NUMBER];
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata[i] = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->metadata_cb[i]));
-    metadata_len[i] = strlen(metadata[i]) + 1;
-    *size = *size + metadata_len[i];
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    metadata[keyid] = g_strdup(gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i])))));
+    if(!metadata[keyid]) metadata[keyid] = g_strdup("");
+    metadata_len[keyid] = strlen(metadata[keyid]) + 1;
+    *size = *size + metadata_len[keyid];
   }
 
   char *params = (char *)malloc(*size);
@@ -609,6 +598,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   {
     memcpy(params + pos, metadata[i], metadata_len[i]);
     pos += metadata_len[i];
+    g_free(metadata[i]);
   }
 
   g_assert(pos == *size);

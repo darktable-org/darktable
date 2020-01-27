@@ -34,9 +34,19 @@ typedef enum dt_metadata_t
 }
 dt_metadata_t;
 
-/** return the id of the metadata name */
+/** return the metadata key by display order */
+const char *dt_metadata_get_short_name_by_display_order(const uint32_t order);
+
+/** return the metadata keyid by display order */
+const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+
+/** return the metadata name of the metadata keyid */
+const char *dt_metadata_get_name(const uint32_t keyid);
+
+/** return the keyid of the metadata key */
 const dt_metadata_t dt_metadata_get_keyid(const char* key);
 
+/** retunr the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
 
 /** Set metadata for a specific image, or all selected for id == -1. */

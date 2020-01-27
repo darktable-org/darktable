@@ -391,70 +391,21 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     // why for they don't get passed to that function.
     if(version == -1 || version > 0)
     {
-      if(FIND_XMP_TAG("Xmp.dc.rights"))
+      for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
-        // rights
-        char *rights = strdup(pos->toString().c_str());
-        char *adr = rights;
-        if(strncmp(rights, "lang=", 5) == 0)
+        const gchar *key = dt_metadata_get_key(i);
+        if(FIND_XMP_TAG(key))
         {
-          rights = strchr(rights, ' ');
-          if(rights != NULL) rights++;
+          char *value = strdup(pos->toString().c_str());
+          char *adr = value;
+          if(strncmp(value, "lang=", 5) == 0)
+          {
+            value = strchr(value, ' ');
+            if(value != NULL) value++;
+          }
+          dt_metadata_set(img->id, key, value, FALSE, FALSE);
+          free(adr);
         }
-        dt_metadata_set(img->id, "Xmp.dc.rights", rights, FALSE, FALSE);
-        free(adr);
-      }
-      if(FIND_XMP_TAG("Xmp.dc.description"))
-      {
-        // description
-        char *description = strdup(pos->toString().c_str());
-        char *adr = description;
-        if(strncmp(description, "lang=", 5) == 0)
-        {
-          description = strchr(description, ' ');
-          if(description != NULL) description++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.description", description, FALSE, FALSE);
-        free(adr);
-      }
-      if(FIND_XMP_TAG("Xmp.dc.title"))
-      {
-        // title
-        char *title = strdup(pos->toString().c_str());
-        char *adr = title;
-        if(strncmp(title, "lang=", 5) == 0)
-        {
-          title = strchr(title, ' ');
-          if(title != NULL) title++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.title", title, FALSE, FALSE);
-        free(adr);
-      }
-      if(FIND_XMP_TAG("Xmp.dc.creator"))
-      {
-        // creator
-        char *creator = strdup(pos->toString().c_str());
-        char *adr = creator;
-        if(strncmp(creator, "lang=", 5) == 0)
-        {
-          creator = strchr(creator, ' ');
-          if(creator != NULL) creator++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.creator", creator, FALSE, FALSE);
-        free(adr);
-      }
-      if(FIND_XMP_TAG("Xmp.dc.publisher"))
-      {
-        // publisher
-        char *publisher = strdup(pos->toString().c_str());
-        char *adr = publisher;
-        if(strncmp(publisher, "lang=", 5) == 0)
-        {
-          publisher = strchr(publisher, ' ');
-          if(publisher != NULL) publisher++;
-        }
-        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher, FALSE, FALSE);
-        free(adr);
       }
     }
 
@@ -1273,17 +1224,14 @@ static void dt_exif_apply_global_overwrites(dt_image_t *img)
   {
     char *str;
 
-    str = dt_conf_get_string("ui_last/import_last_creator");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.creator", str, FALSE, FALSE);
-    g_free(str);
-
-    str = dt_conf_get_string("ui_last/import_last_rights");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.rights", str, FALSE, FALSE);
-    g_free(str);
-
-    str = dt_conf_get_string("ui_last/import_last_publisher");
-    if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, "Xmp.dc.publisher", str, FALSE, FALSE);
-    g_free(str);
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", dt_metadata_get_name(i));
+      str = dt_conf_get_string(setting);
+      if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE, FALSE);
+      g_free(str);
+      g_free(setting);
+    }
 
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(str != NULL && str[0] != '\0') dt_tag_attach_string_list(str, img->id, FALSE, FALSE);
@@ -3213,25 +3161,8 @@ static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int key = sqlite3_column_int(stmt, 0);
-    switch(key)
-    {
-      case DT_METADATA_XMP_DC_CREATOR:
-        xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_PUBLISHER:
-        xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_TITLE:
-        xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_DESCRIPTION:
-        xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_RIGHTS:
-        xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
-        break;
-    }
+    int keyid = sqlite3_column_int(stmt, 0);
+    xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
   }
   sqlite3_finalize(stmt);
 
