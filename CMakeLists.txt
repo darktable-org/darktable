@@ -43,6 +43,14 @@ include(DefineOptions.cmake)
 
 include(GNUInstallDirs)
 
+# Whether to use relative paths for the build RPATH
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+else()
+    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif()
+
 if (USE_OPENMP)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
@@ -220,17 +228,6 @@ endif()
 
 include(compiler-warnings)
 include(windows-macros)
-
-# Setting the runtime path works differently on OSX than on Linux or BSD.
-# Hence use a variable that maps those in the correct way for each OS.
-if(APPLE)
-    # The string "@loader_path" should end up in the executable as-is.
-    set(RPATH_DT "@loader_path")
-else(APPLE)
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
