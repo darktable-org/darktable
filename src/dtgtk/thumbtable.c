@@ -608,7 +608,13 @@ dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
+
+  // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
+  gtk_style_context_add_class(context, "dt_thumbtable");
+  if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
+
   table->offset = 1; // TODO retrieve it from rc file ?
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
@@ -735,6 +741,15 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     else
       gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
   }
+}
+
+void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
+  if(show)
+    gtk_style_context_add_class(context, "dt_show_overlays");
+  else
+    gtk_style_context_remove_class(context, "dt_show_overlays");
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
