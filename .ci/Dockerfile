@@ -72,6 +72,7 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libcairo2-dev \
     libcolord-dev \
     libcolord-gtk-dev \
+    libcmocka-dev \
     libcups2-dev \
     libcurl4-gnutls-dev \
     libexiv2-dev \
