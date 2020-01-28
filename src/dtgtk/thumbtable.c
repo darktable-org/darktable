@@ -502,6 +502,108 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   }
 }
 
+static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  const int imgid = dt_control_get_mouse_over_id();
+  int groupid = -1;
+  // we crawl over all images to find the right one
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->mouse_over != (th->imgid == imgid)) dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
+    if(th->imgid == imgid && th->is_grouped) groupid = th->groupid;
+    if(th->group_borders)
+    {
+      dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_NONE);
+      gtk_widget_queue_draw(th->w_back);
+    }
+    l = g_list_next(l);
+  }
+
+  // we recrawl over all image for groups borders
+  if(groupid > 0)
+  {
+    l = table->list;
+    int pos = 0;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_border_t old_borders = th->group_borders;
+      if(th->groupid == groupid)
+      {
+        // left brorder
+        gboolean b = TRUE;
+        if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
+        {
+          if(pos != 0 && th->x != table->thumbs_area.x)
+          {
+            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - 1);
+            if(th1->groupid == groupid) b = FALSE;
+          }
+          if(b)
+          {
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_LEFT);
+          }
+          // right brorder
+          b = TRUE;
+          if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP && pos < g_list_length(table->list) - 1
+             && (th->x + th->width * 1.5) < table->thumbs_area.width)
+          {
+            dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos + 1);
+            if(th1->groupid == groupid) b = FALSE;
+          }
+          if(b)
+          {
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_RIGHT);
+          }
+        }
+        else
+        {
+          // in filmstrip, top and left borders are always here (no images above or below)
+          dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_TOP);
+          dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_BOTTOM);
+        }
+
+        // top brorder
+        b = TRUE;
+        if(pos - table->thumbs_per_row >= 0)
+        {
+          dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - table->thumbs_per_row);
+          if(th1->groupid == groupid) b = FALSE;
+        }
+        if(b)
+        {
+          if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_LEFT);
+          else
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_TOP);
+        }
+        // bottom brorder
+        b = TRUE;
+        if(pos + table->thumbs_per_row < g_list_length(table->list))
+        {
+          dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos + table->thumbs_per_row);
+          if(th1->groupid == groupid) b = FALSE;
+        }
+        if(b)
+        {
+          if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_RIGHT);
+          else
+            dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_BOTTOM);
+        }
+      }
+      if(th->group_borders != old_borders) gtk_widget_queue_draw(th->w_back);
+      l = g_list_next(l);
+      pos++;
+    }
+  }
+}
+
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
@@ -522,6 +624,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   // we register globals signals
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_dt_collection_changed_callback), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_dt_mouse_over_image_callback), table);
 
   gtk_widget_show(table->widget);
 
