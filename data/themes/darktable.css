@@ -1383,180 +1383,203 @@ scale contents trough slider:hover
 }
 
 /* thumbtable css
+
+Hierachy :
+
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom (GtkLayout -- main widget which contains all thumbs)
+    #thumb_main                                                      (GtkOverlay -- thumbnail widget)
+      #thumb_back                                                    (GtkEventBox -- thumbnail background)
+      #thumb_ext                                                     (GtkLabel -- thumbnail extension)
+      #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_bottom / #thumb_bottom_ext                              (GtkEventBox -- background of the bottom infos area)
+        #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext)
+      #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
+      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
+      #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
+      #thumb_localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
+      #thumb_altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
+      #thumb_group                                                   (GtkDarktableThumbnailBtn -- grouping icon)
+      #thumb_audio                                                   (GtkDarktableThumbnailBtn -- audio sidecar icon)
+
+Details :
+
   #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
-    #thumb_main
-      #thumb_back is the thumbnail background widgets. it can have 3 specials states :
-        - :selected : if the thumb is in current selection
-        - :active : if the thumb correspond to one of the images worked on (filmstrip)
-        - :hover : if the mouse hover the widget
-        you may want to use for example #thumb_back:hover ~ #thumb_star to tweak stars css in case of the mouse hover the thumb
-      #thumb_ext : extension (this is a label)
-      #thumb_image : same as #thumb_back. only the border is used
-      #thumb_bottom / #thumb_bottom_ext : background of the infos area (this is a label)
-      #thumb_reject :
-        - :active if the image is rejected
-        - :hover : the mouse is hover the icon
-      #thumb_star :
-        - color is the color of the star outline.
-        - background-color is the inner part of the star
-        - :active : the rating of the image is >=
-        - :hover : the mouse is hovering the star
-      #thumb_colorlabels
-      #thumb_localcopy
-      #thumb_altered
-      #thumb_group :
-        - :active : the image is the group leader
-      #thumb_audio
-
+    class = .dt_thumbtable     present for all thumbtable types
+    class = .dt_show_overlays  if user has choosed to always show overlay
+  #thumb_main
+    state = :selected  if the thumb is in current selection
+    state = :active    if the thumb correspond to one of the images worked on (filmstrip)
+    state = :hover     if the mouse hover the widget
+    class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders arround thumb
+  #thumb_image
+    only the borders are drawn - background is ignored
+  all icons inside the widget
+    class = .dt_thumb_btn
+    state = :hover : the mouse is hovering the icon
+  #thumb_reject :
+    state = :active   if the image is actually rejected
+    state = :hover    the mouse is hover the icon (a circle is added around the cross)
+  #thumb_star :
+    - color is the color of the star outline.
+    - background-color is the inner part of the star
+    state = :active : the rating of the image is >=
+  #thumb_group :
+    state = :active : the image is the group leader
 */
-#thumb_bottom
-{
-  border : 1px solid transparent; /* so it doesn't overlay the thumb border */
-  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
-}
-#thumb_bottom:hover
-{
-  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
-}
-.group_border_left ~ #thumb_bottom
-{
-  border-left-width: 2px;
-}
-.group_border_right ~ #thumb_bottom
-{
-  border-bottom-width: 2px;
-}
-.group_border_bottom ~ #thumb_bottom
-{
-  border-right-width: 2px;
-}
 
-#thumbnail_btn
-{
-  color: @thumbnail_hover_outline_color;
-  background-color: transparent;
-}
-
-#thumb_back ~ #thumb_star
-{
-  color: @thumbnail_outline_color;
-  background-color: transparent;
-}
-#thumb_back ~ #thumb_star:active
-{
-  color: @grey_90;
-  background-color: @thumbnail_outline_color;
-}
-#thumb_back ~ #thumb_star:hover
-{
-  color: @grey_90;
-  background-color: @grey_70;
-}
-
-#thumb_back:selected ~ #thumb_star
-{
-  color: @thumbnail_selected_outline_color;
-  background-color: transparent;
-}
-#thumb_back:selected ~ #thumb_star:active
-{
-  color: @grey_90;
-  background-color: @thumbnail_selected_outline_color;
-}
-#thumb_back:selected ~ #thumb_star:hover
-{
-  color: @grey_90;
-  background-color: @grey_70;
-}
-
-#thumb_back:hover ~ #thumb_star
-{
-  color: @thumbnail_hover_outline_color;
-  background-color: transparent;
-}
-#thumb_back:hover ~ #thumb_star:active
-{
-  color: @grey_90;
-  background-color: @thumbnail_hover_outline_color;
-}
-#thumb_back:hover ~ #thumb_star:hover
-{
-  color: @grey_90;
-  background-color: @grey_70;
-}
-
-#thumb_reject:active
-{
-  color: red;
-}
-
+/* background */
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
   border: 1px solid @lighttable_bg_color;
 }
-#thumb_back:selected
+#thumb_main:selected #thumb_back
 {
   background-color: @thumbnail_selected_bg_color;
 }
-#thumb_back:hover
+#thumb_main:hover #thumb_back
 {
   background-color: @thumbnail_hover_bg_color;
 }
 
-.group_border_left#thumb_back
+.dt_group_left #thumb_back
 {
   border-left: 2px solid rgb(255, 187, 0);
 }
-.group_border_top#thumb_back
+.dt_group_top #thumb_back
 {
   border-top: 2px solid rgb(255, 187, 0);
 }
-.group_border_right#thumb_back
+.dt_group_right #thumb_back
 {
   border-right: 2px solid rgb(255, 187, 0);
 }
-.group_border_bottom#thumb_back
+.dt_group_bottom #thumb_back
 {
   border-bottom: 2px solid rgb(255, 187, 0);
 }
 
-#thumb_image,
-#thumb_image:hover
-{
-  border: none;
-}
-#thumb_image:active
-{
-  border: 2px solid @grey_20;
-}
+/* extension */
 #thumb_ext
 {
   font-weight: bold;
   color: @thumbnail_font_color;
 }
-#thumb_ext:selected
+#thumb_main:selected #thumb_ext
 {
   color: @thumbnail_selected_font_color;
 }
-#thumb_ext:hover
+#thumb_main:hover #thumb_ext
 {
   color: @thumbnail_hover_font_color;
 }
+
+/* image */
+#thumb_image
+{
+  border: none;
+}
+#thumb_main:active #thumb_image
+{
+  border: 2px solid @grey_20;
+}
+
+/* bottom area */
+#thumb_bottom
+{
+  border : 1px solid transparent; /* to not overlay thumb borders */
+}
+#thumb_main:hover #thumb_bottom,
+.dt_show_overlays #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
+}
+#thumb_main:hover #thumb_bottom:hover
+{
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
+}
+.dt_group_left #thumb_bottom
+{
+  border-left-width: 2px;
+}
+.dt_group_bottom #thumb_bottom
+{
+  border-bottom-width: 2px;
+}
+.dt_group_right #thumb_bottom
+{
+  border-right-width: 2px;
+}
+
+/* thumbnails buttons */
+.dt_thumb_btn
+{
+  color: transparent;
+  background-color: transparent;
+}
+#thumb_main:hover .dt_thumb_btn,
+.dt_show_overlays .dt_thumb_btn
+{
+  color: @thumbnail_hover_outline_color;
+}
+
+/* reject */
+#thumb_main:hover #thumb_reject:active,
+.dt_show_overlays #thumb_reject:active
+{
+  color: red;
+}
+
+/* stars */
+#thumb_main:hover #thumb_star:active,
+.dt_show_overlays #thumb_star:active
+{
+  color: @grey_90;
+  background-color: @thumbnail_hover_outline_color;
+}
+#thumb_main:hover #thumb_star:hover
+{
+  color: @grey_90;
+  background-color: @grey_70;
+}
+
+/* local copy */
 #thumb_localcopy
+{
+  border-top : 1px solid @lighttable_bg_color;
+  border-right : 1px solid @lighttable_bg_color;
+}
+.dt_group_right #thumb_localcopy
+{
+  border-right: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+.dt_group_top #thumb_localcopy
+{
+  border-top: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+#thumb_main:hover #thumb_localcopy,
+.dt_show_overlays #thumb_localcopy
 {
   color: white;
   background-color: white;
 }
-#thumb_altered,
-#thumb_group,
-#thumb_audio
+
+/* other icons */
+#thumb_main:hover #thumb_altered,
+#thumb_main:hover #thumb_group,
+#thumb_main:hover #thumb_audio,
+.dt_show_overlays #thumb_altered,
+.dt_show_overlays #thumb_group,
+.dt_show_overlays #thumb_audio
 {
   color: @thumbnail_outline_color;
 }
-#thumb_group:hover,
-#thumb_group:active,
-#thumb_audio:hover
+#thumb_main:hover #thumb_group:hover,
+#thumb_main:hover #thumb_group:active,
+#thumb_main:hover #thumb_audio:hover,
+.dt_show_overlays #thumb_group:hover,
+.dt_show_overlays #thumb_group:active,
+.dt_show_overlays #thumb_audio:hover
 {
   color: @grey_70;
 }

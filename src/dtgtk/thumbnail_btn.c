@@ -49,6 +49,14 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_style_context_get(context, state, GTK_STYLE_PROPERTY_COLOR, &fg_color, GTK_STYLE_PROPERTY_BACKGROUND_COLOR,
                         &bg_color, NULL);
+  if(fg_color->alpha == 0 && bg_color->alpha == 0)
+  {
+    gdk_rgba_free(fg_color);
+    gdk_rgba_free(bg_color);
+    return TRUE;
+  }
+
+  cairo_save(cr);
   gdk_cairo_set_source_rgba(cr, fg_color);
 
   /* draw icon */
@@ -78,6 +86,11 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
                                         0.75 * allocation.width, 0.75 * allocation.height, flags, bg_color);
     }
   }
+  // and eventually the image border
+  cairo_restore(cr);
+  gtk_render_frame(context, cr, 0, 0, gtk_widget_get_allocated_width(widget),
+                   gtk_widget_get_allocated_height(widget));
+
   gdk_rgba_free(fg_color);
   gdk_rgba_free(bg_color);
   return TRUE;
@@ -107,6 +120,8 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
 {
   GtkDarktableThumbnailBtn *button;
   button = g_object_new(dtgtk_thumbnail_btn_get_type(), NULL);
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(button));
+  gtk_style_context_add_class(context, "dt_thumb_btn");
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;

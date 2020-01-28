@@ -288,31 +288,21 @@ static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, g
 
 static void _thumb_update_icons(dt_thumbnail_t *thumb)
 {
-  gboolean show = (thumb->mouse_over || darktable.gui->show_overlays);
-  gtk_widget_set_visible(thumb->w_bottom_eb, show);
-  gtk_widget_set_visible(thumb->w_reject, show);
-  for(int i = 0; i < 5; i++) gtk_widget_set_visible(thumb->w_stars[i], show);
-  gtk_widget_set_visible(thumb->w_local_copy, show && thumb->has_localcopy);
-  gtk_widget_set_visible(thumb->w_altered, show && thumb->is_altered);
-  gtk_widget_set_visible(thumb->w_group, show && thumb->is_grouped);
-  gtk_widget_set_visible(thumb->w_audio, show && thumb->has_audio);
-  gtk_widget_set_visible(thumb->w_color, show && thumb->colorlabels != 0);
+  gtk_widget_set_visible(thumb->w_local_copy, thumb->has_localcopy);
+  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
+  gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
+  gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
 
-  _set_flag(thumb->w_back, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_ext, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_image, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_back, GTK_STATE_FLAG_ACTIVE, thumb->active);
-  _set_flag(thumb->w_ext, GTK_STATE_FLAG_ACTIVE, thumb->active);
-  _set_flag(thumb->w_image, GTK_STATE_FLAG_ACTIVE, thumb->active);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
   for(int i = 0; i < 5; i++)
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
-  _set_flag(thumb->w_back, GTK_STATE_FLAG_SELECTED, thumb->selected);
-  _set_flag(thumb->w_ext, GTK_STATE_FLAG_SELECTED, thumb->selected);
-  _set_flag(thumb->w_image, GTK_STATE_FLAG_SELECTED, thumb->selected);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
@@ -461,11 +451,12 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
+    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
     g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+    gtk_widget_show(thumb->w_bottom_eb);
     thumb->w_bottom = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
     gtk_widget_set_size_request(thumb->w_bottom, thumb->width,
                                 0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
                                                            // dependent of fontsize ?
@@ -482,6 +473,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
     gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
+    gtk_widget_show(thumb->w_reject);
     g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
@@ -500,6 +492,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
       gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * thumb->width - r1 * 0.75);
       gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
+      gtk_widget_show(thumb->w_stars[i]);
       gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars[i]);
     }
 
@@ -520,8 +513,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_local_copy, 1);
-    gtk_widget_set_margin_end(thumb->w_local_copy, 1); // TODO : extract border size from css
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_local_copy);
 
     // the altered icon
@@ -634,24 +625,24 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
 
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border)
 {
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_back);
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
   if(border == DT_THUMBNAIL_BORDER_NONE)
   {
-    gtk_style_context_remove_class(context, "group_border_left");
-    gtk_style_context_remove_class(context, "group_border_top");
-    gtk_style_context_remove_class(context, "group_border_right");
-    gtk_style_context_remove_class(context, "group_border_bottom");
+    gtk_style_context_remove_class(context, "dt_group_left");
+    gtk_style_context_remove_class(context, "dt_group_top");
+    gtk_style_context_remove_class(context, "dt_group_right");
+    gtk_style_context_remove_class(context, "dt_group_bottom");
     thumb->group_borders = DT_THUMBNAIL_BORDER_NONE;
     return;
   }
   else if(border & DT_THUMBNAIL_BORDER_LEFT)
-    gtk_style_context_add_class(context, "group_border_left");
+    gtk_style_context_add_class(context, "dt_group_left");
   else if(border & DT_THUMBNAIL_BORDER_TOP)
-    gtk_style_context_add_class(context, "group_border_top");
+    gtk_style_context_add_class(context, "dt_group_top");
   else if(border & DT_THUMBNAIL_BORDER_RIGHT)
-    gtk_style_context_add_class(context, "group_border_right");
+    gtk_style_context_add_class(context, "dt_group_right");
   else if(border & DT_THUMBNAIL_BORDER_BOTTOM)
-    gtk_style_context_add_class(context, "group_border_bottom");
+    gtk_style_context_add_class(context, "dt_group_bottom");
 
   thumb->group_borders |= border;
 }
