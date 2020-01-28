@@ -3003,7 +3003,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         for(size_t y = 0; y < oheight; y++)
         {
           size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
-          size_t oindex = (size_t)(y + yoffs) * owidth * ch;
+          size_t oindex = (size_t)y * owidth * ch;
           memcpy(guide_tmp + oindex, (float *)ivoid + iindex, sizeof(*guide_tmp) * owidth * ch);
         }
         guide = guide_tmp;
