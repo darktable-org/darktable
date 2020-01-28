@@ -768,6 +768,11 @@ notebook tab label /* disabled tabs */
   font-weight: normal;
 }
 
+notebook header /* add space between notebook tabs and options below */ 
+{
+  margin-bottom: 5px;
+}
+
 /* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
 
 #preferences_notebook
@@ -876,8 +881,8 @@ entry
 #left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry items in clone manager without touching other parts of the UI */
 {
   padding: 0px;
-  margin: 40px 3px;
-  min-width: 150px;
+  margin: 45px 3px;
+  min-width: 100px;
 }
 
 #right #lib-plugin-ui entry /* This will adjust entry height on right panel */
@@ -894,7 +899,7 @@ checkbutton check
 }
 
 /* arrow size of dropdown button arrow on filter collection */
-#left #lib-plugin-ui #dt-button 
+#left #lib-plugin-ui #dt-button
 {
   padding: 0px;
 }
@@ -1225,7 +1230,7 @@ button:disabled,
 }
 
 /* Treeviews and filechoosers states */
-treeview *:hover,
+treeview:not(#lutname) *:hover,
 filechooser *:hover
 {
     background-color: @field_hover_bg;
