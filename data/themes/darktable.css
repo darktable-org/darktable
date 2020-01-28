@@ -1411,12 +1411,26 @@ scale contents trough slider:hover
 */
 #thumb_bottom
 {
+  border : 1px solid transparent; /* so it doesn't overlay the thumb border */
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
 }
 #thumb_bottom:hover
 {
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
 }
+.group_border_left ~ #thumb_bottom
+{
+  border-left-width: 2px;
+}
+.group_border_right ~ #thumb_bottom
+{
+  border-bottom-width: 2px;
+}
+.group_border_bottom ~ #thumb_bottom
+{
+  border-right-width: 2px;
+}
+
 #thumbnail_btn
 {
   color: @thumbnail_hover_outline_color;
@@ -1489,6 +1503,24 @@ scale contents trough slider:hover
 {
   background-color: @thumbnail_hover_bg_color;
 }
+
+.group_border_left#thumb_back
+{
+  border-left: 2px solid rgb(255, 187, 0);
+}
+.group_border_top#thumb_back
+{
+  border-top: 2px solid rgb(255, 187, 0);
+}
+.group_border_right#thumb_back
+{
+  border-right: 2px solid rgb(255, 187, 0);
+}
+.group_border_bottom#thumb_back
+{
+  border-bottom: 2px solid rgb(255, 187, 0);
+}
+
 #thumb_image,
 #thumb_image:hover
 {
