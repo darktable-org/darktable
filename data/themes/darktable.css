@@ -768,6 +768,11 @@ notebook tab label /* disabled tabs */
   font-weight: normal;
 }
 
+notebook header /* add space between notebook tabs and options below */ 
+{
+  margin-bottom: 5px;
+}
+
 /* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
 
 #preferences_notebook
