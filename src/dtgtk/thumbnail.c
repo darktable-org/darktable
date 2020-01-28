@@ -315,23 +315,6 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_image, GTK_STATE_FLAG_SELECTED, thumb->selected);
 }
 
-static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
-{
-  if(!user_data) return;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb || !thumb->w_back || !GTK_IS_WIDGET(thumb->w_back)) return;
-
-  int over_id = dt_control_get_mouse_over_id();
-  if(thumb->mouse_over || over_id == thumb->imgid)
-  {
-    thumb->mouse_over = (over_id == thumb->imgid);
-    _thumb_update_icons(thumb);
-
-    if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
-    gtk_widget_queue_draw(thumb->w_main);
-  }
-}
-
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
@@ -432,8 +415,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                              G_CALLBACK(_dt_mouse_over_image_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                               G_CALLBACK(_dt_active_images_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
@@ -485,9 +466,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     thumb->w_bottom = gtk_label_new("");
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
-    gtk_widget_set_size_request(thumb->w_bottom, thumb->width - 2 * DT_PIXEL_APPLY_DPI(1.0),
+    gtk_widget_set_size_request(thumb->w_bottom, thumb->width,
                                 0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
                                                            // dependent of fontsize ?
+    gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
     gtk_widget_show(thumb->w_bottom);
     gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom_eb);
@@ -614,7 +596,6 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
 
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mouse_over_image_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
@@ -649,6 +630,40 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
   // reset surface
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
+}
+
+void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_back);
+  if(border == DT_THUMBNAIL_BORDER_NONE)
+  {
+    gtk_style_context_remove_class(context, "group_border_left");
+    gtk_style_context_remove_class(context, "group_border_top");
+    gtk_style_context_remove_class(context, "group_border_right");
+    gtk_style_context_remove_class(context, "group_border_bottom");
+    thumb->group_borders = DT_THUMBNAIL_BORDER_NONE;
+    return;
+  }
+  else if(border & DT_THUMBNAIL_BORDER_LEFT)
+    gtk_style_context_add_class(context, "group_border_left");
+  else if(border & DT_THUMBNAIL_BORDER_TOP)
+    gtk_style_context_add_class(context, "group_border_top");
+  else if(border & DT_THUMBNAIL_BORDER_RIGHT)
+    gtk_style_context_add_class(context, "group_border_right");
+  else if(border & DT_THUMBNAIL_BORDER_BOTTOM)
+    gtk_style_context_add_class(context, "group_border_bottom");
+
+  thumb->group_borders |= border;
+}
+
+void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
+{
+  if(thumb->mouse_over == over) return;
+  thumb->mouse_over = over;
+  _thumb_update_icons(thumb);
+
+  if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  gtk_widget_queue_draw(thumb->w_main);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

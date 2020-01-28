@@ -19,6 +19,15 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+typedef enum dt_thumbnail_border_t
+{
+  DT_THUMBNAIL_BORDER_NONE = 0,
+  DT_THUMBNAIL_BORDER_LEFT = 1 << 0,
+  DT_THUMBNAIL_BORDER_TOP = 1 << 1,
+  DT_THUMBNAIL_BORDER_RIGHT = 1 << 2,
+  DT_THUMBNAIL_BORDER_BOTTOM = 1 << 3,
+} dt_thumbnail_border_t;
+
 typedef struct
 {
   int imgid, rowid;
@@ -59,13 +68,16 @@ typedef struct
   GtkWidget *w_audio;
 
   gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
+
+  dt_thumbnail_border_t group_borders;
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height);
-
+void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
+void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
