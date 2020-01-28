@@ -49,10 +49,9 @@ typedef struct dt_thumbtable_t
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
-
 void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force);
-
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode);
+void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
