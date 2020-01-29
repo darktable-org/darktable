@@ -42,11 +42,11 @@ typedef struct dt_thumbtable_t
   // for zoomable, this is the top-left image (which can be out of screen)
   int offset;
 
-  int thumbs_per_row;          // number of image in a row
-  int rows;                    // number of rows (the last one is not fully visible)
+  int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
+  int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
-  int view_width, view_height; // last view size
-  GdkRectangle thumbs_area;    // coordinate of the currently loaded thumbs area
+  int view_width, view_height; // last main widget size
+  GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
   gboolean dragging;
   int last_x, last_y;         // last position of cursor during move
