@@ -445,6 +445,28 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   }
   return TRUE;
 }
+static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  if(table->dragging)
+  {
+    int dx = ceil(event->x_root) - table->last_x;
+    int dy = ceil(event->y_root) - table->last_y;
+    table->last_x = ceil(event->x_root);
+    table->last_y = ceil(event->y_root);
+    _move(table, dx, dy);
+    table->drag_dx += dx;
+    table->drag_dy += dy;
+    if(table->drag_thumb)
+    {
+      // we only considers that this is a real move if the total distance is not too low
+      table->drag_thumb->moved = ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
+    }
+  }
+  return TRUE;
+}
 static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
@@ -462,26 +484,9 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   }
   return TRUE;
 }
-static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
-{
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
-  if(table->dragging)
-  {
-    int dx = ceil(event->x_root) - table->last_x;
-    int dy = ceil(event->y_root) - table->last_y;
-    table->last_x = ceil(event->x_root);
-    table->last_y = ceil(event->y_root);
-    _move(table, dx, dy);
-    table->drag_dx += dx;
-    table->drag_dy += dy;
-    if(table->drag_thumb)
-      table->drag_thumb->moved = ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
-  }
-  return TRUE;
-}
 
+// this is called each time collected images change
 static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
                                             gpointer user_data)
 {
@@ -502,6 +507,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   }
 }
 
+// this is called each time mouse_over id change
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
@@ -514,17 +520,20 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    // if needed, the change mouseover value of the thumb
     if(th->mouse_over != (th->imgid == imgid)) dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
+    // now the grouping stuff
     if(th->imgid == imgid && th->is_grouped) groupid = th->groupid;
     if(th->group_borders)
     {
+      // to be sure we don't have any borders remaining
       dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_NONE);
-      gtk_widget_queue_draw(th->w_back);
     }
     l = g_list_next(l);
   }
 
   // we recrawl over all image for groups borders
+  // this is somewhat complex as we want to draw borders around the group and not around each image of the group
   if(groupid > 0)
   {
     l = table->list;
@@ -535,10 +544,10 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
       dt_thumbnail_border_t old_borders = th->group_borders;
       if(th->groupid == groupid)
       {
-        // left brorder
         gboolean b = TRUE;
         if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
         {
+          // left brorder
           if(pos != 0 && th->x != table->thumbs_area.x)
           {
             dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - 1);
@@ -616,6 +625,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
   table->offset = 1; // TODO retrieve it from rc file ?
+
+  // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -646,6 +657,8 @@ static void _thumb_remove(gpointer user_data)
   dt_thumbnail_destroy(thumb);
 }
 
+// reload all thumbs from scratch.
+// force define if this should occurs in any case or just if thumbtable sizing properties have changed
 void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 {
   if(!table) return;
@@ -705,6 +718,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   }
 }
 
+// change thumbtable parent widget. Typically from center screen to filmstrip lib
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode)
 {
   GtkWidget *parent = gtk_widget_get_parent(table->widget);
@@ -743,6 +757,7 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
   }
 }
 
+// define if overlays should always be shown or just on mouse-over
 void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
 {
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);

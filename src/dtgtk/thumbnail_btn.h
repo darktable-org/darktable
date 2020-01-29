@@ -35,6 +35,7 @@ typedef struct _GtkDarktableThumbnailBtn
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
   void *icon_data;
+  gboolean hidden;
 } GtkDarktableThumbnailBtn;
 
 typedef struct _GtkDarktableThumbnailBtnClass
@@ -46,6 +47,8 @@ GType dtgtk_thumbnail_btn_get_type(void);
 
 /** instantiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
+
+gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget);
 
 G_END_DECLS
 
