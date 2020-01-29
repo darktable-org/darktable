@@ -18,21 +18,22 @@
 */
 
 #include "common/history.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
-#include "common/utility.h"
-#include "common/collection.h"
-#include "common/history_snapshot.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/control.h"
-#include "develop/develop.h"
 #include "develop/blend.h"
+#include "develop/develop.h"
 #include "develop/masks.h"
+#include "gui/hist_dialog.h"
 
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
@@ -1442,6 +1443,111 @@ const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
   sqlite3_finalize(stmt);
   g_free(query);
   return status;
+}
+
+gboolean dt_history_copy(int imgid)
+{
+  if(imgid <= 0) return FALSE;
+  darktable.view_manager->copy_paste.copied_imageid = imgid;
+  darktable.view_manager->copy_paste.partial = FALSE;
+  if(darktable.view_manager->copy_paste.selops)
+  {
+    g_list_free(darktable.view_manager->copy_paste.selops);
+    darktable.view_manager->copy_paste.selops = NULL;
+  }
+
+  // check if images is currently loaded in darkroom
+  if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_write_history(darktable.develop);
+  return TRUE;
+}
+gboolean dt_history_copy_parts(int imgid)
+{
+  if(dt_history_copy(imgid))
+  {
+    if(dt_gui_hist_dialog_new(&(darktable.view_manager->copy_paste), imgid, TRUE) == GTK_RESPONSE_CANCEL)
+      return FALSE;
+    return TRUE;
+  }
+  else
+    return FALSE;
+}
+gboolean dt_history_paste_on_list(GList *list, gboolean undo)
+{
+  if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
+  if(g_list_length(list) < 1) return FALSE;
+
+  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
+  gboolean merge = FALSE;
+  if(mode == 0) merge = TRUE;
+
+  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  GList *l = list;
+  while(l)
+  {
+    const int dest = GPOINTER_TO_INT(l->data);
+    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid, dest, merge,
+                                       darktable.view_manager->copy_paste.selops, darktable.view_manager->copy_paste.copy_iop_order);
+    l = g_list_next(l);
+  }
+  if(undo) dt_undo_end_group(darktable.undo);
+  return TRUE;
+}
+
+gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo)
+{
+  if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
+  if(g_list_length(list) < 1) return FALSE;
+
+  const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
+  gboolean merge = FALSE;
+  if(mode == 0) merge = TRUE;
+
+  // we launch the dialog
+  const int res = dt_gui_hist_dialog_new(&(darktable.view_manager->copy_paste),
+                                         darktable.view_manager->copy_paste.copied_imageid, FALSE);
+  if(res == GTK_RESPONSE_CANCEL) return FALSE;
+
+  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  GList *l = list;
+  while(l)
+  {
+    const int dest = GPOINTER_TO_INT(l->data);
+    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid, dest, merge,
+                                       darktable.view_manager->copy_paste.selops, darktable.view_manager->copy_paste.copy_iop_order);
+    l = g_list_next(l);
+  }
+  if(undo) dt_undo_end_group(darktable.undo);
+  return TRUE;
+}
+
+gboolean dt_history_delete_on_list(GList *list, gboolean undo)
+{
+  if(g_list_length(list) < 1) return FALSE;
+
+  if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
+  GList *l = list;
+  while(l)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
+
+    hist->imgid = imgid;
+    dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
+    dt_history_delete_on_image_ext(imgid, FALSE);
+
+    dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist, dt_history_snapshot_undo_pop,
+                   dt_history_snapshot_undo_lt_history_data_free);
+
+    /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
+       recalculated when the mimpap will be recreated */
+    if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO) dt_image_set_aspect_ratio(imgid);
+  }
+
+  if(undo) dt_undo_end_group(darktable.undo);
+  return TRUE;
 }
 
 #undef DT_IOP_ORDER_INFO

@@ -26,6 +26,7 @@
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
+#include "common/history.h"
 #include <osm-gps-map.h>
 #endif
 #include <cairo.h>
@@ -258,6 +259,9 @@ typedef struct dt_view_manager_t
 
   // images currently active in the main view (there can be more than 1 in culling)
   GSList *active_images;
+
+  // copy/paste history structure
+  dt_history_copy_item_t copy_paste;
 
   struct
   {

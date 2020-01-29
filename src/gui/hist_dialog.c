@@ -38,7 +38,7 @@ typedef enum _style_items_columns_t
   DT_HIST_ITEMS_NUM_COLS
 } _styles_columns_t;
 
-static gboolean _gui_hist_is_copy_module_order_set(dt_gui_hist_dialog_t *d)
+static gboolean _gui_hist_is_copy_module_order_set(dt_history_copy_item_t *d)
 {
   /* first item is the copy-module */
   GtkTreeIter iter;
@@ -51,7 +51,7 @@ static gboolean _gui_hist_is_copy_module_order_set(dt_gui_hist_dialog_t *d)
   return active && (num == -1);
 }
 
-static GList *_gui_hist_get_active_items(dt_gui_hist_dialog_t *d)
+static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
 {
   GList *result = NULL;
 
@@ -72,7 +72,7 @@ static GList *_gui_hist_get_active_items(dt_gui_hist_dialog_t *d)
   return result;
 }
 
-static void _gui_hist_set_items(dt_gui_hist_dialog_t *d, gboolean active)
+static void _gui_hist_set_items(dt_history_copy_item_t *d, gboolean active)
 {
   /* run through all items and set active status */
   GtkTreeIter iter;
@@ -86,7 +86,7 @@ static void _gui_hist_set_items(dt_gui_hist_dialog_t *d, gboolean active)
   }
 }
 
-static void _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_gui_hist_dialog_t *g)
+static void _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_history_copy_item_t *g)
 {
   switch(response_id)
   {
@@ -110,7 +110,7 @@ static void _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_gui_
 
 static void _gui_hist_item_toggled(GtkCellRendererToggle *cell, gchar *path_str, gpointer data)
 {
-  dt_gui_hist_dialog_t *d = (dt_gui_hist_dialog_t *)data;
+  dt_history_copy_item_t *d = (dt_history_copy_item_t *)data;
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
   GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
@@ -176,7 +176,7 @@ tree_on_row_activated (GtkTreeView        *treeview,
   }
 }
 
-int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
+int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy)
 {
   int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -283,7 +283,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   return res;
 }
 
-void dt_gui_hist_dialog_init(dt_gui_hist_dialog_t *d)
+void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
 {
   d->selops = NULL;
   d->copied_imageid = -1;

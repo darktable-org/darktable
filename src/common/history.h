@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <glib.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 
@@ -46,6 +46,15 @@ typedef struct dt_history_hash_values_t
   guint8 *current;
   int current_len;
 } dt_history_hash_values_t;
+
+typedef struct dt_history_copy_item_t
+{
+  GList *selops;
+  GtkTreeView *items;
+  int copied_imageid;
+  gboolean partial;
+  gboolean copy_iop_order;
+} dt_history_copy_item_t;
 
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
@@ -81,6 +90,13 @@ void dt_history_compress_on_image(int32_t imgid);
 void dt_history_set_compress_problem(int32_t imgid, gboolean set);
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
+
+// direct functions to be called from thumbtable
+gboolean dt_history_copy(int imgid);
+gboolean dt_history_copy_parts(int imgid);
+gboolean dt_history_paste_on_list(GList *list, gboolean undo);
+gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo);
+gboolean dt_history_delete_on_list(GList *list, gboolean undo);
 
 typedef struct dt_history_item_t
 {

@@ -23,6 +23,8 @@ void dt_colorlabels_remove_labels(const int imgid);
 void dt_colorlabels_set_label(const int imgid, const int color);
 /** assign a color label to image imgid or all selected for imgid == -1*/
 void dt_colorlabels_set_labels(const int imgid, const int color, const gboolean clear_on, const gboolean undo_on, const gboolean group_on);
+/** assign a color label to the list of image*/
+void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gboolean undo_on);
 /** remove a color label from imgid */
 void dt_colorlabels_remove_label(const int imgid, const int color);
 /** get the name of the color for a given number (could be replaced by an array) */

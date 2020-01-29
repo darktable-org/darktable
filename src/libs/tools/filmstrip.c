@@ -80,7 +80,6 @@ typedef struct dt_lib_filmstrip_t
   int32_t panel_width;
   int32_t panel_height;
 
-  dt_gui_hist_dialog_t dg;
 } dt_lib_filmstrip_t;
 
 /* proxy function to center filmstrip on imgid */
@@ -107,7 +106,7 @@ static gboolean _lib_filmstrip_button_release_callback(GtkWidget *widget, GdkEve
 static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data);*/
 
 /* key accelerators callback */
-static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
+/*static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
                                                                GObject *aceeleratable, guint keyval,
                                                                GdkModifierType modifier, gpointer data);
 static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGroup *accel_group,
@@ -135,7 +134,7 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
 static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_group, GObject *aceeleratable,
                                                          guint keyval, GdkModifierType modifier,
                                                          gpointer data);
-
+*/
 /* drag'n'drop callbacks */
 /*static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
                                             GtkSelectionData *selection_data, guint target_type, guint time,
@@ -175,124 +174,137 @@ static inline gboolean _is_on_lighttable()
   return cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE;
 }
 
+static gboolean _key_accel_callback(GtkAccelGroup *accel_group, GObject *aceeleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+  if(!darktable.gui || !darktable.gui->ui) return FALSE;
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
+  if(!table) return FALSE;
+  dt_thumbtable_accels_t accel = (dt_thumbtable_accels_t)GPOINTER_TO_INT(data);
+  return dt_thumbtable_accel_callback(table, accel);
+}
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_view_type_flags_t views = DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
   /* setup rating key accelerators */
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 0"), GDK_KEY_0, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 1"), GDK_KEY_1, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 2"), GDK_KEY_2, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 3"), GDK_KEY_3, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 4"), GDK_KEY_4, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate 5"), GDK_KEY_5, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "rate reject"), GDK_KEY_r, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 2"), GDK_KEY_2, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
   /* setup history key accelerators */
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "copy history"), GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "copy history parts"), GDK_KEY_c,
-                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "paste history"), GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "paste history parts"), GDK_KEY_v,
-                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "discard history"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy history"), GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy history parts"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste history"), GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste history parts"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "discard history"), 0, 0);
 
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "duplicate image"), GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "duplicate image"), GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "duplicate image virgin"), GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* setup color label accelerators */
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "color purple"), GDK_KEY_F5, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "clear color labels"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
+  dt_accel_register_lib(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
+  dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
+  dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
+  dt_accel_register_lib(self, NC_("accel", "clear color labels"), 0, 0);
 
   /* setup selection accelerators */
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "select none"), GDK_KEY_a,
-                                  GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "select film roll"), 0, 0);
-  dt_accel_register_lib_for_views(self, views, NC_("accel", "select untouched"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  // this accels are handle directly by lighttable view
-  if(_is_on_lighttable()) return;
-
   // Rating accels
-  dt_accel_connect_lib(self, "rate 0", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
-  dt_accel_connect_lib(self, "rate 1", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
-  dt_accel_connect_lib(self, "rate 2", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
-  dt_accel_connect_lib(self, "rate 3", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
-  dt_accel_connect_lib(self, "rate 4", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
-  dt_accel_connect_lib(self, "rate 5", g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                                      GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
-  dt_accel_connect_lib(self, "rate reject",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-                                      GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
+  dt_accel_connect_lib(
+      self, "rate 0",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_0), NULL));
+  dt_accel_connect_lib(
+      self, "rate 1",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_1), NULL));
+  dt_accel_connect_lib(
+      self, "rate 2",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_2), NULL));
+  dt_accel_connect_lib(
+      self, "rate 3",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_3), NULL));
+  dt_accel_connect_lib(
+      self, "rate 4",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_4), NULL));
+  dt_accel_connect_lib(
+      self, "rate 5",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_RATE_5), NULL));
+  dt_accel_connect_lib(
+      self, "rate reject",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_REJECT), NULL));
 
   // History key accels
   dt_accel_connect_lib(
       self, "copy history",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_copy_history_key_accel_callback), (gpointer)self->data, NULL));
-  dt_accel_connect_lib(self, "copy history parts",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_copy_history_parts_key_accel_callback),
-                                      (gpointer)self->data, NULL));
-  dt_accel_connect_lib(self, "paste history",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_paste_history_key_accel_callback),
-                                      (gpointer)self->data, NULL));
-  dt_accel_connect_lib(self, "paste history parts",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_paste_history_parts_key_accel_callback),
-                                      (gpointer)self->data, NULL));
-  dt_accel_connect_lib(self, "discard history",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_discard_history_key_accel_callback),
-                                      (gpointer)self->data, NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COPY), NULL));
+  dt_accel_connect_lib(
+      self, "copy history parts",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COPY_PARTS), NULL));
+  dt_accel_connect_lib(
+      self, "paste history",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_PASTE), NULL));
+  dt_accel_connect_lib(
+      self, "paste history parts",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_PASTE_PARTS), NULL));
+  dt_accel_connect_lib(
+      self, "discard history",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_HIST_DISCARD), NULL));
 
-  dt_accel_connect_lib(self, "duplicate image",
-                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_duplicate_image_key_accel_callback),
-                                      (gpointer)self->data, NULL));
+  dt_accel_connect_lib(
+      self, "duplicate image",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_DUPLICATE), NULL));
+  dt_accel_connect_lib(self, "duplicate image virgin",
+                       g_cclosure_new(G_CALLBACK(_key_accel_callback),
+                                      GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_DUPLICATE_VIRGIN), NULL));
 
   // Color label accels
   dt_accel_connect_lib(
       self, "color red",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(0), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_RED), NULL));
   dt_accel_connect_lib(
       self, "color yellow",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(1), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_YELLOW), NULL));
   dt_accel_connect_lib(
       self, "color green",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(2), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_GREEN), NULL));
   dt_accel_connect_lib(
       self, "color blue",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(3), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_BLUE), NULL));
   dt_accel_connect_lib(
       self, "color purple",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_PURPLE), NULL));
   dt_accel_connect_lib(
       self, "clear color labels",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback), GINT_TO_POINTER(5), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_COLOR_CLEAR), NULL));
 
   // Selection accels
-  dt_accel_connect_lib(self, "select all", g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-                                                          GINT_TO_POINTER(0), NULL));
+  dt_accel_connect_lib(
+      self, "select all",
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_SELECT_ALL), NULL));
   dt_accel_connect_lib(
       self, "select none",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback), GINT_TO_POINTER(1), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_SELECT_NONE), NULL));
   dt_accel_connect_lib(
       self, "invert selection",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback), GINT_TO_POINTER(2), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_SELECT_INVERT), NULL));
   dt_accel_connect_lib(
       self, "select film roll",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback), GINT_TO_POINTER(3), NULL));
-  dt_accel_connect_lib(
-      self, "select untouched",
-      g_cclosure_new(G_CALLBACK(_lib_filmstrip_select_key_accel_callback), GINT_TO_POINTER(4), NULL));
+      g_cclosure_new(G_CALLBACK(_key_accel_callback), GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_SELECT_FILM), NULL));
+  dt_accel_connect_lib(self, "select untouched",
+                       g_cclosure_new(G_CALLBACK(_key_accel_callback),
+                                      GINT_TO_POINTER(DT_THUMBTABLE_ACCEL_SELECT_UNTOUCHED), NULL));
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -316,7 +328,6 @@ void gui_init(dt_lib_module_t *self)
   d->panel_width = -1;
   d->panel_height = -1;
   d->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
-  dt_gui_hist_dialog_init(&d->dg);
 
   /* creating drawing area */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -460,7 +471,7 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   return TRUE;
 }*/
 
-static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
+/*static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
 {
   sqlite3_stmt *stmt;
   gboolean image_in_collection = TRUE;
@@ -482,7 +493,7 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   sqlite3_finalize(stmt);
   g_free(count_query);
   return image_in_collection;
-}
+}*/
 
 /*static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
@@ -854,7 +865,7 @@ static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self)
   return strip->filmstrip;
 }
 
-static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
+/*static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *accel_group,
                                                                GObject *aceeleratable, guint keyval,
                                                                GdkModifierType modifier, gpointer data)
 {
@@ -864,7 +875,7 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
   strip->history_copy_imgid = mouse_over_id;
   strip->dg.selops = NULL;
 
-  /* check if images is currently loaded in darkroom */
+  // check if images is currently loaded in darkroom
   if(dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
   return TRUE;
 }
@@ -895,10 +906,8 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
 
   if(img < 0)
     dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
-                                           strip->dg.selops, strip->dg.copy_iop_order);
-  else
-    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
-                                       strip->dg.selops, strip->dg.copy_iop_order);
+strip->dg.selops); else dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE :
+FALSE, strip->dg.selops);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
@@ -920,10 +929,8 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
 
   if(img < 0)
     dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
-                                           strip->dg.selops, strip->dg.copy_iop_order);
-  else
-    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
-                                       strip->dg.selops, strip->dg.copy_iop_order);
+strip->dg.selops); else dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE :
+FALSE, strip->dg.selops);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
   dt_control_queue_redraw_center();
@@ -987,7 +994,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
     {
       const int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-      /* get image from cache */
+      // get image from cache
 
       const int32_t activated_image = darktable.view_manager->proxy.filmstrip.activated_image(
         darktable.view_manager->proxy.filmstrip.module);
@@ -1007,7 +1014,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
         if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
           dt_view_filmstrip_scroll_relative(0, offset);
 
-      /* redraw all */
+      // redraw all
       dt_control_queue_redraw();
       break;
     }
@@ -1027,7 +1034,7 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   strip->force_expose_all = TRUE;
 
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
-  /* redraw filmstrip */
+  // redraw filmstrip
   gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
@@ -1061,7 +1068,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
 
   gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
-}
+}*/
 
 /*static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
                                             GtkSelectionData *selection_data, guint target_type, guint time,
