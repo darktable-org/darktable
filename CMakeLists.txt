@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.0)
 
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
-cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
+cmake_policy(SET CMP0048 NEW)
 
 #
 # Avoid source tree pollution
@@ -17,7 +17,12 @@ endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-project(darktable CXX C)
+if(DEFINED PROJECT_VERSION)
+  project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
+else()
+  # Actual version string will be generated from git later
+  project(darktable VERSION 0 LANGUAGES CXX C)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -150,11 +155,11 @@ function(generate_version_gen_c)
   )
 endfunction(generate_version_gen_c)
 
-if(DEFINED PROJECT_VERSION)
+if(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   #project version is defined by -D on the cmake command line
   # only use that value, do not update it at make time
   generate_version_gen_c(${PROJECT_VERSION} "version override")
-else(DEFINED PROJECT_VERSION)
+else(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
@@ -190,7 +195,7 @@ else(DEFINED PROJECT_VERSION)
       )
     endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
   endif(NOT SOURCE_PACKAGE)
-endif(DEFINED PROJECT_VERSION)
+endif(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
 
 # needed to make sure that version string is actually updated.
 add_custom_command(

@@ -329,9 +329,9 @@ void expose(
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     if(closeup)
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
 
     cairo_fill(cr);
 
@@ -390,7 +390,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -495,6 +495,7 @@ void expose(
         cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
                         (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
         cairo_stroke(cri);
+        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
@@ -2680,6 +2681,16 @@ void leave(dt_view_t *self)
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  // reset color assesment mode
+  if(dev->iso_12646.enabled)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
+    dev->iso_12646.enabled = FALSE;
+    dev->width = dev->orig_width;
+    dev->height = dev->orig_height;
+    dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
+
   // commit image ops to db
   dt_dev_write_history(dev);
 
@@ -3321,6 +3332,9 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "image forward"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
 
+  // toggle ISO 12646 color assessment condition
+  dt_accel_register_view(self, NC_("accel", "color assessment"), GDK_KEY_b, GDK_CONTROL_MASK);
+
   // toggle raw overexposure indication
   dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_o, GDK_SHIFT_MASK);
 
@@ -3402,6 +3416,10 @@ void connect_key_accels(dt_view_t *self)
 
   closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "image back", closure);
+
+  // toggle ISO 12646 color assessment condition
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->iso_12646.button, NULL);
+  dt_accel_connect_view(self, "color assessment", closure);
 
   // toggle raw overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->rawoverexposed.button, NULL);
@@ -3591,7 +3609,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -3630,7 +3648,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);

@@ -80,7 +80,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
-  //   dt_pthread_mutex_init(&dev->histogram_waveform_mutex, NULL);
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
@@ -111,9 +110,23 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
+    // FIXME: these are uint32_t, setting to -1 is confusing
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
+
+    // FIXME: allow setting these via dt_conf system?
+    // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
+    // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
+    // for mosaiced images), nor make it too slow to calculate
+    // (regardless of ppd). Try to get enough detail for a (default)
+    // 350px panel, possibly 2x that on hidpi.
+    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
+    // Hardcoded hack: histogram widget will probably be either 175 or
+    // 350 pixels high depending on hidpi
+    dev->histogram_waveform_height = 175;
+    dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
+    dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
@@ -153,7 +166,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_pthread_mutex_destroy(&dev->pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview2_pipe_mutex);
-  //   dt_pthread_mutex_destroy(&dev->histogram_waveform_mutex);
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);
@@ -197,6 +209,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+  free(dev->histogram_waveform);
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
@@ -2734,25 +2747,6 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
-}
-
-dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op)
-{
-  dt_iop_module_t *result = NULL;
-
-  GList *modules = g_list_first(iop_list);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(strcmp(mod->op, op) == 0)
-    {
-      result = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-
-  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

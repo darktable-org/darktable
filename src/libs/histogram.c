@@ -39,8 +39,8 @@ typedef struct dt_lib_histogram_t
   int32_t button_down_x, button_down_y;
   int32_t highlight;
   gboolean red, green, blue;
-  float mode_x, mode_w, red_x, green_x, blue_x;
-  float color_w, button_h, button_y, button_spacing;
+  float mode_x, red_x, green_x, blue_x;
+  float button_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -153,58 +153,63 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_restore(cr);
 }
 
+static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  const int width = event->width;
+  // mode and color buttons position on first expose or widget size change
+  // FIXME: should the button size depend on histogram width or just be set to something reasonable
+  d->button_spacing = 0.02 * width;
+  d->button_w = 0.06 * width;
+  d->button_h = 0.06 * width;
+  d->button_y = d->button_spacing;
+  const float offset = d->button_w + d->button_spacing;
+  d->blue_x = width - offset;
+  d->green_x = d->blue_x - offset;
+  d->red_x = d->green_x - offset;
+  d->mode_x = d->red_x - offset;
+
+  return TRUE;
+}
+
 static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
-  uint32_t *hist = malloc(histsize);
-  if(hist == NULL) return FALSE;
-
   dt_develop_t *dev = darktable.develop;
-
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-  memcpy(hist, dev->histogram, histsize);
-  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                        : logf(1.0 + dev->histogram_max);
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int width = allocation.width, height = allocation.height;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+
+  const int waveform_width = dev->histogram_waveform_width;
+  const int waveform_height = dev->histogram_waveform_height;
+  const gint waveform_stride = dev->histogram_waveform_stride;
+  const size_t histsize = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM
+                            ? sizeof(uint8_t) * waveform_height * waveform_stride
+                            : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  void *buf = malloc(histsize);
+
+  if(buf)
+  {
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      memcpy(buf, dev->histogram_waveform, histsize);
+    else
+      memcpy(buf, dev->histogram, histsize);
+  }
+
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  if(buf == NULL) return FALSE;
+
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
-
-  // Get the mode and color buttons position
-  if(d->mode_x == 0)
-  {
-    d->color_w = 0.06 * width;
-    d->button_spacing = 0.02 * width;
-    d->button_h = 0.06 * width;
-    d->button_y = d->button_spacing;
-    d->mode_w = d->color_w;
-    d->mode_x = width - 3 * (d->color_w + d->button_spacing) - (d->mode_w + d->button_spacing);
-    d->red_x = width - 3 * (d->color_w + d->button_spacing);
-    d->green_x = width - 2 * (d->color_w + d->button_spacing);
-    d->blue_x = width - (d->color_w + d->button_spacing);
-  }
-
-  // TODO: probably this should move to the configure-event callback! That would be future proof if we ever
-  // (again) allow to resize the side panels.
-  const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-
-  // this code assumes that the first expose comes before the first (preview) pipe is processed and that the
-  // size of the widget doesn't change!
-  if(dev->histogram_waveform_width == 0)
-  {
-    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
-    dev->histogram_waveform_stride = stride;
-    dev->histogram_waveform_height = height;
-    dev->histogram_waveform_width = width;
-  }
 
   // Draw frame and background
   cairo_save(cr);
@@ -215,16 +220,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
+  // exposure change regions
   if(d->highlight == 1)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    cairo_rectangle(cr, 0, 0, .2 * width, height);
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
+    else
+      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
     cairo_fill(cr);
   }
   else if(d->highlight == 2)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    cairo_rectangle(cr, 0.2 * width, 0, width, height);
+    if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
+    else
+      cairo_rectangle(cr, 0.2 * width, 0, width, height);
     cairo_fill(cr);
   }
 
@@ -237,37 +249,40 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw histogram
-  if(hist_max > 0.0f && dev->image_storage.id == dev->preview_pipe->output_imgid)
+  if(dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
+      uint8_t *hist_wav = buf;
       // make the color channel selector work:
-      uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * height * stride);
+      // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
       uint8_t mask[3] = { d->blue, d->green, d->red };
-      memcpy(buf, dev->histogram_waveform, sizeof(uint8_t) * height * stride);
-      for(int y = 0; y < height; y++)
-        for(int x = 0; x < width; x++)
-          for(int k = 0; k < 3; k++)
-          {
-            buf[y * stride + x * 4 + k] *= mask[k];
-          }
+      for(int k = 0; k < 3; k++)
+        if(!mask[k])
+          for(int y = 0; y < waveform_height; y++)
+            for(int x = 0; x < waveform_width; x++)
+              hist_wav[y * waveform_stride + x * 4 + k] = 0;
 
       cairo_surface_t *source
-          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width, height, stride);
+          = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
+                                                   waveform_width, waveform_height, waveform_stride);
 
+      cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
-      free(buf);
     }
-    else
+    else if(dev->histogram_max)
     {
+      uint32_t *hist = buf;
+      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                            : logf(1.0 + dev->histogram_max);
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_set_line_width(cr, 1.);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
       if(d->red)
       {
         cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
@@ -291,13 +306,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != 0)
   {
-    _draw_mode_toggle(cr, d->mode_x, d->button_y, d->mode_w, d->button_h, dev->histogram_type);
+    _draw_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->histogram_type);
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
-    _draw_color_toggle(cr, d->red_x, d->button_y, d->color_w, d->button_h, d->red);
+    _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
     cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
-    _draw_color_toggle(cr, d->green_x, d->button_y, d->color_w, d->button_h, d->green);
+    _draw_color_toggle(cr, d->green_x, d->button_y, d->button_w, d->button_h, d->green);
     cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
-    _draw_color_toggle(cr, d->blue_x, d->button_y, d->color_w, d->button_h, d->blue);
+    _draw_color_toggle(cr, d->blue_x, d->button_y, d->button_w, d->button_h, d->blue);
   }
 
   cairo_destroy(cr);
@@ -305,7 +320,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_paint(crf);
   cairo_surface_destroy(cst);
 
-  free(hist);
+  free(buf);
 
   return TRUE;
 }
@@ -315,6 +330,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
   /* check if exposure hooks are available */
   gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
@@ -323,29 +339,36 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->dragging && d->highlight == 2)
+  if(d->dragging)
   {
-    float exposure = d->exposure + (event->x - d->button_down_x) * 4.0f / (float)allocation.width;
-    dt_dev_exposure_set_exposure(darktable.develop, exposure);
-  }
-  else if(d->dragging && d->highlight == 1)
-  {
-    float black = d->black - (event->x - d->button_down_x) * .1f / (float)allocation.width;
-    dt_dev_exposure_set_black(darktable.develop, black);
+    const float diff = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM ? d->button_down_y - event->y
+                                                                        : event->x - d->button_down_x;
+    const int range = dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM ? allocation.height
+                                                                       : allocation.width;
+    if (d->highlight == 2)
+    {
+      const float exposure = d->exposure + diff * 4.0f / (float)range;
+      dt_dev_exposure_set_exposure(darktable.develop, exposure);
+    }
+    else if(d->highlight == 1)
+    {
+      const float black = d->black - diff * .1f / (float)range;
+      dt_dev_exposure_set_black(darktable.develop, black);
+    }
   }
   else
   {
     const float x = event->x;
     const float y = event->y;
-    const float pos = x / (float)(allocation.width);
+    const float posx = x / (float)(allocation.width);
+    const float posy = y / (float)(allocation.height);
 
-
-    if(pos < 0 || pos > 1.0)
+    if(posx < 0.0f || posx > 1.0f || posy < 0.0f || posy > 1.0f)
       ;
-    else if(x > d->mode_x && x < d->mode_x + d->mode_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 3;
-      switch(darktable.develop->histogram_type)
+      switch(dev->histogram_type)
       {
         case DT_DEV_HISTOGRAM_LOGARITHMIC:
           gtk_widget_set_tooltip_text(widget, _("set histogram mode to linear"));
@@ -360,23 +383,24 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
           g_assert_not_reached();
       }
     }
-    else if(x > d->red_x && x < d->red_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->red_x && x < d->red_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 4;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
     }
-    else if(x > d->green_x && x < d->green_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->green_x && x < d->green_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 5;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
                                                  : _("click to show green channel"));
     }
-    else if(x > d->blue_x && x < d->blue_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
+    else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 6;
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
     }
-    else if(pos < 0.2)
+    else if((posx < 0.2f && dev->histogram_type != DT_DEV_HISTOGRAM_WAVEFORM) ||
+            (posy > 7.0f/9.0f && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM))
     {
       d->highlight = 1;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
@@ -415,7 +439,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
 
   if(!hooks_available) return TRUE;
 
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(event->type == GDK_2BUTTON_PRESS && (d->highlight == 1 || d->highlight ==2))
   {
     dt_dev_exposure_reset_defaults(darktable.develop);
   }
@@ -427,11 +451,10 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_dev_histogram_type_names[darktable.develop->histogram_type]);
       // we need to reprocess the preview pipe
+      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
       if(darktable.develop->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
       {
-        darktable.develop->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-        darktable.develop->preview_pipe->cache_obsolete = 1;
-        dt_control_queue_redraw();
+        dt_dev_process_preview(darktable.develop);
       }
     }
     else if(d->highlight == 4) // red button
@@ -566,9 +589,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
                    G_CALLBACK(_lib_histogram_enter_notify_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "configure-event",
+                   G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, 175);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
@@ -579,14 +604,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect callback from  signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
-
-  dt_develop_t *dev = darktable.develop;
-
-  free(dev->histogram_waveform);
-  dev->histogram_waveform = NULL;
-  dev->histogram_waveform_stride = 0;
-  dev->histogram_waveform_height = 0;
-  dev->histogram_waveform_width = 0;
 
   g_free(self->data);
   self->data = NULL;

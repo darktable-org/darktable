@@ -370,7 +370,7 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
     }
     while(t->minute < 0)
     {
-      t->hour += 60;
+      t->minute += 60;
       _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_HOUR);
     }
   }
@@ -431,7 +431,8 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
       }
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
       {
-        tt.minute = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        int nb = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        _time_add(&tt, nb, DT_LIB_TIMELINE_ZOOM_MINUTE);
         if(tt.minute < 0) tt.minute = 0;
       }
 
@@ -504,12 +505,12 @@ static gchar *_time_format_for_ui(dt_lib_timeline_time_t t, dt_lib_timeline_zoom
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
   {
-    return g_strdup_printf("%02d/%02d/%02d (%02dh-%02dh)", t.day, t.month, t.year % 100, t.hour / 6 * 6,
+    return g_strdup_printf("%02d/%02d/%02d (h%02d-%02d)", t.day, t.month, t.year % 100, t.hour / 6 * 6,
                            t.hour / 6 * 6 + 5);
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
   {
-    return g_strdup_printf("%02d/%02d/%02d %02dh", t.day, t.month, t.year % 100, t.hour);
+    return g_strdup_printf("%02d/%02d/%02d h%02d", t.day, t.month, t.year % 100, t.hour);
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_10MINUTE)
   {
@@ -518,7 +519,7 @@ static gchar *_time_format_for_ui(dt_lib_timeline_time_t t, dt_lib_timeline_zoom
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_MINUTE)
   {
-    return g_strdup_printf("%02d/%02d/%02d %02dh%02d", t.day, t.month, t.year % 100, t.hour, t.minute);
+    return g_strdup_printf("%02d/%02d/%02d %02d:%02d", t.day, t.month, t.year % 100, t.hour, t.minute);
   }
 
   return NULL;
@@ -1015,7 +1016,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
 
       cairo_text_extents_t te;
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_BRUSH_CURSOR);
-      cairo_set_font_size(cr, 10);
+      cairo_set_font_size(cr, 10 * (1 + (darktable.gui->dpi_factor - 1) / 2));
       cairo_text_extents(cr, blo->name, &te);
       int bh = allocation.height - te.height - 4;
       cairo_move_to(cr, posx + (wb - te.width) / 2 - te.x_bearing, allocation.height - 2);
@@ -1115,7 +1116,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       cairo_stroke(wcr);
       gchar *dte = _time_format_for_ui(tt, strip->precision);
       cairo_text_extents_t te2;
-      cairo_set_font_size(wcr, 10);
+      cairo_set_font_size(wcr, 10 * darktable.gui->dpi_factor);
       cairo_text_extents(wcr, dte, &te2);
       cairo_rectangle(wcr, strip->current_x, 8, te2.width + 4, te2.height + 4);
       dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
@@ -1156,7 +1157,11 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       else
       {
         strip->start_x = strip->stop_x = e->x;
-        strip->start_t = strip->stop_t = _time_get_from_pos(e->x, strip);
+        dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
+        if(_time_compare(tt, _time_init()) == 0)
+          strip->start_t = strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+        else
+          strip->start_t = strip->stop_t = tt;
         strip->move_edge = FALSE;
       }
       strip->selecting = TRUE;
@@ -1193,18 +1198,24 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
   if(strip->selecting)
   {
     strip->stop_x = e->x;
-    strip->stop_t = _time_get_from_pos(e->x, strip);
-    // we want to be at the "end" of this date
-    if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
+    dt_lib_timeline_time_t tt = _time_get_from_pos(e->x, strip);
+    if(_time_compare(tt, _time_init()) == 0)
+      strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+    else
     {
-      strip->stop_t.minute = 59;
-      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
+      strip->stop_t = tt;
+      // we want to be at the "end" of this date
+      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
       {
-        strip->stop_t.hour = 23;
-        if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
-        {
-          strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
-        }
+	strip->stop_t.minute = 59;
+	if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
+	{
+	  strip->stop_t.hour = 23;
+	  if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
+	  {
+	    strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	  }
+	}
       }
     }
     strip->selecting = FALSE;
@@ -1225,11 +1236,15 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
 
   strip->start_x = strip->current_x;
-  strip->start_t = _time_get_from_pos(strip->current_x, strip);
-
+  dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
+  if(_time_compare(tt, _time_init()) == 0)
+    strip->start_t = strip->time_maxi; //we are past the end so selection extends until the end
+  else
+    strip->start_t = _time_get_from_pos(strip->current_x, strip);
   strip->stop_x = strip->start_x;
   strip->stop_t = strip->start_t;
   strip->selecting = TRUE;
+  strip->has_selection = TRUE;
 
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
@@ -1238,19 +1253,25 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
                                 GdkModifierType modifier, gpointer data)
 {
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
+  dt_lib_timeline_time_t tt = _time_get_from_pos(strip->current_x, strip);
 
   strip->stop_x = strip->current_x;
-  strip->stop_t = _time_get_from_pos(strip->current_x, strip);
-  // we want to be at the "end" of this date
-  if(strip->zoom < DT_LIB_TIMELINE_ZOOM_HOUR)
+  if(_time_compare(tt, _time_init()) == 0)
+    strip->stop_t = strip->time_maxi; //we are past the end so selection extends until the end
+  else
   {
-    strip->stop_t.minute = 59;
-    if(strip->zoom < DT_LIB_TIMELINE_ZOOM_DAY)
+    strip->stop_t = tt;
+    // we want to be at the "end" of this date
+    if(strip->zoom < DT_LIB_TIMELINE_ZOOM_HOUR)
     {
-      strip->stop_t.hour = 23;
-      if(strip->zoom < DT_LIB_TIMELINE_ZOOM_MONTH)
+      strip->stop_t.minute = 59;
+      if(strip->zoom < DT_LIB_TIMELINE_ZOOM_DAY)
       {
-        strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	strip->stop_t.hour = 23;
+	if(strip->zoom < DT_LIB_TIMELINE_ZOOM_MONTH)
+	{
+	  strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
+	}
       }
     }
   }
@@ -1260,6 +1281,7 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
 }
+
 static gboolean _block_autoscroll(gpointer user_data)
 {
   // this function is called repetidly until the pointer is not more in the autoscoll zone
@@ -1284,11 +1306,13 @@ static gboolean _block_autoscroll(gpointer user_data)
     return FALSE;
   }
 
+  dt_lib_timeline_time_t old_pos = strip->time_pos;
   _time_add(&(strip->time_pos), move, strip->zoom);
   // we ensure that the fimlstrip stay in the bounds
   dt_lib_timeline_time_t tt = _selection_scroll_to(strip->time_pos, strip);
   if(_time_compare(tt, strip->time_pos) != 0)
   {
+    strip->time_pos = old_pos; //no scroll, so we restore the previous position
     strip->autoscroll = FALSE;
     return FALSE;
   }

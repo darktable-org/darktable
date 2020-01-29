@@ -971,6 +971,15 @@ static char *_dt_collection_compute_datetime(const char *operator, const char *i
     tm1.tm_min = 59;
     tm1.tm_sec = 59;
   }
+  if(strcmp(operator, "<") == 0 || strcmp(operator, ">=") == 0)
+  {
+    // we set all values to their minimum
+    tm1.tm_mon = 1;
+    tm1.tm_mday = 1;
+    tm1.tm_hour = 0;
+    tm1.tm_min = 0;
+    tm1.tm_sec = 0;
+  }
 
   // we read the input date, depending of his length
   if(len < 7)
@@ -1446,8 +1455,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      query = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", escaped_text);
+    {
+      GList *list, *l;
+      list = dt_util_str_to_glist(",", escaped_text);
+
+      for (l = list; l != NULL; l = l->next)
+        l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
+
+      query = dt_util_glist_to_str(" OR ", list);
+      g_list_free(list);
+
       break;
+    }
 
     case DT_COLLECTION_PROP_DAY:
     // query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);

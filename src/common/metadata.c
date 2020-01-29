@@ -47,15 +47,16 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
 
   while(b)
   {
-    GList *same = g_list_find_custom(a, b->data, _compare_metadata);
+    GList *same_key = g_list_find_custom(a, b->data, _compare_metadata);
     GList *b2 = g_list_next(b);
-    gboolean different = FALSE;
-    if(same)
+    gboolean different_value = FALSE;
+    const char *value = (char *)b2->data; // if empty we can remove it
+    if(same_key)
     {
-      GList *same2 = g_list_next(same);
-      different = g_strcmp0(same2->data, b2->data);
+      GList *same2 = g_list_next(same_key);
+      different_value = g_strcmp0(same2->data, b2->data);
     }
-    if(!same || different)
+    if(!same_key || different_value || !value[0])
     {
       metadata_list = dt_util_dstrcat(metadata_list, "%d,", atoi(b->data));
     }
@@ -74,17 +75,18 @@ static gchar *_get_tb_added_metadata_string_values(const int img, GList *before,
 
   while(a)
   {
-    GList *same = g_list_find_custom(b, a->data, _compare_metadata);
+    GList *same_key = g_list_find_custom(b, a->data, _compare_metadata);
     GList *a2 = g_list_next(a);
-    gboolean different = FALSE;
-    if(same)
+    gboolean different_value = FALSE;
+    const char *value = (char *)a2->data; // if empty we don't add it to database
+    if(same_key)
     {
-      GList *same2 = g_list_next(same);
-      different = g_strcmp0(same2->data, a2->data);
+      GList *same2 = g_list_next(same_key);
+      different_value = g_strcmp0(same2->data, a2->data);
     }
-    if(!same || different)
+    if((!same_key || different_value) && value[0])
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,\'%s\'),", GPOINTER_TO_INT(img), atoi(a->data), (char *)a2->data);
+      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,\"%s\"),", GPOINTER_TO_INT(img), atoi(a->data), (char *)a2->data);
     }
     a = g_list_next(a);
     a = g_list_next(a);
@@ -107,7 +109,7 @@ static void _bulk_remove_metadata(const int img, const gchar *metadata_list)
   }
 }
 
-static void _bulk_add_metadata(const gchar *metadata_list)
+static void _bulk_add_metadata(gchar *metadata_list)
 {
   if(metadata_list)
   {
@@ -163,8 +165,9 @@ GList *dt_metadata_get_list_id(const int id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    const gchar *value = (const char *)sqlite3_column_text(stmt, 1);
     const gchar *ckey = dt_util_dstrcat(NULL, "%d", sqlite3_column_int(stmt, 0));
-    const gchar *cvalue = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+    const gchar *cvalue = g_strdup(value ? value : ""); // to avoid NULL value
     metadata = g_list_append(metadata, (gpointer)ckey);
     metadata = g_list_append(metadata, (gpointer)cvalue);
   }
@@ -198,7 +201,7 @@ gchar *_cleanup_metadata_value(const gchar *value)
     c = v;
     while(*c == ' ') c++;
   }
-  c = g_strdup(c);
+  c = g_strdup(c ? c : ""); // avoid NULL value
   g_free(v);
   return c;
 }
@@ -308,7 +311,8 @@ static GList *dt_metadata_get_xmp(const int id, const char *key, uint32_t *count
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     local_count++;
-    result = g_list_append(result, g_strdup((char *)sqlite3_column_text(stmt, 0)));
+    char *value = (char *)sqlite3_column_text(stmt, 0);
+    result = g_list_append(result, g_strdup(value ? value : "")); // to avoid NULL value
   }
   sqlite3_finalize(stmt);
   if(count != NULL) *count = local_count;
@@ -520,17 +524,17 @@ static void _metadata_add_metadata_to_list(GList **list, GList *metadata)
   while(m)
   {
     GList *m2 = g_list_next(m);
-    GList *same = g_list_find_custom(*list, m->data, _compare_metadata);
-    GList *same2 = g_list_next(same);
-    gboolean different = FALSE;
-    if(same) different = g_strcmp0(same2->data, m2->data);
-    if(same && different)
+    GList *same_key = g_list_find_custom(*list, m->data, _compare_metadata);
+    GList *same2 = g_list_next(same_key);
+    gboolean different_value = FALSE;
+    if(same_key) different_value = g_strcmp0(same2->data, m2->data);
+    if(same_key && different_value)
     {
       // same key but different value - replace the old value by the new one
       g_free(same2->data);
       same2->data = g_strdup(m2->data);
     }
-    else if(!same)
+    else if(!same_key)
     {
       // new key for that image - append the new metadata item
       *list = g_list_append(*list, g_strdup(m->data));
@@ -583,7 +587,7 @@ static void _metadata_execute(GList *imgs, GList *metadata, GList **undo, const 
 
 void dt_metadata_set(const int imgid, const char *key, const char *value, const gboolean undo_on, const gboolean group_on)
 {
-  if(!key) return;
+  if(!key || !imgid) return;
 
   int keyid = dt_metadata_get_keyid(key);
   if(keyid != -1) // known key
@@ -633,7 +637,7 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
       kv = g_list_next(kv);
       const gchar *value = (const gchar *)kv->data;
       kv = g_list_next(kv);
-      if(value && value[0])
+      if(value)
       {
         metadata = g_list_append(metadata, (gchar *)ckey);
         metadata = g_list_append(metadata, _cleanup_metadata_value(value));
@@ -659,7 +663,7 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
       if(group_on) dt_grouping_add_grouped_images(&imgs);
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
-      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_SET);
+      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
 
       g_list_free(imgs);
       if(undo_on)

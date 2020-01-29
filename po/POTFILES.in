@@ -70,10 +70,7 @@ src/imageio/format/tiff.c
 src/imageio/format/webp.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
-src/imageio/storage/facebook.c
-src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
-src/imageio/storage/googlephoto.c
 src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
 src/iop/amaze_demosaic_RT.cc

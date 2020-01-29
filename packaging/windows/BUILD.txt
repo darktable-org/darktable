@@ -16,6 +16,9 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Install required libraries and dependencies:
 	$ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
 
+    Install optional libraries and dependencies:
+  $ pacman -S mingw-w64-x86_64-gmic
+
     For gphoto2:
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
 	$ echo $CAMLIBS
@@ -25,12 +28,12 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Download the file mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz from http://repo.msys2.org/mingw/x86_64/
     Put the file in your MSYS2 home folder, then from MSYS2 terminal:
     $ pacman -U mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
-    Also in order to prevent pacman from updating the lensfun package, open the file /etc/pacman.conf, find the line: 
+    Also in order to prevent pacman from updating the lensfun package, open the file /etc/pacman.conf, find the line:
 	#Pacman won’t upgrade packages listed in IgnorePkg and members of IgnoreGroup
     and below, add the following line
 	IgnorePkg = mingw-w64-x86_64-lensfun
     Copy the lensfun folder and the lensfun-0.3.2-py3.6.egg-info file from /mingw64/lib/python3.6/site-packages to /mingw64/lib/python3.8/site-packages.
-	
+
 	From MINGW64 terminal, update your lensfun database:
 	$ lensfun-update-data
 
@@ -45,11 +48,11 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 	$ pacman -S libxml2-python
 
     Make sure you have JAVA runtime installed in Windows (https://www.java.com/en/download/)
-    
+
 	Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
     Copy files into ~/java/saxon/
 
-    Manually install DocBook Extension to Saxon: 
+    Manually install DocBook Extension to Saxon:
 	Download the file docbook-xsl-saxon-1.00.zip from https://sourceforge.net/projects/docbook/files/docbook-xsl-saxon/1.00/
     Open the file, go in the folder docbook-xsl-saxon-1.00
 	Copy files to ~/java/docbook-xsl-saxon
@@ -108,7 +111,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
         $ cmake --build . --target package
 	NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:
 		$ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
-	
+
 
 B) Cross compile on Linux
     In order to build darktable for Windows there is a chance to cross compile it

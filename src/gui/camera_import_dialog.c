@@ -409,7 +409,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = \"metadata\"", -1, &stmt,
+                              "SELECT name, op_params FROM data.presets WHERE operation = 'metadata'", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
