@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
@@ -47,7 +48,6 @@ typedef struct dt_lib_copy_history_t
   GtkWidget *copy_parts_button;
   GtkButton *compress_button;
 
-  dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -116,36 +116,16 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static int _get_source_image(void)
-{
-  // if the mouse is over an image, always choose this one
-  // otherwise, choose the first image selected
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) return imgid;
-
-  GList *l = dt_collection_get_selected(darktable.collection, 1);
-  if(l)
-  {
-    imgid = GPOINTER_TO_INT(l->data);
-    g_list_free(l);
-  }
-
-  return imgid;
-}
-
 static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = _get_source_image();
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
+  const int id = dt_thumbtable_get_image_to_act_on(table);
 
-  if(d->imageid > 0)
+  if(id > 0 && dt_history_copy(id))
   {
-    d->dg.selops = NULL;
-    d->dg.copied_imageid = d->imageid;
-    d->dg.copy_iop_order = TRUE;
-
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
   }
@@ -181,20 +161,13 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = _get_source_image();
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
+  const int id = dt_thumbtable_get_image_to_act_on(table);
 
-  if(d->imageid > 0)
+  if(id > 0 && dt_history_copy_parts(id))
   {
-    d->dg.copied_imageid = d->imageid;
-
-    // launch dialog to select the ops to copy
-    const int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
-
-    if(res != GTK_RESPONSE_CANCEL && d->dg.selops)
-    {
-      gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
-      gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
-    }
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
   }
 }
 
@@ -251,27 +224,26 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   const int mode = dt_bauhaus_combobox_get(d->pastemode);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
-  /* copy history from d->imageid and past onto selection */
-  const int img = dt_view_get_image_to_act_on();
+  /* copy history from previously copied image and past onto selection */
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
+  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
 
-  if(img < 0)
-    dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
-  else
-    dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  /* redraw */
-  dt_control_queue_redraw_center();
+  if(dt_history_paste_on_list(imgs, TRUE))
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  }
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  /* copy history from previously copied image and past onto selection */
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
+  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
 
-  // launch dialog to select the ops to paste
-  if(dt_gui_hist_dialog_new(&(d->dg), d->dg.copied_imageid, FALSE) == GTK_RESPONSE_OK)
-    paste_button_clicked(widget, user_data);
+  if(dt_history_paste_parts_on_list(imgs, TRUE))
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  }
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
@@ -302,8 +274,6 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
-  d->imageid = -1;
-  dt_gui_hist_dialog_init(&d->dg);
 
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));

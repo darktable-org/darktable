@@ -112,6 +112,7 @@ void dt_selection_invert(dt_selection_t *selection)
 
 void dt_selection_clear(const dt_selection_t *selection)
 {
+  printf("clear\n");
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);

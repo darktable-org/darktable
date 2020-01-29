@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/focus_peaking.h"
-#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/module.h"
