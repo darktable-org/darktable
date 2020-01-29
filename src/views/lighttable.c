@@ -4539,7 +4539,7 @@ void init_key_accels(dt_view_t *self)
   // Initializing accelerators
 
   // Color labels keys
-  dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  /*dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
   dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
   dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
   dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
@@ -4553,7 +4553,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
   dt_accel_register_view(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
   dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
-  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
+  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);*/
 
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"), GDK_KEY_g, 0);
@@ -4641,36 +4641,6 @@ static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
-
-  // Color labels keys
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(0), NULL);
-  dt_accel_connect_view(self, "color red", closure);
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(1), NULL);
-  dt_accel_connect_view(self, "color yellow", closure);
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(2), NULL);
-  dt_accel_connect_view(self, "color green", closure);
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(3), NULL);
-  dt_accel_connect_view(self, "color blue", closure);
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL);
-  dt_accel_connect_view(self, "color purple", closure);
-  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(5), NULL);
-  dt_accel_connect_view(self, "clear color labels", closure);
-
-  // Rating keys
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_DESERT), NULL);
-  dt_accel_connect_view(self, "rate 0", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL);
-  dt_accel_connect_view(self, "rate 1", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL);
-  dt_accel_connect_view(self, "rate 2", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL);
-  dt_accel_connect_view(self, "rate 3", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL);
-  dt_accel_connect_view(self, "rate 4", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL);
-  dt_accel_connect_view(self, "rate 5", closure);
-  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
-  dt_accel_connect_view(self, "rate reject", closure);
 
   // Navigation keys
   closure = g_cclosure_new(G_CALLBACK(go_up_key_accel_callback), (gpointer)self, NULL);

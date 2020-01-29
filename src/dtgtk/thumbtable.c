@@ -18,7 +18,11 @@
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 #include "dtgtk/thumbtable.h"
 #include "common/collection.h"
+#include "common/colorlabels.h"
 #include "common/debug.h"
+#include "common/history.h"
+#include "common/ratings.h"
+#include "common/selection.h"
 #include "control/control.h"
 #include "views/view.h"
 
@@ -426,6 +430,8 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
 static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  table->mouse_inside = FALSE;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
 }
@@ -448,6 +454,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
 static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  table->mouse_inside = TRUE;
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
   if(table->dragging)
@@ -766,6 +773,235 @@ void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
   else
     gtk_style_context_remove_class(context, "dt_show_overlays");
 }
+
+static gboolean _image_duplicate(int sourceid, gboolean virgin)
+{
+  const int newimgid = dt_image_duplicate(sourceid);
+  if(newimgid <= 0) return FALSE;
+
+  if(virgin)
+    dt_history_delete_on_image(newimgid);
+  else
+    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL);
+
+  return TRUE;
+}
+
+// key accels are managed inside filmstrip lib and repercuted here
+gboolean dt_thumbtable_accel_callback(dt_thumbtable_t *table, dt_thumbtable_accels_t accel)
+{
+  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
+  const int id = dt_thumbtable_get_image_to_act_on(table);
+  gboolean ret = TRUE;
+  gboolean reload = TRUE;
+
+  switch(accel)
+  {
+    case DT_THUMBTABLE_ACCEL_RATE_0:
+    case DT_THUMBTABLE_ACCEL_RATE_1:
+    case DT_THUMBTABLE_ACCEL_RATE_2:
+    case DT_THUMBTABLE_ACCEL_RATE_3:
+    case DT_THUMBTABLE_ACCEL_RATE_4:
+    case DT_THUMBTABLE_ACCEL_RATE_5:
+    case DT_THUMBTABLE_ACCEL_REJECT:
+      dt_ratings_apply_on_list(dt_thumbtable_get_images_to_act_on(table), accel, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_COPY:
+      ret = dt_history_copy(id);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_COPY_PARTS:
+      ret = dt_history_copy_parts(id);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_PASTE:
+      ret = dt_history_paste_on_list(imgs, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_PASTE_PARTS:
+      ret = dt_history_paste_parts_on_list(imgs, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_HIST_DISCARD:
+      ret = dt_history_delete_on_list(imgs, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_DUPLICATE:
+      ret = _image_duplicate(id, FALSE);
+      break;
+    case DT_THUMBTABLE_ACCEL_DUPLICATE_VIRGIN:
+      ret = _image_duplicate(id, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_COLOR_RED:
+    case DT_THUMBTABLE_ACCEL_COLOR_YELLOW:
+    case DT_THUMBTABLE_ACCEL_COLOR_GREEN:
+    case DT_THUMBTABLE_ACCEL_COLOR_BLUE:
+    case DT_THUMBTABLE_ACCEL_COLOR_PURPLE:
+    case DT_THUMBTABLE_ACCEL_COLOR_CLEAR:
+      dt_colorlabels_toggle_label_on_list(imgs, accel - DT_THUMBTABLE_ACCEL_COLOR_RED, TRUE);
+      break;
+    case DT_THUMBTABLE_ACCEL_SELECT_ALL:
+      dt_selection_select_all(darktable.selection);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_SELECT_NONE:
+      dt_selection_clear(darktable.selection);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_SELECT_INVERT:
+      dt_selection_invert(darktable.selection);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_SELECT_FILM:
+      dt_selection_select_filmroll(darktable.selection);
+      reload = FALSE;
+      break;
+    case DT_THUMBTABLE_ACCEL_SELECT_UNTOUCHED:
+      dt_selection_select_unaltered(darktable.selection);
+      reload = FALSE;
+      break;
+    default:
+      break;
+  }
+
+  if(reload) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+
+  g_list_free(imgs);
+  return ret;
+}
+
+// get the list of images to act on during global changes (libs, accels)
+// TODO : grouped images
+GList *dt_thumbtable_get_images_to_act_on(dt_thumbtable_t *table)
+{
+  /** Here's how it works
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip
+   **/
+
+  GList *l = NULL;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover > 0)
+  {
+    // collumn 1,2,3
+    if(table->mouse_inside)
+    {
+      // collumn 1,2
+      sqlite3_stmt *stmt;
+      gboolean inside_sel = FALSE;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        inside_sel = TRUE;
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      if(inside_sel)
+      {
+        // collumn 1
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                    &stmt, NULL);
+        while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        }
+        if(stmt) sqlite3_finalize(stmt);
+      }
+      else
+      {
+        // collumn 2
+        l = g_list_append(l, GINT_TO_POINTER(mouseover));
+      }
+    }
+    else
+    {
+      // collumn 3
+      l = g_list_append(l, GINT_TO_POINTER(mouseover));
+    }
+  }
+  else
+  {
+    // collumn 4,5
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      // collumn 5
+      GSList *ll = darktable.view_manager->active_images;
+      while(ll)
+      {
+        const int id = GPOINTER_TO_INT(ll->data);
+        l = g_list_append(l, GINT_TO_POINTER(id));
+        ll = g_slist_next(ll);
+      }
+    }
+    else
+    {
+      // collumn 4
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                  &stmt, NULL);
+      while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return l;
+}
+
+// get the main image to act on during global changes (libs, accels)
+int dt_thumbtable_get_image_to_act_on(dt_thumbtable_t *table)
+{
+  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
+   *
+   *             mouse over| x |   |   |
+   *          active images| ? |   | x |
+   *                       |   |   |   |
+   *                       | O | S | A |
+   *  First image of ...
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip
+   **/
+
+  int ret = -1;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover)
+  {
+    ret = mouseover;
+  }
+  else
+  {
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT s.imgid FROM main.selected_images as s, memory.collected_images as c "
+                                  "WHERE c.imgid=s.imgid ORDER BY c.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        ret = sqlite3_column_int(stmt, 0);
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return ret;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

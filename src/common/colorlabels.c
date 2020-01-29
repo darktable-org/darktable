@@ -199,9 +199,25 @@ void dt_colorlabels_set_labels(const int imgid, const int labels, const gboolean
   }
 }
 
-void dt_colorlabels_toggle_label(const int imgid, const int color, const gboolean undo_on, const gboolean group_on)
+void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gboolean undo_on)
 {
   const int label = 1<<color;
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
+
+  _colorlabels_execute(list, label, &undo, undo_on, DT_CA_TOGGLE);
+
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+  dt_collection_hint_message(darktable.collection);
+}
+
+static void dt_colorlabels_toggle_label(const int imgid, const int color, const gboolean undo_on,
+                                        const gboolean group_on)
+{
   GList *imgs = NULL;
   if(imgid == -1)
     imgs = dt_collection_get_selected(darktable.collection, -1);
@@ -209,20 +225,10 @@ void dt_colorlabels_toggle_label(const int imgid, const int color, const gboolea
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(imgs)
   {
-    GList *undo = NULL;
     if(group_on) dt_grouping_add_grouped_images(&imgs);
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
-
-    _colorlabels_execute(imgs, label, &undo, undo_on, DT_CA_TOGGLE);
+    dt_colorlabels_toggle_label_on_list(imgs, color, undo_on);
 
     g_list_free(imgs);
-    if(undo_on)
-    {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
-      dt_undo_end_group(darktable.undo);
-    }
-    dt_collection_hint_message(darktable.collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
