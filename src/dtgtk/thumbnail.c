@@ -205,6 +205,7 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
   {
@@ -234,6 +235,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
 static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
   {
@@ -267,6 +269,7 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
 static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
   {

@@ -51,10 +51,12 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
                         &bg_color, NULL);
   if(fg_color->alpha == 0 && bg_color->alpha == 0)
   {
+    DTGTK_THUMBNAIL_BTN(widget)->hidden = TRUE;
     gdk_rgba_free(fg_color);
     gdk_rgba_free(bg_color);
     return TRUE;
   }
+  DTGTK_THUMBNAIL_BTN(widget)->hidden = FALSE;
 
   cairo_save(cr);
   gdk_cairo_set_source_rgba(cr, fg_color);
@@ -156,6 +158,10 @@ GType dtgtk_thumbnail_btn_get_type()
   return dtgtk_thumbnail_btn_type;
 }
 
+gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget)
+{
+  return DTGTK_THUMBNAIL_BTN(widget)->hidden;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

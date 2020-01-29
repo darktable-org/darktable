@@ -1416,6 +1416,7 @@ Details :
   all icons inside the widget
     class = .dt_thumb_btn
     state = :hover : the mouse is hovering the icon
+    if color and background-color are transparent, the icon is not drawn and inactive
   #thumb_reject :
     state = :active   if the image is actually rejected
     state = :hover    the mouse is hover the icon (a circle is added around the cross)
