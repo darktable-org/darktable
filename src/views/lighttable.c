@@ -361,6 +361,7 @@ static void check_layout(dt_view_t *self)
     // we want to reacquire the thumbtable if needed
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_FILEMANAGER);
+    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
@@ -409,6 +410,7 @@ static void check_layout(dt_view_t *self)
     // we want to reacquire the thumbtable if needed
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_ZOOM);
+    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
 

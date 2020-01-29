@@ -382,7 +382,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     d->combo_evt_reset = TRUE;
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), layout);
     d->combo_evt_reset = FALSE;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
+    dt_control_queue_redraw_center();
   }
   else
   {
