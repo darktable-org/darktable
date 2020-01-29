@@ -49,27 +49,28 @@ typedef struct
   gboolean has_localcopy;
   int groupid;
 
-  GtkWidget *w_main;
-  GtkWidget *w_back;
-  GtkWidget *w_ext;
+  // all widget components
+  GtkWidget *w_main; // GtkOverlay -- contains all others widgets
+  GtkWidget *w_back; // GtkEventBox -- thumbnail background
+  GtkWidget *w_ext;  // GtkLabel -- thumbnail extension
 
-  GtkWidget *w_image;
-  cairo_surface_t *img_surf;
+  GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
+  cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
 
-  GtkWidget *w_bottom_eb;
-  GtkWidget *w_bottom;
-  GtkWidget *w_reject;
-  GtkWidget *w_stars[5];
-  GtkWidget *w_color;
+  GtkWidget *w_bottom_eb; // GtkEventBox -- background of the bottom infos area (contains w_bottom)
+  GtkWidget *w_bottom;    // GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext
+  GtkWidget *w_reject;    // GtkDarktableThumbnailBtn -- Reject icon
+  GtkWidget *w_stars[5];  // GtkDarktableThumbnailBtn -- Stars icons
+  GtkWidget *w_color;     // GtkDarktableThumbnailBtn -- Colorlabels "flower" icon
 
-  GtkWidget *w_local_copy;
-  GtkWidget *w_altered;
-  GtkWidget *w_group;
-  GtkWidget *w_audio;
+  GtkWidget *w_local_copy; // GtkDarktableThumbnailBtn -- localcopy triangle
+  GtkWidget *w_altered;    // GtkDarktableThumbnailBtn -- Altered icon
+  GtkWidget *w_group;      // GtkDarktableThumbnailBtn -- Grouping icon
+  GtkWidget *w_audio;      // GtkDarktableThumbnailBtn -- Audio sidecar icon
 
   gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
 
-  dt_thumbnail_border_t group_borders;
+  dt_thumbnail_border_t group_borders; // which group borders should be drawn
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
