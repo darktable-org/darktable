@@ -67,6 +67,11 @@ void dt_accel_path_lua(char *s, size_t n, const char *path)
   snprintf(s, n, "<Darktable>/%s/%s", NC_("accel", "lua"), path);
 }
 
+void dt_accel_path_manual(char *s, size_t n, const char *full_path)
+{
+  snprintf(s, n, "<Darktable>/%s", full_path);
+}
+
 static void dt_accel_path_global_translated(char *s, size_t n, const char *path)
 {
   snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "global"), g_dpgettext2(NULL, "accel", path));
@@ -112,6 +117,11 @@ static void dt_accel_paths_slider_iop_translated(char *s[], size_t n, dt_iop_mod
 static void dt_accel_path_lua_translated(char *s, size_t n, const char *path)
 {
   snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "lua"), g_dpgettext2(NULL, "accel", path));
+}
+
+static void dt_accel_path_manual_translated(char *s, size_t n, const char *full_path)
+{
+  snprintf(s, n, "<Darktable>/%s", g_dpgettext2(NULL, "accel", full_path));
 }
 
 void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods)
@@ -212,7 +222,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
     else if(strcmp(views[i], "*") == 0)
       v |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
            | DT_VIEW_SLIDESHOW;
-    i++;  
+    i++;
   }
   dt_accel_register_lib_for_views(self, v, path, accel_key, mods);
 }
@@ -285,6 +295,24 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
+void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
+                              GdkModifierType mods)
+{
+  gchar accel_path[256];
+  dt_accel_t *accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
+
+  dt_accel_path_manual(accel_path, sizeof(accel_path), full_path);
+  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+
+  g_strlcpy(accel->path, accel_path, sizeof(accel->path));
+  dt_accel_path_manual_translated(accel_path, sizeof(accel_path), full_path);
+  g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
+
+  *(accel->module) = '\0';
+  accel->local = FALSE;
+  accel->views = views;
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+}
 
 static dt_accel_t *_lookup_accel(const gchar *path)
 {
@@ -368,6 +396,16 @@ void dt_accel_connect_lua(const gchar *path, GClosure *closure)
   dt_accel_t *laccel = _lookup_accel(accel_path);
   laccel->closure = closure;
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
+}
+
+void dt_accel_connect_manual(GSList *list, const gchar *full_path, GClosure *closure)
+{
+  gchar accel_path[256];
+  dt_accel_path_manual(accel_path, sizeof(accel_path), full_path);
+  dt_accel_t *accel = _lookup_accel(accel_path);
+  accel->closure = closure;
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
+  list = g_slist_prepend(list, accel);
 }
 
 static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -925,6 +963,43 @@ void dt_accel_deregister_lua(const gchar *path)
     {
       darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
       gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+      l = NULL;
+      g_free(accel);
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+}
+
+void dt_accel_deregister_manual(GSList *list, const gchar *full_path)
+{
+  GSList *l;
+  char build_path[1024];
+  dt_accel_path_manual(build_path, sizeof(build_path), full_path);
+  l = list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t *)l->data;
+    if(accel && !strncmp(accel->path, build_path, 1024))
+    {
+      list = g_slist_delete_link(list, l);
+      gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+      l = NULL;
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+  l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t *)l->data;
+    if(accel && !strncmp(accel->path, build_path, 1024))
+    {
+      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
       l = NULL;
       g_free(accel);
     }

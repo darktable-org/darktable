@@ -24,7 +24,6 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
-#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
@@ -121,8 +120,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  const int id = dt_thumbtable_get_image_to_act_on(table);
+  const int id = dt_view_get_image_to_act_on2();
 
   if(id > 0 && dt_history_copy(id))
   {
@@ -161,8 +159,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  const int id = dt_thumbtable_get_image_to_act_on(table);
+  const int id = dt_view_get_image_to_act_on();
 
   if(id > 0 && dt_history_copy_parts(id))
   {
@@ -225,8 +222,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
+  GList *imgs = dt_view_get_images_to_act_on();
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
@@ -237,8 +233,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
+  GList *imgs = dt_view_get_images_to_act_on();
 
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {

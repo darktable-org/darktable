@@ -90,6 +90,8 @@ typedef struct dt_thumbtable_t
   dt_thumbnail_t *drag_thumb; // thumb currently dragged (under the mouse)
 
   gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
+
+  GSList *accel_closures; // list of associated accels
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
@@ -99,12 +101,12 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force);
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode);
 // define if overlays should always be shown or just on mouse-over
 void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
-// repercuted accel click (from filmstrip lib)
-gboolean dt_thumbtable_accel_callback(dt_thumbtable_t *table, dt_thumbtable_accels_t accel);
-// get images to act on for gloabals change (via libs or accels)
-GList *dt_thumbtable_get_images_to_act_on(dt_thumbtable_t *table);
-// get the main image to act on during global changes (libs, accels)
-int dt_thumbtable_get_image_to_act_on(dt_thumbtable_t *table);
+
+// init all accels
+void dt_thumbtable_init_accels(dt_thumbtable_t *table);
+// connect all accels if thumbtable is active in the view and they are not loaded
+// disconnect them if not
+void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

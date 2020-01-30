@@ -24,6 +24,7 @@
 #include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "views/view.h"
 
 #define ZOOM_MAX 13
@@ -120,7 +121,12 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
   GtkAllocation allocation;
   gtk_widget_get_allocation(table->widget, &allocation);
 
-  if(allocation.width <= 20 || allocation.height <= 20) return FALSE;
+  if(allocation.width <= 20 || allocation.height <= 20)
+  {
+    table->view_width = allocation.width;
+    table->view_height = allocation.height;
+    return FALSE;
+  }
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -654,6 +660,10 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
+
+  // we init key accels
+  dt_thumbtable_init_accels(table);
+
   return table;
 }
 
@@ -774,232 +784,226 @@ void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
     gtk_style_context_remove_class(context, "dt_show_overlays");
 }
 
-static gboolean _image_duplicate(int sourceid, gboolean virgin)
+static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                            GdkModifierType modifier, gpointer data)
 {
+  GList *imgs = dt_view_get_images_to_act_on();
+  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  g_list_free(imgs);
+  return TRUE;
+}
+static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                             GdkModifierType modifier, gpointer data)
+{
+  GList *imgs = dt_view_get_images_to_act_on();
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  g_list_free(imgs);
+  return TRUE;
+}
+static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                            GdkModifierType modifier, gpointer data)
+{
+  return dt_history_copy(dt_view_get_image_to_act_on2());
+}
+static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                  GdkModifierType modifier, gpointer data)
+{
+  return dt_history_copy_parts(dt_view_get_image_to_act_on2());
+}
+static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                             GdkModifierType modifier, gpointer data)
+{
+  GList *imgs = dt_view_get_images_to_act_on();
+  gboolean ret = dt_history_paste_on_list(imgs, TRUE);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  g_list_free(imgs);
+  return ret;
+}
+static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  GList *imgs = dt_view_get_images_to_act_on();
+  gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  g_list_free(imgs);
+  return ret;
+}
+static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+  GList *imgs = dt_view_get_images_to_act_on();
+  gboolean ret = dt_history_delete_on_list(imgs, TRUE);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  g_list_free(imgs);
+  return ret;
+}
+static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                 GdkModifierType modifier, gpointer data)
+{
+  const int sourceid = dt_view_get_image_to_act_on2();
   const int newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 
-  if(virgin)
+  if(GPOINTER_TO_INT(data))
     dt_history_delete_on_image(newimgid);
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL);
 
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  return TRUE;
+}
+static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                  GdkModifierType modifier, gpointer data)
+{
+  dt_selection_select_all(darktable.selection);
+  return TRUE;
+}
+static gboolean _accel_select_none(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  dt_selection_clear(darktable.selection);
+  return TRUE;
+}
+static gboolean _accel_select_invert(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  dt_selection_invert(darktable.selection);
+  return TRUE;
+}
+static gboolean _accel_select_film(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  dt_selection_select_filmroll(darktable.selection);
+  return TRUE;
+}
+static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
+{
+  dt_selection_select_unaltered(darktable.selection);
   return TRUE;
 }
 
-// key accels are managed inside filmstrip lib and repercuted here
-gboolean dt_thumbtable_accel_callback(dt_thumbtable_t *table, dt_thumbtable_accels_t accel)
+// init all accels
+void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 {
-  GList *imgs = dt_thumbtable_get_images_to_act_on(table);
-  const int id = dt_thumbtable_get_image_to_act_on(table);
-  gboolean ret = TRUE;
-  gboolean reload = TRUE;
+  dt_view_type_flags_t views
+      = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
+  /* setup rating key accelerators */
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 0"), views, GDK_KEY_0, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 1"), views, GDK_KEY_1, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 2"), views, GDK_KEY_2, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 3"), views, GDK_KEY_3, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 4"), views, GDK_KEY_4, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate 5"), views, GDK_KEY_5, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/rate reject"), views, GDK_KEY_r, 0);
 
-  switch(accel)
-  {
-    case DT_THUMBTABLE_ACCEL_RATE_0:
-    case DT_THUMBTABLE_ACCEL_RATE_1:
-    case DT_THUMBTABLE_ACCEL_RATE_2:
-    case DT_THUMBTABLE_ACCEL_RATE_3:
-    case DT_THUMBTABLE_ACCEL_RATE_4:
-    case DT_THUMBTABLE_ACCEL_RATE_5:
-    case DT_THUMBTABLE_ACCEL_REJECT:
-      dt_ratings_apply_on_list(dt_thumbtable_get_images_to_act_on(table), accel, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_COPY:
-      ret = dt_history_copy(id);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_COPY_PARTS:
-      ret = dt_history_copy_parts(id);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_PASTE:
-      ret = dt_history_paste_on_list(imgs, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_PASTE_PARTS:
-      ret = dt_history_paste_parts_on_list(imgs, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_HIST_DISCARD:
-      ret = dt_history_delete_on_list(imgs, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_DUPLICATE:
-      ret = _image_duplicate(id, FALSE);
-      break;
-    case DT_THUMBTABLE_ACCEL_DUPLICATE_VIRGIN:
-      ret = _image_duplicate(id, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_COLOR_RED:
-    case DT_THUMBTABLE_ACCEL_COLOR_YELLOW:
-    case DT_THUMBTABLE_ACCEL_COLOR_GREEN:
-    case DT_THUMBTABLE_ACCEL_COLOR_BLUE:
-    case DT_THUMBTABLE_ACCEL_COLOR_PURPLE:
-    case DT_THUMBTABLE_ACCEL_COLOR_CLEAR:
-      dt_colorlabels_toggle_label_on_list(imgs, accel - DT_THUMBTABLE_ACCEL_COLOR_RED, TRUE);
-      break;
-    case DT_THUMBTABLE_ACCEL_SELECT_ALL:
-      dt_selection_select_all(darktable.selection);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_SELECT_NONE:
-      dt_selection_clear(darktable.selection);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_SELECT_INVERT:
-      dt_selection_invert(darktable.selection);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_SELECT_FILM:
-      dt_selection_select_filmroll(darktable.selection);
-      reload = FALSE;
-      break;
-    case DT_THUMBTABLE_ACCEL_SELECT_UNTOUCHED:
-      dt_selection_select_unaltered(darktable.selection);
-      reload = FALSE;
-      break;
-    default:
-      break;
-  }
+  /* setup history key accelerators */
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/copy history"), views, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/copy history parts"), views, GDK_KEY_c,
+                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/paste history"), views, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/paste history parts"), views, GDK_KEY_v,
+                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/discard history"), views, 0, 0);
 
-  if(reload) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/duplicate image"), views, GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/duplicate image virgin"), views, GDK_KEY_d,
+                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  g_list_free(imgs);
-  return ret;
+  /* setup color label accelerators */
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/color red"), views, GDK_KEY_F1, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/color yellow"), views, GDK_KEY_F2, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/color green"), views, GDK_KEY_F3, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/color blue"), views, GDK_KEY_F4, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/color purple"), views, GDK_KEY_F5, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/clear color labels"), views, 0, 0);
+
+  /* setup selection accelerators */
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/select all"), views, GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/select none"), views, GDK_KEY_a,
+                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/invert selection"), views, GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/select film roll"), views, 0, 0);
+  dt_accel_register_manual(NC_("accel", "view/thumbtable/select untouched"), views, 0, 0);
 }
-
-// get the list of images to act on during global changes (libs, accels)
-// TODO : grouped images
-GList *dt_thumbtable_get_images_to_act_on(dt_thumbtable_t *table)
+// connect all accels if thumbtable is active in the view and they are not loaded
+// disconnect them if not
+void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view)
 {
-  /** Here's how it works
-   *
-   *             mouse over| x | x | x |   |   |
-   *     mouse inside table| x | x |   |   |   |
-   * mouse inside selection| x |   |   |   |   |
-   *          active images| ? | ? | x |   | x |
-   *                       |   |   |   |   |   |
-   *                       | S | O | O | S | A |
-   *  S = selection ; O = mouseover ; A = active images
-   *  the mouse can be outside thumbtable in case of filmstrip
-   **/
-
-  GList *l = NULL;
-  const int mouseover = dt_control_get_mouse_over_id();
-
-  if(mouseover > 0)
+  // we verify that thumbtable may be active for this view
+  if(!(view & DT_VIEW_LIGHTTABLE) && !(view & DT_VIEW_DARKROOM) && !(view & DT_VIEW_TETHERING)
+     && !(view & DT_VIEW_MAP) && !(view & DT_VIEW_PRINT))
   {
-    // collumn 1,2,3
-    if(table->mouse_inside)
-    {
-      // collumn 1,2
-      sqlite3_stmt *stmt;
-      gboolean inside_sel = FALSE;
-      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        inside_sel = TRUE;
-        sqlite3_finalize(stmt);
-      }
-      g_free(query);
-
-      if(inside_sel)
-      {
-        // collumn 1
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                    &stmt, NULL);
-        while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-        }
-        if(stmt) sqlite3_finalize(stmt);
-      }
-      else
-      {
-        // collumn 2
-        l = g_list_append(l, GINT_TO_POINTER(mouseover));
-      }
-    }
-    else
-    {
-      // collumn 3
-      l = g_list_append(l, GINT_TO_POINTER(mouseover));
-    }
+    // disconnect all accels
+    dt_accel_disconnect_list(table->accel_closures);
+    return;
   }
-  else
+  else if(g_slist_length(table->accel_closures) > 1)
   {
-    // collumn 4,5
-    if(g_slist_length(darktable.view_manager->active_images) > 0)
-    {
-      // collumn 5
-      GSList *ll = darktable.view_manager->active_images;
-      while(ll)
-      {
-        const int id = GPOINTER_TO_INT(ll->data);
-        l = g_list_append(l, GINT_TO_POINTER(id));
-        ll = g_slist_next(ll);
-      }
-    }
-    else
-    {
-      // collumn 4
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                  &stmt, NULL);
-      while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-      }
-      if(stmt) sqlite3_finalize(stmt);
-    }
+    // already loaded, nothing to do !
+    return;
   }
 
-  return l;
-}
+  // Rating accels
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 0",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 1",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 2",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 3",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 4",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate 5",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/rate reject",
+                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
 
-// get the main image to act on during global changes (libs, accels)
-int dt_thumbtable_get_image_to_act_on(dt_thumbtable_t *table)
-{
-  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
-   *
-   *             mouse over| x |   |   |
-   *          active images| ? |   | x |
-   *                       |   |   |   |
-   *                       | O | S | A |
-   *  First image of ...
-   *  S = selection ; O = mouseover ; A = active images
-   *  the mouse can be outside thumbtable in case of filmstrip
-   **/
+  // History key accels
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/copy history",
+                          g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/copy history parts",
+                          g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/paste history",
+                          g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/paste history parts",
+                          g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/discard history",
+                          g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
 
-  int ret = -1;
-  const int mouseover = dt_control_get_mouse_over_id();
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/duplicate image",
+                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/duplicate image virgin",
+                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
 
-  if(mouseover)
-  {
-    ret = mouseover;
-  }
-  else
-  {
-    if(g_slist_length(darktable.view_manager->active_images) > 0)
-    {
-      ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
-    }
-    else
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT s.imgid FROM main.selected_images as s, memory.collected_images as c "
-                                  "WHERE c.imgid=s.imgid ORDER BY c.rowid LIMIT 1",
-                                  -1, &stmt, NULL);
-      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        ret = sqlite3_column_int(stmt, 0);
-      }
-      if(stmt) sqlite3_finalize(stmt);
-    }
-  }
+  // Color label accels
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/color red",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(0), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/color yellow",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(1), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/color green",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(2), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/color blue",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(3), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/color purple",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(4), NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/clear color labels",
+                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(5), NULL));
 
-  return ret;
+  // Selection accels
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/select all",
+                          g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/select none",
+                          g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/invert selection",
+                          g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/select film roll",
+                          g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
+  dt_accel_connect_manual(table->accel_closures, "view/thumbtable/select untouched",
+                          g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
