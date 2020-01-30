@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2020-01-03 19:59+0100\n"
-"PO-Revision-Date: 2019-12-21 15:19+0100\n"
+"POT-Creation-Date: 2020-01-29 10:07+0100\n"
+"PO-Revision-Date: 2020-01-30 15:45+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -313,15 +313,15 @@ msgid "Overview"
 msgstr "Présentation générale"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:176(para)
-#, fuzzy
 msgid ""
 "darktable is an open source photography workflow application, image editor "
 "and raw developer, a virtual lighttable and darkroom for photographers."
 msgstr ""
 "darktable est une application à code source ouvert qui offre un flux de "
-"travail pour le traitement des photographies. Il permet le développement des "
-"images enregistrées au format RAW. Il comporte une table lumineuse et une "
-"chambre noire virtuelles pour les photographes."
+"travail pour le traitement des photographies. Il fournit un éditeur d'images "
+"et permet le développement des images enregistrées au format RAW. Il "
+"comporte une table lumineuse et une chambre noire virtuelles pour les "
+"photographes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:181(para)
 msgid ""
@@ -338,26 +338,25 @@ msgid "General Features"
 msgstr "Fonctionnalités générales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:192(para)
-#, fuzzy
 msgid ""
 "darktable runs on GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows and "
 "Solaris 11 / GTK3."
 msgstr ""
-"darktable fonctionne sous GNU/Linux / GTK3, Mac OS X / macports et Solaris "
-"11 / GTK3 ;"
+"darktable fonctionne sous GNU/Linux / GTK3, Mac OS X / macports, BSD, "
+"Windows et Solaris 11 / GTK3."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:196(para)
 msgid "Fully non-destructive editing."
-msgstr "édition totalement non destructive ;"
+msgstr "Édition totalement non destructive."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:200(para)
 msgid ""
 "All darktable core functions operate on 4x32-bit floating point pixel "
 "buffers for high accuracy processing, preventing banding and color breaks."
 msgstr ""
-"toutes les fonctions de base de darktable utilisent des tampons de pixels en "
+"Toutes les fonctions de base de darktable utilisent des tampons de pixels en "
 "arithmétique flottante 4x32 bits pour un traitement de haute précision "
-"évitant les effets de bandes et les ruptures de dégradé ;"
+"évitant les effets de bandes et les ruptures de dégradé."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:205(para)
 msgid ""
@@ -373,19 +372,18 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:211(para)
 msgid "GPU acceleration via OpenCL (runtime detection and enabling)."
-msgstr "accélération GPU via OpenCL (détection et activation au lancement) ;"
+msgstr "Accélération GPU via OpenCL (détection et activation au lancement)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:215(para)
-#, fuzzy
 msgid ""
 "Image processing modules operate in CIELab and several popular RGB model-"
 "based color spaces, which are much larger than the gamut of modern displays, "
 "printers or even human vision."
 msgstr ""
-"l’essentiel du traitement des images est effectué dans l’espace "
-"colorimétrique CIELab, qui est bien plus étendu que le gamut (gamme des "
-"couleurs prises en compte) des écrans modernes, des imprimantes et même de "
-"la vision humaine ;"
+"Les modules de traitement d'images opèrent dans l'espace CIELab et dans "
+"plusieurs espaces colorimétriques populaires basés sur RGB qui sont bien "
+"plus étendus que le gamut (gamme des couleurs prises en compte) des écrans "
+"modernes, des imprimantes et même de la vision humaine."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:220(para)
 msgid ""
@@ -394,7 +392,7 @@ msgid ""
 msgstr ""
 "Écran géré en pleines couleurs avec épreuvage et vérification du gamut. "
 "Profil ICC intégré pour effectuer l’exportation : sRGB, Adobe RGB, XYZ et "
-"RGB linéaire ;"
+"RGB linéaire."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:225(para)
 msgid ""
@@ -403,21 +401,20 @@ msgid ""
 "Filtering and sorting your collections within the base query or simple "
 "tagging by related tags are useful tools in your every-day photo workflow."
 msgstr ""
-"un module de collection vous permet d’exécuter des requêtes flexibles de "
+"Un module de collection vous permet d’exécuter des requêtes flexibles de "
 "base de données, de rechercher vos images par mots-clés, par notes "
 "(étoiles), par labels de couleur et de faire beaucoup plus. Filtrage et tri "
 "de vos collections par requêtes sur la base de données ou simple marquage "
 "par des mots-clés appropriés seront, tous les jours, des outils utiles dans "
-"le flux de travail de traitement de vos photos ;"
+"le flux de travail de traitement de vos photos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:232(para)
-#, fuzzy
 msgid ""
 "Import a variety of standard raw, low and high dynamic range image formats "
 "(e.g. CR2, DNG, JPEG, OpenEXR, PFM)."
 msgstr ""
-"importe une variété de formats d’image, standard, RAW, de grande plage "
-"dynamique (par exemple JPEG, CR2, OpenEXR, PFM, ...) ;"
+"Importe une variété de formats standard RAW, des formats d'image de faible "
+"et de grande plage dynamique (par exemple CR2, DNG, JPEG, CR2, OpenEXR, PFM)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:237(para)
 msgid ""
@@ -425,11 +422,11 @@ msgid ""
 "multi-level software caches."
 msgstr ""
 "grâce à des caches logiciels à plusieurs niveaux, darktable possède une "
-"interface utilisateur sans latence, plein écran et zoomable  ;"
+"interface utilisateur sans latence, plein écran et zoomable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:242(para)
 msgid "Tethered shooting."
-msgstr "prise de vue en mode connecté ;"
+msgstr "Prise de vue en mode connecté."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:246(para)
 msgid ""
@@ -447,10 +444,9 @@ msgid ""
 msgstr ""
 "darktable utilise à la fois des fichiers liés XMP et sa base de données "
 "rapide pour enregistrer les métadonnées et les paramètres de traitement. "
-"Toutes les données EXIF sont lues et écrites en utilisant libexiv2 ;"
+"Toutes les données EXIF sont lues et écrites en utilisant libexiv2."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:257(para)
-#, fuzzy
 msgid ""
 "darktable comes with more than 60 image processing modules which cover "
 "correction of digital image imperfections and common defects, basic "
@@ -458,9 +454,10 @@ msgid ""
 "enhancements and artistic effects."
 msgstr ""
 "darktable est livré avec plus de 60 modules de traitement d'images qui "
-"couvrent l’ensemble des besoins depuis les opérations de base, les "
-"modifications de valeurs tonales, la manipulation de la couleur, la "
-"correction des défauts courants des images, jusqu’aux effets artistiques ;"
+"couvrent la correction des imperfections des images numériques et des "
+"défauts courants, les ajustements de base, les modifications de valeurs "
+"tonales, la manipulation de la couleur aussi bien que les améliorations et "
+"les effets artistiques."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:263(para)
 msgid ""
@@ -469,17 +466,17 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:267(para)
-#, fuzzy
 msgid ""
 "A powerful mask feature gives you fine control over how the module affects "
 "complete image or its specific areas. You can select image areas by drawing "
 "a mask using various shapes, or by defining a parametric mask based on pixel "
 "values."
 msgstr ""
-"une fonctionnalité puissante de masque vous donne un contrôle précis de "
-"l'action des modules sur différentes parties d’une image. Vous pouvez, à "
-"votre choix, dessiner un masque en utilisant différentes formes ou définir "
-"un masque paramétrique basé sur les valeurs des pixels ;"
+"Une fonctionnalité puissante de masque vous donne un contrôle précis de "
+"l'action des modules sur l'image complète ou sur des parties spécifiques de "
+"cette image. Vous pouvez sélectionner des zones de l'image en dessinant un "
+"masque en utilisant différentes formes ou en définissant un masque "
+"paramétrique basé sur des valeurs de pixels."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:273(para)
 msgid ""
@@ -490,23 +487,24 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:278(para)
 msgid ""
 "darktable introduces a highly efficient, yet simple <quote>single-click</"
-"quote> denoiser that always just works™. It's designed as a module where the "
+"quote> denoiser that always just works. It's designed as a module where the "
 "denoising performance only depends on camera and ISO setting. A database of "
 "profiles contains parameters for well above 200 popular camera models."
 msgstr ""
 "darktable introduit un réducteur de bruit <quote>en un clic</quote> très "
-"efficace, pourtant simple, qui fonctionne toujours juste™. Il est conçu sous "
+"efficace, pourtant simple, qui fonctionne toujours bien. Il est conçu sous "
 "forme de module où les performances de la réduction de bruit ne dépendent "
-"que du boîtier et de la sensibilité ISO. Une base de données de profils "
-"comporte les paramètres pour bien plus de 200 boîtiers populaires ;"
+"que du boîtier et du réglage de la sensibilité ISO. Une base de données de "
+"profils contient des paramètres pour bien plus de 200 modèle de boîtiers "
+"populaires."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:285(para)
 msgid ""
 "darktable comes with a versatile scripting interface for functionality "
 "enhancement using Lua as a scripting language."
 msgstr ""
-"pour améliorer la fonctionnalité darktable possède une interface souple "
-"d'écriture de scripts. Il utilise Lua comme langage de script ;"
+"Pour améliorer la fonctionnalité darktable possède une interface souple "
+"d'écriture de scripts. Il utilise Lua comme langage de script."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:290(para)
 msgid ""
@@ -519,7 +517,7 @@ msgstr ""
 "affichées sur une carte. Différentes sources de cartes sont proposées à "
 "votre choix. Des coordonnées de géolocalisation peuvent être assignées aux "
 "images en les déposant manuellement sur la carte ou, en appliquant des "
-"données de traces GPX ;"
+"données de traces GPX."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:296(para)
 msgid ""
@@ -527,7 +525,7 @@ msgid ""
 "collection of images fullscreen."
 msgstr ""
 "darktable dispose d'une fonctionnalité de diaporama intégrée qui vous permet "
-"d'afficher votre collection d'images en mode plein écran ;"
+"d'afficher votre collection d'images en mode plein écran."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:301(para)
 msgid ""
@@ -535,7 +533,7 @@ msgid ""
 "with full color management support."
 msgstr ""
 "Un module polyvalent d'impression, avec un support complet de la gestion des "
-"couleurs, vous permet d'envoyer votre image à une imprimante connectée . "
+"couleurs, vous permet d'envoyer votre image à une imprimante connectée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:310(title)
 msgid "Program invocation"
@@ -3639,9 +3637,8 @@ msgid "HSL <emphasis>(color zones)</emphasis>"
 msgstr "HSL <emphasis>(zones de couleur)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2682(para)
-#, fuzzy
 msgid "split-toning <emphasis>(split-toning)</emphasis>"
-msgstr "virage partiel <emphasis>(virage partiel)</emphasis> ;"
+msgstr "Virage partiel <emphasis>(virage partiel)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2686(para)
 msgid "grain <emphasis>(grain)</emphasis>"
@@ -5719,11 +5716,8 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4482(para)
-#, fuzzy
 msgid "The panel contains two views: <placeholder-1/>"
-msgstr ""
-"Il y a 4 étapes dans le processus d'utilisation de filmique : <placeholder-1/"
-">"
+msgstr "Le panneau contient deux vues : <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4498(title)
 msgid "tag properties"
@@ -5795,18 +5789,15 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4553(para)
-#, fuzzy
 msgid ""
 "A <quote>minus</quote> means that the tag is attached to at least one "
 "selected image. In tree view, for a parent tag it also means that at least "
 "one child tag is attached to at least one of the selected images."
 msgstr ""
-"Sur la gauche, un indicateur donne le statut du mot-clé par rapport aux "
-"images sélectionnées. Une <quote> coche </quote> signifie que le mot-clé est "
-"attaché à toutes les images sélectionnées. Un <quote> moins </quote> "
-"signifie que le mot-clé est attaché à au moins une image sélectionnée. Dans "
-"l'arborescence, sur le nœud parent, cela signifie qu'au moins un mot-clé "
-"enfant est attaché à une image sélectionnée."
+"Un <quote> moins </quote> signifie que le mot-clé est attaché à au moins une "
+"image sélectionnée. Dans l'arborescence, pour un mot-clé parent cela "
+"signifie aussi qu'au moins un mot-clé enfant est attaché à au moins une des "
+"images sélectionnées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4559(para)
 msgid ""
@@ -5847,11 +5838,10 @@ msgstr ""
 "exportée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4582(para)
-#, fuzzy
 msgid "Right-clicking on the tag opens a submenu with available commands."
 msgstr ""
-"Un Clic-droit ouvre un sous-menu avec les commandes disponibles pour ce mot-"
-"clé."
+"Un Clic-droit sur le mot-clé ouvre un sous-menu avec les commandes "
+"disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4590(para)
 msgid ""
@@ -17467,11 +17457,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14242(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
