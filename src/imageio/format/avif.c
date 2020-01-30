@@ -35,6 +35,10 @@
 
 #include <avif/avif.h>
 
+#define AVIF_MIN_TILE_SIZE 512
+#define AVIF_MAX_TILE_SIZE 3072
+#define AVIF_DEFAULT_TILE_SIZE AVIF_MIN_TILE_SIZE * 4
+
 DT_MODULE(1)
 
 enum avif_compression_type_e {
@@ -427,21 +431,14 @@ int write_image(struct dt_imageio_module_data_t *data,
    */
   switch (d->tiling) {
   case AVIF_TILING_ON: {
-    size_t width_tile_size = 512;
-    size_t height_tile_size = 512;
+    size_t width_tile_size  = AVIF_DEFAULT_TILE_SIZE;
+    size_t height_tile_size = AVIF_DEFAULT_TILE_SIZE;
 
     if (width >= 4096) {
-      width_tile_size = 1024;
+        width_tile_size = AVIF_MAX_TILE_SIZE;
     }
     if (height >= 4096) {
-      height_tile_size = 1024;
-    }
-
-    if (width >= 8192) {
-      width_tile_size = 2048;
-    }
-    if (height >= 8192) {
-      height_tile_size = 2048;
+        height_tile_size = AVIF_MAX_TILE_SIZE;
     }
 
     encoder->tileColsLog2 = flp2(width / width_tile_size);
@@ -690,8 +687,8 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->tiling,
           _("tile an image into segments.\n"
             "\n"
-            "makes encoding a lot faster. the impact on quality reduction "
-            "is negligible."));
+            "makes encoding faster. the impact on quality reduction "
+            "is negligible, but increases the file size."));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->tiling,
