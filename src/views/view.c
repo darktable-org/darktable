@@ -34,6 +34,7 @@
 #include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -376,6 +377,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   /* change current view to the new view */
   vm->current_view = new_view;
+
+  /* update thumbtable accels */
+  dt_thumbtable_update_accels_connection(dt_ui_thumbtable(darktable.gui->ui), new_view->view(new_view));
 
   /* restore visible stat of panels for the new view */
   dt_ui_restore_panels(darktable.gui->ui);
@@ -784,6 +788,139 @@ int32_t dt_view_get_image_to_act_on()
     else
       return mouse_over_id;
   }
+}
+// get the list of images to act on during global changes (libs, accels)
+// TODO : grouped images
+GList *dt_view_get_images_to_act_on()
+{
+  /** Here's how it works
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   **/
+
+  GList *l = NULL;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover > 0)
+  {
+    // collumn 1,2,3
+    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    {
+      // collumn 1,2
+      sqlite3_stmt *stmt;
+      gboolean inside_sel = FALSE;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        inside_sel = TRUE;
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      if(inside_sel)
+      {
+        // collumn 1
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                    &stmt, NULL);
+        while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        }
+        if(stmt) sqlite3_finalize(stmt);
+      }
+      else
+      {
+        // collumn 2
+        l = g_list_append(l, GINT_TO_POINTER(mouseover));
+      }
+    }
+    else
+    {
+      // collumn 3
+      l = g_list_append(l, GINT_TO_POINTER(mouseover));
+    }
+  }
+  else
+  {
+    // collumn 4,5
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      // collumn 5
+      GSList *ll = darktable.view_manager->active_images;
+      while(ll)
+      {
+        const int id = GPOINTER_TO_INT(ll->data);
+        l = g_list_append(l, GINT_TO_POINTER(id));
+        ll = g_slist_next(ll);
+      }
+    }
+    else
+    {
+      // collumn 4
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                  &stmt, NULL);
+      while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return l;
+}
+
+// get the main image to act on during global changes (libs, accels)
+int dt_view_get_image_to_act_on2()
+{
+  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
+   *
+   *             mouse over| x |   |   |
+   *          active images| ? |   | x |
+   *                       |   |   |   |
+   *                       | O | S | A |
+   *  First image of ...
+   *  S = selection ; O = mouseover ; A = active images
+   **/
+
+  int ret = -1;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover)
+  {
+    ret = mouseover;
+  }
+  else
+  {
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT s.imgid FROM main.selected_images as s, memory.collected_images as c "
+                                  "WHERE c.imgid=s.imgid ORDER BY c.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        ret = sqlite3_column_int(stmt, 0);
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return ret;
 }
 
 // Draw one of the controls that overlay thumbnails (e.g. stars) and check if the pointer is hovering it.

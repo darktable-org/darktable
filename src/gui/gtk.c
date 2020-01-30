@@ -94,7 +94,6 @@ typedef struct dt_ui_t
 
   /* thumb table */
   dt_thumbtable_t *thumbtable;
-  GtkWidget *lb;
 } dt_ui_t;
 
 /* initialize the whole left panel */
