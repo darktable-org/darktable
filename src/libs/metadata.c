@@ -35,13 +35,16 @@ DT_MODULE(2)
 typedef struct dt_lib_metadata_t
 {
   int imgsel;
-  GtkComboBox *metadata_cb[DT_METADATA_NUMBER];
-  gboolean multi_metadata[DT_METADATA_NUMBER];
+  GtkTextView *textview[DT_METADATA_NUMBER];
+  GtkWidget *swindow[DT_METADATA_NUMBER];
+  GList *metadata_list[DT_METADATA_NUMBER];
   GtkGrid *metadata_grid;
   gboolean editing;
   GtkWidget *clear_button;
   GtkWidget *apply_button;
   GtkWidget *config_button;
+  gint line_height;
+  gboolean init_layout;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -60,50 +63,52 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void _entry_set_style(GtkEntry *entry, PangoStyle style)
+static gboolean _is_leave_unchanged(const char *text)
 {
-  PangoAttribute *attr = pango_attr_style_new(style);
-  PangoLayout *layout = gtk_entry_get_layout(entry);
-  PangoAttrList *attrs = pango_layout_get_attributes(layout);
-  if (!attrs) attrs = pango_attr_list_new();
-  pango_attr_list_insert(attrs, attr);
-  gtk_entry_set_attributes(entry, attrs);
+  return g_strcmp0(text, _("<leave unchanged>")) == 0;
 }
 
-static void fill_combo_box_entry(GtkComboBox *combobox, uint32_t count, GList *items, gboolean *multi)
+static gchar *_get_buffer_text(GtkTextView *textview)
 {
-  GtkListStore *model = (GtkListStore *)gtk_combo_box_get_model(combobox);
-  gtk_list_store_clear(GTK_LIST_STORE(model));
-  GtkTreeIter iter;
-  GtkEntry *entry = (GtkEntry *)gtk_bin_get_child(GTK_BIN(combobox));
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+  GtkTextIter start;
+  gtk_text_buffer_get_start_iter(buffer, &start);
+  GtkTextIter end;
+  gtk_text_buffer_get_end_iter(buffer, &end);
+  return gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
+}
 
+static void _text_set_italic(GtkTextView *textview, const gboolean italic)
+{
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(buffer, &start, &end);
+  if(italic)
+    gtk_text_buffer_apply_tag_by_name(buffer, "italic", &start, &end);
+  else
+    gtk_text_buffer_remove_tag_by_name(buffer, "italic", &start, &end);
+}
+
+static void fill_text_view(const uint32_t i, const uint32_t count, dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  gboolean multi = FALSE;
+
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
   if(count == 0)  // no metadata value
   {
-    gtk_entry_set_text(entry, "");
-    _entry_set_style(entry, PANGO_STYLE_NORMAL);
-    *multi = FALSE;
-    return;
+    gtk_text_buffer_set_text(buffer, "", -1);
   }
-  if(count == 1) // images with different metadata values
+  else if(count == 1) // images with different metadata values
   {
-    gtk_list_store_append(model, &iter);
-    gtk_list_store_set(model, &iter, 0, _("<leave unchanged>"), -1);
-    gtk_combo_box_set_button_sensitivity(combobox, GTK_SENSITIVITY_AUTO);
-    _entry_set_style(entry, PANGO_STYLE_ITALIC);
-    *multi = TRUE;
+    gtk_text_buffer_set_text(buffer, "<leave unchanged>", -1);
+    multi = TRUE;
   }
   else // one or several images with the same metadata value
   {
-    gtk_combo_box_set_button_sensitivity(combobox, GTK_SENSITIVITY_OFF);
-    _entry_set_style(entry, PANGO_STYLE_NORMAL);
-    *multi = FALSE;
+    gtk_text_buffer_set_text(buffer, (char *)d->metadata_list[i]->data, -1);
   }
-  for(GList *item = items; item; item = g_list_next(item))
-  {
-    gtk_list_store_append(model, &iter);
-    gtk_list_store_set(model, &iter, 0, (char *)item->data, -1);
-  }
-  gtk_combo_box_set_active(combobox, 0);
+  _text_set_italic(d->textview[i], multi);
 }
 
 static void update(dt_lib_module_t *self, gboolean early_bark_out)
@@ -163,14 +168,16 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    fill_combo_box_entry(d->metadata_cb[i], metadata_count[keyid], metadata[keyid], &(d->multi_metadata[i]));
-    g_list_free_full(metadata[keyid], g_free);
+    g_list_free_full(d->metadata_list[i], g_free);
+    d->metadata_list[i] = metadata[keyid];
+    fill_text_view(i, metadata_count[keyid], self);
   }
 }
 
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
+
   if(!dt_control_running()) return FALSE;
   update(self, TRUE);
   return FALSE;
@@ -193,22 +200,17 @@ static void write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  int32_t mouse_over_id;
-
+  const int32_t mouse_over_id = d->imgsel;
   d->editing = FALSE;
-
-  mouse_over_id = d->imgsel;
 
   gchar *metadata[DT_METADATA_NUMBER];
   GList *key_value = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    metadata[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i])))));
-    if(metadata[i] != NULL && (d->multi_metadata[i] == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->metadata_cb[i])) != 0))
-    {
+    metadata[i] = _get_buffer_text((GtkTextView *)d->textview[i]);
+    if(metadata[i] && !_is_leave_unchanged(metadata[i]))
       _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
-    }
   }
 
   dt_metadata_set_list(mouse_over_id, key_value, TRUE, TRUE);
@@ -230,7 +232,7 @@ static void apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
   write_metadata(self);
 }
 
-static gboolean key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
@@ -239,34 +241,42 @@ static gboolean key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
       write_metadata(self);
-      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-      break;
+//      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      return TRUE; // we don't want to insert new line into the text
     case GDK_KEY_Escape:
       update(self, FALSE);
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      d->editing = FALSE;
       break;
     case GDK_KEY_Tab:
       write_metadata(self);
       break;
     default:
       d->editing = TRUE;
-      _entry_set_style(GTK_ENTRY(entry), PANGO_STYLE_NORMAL);
+  }
+
+  if (gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event))
+  {
+    return TRUE;
   }
   return FALSE;
 }
 
-static void combobox_changed(GtkComboBox *combobox, dt_lib_module_t *self)
+static gboolean got_focus(GtkWidget *textview, dt_lib_module_t *self)
 {
-  GtkEntry *entry = (GtkEntry*)gtk_bin_get_child(GTK_BIN(combobox));
-  gchar *value;
-  GtkTreeModel *model = gtk_combo_box_get_model(combobox);
-  GtkTreeIter iter;
-  if(gtk_combo_box_get_active_iter(combobox, &iter))
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  if(!d->editing)
   {
-    gtk_tree_model_get(model, &iter, 0, &value, -1);
-    const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>")) == 0;
-    _entry_set_style(entry, leave_unchanged ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    gchar *text = _get_buffer_text(GTK_TEXT_VIEW(textview));
+    if(_is_leave_unchanged(text))
+    {
+      gtk_text_buffer_set_text(buffer, "", -1);
+      _text_set_italic(GTK_TEXT_VIEW(textview), FALSE);
+    }
+    g_free(text);
   }
+  return FALSE;
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -279,7 +289,51 @@ int position()
   return 510;
 }
 
-static void mouse_over_image_callback(gpointer instace, dt_lib_module_t *self)
+static void update_layout(dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+    const gboolean hidden = dt_conf_get_bool(setting);
+    if(hidden)
+    {
+      for(int j = 0; j < 2; j++)
+      {
+        gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,j,i));
+      }
+    }
+    else
+    {
+      for(int j = 0; j < 2; j++)
+      {
+        gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,j,i));
+      }
+    }
+    g_free(setting);
+
+    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+    // add a small offset to avoid scroll bar when not needed.
+    // would be probably better with the actual value of scrolling threshold
+    const unsigned int height = dt_conf_get_int(setting) ?
+                  dt_conf_get_int(setting) : DT_PIXEL_APPLY_DPI(d->line_height + d->line_height / 5);
+    gtk_widget_set_size_request(GTK_WIDGET(d->swindow[i]), -1, (height));
+    g_free(setting);
+  }
+}
+
+static void update_layout_workaround(dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  if(!d->init_layout)
+  {
+    update_layout(self);
+    d->init_layout = TRUE;
+  }
+}
+
+static void mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   /* lets trigger an expose for a redraw of widget */
@@ -289,29 +343,53 @@ static void mouse_over_image_callback(gpointer instace, dt_lib_module_t *self)
     gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
   }
   update(self, FALSE);
+  update_layout_workaround(self);
 }
 
-static void update_layout(dt_lib_module_t *self)
+static gboolean _metadata_list_size_changed(GtkWidget *window, GdkEvent  *event, GtkCellRenderer *renderer)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  GdkEventConfigure *data = (GdkEventConfigure *)event;
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+//  GtkTreeView *listview = g_object_get_qdata(G_OBJECT(renderer), g_quark_from_static_string("listview"));
+  g_object_set(G_OBJECT(renderer), "wrap-width", data->width, NULL);
+  // TODO make it works. renderer should take in account the new wrap-width and calculate a new record height
+  gtk_widget_queue_draw(GTK_WIDGET(window));
+  return FALSE;
+}
+
+typedef struct dt_lib_metadata_dialog_t
+{
+  GtkTextView *textview;
+  GtkTreeView *listview;
+  GtkDialog *dialog;
+} dt_lib_metadata_dialog_t;
+
+static gboolean metadata_selected(GtkWidget *listview, GdkEventButton *event, dt_lib_metadata_dialog_t *d)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
   {
-    const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name);
-    const gboolean hidden = dt_conf_get_bool(setting);
-    if(hidden)
+    GtkTreePath *path = NULL;
+    // Get tree path for row that was clicked
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(listview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,0,i));
-      gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,1,i));
+      GtkTreeModel *liststore = gtk_tree_view_get_model(GTK_TREE_VIEW(d->listview));
+      GtkTreeIter iter;
+      if(gtk_tree_model_get_iter(liststore, &iter, path))
+      {
+        gchar *text;
+        gtk_tree_model_get(liststore, &iter, 0, &text, -1);
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview);
+        gtk_text_buffer_set_text(buffer, text, -1);
+        g_free(text);
+        gtk_tree_path_free(path);
+        gtk_dialog_response(d->dialog, GTK_RESPONSE_YES);
+        return TRUE;
+      }
     }
-    else
-    {
-      gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,0,i));
-      gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,1,i));
-    }
-    g_free(setting);
+    gtk_tree_path_free(path);
   }
+  gtk_dialog_response(d->dialog, GTK_RESPONSE_NONE);
+  return FALSE;
 }
 
 static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
@@ -329,25 +407,31 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
   label = gtk_label_new(_("private"));
   gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
-  GtkWidget *metadata[DT_METADATA_NUMBER];
+  label = gtk_label_new(_("height"));
+  gtk_grid_attach(GTK_GRID(grid), label, 3, 0, 1, 1);
+  gchar *name[DT_METADATA_NUMBER];
+  GtkWidget *hidden[DT_METADATA_NUMBER];
   GtkWidget *private[DT_METADATA_NUMBER];
-  gchar *metadata_name[DT_METADATA_NUMBER];
+  gboolean hidden_v[DT_METADATA_NUMBER];
+  gboolean private_v[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata_name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
-    label = gtk_label_new(_(metadata_name[i]));
+    name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
+    label = gtk_label_new(_(name[i]));
     gtk_grid_attach(GTK_GRID(grid), label, 0, i+1, 1, 1);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     gtk_widget_set_hexpand(label, TRUE);
-    metadata[i] = gtk_check_button_new();
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata[i]), dt_conf_get_bool(setting));
-    gtk_grid_attach(GTK_GRID(grid), metadata[i], 1, i+1, 1, 1);
-    gtk_widget_set_halign(metadata[i], GTK_ALIGN_CENTER);
+    hidden[i] = gtk_check_button_new();
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
+    hidden_v[i] = dt_conf_get_bool(setting);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hidden[i]), hidden_v[i]);
+    gtk_grid_attach(GTK_GRID(grid), hidden[i], 1, i+1, 1, 1);
+    gtk_widget_set_halign(hidden[i], GTK_ALIGN_CENTER);
     g_free(setting);
     private[i] = gtk_check_button_new();
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", metadata_name[i]);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), dt_conf_get_bool(setting));
+    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
+    private_v[i] = dt_conf_get_bool(setting);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), private_v[i]);
     gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
     gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
     g_free(setting);
@@ -362,11 +446,13 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   {
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
-      dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata[i])));
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
+      const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
+      if(hidden_nv !=  hidden_v[i]) dt_conf_set_bool(setting, hidden_nv);
       g_free(setting);
-      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", metadata_name[i]);
-      dt_conf_set_bool(setting, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i])));
+      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
+      const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
+      if(private_nv != private_v[i]) dt_conf_set_bool(setting, private_nv);
       g_free(setting);
     }
   }
@@ -388,41 +474,126 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "apply", d->apply_button);
 }
 
-static void _set_combobox_style(GtkCellLayout *cell_layout, GtkCellRenderer *renderer,
-                          GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+static gboolean mouse_scroll(GtkWidget *swindow, GdkEventScroll *event, dt_lib_module_t *self)
 {
-  gchar *value;
-  gtk_tree_model_get(model, iter, 0, &value, -1);
-  const gboolean leave_unchanged = g_strcmp0(value, _("<leave unchanged>")) == 0;
-  g_object_set(renderer, "style", leave_unchanged ? PANGO_STYLE_ITALIC
-                                                  : PANGO_STYLE_NORMAL, NULL);
-  g_free(value);
-}
+  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-static gboolean _combobox_tooltip_setup(GtkWidget *combobox, gint x, gint y, gboolean kb_mode,
-                                        GtkTooltip* tooltip, dt_lib_module_t *self)
-{
-  gboolean res = FALSE;
-  GtkEntry *entry = (GtkEntry*)gtk_bin_get_child(GTK_BIN(combobox));
-  PangoLayout *layout = gtk_entry_get_layout(entry);
-  gint width;
-  pango_layout_get_size(layout, &width, NULL);
-  width = width / PANGO_SCALE;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(GTK_WIDGET(entry), &allocation);
-  if(allocation.width < width)  // the full text is not visible
+  if (event->state & GDK_CONTROL_MASK)
   {
-    gchar *value;
-    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(combobox));
-    GtkTreeIter iter;
-    if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(combobox), &iter))
+    gint i;
+    for(i = 0; i < DT_METADATA_NUMBER; i++)
+      if(d->swindow[i] == swindow)
     {
-      gtk_tree_model_get(model, &iter, 0, &value, -1);
-      gtk_tooltip_set_text(tooltip, value);
-      res = TRUE;
+      const gint increment = DT_PIXEL_APPLY_DPI(d->line_height);
+      const gint min_height = DT_PIXEL_APPLY_DPI(d->line_height + d->line_height / 5);
+      const gint max_height = DT_PIXEL_APPLY_DPI(20*d->line_height + d->line_height / 5);
+      gint height;
+      gtk_widget_get_size_request(GTK_WIDGET(swindow), NULL, &height);
+      height = height + increment * event->delta_y;
+      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+      gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
+
+      const gchar *name = dt_metadata_get_name_by_display_order(i);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+      dt_conf_set_int(setting, height);
+      g_free(setting);
+
+      return TRUE;
     }
   }
-  return res;
+  return FALSE;
+}
+
+static gboolean click_on_textview(GtkWidget *textview, GdkEventButton *event, dt_lib_module_t *self)
+{
+  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  // get grid line number
+  uint32_t i;
+  for(i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    if(GTK_TEXT_VIEW(textview) == d->textview[i])
+      break;
+  }
+  if(i >= DT_METADATA_NUMBER) return FALSE;
+
+  if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)) return FALSE;
+
+  gchar *text = _get_buffer_text(GTK_TEXT_VIEW(textview));
+  const gboolean leave_unchanged = _is_leave_unchanged(text);
+  g_free(text);
+  if (!leave_unchanged) return FALSE;
+
+  GtkWidget *dialog = gtk_dialog_new();
+  gtk_window_set_decorated (GTK_WINDOW(dialog), FALSE);
+  gtk_window_set_modal (GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_title(GTK_WINDOW(dialog),_("metadata list"));
+  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+  GtkWidget *grid = gtk_grid_new();
+  gtk_container_add(GTK_CONTAINER(area), grid);
+  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_hexpand(w, TRUE);
+  gtk_widget_set_vexpand(w, TRUE);
+  // popup position
+  GdkWindow *parent_window = gtk_widget_get_window(GTK_WIDGET(d->swindow[i]));
+  gint wx, wy;
+  gdk_window_get_origin(parent_window, &wx, &wy);
+  gtk_window_move(GTK_WINDOW(dialog), wx, wy);
+  // popup width
+  GtkAllocation metadata_allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(d->swindow[i]), &metadata_allocation);
+  // popup height
+  const gchar *name = dt_metadata_get_name_by_display_order(i);
+  gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+  const gint height = dt_conf_get_int(setting) * 5;
+  g_free(setting);
+
+  gtk_widget_set_size_request(w, metadata_allocation.width, height);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_grid_attach(GTK_GRID(grid), w, 0, 0, 1, 1);
+
+  GtkTreeView *listview = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(listview));
+  gtk_tree_view_set_headers_visible(listview, FALSE);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(listview), GTK_SELECTION_SINGLE);
+
+  dt_lib_metadata_dialog_t *sd = (dt_lib_metadata_dialog_t *)calloc(1, sizeof(dt_lib_metadata_dialog_t));
+  sd->dialog = GTK_DIALOG(dialog);
+  sd->textview = d->textview[i];
+  sd->listview = listview;
+  g_signal_connect(G_OBJECT(listview), "button-press-event", G_CALLBACK(metadata_selected), sd);
+
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer, "text", 0, NULL);
+  gtk_tree_view_append_column(listview, col);
+//  gtk_tree_view_column_set_resizable(col, TRUE);
+//  g_object_set_qdata_full(G_OBJECT(renderer), g_quark_from_static_string("listview"), (gpointer)listview, NULL);
+  g_object_set(G_OBJECT(renderer), "wrap-mode", PANGO_WRAP_WORD, NULL);
+  g_object_set(G_OBJECT(renderer), "wrap-width", metadata_allocation.width, NULL);
+  g_signal_connect(GTK_WIDGET(dialog), "configure-event", G_CALLBACK(_metadata_list_size_changed), renderer);
+
+  GtkListStore *liststore = gtk_list_store_new(1, G_TYPE_STRING);
+  GtkTreeIter iter;
+  for(GList *item = d->metadata_list[i]; item; item = g_list_next(item))
+  {
+    gtk_list_store_append(liststore, &iter);
+    gtk_list_store_set(liststore, &iter, 0, (char *)item->data, -1);
+  }
+  gtk_tree_view_set_model(listview, GTK_TREE_MODEL(liststore));
+  g_object_unref(liststore);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+  const int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  if(res == GTK_RESPONSE_YES)
+  {
+    gtk_widget_grab_focus(GTK_WIDGET(d->textview[i]));
+  }
+  g_free(sd);
+  gtk_widget_destroy(dialog);
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -449,40 +620,55 @@ void gui_init(dt_lib_module_t *self)
   {
     GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
     gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_grid_attach(grid, label, 0, i, 1, 1);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label),
+              _("metadata text. if <leave unchanged> selected images have different metadata."
+              "\nin that case, right-click gives the possibility to choose one of them."
+              "\npress escape to exit the popup window"));
 
-    GtkListStore *model = gtk_list_store_new(1, G_TYPE_STRING);
-    GtkWidget *combobox = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(model));
-    g_signal_connect(combobox, "changed", G_CALLBACK(combobox_changed), self);
-    GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(combobox));
-    GtkCellRenderer *renderer = (GtkCellRenderer *)renderers->data;
+    GtkWidget *swindow = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_grid_attach(grid, swindow, 1, i, 1, 1);
+    gtk_widget_set_hexpand(swindow, TRUE);
+    d->swindow[i] = swindow;
+    gtk_widget_set_size_request(d->swindow[i], -1, DT_PIXEL_APPLY_DPI(30));
 
-    GtkWidget *entry = gtk_bin_get_child(GTK_BIN(combobox));
-    dt_gui_key_accel_block_on_focus_connect(entry);
-    g_signal_connect(entry, "key-press-event", G_CALLBACK(key_pressed), self);
-    gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
+    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+    gtk_text_buffer_create_tag (buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
+    GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
+    gtk_container_add(GTK_CONTAINER(swindow), textview);
 
-    g_object_set(G_OBJECT(combobox), "has-tooltip", TRUE, NULL);
-    g_signal_connect(G_OBJECT(combobox), "query-tooltip", G_CALLBACK(_combobox_tooltip_setup), self);
-    g_object_unref(model);
-    gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(combobox), 0);
-    gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(combobox), renderer, _set_combobox_style, NULL, NULL);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
+    dt_gui_key_accel_block_on_focus_connect(textview);
+    g_signal_connect(textview, "key-press-event", G_CALLBACK(key_pressed), self);
+    g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(click_on_textview), self);
+    g_signal_connect(textview, "grab-focus", G_CALLBACK(got_focus), self);
+    g_signal_connect(G_OBJECT(swindow), "scroll-event", G_CALLBACK(mouse_scroll), self);
+    d->textview[i] = GTK_TEXT_VIEW(textview);
+    gtk_widget_set_hexpand(textview, TRUE);
+    gtk_widget_set_vexpand(textview, TRUE);
 
-    d->metadata_cb[i] = GTK_COMBO_BOX(combobox);
-
-    gtk_widget_set_hexpand(combobox, TRUE);
-
-    GtkEntryCompletion *completion = gtk_entry_completion_new();
+/*    GtkEntryCompletion *completion = gtk_entry_completion_new();
     gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(combobox)));
     gtk_entry_completion_set_text_column(completion, 0);
     gtk_entry_completion_set_inline_completion(completion, TRUE);
     gtk_entry_set_completion(GTK_ENTRY(entry), completion);
     g_object_unref(completion);
+*/
 
-    g_object_set(G_OBJECT(label), "no-show-all", TRUE, NULL);
-    g_object_set(G_OBJECT(combobox), "no-show-all", TRUE, NULL);
-    gtk_grid_attach(grid, label, 0, i, 1, 1);
-    gtk_grid_attach_next_to(grid, combobox, label, GTK_POS_RIGHT, 1, 1);
+    gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
+    // doesn't work
+    // gtk_widget_set_no_show_all(GTK_WIDGET(textview), TRUE);
   }
+
+  PangoLayout *cell = gtk_widget_create_pango_layout(GTK_WIDGET(d->textview[0]), "X");
+
+  pango_layout_get_size(cell, NULL, &d->line_height);
+  g_object_unref(cell);
+  d->line_height /= PANGO_SCALE;
+
+  d->init_layout = FALSE;
   update_layout(self);
 
   // clear/apply buttons
@@ -493,21 +679,21 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
-  gtk_grid_attach(grid, button, 0, 0, 4, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), (gpointer)self);
+  gtk_grid_attach(grid, button, 0, 0, 5, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), self);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
   gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
-  gtk_grid_attach(grid, button, 4, 0, 4, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
+  gtk_grid_attach(grid, button, 5, 0, 5, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
-      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
+      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_BG_TRANSPARENT, NULL);
   d->config_button = button;
   gtk_widget_set_tooltip_text(button, _("configure metadata"));
-  gtk_grid_attach(grid, button, 8, 0, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(config_button_clicked), (gpointer)self);
+  gtk_grid_attach(grid, button, 10, 0, 1, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(config_button_clicked), self);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
   gtk_widget_set_hexpand(GTK_WIDGET(grid), TRUE);
@@ -523,7 +709,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(mouse_over_image_callback), self);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i]))));
+    dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->textview[i]));
   }
   free(self->data);
   self->data = NULL;
@@ -606,7 +792,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    metadata[keyid] = g_strdup(gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->metadata_cb[i])))));
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer((GtkTextView *)d->textview[i]);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(buffer, &start, &end);
+    metadata[keyid] = gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
     if(!metadata[keyid]) metadata[keyid] = g_strdup("");
     metadata_len[keyid] = strlen(metadata[keyid]) + 1;
     *size = *size + metadata_len[keyid];
