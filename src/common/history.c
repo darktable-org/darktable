@@ -681,6 +681,19 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    // and finaly copy the module order
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "INSERT OR REPLACE INTO main.module_order (imgid, iop_list, version)"
+                                " SELECT ?2, iop_list, version"
+                                "   FROM module_order"
+                                "   WHERE imgid = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dest_imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
   else
   {
