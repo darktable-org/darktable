@@ -89,6 +89,10 @@ typedef struct dt_thumbtable_t
   int drag_dx, drag_dy;       // distance of move of the current dragging session
   dt_thumbnail_t *drag_thumb; // thumb currently dragged (under the mouse)
 
+  // for some reasons, in filemanager, first image can not be at x=0
+  // in that case, we count the number of "scroll-top" try and reallign after 2 try
+  int realign_top_try;
+
   gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
 
   GSList *accel_closures; // list of associated accels
