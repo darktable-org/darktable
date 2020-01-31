@@ -459,7 +459,7 @@ static gboolean view_onMouseScroll(GtkWidget *treeview, GdkEventScroll *event, d
     const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow));
     const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
     gint width, height;
-    
+
     gtk_widget_get_size_request(GTK_WIDGET(d->scrolledwindow), &width, &height);
     height = height + increment*event->delta_y;
     height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
@@ -468,7 +468,7 @@ static gboolean view_onMouseScroll(GtkWidget *treeview, GdkEventScroll *event, d
 
     return TRUE;
   }
-  return FALSE; 
+  return FALSE;
 }
 
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
