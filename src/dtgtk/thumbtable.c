@@ -288,7 +288,22 @@ static void _move(dt_thumbtable_t *table, int x, int y)
 
     // we stop when first rowid image is fully shown
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-    if(first->rowid == 1 && posy > 0 && first->y >= 0) return;
+    if(first->rowid == 1 && posy > 0 && first->y >= 0)
+    {
+      // for some reasons, in filemanager, first image can not be at x=0
+      // in that case, we count the number of "scroll-top" try and reallign after 2 try
+      if(first->x != 0)
+      {
+        table->realign_top_try++;
+        if(table->realign_top_try > 2)
+        {
+          table->realign_top_try = 0;
+          dt_thumbtable_full_redraw(table, TRUE);
+        }
+      }
+      return;
+    }
+    table->realign_top_try = 0;
 
     // we stop when last image is fully shown (that means empty space at the bottom)
     dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
@@ -637,7 +652,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_style_context_add_class(context, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
-  table->offset = 1; // TODO retrieve it from rc file ?
+  table->offset = 3; // TODO retrieve it from rc file ?
 
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
