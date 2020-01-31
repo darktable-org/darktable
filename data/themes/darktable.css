@@ -199,6 +199,8 @@ filechooserdialog *,
 alignment,
 entry,
 entry *,
+textview,
+textview*,
 dialog,
 dialog *,
 colorswatch,
@@ -428,6 +430,17 @@ entry
 entry selection
 {
   background-color: @field_selected_bg;
+}
+
+textview
+{
+  border-radius: 2pt;
+  border: 0.5pt solid @border_color;
+  color: @field_fg;
+  background-color: @field_bg;
+  min-height: 0;
+  min-width: 0;
+  padding-left: 3pt;
 }
 
 /* Labels in views */
