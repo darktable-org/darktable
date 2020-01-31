@@ -347,8 +347,11 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     /* Clean selected images, and add to the table those which are going to be deleted */
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-    fullq = dt_util_dstrcat(fullq, "INSERT INTO main.selected_images SELECT id FROM main.images WHERE film_id IN "
-                                   "(SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
+    fullq = dt_util_dstrcat(fullq,
+                            "INSERT INTO main.selected_images"
+                            " SELECT id"
+                            " FROM main.images"
+                            " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
                             filmroll_path);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
 
