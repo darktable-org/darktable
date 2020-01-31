@@ -1514,7 +1514,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    "   ON film_id = film_rolls_id "
                    " WHERE %s"
                    " GROUP BY folder"
-                   " ORDER BY folder DESC", where_ext);
+                   " ORDER BY film_rolls_id DESC", where_ext);
         break;
     }
 
