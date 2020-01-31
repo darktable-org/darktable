@@ -2054,7 +2054,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
 
   // check if module is enabled and shown in UI
   dt_pthread_mutex_lock(&g->lock);
-  g->has_focus = (dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) && self->enabled);
+  g->has_focus = (self->expanded && self->enabled);
   dt_pthread_mutex_unlock(&g->lock);
 
   if(!g->has_focus)
@@ -3146,7 +3146,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(g == NULL) return;
   switch_cursors(self);
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled)
+  if(!self->expanded || !self->enabled)
   {
     // if module is not active, disable mask preview
     dt_pthread_mutex_lock(&g->lock);
