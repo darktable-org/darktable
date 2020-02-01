@@ -251,7 +251,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     if(!strcmp(entry->operation, new_module))
     {
       exists = TRUE;
@@ -268,7 +268,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
     l = iop_order_list;
     while(l)
     {
-      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+      const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
 
       if(!strcmp(entry->operation, module))
       {
@@ -369,7 +369,7 @@ GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, c
 // returns the first iop order entry that matches operation == op_name
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority)
 {
-  const GList *link = dt_ioppr_get_iop_order_link(iop_order_list, op_name, multi_priority);
+  const GList * const restrict link = dt_ioppr_get_iop_order_link(iop_order_list, op_name, multi_priority);
   if(link)
     return (dt_iop_order_entry_t *)link->data;
   else
@@ -380,7 +380,8 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority)
 {
   int iop_order = INT_MAX;
-  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name, multi_priority);
+  const dt_iop_order_entry_t *const restrict order_entry =
+    dt_ioppr_get_iop_order_entry(iop_order_list, op_name, multi_priority);
 
   if(order_entry)
   {
@@ -402,8 +403,8 @@ gboolean dt_ioppr_is_iop_before(GList *iop_order_list, const char *base_operatio
 
 gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 {
-  const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
-  const dt_iop_order_entry_t *bm = (const dt_iop_order_entry_t *)b;
+  const dt_iop_order_entry_t *const restrict am = (const dt_iop_order_entry_t *)a;
+  const dt_iop_order_entry_t *const restrict bm = (const dt_iop_order_entry_t *)b;
   if(am->o.iop_order > bm->o.iop_order) return 1;
   if(am->o.iop_order < bm->o.iop_order) return -1;
   return 0;
@@ -411,8 +412,8 @@ gint dt_sort_iop_list_by_order(gconstpointer a, gconstpointer b)
 
 gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b)
 {
-  const dt_iop_order_entry_t *am = (const dt_iop_order_entry_t *)a;
-  const dt_iop_order_entry_t *bm = (const dt_iop_order_entry_t *)b;
+  const dt_iop_order_entry_t *const restrict am = (const dt_iop_order_entry_t *)a;
+  const dt_iop_order_entry_t *const restrict bm = (const dt_iop_order_entry_t *)b;
   if(am->o.iop_order_f > bm->o.iop_order_f) return 1;
   if(am->o.iop_order_f < bm->o.iop_order_f) return -1;
   return 0;
@@ -426,7 +427,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   gboolean ok = TRUE;
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     if(strcmp(v30_order[k].operation, entry->operation))
     {
       ok = FALSE;
@@ -452,7 +453,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   ok = TRUE;
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     if(strcmp(legacy_order[k].operation, entry->operation))
     {
       ok = FALSE;
@@ -670,8 +671,8 @@ void dt_ioppr_resync_iop_list(dt_develop_t *dev)
   while(l)
   {
     GList *next = g_list_next(l);
-    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
-    dt_iop_module_t *mod = dt_iop_get_module_by_op_priority(dev->iop, e->operation, e->instance);
+    const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_module_t *const restrict mod = dt_iop_get_module_by_op_priority(dev->iop, e->operation, e->instance);
     if(mod == NULL)
     {
       dev->iop_order_list = g_list_remove_link(dev->iop_order_list, l);
@@ -752,7 +753,7 @@ GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list)
   GList *l = g_list_first(iop_order_list);
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
 
     if(_count_entries_operation(iop_order_list, entry->operation) > 1)
     {
@@ -809,7 +810,7 @@ GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list
   {
     while(link)
     {
-      dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)link->data;
+      const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)link->data;
       GList *next = g_list_next(link);
       if(strcmp(operation, entry->operation) == 0)
       {
@@ -879,7 +880,7 @@ static void _count_iop_module(GList *iop, const char *operation, int *max_multi_
   GList *modules = iop;
   while(modules)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
     if(!strcmp(mod->op, operation))
     {
       (*count)++;
@@ -918,7 +919,7 @@ static gboolean _operation_already_handled(GList *e_list, const char *operation)
 
   while(l)
   {
-    dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict ep = (dt_iop_order_entry_t *)l->data;
     if(!strcmp(ep->operation, operation)) return TRUE;
     l = g_list_previous(l);
   }
@@ -932,7 +933,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   int count = 0;
   while(l)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
+    const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)l->data;
     if((!only_disabled || mod->enabled == FALSE) && !strcmp(mod->op, operation))
     {
       count++;
@@ -952,7 +953,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   // for each priority list to be checked
   while(e_list)
   {
-    dt_iop_order_entry_t *ep = (dt_iop_order_entry_t *)e_list->data;
+    const dt_iop_order_entry_t *const restrict ep = (dt_iop_order_entry_t *)e_list->data;
 
     int max_multi_priority = 0, count = 0;
     int max_multi_priority_enabled = 0, count_enabled = 0;
@@ -967,7 +968,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
 
     while(l)
     {
-      dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+      const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)l->data;
       if(!strcmp(e->operation, ep->operation) && !_operation_already_handled(e_list, ep->operation))
       {
         // how many instances of this module in the entry list, and re-number multi-priority accordingly
@@ -1049,7 +1050,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolea
   // for each priority list to be checked
   while(si_list)
   {
-    dt_style_item_t *si = (dt_style_item_t *)si_list->data;
+    const dt_style_item_t *const restrict si = (dt_style_item_t *)si_list->data;
 
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     memcpy(n->operation, si->operation, sizeof(n->operation));
@@ -1069,7 +1070,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolea
   while(si_list)
   {
     dt_style_item_t *si = (dt_style_item_t *)si_list->data;
-    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)el->data;
+    const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)el->data;
 
     si->multi_priority = e->instance;
     si->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, si->operation, si->multi_priority);
@@ -1089,7 +1090,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, gboolean app
   // for each priority list to be checked
   while(m_list)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)m_list->data;
+    const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)m_list->data;
 
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     strncpy(n->operation, mod->op, sizeof(n->operation));
@@ -1254,9 +1255,9 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
   GList *modules = g_list_first(iop_list);
   while(modules)
   {
-    dt_iop_module_so_t *mod = (dt_iop_module_so_t *)(modules->data);
-
-    dt_iop_order_entry_t *entry = dt_ioppr_get_iop_order_entry(iop_order_list, mod->op, 0); // mod->multi_priority);
+    const dt_iop_module_so_t *const restrict mod = (dt_iop_module_so_t *)(modules->data);
+    const dt_iop_order_entry_t *const restrict entry =
+      dt_ioppr_get_iop_order_entry(iop_order_list, mod->op, 0); // mod->multi_priority);
     if(entry == NULL)
     {
       iop_order_missing = 1;
@@ -1270,7 +1271,7 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
 
 static void *_dup_iop_order_entry(const void *src, gpointer data)
 {
-  dt_iop_order_entry_t *scr_entry = (dt_iop_order_entry_t *)src;
+  const dt_iop_order_entry_t *const restrict scr_entry = (dt_iop_order_entry_t *)src;
   dt_iop_order_entry_t *new_entry = malloc(sizeof(dt_iop_order_entry_t));
   memcpy(new_entry, scr_entry, sizeof(dt_iop_order_entry_t));
   return (void *)new_entry;
@@ -1285,8 +1286,8 @@ GList *dt_ioppr_iop_order_copy_deep(GList *iop_order_list)
 // helper to sort a GList of dt_iop_module_t by iop_order
 gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b)
 {
-  const dt_iop_module_t *am = (const dt_iop_module_t *)a;
-  const dt_iop_module_t *bm = (const dt_iop_module_t *)b;
+  const dt_iop_module_t *const restrict am = (const dt_iop_module_t *)a;
+  const dt_iop_module_t *const restrict bm = (const dt_iop_module_t *)b;
   if(am->iop_order > bm->iop_order) return 1;
   if(am->iop_order < bm->iop_order) return -1;
   return 0;
@@ -1313,7 +1314,7 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, dt_iop_module_t *mo
     GList *modules = g_list_first(iop_list);
     while(modules)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
       if(mod == module) break;
       modules = g_list_next(modules);
     }
@@ -1349,7 +1350,7 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, dt_iop_module_t *mo
         GList *rules = g_list_first(darktable.iop_order_rules);
         while(rules)
         {
-          dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
+          const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
           if(strcmp(module->op, rule->op_prev) == 0 && strcmp(mod->op, rule->op_next) == 0)
           {
@@ -1395,7 +1396,7 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, dt_iop_module_t *mo
     GList *modules = g_list_last(iop_list);
     while(modules)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
       if(mod == module) break;
       modules = g_list_previous(modules);
     }
@@ -1432,7 +1433,7 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, dt_iop_module_t *mo
         GList *rules = g_list_first(darktable.iop_order_rules);
         while(rules)
         {
-          dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
+          const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
           if(strcmp(mod->op, rule->op_prev) == 0 && strcmp(module->op, rule->op_next) == 0)
           {
@@ -1634,7 +1635,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   modules = g_list_first(iop_list);
   while(modules)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
     if(mod->iop_order == INT_MAX)
     {
       modules = g_list_next(modules);
@@ -1691,7 +1692,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   modules = g_list_first(iop_list);
   while(modules)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
     if(mod->iop_order == INT_MAX)
     {
       modules = g_list_next(modules);
@@ -1702,7 +1703,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
     GList *rules = g_list_first(darktable.iop_order_rules);
     while(rules)
     {
-      dt_iop_order_rule_t *rule = (dt_iop_order_rule_t *)rules->data;
+      const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
       // mod must be before rule->op_next
       if(strcmp(mod->op, rule->op_prev) == 0)
@@ -1711,7 +1712,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
         GList *modules_prev = g_list_previous(modules);
         while(modules_prev)
         {
-          dt_iop_module_t *mod_prev = (dt_iop_module_t *)modules_prev->data;
+          const dt_iop_module_t *const restrict mod_prev = (dt_iop_module_t *)modules_prev->data;
 
           if(strcmp(mod_prev->op, rule->op_next) == 0)
           {
@@ -1730,7 +1731,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
         GList *modules_next = g_list_next(modules);
         while(modules_next)
         {
-          dt_iop_module_t *mod_next = (dt_iop_module_t *)modules_next->data;
+          const dt_iop_module_t *const restrict mod_next = (dt_iop_module_t *)modules_next->data;
 
           if(strcmp(mod_next->op, rule->op_prev) == 0)
           {
@@ -1770,7 +1771,7 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *
 
   while(l)
   {
-    dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)l->data;
     if(!strcmp(e->operation, operation) && e->instance > max_instance)
     {
       place = l;
@@ -1791,7 +1792,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     GList *modules = g_list_last(dev->iop);
     while(modules)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
       if(mod->iop_order != INT_MAX)
         break;
 
@@ -1799,7 +1800,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     }
     if(modules)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
 
       if(strcmp(mod->op, "gamma") != 0)
       {
@@ -1819,7 +1820,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
     GList *modules = g_list_last(dev->iop);
     while(modules)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
       if(!mod->default_enabled && mod->iop_order != INT_MAX)
       {
         if(mod->enabled)
@@ -1880,7 +1881,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
   GList *history = g_list_first(dev->history);
   while(history)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    const dt_dev_history_item_t *const restrict hist = (dt_dev_history_item_t *)(history->data);
 
     if(hist->iop_order == INT_MAX)
     {
@@ -1912,7 +1913,7 @@ void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
   GList *l = iop_order_list;
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     *size += strlen(entry->operation) + sizeof(int32_t) * 2;
     l = g_list_next(l);
   }
@@ -1926,7 +1927,7 @@ void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
   l = iop_order_list;
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     // write the len of the module name
     const int32_t len = strlen(entry->operation);
     memcpy(params+pos, &len, sizeof(int32_t));
@@ -1953,7 +1954,7 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
   GList *l = iop_order_list;
   while(l)
   {
-    dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+    const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     gchar buf[64];
     snprintf(buf, sizeof(buf), "%s,%d%s", entry->operation, entry->instance, l == g_list_last(iop_order_list) ? "" : ",");
     text = g_strconcat(text, buf, NULL);
