@@ -781,7 +781,7 @@ notebook tab label /* disabled tabs */
   font-weight: normal;
 }
 
-notebook header /* add space between notebook tabs and options below */ 
+notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 5px;
 }
@@ -1427,6 +1427,12 @@ Details :
   #thumb_group :
     state = :active : the image is the group leader
 */
+
+/* thumbtable */
+.dt_thumbtable
+{
+  background-color: @lighttable_bg_color;
+}
 
 /* background */
 #thumb_back

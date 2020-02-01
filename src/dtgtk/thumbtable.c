@@ -445,10 +445,15 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget))) return TRUE;
 
-  // we don't really want to draw something, this is just to know when the widget is really ready
+  // we render the background (can be visible if before first image / after last image)
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_render_background(context, cr, 0, 0, gtk_widget_get_allocated_width(widget),
+                        gtk_widget_get_allocated_height(widget));
+
+  // but we don't really want to draw something, this is just to know when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   dt_thumbtable_full_redraw(table, FALSE);
-  return FALSE; // let's propagate this event for childs
+  return FALSE; // let's propagate this event
 }
 
 static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
@@ -808,6 +813,24 @@ void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redra
   if(offset < 1 || offset == table->offset) return;
   table->offset = offset;
   if(redraw) dt_thumbtable_full_redraw(table, TRUE);
+}
+
+// set offset at specific imgid and redraw if needed
+void dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw)
+{
+  int offset = -1;
+
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    offset = sqlite3_column_int(stmt, 0);
+  }
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  dt_thumbtable_set_offset(table, offset, redraw);
 }
 
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
