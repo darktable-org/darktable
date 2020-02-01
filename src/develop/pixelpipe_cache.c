@@ -63,7 +63,17 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   return 1;
 
 alloc_memory_fail:
-  dt_dev_pixelpipe_cache_cleanup(cache);
+  //  dt_dev_pixelpipe_cache_cleanup(cache);
+  // The above code seems to be not correct as failing to allocate the cache->data buffers
+  // should not cleanup the whole pixelpipe cache but only reset the buffers to null.
+  // A warning about low memory will appear but the pipeline still has valid data so dt won't crash
+  // but will only fail to generate thumbnails for example.
+  for(int k = 0; k < cache->entries; k++)
+  {
+    dt_free_align(cache->data[k]);
+    cache->size[k] = 0;
+    cache->data[k] = NULL;
+  }
   return 0;
 }
 
