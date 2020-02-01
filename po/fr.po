@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-21 17:29+0100\n"
-"PO-Revision-Date: 2020-01-21 18:51+0100\n"
+"POT-Creation-Date: 2020-02-01 19:30+0100\n"
+"PO-Revision-Date: 2020-02-01 19:37+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1340,12 +1340,12 @@ msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 #: ../src/common/collection.c:1250 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2531
-#: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1324
+#: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1372
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1252 ../src/develop/lightroom.c:827
-#: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1324
+#: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1372
 msgid "yellow"
 msgstr "jaune"
 
@@ -1353,35 +1353,35 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:374 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2538
 #: ../src/iop/temperature.c:1368 ../src/iop/temperature.c:1381
-#: ../src/libs/collect.c:1324
+#: ../src/libs/collect.c:1372
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:1256 ../src/develop/lightroom.c:831
 #: ../src/iop/bilateral.cc:375 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2545
-#: ../src/iop/temperature.c:1382 ../src/libs/collect.c:1324
+#: ../src/iop/temperature.c:1382 ../src/libs/collect.c:1372
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1258 ../src/libs/collect.c:1324
+#: ../src/common/collection.c:1258 ../src/libs/collect.c:1372
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:1267 ../src/libs/collect.c:1291
+#: ../src/common/collection.c:1267 ../src/libs/collect.c:1319
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1273 ../src/libs/collect.c:1300
+#: ../src/common/collection.c:1273 ../src/libs/collect.c:1332
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1279 ../src/libs/collect.c:1309
+#: ../src/common/collection.c:1279 ../src/libs/collect.c:1344
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1502 ../src/libs/collect.c:1413
+#: ../src/common/collection.c:1502 ../src/libs/collect.c:1508
 msgid "group leaders"
 msgstr "tête de groupe"
 
@@ -3389,20 +3389,20 @@ msgstr "pinceau #%d"
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1368
+#: ../src/develop/masks/masks.c:1401
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:2125 ../src/libs/masks.c:1053
+#: ../src/develop/masks/masks.c:2158 ../src/libs/masks.c:1053
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:2150
+#: ../src/develop/masks/masks.c:2183
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2461
+#: ../src/develop/masks/masks.c:2494
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -7208,7 +7208,7 @@ msgstr "profil de travail"
 #: ../src/iop/colorout.c:894
 #, c-format
 msgid "ICC profiles in %s or %s"
-msgstr "profils ICC dans %s ou %s"
+msgstr "profils ICC dans « %s » ou « %s »"
 
 #: ../src/iop/colorin.c:2133
 msgid "gamut clipping"
@@ -11618,7 +11618,7 @@ msgstr "fichier"
 #: ../src/iop/watermark.c:1467
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
-msgstr "filigranes SVG dans %s/watermarks ou %s/watermarks"
+msgstr "filigranes SVG dans « %s/watermarks » ou « %s/watermarks »"
 
 #: ../src/iop/watermark.c:1486
 msgid ""
@@ -11894,49 +11894,49 @@ msgstr ""
 "problème lors de la sélection d'un nouveau chemin pour la pellicule située "
 "dans %s"
 
-#: ../src/libs/collect.c:372
+#: ../src/libs/collect.c:375
 msgid "search filmroll..."
 msgstr "rechercher une pellicule"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/collect.c:376
+#: ../src/libs/collect.c:379
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:958
+#: ../src/libs/collect.c:961
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1291
+#: ../src/libs/collect.c:1319
 msgid "not altered"
 msgstr "non développées"
 
-#: ../src/libs/collect.c:1300
+#: ../src/libs/collect.c:1332
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1309
+#: ../src/libs/collect.c:1344
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1413
+#: ../src/libs/collect.c:1508
 msgid "group followers"
 msgstr "membres du groupe"
 
-#: ../src/libs/collect.c:1589 ../src/libs/collect.c:1604
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:1696 ../src/libs/collect.c:1711
+#: ../src/libs/collect.c:2098
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1593
+#: ../src/libs/collect.c:1700
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1650
+#: ../src/libs/collect.c:1757
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1655
+#: ../src/libs/collect.c:1762
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -11945,40 +11945,41 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:1660
+#: ../src/libs/collect.c:1767
 #, c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr ""
-"saisissez votre requête, utilisez '%' en caractère joker et ',' pour séparer les valeurs"
+"saisissez votre requête, utilisez '%' en caractère joker et ',' pour séparer "
+"les valeurs"
 
-#: ../src/libs/collect.c:1665 ../src/libs/collect.c:2085
+#: ../src/libs/collect.c:1772 ../src/libs/collect.c:2192
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:1997
+#: ../src/libs/collect.c:2104
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:2002
+#: ../src/libs/collect.c:2109
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:2114
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:2014
+#: ../src/libs/collect.c:2121
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:2019
+#: ../src/libs/collect.c:2126
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:2024
+#: ../src/libs/collect.c:2131
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
@@ -12273,15 +12274,15 @@ msgstr "sauver en xmp"
 msgid "duplicate manager"
 msgstr "gestion des clones"
 
-#: ../src/libs/duplicate.c:492
+#: ../src/libs/duplicate.c:494
 msgid "existing duplicates"
 msgstr "clones existants"
 
-#: ../src/libs/duplicate.c:495
+#: ../src/libs/duplicate.c:497
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "créer un clone vierge"
 
-#: ../src/libs/duplicate.c:499
+#: ../src/libs/duplicate.c:501
 msgid "create a duplicate of the image with same history stack"
 msgstr "créer un clone avec le même historique"
 
@@ -12554,7 +12555,6 @@ msgid "formula"
 msgstr "formule"
 
 #: ../src/libs/export_metadata.c:361
-#, fuzzy
 msgid ""
 "list of calculated metadata\n"
 "if formula is empty, the corresponding metadata is removed from exported "
@@ -12568,9 +12568,11 @@ msgstr ""
 "liste des métadonnées calculées\n"
 "si la formule est vide, la métadonnée correspondante est supprimée du "
 "fichier exporté\n"
+"si la formule est « = », le métadonnée est exportée même si l'export des "
+"métadonnées est désactivé\n"
 "sinon la métadonnée correspondante est calculé et inclus dans le fichier "
 "exporté\n"
-"cliquer sur une cellule pour éditer. les variables supportées sont:"
+"cliquer sur une cellule pour éditer. les variables supportées sont:\n"
 
 #: ../src/libs/export_metadata.c:418
 msgid "add an output metadata tag"
@@ -14279,7 +14281,7 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"voulez-vous réellement supprimer le mot-clé « %s« ?\n"
+"voulez-vous réellement supprimer le mot-clé « %s » ?\n"
 "ce mot-clé est assigné à %d image"
 msgstr[1] ""
 "voulez-vous réellement supprimer le mot-clé « %s »?\n"
@@ -14353,7 +14355,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:1437
 msgid "tag name already exists. aborting."
-msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
+msgstr "le mot clé existe déjà, annulation."
 
 #: ../src/libs/tagging.c:1533
 msgid "edit tag"
