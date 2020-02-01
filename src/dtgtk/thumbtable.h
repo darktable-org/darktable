@@ -107,6 +107,9 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
 void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
 // set offset (and redraw if needed)
 void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
+// set offset at specific imageid (and redraw if needed)
+void dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw);
+
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
