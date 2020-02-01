@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-01-29 10:07+0100\n"
-"PO-Revision-Date: 2020-01-30 15:45+0100\n"
+"PO-Revision-Date: 2020-02-01 19:02+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -332,6 +332,13 @@ msgid ""
 "demonstrating them as slides on a screen. All these operations are performed "
 "via fully color-managed workflows."
 msgstr ""
+"Il gère votre base de données de négatifs numériques importés de différentes "
+"sources (incluant les prises de vues en mode capture), vous permet de les "
+"visionner dans une table lumineuse zoomable, fournit une riche collections "
+"de modules pour développer les images, permet l'exportation des résultats "
+"vers des supports physiques et/ou numériques stantard ou de réaliser un "
+"diaporama sur un écran. Toutes ces opérations sont réalisées via des flux de "
+"travail entièrement gérés par la couleur."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:190(title)
 msgid "General Features"
@@ -435,6 +442,11 @@ msgid ""
 "book template, email attachments, and can generate a simple html-based web "
 "gallery."
 msgstr ""
+"darktable peut exporter les images développées, en basse ou haute plage "
+"dynamique (JPEG, PNG, TIFF, PDF, PFM, EXR), sous forme de fichiers, dans un "
+"disque local, dans des albums web, dans des modèles de livres Latex, en "
+"pièces jointes aux e-mails et peut générer une galerie Web simple basée sur "
+"du HTML."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:252(para)
 msgid ""
@@ -464,6 +476,8 @@ msgid ""
 "You can instantiate most modules multiple times and control the order in "
 "which they get applied."
 msgstr ""
+"Vous pouvez instancier plusieurs fois la plupart des modules et contrôler "
+"l'ordre dans lequel ils sont appliqués."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:267(para)
 msgid ""
@@ -483,6 +497,9 @@ msgid ""
 "Flexibility of masks is further extended by the possibility to apply them in "
 "different blending modes and reuse the same mask in several modules."
 msgstr ""
+"La flexibilité des masques est de plus renforcée par la possibilité de les "
+"appliquer dans différents modes de fusion et par la possibilité de "
+"réutiliser le même masque dans plusieurs modules."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:278(para)
 msgid ""
@@ -5687,6 +5704,9 @@ msgid ""
 "This panel allows managing tags on images. Tags are stored in both XMP "
 "sidecar files and within the darktable database."
 msgstr ""
+"Ce panneau permet de gérer les mots-clés des images. Les mots-clés sont "
+"stockés, à la fois, dans des fichiers liés XMP et dans la base de données de "
+"darktable. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4464(para)
 msgid ""
@@ -5694,6 +5714,9 @@ msgid ""
 "keyword dictionary. You can manage tags as a hierarchical tree, which is "
 "useful when their number becomes large."
 msgstr ""
+"Les mots-clés fournissent un moyen d'ajouter des informations aux images "
+"grâce à un dictionnaire donné. Vous pouvez gérer les mot-clés comme une "
+"arborescence, ce qui est utile utile quand leur nombre devient important."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4468(para)
 msgid ""
@@ -5701,6 +5724,10 @@ msgid ""
 "rather represent categories. For example, in the <quote>color|white</quote> "
 "tag <quote>color</quote> is a category for the <quote>white</quote> tag."
 msgstr ""
+"Contrairement aux mots-clés enfant, les mots-clés parent n'ajoutent pas "
+"d'informations à l'image, mais représentent des catégories. Par exemple, "
+"dans le mot-clé <quote> couleur | blanc </quote> <quote> couleur</quote> est "
+"la catégorie du mot-clé <quote> blanc </quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4486(para)
 msgid ""
@@ -5708,12 +5735,18 @@ msgid ""
 "currently attached to the image under the cursor or the selected image(s), "
 "if the cursor is outside the center area of the lighttable view."
 msgstr ""
+"La vue supérieure <quote> des mots-clés attachés</quote> affiche les mots-"
+"clés qui sont actuellement attachés à l'image située sous le curseur ou "
+"attachés aux images sélectionnées, si le curseur est en dehors de la zone "
+"centrale de la vue table lumineuse."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4491(para)
 msgid ""
 "The lower <quote>tag dictonary</quote> view displays all tags that are "
 "available in the database."
 msgstr ""
+"La vue inférieure <quote>du dictionnaire des mots-clés</quote> affiche tous "
+"les mots-clés disponibles de la base de données."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4482(para)
 msgid "The panel contains two views: <placeholder-1/>"
@@ -5787,6 +5820,8 @@ msgid ""
 "A <quote>check-mark</quote> means that the tag is attached to all selected "
 "images."
 msgstr ""
+"Une <quote>coche</quote> signifie que le mot-clé est attaché à toutes les "
+"images sélectionnées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4553(para)
 msgid ""
@@ -5806,12 +5841,19 @@ msgid ""
 "view, for a parent tag it also means that none of its child tags is attached "
 "to any of the selected images."
 msgstr ""
+"L'absence de tout marquage dans la vue dictionnaire des mots-clés signifie "
+"que le mot-clé existe dans la base de données, mais n'est attaché à aucune "
+"des images sélectionnées. Dans l'arborescence, pour un mot-clé parent, cela "
+"signifie également qu'aucun de ses mots-clés enfant n'est attaché aux images "
+"sélectionnées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4544(para)
 msgid ""
 "On the left, an indicator gives the status of the tag in relation to the "
 "selected images: <placeholder-1/>"
 msgstr ""
+"À gauche, un indicateur donne le statut du mot-clé par rapport aux images "
+"sélectionnées : <placeholder-1 />"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4568(para)
 msgid ""
@@ -5819,12 +5861,18 @@ msgid ""
 "the attached tags view, this count refers to the selected images, while in "
 "the tag dictionary view it refers to the whole database."
 msgstr ""
+"À droite, le nombre entre parenthèses indique le nombre d'images attachées. "
+"Dans la vue mots-clés attachés, ce nombre fait référence aux images "
+"sélectionnées, tandis que dans la vue dictionnaire des mots-clés, il fait "
+"référence à la base de données tout entière."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4539(para)
 msgid ""
 "The attached tags and tag dictionary views display additional information on "
 "the sides of the tag: <placeholder-1/>"
 msgstr ""
+"Les vues mots-clés attachés et dictionnaire des mots-clés affichent des "
+"informations supplémentaires sur les côtés du mot-clé : <placeholder-1 />"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4577(para)
 msgid ""
@@ -5848,6 +5896,8 @@ msgid ""
 "Hovering cursor over a tag displays an overlay with basic usage instructions "
 "for the tagging panel."
 msgstr ""
+"Passer le curseur sur un mot-clé affiche en superposition des instructions "
+"d'utilisation de base pour le panneau mot-clé."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4598(para)
 msgid "The list views are controlled with the three upper graphic buttons:"
@@ -8809,6 +8859,8 @@ msgid ""
 "Drawing a mask represents the simplest approach for limiting the effect of a "
 "darktable module to a specific area in the developed image."
 msgstr ""
+"Le dessin d'un masque représente l'approche la plus simple pour limiter "
+"l'effet d'un module darktable à une zone spécifique de l'image développée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6855(para)
 msgid ""
@@ -15057,15 +15109,13 @@ msgstr ""
 "mappage des tonalités."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12181(title)
-#, fuzzy
 msgid "Filmic rgb"
-msgstr "Filmique"
+msgstr "Filmique rgb"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12185(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12189(primary)
-#, fuzzy
 msgid "filmic rgb"
-msgstr "filmique"
+msgstr "filmique rgb"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12203(para)
 #, fuzzy
@@ -15111,6 +15161,11 @@ msgid ""
 "previous version should not expect a 1:1 translation of their workflow, and "
 "may find <xref linkend=\"filmic-rgb-for-26-users\"/> useful."
 msgstr ""
+"Filmique rgb est le successeur du module filmique fourni dans darktable 2.6."
+"x. Bien que les principes sous-jacents n'aient pas beaucoup changé, les "
+"utilisateurs de la version précédente ne devraient pas s'attendre à une "
+"traduction 1:1 de leur flux de travail et peuvent trouver utile la section "
+"<xref linkend = \"filmic-rgb-for-26-users\" />."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12241(title)
 msgid "Prerequisites"
@@ -15211,6 +15266,9 @@ msgid ""
 "<quote>input</quote> settings of the scene: what constitutes middle grey, "
 "white and black in the photographed scene."
 msgstr ""
+"Le panneau <guilabel moreinfo=\"none\">scène</guilabel> contient les "
+"réglages <quote>en entrée</quote> de la scène : ce qui constitue le gris "
+"moyen, le blanc et le noir dans la scène photographiée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12308(para)
 #, fuzzy
@@ -15232,6 +15290,10 @@ msgid ""
 "settings to map the transformed image to the display. In typical use cases, "
 "this tab should only be used very rarely."
 msgstr ""
+"L'onglet <guilabel moreinfo=\"none\"> affichage </guilabel> définit les "
+"paramètres de sortie pour mapper l'image transformée à l'affichage. Dans des "
+"cas d'utilisation typiques, ce panneau ne doit être utilisé que très "
+"rarement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12295(para)
 msgid ""
@@ -15240,6 +15302,10 @@ msgid ""
 "defined in three steps, each handled in a separate tab in the interface: "
 "<placeholder-1/>"
 msgstr ""
+"Le module filmique rgb a pour but de mapper la plage dynamique de la scène "
+"photographiée (image RAW) vers la plage dynamique (plus petite) de "
+"l'affichage. Ce mappage est défini en trois étapes, chacune gérée dans un "
+"onglet séparé de l'interface : <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12329(para)
 #, fuzzy
@@ -15267,11 +15333,18 @@ msgid ""
 "curve, representing the percentage of saturation as function of the scene "
 "exposure."
 msgstr ""
+"Les courbes en haut du module sont en lecture seule et servent de guide pour "
+"les opérations effectuées sur les curseurs. La courbe brillante est la "
+"courbe de correspondance des tons, où les abscisses représentent "
+"l'exposition de la scène et les ordonnées représentent l'exposition de "
+"l'affichage. La courbe sombre est la courbe de désaturation, représentant le "
+"pourcentage de saturation en fonction de l'exposition de la scène."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12345(title)
 msgid ""
 "Middle-grey luminance (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"luminance du gris-moyen (onglet <guilabel moreinfo=\"none\">scène</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12346(para)
 #, fuzzy
@@ -15339,6 +15412,8 @@ msgstr ""
 msgid ""
 "White relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"exposition relative du blanc (onglet <guilabel moreinfo=\"none\">scène</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12375(para)
 #, fuzzy
@@ -15372,6 +15447,8 @@ msgstr ""
 msgid ""
 "Black relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
+"exposition relative du noir (onglet <guilabel moreinfo=\"none\">scène</"
+"guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12390(para)
 #, fuzzy
@@ -15439,6 +15516,8 @@ msgid ""
 "Dynamic range scaling and auto-tune (<guilabel moreinfo=\"none\">Scene</"
 "guilabel> tab)"
 msgstr ""
+"échelle de plage dynamique et niveau automatique (onglet <guilabel moreinfo="
+"\"none\">scène</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12418(para)
 #, fuzzy
@@ -15473,7 +15552,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12434(title)
 msgid "Contrast (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr ""
+msgstr "contraste (onglet <guilabel moreinfo=\"none\">lookk</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12435(para)
 #, fuzzy
@@ -15500,6 +15579,9 @@ msgid ""
 "The <guilabel moreinfo=\"none\">contrast</guilabel> slider controls the "
 "slope of the middle part of the curve, as illustrated in the graph display."
 msgstr ""
+"Le curseur <guilabel moreinfo=\"none\"> contraste </guilabel> contrôle la "
+"pente de la partie centrale linéaire de la courbe, comme illustré dans "
+"l'affichage graphique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12448(para)
 #, fuzzy
@@ -15517,11 +15599,11 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12453(para)
 msgid "When the contrast is set to 1, this disables the S-curve."
-msgstr ""
+msgstr "Quand le contraste est défini à 1, la courbe en S est déactivée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12459(title)
 msgid "Latitude (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr ""
+msgstr "latitude (onglet <guilabel moreinfo=\"none\">look</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12460(para)
 msgid ""
@@ -15544,6 +15626,9 @@ msgid ""
 "the extremities of the luminance range (see <xref linkend=\"filmicrgb-"
 "saturation\"/>)."
 msgstr ""
+"La latitude définit également la plage des luminances qui n'est pas dé-"
+"saturée aux extrémités de la plage de luminance (voir <xref linkend="
+"\"filmicrgb-saturation\" />)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12480(title)
 msgid ""
@@ -15723,12 +15808,10 @@ msgstr ""
 "si vous souhaitez obtenir des blancs atténués pour obtenir un look rétro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12599(title)
-#, fuzzy
 msgid "Target power factor function"
-msgstr "Fonction de sélection de plage"
+msgstr "Fonction exposant cible"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12600(para)
-#, fuzzy
 msgid ""
 "The power of the output transfer function, often improperly called the gamma "
 "(only screen have a gamma), is the parameter used to raise or compress the "
@@ -15742,15 +15825,15 @@ msgid ""
 "double up, and the middle-grey will be remapped to 76% instead of 45% as it "
 "should."
 msgstr ""
-"La puissance de la fonction de transfert de sortie, souvent appelée à tort "
+"L'exposant de la fonction de transfert de sortie, souvent appelée à tort "
 "gamma (seul l'écran possède un gamma), est le paramètre utilisé pour "
 "augmenter ou réduire les tons moyens afin de prendre en compte les non-"
 "linéarités d'affichage ou d'éviter les artefacts de quantification lors du "
 "codage dans un format de fichier 8 bits. Cette opération est courante lors "
 "de l’application de profils de couleur ICC (à l’exception des espaces RGB "
 "linéaires, tels que REC 709 ou REC 2020, qui ont un <quote>gamma</quote> "
-"linéaire de 1,0). Cependant, à la sortie de filmique, le signal est codé de "
-"manière logarithmique, ce que les profils de couleur ICC ne savent pas "
+"linéaire de 1,0). Cependant, à la sortie de filmique rgb, le signal est codé "
+"de manière logarithmique, ce que les profils de couleur ICC ne savent pas "
 "gérer. En conséquence, si nous les laissons appliquer un gamma 1/2.2 en "
 "plus, cela se traduira par une double correction et le gris moyen sera "
 "remappé à 76% au lieu de 45% comme il se doit."
@@ -15770,9 +15853,8 @@ msgstr ""
 "à 1,0 et le gris moyen cible à 45%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12623(title)
-#, fuzzy
 msgid "Workflow"
-msgstr "flux de travail de base"
+msgstr "Flux de travail"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12625(para)
 msgid ""
@@ -15884,9 +15966,8 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12738(para)
-#, fuzzy
 msgid "Lower the contrast."
-msgstr "Définit l’accentuation du contraste."
+msgstr "Réduire le contraste."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12742(para)
 msgid ""
@@ -20915,7 +20996,6 @@ msgstr "Exemple où un cadre a été défini par l’utilisateur."
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17696(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19429(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19561(para)
-#, fuzzy
 msgid "split-toning"
 msgstr "virage partiel"
 
@@ -21031,9 +21111,8 @@ msgid "Original black and white image."
 msgstr "Image d’origine en noir et blanc."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17800(entry)
-#, fuzzy
 msgid "split-toning with blue shadows and yellow highlights."
-msgstr "Virage partiel avec des ombres bleues et des hautes lumières jaunes."
+msgstr "virage partiel avec des ombres bleues et des hautes lumières jaunes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17815(title)
 msgid "Vignetting"
@@ -22301,9 +22380,8 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19440(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19574(para)
-#, fuzzy
 msgid "Enable the split-toning module"
-msgstr "Activez le module de virage partiel."
+msgstr "Activez le module virage partiel."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19444(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
