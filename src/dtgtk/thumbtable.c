@@ -357,6 +357,8 @@ static void _move(dt_thumbtable_t *table, int x, int y)
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
     table->offset = first->rowid;
   }
+  // and we store it
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 }
 
 static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
@@ -531,6 +533,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   {
     // otherwise we reset the offset to the beginning
     table->offset = 1;
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
     dt_thumbtable_full_redraw(table, TRUE);
   }
 }
@@ -652,7 +655,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_style_context_add_class(context, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
-  table->offset = 3; // TODO retrieve it from rc file ?
+  table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
 
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
@@ -797,6 +800,14 @@ void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
     gtk_style_context_add_class(context, "dt_show_overlays");
   else
     gtk_style_context_remove_class(context, "dt_show_overlays");
+}
+
+// set offset and redraw if needed
+void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw)
+{
+  if(offset < 1 || offset == table->offset) return;
+  table->offset = offset;
+  if(redraw) dt_thumbtable_full_redraw(table, TRUE);
 }
 
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
