@@ -313,6 +313,7 @@ static inline float clamp_simd(const float x)
 static inline float pixel_rgb_norm_power(const float pixel[4])
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
+  // the full norm is (R^3 + G^3 + B^3) / (R^2 + G^2 + B^2) and it should be in ]0; +infinity[
 
   float numerator = 0.0f;
   float denominator = 0.0f;
@@ -329,7 +330,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
     denominator += RGB_square;
   }
 
-  return numerator / fmaxf(denominator, 1e-6f);
+  return numerator / fmaxf(denominator, 1e-12f);  // prevent from division-by-0 (note: (1e-6)^2 = 1e-12
 }
 
 
