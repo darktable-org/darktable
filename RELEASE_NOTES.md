@@ -39,6 +39,10 @@ making a backup is strongly advised.
 - Add a focus peaking mode in the lighttable and darkroom. The default
   key to toggle this mode is <kbd>Ctrl+Shift+F</kbd>
 
+- The wavelet denoise profile has a new Y0U0V0 mode. This new mode
+  makes it possible to denoise the chroma and luma noise in a single
+  instance.
+
 ## New Features And Changes
 
 - Add darkroom loading screen.
@@ -85,6 +89,16 @@ making a backup is strongly advised.
 
 - Better visibility for the zoomed image part in the navigation widget.
 
+- Revert to smooth mode (was default in 2.6) in color zone module.
+
+- It is now possible to resize the collect module windows with
+  <kbd>Ctrl+Scroll</kbd>.
+
+- Add support for compressed Lut (.gmz) in the 3D Lut module.
+
+- Use a more natural folder order in the collect module, the latest
+  folder are now listed first.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
@@ -118,6 +132,33 @@ making a backup is strongly advised.
 - Exports should now better respect the final dimensions requested.
 
 - Fix issues with brush opacity handling.
+
+- Better performance for computing the aspect ratio.
+
+- Fix importing of duplicates on Windows.
+
+- Better visibility of tone curve grid on Grey theme.
+
+- Better accuracy for the keystone OSD lines.
+
+- Better performance and accuracy improvements for the waveform histogram.
+
+- Some HiDPI fixes in icons.
+
+- The Facebook, Google Photo and Flickr export storage have been
+  removed as not supported anymore due to deep change in the provider
+  making it very hard to fix.
+
+- Fix brush OSD when in zoom mode. The brushes are now keeping thin
+  lines.
+
+- Fix watermark blurring when using rotation.
+
+- Fix using apostrophe in meta-data.
+
+- Fix time-line display reporting 61 minutes per hour.
+
+- Smoother transition for gradient shapes.
 
 ## Lua
 
