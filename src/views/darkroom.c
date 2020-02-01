@@ -38,6 +38,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -770,8 +771,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   }
   dt_masks_change_form_gui(NULL);
 
-  select_this_image(imgid);
-
   while(dev->history)
   {
     // clear history of old image
@@ -963,44 +962,32 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int im
 
 static void dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  int offset = 0;
-  if(qin)
+  if(dev->image_loading) return;
+
+  const int imgid = dev->image_storage.id;
+  int new_offset = 1;
+  int new_id = -1;
+
+  // we new offset and imgid after the jump
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL,
+                                 "SELECT rowid, imgid FROM memory.collected_images WHERE rowid=(SELECT rowid FROM "
+                                 "memory.collected_images WHERE imgid=%d)+%d",
+                                 imgid, diff);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int orig_imgid = -1, imgid = -1;
-    sqlite3_stmt *stmt;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) orig_imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    offset = dt_collection_image_offset(orig_imgid);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      imgid = sqlite3_column_int(stmt, 0);
-
-      if(orig_imgid == imgid)
-      {
-        // nothing to do
-        sqlite3_finalize(stmt);
-        return;
-      }
-
-      if(!dev->image_loading)
-      {
-        dt_dev_change_image(dev, imgid);
-        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-        // record the imgid to display when going back to lighttable
-        dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-      }
-    }
-    sqlite3_finalize(stmt);
+    new_offset = sqlite3_column_int(stmt, 0);
+    new_id = sqlite3_column_int(stmt, 1);
   }
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  if(new_id < 0) return;
+
+  // if id seems valid, we change the image and move filmstrip
+  dt_dev_change_image(dev, new_id);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
 }
 
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -2597,7 +2584,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
