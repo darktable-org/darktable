@@ -105,6 +105,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force);
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode);
 // define if overlays should always be shown or just on mouse-over
 void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
+// set offset (and redraw if needed)
+void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
