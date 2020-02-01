@@ -93,7 +93,17 @@ if(ALSA_FOUND)
   target_link_libraries (midi ${ALSA_LIBRARIES})      
 endif()
 
-target_link_libraries (midi -lportmidi)
+find_path(PORTMIDI_INCLUDE_DIR NAMES portmidi.h
+          DOC "The Portmidi include directory"
+)
+find_library(PORTMIDI_LIBRARY NAMES portmidi
+          DOC "The Portmidi library"
+)
+if(PORTMIDI_INCLUDE_DIR)
+  add_definitions("-DHAVE_PORTMIDI")
+  include_directories(${PORTMIDI_INCLUDE_DIRS})                  
+  target_link_libraries (midi ${PORTMIDI_LIBRARY})
+endif()
 
 if(BUILD_BATTERY_INDICATOR)
   add_library(battery_indicator MODULE "tools/battery_indicator.c")

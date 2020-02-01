@@ -24,8 +24,6 @@
 #include "common/file_location.h"
 #include <fcntl.h>
 
-#include <portmidi.h>
-
 char midi_devices_default[] = "portmidi,alsa,/dev/midi1,/dev/midi2,/dev/midi3,/dev/midi4";
 
 DT_MODULE(1)
@@ -33,6 +31,10 @@ DT_MODULE(1)
 #ifdef HAVE_ALSA
   #define _GNU_SOURCE  /* the ALSA headers need this */
   #include <alsa/asoundlib.h>
+#endif
+
+#ifdef HAVE_PORTMIDI
+  #include <portmidi.h>
 #endif
 
 #define D(stmnt) stmnt;
@@ -86,10 +88,11 @@ typedef struct MidiDevice
   snd_seq_t      *sequencer;
   int             port;
 #endif
-  guint           source_id;
-
+#ifdef HAVE_PORTMIDI
   PortMidiStream *portmidi;
   PortMidiStream *portmidi_out;
+#endif
+  guint           source_id;
 
   GIOChannel     *io;
   guint           io_id;
@@ -235,20 +238,20 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
     {
     case 0xB:
       event.type = SND_SEQ_EVENT_CONTROLLER;
+      event.data.control.channel = channel;
+      event.data.control.param = key;
+      event.data.control.value = velocity;
       break;
     case 0x9:
       event.type = SND_SEQ_EVENT_NOTEON;
-      break;
-    case 0x8:
-      event.type = SND_SEQ_EVENT_NOTEOFF;
+      event.data.note.channel = channel;
+      event.data.note.note = key;
+      event.data.note.velocity = velocity;
       break;
     default:
       event.type = SND_SEQ_EVENT_SYSTEM;
       break;
     }
-    event.data.control.channel = channel;
-    event.data.control.param = key;
-    event.data.control.value = velocity;
 
     snd_seq_ev_set_subs(&event);  
     snd_seq_ev_set_direct(&event);
@@ -261,6 +264,7 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
     }
   } else
 #endif /* HAVE_ALSA */
+#ifdef HAVE_PORTMIDI
   if (midi->portmidi_out)
   {
     PmMessage message = Pm_Message((type << 4) + channel, key, velocity);
@@ -270,7 +274,9 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
       g_print("Portmidi error: %s\n", Pm_GetErrorText(pmerror));
     }
   }
-  else if (midi->io)
+  else
+#endif
+  if (midi->io)
   {
     gchar buf[3];
     buf[0] = (type << 4) + channel;
@@ -685,72 +691,76 @@ void select_page(MidiDevice *midi, gint channel, gint note)
     midi->group_switch_key = note;
     knob_config_mode = FALSE;
   }
-  midi->group = note - midi->group_switch_key;
 
-  for (note = 1; note <= 8; note++)
+  if (note >= midi->group_switch_key && note < midi->group_switch_key + 8)
   {
-    midi_write(midi, channel, 0xB, note, 0); // try to initialise rotator lights off
-    midi_write(midi, 0, 0xB, note, 0); // set single pattern on x-touch mini
-  }
+    midi->group = note - midi->group_switch_key;
 
-  refresh_sliders_to_device(midi);
-
-  char *help_text = g_strdup_printf("MIDI key group %d:", midi->group);
-  char *tmp;
-
-  char channel_text[30] = "";
-  dt_iop_module_t *previous_module = NULL;
-  gint remaining_line_items = 0;
-
-  GSList *l = midi->mapping_list;
-  gint current_channel = l? ((dt_midi_knob_t *)g_slist_last(l)->data)->channel: 0;
-  while(l)
-  {
-    dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
-    if (d->group > midi->group)
+    for (gint knob = 1; knob <= 8; knob++)
     {
-      break;
+      midi_write(midi, channel, 0xB, knob, 0); // try to initialise rotator lights off
+      midi_write(midi,       0, 0xB, knob, 0); // set single pattern on x-touch mini
     }
 
-    if (d->group == midi->group && d->accelerator->widget != NULL)
-    {
-      dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
+    refresh_sliders_to_device(midi);
 
-      if (d->channel != current_channel)
+    char *help_text = g_strdup_printf("MIDI key group %d:", midi->group+1);
+    char *tmp;
+
+    char channel_text[30] = "";
+    dt_iop_module_t *previous_module = NULL;
+    gint remaining_line_items = 0;
+
+    GSList *l = midi->mapping_list;
+    gint current_channel = l? ((dt_midi_knob_t *)g_slist_last(l)->data)->channel: 0;
+    while(l)
+    {
+      dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
+      if (d->group > midi->group)
       {
-        current_channel = d->channel;
-        snprintf(channel_text, sizeof(channel_text), "(Channel %2d) ", current_channel);
-        remaining_line_items = 0;
+        break;
       }
 
-      if (remaining_line_items-- == 0)
+      if (d->group == midi->group && d->accelerator->widget != NULL)
       {
-        tmp = g_strdup_printf("%s\n%s", help_text, channel_text);
+        dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
+
+        if (d->channel != current_channel)
+        {
+          current_channel = d->channel;
+          snprintf(channel_text, sizeof(channel_text), "(Channel %2d) ", current_channel);
+          remaining_line_items = 0;
+        }
+
+        if (remaining_line_items-- == 0)
+        {
+          tmp = g_strdup_printf("%s\n%s", help_text, channel_text);
+          g_free(help_text);
+          help_text = tmp;
+
+          // memset(channel_text, ' ', strlen(channel_text)); // only works with monospaced fonts
+          remaining_line_items = 8 - 1;
+        }
+
+        if (w->module == previous_module || strstr(w->module->name(), w->label))
+        {
+          tmp = g_strdup_printf("%s%2d: %s  ", help_text, d->key, w->label);
+        }
+        else
+        {
+          tmp = g_strdup_printf("%s%2d: %s/%s  ", help_text, d->key, w->module->name(), w->label);
+          previous_module = w->module;
+        }
         g_free(help_text);
         help_text = tmp;
-
-        // memset(channel_text, ' ', strlen(channel_text)); // only works with monospaced fonts
-        remaining_line_items = 8 - 1;
       }
-
-      if (w->module == previous_module || strstr(w->module->name(), w->label))
-      {
-        tmp = g_strdup_printf("%s%2d: %s  ", help_text, d->key, w->label);
-      }
-      else
-      {
-        tmp = g_strdup_printf("%s%2d: %s/%s  ", help_text, d->key, w->module->name(), w->label);
-        previous_module = w->module;
-      }
-      g_free(help_text);
-      help_text = tmp;
+      l = g_slist_next(l);
     }
-    l = g_slist_next(l);
-  }
 
-  dt_control_hinter_message(darktable.control, help_text);
-  
-  g_free(help_text);
+    dt_control_hinter_message(darktable.control, help_text);
+    
+    g_free(help_text);
+  }
 }
 
 void select_page_off(MidiDevice *midi)
@@ -856,6 +866,7 @@ static GSourceFuncs source_funcs_alsa =
 };
 #endif /* HAVE_ALSA */
 
+#ifdef HAVE_PORTMIDI
 static gboolean midi_port_prepare (GSource *source,
                                    gint    *timeout)
 {
@@ -934,6 +945,7 @@ static GSourceFuncs source_funcs_portmidi =
   midi_port_dispatch,
   NULL
 };
+#endif /* HAVE_PORTMIDI */
 
 gboolean midi_read_event (GIOChannel   *io,
                           GIOCondition  cond,
@@ -1219,10 +1231,11 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
 #ifdef HAVE_ALSA
     midi->sequencer    = NULL;
 #endif
-    midi->source_id    = 0;
-
+#ifdef HAVE_PORTMIDI
     midi->portmidi     = NULL;
     midi->portmidi_out = NULL;
+#endif
+    midi->source_id    = 0;
 
     midi->name_queried = FALSE;
 
@@ -1295,6 +1308,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     }
 #endif /* HAVE_ALSA */
 
+#ifdef HAVE_PORTMIDI
     if (! g_ascii_strcasecmp (midi->device, "portmidi"))
     {
       PmDeviceID defaultPM = Pm_GetDefaultInputDeviceID();
@@ -1338,6 +1352,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
 
       return TRUE;
     }
+#endif /* HAVE_PORTMIDI */
 
     gint fd;
 
@@ -1380,6 +1395,7 @@ void midi_device_free(MidiDevice *midi)
     midi->sequencer = NULL;
   }
 #endif /* HAVE_ALSA */
+#ifdef HAVE_PORTMIDI
   if (midi->portmidi)
   {
     Pm_Close(midi->portmidi);
@@ -1389,6 +1405,7 @@ void midi_device_free(MidiDevice *midi)
       Pm_Close(midi->portmidi_out);
     }
   }
+#endif /* HAVE_PORTMIDI */
 
   if (midi->io)
   {
@@ -1405,7 +1422,9 @@ void midi_device_free(MidiDevice *midi)
 
 void midi_open_devices(dt_lib_module_t *self)
 {
+#ifdef HAVE_PORTMIDI
   Pm_Initialize();
+#endif
 
   gchar *midi_devices = dt_conf_get_string("plugins/lighttable/midi/devices");
   if (midi_devices == NULL || midi_devices[0] == '\0')
@@ -1457,7 +1476,9 @@ void midi_close_devices(dt_lib_module_t *self)
   g_slist_free_full (self->data, (void (*)(void *))midi_device_free);
   self->data = NULL;
 
+#ifdef HAVE_PORTMIDI
   Pm_Terminate();
+#endif
 }
 
 void gui_init(dt_lib_module_t *self)
