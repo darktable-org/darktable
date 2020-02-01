@@ -1166,7 +1166,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       if(style->description && *style->description)
       {
-        tooltip = g_strconcat("<b>", style->description, "</b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
       }
       else
       {
