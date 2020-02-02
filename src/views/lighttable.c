@@ -2403,7 +2403,7 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
       lib->select_deactivate = FALSE;
     }
     // move filmstrip
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->slots[0].imgid, TRUE);
   }
 
   // we save the current first id
@@ -3537,7 +3537,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
   dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                      TRUE); // always on, visibility is driven by panel state
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->full_preview_id, FALSE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
