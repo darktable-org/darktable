@@ -2702,8 +2702,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           iop_order_list = dt_ioppr_deserialize_text_iop_order_list(pos->toString().c_str());
         }
       }
+      else
+        iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
     }
-    if(version == 3)
+    else if(version == 3)
     {
       iop_order_version = DT_IOP_ORDER_LEGACY;
 
@@ -2712,9 +2714,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         iop_order_version = pos->toLong() == 2 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
       }
+      else
+        iop_order_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
     }
-
-    if(iop_order_list == NULL)
+    else
     {
       iop_order_version = DT_IOP_ORDER_LEGACY;
       iop_order_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
