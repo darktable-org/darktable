@@ -343,7 +343,6 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
 
     /* darkroom view proxy object */
