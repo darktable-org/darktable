@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -67,9 +68,7 @@ static void _film_strip_activated(const int imgid, void *data)
 
   prt->image_id = imgid;
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-  // record the imgid to display when going back to lighttable
-  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
 
   // force redraw
   dt_control_queue_redraw();
@@ -277,7 +276,7 @@ void enter(dt_view_t *self)
   {
     const int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
   }
   g_list_free(selected_images);
 

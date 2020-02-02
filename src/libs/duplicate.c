@@ -98,10 +98,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
 
 static void _do_select(int imgid)
 {
-  // to select the duplicate, we reuse the filmstrip proxy
-  dt_selection_select_single(darktable.selection, imgid);
-  dt_control_set_mouse_over_id(imgid);
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
 }
 
 static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -113,8 +110,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  // to select the duplicate, we reuse the filmstrip proxy
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
@@ -125,8 +121,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  // to select the duplicate, we reuse the filmstrip proxy
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
 static void _lib_duplicate_filmrolls_updated(gpointer instance, gpointer self)

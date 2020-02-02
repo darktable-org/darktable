@@ -82,8 +82,6 @@ typedef struct dt_lib_filmstrip_t
 
 } dt_lib_filmstrip_t;
 
-/* proxy function to center filmstrip on imgid */
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
 /* proxy function for retrieving last activate request image id */
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self);
@@ -203,8 +201,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, TRUE, TRUE, 0);
 
   /* initialize view manager proxy */
-  darktable.view_manager->proxy.filmstrip.module          = self;
-  darktable.view_manager->proxy.filmstrip.scroll_to_image = _lib_filmstrip_scroll_to_image;
+  darktable.view_manager->proxy.filmstrip.module = self;
   darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
   darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
 
@@ -443,39 +440,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
     gtk_widget_queue_draw(tt->widget);
   }
   return FALSE;
-}
-
-/*static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-  strip->force_expose_all = TRUE;
-  dt_control_queue_redraw_widget(strip->filmstrip);
-}*/
-
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
-{
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  // if no imgid just bail out
-  if(imgid <= 0) return;
-
-  strip->activated_image = imgid;
-
-  strip->offset = dt_collection_image_offset(imgid);
-
-  dt_control_set_mouse_over_id(strip->activated_image);
-
-  /* activate the image if requested */
-  if(activate)
-  {
-    strip->activated_image = imgid;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
-  }
-
-  // redraw filmstrip. since this is a proxy function it could be used from another thread
-  strip->force_expose_all = TRUE;
-  dt_control_queue_redraw_widget(self->widget);
 }
 
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
