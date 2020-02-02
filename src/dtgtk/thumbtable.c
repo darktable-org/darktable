@@ -459,6 +459,9 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
+  if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
+
   table->mouse_inside = FALSE;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
@@ -518,29 +521,6 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
     l = g_list_next(l);
   }
   return TRUE;
-}
-
-
-// this is called each time collected images change
-static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
-                                            gpointer user_data)
-{
-  if(!user_data) return;
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-
-  if(query_change == DT_COLLECTION_CHANGE_RELOAD)
-  {
-    // if it's a simple reload (no query change, but the collection content may have changed)
-    // we keep the rowid offset as it is
-    dt_thumbtable_full_redraw(table, TRUE);
-  }
-  else
-  {
-    // otherwise we reset the offset to the beginning
-    table->offset = 1;
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
-    dt_thumbtable_full_redraw(table, TRUE);
-  }
 }
 
 // this is called each time mouse_over id change
@@ -649,6 +629,28 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   }
 }
 
+// this is called each time collected images change
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
+                                            gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  if(query_change == DT_COLLECTION_CHANGE_RELOAD)
+  {
+    // if it's a simple reload (no query change, but the collection content may have changed)
+    // we keep the rowid offset as it is
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
+  else
+  {
+    // otherwise we reset the offset to the beginning
+    table->offset = 1;
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
+}
+
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
@@ -705,7 +707,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(_compute_sizes(table, force))
   {
     table->dragging = FALSE;
-
     sqlite3_stmt *stmt;
     printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d ...\n", force, table->view_width,
            table->view_height, table->thumbs_per_row, table->rows, table->thumb_size);

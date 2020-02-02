@@ -585,9 +585,10 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
   // we create the widget
   dt_thumbnail_create_widget(thumb);
 
-  // let's see if the images are selected or active
+  // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
   _dt_selection_changed_callback(NULL, thumb);
+  if(dt_control_get_mouse_over_id() == thumb->imgid) dt_thumbnail_set_mouseover(thumb, TRUE);
 
   return thumb;
 }

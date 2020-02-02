@@ -941,26 +941,23 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 }
 
-static void film_strip_activated(const int imgid, void *data)
-{
-  // switch images in darkroom mode:
-  const dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  dt_dev_change_image(dev, imgid);
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-  // record the imgid to display when going back to lighttable
-  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-  // force redraw
-  dt_control_queue_redraw();
-}
-
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  if(imgid > 0) film_strip_activated(imgid, user_data);
+  if(imgid > 0)
+  {
+    // switch images in darkroom mode:
+    const dt_view_t *self = (dt_view_t *)user_data;
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    dt_dev_change_image(dev, imgid);
+    // move filmstrip
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    // force redraw
+    dt_control_queue_redraw();
+  }
 }
 
-static void dt_dev_jump_image(dt_develop_t *dev, int diff)
+static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
   if(dev->image_loading) return;
 
@@ -988,6 +985,9 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff)
   // if id seems valid, we change the image and move filmstrip
   dt_dev_change_image(dev, new_id);
   dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+
+  // if it's a change by key_press, we set mouse_over to the active image
+  if(by_key) dt_control_set_mouse_over_id(new_id);
 }
 
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1082,14 +1082,14 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, 1);
+  dt_dev_jump_image((dt_develop_t *)data, 1, TRUE);
   return TRUE;
 }
 
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, -1);
+  dt_dev_jump_image((dt_develop_t *)data, -1, TRUE);
   return TRUE;
 }
 
