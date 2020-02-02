@@ -731,6 +731,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
 
 static void _update_collected_images(dt_view_t *self)
 {
+  return;
   dt_library_t *lib = (dt_library_t *)self->data;
   sqlite3_stmt *stmt;
   int32_t min_before = 0, min_after = -1;
