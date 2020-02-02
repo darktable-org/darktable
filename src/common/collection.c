@@ -1810,7 +1810,6 @@ int64_t dt_collection_get_image_position(const int32_t image_id)
 
 void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   sqlite3_stmt *stmt = NULL;
 
   // shift image positions to make some space
@@ -1823,8 +1822,6 @@ void dt_collection_shift_image_positions(const unsigned int length, const int64_
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 /* move images with drag and drop
