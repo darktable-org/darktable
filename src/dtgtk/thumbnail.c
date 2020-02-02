@@ -167,13 +167,12 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   return TRUE;
 }
 
-static gboolean _event_main_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  dt_control_set_mouse_over_id(thumb->imgid);
-  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
-  return TRUE;
+  if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
+  return FALSE;
 }
 
 static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -360,11 +359,11 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   }
 }
 
-static gboolean _event_bottom_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
-  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY) dt_control_set_mouse_over_id(thumb->imgid);
+  _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
   return FALSE;
 }
 
@@ -415,8 +414,11 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
     // the background
     thumb->w_back = gtk_event_box_new();
+    gtk_widget_set_events(thumb->w_back, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                             | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                             | GDK_POINTER_MOTION_MASK);
     gtk_widget_set_name(thumb->w_back, "thumb_back");
-    g_signal_connect(G_OBJECT(thumb->w_back), "enter-notify-event", G_CALLBACK(_event_main_enter), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     gtk_widget_show(thumb->w_back);
     gtk_container_add(GTK_CONTAINER(thumb->w_main), thumb->w_back);
 
@@ -442,7 +444,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
                                               | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
                                               | GDK_POINTER_MOTION_MASK);
     g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_event_main_enter), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
@@ -455,7 +457,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
-    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event", G_CALLBACK(_event_bottom_enter_leave),
+                     thumb);
+    g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "leave-notify-event", G_CALLBACK(_event_bottom_enter_leave),
+                     thumb);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
@@ -477,7 +482,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     gtk_widget_show(thumb->w_reject);
-    g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_bottom_enter), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
 
