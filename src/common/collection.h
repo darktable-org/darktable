@@ -257,6 +257,9 @@ void dt_collection_shift_image_positions(const unsigned int length, const int64_
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);
 
+/* initialize memory table */
+void dt_collection_memory_update();
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -2175,15 +2175,23 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
 }
 
-int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
+void dt_view_active_images_reset(gboolean raise)
 {
-  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happen here for debugging
-  // g_return_val_if_fail(vm->proxy.filmstrip.activated_image!=NULL, 0);
+  if(g_slist_length(darktable.view_manager->active_images) < 1) return;
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
 
-  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.activated_image)
-    return vm->proxy.filmstrip.activated_image(vm->proxy.filmstrip.module);
-
-  return 0;
+  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+}
+void dt_view_active_images_add(int imgid, gboolean raise)
+{
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+}
+GSList *dt_view_active_images_get()
+{
+  return darktable.view_manager->active_images;
 }
 
 void dt_view_filmstrip_prefetch()
