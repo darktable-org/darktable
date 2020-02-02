@@ -124,6 +124,7 @@ typedef struct MidiDevice
 
   gint            group;
   gint            group_switch_key;
+  gint            group_key_light;
 } MidiDevice;
 
 typedef struct _GMidiSource
@@ -492,7 +493,12 @@ void aggregate_and_set_slider(MidiDevice *midi,
                 midi->syncing = FALSE;
               }
 
-              dt_bauhaus_slider_set(w, v + s * move);
+              if (midi->accum == 0)
+                dt_bauhaus_slider_set(w, wmin);
+              else if (midi->accum == 127)
+                dt_bauhaus_slider_set(w, wmax);
+              else
+                dt_bauhaus_slider_set(w, v + s * move);
             }
             else
             {
@@ -683,28 +689,42 @@ void select_page(MidiDevice *midi, gint channel, gint note)
 {
   aggregate_and_set_slider(midi, -1, -1, 0);
 
-  midi_write(midi, 0, 0x9, midi->group, 0); // try to switch off button light
-  midi_write(midi, 0, 0x9, midi->group + midi->group_switch_key, 0);
-
   if (midi->group_switch_key == -1 || knob_config_mode == TRUE)
   {
-    midi->group_switch_key = note;
+    if (strstr(midi->model_name, "X-TOUCH MINI"))
+    {
+      midi->group_switch_key = 16;
+      midi->group_key_light = 8;
+    }
+    else if (strstr(midi->model_name, "Arturia BeatStep"))
+    {
+      midi->group_switch_key = 0;
+      midi->group_key_light = 0;
+    }
+    else
+    {
+      midi->group_switch_key = note;
+    }
+    
     knob_config_mode = FALSE;
   }
 
   if (note >= midi->group_switch_key && note < midi->group_switch_key + 8)
   {
-    midi->group = note - midi->group_switch_key;
+    midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 0); // try to switch off button light
 
+    midi->group = note - midi->group_switch_key + 1;
+
+    // try to initialise rotator lights off
     for (gint knob = 1; knob <= 8; knob++)
     {
-      midi_write(midi, channel, 0xB, knob, 0); // try to initialise rotator lights off
+      midi_write(midi, channel, 0xB, knob, 0); 
       midi_write(midi,       0, 0xB, knob, 0); // set single pattern on x-touch mini
     }
 
     refresh_sliders_to_device(midi);
 
-    char *help_text = g_strdup_printf("MIDI key group %d:", midi->group+1);
+    char *help_text = g_strdup_printf("MIDI key group %d:", midi->group);
     char *tmp;
 
     char channel_text[30] = "";
@@ -765,8 +785,7 @@ void select_page(MidiDevice *midi, gint channel, gint note)
 
 void select_page_off(MidiDevice *midi)
 {
-  midi_write(midi, 0, 0x9, midi->group, 1); // try to light up button light
-  midi_write(midi, 0, 0x9, midi->group+midi->group_switch_key, 1);
+  midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 1);
 
   dt_control_hinter_message(darktable.control, _(""));
 }
@@ -838,6 +857,7 @@ static gboolean midi_alsa_dispatch (GSource     *source,
         if (g_strcmp0(snd_seq_client_info_get_name (client_info),"darktable"))
         {
           midi->model_name = g_strdup(snd_seq_client_info_get_name (client_info));
+          g_print("Alsa device name: %s\n", midi->model_name);
           midi->config_loaded = FALSE;
         }
 
@@ -1260,7 +1280,8 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->stored_knob    = NULL;
 
     midi->group            =  0;
-    midi->group_switch_key =  8; // first row on both Arturia Beatstep and X-touch mini
+    midi->group_switch_key = -1;
+    midi->group_key_light  = -100;
 
 #ifdef HAVE_ALSA
     if (! g_ascii_strcasecmp (midi->device, "alsa"))
@@ -1520,7 +1541,7 @@ static gboolean callback_configure_midi(GtkAccelGroup *accel_group,
 
     midi_open_devices(data);
 
-    dt_control_log("Reopened all midi devices");
+    dt_control_log(_("Reopened all midi devices"));
   }
 
   return TRUE;
