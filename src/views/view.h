@@ -343,7 +343,6 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      int32_t (*activated_image)(struct dt_lib_module_t *);
       GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
 
@@ -479,15 +478,10 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
  */
 void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
 
-/*
- * NEW filmstrip api
- */
-/*** scrolls filmstrip to the image in position 'diff' from the current one
- *** offset to be provided is the offset of the current image, as given by
- *** dt_collection_image_offset. Getting this data before changing flags allows
- *** for using this function with images disappearing from the current collection  */
-/** get the imageid from last filmstrip activate request */
-int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
+// active images functions
+void dt_view_active_images_reset(gboolean raise);
+void dt_view_active_images_add(int imgid, gboolean raise);
+GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);

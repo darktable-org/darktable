@@ -1054,7 +1054,8 @@ void init(dt_view_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_selection_listener_callback), (gpointer)self);
 
-  _view_lighttable_collection_listener_callback(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, self);
+  // ensure the memory table is up to date
+  dt_collection_memory_update();
 
   /* initialize reusable sql statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid != ?1",
