@@ -96,6 +96,10 @@ typedef struct dt_thumbtable_t
   gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
 
   GSList *accel_closures; // list of associated accels
+
+  // when performing a drag, we store the list of items to drag here
+  // as this can change during the drag and drop (esp. because of the image_over_id)
+  GList *drag_list;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

@@ -71,6 +71,7 @@ typedef struct
   gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
 
   dt_thumbnail_border_t group_borders; // which group borders should be drawn
+
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);

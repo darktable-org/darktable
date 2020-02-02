@@ -85,22 +85,7 @@ typedef struct dt_lib_filmstrip_t
 /* proxy function for retrieving last activate request image id */
 static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self);
 
-/*
-static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data);
-
-static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data);
-
-static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data);
-*/
 static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-/*
-static gboolean _lib_filmstrip_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data);
-
-static gboolean _lib_filmstrip_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                       gpointer user_data);
-
-static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data);*/
 
 /* drag'n'drop callbacks */
 /*static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
@@ -187,27 +172,12 @@ void gui_init(dt_lib_module_t *self)
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
-  /*g_signal_connect(G_OBJECT(d->filmstrip), "button-press-event",
-                   G_CALLBACK(_lib_filmstrip_button_press_callback), self);
-  g_signal_connect(G_OBJECT(d->filmstrip), "button-release-event",
-                   G_CALLBACK(_lib_filmstrip_button_release_callback), self);
-  g_signal_connect(G_OBJECT(d->filmstrip), "scroll-event", G_CALLBACK(_lib_filmstrip_scroll_callback), self);
-  g_signal_connect(G_OBJECT(d->filmstrip), "motion-notify-event",
-                   G_CALLBACK(_lib_filmstrip_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(d->filmstrip), "leave-notify-event",
-                   G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);*/
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, TRUE, TRUE, 0);
 
   /* initialize view manager proxy */
   darktable.view_manager->proxy.filmstrip.module = self;
   darktable.view_manager->proxy.filmstrip.widget = _lib_filmstrip_get_widget;
-
-  /* connect signal handler */
-  /*dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_lib_filmstrip_collection_changed_callback), (gpointer)self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_lib_filmstrip_collection_changed_callback), (gpointer)self);*/
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -223,206 +193,6 @@ void gui_cleanup(dt_lib_module_t *self)
   free(self->data);
   self->data = NULL;
 }
-
-
-/*static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  dt_control_set_mouse_over_id(strip->activated_image);
-
-  // suppress mouse over highlight upon leave
-  strip->pointery = -1;
-  gtk_widget_queue_draw(strip->filmstrip);
-
-  return TRUE;
-}
-
-static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  // no redraw by default
-  gboolean do_redraw = FALSE;
-
-  strip->pointerx = e->x;
-  strip->pointery = e->y;
-
-  if(strip->thumb_size == -1)
-  {
-    do_redraw = TRUE;
-  }
-  else
-  {
-    // compute the actual thumb number, this is not at all the thumb id, but a count of the thumb starting from the
-    // left and continuing to the right. this goal is to filter out as much as possible the redraw event. when we
-    // stay on the same thumb we do not redraw, there is nothing to do. the exception is a small border around the
-    // thumb to ensure the stars, reject tag and the dev history sensitive area are reacting.
-    const double px = e->x - strip->offset_x;
-    const double py = e->y;
-    const int mouse_over_thumb = (int)(1.0 + px / strip->thumb_size);
-    const float x_offset = fmodf(px, strip->thumb_size);
-    const float y_offset = fmodf(py, strip->thumb_size);
-    const float end_pos = (strip->thumb_size * 85) / 100;
-    const float start_pos = (strip->thumb_size * 10) / 100;
-
-    if (strip->last_mouse_over_thumb == -1 || strip->last_mouse_over_thumb != mouse_over_thumb
-        || (y_offset > end_pos || y_offset < start_pos)
-        || (x_offset > end_pos || x_offset < start_pos))
-    {
-      strip->last_mouse_over_thumb = mouse_over_thumb;
-      do_redraw = TRUE;
-    }
-  }
-
-  // redraw
-  if(do_redraw) gtk_widget_queue_draw(strip->filmstrip);
-  return TRUE;
-}
-
-static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  // change the offset
-  int delta;
-  if(dt_gui_get_scroll_unit_delta(e, &delta))
-  {
-    strip->offset = CLAMP(strip->offset + delta, 0, strip->collection_count-1);
-    strip->force_expose_all = TRUE;
-    gtk_widget_queue_draw(strip->filmstrip);
-  }
-
-  return TRUE;
-}*/
-
-/*static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
-{
-  sqlite3_stmt *stmt;
-  gboolean image_in_collection = TRUE;
-  const char *query = dt_collection_get_query(collection);
-
-  char *count_query = g_strdup_printf("SELECT count(id) FROM (%s) WHERE id = ?3", query);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
-     && !(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-  {
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-  }
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    image_in_collection = (sqlite3_column_int(stmt, 0) > 0);
-  sqlite3_finalize(stmt);
-  g_free(count_query);
-  return image_in_collection;
-}*/
-
-/*static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  const int32_t mouse_over_id = strip->mouse_over_id;
-  strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
-
-  if(e->button == 1)
-  {
-    if(e->type == GDK_BUTTON_PRESS)
-    {
-      // let check if any thumb controls was clicked
-      switch(strip->image_over)
-      {
-        case DT_VIEW_DESERT:
-          // is this an activation of image
-          if((e->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
-            strip->select = DT_LIB_FILMSTRIP_SELECT_SINGLE;
-          else if((e->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-            strip->select = DT_LIB_FILMSTRIP_SELECT_TOGGLE;
-          else if((e->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-            strip->select = DT_LIB_FILMSTRIP_SELECT_RANGE;
-          if(strip->select != DT_LIB_FILMSTRIP_SELECT_NONE)
-          {
-            strip->select_id = mouse_over_id;
-            return TRUE;
-          }
-          break;
-        case DT_VIEW_REJECT:
-        case DT_VIEW_STAR_1:
-        case DT_VIEW_STAR_2:
-        case DT_VIEW_STAR_3:
-        case DT_VIEW_STAR_4:
-        case DT_VIEW_STAR_5:
-        {
-          int offset = 0;
-          if(mouse_over_id == strip->activated_image) offset = dt_collection_image_offset(mouse_over_id);
-
-          dt_ratings_apply(mouse_over_id, strip->image_over, TRUE, TRUE, TRUE);
-
-          if(mouse_over_id == strip->activated_image)
-            if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
-              dt_view_filmstrip_scroll_relative(0, offset);
-
-          dt_collection_update_query(darktable.collection); // update the counter and selection
-          dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
-
-          gtk_widget_queue_draw(strip->filmstrip);
-          return TRUE;
-        }
-
-        default:
-          return FALSE;
-      }
-    }
-    else if(e->type == GDK_2BUTTON_PRESS)
-    {
-      if(mouse_over_id > 0)
-      {
-        strip->activated_image = mouse_over_id;
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
-        return TRUE;
-      }
-    }
-  }
-
-  return FALSE;
-}
-
-static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-
-  const int32_t mouse_over_id = strip->mouse_over_id;
-  const int32_t select_id = strip->select_id;
-  gboolean result = FALSE;
-  strip->force_expose_all = TRUE;
-
-  if(mouse_over_id == select_id && mouse_over_id > 0)
-  {
-    result = TRUE;
-    if(strip->select == DT_LIB_FILMSTRIP_SELECT_SINGLE)
-      dt_selection_select_single(darktable.selection, mouse_over_id);
-    else if(strip->select == DT_LIB_FILMSTRIP_SELECT_TOGGLE)
-      dt_selection_toggle(darktable.selection, mouse_over_id);
-    else if(strip->select == DT_LIB_FILMSTRIP_SELECT_RANGE)
-      dt_selection_select_range(darktable.selection, mouse_over_id);
-    else
-      result = FALSE;
-  }
-
-  strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
-  strip->select_id = -1;
-
-  // redraw filmstrip
-  gtk_widget_queue_draw(strip->filmstrip);
-  return result;
-}*/
 
 static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gpointer user_data)
 {

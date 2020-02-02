@@ -25,6 +25,7 @@
 #include "common/selection.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/drag_and_drop.h"
 #include "views/view.h"
 
 #define ZOOM_MAX 13
@@ -651,6 +652,113 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   }
 }
 
+
+static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+                           guint target_type, guint time, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  g_assert(selection_data != NULL);
+
+  switch(target_type)
+  {
+    case DND_TARGET_IMGID:
+    {
+      // TODO multiple ids
+      int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
+      gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _DWORD, (guchar *)&id,
+                             sizeof(id));
+      break;
+    }
+    default: // return the location of the file as a last resort
+    case DND_TARGET_URI:
+    {
+      GList *l = table->drag_list;
+      if(g_list_length(l) == 1)
+      {
+        gchar pathname[PATH_MAX] = { 0 };
+        gboolean from_cache = TRUE;
+        const int id = GPOINTER_TO_INT(g_list_nth_data(l, 0));
+        dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
+        gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar *)uri,
+                               strlen(uri));
+        g_free(uri);
+      }
+      else
+      {
+        GList *images = NULL;
+        while(l)
+        {
+          const int id = GPOINTER_TO_INT(l->data);
+          gchar pathname[PATH_MAX] = { 0 };
+          gboolean from_cache = TRUE;
+          dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
+          gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
+          images = g_list_append(images, uri);
+          l = g_list_next(l);
+        }
+        gchar *uri_list = dt_util_glist_to_str("\r\n", images);
+        g_list_free_full(images, g_free);
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE,
+                               (guchar *)uri_list, strlen(uri_list));
+        g_free(uri_list);
+      }
+      break;
+    }
+  }
+}
+
+static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  const int ts = DT_PIXEL_APPLY_DPI(64);
+
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  table->drag_list = dt_view_get_images_to_act_on();
+
+  // if we are dragging a single image -> use the thumbnail of that image
+  // otherwise use the generic d&d icon
+  // TODO: have something pretty in the 2nd case, too.
+  if(g_list_length(table->drag_list) == 1)
+  {
+    const int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
+
+    if(buf.buf)
+    {
+      for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
+
+      int w = ts, h = ts;
+      if(buf.width < buf.height)
+        w = (buf.width * ts) / buf.height; // portrait
+      else
+        h = (buf.height * ts) / buf.width; // landscape
+
+      GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
+                                                   buf.width * 4, NULL, NULL);
+      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+      gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
+
+      if(source) g_object_unref(source);
+      if(scaled) g_object_unref(scaled);
+    }
+
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  }
+}
+
+static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->drag_list)
+  {
+    g_list_free(table->drag_list);
+    table->drag_list = NULL;
+  }
+}
+
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
@@ -669,6 +777,16 @@ dt_thumbtable_t *dt_thumbtable_new()
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
+
+  gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
+#ifdef HAVE_MAP
+  gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+#endif
+
+  g_signal_connect_after(table->widget, "drag-begin", G_CALLBACK(_event_dnd_begin), table);
+  g_signal_connect_after(table->widget, "drag-end", G_CALLBACK(_event_dnd_end), table);
+  g_signal_connect(table->widget, "drag-data-get", G_CALLBACK(_event_dnd_get), table);
+
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
   g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
@@ -779,14 +897,36 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     gtk_container_remove(GTK_CONTAINER(parent), table->widget);
   }
 
-  // we change the settings
-  table->mode = mode;
-  if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-    gtk_widget_set_name(table->widget, "thumbtable_filemanager");
-  else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-    gtk_widget_set_name(table->widget, "thumbtable_filmstrip");
-  else if(mode == DT_THUMBTABLE_MODE_ZOOM)
-    gtk_widget_set_name(table->widget, "thumbtable_zoom");
+  // mode change
+  if(table->mode != mode)
+  {
+    // we change the widget name
+    if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+      gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+    else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+      gtk_widget_set_name(table->widget, "thumbtable_filmstrip");
+    else if(mode == DT_THUMBTABLE_MODE_ZOOM)
+      gtk_widget_set_name(table->widget, "thumbtable_zoom");
+
+    // if needed, we block/unblock drag and drop
+    if(mode == DT_THUMBTABLE_MODE_ZOOM)
+    {
+      gtk_drag_source_unset(table->widget);
+#ifdef HAVE_MAP
+      gtk_drag_dest_unset(table->widget);
+#endif
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    {
+      gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
+#ifdef HAVE_MAP
+      gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
+                        GDK_ACTION_COPY);
+#endif
+    }
+
+    table->mode = mode;
+  }
 
   // we reparent the table
   if(!parent || parent != new_parent)
