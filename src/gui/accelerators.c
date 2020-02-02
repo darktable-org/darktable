@@ -185,7 +185,8 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
   accel->local = FALSE;
   // we get the views in which the lib will be displayed
   accel->views = views;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  if (!dt_accel_find_by_path(accel->path))
+    darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
 {
