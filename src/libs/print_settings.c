@@ -383,7 +383,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  int imgid = -1;
+  if(g_slist_length(dt_view_active_images_get()) > 0)
+    imgid = GPOINTER_TO_INT(g_slist_nth_data(dt_view_active_images_get(), 0));
 
   if (imgid == -1)
   {

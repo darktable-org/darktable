@@ -663,19 +663,6 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-
-
-static void select_this_image(const int imgid)
-{
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-}
-
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
   dt_accel_disconnect_list(module->accel_closures);
@@ -2519,13 +2506,8 @@ void enter(dt_view_t *self)
   dev->gui_module = NULL;
 
   // change active image
-  g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
-
-  select_this_image(dev->image_storage.id);
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(dev->image_storage.id, TRUE);
 
   dt_control_set_dev_zoom(DT_ZOOM_FIT);
   dt_control_set_dev_zoom_x(0);

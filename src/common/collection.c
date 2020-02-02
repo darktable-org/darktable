@@ -141,7 +141,7 @@ static char * and_operator(int *term)
   assert(0); // Not reached.
 }
 
-static void _memory_collection_update()
+void dt_collection_memory_update()
 {
   if(!darktable.collection || !darktable.db) return;
   sqlite3_stmt *stmt;
@@ -1778,7 +1778,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   /* raise signal of collection change, only if this is an original */
   if(!collection->clone)
   {
-    _memory_collection_update();
+    dt_collection_memory_update();
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change);
   }
 }

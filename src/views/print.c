@@ -276,7 +276,11 @@ void enter(dt_view_t *self)
   {
     const int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
+
+    // change active image
     dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    dt_view_active_images_reset(FALSE);
+    dt_view_active_images_add(imgid, TRUE);
   }
   g_list_free(selected_images);
 

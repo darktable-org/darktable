@@ -83,7 +83,6 @@ typedef struct dt_lib_filmstrip_t
 } dt_lib_filmstrip_t;
 
 /* proxy function for retrieving last activate request image id */
-static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self);
 
 /*
@@ -202,8 +201,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize view manager proxy */
   darktable.view_manager->proxy.filmstrip.module = self;
-  darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
-  darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
+  darktable.view_manager->proxy.filmstrip.widget = _lib_filmstrip_get_widget;
 
   /* connect signal handler */
   /*dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
@@ -440,12 +438,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
     gtk_widget_queue_draw(tt->widget);
   }
   return FALSE;
-}
-
-static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
-{
-  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
-  return strip->activated_image;
 }
 
 static GtkWidget *_lib_filmstrip_get_widget(dt_lib_module_t *self)
