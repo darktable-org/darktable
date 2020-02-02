@@ -173,9 +173,11 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
                                      guint accel_key, GdkModifierType mods)
 {
   gchar accel_path[256];
+  dt_accel_path_lib(accel_path, sizeof(accel_path), self->plugin_name, path);
+  if (dt_accel_find_by_path(accel_path)) return; // return if nothing to add, to avoid multiple entries
+
   dt_accel_t *accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
 
-  dt_accel_path_lib(accel_path, sizeof(accel_path), self->plugin_name, path);
   gtk_accel_map_add_entry(accel_path, accel_key, mods);
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_lib_translated(accel_path, sizeof(accel_path), self, path);
@@ -185,9 +187,9 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
   accel->local = FALSE;
   // we get the views in which the lib will be displayed
   accel->views = views;
-  if (!dt_accel_find_by_path(accel->path))
-    darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
+
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
 {
   dt_view_type_flags_t v = 0;
