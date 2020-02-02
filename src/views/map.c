@@ -650,9 +650,8 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   // case in the initialization phase.
   if(!lib->drop_filmstrip_activated && darktable.view_manager->proxy.filmstrip.module)
   {
-    g_signal_connect(
-        darktable.view_manager->proxy.filmstrip.widget(darktable.view_manager->proxy.filmstrip.module),
-        "drag-data-received", G_CALLBACK(_view_map_dnd_remove_callback), self);
+    g_signal_connect(darktable.view_manager->proxy.filmstrip.module->widget, "drag-data-received",
+                     G_CALLBACK(_view_map_dnd_remove_callback), self);
     lib->drop_filmstrip_activated = TRUE;
   }
 }
