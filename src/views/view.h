@@ -343,7 +343,6 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
       int32_t (*activated_image)(struct dt_lib_module_t *);
       GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
@@ -487,9 +486,6 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
  *** offset to be provided is the offset of the current image, as given by
  *** dt_collection_image_offset. Getting this data before changing flags allows
  *** for using this function with images disappearing from the current collection  */
-void dt_view_filmstrip_scroll_relative(const int diff, int offset);
-/** scrolls filmstrip to the specified image */
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
 /** get the imageid from last filmstrip activate request */
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 
@@ -514,8 +510,6 @@ void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
 /** is the image visible in culling layout */
 gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
 
-/** set active image */
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
 /** prefetch the next few images in film strip, from selected on.
     TODO: move to control ?
 */

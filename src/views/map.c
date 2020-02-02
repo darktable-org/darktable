@@ -26,6 +26,7 @@
 #include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
@@ -854,7 +855,8 @@ void enter(dt_view_t *self)
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
   if(selected_images)
   {
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), GPOINTER_TO_INT(selected_images->data),
+                                   TRUE);
     g_list_free(selected_images);
   }
 

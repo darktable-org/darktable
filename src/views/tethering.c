@@ -39,6 +39,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/settings.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -307,7 +308,7 @@ void enter(dt_view_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->image_id, TRUE);
 
 
   /* initialize a session */

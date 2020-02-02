@@ -2175,38 +2175,6 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
 }
 
-void dt_view_filmstrip_scroll_relative(const int diff, int offset)
-{
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  if(qin)
-  {
-    sqlite3_stmt *stmt;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-
-      if(!darktable.develop->image_loading)
-      {
-        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
-      }
-    }
-    sqlite3_finalize(stmt);
-  }
-}
-
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate)
-{
-  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happen here for debugging
-  // g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
-
-  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
-    vm->proxy.filmstrip.scroll_to_image(vm->proxy.filmstrip.module, imgid, activate);
-}
-
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
 {
   // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happen here for debugging
@@ -2216,22 +2184,6 @@ int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
     return vm->proxy.filmstrip.activated_image(vm->proxy.filmstrip.module);
 
   return 0;
-}
-
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid)
-{
-  /* First off clear all selected images... */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-
-  /* clear and reset statement */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
-
-  /* setup statement and execute */
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, iid);
-  sqlite3_step(darktable.view_manager->statements.make_selected);
-
-  dt_view_filmstrip_scroll_to_image(vm, iid, TRUE);
 }
 
 void dt_view_filmstrip_prefetch()
