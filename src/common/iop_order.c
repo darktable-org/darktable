@@ -274,7 +274,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
       {
         dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-        strncpy(new_entry->operation, new_module, sizeof(new_entry->operation));
+        strncpy(new_entry->operation, new_module, sizeof(new_entry->operation) - 1);
         new_entry->instance = 0;
         new_entry->o.iop_order = 0;
 
