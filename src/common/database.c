@@ -1497,13 +1497,13 @@ static void _create_memory_schema(dt_database_t *db)
       db->handle,
       "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)", NULL,
       NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
                            "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
