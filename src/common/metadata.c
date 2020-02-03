@@ -29,8 +29,12 @@
 #include <stdlib.h>
 
 // this array should contain all dt metadata
-// do change the order. Must match with dt_metadata_t in metadata.h.
-// just add new metadata at the end when needed
+// add the new metadata at the end when needed
+// Dependencies
+//    Must match with dt_metadata_t in metadata.h.
+//    Exif.cc: add the new metadata into dt_xmp_keys[]
+//    libs/metadata.c increment version and change legacy_param() accordingly
+
 static const struct
 {
   char *key;
