@@ -1052,18 +1052,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  /* Select tags from tagged images when at least one tag is attached to selected images */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.tagq (id) "
-                              "SELECT TI.tagid "
-                              "FROM (SELECT DISTINCT TI.imgid "
-                                "FROM memory.similar_tags AS S "
-                                "JOIN main.tagged_images AS TI ON TI.tagid = S.tagid) AS S "
-                              "JOIN main.tagged_images AS TI ON TI.imgid = S.imgid ",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
   /* list tags and count */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.taglist (id, count)"
@@ -1119,7 +1107,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
 
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.tagq", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
 
   return count;
