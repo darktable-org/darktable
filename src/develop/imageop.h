@@ -93,8 +93,6 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_INCLUDE_IN_STYLES = 1 << 0,
   IOP_FLAGS_SUPPORTS_BLENDING = 1 << 1, // Does provide blending modes
   IOP_FLAGS_DEPRECATED = 1 << 2,
-  IOP_FLAGS_BLEND_ONLY_LIGHTNESS
-  = 1 << 3, // Does only blend with L-channel in Lab space. Keeps a, b of original image.
   IOP_FLAGS_ALLOW_TILING = 1 << 4, // Does allow tile-wise processing (valid for CPU and GPU processing)
   IOP_FLAGS_HIDDEN = 1 << 5,       // Hide the iop from userinterface
   IOP_FLAGS_TILING_FULL_ROI
