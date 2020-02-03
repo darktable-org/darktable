@@ -632,10 +632,10 @@ static void dt_set_darktable_tags()
   if (!count)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO memory.darktable_tags (tagid) "
-                                "SELECT DISTINCT id "
-                                "FROM data.tags "
-                                "WHERE name LIKE 'darktable|%%' ",
+                                "INSERT INTO memory.darktable_tags (tagid)"
+                                " SELECT DISTINCT id"
+                                " FROM data.tags"
+                                " WHERE name LIKE 'darktable|%%'",
                                 -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -1068,11 +1068,11 @@ uint32_t dt_tag_get_suggestions(GList **result)
 
   /* list tags and count */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) "
-                              "SELECT S.tagid, COUNT(*) "
-                              "FROM main.tagged_images AS S "
-                              "WHERE S.tagid NOT IN memory.darktable_tags "
-                              "GROUP BY S.tagid ",
+                              "INSERT INTO memory.taglist (id, count)"
+                              " SELECT S.tagid, COUNT(*)"
+                              "  FROM main.tagged_images AS S"
+                              "  WHERE S.tagid NOT IN memory.darktable_tags"
+                              "  GROUP BY S.tagid",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
