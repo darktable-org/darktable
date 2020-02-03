@@ -177,7 +177,6 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
-
   if(!dt_control_running()) return FALSE;
   update(self, TRUE);
   return FALSE;
@@ -241,6 +240,7 @@ static gboolean key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_modu
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
       write_metadata(self);
+      // TODO give focus to next widget - should mimic the TAB key.
 //      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       return TRUE; // we don't want to insert new line into the text
     case GDK_KEY_Escape:
@@ -255,11 +255,7 @@ static gboolean key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_modu
       d->editing = TRUE;
   }
 
-  if (gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event))
-  {
-    return TRUE;
-  }
-  return FALSE;
+  return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event);
 }
 
 static gboolean got_focus(GtkWidget *textview, dt_lib_module_t *self)
@@ -313,23 +309,13 @@ static void update_layout(dt_lib_module_t *self)
     }
     g_free(setting);
 
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
     // add a small offset to avoid scroll bar when not needed.
     // would be probably better with the actual value of scrolling threshold
     const unsigned int height = dt_conf_get_int(setting) ?
                   dt_conf_get_int(setting) : DT_PIXEL_APPLY_DPI(d->line_height + d->line_height / 5);
     gtk_widget_set_size_request(GTK_WIDGET(d->swindow[i]), -1, (height));
     g_free(setting);
-  }
-}
-
-static void update_layout_workaround(dt_lib_module_t *self)
-{
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  if(!d->init_layout)
-  {
-    update_layout(self);
-    d->init_layout = TRUE;
   }
 }
 
@@ -343,7 +329,6 @@ static void mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
     gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
   }
   update(self, FALSE);
-  update_layout_workaround(self);
 }
 
 static gboolean _metadata_list_size_changed(GtkWidget *window, GdkEvent  *event, GtkCellRenderer *renderer)
@@ -456,7 +441,7 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       g_free(setting);
     }
   }
-  update_layout(self);
+//  update_layout(self);
   gtk_widget_destroy(dialog);
 }
 
@@ -494,7 +479,7 @@ static gboolean mouse_scroll(GtkWidget *swindow, GdkEventScroll *event, dt_lib_m
       gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
 
       const gchar *name = dt_metadata_get_name_by_display_order(i);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
       dt_conf_set_int(setting, height);
       g_free(setting);
 
@@ -544,7 +529,7 @@ static gboolean click_on_textview(GtkWidget *textview, GdkEventButton *event, dt
   gtk_widget_get_allocation(GTK_WIDGET(d->swindow[i]), &metadata_allocation);
   // popup height
   const gchar *name = dt_metadata_get_name_by_display_order(i);
-  gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_lineheight", name);
+  gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
   const gint height = dt_conf_get_int(setting) * 5;
   g_free(setting);
 
@@ -596,6 +581,12 @@ static gboolean click_on_textview(GtkWidget *textview, GdkEventButton *event, dt
   return TRUE;
 }
 
+void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                        int32_t pointerx, int32_t pointery)
+{
+  update_layout(self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
@@ -622,7 +613,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-              _("metadata text. if <leave unchanged> selected images have different metadata."
+              _("metadata text. ctrl-wheel scroll to resize the text box"
+              "\nif <leave unchanged> selected images have different metadata."
               "\nin that case, right-click gives the possibility to choose one of them."
               "\npress escape to exit the popup window"));
 
@@ -649,16 +641,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
 
-/*    GtkEntryCompletion *completion = gtk_entry_completion_new();
-    gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(combobox)));
-    gtk_entry_completion_set_text_column(completion, 0);
-    gtk_entry_completion_set_inline_completion(completion, TRUE);
-    gtk_entry_set_completion(GTK_ENTRY(entry), completion);
-    g_object_unref(completion);
-*/
-
-    gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
-    // doesn't work
+    // doesn't work. Workaround => gui_post_expose
+    // gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
     // gtk_widget_set_no_show_all(GTK_WIDGET(textview), TRUE);
   }
 
@@ -669,7 +653,6 @@ void gui_init(dt_lib_module_t *self)
   d->line_height /= PANGO_SCALE;
 
   d->init_layout = FALSE;
-  update_layout(self);
 
   // clear/apply buttons
 
@@ -701,6 +684,8 @@ void gui_init(dt_lib_module_t *self)
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(mouse_over_image_callback), self);
+
+  update(self, FALSE);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
