@@ -1044,12 +1044,10 @@ uint32_t dt_tag_get_suggestions(GList **result)
   dt_set_darktable_tags();
   /* select tags from selected images */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid) "
-                              "SELECT DISTINCT TI.tagid "
-                              "FROM main.selected_images AS S "
-                              "JOIN main.tagged_images AS TI ON TI.imgid = S.imgid "
-                              "JOIN data.tags AS T ON T.id = TI.tagid "
-                              "WHERE TI.tagid NOT IN memory.darktable_tags ",
+                              "INSERT INTO memory.similar_tags (tagid)"
+                              " SELECT TI.tagid "
+                              " FROM main.selected_images AS S, main.tagged_images AS TI"
+                              " WHERE TI.imgid = S.imgid AND TI.tagid NOT IN memory.darktable_tags",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
