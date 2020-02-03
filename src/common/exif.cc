@@ -1774,9 +1774,6 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       exifData["Exif.Image.DateTime"] = new_datetime;
       exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
       exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
-      // FIXME: What about DateTimeDigitized? we currently update it, too, which might not be what is expected
-      // for scanned images
-      exifData["Exif.Photo.DateTimeDigitized"] = cimg->exif_datetime_taken;
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
