@@ -3029,7 +3029,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     if(mask_tone_curve && opacity > 1e-4f)
     {
       const float e = expf(3.f * d->contrast);
-      const float brightness = d->brightness;
+      const float brightness = fminf(d->brightness,0.999f);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(brightness, buffsize, e, mask, opacity)
@@ -3438,7 +3438,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     if(mask_tone_curve && opacity > 1e-4f)
     {
       const float e = expf(3.f * d->contrast);
-      const float brightness = d->brightness;
+      const float brightness = fminf(d->brightness,0.999f);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 0, sizeof(cl_mem), (void *)&dev_mask_2);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 1, sizeof(cl_mem), (void *)&dev_mask_1);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 2, sizeof(int), (void *)&owidth);
