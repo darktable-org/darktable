@@ -79,9 +79,12 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 
 /** attach a tag on selected images. tagid id of tag to attach. imgid the image
  * id to attach tag to, if < 0 selected images are used. */
-void dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
+gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 /** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
+
+/** check if a tag is attached to the given image */
+gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
 
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created
