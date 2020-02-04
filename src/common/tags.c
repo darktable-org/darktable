@@ -214,7 +214,7 @@ gboolean dt_tag_new(const char *name, guint *tagid)
     // tagid already exists.
     if(tagid != NULL) *tagid = sqlite3_column_int64(stmt, 0);
     sqlite3_finalize(stmt);
-    return TRUE;
+    return FALSE;
   }
   sqlite3_finalize(stmt);
 
@@ -458,7 +458,7 @@ static void _tag_execute(GList *tags, GList *imgs, GList **undo, const gboolean 
   }
 }
 
-void dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
 {
   GList *undo = NULL;
   GList *tags = NULL;
@@ -466,7 +466,11 @@ void dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, 
   if(imgid == -1)
     imgs = dt_collection_get_selected(darktable.collection, -1);
   else
+  {
+    if(dt_is_tag_attached(tagid, imgid)) return FALSE;
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  }
+
   if(imgs)
   {
     tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
@@ -482,13 +486,17 @@ void dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, 
       dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
+
+    return TRUE;
   }
+
+  return FALSE;
 }
 
 void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
 {
-  dt_tag_attach(tagid, imgid, undo_on, group_on);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(dt_tag_attach(tagid, imgid, undo_on, group_on))
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
@@ -1003,6 +1011,22 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
   dt_tag_free_result(&taglist);
 
   return tags;
+}
+
+gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid"
+                              " FROM main.tagged_images"
+                              " WHERE imgid = ?1 AND tagid = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
+
+  const gboolean ret = (sqlite3_step(stmt) == SQLITE_ROW);
+  sqlite3_finalize(stmt);
+  return ret;
 }
 
 GList *dt_tag_get_images_from_selection(gint imgid, gint tagid)
