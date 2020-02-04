@@ -16,6 +16,8 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/iop_profile.h"
+
  typedef enum dt_iop_rgb_norms_t
  {
    DT_RGB_NORM_NONE = 0,

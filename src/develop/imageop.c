@@ -381,7 +381,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
-  module->iop_order = 0.0;
+  module->iop_order = 0;
   for(int k = 0; k < 3; k++)
   {
     module->picked_color[k] = module->picked_output_color[k] = 0.0f;
@@ -505,22 +505,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 
-  // set the iop_order using the current version
-  dt_iop_order_entry_t *iop_order_entry = NULL;
-  if(dev && dev->iop_order_list)
-    iop_order_entry = dt_ioppr_get_iop_order_entry(dev->iop_order_list, module->op);
-  else
-    iop_order_entry = dt_ioppr_get_iop_order_entry(darktable.iop_order_list, module->op);
-  if(iop_order_entry)
-    module->iop_order = iop_order_entry->iop_order;
-  else
-    module->iop_order = -1.0;
-
-  if(module->iop_order <= 0.0)
-  {
-    fprintf(stderr, "[iop_load_module] `%s' needs to set iop_order!\n", so->op);
-    return 1; // this needs to be set
-  }
   if(module->params_size == 0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
@@ -567,7 +551,8 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
 
   if(dev->gui_attached)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   // we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);
@@ -724,7 +709,7 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   // dt_ioppr_check_iop_order(module->dev, "dt_iop_gui_movedown_callback 1");
   if(!prev) return;
 
-  const int moved = dt_ioppr_move_iop_before(&module->dev->iop, module, prev, 1, 1);
+  const int moved = dt_ioppr_move_iop_before(module->dev, module, prev);
   // dt_ioppr_check_iop_order(module->dev, "dt_iop_gui_movedown_callback 2");
   if(!moved) return;
 
@@ -764,7 +749,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_module_t *next = dt_iop_gui_get_next_visible_module(module);
   if(!next) return;
 
-  const int moved = dt_ioppr_move_iop_after(&module->dev->iop, module, next, 1, 1);
+  const int moved = dt_ioppr_move_iop_after(module->dev, module, next);
   if(!moved) return;
 
   // we move the headers
@@ -798,7 +783,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
-  uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
+  const uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
 
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
@@ -2365,6 +2350,27 @@ gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
       return TRUE;
   }
   return FALSE;
+}
+
+dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority)
+{
+  dt_iop_module_t *mod_ret = NULL;
+
+  GList *m = g_list_first(modules);
+  while(m)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+
+    if(strcmp(mod->op, operation) == 0
+       && (mod->multi_priority == multi_priority || multi_priority == -1))
+    {
+      mod_ret = mod;
+      break;
+    }
+
+    m = g_list_next(m);
+  }
+  return mod_ret;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

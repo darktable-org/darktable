@@ -372,7 +372,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
       if ((DT_IOP_ORDER_INFO) && (module->enabled))
       {
-        fprintf(stderr,"\n%20s %9.5f",module->op,module->iop_order);
+        fprintf(stderr,"\n%20s %d",module->op, module->iop_order);
         if(dt_iop_is_hidden(module)) fprintf(stderr,", hidden");
       }
 
@@ -381,7 +381,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
       // do not show non-active modules
       // we don't want the user to mess with those
-      if(module->iop_order == DBL_MAX)
+      if(module->iop_order == INT_MAX)
       {
         if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
         if(w) gtk_widget_hide(w);

@@ -20,6 +20,7 @@ src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
 src/common/iop_order.c
+src/common/iop_profile.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.c
 src/common/opencl.c
