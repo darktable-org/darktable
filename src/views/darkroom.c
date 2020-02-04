@@ -799,10 +799,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
     if(module->multi_priority == base_multi_priority) // if the module is the "base" instance, we keep it
     {
-      if(dev->iop_order_list)
-        module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op);
-      else
-        module->iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, module->op);
+      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
       dt_iop_reload_defaults(module);
@@ -2352,14 +2349,10 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
   if(module_src && module_dest && module_src != module_dest)
   {
-    double iop_order = -1.0;
     if(module_src->iop_order < module_dest->iop_order)
-      iop_order = dt_ioppr_get_iop_order_after_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
+      can_moved = dt_ioppr_check_can_move_after_iop(darktable.develop->iop, module_src, module_dest);
     else
-      iop_order = dt_ioppr_get_iop_order_before_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
-
-    if(iop_order > 0.0 && iop_order != module_src->iop_order)
-      can_moved = TRUE;
+      can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
   if(can_moved)
@@ -2400,14 +2393,14 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       /* printf("[_on_drag_data_received] moving %s %s(%f) after %s %s(%f)\n",
           module_src->op, module_src->multi_name, module_src->iop_order,
           module_dest->op, module_dest->multi_name, module_dest->iop_order); */
-      moved = dt_ioppr_move_iop_after(&darktable.develop->iop, module_src, module_dest, 1, 1);
+      moved = dt_ioppr_move_iop_after(darktable.develop, module_src, module_dest);
     }
     else
     {
       /* printf("[_on_drag_data_received] moving %s %s(%f) before %s %s(%f)\n",
           module_src->op, module_src->multi_name, module_src->iop_order,
           module_dest->op, module_dest->multi_name, module_dest->iop_order); */
-      moved = dt_ioppr_move_iop_before(&darktable.develop->iop, module_src, module_dest, 1, 1);
+      moved = dt_ioppr_move_iop_before(darktable.develop, module_src, module_dest);
     }
   }
   else
