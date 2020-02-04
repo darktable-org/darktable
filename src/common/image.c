@@ -931,34 +931,28 @@ void dt_image_remove(const int32_t imgid)
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
 
-int dt_image_altered(const uint32_t imgid)
+gboolean dt_image_altered(const uint32_t imgid)
 {
-  int altered = 0;
   sqlite3_stmt *stmt;
 
   const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
   const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation"
-                              " FROM main.history, main.images"
-                              " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
-                              "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
-                              "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature')",
-                              -1, &stmt, NULL);
+  char query[1024] = { 0 };
+
+  snprintf(query, sizeof(query),
+           "SELECT 1"
+           " FROM main.history, main.images"
+           " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
+           "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
+           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
+           basecurve_auto_apply ? ", 'basecurve'" : "",
+           sharpen_auto_apply ? ", 'sharpen'" : "");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *op = (const char *)sqlite3_column_text(stmt, 0);
-    // FIXME: this is clearly a terrible way to determine which modules
-    // are okay to still load the thumbnail and which aren't.
-    // it is also used to display the altered symbol on the thumbnails.
-    if(!op) continue; // can happen while importing or something like that
-    if(!strcmp(op, "basecurve") && basecurve_auto_apply) continue;
-    if(!strcmp(op, "sharpen") && sharpen_auto_apply) continue;
-    altered = 1;
-    break;
-  }
+
+  const gboolean altered = (sqlite3_step(stmt) == SQLITE_ROW);
   sqlite3_finalize(stmt);
 
   return altered;
