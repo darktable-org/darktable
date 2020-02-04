@@ -936,8 +936,15 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
 
+  const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+  const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation FROM main.history, main.images WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1",
+                              "SELECT operation"
+                              " FROM main.history, main.images"
+                              " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
+                              "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
+                              "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature')",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -947,17 +954,8 @@ int dt_image_altered(const uint32_t imgid)
     // are okay to still load the thumbnail and which aren't.
     // it is also used to display the altered symbol on the thumbnails.
     if(!op) continue; // can happen while importing or something like that
-    if(!strcmp(op, "basecurve") && dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply")) continue;
-    if(!strcmp(op, "flip")) continue;
-    if(!strcmp(op, "sharpen") && dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply")) continue;
-    if(!strcmp(op, "dither")) continue;
-    if(!strcmp(op, "highlights")) continue;
-    if(!strcmp(op, "rawprepare")) continue;
-    if(!strcmp(op, "colorin")) continue;
-    if(!strcmp(op, "colorout")) continue;
-    if(!strcmp(op, "gamma")) continue;
-    if(!strcmp(op, "demosaic")) continue;
-    if(!strcmp(op, "temperature")) continue;
+    if(!strcmp(op, "basecurve") && basecurve_auto_apply) continue;
+    if(!strcmp(op, "sharpen") && sharpen_auto_apply) continue;
     altered = 1;
     break;
   }
