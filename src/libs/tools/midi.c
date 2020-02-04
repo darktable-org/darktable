@@ -718,8 +718,8 @@ void select_page(MidiDevice *midi, gint channel, gint note)
     // try to initialise rotator lights off
     for (gint knob = 1; knob <= 8; knob++)
     {
-      midi_write(midi, channel, 0xB, knob, 0); 
       midi_write(midi,       0, 0xB, knob, 0); // set single pattern on x-touch mini
+      midi_write(midi, channel, 0xB, knob, 0); 
     }
 
     refresh_sliders_to_device(midi);
@@ -856,6 +856,7 @@ static gboolean midi_alsa_dispatch (GSource     *source,
 
         if (g_strcmp0(snd_seq_client_info_get_name (client_info),"darktable"))
         {
+          g_free(midi->model_name);
           midi->model_name = g_strdup(snd_seq_client_info_get_name (client_info));
           g_print("Alsa device name: %s\n", midi->model_name);
           midi->config_loaded = FALSE;
@@ -1067,6 +1068,7 @@ gboolean midi_read_event (GIOChannel   *io,
                 //Arturia Beatstep responds with:
                 //7e 00 06 02 00 20 6b 02 00 06 00 03 00 02 01
                 //turn this into string 00206B_0002_0006
+                g_free(midi->model_name);
                 midi->model_name = g_strdup_printf(
                                 "%02X%02X%02X_%02X%02X_%02X%02X",
                                 buf[pos+4],buf[pos+5],buf[pos+6],
@@ -1244,7 +1246,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
   {
     midi->device = g_strdup (device);
 
-    midi->model_name = "unknown";
+    midi->model_name = g_strdelimit (g_strdup (device), "/", '_');
 
     midi->io           = NULL;
     midi->io_id        = 0;
@@ -1279,7 +1281,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->stored_key       = -1;
     midi->stored_knob    = NULL;
 
-    midi->group            =  0;
+    midi->group            =  1;
     midi->group_switch_key = -1;
     midi->group_key_light  = -100;
 
@@ -1339,7 +1341,6 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
       if (portmidi_info == NULL) return FALSE;
 
       g_print("Portmidi device name: %s\n", (char *)portmidi_info->name);
-      midi->model_name = g_strdup(portmidi_info->name);
       
       PmError pmerror = Pm_OpenInput(&midi->portmidi, defaultPM, NULL, 1000, NULL, NULL);
       if (pmerror != pmNoError)
@@ -1354,7 +1355,9 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
       portmidi_info = Pm_GetDeviceInfo( defaultPM );
       if (portmidi_info == NULL) return FALSE;
 
+      // use output device for midi ID, since input more likely rerouted via key interpreter
       g_print("Portmidi output device name: %s\n", (char *)portmidi_info->name);
+      g_free(midi->model_name);
       midi->model_name = g_strdup(portmidi_info->name);
       
       pmerror = Pm_OpenOutput(&midi->portmidi_out, defaultPM, NULL, 1000, NULL, NULL, 0);
@@ -1438,7 +1441,10 @@ void midi_device_free(MidiDevice *midi)
   }
 
   if (midi->device)
-    g_free (midi->device);
+    g_free(midi->device);
+
+  if (midi->model_name)
+    g_free(midi->model_name);
 }
 
 void midi_open_devices(dt_lib_module_t *self)
@@ -1468,7 +1474,7 @@ void midi_open_devices(dt_lib_module_t *self)
     }
     else
     {
-      g_free(midi);
+      midi_device_free(midi);
     }
 
     cur_device++;
