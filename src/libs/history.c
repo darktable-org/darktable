@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2019-2020 Pascal Obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +39,7 @@ typedef struct dt_undo_history_t
 {
   GList *before_snapshot, *after_snapshot;
   int before_end, after_end;
+  GList *before_iop_order_list, *after_iop_order_list;
 } dt_undo_history_t;
 
 typedef struct dt_lib_history_t
@@ -47,8 +49,10 @@ typedef struct dt_lib_history_t
   GtkWidget *create_button;
   GtkWidget *compress_button;
   gboolean record_undo;
+  // previous_* below store values sent by signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
   GList *previous_snapshot;
   int previous_history_end;
+  GList *previous_iop_order_list;
 } dt_lib_history_t;
 
 /* 3 widgets in each history line */
@@ -61,7 +65,8 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 /* signal callback for history change */
-static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end, gpointer user_data);
+static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end,
+                                              GList *iop_order_list, gpointer user_data);
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data);
 
@@ -111,6 +116,7 @@ void gui_init(dt_lib_module_t *self)
   d->record_undo = TRUE;
   d->previous_snapshot = NULL;
   d->previous_history_end = 0;
+  d->previous_iop_order_list = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
@@ -547,11 +553,13 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     {
       history_temp = dt_history_duplicate(hist->before_snapshot);
       hist_end = hist->before_end;
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->before_iop_order_list);
     }
     else
     {
       history_temp = dt_history_duplicate(hist->after_snapshot);
       hist_end = hist->after_end;
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->after_iop_order_list);
     }
 
     GList *iop_temp = g_list_copy(dev->iop);
@@ -617,6 +625,8 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
 
+    dt_ioppr_resync_modules_order(dev);
+
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 }
@@ -626,6 +636,8 @@ static void _history_undo_data_free(gpointer data)
   dt_undo_history_t *hist = (dt_undo_history_t *)data;
   g_list_free_full(hist->before_snapshot, dt_dev_free_history_item);
   g_list_free_full(hist->after_snapshot, dt_dev_free_history_item);
+  g_list_free_full(hist->before_iop_order_list, free);
+  g_list_free_full(hist->after_iop_order_list, free);
   free(data);
 }
 
@@ -634,7 +646,7 @@ static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module
   dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
-static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end,
+static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end, GList *iop_order_list,
                                               gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -644,9 +656,11 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
   {
     // history is about to change, we want here ot record a snapshot of the history for the undo
     // record previous history
-    g_list_free(lib->previous_snapshot);
-    lib->previous_snapshot = history; //_duplicate_history(darktable.develop->history);
+    g_list_free_full(lib->previous_snapshot, free);
+    g_list_free_full(lib->previous_iop_order_list, free);
+    lib->previous_snapshot = history;
     lib->previous_history_end = history_end;
+    lib->previous_iop_order_list = iop_order_list;
   }
 }
 
@@ -670,9 +684,12 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     /* record undo/redo history snapshot */
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
     hist->before_snapshot = dt_history_duplicate(d->previous_snapshot);
-    hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
     hist->before_end = d->previous_history_end;
+    hist->before_iop_order_list = dt_ioppr_iop_order_copy_deep(d->previous_iop_order_list);
+
+    hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
     hist->after_end = darktable.develop->history_end;
+    hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
 
     dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
@@ -721,7 +738,8 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   if(!imgid) return;
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   // As dt_history_compress_on_image does *not* use the history stack data at all
   // make sure the current stack is in the database
@@ -783,7 +801,8 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   if(darktable.gui->reset) return;
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   /* revert to given history item. */
   const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
