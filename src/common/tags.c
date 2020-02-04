@@ -1162,8 +1162,10 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
   g_free(keyword_expr);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT ST.tagid, T.name FROM memory.similar_tags ST "
-                              "JOIN data.tags T ON T.id = ST.tagid ",
+                              "SELECT ST.tagid, T.name"
+                              " FROM memory.similar_tags ST"
+                              " JOIN data.tags T"
+                              "   ON T.id = ST.tagid ",
                               -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1176,8 +1178,10 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT DISTINCT ti.imgid FROM main.tagged_images AS ti "
-                              "JOIN memory.similar_tags AS st ON st.tagid = ti.tagid",
+                              "SELECT DISTINCT ti.imgid"
+                              " FROM main.tagged_images AS ti"
+                              " JOIN memory.similar_tags AS st"
+                              "   ON st.tagid = ti.tagid",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1206,8 +1210,9 @@ uint32_t dt_tag_images_count(gint tagid)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(DISTINCT imgid) AS imgnb FROM main.tagged_images "
-                              "WHERE tagid = ?1",
+                              "SELECT COUNT(DISTINCT imgid) AS imgnb"
+                              " FROM main.tagged_images"
+                              " WHERE tagid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   sqlite3_step(stmt);
@@ -1224,9 +1229,9 @@ uint32_t dt_tag_get_with_usage(GList **result)
 
   /* Select tags that are similar to the keyword and are actually used to tag images*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) SELECT tagid, COUNT(*) "
-                              "FROM main.tagged_images "
-                              "GROUP BY tagid",
+                              "INSERT INTO memory.taglist (id, count) SELECT tagid, COUNT(*)"
+                              " FROM main.tagged_images"
+                              " GROUP BY tagid",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
