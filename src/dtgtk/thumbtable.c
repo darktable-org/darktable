@@ -747,6 +747,66 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
+
+  // if we can reorder, let's update the thumbtable class acoordingly
+  // this will show up vertical bar for the image destination point
+  if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER && table->mode != DT_THUMBTABLE_MODE_ZOOM)
+  {
+    // we set the class correctly
+    GtkStyleContext *tablecontext = gtk_widget_get_style_context(table->widget);
+    gtk_style_context_add_class(tablecontext, "dt_thumbtable_reorder");
+  }
+}
+
+static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                                GtkSelectionData *selection_data, guint target_type, guint time,
+                                gpointer user_data)
+{
+  gboolean success = FALSE;
+
+  if((target_type == DND_TARGET_URI) && (selection_data != NULL)
+     && (gtk_selection_data_get_length(selection_data) >= 0))
+  {
+    gchar **uri_list = g_strsplit_set((gchar *)gtk_selection_data_get_data(selection_data), "\r\n", 0);
+    if(uri_list)
+    {
+      gchar **image_to_load = uri_list;
+      while(*image_to_load)
+      {
+        if(**image_to_load)
+        {
+          dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode?
+                                                            // If yes -> set to TRUE.
+        }
+        image_to_load++;
+      }
+    }
+    g_strfreev(uri_list);
+    success = TRUE;
+  }
+  else if((target_type == DND_TARGET_IMGID) && (selection_data != NULL)
+          && (gtk_selection_data_get_length(selection_data) >= 0))
+  {
+    dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+    if(table->drag_list)
+    {
+      if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER
+         && table->mode != DT_THUMBTABLE_MODE_ZOOM)
+      {
+        // source = dest = thumbtable => we are reordering
+        // set order to "user defined" (this shouldn't trigger anything)
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        dt_collection_move_before(mouse_over_id, table->drag_list);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+        success = TRUE;
+      }
+    }
+    else
+    {
+      // we don't catch anything here at the moment
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
 }
 
 static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
@@ -757,6 +817,9 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer 
     g_list_free(table->drag_list);
     table->drag_list = NULL;
   }
+  // in any case, with reset the reordering class if any
+  GtkStyleContext *tablecontext = gtk_widget_get_style_context(table->widget);
+  gtk_style_context_remove_class(tablecontext, "dt_thumbtable_reorder");
 }
 
 dt_thumbtable_t *dt_thumbtable_new()
@@ -778,14 +841,14 @@ dt_thumbtable_t *dt_thumbtable_new()
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
 
+  // drag and drop : used for reordering, interactions with maps, exporting uri to external apps, importing images
+  // in filmroll...
   gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
-#ifdef HAVE_MAP
-  gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
-#endif
-
+  gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all, GDK_ACTION_COPY);
   g_signal_connect_after(table->widget, "drag-begin", G_CALLBACK(_event_dnd_begin), table);
   g_signal_connect_after(table->widget, "drag-end", G_CALLBACK(_event_dnd_end), table);
   g_signal_connect(table->widget, "drag-data-get", G_CALLBACK(_event_dnd_get), table);
+  g_signal_connect(table->widget, "drag-data-received", G_CALLBACK(_event_dnd_received), table);
 
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
@@ -912,17 +975,10 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     if(mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       gtk_drag_source_unset(table->widget);
-#ifdef HAVE_MAP
-      gtk_drag_dest_unset(table->widget);
-#endif
     }
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
-#ifdef HAVE_MAP
-      gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
-                        GDK_ACTION_COPY);
-#endif
     }
 
     table->mode = mode;
