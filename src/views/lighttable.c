@@ -237,18 +237,6 @@ static inline float absmul(float a, float b) {
 }
 
 
-/* drag and drop callbacks to reorder picture sequence (dnd)*/
-
-static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                    GtkSelectionData *selection_data, guint target_type, guint time,
-                                    gpointer data);
-static void _dnd_begin_picture_reorder(GtkWidget *widget, GdkDragContext *context, gpointer user_data);
-
-static gboolean _dnd_drag_picture_motion(GtkWidget *dest_button, GdkDragContext *dc, gint x, gint y, guint time, gpointer user_data);
-
-static void _register_custom_image_order_drag_n_drop(dt_view_t *self);
-static void _unregister_custom_image_order_drag_n_drop(dt_view_t *self);
-
 static void _stop_audio(dt_library_t *lib);
 
 const char *name(const dt_view_t *self)
@@ -432,10 +420,6 @@ static void check_layout(dt_view_t *self)
     g_timeout_add(200, _expose_again_full, self);
     _scrollbars_restore();
   }
-
-  // put back or desactivate the reorder dnd
-  _unregister_custom_image_order_drag_n_drop(self);
-  _register_custom_image_order_drag_n_drop(self);
 }
 
 static inline void _destroy_preview_surface(dt_preview_surface_t *fp_surf)
@@ -561,8 +545,6 @@ static void zoom_around_image(dt_library_t *lib, double pointerx, double pointer
 static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_library_t *lib)
 {
   lib->force_expose_all = TRUE;
-  _unregister_custom_image_order_drag_n_drop(self);
-  _register_custom_image_order_drag_n_drop(self);
 
   _full_preview_destroy(self);
   lib->full_zoom = 1.0f;
@@ -3266,34 +3248,6 @@ static void _lighttable_mipmaps_updated_signal_callback(gpointer instance, gpoin
   dt_control_queue_redraw_center();
 }
 
-static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                   GtkSelectionData *selection_data, guint target_type, guint time,
-                                   gpointer data)
-{
-  gboolean success = FALSE;
-
-  if((target_type == DND_TARGET_URI) && (selection_data != NULL) && (gtk_selection_data_get_length(selection_data) >= 0))
-  {
-    gchar **uri_list = g_strsplit_set((gchar *)gtk_selection_data_get_data(selection_data), "\r\n", 0);
-    if(uri_list)
-    {
-      gchar **image_to_load = uri_list;
-      while(*image_to_load)
-      {
-        if(**image_to_load)
-        {
-          dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
-                                                            // yes -> set to TRUE.
-        }
-        image_to_load++;
-      }
-    }
-    g_strfreev(uri_list);
-    success = TRUE;
-  }
-  gtk_drag_finish(context, success, FALSE, time);
-}
-
 // shitf the first select image by 1 with up direction
 static void _culling_scroll(dt_library_t *lib, const int up)
 {
@@ -3397,15 +3351,6 @@ void enter(dt_view_t *self)
 
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
-
-  gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
-                    GDK_ACTION_COPY);
-
-  // dropping images for import
-  g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-received", G_CALLBACK(drag_and_drop_received),
-                   self);
-
-  _register_custom_image_order_drag_n_drop(self);
 
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
@@ -3554,9 +3499,6 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   lib->full_y = 0.0f;
   _full_preview_destroy(self);
 
-  // we don't want want drag and drop here
-  _unregister_custom_image_order_drag_n_drop(self);
-
   lib->force_expose_all = TRUE;
 }
 static void _preview_quit(dt_view_t *self)
@@ -3622,9 +3564,6 @@ static void _preview_quit(dt_view_t *self)
   // restore scrollbars
   _scrollbars_restore();
 
-  // restore drag and drop
-  _register_custom_image_order_drag_n_drop(self);
-
   lib->slots_changed = TRUE;
   lib->force_expose_all = TRUE;
 }
@@ -3641,13 +3580,6 @@ void leave(dt_view_t *self)
     darktable.view_manager->active_images = NULL;
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
   }
-
-  gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
-
-  // disconnect dropping images for import
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(drag_and_drop_received),self);
-
-  _unregister_custom_image_order_drag_n_drop(self);
 
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipmaps_updated_signal_callback),
@@ -5132,122 +5064,6 @@ static void _redraw_selected_images(dt_view_t *self)
     g_hash_table_add(lib->thumbs_table, (gpointer)&imgid);
   }
   sqlite3_finalize(stmt);
-}
-
-static void _register_custom_image_order_drag_n_drop(dt_view_t *self)
-{
-  // register drag and drop for custom image ordering only
-  // if "custom order" is selected and if the view "Lighttable"
-  // is active
-  if (_is_custom_image_order_actif(self))
-  {
-    // drag and drop for custom order of picture sequence (dnd) and drag&drop of external files/folders into darktable
-    gtk_drag_source_set(dt_ui_center(darktable.gui->ui), GDK_BUTTON1_MASK, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
-
-    // check if already connected
-    const int is_connected = g_signal_handler_find(dt_ui_center(darktable.gui->ui),
-                                     G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA,
-                                     0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self) != 0;
-
-    if (!is_connected)
-    {
-      g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-begin",    G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
-      g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-get", G_CALLBACK(_dnd_get_picture_reorder),   (gpointer)self);
-      g_signal_connect(dt_ui_center(darktable.gui->ui), "drag_motion",   G_CALLBACK(_dnd_drag_picture_motion),   (gpointer)self);
-    }
-  }
-}
-
-static void _unregister_custom_image_order_drag_n_drop(dt_view_t *self)
-{
-  if (darktable.gui)
-  {
-    gtk_drag_source_unset(dt_ui_center(darktable.gui->ui));
-
-    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
-    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_get_picture_reorder), (gpointer)self);
-    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_drag_picture_motion), (gpointer)self);
-  }
-}
-
-static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                    GtkSelectionData *selection_data, guint target_type, guint time,
-                                    gpointer data)
-{
-  GList *selected_images = dt_collection_get_selected(darktable.collection, -1);
-  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-  dt_collection_move_before(mouse_over_id, selected_images);
-
-  dt_control_button_released(x, y, GDK_BUTTON1_MASK, 0 & 0xf);
-  //gtk_widget_queue_draw(widget);
-  _update_collected_images(darktable.view_manager->proxy.lighttable.view);
-  g_list_free(selected_images);
-}
-
-static void _dnd_begin_picture_reorder(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
-{
-  const int ts = DT_PIXEL_APPLY_DPI(64);
-
-  // we need to check that we are over a selection. If not we need to update the selection
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM main.selected_images WHERE imgid=?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dt_control_get_mouse_over_id());
-  if(sqlite3_step(stmt) != SQLITE_ROW)
-  {
-    // we apply selection changes
-    activate_control_element(darktable.view_manager->proxy.lighttable.view);
-  }
-  sqlite3_finalize(stmt);
-
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-
-  // if we are dragging a single image -> use the thumbnail of that image
-  // otherwise use the generic d&d icon
-  // TODO: have something pretty in the 2nd case, too.
-  if(dt_collection_get_selected_count(NULL) == 1 && selected_images)
-  {
-    const int imgid = GPOINTER_TO_INT(selected_images->data);
-
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
-
-    if(buf.buf)
-    {
-      const int32_t width = buf.width;
-      const int32_t height = buf.height;
-
-      if (width > 0 && height > 0)
-      {
-        for(size_t i = 3; i < (size_t)4 * width * height; i += 4) buf.buf[i] = UINT8_MAX;
-
-        int w = ts, h = ts;
-        if(width < height)
-          w = (width * ts) / height; // portrait
-        else
-          h = (height * ts) / width; // landscape
-
-        GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, width,
-                                                     height, width * 4, NULL, NULL);
-        GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
-        gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
-
-        if(source) g_object_unref(source);
-        if(scaled) g_object_unref(scaled);
-      }
-    }
-
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  }
-
-  g_list_free(selected_images);
-}
-
-static gboolean _dnd_drag_picture_motion(GtkWidget *dest_button, GdkDragContext *dc, gint x, gint y, guint time, gpointer user_data)
-{
-  dt_control_queue_redraw_center();
-  return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

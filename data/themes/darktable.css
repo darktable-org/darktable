@@ -1404,8 +1404,9 @@ Hierachy :
 Details :
 
   #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
-    class = .dt_thumbtable     present for all thumbtable types
-    class = .dt_show_overlays  if user has choosed to always show overlay
+    class = .dt_thumbtable           present for all thumbtable types
+    class = .dt_show_overlays       if user has choosed to always show overlay
+    class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
   #thumb_main
     state = :selected  if the thumb is in current selection
     state = :active    if the thumb correspond to one of the images worked on (filmstrip)
@@ -1464,6 +1465,11 @@ Details :
 .dt_group_bottom #thumb_back
 {
   border-bottom: 2px solid rgb(255, 187, 0);
+}
+
+.dt_thumbtable_reorder #thumb_main:hover #thumb_back
+{
+  border-left : 4px solid rgb(255, 187, 0);
 }
 
 /* extension */

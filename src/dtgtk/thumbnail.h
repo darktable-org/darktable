@@ -81,6 +81,10 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height);
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
 void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 
+// set if the thumbnail should react (mouse_over) to drag and drop
+// note that it's just cosmetic as dropping occurs in thumbtable in any case
+void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

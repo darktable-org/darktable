@@ -29,6 +29,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
 #include "dtgtk/thumbnail_btn.h"
+#include "gui/drag_and_drop.h"
 #include "views/view.h"
 
 static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
@@ -394,6 +395,14 @@ static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gp
   return TRUE;
 }
 
+// we only want to specify that the mouse is hovereing the thumbnail
+static gboolean _event_main_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time,
+                                        gpointer user_data)
+{
+  _event_main_motion(widget, NULL, user_data);
+  return TRUE;
+}
+
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 {
   // main widget (overlay)
@@ -403,6 +412,11 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
   if(thumb->imgid > 0)
   {
+    // this is only here to ensure that mouse-over value is updated correctly
+    // all dragging actions take place inside thumbatble.c
+    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_COPY);
+    g_signal_connect(G_OBJECT(thumb->w_main), "drag-motion", G_CALLBACK(_event_main_drag_motion), thumb);
+
     g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event", G_CALLBACK(_event_main_press), thumb);
     g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
 
@@ -664,6 +678,21 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
   if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
   gtk_widget_queue_draw(thumb->w_main);
 }
+
+// set if the thumbnail should react (mouse_over) to drag and drop
+// note that it's just cosmetic as dropping occurs in thumbtable in any case
+void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop)
+{
+  if(accept_drop)
+  {
+    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_COPY);
+  }
+  else
+  {
+    gtk_drag_dest_unset(thumb->w_main);
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

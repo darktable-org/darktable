@@ -413,8 +413,7 @@ void init(dt_view_t *self)
     lib->map = g_object_new(OSM_TYPE_GPS_MAP, "map-source", OSM_GPS_MAP_SOURCE_NULL, "proxy-uri",
                             g_getenv("http_proxy"), NULL);
 
-    GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center_base(darktable.gui->ui)));
-    gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
+    g_object_ref(lib->map); // we want to keep map alive until explicit destroy
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
                             TRUE, "show-zoom", TRUE,
@@ -648,9 +647,9 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   // activate this callback late in the process as we need the filmstrip proxy to be setup. This is not the
   // case in the initialization phase.
-  if(!lib->drop_filmstrip_activated && darktable.view_manager->proxy.filmstrip.module)
+  if(!lib->drop_filmstrip_activated)
   {
-    g_signal_connect(darktable.view_manager->proxy.filmstrip.module->widget, "drag-data-received",
+    g_signal_connect(dt_ui_thumbtable(darktable.gui->ui)->widget, "drag-data-received",
                      G_CALLBACK(_view_map_dnd_remove_callback), self);
     lib->drop_filmstrip_activated = TRUE;
   }
@@ -820,11 +819,8 @@ void enter(dt_view_t *self)
   /* set the correct map source */
   _view_map_set_map_source_g_object(self, lib->map_source);
 
-  /* replace center widget */
-  GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
-  gtk_widget_hide(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
-
-  gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
+  /* add map to center widget */
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
 
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
@@ -870,10 +866,13 @@ void leave(dt_view_t *self)
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_filmstrip_activate_callback),
                                (gpointer)self);
+  g_signal_handlers_disconnect_by_func(dt_ui_thumbtable(darktable.gui->ui)->widget,
+                                       G_CALLBACK(_view_map_dnd_remove_callback), self);
 
   dt_map_t *lib = (dt_map_t *)self->data;
 
   gtk_widget_hide(GTK_WIDGET(lib->map));
+  gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
   gtk_widget_show_all(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   /* reset proxy */
