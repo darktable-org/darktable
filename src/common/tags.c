@@ -632,10 +632,10 @@ static void dt_set_darktable_tags()
   if (!count)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO memory.darktable_tags (tagid) "
-                                "SELECT DISTINCT id "
-                                "FROM data.tags "
-                                "WHERE name LIKE 'darktable|%%' ",
+                                "INSERT INTO memory.darktable_tags (tagid)"
+                                " SELECT DISTINCT id"
+                                " FROM data.tags"
+                                " WHERE name LIKE 'darktable|%%'",
                                 -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -1044,35 +1044,21 @@ uint32_t dt_tag_get_suggestions(GList **result)
   dt_set_darktable_tags();
   /* select tags from selected images */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid) "
-                              "SELECT DISTINCT TI.tagid "
-                              "FROM main.selected_images AS S "
-                              "JOIN main.tagged_images AS TI ON TI.imgid = S.imgid "
-                              "JOIN data.tags AS T ON T.id = TI.tagid "
-                              "WHERE TI.tagid NOT IN memory.darktable_tags ",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  /* Select tags from tagged images when at least one tag is attached to selected images */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.tagq (id) "
-                              "SELECT TI.tagid "
-                              "FROM (SELECT DISTINCT TI.imgid "
-                                "FROM memory.similar_tags AS S "
-                                "JOIN main.tagged_images AS TI ON TI.tagid = S.tagid) AS S "
-                              "JOIN main.tagged_images AS TI ON TI.imgid = S.imgid ",
+                              "INSERT INTO memory.similar_tags (tagid)"
+                              " SELECT TI.tagid "
+                              " FROM main.selected_images AS S, main.tagged_images AS TI"
+                              " WHERE TI.imgid = S.imgid AND TI.tagid NOT IN memory.darktable_tags",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   /* list tags and count */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) "
-                              "SELECT S.tagid, COUNT(*) "
-                              "FROM main.tagged_images AS S "
-                              "WHERE S.tagid NOT IN memory.darktable_tags "
-                              "GROUP BY S.tagid ",
+                              "INSERT INTO memory.taglist (id, count)"
+                              " SELECT S.tagid, COUNT(*)"
+                              "  FROM main.tagged_images AS S"
+                              "  WHERE S.tagid NOT IN memory.darktable_tags"
+                              "  GROUP BY S.tagid",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -1121,7 +1107,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
 
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.tagq", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
 
   return count;
