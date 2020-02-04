@@ -1042,15 +1042,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
   sqlite3_stmt *stmt;
 
   dt_set_darktable_tags();
-  /* select tags from selected images */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid)"
-                              " SELECT TI.tagid "
-                              " FROM main.selected_images AS S, main.tagged_images AS TI"
-                              " WHERE TI.imgid = S.imgid AND TI.tagid NOT IN memory.darktable_tags",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 
   /* list tags and count */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1107,7 +1098,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
 
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
 
   return count;
 }
