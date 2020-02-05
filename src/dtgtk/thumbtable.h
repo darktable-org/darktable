@@ -41,6 +41,7 @@ typedef struct dt_thumbtable_t
   // for filmstrip this is the image in the center.
   // for zoomable, this is the top-left image (which can be out of screen)
   int offset;
+  int offset_imgid;
 
   int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
   int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
@@ -74,9 +75,9 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
 // define if overlays should always be shown or just on mouse-over
 void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
 // set offset (and redraw if needed)
-void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
+gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
 // set offset at specific imageid (and redraw if needed)
-void dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw);
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw);
 
 
 // init all accels

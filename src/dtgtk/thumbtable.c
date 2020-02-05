@@ -43,6 +43,35 @@ static dt_thumbnail_t *_thumb_get_mouse_over(dt_thumbtable_t *table)
   return NULL;
 }
 
+static int _thumb_get_imgid(int rowid)
+{
+  int id = -1;
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  g_free(query);
+  sqlite3_finalize(stmt);
+  return id;
+}
+static int _thumb_get_rowid(int imgid)
+{
+  int id = -1;
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  g_free(query);
+  sqlite3_finalize(stmt);
+  return id;
+}
+
 static void _pos_compute_area(dt_thumbtable_t *table)
 {
   GList *l = g_list_first(table->list);
@@ -350,14 +379,22 @@ static void _move(dt_thumbtable_t *table, int x, int y)
 
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
     table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
+    table->offset_imgid = _thumb_get_imgid(table->offset);
+  }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
     table->offset = MAX(1, table->offset - posx / table->thumb_size);
+    table->offset_imgid = _thumb_get_imgid(table->offset);
+  }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
     table->offset = first->rowid;
+    table->offset_imgid = first->imgid;
   }
+
   // and we store it
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 }
@@ -639,8 +676,45 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
-    // if it's a simple reload (no query change, but the collection content may have changed)
-    // we keep the rowid offset as it is
+    /**
+     * here's how it works
+     *
+     * No list of change => keep same imgid as offset
+     * offset img is not in changed imgs list => keep same imgid as offset
+     * offset img is in changed list => rowid of offset img as changed => next imgid is valid => use next imgid as
+     *offset next imgid is invalid => keep same imgid as offset rowid of offset img is the same => keep same imgid
+     *as offset
+     *
+     **/
+    int newid = table->offset_imgid;
+
+    // is the current offset imgid in the changed list
+    gboolean in_list = FALSE;
+    GList *l = imgs;
+    while(l)
+    {
+      if(table->offset_imgid == GPOINTER_TO_INT(l->data))
+      {
+        in_list = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+
+    if(in_list)
+    {
+      if(next > 0 && _thumb_get_rowid(table->offset_imgid) != table->offset)
+      {
+        // if offset has changed, that means the offset img has moved. So we use the next untouched image as offset
+        newid = next;
+      }
+    }
+
+    // get the new rowid of the new offset image
+    table->offset_imgid = newid;
+    table->offset = _thumb_get_rowid(newid);
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+
     dt_thumbtable_full_redraw(table, TRUE);
   }
   else
@@ -931,6 +1005,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       table->list = g_list_append(table->list, thumb);
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
       _pos_get_next(table, &posx, &posy);
+      // if it's the offset, we record the imgid
+      if(sqlite3_column_int(stmt, 0) == table->offset) table->offset_imgid = sqlite3_column_int(stmt, 1);
     }
 
     _pos_compute_area(table);
@@ -1006,29 +1082,18 @@ void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
 }
 
 // set offset and redraw if needed
-void dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw)
+gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw)
 {
-  if(offset < 1 || offset == table->offset) return;
+  if(offset < 1 || offset == table->offset) return FALSE;
   table->offset = offset;
   if(redraw) dt_thumbtable_full_redraw(table, TRUE);
+  return TRUE;
 }
 
 // set offset at specific imgid and redraw if needed
-void dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw)
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw)
 {
-  int offset = -1;
-
-  sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    offset = sqlite3_column_int(stmt, 0);
-  }
-  g_free(query);
-  sqlite3_finalize(stmt);
-
-  dt_thumbtable_set_offset(table, offset, redraw);
+  return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
 }
 
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
