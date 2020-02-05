@@ -2040,4 +2040,11 @@
     <shortdescription>version of the last completed performance configuration</shortdescription>
     <longdescription>what was the last performance configuration which has been completed</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>preview_downsampling</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription>resolution reduction of preview image</shortdescription>
+    <longdescription>decrease to 0.5 or 0.25 to speed up preview rendering</longdescription>
+  </dtconfig>
 </dtconfiglist>

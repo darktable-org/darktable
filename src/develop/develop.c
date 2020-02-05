@@ -54,7 +54,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
-  dev->preview_downsampling = 1.0f;
+  dev->preview_downsampling = dt_conf_get_float("preview_downsampling");
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
@@ -681,6 +681,9 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
+
+  if(preview) zoom_scale /= dev->preview_downsampling;
+
   return zoom_scale;
 }
 
