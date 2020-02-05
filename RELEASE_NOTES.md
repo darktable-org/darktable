@@ -106,11 +106,11 @@ making a backup is strongly advised.
   possible to create order presets which can be freely applied.
 
   Note that the copy / paste of multi-instances when they have been
-  reordered in a way that some modules are separating them will not
-  keep the same order. This was buggy in previous implementation when
-  the target image has also been reordered in a non compatible manner
-  or using a different pipe order. In this new versions all the
-  multi-instance will be grouped together keeping their relative
+  reordered in a way that some other modules are separating them will
+  not keep the same order. This was buggy in previous implementation
+  when the target image had also been reordered in a non compatible
+  manner or using a different pipe order. In this new versions all the
+  multi-instances will be grouped together keeping their relative
   order.
 
   Note that this work has mainly been done to make the implementation
