@@ -460,8 +460,8 @@ static void _lib_tagging_tags_changed_callback(gpointer instance, dt_lib_module_
   init_treeview(self, 1);
 }
 
-static void collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
-                                        dt_lib_module_t *self)
+static void collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   d->collection[0] = '\0';

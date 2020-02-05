@@ -631,8 +631,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 }
 
 // this is called each time collected images change
-static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
-                                            gpointer user_data)
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                            int next, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
@@ -797,7 +797,8 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
         // set order to "user defined" (this shouldn't trigger anything)
         const int32_t mouse_over_id = dt_control_get_mouse_over_id();
         dt_collection_move_before(mouse_over_id, table->drag_list);
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                                   g_list_copy(table->drag_list));
         success = TRUE;
       }
     }
@@ -1035,8 +1036,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 {
   GList *imgs = dt_view_get_images_to_act_on();
   dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  g_list_free(imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1044,8 +1044,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
 {
   GList *imgs = dt_view_get_images_to_act_on();
   dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  g_list_free(imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1063,8 +1062,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
 {
   GList *imgs = dt_view_get_images_to_act_on();
   gboolean ret = dt_history_paste_on_list(imgs, TRUE);
-  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  g_list_free(imgs);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1072,8 +1070,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
 {
   GList *imgs = dt_view_get_images_to_act_on();
   gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
-  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  g_list_free(imgs);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1081,8 +1078,7 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
 {
   GList *imgs = dt_view_get_images_to_act_on();
   gboolean ret = dt_history_delete_on_list(imgs, TRUE);
-  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
-  g_list_free(imgs);
+  if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
 static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1097,7 +1093,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   return TRUE;
 }
 static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

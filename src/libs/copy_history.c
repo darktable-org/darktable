@@ -132,11 +132,12 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  if (dt_collection_get_selected_count(darktable.collection) < 1 ) return;
+  GList *imgs = dt_view_get_images_to_act_on();
+  if(g_list_length(imgs) < 1) return;
 
-  const int missing = dt_history_compress_on_selection();
+  const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -172,17 +173,13 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  const int img = dt_view_get_image_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on();
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number;
-    if(img != -1)
-      number = 1;
-    else
-      number = dt_collection_get_selected_count(darktable.collection);
+    const int number = g_list_length(imgs);
 
     if (number == 0) return;
 
@@ -201,12 +198,9 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    if(img < 0)
-      dt_history_delete_on_selection();
-    else
-      dt_history_delete_on_image(img);
+    dt_history_delete_on_list(imgs, TRUE);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
     dt_control_queue_redraw_center();
   }
 }
@@ -226,7 +220,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   }
 }
 
@@ -237,7 +231,7 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   }
 }
 

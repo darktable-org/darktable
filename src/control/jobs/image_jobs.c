@@ -37,7 +37,7 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
   if (buf.buf && buf.height && buf.width)
   {
     const double aspect_ratio = (double)buf.width / (double)buf.height;
-    dt_image_set_aspect_ratio_if_different(params->imgid, aspect_ratio);
+    dt_image_set_aspect_ratio_if_different(params->imgid, aspect_ratio, FALSE);
   }
 
   // drop read lock, as this is only speculative async loading.

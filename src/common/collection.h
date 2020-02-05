@@ -234,7 +234,8 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit);
 uint32_t dt_collection_get_selected_count(const dt_collection_t *collection);
 
 /** update query by conf vars */
-void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change);
+void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change,
+                                GList *list);
 
 /** updates the hint message for collection */
 void dt_collection_hint_message(const dt_collection_t *collection);
