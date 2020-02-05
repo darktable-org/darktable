@@ -1351,14 +1351,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE h (imgid INTEGER, num INTEGER, module INTEGER, "
              "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
              "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
-             "[init] can't create module_order table'\n");
+             "[init] can't create module_order table\n");
     TRY_EXEC("CREATE INDEX h_imgid_index ON h (imgid)",
-             "[init] can't create index h_imgid_index");
+             "[init] can't create index h_imgid_index\n");
     TRY_EXEC("INSERT INTO h SELECT imgid, num, module, operation, op_params, enabled, "
              "blendop_params, blendop_version, multi_priority, multi_name FROM main.history",
-             "[init] can't create module_order table'\n");
+             "[init] can't create module_order table\n");
     TRY_EXEC("DROP TABLE history",
-             "[init] can't drop table history'\n");
+             "[init] can't drop table history\n");
     TRY_EXEC("ALTER TABLE h RENAME TO history",
              "[init] can't rename h to history\n");
     TRY_EXEC("DROP INDEX h_imgid_index",
@@ -1379,7 +1379,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
              "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
              "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL)",
-             "[init] can't create table i'\n");
+             "[init] can't create table i\n");
     TRY_EXEC("INSERT INTO i SELECT id, group_id, film_id, width, height, filename, maker, model,"
              " lens, exposure, aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
              " output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
@@ -1387,9 +1387,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              " orientation, histogram, lightmap, longitude, latitude, altitude, color_matrix, colorspace, version,"
              " max_version, write_timestamp, history_end, position, aspect_ratio "
              "FROM images",
-             "[init] can't populate table h'\n");
+             "[init] can't populate table h\n");
     TRY_EXEC("DROP TABLE images",
-             "[init] can't drop table images'\n");
+             "[init] can't drop table images\n");
     TRY_EXEC("ALTER TABLE i RENAME TO images",
              "[init] can't rename i to images\n");
 
@@ -1401,16 +1401,16 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
     TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_group_id_index ON images (group_id)",
-             "[init] can't create group_id index on image");
+             "[init] can't create group_id index on image\n");
     TRY_EXEC("CREATE INDEX IF NOT EXISTS  main.images_film_id_index ON images (film_id)",
-             "[init] can't create film_id index on image");
+             "[init] can't create film_id index on image\n");
     TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_filename_index ON images (filename)",
-             "[init] can't create filename index on image");
+             "[init] can't create filename index on image\n");
     TRY_EXEC("CREATE INDEX IF NOT EXISTS main.image_position_index ON images (position)",
-             "[init] can't create position index on image");
+             "[init] can't create position index on image\n");
 
     TRY_EXEC("CREATE INDEX IF NOT EXISTS main.film_rolls_folder_index ON film_rolls (folder)",
-             "[init] can't create folder index on film_rolls");
+             "[init] can't create folder index on film_rolls\n");
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 23;
