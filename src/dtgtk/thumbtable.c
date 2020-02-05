@@ -558,6 +558,10 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
     th->moved = FALSE;
     l = g_list_next(l);
   }
+
+  // we register the position
+  dt_conf_set_int("lighttable/ui/pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/ui/pos_y", table->thumbs_area.y);
   return TRUE;
 }
 
@@ -970,11 +974,23 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     int posx = 0;
     int posy = 0;
     // in zoomable, we want the first thumb at the same position as the old one
-    if(table->mode == DT_THUMBTABLE_MODE_ZOOM && table->list && g_list_length(table->list) > 0)
+
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-      posx = thumb->x;
-      posy = thumb->y;
+      if(g_list_length(table->list) > 0)
+      {
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+        posx = thumb->x;
+        posy = thumb->y;
+      }
+      else
+      {
+        // first start let's retrieve values from rc file
+        posx = dt_conf_get_int("lighttable/ui/pos_x");
+        posy = dt_conf_get_int("lighttable/ui/pos_y");
+        table->thumbs_area.x = posx;
+        table->thumbs_area.y = posy;
+      }
     }
 
     // we drop all the widgets
