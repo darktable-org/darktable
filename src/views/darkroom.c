@@ -691,11 +691,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
   }
 
   // clean the undo list
@@ -2682,11 +2682,11 @@ void leave(dt_view_t *self)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, FALSE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, FALSE);
   }
 
   // be sure light table will regenerate the thumbnail:
@@ -2767,9 +2767,12 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
-  darktable.develop->image_storage.id = -1;
   // darkroom development could have changed a collection, so update that before being back in lightroom
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                             g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
+
+  darktable.develop->image_storage.id = -1;
+
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

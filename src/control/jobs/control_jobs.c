@@ -532,7 +532,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     if(newimgid != -1)
     {
       dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     }
     t = g_list_delete_link(t, t);
     const double fraction = 1.0 / total;
@@ -549,6 +549,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   const int cw = params->flag;
   GList *t = params->index;
+  GList *imgs = NULL;
   guint total = g_list_length(t);
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
@@ -559,11 +560,12 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     const double fraction = 1.0 / total;
-    dt_image_set_aspect_ratio(imgid);
+    dt_image_set_aspect_ratio(imgid, FALSE);
     dt_control_job_set_progress(job, fraction);
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   }
   params->index = NULL;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
   return 0;
 }

@@ -62,8 +62,11 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
 
-  /** \brief This signal is raised when collection changed
+  /** \brief This signal is raised when collection changed. To avoid leaking the list,
+    dt_collection_t is connected to this event and responsible of that.
     1 : dt_collection_change_t the reason why the collection has changed
+    2 : GList of imageids that have changed (can be null if it's a global change)
+    3 : next untouched imgid in the list (-1 if no list)
     no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
