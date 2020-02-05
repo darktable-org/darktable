@@ -123,16 +123,13 @@ void dt_ratings_apply_on_list(GList *list, const int rating, const gboolean undo
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on,
-                      const gboolean group_on)
+void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on,
+                               const gboolean group_on)
 {
   GList *imgs = NULL;
   int new_rating = rating;
 
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  if(imgid > 0) imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
 
   if(imgs)
   {

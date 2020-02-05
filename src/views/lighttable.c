@@ -77,10 +77,6 @@ typedef enum dt_lighttable_direction_t
   DIRECTION_CENTER = 10,
 } dt_lighttable_direction_t;
 
-static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static gboolean colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data);
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -94,12 +90,6 @@ static void _update_collected_images(dt_view_t *self);
 
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_custom_image_order_actif(const dt_view_t *self);
-/* returns TRUE if lighttable is using the custom order filter */
-static gboolean _is_rating_order_actif(dt_view_t *self);
-/* returns TRUE if lighttable is using the custom order filter */
-static gboolean _is_colorlabels_order_actif(dt_view_t *self);
-/* register for redraw only the selected images */
-static void _redraw_selected_images(dt_view_t *self);
 
 static gboolean _expose_again_full(gpointer user_data);
 
@@ -3148,102 +3138,6 @@ static gboolean select_single_callback(GtkAccelGroup *accel_group, GObject *acce
   return TRUE;
 }
 
-static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  int num = GPOINTER_TO_INT(data);
-  int32_t mouse_over_id;
-  int next_image_rowid = -1;
-
-  dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
-
-  // needed as we can have a reordering of the pictures
-  if(_is_rating_order_actif(self))
-    lib->force_expose_all = TRUE;
-  else
-    _redraw_selected_images(self);
-
-  if(lib->using_arrows)
-  {
-    // if using arrows may be the image I'm rating is going to disappear from the collection.
-    // So, store where may be we need to jump
-    int imgid_for_offset;
-    sqlite3_stmt *stmt;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MIN(imgid) FROM main.selected_images", -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      sqlite3_stmt *inner_stmt;
-      imgid_for_offset = sqlite3_column_int(stmt, 0);
-      if(!imgid_for_offset)
-      {
-        // empty selection
-        imgid_for_offset = dt_control_get_mouse_over_id();
-      }
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          //"SELECT imgid FROM memory.collected_images", -1, &inner_stmt,
-          "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &inner_stmt,
-          NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(inner_stmt, 1, imgid_for_offset);
-      if(sqlite3_step(inner_stmt) == SQLITE_ROW)
-        next_image_rowid = sqlite3_column_int(inner_stmt, 0);
-      sqlite3_finalize(inner_stmt);
-    }
-    sqlite3_finalize(stmt);
-  }
-
-  // TODO rework this part !
-  mouse_over_id = dt_view_get_image_to_act_on();
-  dt_ratings_apply(mouse_over_id, num, TRUE, TRUE, TRUE);
-  _update_collected_images(self);
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL); // update the counter
-
-  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != dt_collection_get_count(darktable.collection))
-  {
-    // some images disappeared from collection. Selection is now invisible.
-    // lib->collection_count  --> before the rating
-    // dt_collection_get_count(darktable.collection)  --> after the rating
-    dt_selection_clear(darktable.selection);
-    if(lib->using_arrows)
-    {
-      // Jump where stored before
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT imgid FROM memory.collected_images WHERE rowid=?1 OR rowid=?1 - 1 "
-                                  "ORDER BY rowid DESC LIMIT 1", -1, &stmt,
-                                  NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, next_image_rowid);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-        mouse_over_id = sqlite3_column_int(stmt, 0);
-      sqlite3_finalize(stmt);
-      dt_control_set_mouse_over_id(mouse_over_id);
-    }
-  }
-  return TRUE;
-}
-
-static gboolean colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  // needed as we can have a reordering of the pictures
-  if(_is_colorlabels_order_actif(self))
-    lib->force_expose_all = TRUE;
-  else
-    _redraw_selected_images(self);
-
-  dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
-
-  return TRUE;
-}
-
 static void _lighttable_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
@@ -3853,7 +3747,7 @@ void activate_control_element(dt_view_t *self)
     case DT_VIEW_STAR_5:
     {
       const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-      dt_ratings_apply(mouse_over_id, lib->image_over, TRUE, TRUE, TRUE);
+      dt_ratings_apply_on_image(mouse_over_id, lib->image_over, TRUE, TRUE, TRUE);
       _update_collected_images(self);
       break;
     }
@@ -4472,25 +4366,6 @@ static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject 
 
 void init_key_accels(dt_view_t *self)
 {
-  // Initializing accelerators
-
-  // Color labels keys
-  /*dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
-  dt_accel_register_view(self, NC_("accel", "clear color labels"), 0, 0);
-
-  // Rating keys
-  dt_accel_register_view(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 2"), GDK_KEY_2, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
-  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);*/
-
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"), GDK_KEY_g, 0);
   dt_accel_register_view(self, NC_("accel", "navigate down"), GDK_KEY_g, GDK_SHIFT_MASK);
@@ -5042,30 +4917,6 @@ static gboolean _is_order_actif(const dt_view_t *self, dt_collection_sort_t sort
 static gboolean _is_custom_image_order_actif(const dt_view_t *self)
 {
   return _is_order_actif(self, DT_COLLECTION_SORT_CUSTOM_ORDER);
-}
-
-static gboolean _is_rating_order_actif(dt_view_t *self)
-{
-  return _is_order_actif(self, DT_COLLECTION_SORT_RATING);
-}
-
-static gboolean _is_colorlabels_order_actif(dt_view_t *self)
-{
-  return _is_order_actif(self, DT_COLLECTION_SORT_COLOR);
-}
-
-static void _redraw_selected_images(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int imgid  = sqlite3_column_int(stmt, 0);
-    g_hash_table_add(lib->thumbs_table, (gpointer)&imgid);
-  }
-  sqlite3_finalize(stmt);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

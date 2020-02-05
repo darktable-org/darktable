@@ -205,7 +205,22 @@ void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gbo
   GList *undo = NULL;
   if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
-  _colorlabels_execute(list, label, &undo, undo_on, DT_CA_TOGGLE);
+  if(color == 5)
+  {
+    _colorlabels_execute(list, 0, &undo, undo_on, DT_CA_SET);
+  }
+  else
+  {
+    _colorlabels_execute(list, label, &undo, undo_on, DT_CA_TOGGLE);
+  }
+
+  // synchronise xmp files
+  GList *l = list;
+  while(l)
+  {
+    dt_image_synch_xmp(GPOINTER_TO_INT(l->data));
+    l = g_list_next(l);
+  }
 
   if(undo_on)
   {
@@ -213,23 +228,6 @@ void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gbo
     dt_undo_end_group(darktable.undo);
   }
   dt_collection_hint_message(darktable.collection);
-}
-
-static void dt_colorlabels_toggle_label(const int imgid, const int color, const gboolean undo_on,
-                                        const gboolean group_on)
-{
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-  if(imgs)
-  {
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
-    dt_colorlabels_toggle_label_on_list(imgs, color, undo_on);
-
-    g_list_free(imgs);
-  }
 }
 
 int dt_colorlabels_check_label(const int imgid, const int color)
@@ -251,35 +249,6 @@ int dt_colorlabels_check_label(const int imgid, const int color)
     sqlite3_finalize(stmt);
     return 0;
   }
-}
-
-gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  const int color = GPOINTER_TO_INT(data);
-  const int32_t selected = dt_view_get_image_to_act_on();
-
-    switch(color)
-    {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4: // colors red, yellow, green, blue, purple
-        dt_colorlabels_toggle_label(selected, color, TRUE, TRUE);
-        break;
-      case 5:
-      default: // remove all selected
-        dt_colorlabels_set_labels(selected, 0, TRUE, TRUE, TRUE);
-        break;
-    }
-
-  // synch to file:
-  // TODO: move color labels to image_t cache and sync via write_get!
-  dt_image_synch_xmp(selected);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_control_queue_redraw_center();
-  return TRUE;
 }
 
 // FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?

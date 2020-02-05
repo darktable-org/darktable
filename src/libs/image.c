@@ -239,7 +239,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(rating_flag)
   {
     const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
-    dt_ratings_apply(img, stars, FALSE, TRUE, TRUE);
+    dt_ratings_apply_on_image(img, stars, FALSE, TRUE, TRUE);
   }
   if(colors_flag)
   {
