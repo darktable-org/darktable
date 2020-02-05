@@ -147,11 +147,17 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     else
       ext2 = dt_util_dstrcat(ext2, "%s", ext);
     gchar *upcase_ext = g_ascii_strup(ext2, -1); // extension in capital letters to avoid character descenders
+    gtk_label_set_text(GTK_LABEL(thumb->w_ext), upcase_ext);
     const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * thumb->width);
-    gchar *ext_final = dt_util_dstrcat(NULL, "<span size=\"%d\">%s</span>", fsize * PANGO_SCALE, upcase_ext);
-    gtk_label_set_markup(GTK_LABEL(thumb->w_ext), ext_final);
+    PangoAttrList *attrlist = pango_attr_list_new();
+    PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
+    pango_attr_list_insert(attrlist, attr);
+    // the idea is to reduce line-height, but it doesn't work for whatever reason...
+    // PangoAttribute *attr2 = pango_attr_rise_new(-fsize * PANGO_SCALE);
+    // pango_attr_list_insert(attrlist, attr2);
+    gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
+    pango_attr_list_unref(attrlist);
     g_free(upcase_ext);
-    g_free(ext_final);
     g_free(ext2);
 
     return TRUE;
