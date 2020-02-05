@@ -109,7 +109,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -120,14 +120,15 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
 static void _lib_duplicate_filmrolls_updated(gpointer instance, gpointer self)
 {
   _lib_duplicate_init_callback(NULL, self);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD);
+  // TODO WHY DO WE HAVE THAT ? dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  // DT_COLLECTION_CHANGE_RELOAD, NULL);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -456,7 +457,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 }
 
 static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_change_t query_change,
-                                              dt_lib_module_t *self)
+                                              gpointer imgs, int next, dt_lib_module_t *self)
 {
   _lib_duplicate_init_callback(instance, self);
 }

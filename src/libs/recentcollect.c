@@ -76,7 +76,6 @@ static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratabl
   if(line)
   {
     dt_collection_deserialize(line);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY);
     g_free(line);
   }
   return TRUE;
@@ -175,8 +174,8 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   }
 }
 
-static void _lib_recentcollection_updated(gpointer instance, dt_collection_change_t query_change,
-                                          gpointer user_data)
+static void _lib_recentcollection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                          int next, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
@@ -298,7 +297,7 @@ void gui_reset(dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
     dt_conf_set_int(confname, 0);
   }
-  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, self);
+  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -319,7 +318,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(GTK_WIDGET(d->item[k].button), "recent-collection-button");
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
-  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, self);
+  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 
   /* connect collection changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,

@@ -624,7 +624,7 @@ static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self
 }*/
 
 static void _view_lighttable_collection_listener_callback(gpointer instance, dt_collection_change_t query_change,
-                                                          gpointer user_data)
+                                                          gpointer imgs, int next, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -2045,7 +2045,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
     double aspect_ratio = sqlite3_column_double(stmt, 1);
     if(!aspect_ratio || aspect_ratio < 0.0001)
     {
-      aspect_ratio = dt_image_set_aspect_ratio(id);
+      aspect_ratio = dt_image_set_aspect_ratio(id, FALSE);
       // if an error occurs, let's use 1:1 value
       if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
     }
@@ -2079,7 +2079,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
         double aspect_ratio = sqlite3_column_double(stmt, 1);
         if(!aspect_ratio || aspect_ratio < 0.0001)
         {
-          aspect_ratio = dt_image_set_aspect_ratio(id);
+          aspect_ratio = dt_image_set_aspect_ratio(id, FALSE);
           // if an error occurs, let's use 1:1 value
           if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
         }
@@ -2444,7 +2444,7 @@ static void _culling_prefetch(dt_view_t *self)
           double aspect_ratio = sqlite3_column_double(stmt, 1);
           if(!aspect_ratio || aspect_ratio < 0.0001)
           {
-            aspect_ratio = dt_image_set_aspect_ratio(img->imgid);
+            aspect_ratio = dt_image_set_aspect_ratio(img->imgid, FALSE);
             // if an error occurs, let's use 1:1 value
             if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
           }
@@ -3196,11 +3196,12 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
     sqlite3_finalize(stmt);
   }
 
+  // TODO rework this part !
   mouse_over_id = dt_view_get_image_to_act_on();
   dt_ratings_apply(mouse_over_id, num, TRUE, TRUE, TRUE);
   _update_collected_images(self);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD); // update the counter
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL); // update the counter
 
   if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
@@ -4126,7 +4127,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         }
         else // expand the group
           darktable.gui->expanded_group_id = group_id;
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                                   g_list_append(NULL, GINT_TO_POINTER(id)));
         break;
       }
       case DT_VIEW_AUDIO:
