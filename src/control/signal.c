@@ -72,7 +72,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
     NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
 
-  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 3, collection_args, NULL,
+  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, collection_args, NULL,
     FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
   { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_SELECTION_CHANGED
