@@ -1732,9 +1732,9 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
         i++;
       }
       gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT imgid FROM memory.collected_images"
-                                     "WHERE imgid NOT IN (%s) AND"
-                                     "rowid>(SELECT rowid FROM memory.collected_images WHERE imgid=%d)"
+                                     "SELECT imgid FROM memory.collected_images "
+                                     "WHERE imgid NOT IN (%s) AND "
+                                     "rowid>(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
                                      "ORDER BY rowid LIMIT 1",
                                      txt, id0);
       sqlite3_stmt *stmt2;
