@@ -1400,12 +1400,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   else if(version == 22)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
-    TRY_EXEC("CREATE INDEX main.images_group_id_index ON images (group_id)", "[init] can't create group_id index on image");
-    TRY_EXEC("CREATE INDEX main.images_film_id_index ON images (film_id)", "[init] can't create film_id index on image");
-    TRY_EXEC("CREATE INDEX main.images_filename_index ON images (filename)", "[init] can't create filename index on image");
-    TRY_EXEC("CREATE INDEX main.image_position_index ON images (position)", "[init] can't create position index on image");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_group_id_index ON images (group_id)",
+             "[init] can't create group_id index on image");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS  main.images_film_id_index ON images (film_id)",
+             "[init] can't create film_id index on image");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_filename_index ON images (filename)",
+             "[init] can't create filename index on image");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.image_position_index ON images (position)",
+             "[init] can't create position index on image");
 
-    TRY_EXEC("CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", "[init] can't create folder index on film_rolls");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.film_rolls_folder_index ON film_rolls (folder)",
+             "[init] can't create folder index on film_rolls");
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 23;
