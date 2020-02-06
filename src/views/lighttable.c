@@ -4404,7 +4404,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "move down"), GDK_KEY_Down, 0);
   dt_accel_register_view(self, NC_("accel", "move left"), GDK_KEY_Left, 0);
   dt_accel_register_view(self, NC_("accel", "move right"), GDK_KEY_Right, 0);
-  dt_accel_register_view(self, NC_("accel", "move start"), GDK_KEY_Start, 0);
+  dt_accel_register_view(self, NC_("accel", "move start"), GDK_KEY_Home, 0);
   dt_accel_register_view(self, NC_("accel", "move end"), GDK_KEY_End, 0);
 
   dt_accel_register_view(self, NC_("accel", "scroll center"), GDK_KEY_apostrophe, 0);

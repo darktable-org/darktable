@@ -1348,7 +1348,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   if(rowid < 1) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-  const int pos = MIN(g_list_length(table->list), table->thumbs_per_row * (table->rows - 1) - 1);
+  const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
 
   if(first->rowid > rowid)
