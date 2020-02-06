@@ -81,10 +81,10 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
                                          GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data);
-static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+/*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data);
 static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data);
+                                             GdkModifierType modifier, gpointer data);*/
 
 static void _update_collected_images(dt_view_t *self);
 
@@ -2972,7 +2972,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   return TRUE;
 }
 
-static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+/*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = (dt_view_t *)data;
@@ -3031,7 +3031,7 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   else
   {
     const int iir = get_zoom();
-    const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+    const int scroll_by_rows = 4; // This should be the number of visible rows.
     const int offset_delta = scroll_by_rows * iir;
     lib->offset = MAX(lib->offset - offset_delta, 0);
   }
@@ -3096,13 +3096,13 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   else
   {
     const int iir = get_zoom();
-    const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+    const int scroll_by_rows = 4; // This should be the number of visible rows.
     const int offset_delta = scroll_by_rows * iir;
     lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
   }
   dt_control_queue_redraw_center();
   return TRUE;
-}
+}*/
 
 static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
@@ -4171,9 +4171,36 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 0;
   }
 
-  if (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R)
+  // navigation accels for thumbtable layouts
+  // this can't be "normal" key accels because it's usually arrow keys and lot of other widgets
+  // will capture them before the usual accel is triggered
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
-    lib->key_select = 1;
+    dt_thumbtable_move_t move = DT_THUMBTABLE_MOVE_NONE;
+    gboolean select = FALSE;
+    if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+      move = DT_THUMBTABLE_MOVE_LEFT;
+    else if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+      move = DT_THUMBTABLE_MOVE_UP;
+    else if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+      move = DT_THUMBTABLE_MOVE_RIGHT;
+    else if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+      move = DT_THUMBTABLE_MOVE_DOWN;
+    else if(key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods)
+      move = DT_THUMBTABLE_MOVE_PAGEUP;
+    else if(key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods)
+      move = DT_THUMBTABLE_MOVE_PAGEDOWN;
+    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
+      move = DT_THUMBTABLE_MOVE_START;
+    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
+      move = DT_THUMBTABLE_MOVE_END;
+
+    if(move != DT_THUMBTABLE_MOVE_NONE)
+    {
+      // for this layout navigation keys are managed directly by thumbtable
+      dt_thumbtable_key_move(dt_ui_thumbtable(darktable.gui->ui), move, select);
+      return TRUE;
+    }
   }
 
   // key move left
@@ -4369,14 +4396,17 @@ void init_key_accels(dt_view_t *self)
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"), GDK_KEY_g, 0);
   dt_accel_register_view(self, NC_("accel", "navigate down"), GDK_KEY_g, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "navigate page up"), GDK_KEY_Page_Up, 0);
-  dt_accel_register_view(self, NC_("accel", "navigate page down"), GDK_KEY_Page_Down, 0);
 
-  // Scroll keys
-  dt_accel_register_view(self, NC_("accel", "scroll up"), GDK_KEY_Up, 0);
-  dt_accel_register_view(self, NC_("accel", "scroll down"), GDK_KEY_Down, 0);
-  dt_accel_register_view(self, NC_("accel", "scroll left"), GDK_KEY_Left, 0);
-  dt_accel_register_view(self, NC_("accel", "scroll right"), GDK_KEY_Right, 0);
+  // movement keys
+  dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);
+  dt_accel_register_view(self, NC_("accel", "move page down"), GDK_KEY_Page_Down, 0);
+  dt_accel_register_view(self, NC_("accel", "move up"), GDK_KEY_Up, 0);
+  dt_accel_register_view(self, NC_("accel", "move down"), GDK_KEY_Down, 0);
+  dt_accel_register_view(self, NC_("accel", "move left"), GDK_KEY_Left, 0);
+  dt_accel_register_view(self, NC_("accel", "move right"), GDK_KEY_Right, 0);
+  dt_accel_register_view(self, NC_("accel", "move start"), GDK_KEY_Start, 0);
+  dt_accel_register_view(self, NC_("accel", "move end"), GDK_KEY_End, 0);
+
   dt_accel_register_view(self, NC_("accel", "scroll center"), GDK_KEY_apostrophe, 0);
   dt_accel_register_view(self, NC_("accel", "realign images to grid"), GDK_KEY_l, 0);
   dt_accel_register_view(self, NC_("accel", "select toggle image"), GDK_KEY_space, 0);
@@ -4458,10 +4488,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "navigate up", closure);
   closure = g_cclosure_new(G_CALLBACK(go_down_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "navigate down", closure);
-  closure = g_cclosure_new(G_CALLBACK(go_pgup_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "navigate page up", closure);
-  closure = g_cclosure_new(G_CALLBACK(go_pgdown_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "navigate page down", closure);
   closure = g_cclosure_new(G_CALLBACK(select_toggle_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "select toggle image", closure);
   closure = g_cclosure_new(G_CALLBACK(select_single_callback), (gpointer)self, NULL);

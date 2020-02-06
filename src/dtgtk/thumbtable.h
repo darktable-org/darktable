@@ -26,6 +26,19 @@ typedef enum dt_thumbtable_mode_t
   DT_THUMBTABLE_MODE_ZOOM
 } dt_thumbtable_mode_t;
 
+typedef enum dt_thumbtable_move_t
+{
+  DT_THUMBTABLE_MOVE_NONE,
+  DT_THUMBTABLE_MOVE_LEFT,
+  DT_THUMBTABLE_MOVE_UP,
+  DT_THUMBTABLE_MOVE_RIGHT,
+  DT_THUMBTABLE_MOVE_DOWN,
+  DT_THUMBTABLE_MOVE_PAGEUP,
+  DT_THUMBTABLE_MOVE_PAGEDOWN,
+  DT_THUMBTABLE_MOVE_START,
+  DT_THUMBTABLE_MOVE_END
+} dt_thumbtable_move_t;
+
 typedef struct dt_thumbtable_t
 {
   dt_thumbtable_mode_t mode;
@@ -79,6 +92,12 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean r
 // set offset at specific imageid (and redraw if needed)
 gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw);
 
+// ensure that the mentionned image is visible by moving the view if needed
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
+
+// move by key actions.
+// this key accels are not managed here but inside view
+gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
