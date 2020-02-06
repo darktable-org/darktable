@@ -214,9 +214,9 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->y + table->thumb_size < 0 || th->y > table->view_height
+    if(th->y + table->thumb_size <= 0 || th->y > table->view_height
        || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-           && (th->x + table->thumb_size < 0 || th->x > table->view_width)))
+           && (th->x + table->thumb_size <= 0 || th->x > table->view_width)))
     {
       table->list = g_list_remove_link(table->list, l);
       gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
@@ -1341,6 +1341,212 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view)
                           g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
   dt_accel_connect_manual(table->accel_closures, "view/thumbtable/select untouched",
                           g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
+}
+
+static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
+{
+  if(rowid < 1) return FALSE;
+  // get first and last fully visible thumbnails
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  const int pos = MIN(g_list_length(table->list), table->thumbs_per_row * (table->rows - 1) - 1);
+  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+
+  if(first->rowid > rowid)
+  {
+    if(_move(table, 0, table->thumb_size))
+      return _filemanager_ensure_rowid_visibility(table, rowid);
+    else
+      return FALSE;
+  }
+  else if(last->rowid < rowid)
+  {
+    if(_move(table, 0, -table->thumb_size))
+      return _filemanager_ensure_rowid_visibility(table, rowid);
+    else
+      return FALSE;
+  }
+  return TRUE;
+}
+static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
+{
+  if(rowid < 1) return FALSE;
+
+  int minrowid = 0;
+  int maxrowid = 0;
+  // is the needed rowid inside the list
+  // in this case, is it fully visible ?
+  GList *l = g_list_first(table->list);
+  int i = 0;
+  int y_move = 0;
+  int x_move = 0;
+  gboolean inside = FALSE;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(i == 0) minrowid = th->rowid;
+    maxrowid = th->rowid;
+    if(th->rowid == rowid)
+    {
+      // the thumbnail is inside the list but maybe not fully visible
+      inside = TRUE;
+      // vertical movement
+      if(th->y + table->thumbs_area.y < 0)
+        y_move = -th->y - table->thumbs_area.y;
+      else if(th->y + table->thumbs_area.y + table->thumb_size >= table->view_height)
+        y_move = table->view_height - th->y + table->thumbs_area.y + table->thumb_size;
+      // horizontal movement
+      if(th->x + table->thumbs_area.x < 0)
+        x_move = -th->x - table->thumbs_area.x;
+      else if(th->x + table->thumbs_area.x + table->thumb_size >= table->view_width)
+        x_move = table->view_width - th->x + table->thumbs_area.x + table->thumb_size;
+      // if the thumb is fully visible, nothing to do !
+      if(x_move == 0 && y_move == 0) return TRUE;
+      break;
+    }
+    l = g_list_next(l);
+    i++;
+  }
+
+  // case where the thumb is inside but not fully visible
+  if(inside)
+  {
+    return _move(table, x_move, y_move);
+  }
+  // case where the thumb is not in the list
+  else
+  {
+    if(rowid < minrowid)
+    {
+      if(_move(table, 0, table->thumb_size))
+        return _zoomable_ensure_rowid_visibility(table, rowid);
+      else
+        return FALSE;
+    }
+    else if(rowid > maxrowid)
+    {
+      if(_move(table, 0, -table->thumb_size))
+        return _zoomable_ensure_rowid_visibility(table, rowid);
+      else
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid)
+{
+  if(imgid < 1) return FALSE;
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    return _filemanager_ensure_rowid_visibility(table, _thumb_get_rowid(imgid));
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    return _zoomable_ensure_rowid_visibility(table, _thumb_get_rowid(imgid));
+
+  return FALSE;
+}
+
+static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+{
+  // base point
+  int baseid = dt_control_get_mouse_over_id();
+  int baserowid = 1;
+  int newrowid = 1;
+  if(baseid <= 0)
+  {
+    baserowid = table->offset;
+    baseid = table->offset_imgid;
+  }
+  else
+  {
+    baserowid = _thumb_get_rowid(baseid);
+  }
+
+  // last rowid of the current collection
+  int maxrowid = 1;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(rowid) FROM memory.collected_images", -1,
+                              &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  // classic keys
+  if(move == DT_THUMBTABLE_MOVE_LEFT)
+    newrowid = baserowid - 1;
+  else if(move == DT_THUMBTABLE_MOVE_RIGHT)
+    newrowid = baserowid + 1;
+  else if(move == DT_THUMBTABLE_MOVE_UP)
+    newrowid = baserowid - table->thumbs_per_row;
+  else if(move == DT_THUMBTABLE_MOVE_DOWN)
+    newrowid = baserowid + table->thumbs_per_row;
+  // page key
+  else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
+    newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
+  else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
+    newrowid = baserowid + table->thumbs_per_row * (table->rows - 1);
+  // direct start/end
+  else if(move == DT_THUMBTABLE_MOVE_START)
+    newrowid = 1;
+  else if(move == DT_THUMBTABLE_MOVE_END)
+    newrowid = maxrowid;
+
+  newrowid = CLAMP(newrowid, 1, maxrowid);
+  if(newrowid == baserowid) return FALSE;
+
+  // change image_over
+  const int imgid = _thumb_get_imgid(newrowid);
+  if(imgid < 1) return FALSE;
+
+  dt_control_set_mouse_over_id(imgid);
+
+  // ensure the image is visible by moving the view if needed
+  _filemanager_ensure_rowid_visibility(table, newrowid);
+
+  // if needed, we set the selection
+  if(select) dt_selection_select_range(darktable.selection, imgid);
+  return TRUE;
+}
+static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+{
+  // move step : if "select" we move twice
+  int step = table->thumb_size;
+  if(select) step *= 2;
+
+  // classic keys
+  if(move == DT_THUMBTABLE_MOVE_LEFT)
+    return _move(table, step, 0);
+  else if(move == DT_THUMBTABLE_MOVE_RIGHT)
+    return _move(table, -step, 0);
+  else if(move == DT_THUMBTABLE_MOVE_UP)
+    return _move(table, 0, step);
+  else if(move == DT_THUMBTABLE_MOVE_DOWN)
+    return _move(table, 0, -step);
+  // page key
+  else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
+    return _move(table, 0, table->thumb_size * (table->rows - 1));
+  else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
+    return _move(table, 0, -table->thumb_size * (table->rows - 1));
+  // direct start/end
+  else if(move == DT_THUMBTABLE_MOVE_START)
+    return _zoomable_ensure_rowid_visibility(table, 1);
+  else if(move == DT_THUMBTABLE_MOVE_END)
+  {
+    int maxrowid = 1;
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(rowid) FROM memory.collected_images",
+                                -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    _zoomable_ensure_rowid_visibility(table, maxrowid);
+  }
+  return FALSE;
+}
+
+gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+{
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    return _filemanager_key_move(table, move, select);
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    return _zoomable_key_move(table, move, select);
+
+  return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
