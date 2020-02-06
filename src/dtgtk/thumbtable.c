@@ -85,7 +85,7 @@ static void _pos_compute_area(dt_thumbtable_t *table)
     x1 = MIN(x1, th->x);
     y1 = MIN(y1, th->y);
     x2 = MAX(x2, th->x);
-    y2 = MAX(y2, th->x);
+    y2 = MAX(y2, th->y);
     l = g_list_next(l);
   }
   table->thumbs_area.x = x1;
@@ -306,7 +306,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
   return changed;
 }
 
-static void _move(dt_thumbtable_t *table, int x, int y)
+static gboolean _move(dt_thumbtable_t *table, int x, int y)
 {
   // we check bounds to allow or not the move
   int posx = x;
@@ -314,7 +314,7 @@ static void _move(dt_thumbtable_t *table, int x, int y)
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
     posx = 0; // to be sure, we don't want horizontal move
-    if(posy == 0) return;
+    if(posy == 0) return FALSE;
 
     // we stop when first rowid image is fully shown
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
@@ -329,28 +329,40 @@ static void _move(dt_thumbtable_t *table, int x, int y)
         {
           table->realign_top_try = 0;
           dt_thumbtable_full_redraw(table, TRUE);
+          return TRUE;
         }
       }
-      return;
+      return FALSE;
     }
     table->realign_top_try = 0;
 
     // we stop when last image is fully shown (that means empty space at the bottom)
     dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-    if(last->y + table->thumb_size < table->view_height && posy < 0) return;
+    if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
   }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
   {
     posy = 0; // to be sure, we don't want vertical move
-    if(posx == 0) return;
+    if(posx == 0) return FALSE;
 
     // we stop when first rowid image is fully shown
     dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-    if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return;
+    if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return FALSE;
 
     // we stop when last image is fully shown (that means empty space at the bottom)
     dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-    if(last->x < table->view_width / 2 && posx < 0) return;
+    if(last->x < table->view_width / 2 && posx < 0) return FALSE;
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    // we stop before thumb area completly disappear from screen
+    const int space = table->thumb_size * 0.5;
+    if(table->thumbs_area.y > table->view_height - space) posy = MIN(0, posy);        // we only allow to move up
+    if(table->thumbs_area.y + table->thumbs_area.height < space) posy = MAX(0, posy); // we only allow to move down
+    if(table->thumbs_area.x > table->view_width - space) posx = MIN(0, posx);         // we only allow to move left
+    if(table->thumbs_area.x + table->thumbs_area.width < space) posx = MAX(0, posx); // we only allow to move right
+
+    if(posy == 0 && posx == 0) return FALSE;
   }
 
   // we move all current thumbs
@@ -397,6 +409,8 @@ static void _move(dt_thumbtable_t *table, int x, int y)
 
   // and we store it
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+
+  return TRUE;
 }
 
 static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
