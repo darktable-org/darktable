@@ -4,18 +4,16 @@ cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
 cmake_policy(SET CMP0048 NEW)
 
-#
-# Avoid source tree pollution
-#
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+### Add defaults for cmake
+# These defaults need to be included before the project() call.
+include(DefineCMakeDefaults)
 
 If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 if(DEFINED PROJECT_VERSION)
   project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
@@ -23,8 +21,6 @@ else()
   # Actual version string will be generated from git later
   project(darktable VERSION 0 LANGUAGES CXX C)
 endif()
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
@@ -46,6 +42,14 @@ include(DefineOptions.cmake)
 # Some defaults are set for OpenBSD as well (info and man pages).
 
 include(GNUInstallDirs)
+
+# Whether to use relative paths for the build RPATH
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+else()
+    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif()
 
 if (USE_OPENMP)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
@@ -224,17 +228,6 @@ endif()
 
 include(compiler-warnings)
 include(windows-macros)
-
-# Setting the runtime path works differently on OSX than on Linux or BSD.
-# Hence use a variable that maps those in the correct way for each OS.
-if(APPLE)
-    # The string "@loader_path" should end up in the executable as-is.
-    set(RPATH_DT "@loader_path")
-else(APPLE)
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
