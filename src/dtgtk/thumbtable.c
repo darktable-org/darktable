@@ -586,6 +586,14 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   const int imgid = dt_control_get_mouse_over_id();
+
+  if(imgid > 0)
+  {
+    // let's be absolutely sure that the right widget has the focus
+    // otherwise accels don't work...
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+  }
+
   int groupid = -1;
   // we crawl over all images to find the right one
   GList *l = table->list;
@@ -933,6 +941,7 @@ dt_thumbtable_t *dt_thumbtable_new()
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
+  gtk_widget_set_can_focus(table->widget, TRUE);
 
   // drag and drop : used for reordering, interactions with maps, exporting uri to external apps, importing images
   // in filmroll...
@@ -1390,15 +1399,15 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, int ro
       // the thumbnail is inside the list but maybe not fully visible
       inside = TRUE;
       // vertical movement
-      if(th->y + table->thumbs_area.y < 0)
-        y_move = -th->y - table->thumbs_area.y;
-      else if(th->y + table->thumbs_area.y + table->thumb_size >= table->view_height)
-        y_move = table->view_height - th->y + table->thumbs_area.y + table->thumb_size;
+      if(th->y < 0)
+        y_move = -th->y;
+      else if(th->y + table->thumb_size >= table->view_height)
+        y_move = table->view_height - th->y - table->thumb_size;
       // horizontal movement
-      if(th->x + table->thumbs_area.x < 0)
-        x_move = -th->x - table->thumbs_area.x;
-      else if(th->x + table->thumbs_area.x + table->thumb_size >= table->view_width)
-        x_move = table->view_width - th->x + table->thumbs_area.x + table->thumb_size;
+      if(th->x < 0)
+        x_move = -th->x;
+      else if(th->x + table->thumb_size >= table->view_width)
+        x_move = table->view_width - th->x - table->thumb_size;
       // if the thumb is fully visible, nothing to do !
       if(x_move == 0 && y_move == 0) return TRUE;
       break;
