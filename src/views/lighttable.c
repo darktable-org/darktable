@@ -323,7 +323,7 @@ static void check_layout(dt_view_t *self)
   // layout has changed, let restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     // ensure we have no active image remaining
     if(darktable.view_manager->active_images)
