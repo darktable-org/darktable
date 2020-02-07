@@ -148,15 +148,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       ext2 = dt_util_dstrcat(ext2, "%s", ext);
     gchar *upcase_ext = g_ascii_strup(ext2, -1); // extension in capital letters to avoid character descenders
     gtk_label_set_text(GTK_LABEL(thumb->w_ext), upcase_ext);
-    const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * thumb->width);
-    PangoAttrList *attrlist = pango_attr_list_new();
-    PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
-    pango_attr_list_insert(attrlist, attr);
-    // the idea is to reduce line-height, but it doesn't work for whatever reason...
-    // PangoAttribute *attr2 = pango_attr_rise_new(-fsize * PANGO_SCALE);
-    // pango_attr_list_insert(attrlist, attr2);
-    gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
-    pango_attr_list_unref(attrlist);
     g_free(upcase_ext);
     g_free(ext2);
 
@@ -415,7 +406,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_name(thumb->w_main, "thumb_main");
-  gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
   {
@@ -448,8 +438,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_name(thumb->w_ext, "thumb_ext");
     gtk_widget_set_valign(thumb->w_ext, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_ext, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_ext, 0.045 * thumb->width);
-    gtk_widget_set_margin_top(thumb->w_ext, 0.045 * thumb->width);
     gtk_label_set_justify(GTK_LABEL(thumb->w_ext), GTK_JUSTIFY_CENTER);
     gtk_widget_show(thumb->w_ext);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
@@ -469,12 +457,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
-    // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
-    // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
-    // colorlabels => 3 * r1 + space r1
-    // inner margins are 0.045 * width
-    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * thumb->width / 22.0f);
-
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
@@ -486,9 +468,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
     thumb->w_bottom = gtk_label_new("");
-    gtk_widget_set_size_request(thumb->w_bottom, thumb->width,
-                                0.147125 * thumb->height); // TODO Why this hardcoded ratio ?  prefer something
-                                                           // dependent of fontsize ?
     gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
     gtk_widget_show(thumb->w_bottom);
     gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
@@ -497,11 +476,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
     gtk_widget_set_name(thumb->w_reject, "thumb_reject");
-    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
-    gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * thumb->width - r1 * 0.75);
     gtk_widget_show(thumb->w_reject);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
@@ -510,7 +486,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     for(int i = 0; i < 5; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
-      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event", G_CALLBACK(_event_star_leave), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event", G_CALLBACK(_event_rating_release),
@@ -518,8 +493,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
-      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * thumb->width - r1 * 0.75);
-      gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
       gtk_widget_show(thumb->w_stars[i]);
       gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars[i]);
     }
@@ -528,17 +501,13 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower,
                                              CPF_DO_NOT_USE_BORDER | thumb->colorlabels, NULL);
     gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
-    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
-    gtk_widget_set_margin_bottom(thumb->w_color, 0.045 * thumb->width);
-    gtk_widget_set_margin_end(thumb->w_color, 0.045 * thumb->width);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_color);
 
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
-    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_local_copy);
@@ -546,34 +515,27 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the altered icon
     thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_altered, "thumb_altered");
-    gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_altered, 0.045 * thumb->width);
-    gtk_widget_set_margin_end(thumb->w_altered, 0.045 * thumb->width);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_altered);
 
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_group, "thumb_group");
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
-    gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_group, 0.045 * thumb->width);
-    gtk_widget_set_margin_end(thumb->w_group, 0.045 * thumb->width + 3.0 * r1);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_group);
 
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_audio, "thumb_audio");
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
-    gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_audio, 0.045 * thumb->width);
-    gtk_widget_set_margin_end(thumb->w_audio, 0.045 * thumb->width + 6.0 * r1);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_audio);
+
+    dt_thumbnail_resize(thumb, thumb->width, thumb->height);
   }
   gtk_widget_show(thumb->w_main);
   g_object_ref(G_OBJECT(thumb->w_main));
@@ -627,21 +589,58 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
 {
-  // new size unit
-  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
+  // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
+  // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
+  // colorlabels => 3 * r1 + space r1
+  // inner margins are 0.045 * width
+  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
 
   // widget resizing
   gtk_widget_set_size_request(thumb->w_main, width, height);
-  gtk_widget_set_size_request(thumb->w_bottom, width - 2 * DT_PIXEL_APPLY_DPI(1.0), 0.147125 * height);
-  gtk_widget_set_size_request(thumb->w_reject, 4.0 * r1, 4.0 * r1);
-  gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1);
-  gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * width - r1);
-  for(int i = 0; i < 4; i++)
+  // file extension
+  gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
+  gtk_widget_set_margin_top(thumb->w_ext, 0.045 * width);
+  const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
+  pango_attr_list_insert(attrlist, attr);
+  // the idea is to reduce line-height, but it doesn't work for whatever reason...
+  // PangoAttribute *attr2 = pango_attr_rise_new(-fsize * PANGO_SCALE);
+  // pango_attr_list_insert(attrlist, attr2);
+  gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
+  pango_attr_list_unref(attrlist);
+  // bottom background
+  // TODO Why this hardcoded ratio ?  prefer something dependent of fontsize ?
+  gtk_widget_set_size_request(thumb->w_bottom, width, 0.147125 * height);
+  // reject icon
+  gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+  gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
+  gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * width - r1 * 0.75);
+  // stars
+  for(int i = 0; i < 5; i++)
   {
-    gtk_widget_set_size_request(thumb->w_stars[i], 4.0 * r1, 4.0 * r1);
-    gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * width - r1);
-    gtk_widget_set_margin_start(thumb->w_stars[i], (thumb->width - 16.0 * r1) * 0.5 + i * 4.0 * r1);
+    gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * width - r1 * 0.75);
+    gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
   }
+  // the color labels
+  gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+  gtk_widget_set_margin_bottom(thumb->w_color, 0.045 * width);
+  gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
+  // the local copy indicator
+  gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+  // the altered icon
+  gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+  gtk_widget_set_margin_top(thumb->w_altered, 0.045 * width);
+  gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
+  // the group bouton
+  gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+  gtk_widget_set_margin_top(thumb->w_group, 0.045 * width);
+  gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
+  // the sound icon
+  gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+  gtk_widget_set_margin_top(thumb->w_audio, 0.045 * width);
+  gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
 
   // update values
   thumb->width = width;
