@@ -30,6 +30,27 @@
 
 #define ZOOM_MAX 13
 
+static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
+{
+  if(!table->mouse_inside || table->mode != DT_THUMBTABLE_MODE_ZOOM) return NULL;
+
+  int x = -1;
+  int y = -1;
+  gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
+  x = table->last_x - x;
+  y = table->last_y - y;
+
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->x <= x && th->x + th->width > x && th->y <= y && th->y + th->height > y) return th;
+    l = g_list_next(l);
+  }
+
+  return NULL;
+}
+
 static dt_thumbnail_t *_thumb_get_mouse_over(dt_thumbtable_t *table)
 {
   const int imgid = dt_control_get_mouse_over_id();
@@ -515,6 +536,8 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
   table->mouse_inside = FALSE;
+  table->last_x = -1;
+  table->last_y = -1;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
 }
@@ -527,8 +550,6 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
-    table->last_x = event->x_root;
-    table->last_y = event->y_root;
     table->drag_dx = table->drag_dy = 0;
     table->drag_thumb = _thumb_get_mouse_over(table);
   }
@@ -544,8 +565,6 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   {
     int dx = ceil(event->x_root) - table->last_x;
     int dy = ceil(event->y_root) - table->last_y;
-    table->last_x = ceil(event->x_root);
-    table->last_y = ceil(event->y_root);
     _move(table, dx, dy);
     table->drag_dx += dx;
     table->drag_dy += dy;
@@ -555,6 +574,9 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       table->drag_thumb->moved = ((abs(table->drag_dx) + abs(table->drag_dy)) > DT_PIXEL_APPLY_DPI(8));
     }
   }
+
+  table->last_x = ceil(event->x_root);
+  table->last_y = ceil(event->y_root);
   return TRUE;
 }
 static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -1514,27 +1536,28 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 }
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
 {
-  // move step : if "select" we move twice
-  int step = table->thumb_size;
-  if(select) step *= 2;
+  // first, we move the view by 1 thumb_size
+  // move step
+  const int step = table->thumb_size;
+  gboolean moved = FALSE;
 
   // classic keys
   if(move == DT_THUMBTABLE_MOVE_LEFT)
-    return _move(table, step, 0);
+    moved = _move(table, step, 0);
   else if(move == DT_THUMBTABLE_MOVE_RIGHT)
-    return _move(table, -step, 0);
+    moved = _move(table, -step, 0);
   else if(move == DT_THUMBTABLE_MOVE_UP)
-    return _move(table, 0, step);
+    moved = _move(table, 0, step);
   else if(move == DT_THUMBTABLE_MOVE_DOWN)
-    return _move(table, 0, -step);
+    moved = _move(table, 0, -step);
   // page key
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
-    return _move(table, 0, table->thumb_size * (table->rows - 1));
+    moved = _move(table, 0, table->thumb_size * (table->rows - 1));
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
-    return _move(table, 0, -table->thumb_size * (table->rows - 1));
+    moved = _move(table, 0, -table->thumb_size * (table->rows - 1));
   // direct start/end
   else if(move == DT_THUMBTABLE_MOVE_START)
-    return _zoomable_ensure_rowid_visibility(table, 1);
+    moved = _zoomable_ensure_rowid_visibility(table, 1);
   else if(move == DT_THUMBTABLE_MOVE_END)
   {
     int maxrowid = 1;
@@ -1543,9 +1566,14 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
                                 -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    _zoomable_ensure_rowid_visibility(table, maxrowid);
+    moved = _zoomable_ensure_rowid_visibility(table, maxrowid);
   }
-  return FALSE;
+
+  // and we set mouseover if we can
+  dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
+  if(thumb) dt_control_set_mouse_over_id(thumb->imgid);
+
+  return moved;
 }
 
 gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
