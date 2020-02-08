@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-09 01:38+0800\n"
-"PO-Revision-Date: 2020-02-09 02:17+0800\n"
+"PO-Revision-Date: 2020-02-09 02:22+0800\n"
 "Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Traditional Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -25,7 +25,7 @@ msgstr "虛擬光桌與暗房"
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "自數碼相機整理和編輯影像"
+msgstr "整理和顯影數位相機的影像"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
@@ -390,7 +390,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2549
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "隱藏"
 
 #: ../build/src/preferences_gen.h:2574
 msgid "show search module text entry"
@@ -399,17 +399,17 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2585
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "顯示搜尋文字"
 
 #: ../build/src/preferences_gen.h:2590
 msgctxt "preferences"
 msgid "show groups"
-msgstr ""
+msgstr "顯示群組"
 
 #: ../build/src/preferences_gen.h:2595 ../build/src/preferences_gen.h:2610
 msgctxt "preferences"
 msgid "show both"
-msgstr ""
+msgstr "顯示兩者"
 
 #: ../build/src/preferences_gen.h:2620
 msgid "expand a single darkroom module at a time"
@@ -4027,7 +4027,7 @@ msgstr "自動"
 #: ../src/gui/preferences.c:545 ../src/gui/preferences.c:638
 msgctxt "preferences"
 msgid "import..."
-msgstr ""
+msgstr "匯入..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:585
@@ -12246,12 +12246,12 @@ msgstr "自磁碟中刪除或送至垃圾桶"
 #: ../src/libs/image.c:565
 msgctxt "accel"
 msgid "move to other folder"
-msgstr ""
+msgstr "移動到其他資料夾"
 
 #: ../src/libs/image.c:566
 msgctxt "accel"
 msgid "copy to other folder"
-msgstr ""
+msgstr "複製到其他資料夾"
 
 #: ../src/libs/image.c:567
 msgctxt "accel"
@@ -12281,37 +12281,37 @@ msgstr "重設旋轉"
 #: ../src/libs/image.c:572
 msgctxt "accel"
 msgid "copy the image locally"
-msgstr ""
+msgstr "本地複製影像"
 
 #: ../src/libs/image.c:573
 msgctxt "accel"
 msgid "resync the local copy"
-msgstr ""
+msgstr "重新同步本地副本"
 
 #: ../src/libs/image.c:574
 msgctxt "accel"
 msgid "refresh exif"
-msgstr ""
+msgstr "重新整理 exif"
 
 #: ../src/libs/image.c:575
 msgctxt "accel"
 msgid "copy metadata"
-msgstr ""
+msgstr "複製中介資料"
 
 #: ../src/libs/image.c:576
 msgctxt "accel"
 msgid "replace metadata"
-msgstr ""
+msgstr "取代中介資料"
 
 #: ../src/libs/image.c:577
 msgctxt "accel"
 msgid "paste metadata"
-msgstr ""
+msgstr "貼上中介資料"
 
 #: ../src/libs/image.c:578
 msgctxt "accel"
 msgid "clear metadata"
-msgstr ""
+msgstr "清除中介資料"
 
 #. Grouping keys
 #: ../src/libs/image.c:580
@@ -13498,7 +13498,7 @@ msgstr "刪除上列選中的樣式"
 #: ../src/libs/styles.c:465 ../src/libs/tagging.c:2712
 msgctxt "verb"
 msgid "import..."
-msgstr ""
+msgstr "匯入..."
 
 #: ../src/libs/styles.c:467
 msgid "import style from a style file"
@@ -13817,7 +13817,7 @@ msgstr "從 Lightroom 關鍵字檔案匯入標籤"
 #: ../src/libs/tagging.c:2720
 msgctxt "verb"
 msgid "export..."
-msgstr ""
+msgstr "匯出..."
 
 #: ../src/libs/tagging.c:2723
 msgid "export all tags to a Lightroom keyword file"
@@ -14175,12 +14175,12 @@ msgstr ""
 #: ../src/libs/tools/timeline.c:1439
 msgctxt "accel"
 msgid "start selection"
-msgstr ""
+msgstr "開始選取"
 
 #: ../src/libs/tools/timeline.c:1440
 msgctxt "accel"
 msgid "stop selection"
-msgstr ""
+msgstr "停止選取"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
