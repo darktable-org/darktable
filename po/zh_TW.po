@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-09 01:38+0800\n"
-"PO-Revision-Date: 2020-02-09 01:46+0800\n"
+"PO-Revision-Date: 2020-02-09 02:06+0800\n"
 "Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Traditional Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -25,12 +25,12 @@ msgstr "虛擬光桌與暗房"
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "自數位相機整理和編輯影像"
+msgstr "自數碼相機整理和編輯影像"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "圖形;攝影;原始檔;graphics;photography;raw;"
+msgstr "圖形;照片;相片;攝影;raw；"
 
 #: ../build/src/preferences_gen.h:1956
 msgid "GUI options"
@@ -42,7 +42,7 @@ msgstr "匯入"
 
 #: ../build/src/preferences_gen.h:1968
 msgid "ignore JPEG images when importing film rolls"
-msgstr "匯入膠捲時忽略JPEG影像"
+msgstr "匯入膠卷時忽略 JPEG 影像"
 
 #: ../build/src/preferences_gen.h:1977 ../build/src/preferences_gen.h:1997
 #: ../build/src/preferences_gen.h:2020 ../build/src/preferences_gen.h:2043
@@ -80,7 +80,7 @@ msgstr "匯入膠捲時忽略JPEG影像"
 #: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "滑鼠雙擊以重設回 「%s」"
+msgstr "連點兩下重設回「%s」"
 
 #: ../build/src/preferences_gen.h:1977 ../build/src/preferences_gen.h:1997
 #: ../build/src/preferences_gen.h:2146 ../build/src/preferences_gen.h:2243
@@ -94,35 +94,35 @@ msgstr "滑鼠雙擊以重設回 「%s」"
 #: ../build/src/preferences_gen.h:3795 ../build/src/preferences_gen.h:3815
 msgctxt "preferences"
 msgid "FALSE"
-msgstr "否"
+msgstr "FALSE"
 
 #: ../build/src/preferences_gen.h:1980
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"在目錄中影像同時具備 raw 和 JPEG 格式時同時匯入是沒有意義的。使用此標誌，可以"
-"忽略發現的所有 JPEG 檔案。"
+"若目錄中同時有 raw 和 JPEG 格式的影像，兩者一併匯入沒有意義。打開此旗標則可以"
+"忽略找到的所有 JPEG 檔。"
 
 #: ../build/src/preferences_gen.h:1988
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "遞迴匯入目錄所有內容至膠捲中"
+msgstr "遞迴匯入目錄所有內容至膠卷中"
 
 #: ../build/src/preferences_gen.h:2007
 msgid "creator to be applied when importing"
-msgstr "匯入影像時設定作者"
+msgstr "匯入時設定作者"
 
 #: ../build/src/preferences_gen.h:2030
 msgid "publisher to be applied when importing"
-msgstr "匯入影像時設定發行者"
+msgstr "匯入時設定發行者"
 
 #: ../build/src/preferences_gen.h:2053
 msgid "rights to be applied when importing"
-msgstr "匯入影像時設定授權協議"
+msgstr "匯入時設定授權"
 
 #: ../build/src/preferences_gen.h:2076
 msgid "comma separated tags to be applied when importing"
-msgstr "匯入影像時設定標籤（逗號分隔）"
+msgstr "匯入時設定標籤（以逗號分隔）"
 
 #: ../build/src/preferences_gen.h:2099
 msgid "initial import rating"
@@ -135,11 +135,11 @@ msgstr "初始匯入評級"
 #: ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "滑鼠雙擊以重設回 「%d」"
+msgstr "連點兩下重設回「%d」"
 
 #: ../build/src/preferences_gen.h:2120
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "匯入一個膠捲時對所有影像的初始星級評定"
+msgstr "匯入膠卷時對所有影像設定初始星級評定"
 
 #: ../build/src/preferences_gen.h:2128 ../src/libs/tools/lighttable.c:89
 #: ../src/views/lighttable.c:249
@@ -148,15 +148,15 @@ msgstr "光桌"
 
 #: ../build/src/preferences_gen.h:2137
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "請使用一半尺寸的raw檔案，而非內嵌的預覽JPEG圖檔"
+msgstr "不要使用內嵌的預覽 JPEG，而是使用一半大小的 raw 檔"
 
 #: ../build/src/preferences_gen.h:2149
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"勾選此項將不會使用raw檔案中內嵌的JPEG圖檔，而是處理raw數據較慢，但會生成色彩"
-"更精確的縮圖。"
+"勾選此項將不會使用 raw 檔中內嵌的 JPEG 圖檔，而是處理 raw 資料較慢，但會生成"
+"色彩更精確的縮圖。"
 
 #: ../build/src/preferences_gen.h:2157
 msgid "high quality thumb processing from size"
@@ -170,7 +170,7 @@ msgstr "總是"
 #: ../build/src/preferences_gen.h:2173
 msgctxt "preferences"
 msgid "small"
-msgstr "小"
+msgstr "小型"
 
 #: ../build/src/preferences_gen.h:2178
 msgctxt "preferences"
@@ -211,7 +211,7 @@ msgstr "絕不"
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
-msgstr "若縮圖尺寸大於此值，會以完整品質的渲染路徑來處理（成果較佳但較慢）。"
+msgstr "若縮圖尺寸大於此值，會以完整品質的算繪路徑來處理（成果較佳但較慢）。"
 
 #: ../build/src/preferences_gen.h:2234
 msgid "enable extended thumb overlay"
@@ -219,7 +219,7 @@ msgstr "開啟延伸重疊縮圖"
 
 #: ../build/src/preferences_gen.h:2246
 msgid "if set to true, thumb overlay shows filename and some exif data."
-msgstr "若設為是，重疊縮圖將顯示檔案名稱和某些可交換圖檔格式 (exif) 資料"
+msgstr "若設為是，重疊縮圖將顯示檔案名稱和某些可交換圖檔格式 (exif) 資料。"
 
 #: ../build/src/preferences_gen.h:2254
 msgid "use single-click in the collect panel"
@@ -237,7 +237,7 @@ msgstr "一次擴展一個光桌模組"
 
 #: ../build/src/preferences_gen.h:2286
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr "此選項可在光桌模式下切換shift+滑鼠點擊的行為"
+msgstr "此選項可在光桌模式下切換 shift+滑鼠點按 的行為"
 
 #: ../build/src/preferences_gen.h:2294
 msgid "scroll to lighttable modules when expanded/collapsed"
@@ -247,7 +247,7 @@ msgstr "當展開/收折時以滾輪開啟光桌模式"
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
-msgstr "啟用此選項後，darktable將嘗試將模組滾動到可見列表的頂部。"
+msgstr "啟用此選項後，darktable 將嘗試將模組滾動到可見列表的頂部"
 
 #: ../build/src/preferences_gen.h:2314
 msgid "rating an image one star twice will not zero out the rating"
@@ -353,7 +353,7 @@ msgstr "灰階"
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
-msgstr "當於參數式遮罩功能啟動時，定義色彩通道如何顯示"
+msgstr "當於參數式遮罩功能啟動時，定義色彩通道如何顯示。"
 
 #: ../build/src/preferences_gen.h:2494
 msgid "pattern for the image infos line"
@@ -426,11 +426,11 @@ msgstr "一次擴展一個暗房模組"
 #: ../build/src/preferences_gen.h:3580 ../build/src/preferences_gen.h:3703
 msgctxt "preferences"
 msgid "TRUE"
-msgstr "是"
+msgstr "TRUE"
 
 #: ../build/src/preferences_gen.h:2632
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "此選項可在暗房模式下切換shift+滑鼠點擊的行為"
+msgstr "此選項可在暗房模式下切換 shift+滑鼠點按 的行為"
 
 #: ../build/src/preferences_gen.h:2640
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -470,7 +470,7 @@ msgid ""
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
-"使用目前過濾器設定來選擇繪製在地圖上的地理標記圖像，也就是限制繪製到當目幻燈"
+"使用目前過濾器設定來選取繪製在地圖上的地理標籤圖像，也就是限制繪製到當目幻燈"
 "片的圖像。這限制了繪製圖像的數量，從而減少了繪製圖像所需的時間。"
 
 #: ../build/src/preferences_gen.h:2736
@@ -482,7 +482,7 @@ msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
 msgstr ""
-"在地圖上繪製地理標記影像的最大數量。若調高此數量將使繪製影像的速度變慢。"
+"在地圖上繪製地理標籤影像的最大數量。若調高此數量將使繪製影像的速度變慢。"
 
 #: ../build/src/preferences_gen.h:2763
 msgid "pretty print the image location"
@@ -504,54 +504,53 @@ msgstr "從資料庫移除影像前詢問"
 
 #: ../build/src/preferences_gen.h:2804
 msgid "always ask the user before any image is removed from DB."
-msgstr "每次從資料庫移除任何影像前皆要詢問。"
+msgstr "每次從資料庫中移除任何影像前皆要詢問使用者。"
 
 #: ../build/src/preferences_gen.h:2812
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "從硬碟移除影像/忽略歷史紀錄前詢問"
+msgstr "從磁碟移除影像 / 忽略歷史紀錄前詢問"
 
 #: ../build/src/preferences_gen.h:2824
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
-msgstr "從硬碟移除任何影像/忽略歷史紀錄前皆要詢問"
+msgstr "從磁碟中移除任何影像 / 忽略歷史紀錄前皆要詢問使用者。"
 
 #: ../build/src/preferences_gen.h:2832
 msgid "send files to trash when erasing images"
-msgstr "當移除影像時，將檔案置於垃圾桶"
+msgstr "移除影像時將檔案丟到垃圾桶"
 
 #: ../build/src/preferences_gen.h:2844
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
-msgstr "將檔案置於垃圾桶，以取代永久在系統上刪除檔案"
+msgstr "在支持此功能的系統上將檔案丟到垃圾桶，而不是從系統中永遠刪除檔案"
 
 #: ../build/src/preferences_gen.h:2852
 msgid "ask before moving images from film roll folder"
-msgstr "從膠捲目錄中移除影像前詢問"
+msgstr "從膠卷資料夾中移動影像前詢問"
 
 #: ../build/src/preferences_gen.h:2864
 msgid "always ask the user before any image file is moved."
-msgstr "移動任何影像前皆要詢問使用者。"
+msgstr "在移動任何影像之前皆要詢問使用者。"
 
 #: ../build/src/preferences_gen.h:2872
 msgid "ask before copying images to new film roll folder"
-msgstr "複製影像到新的膠捲目錄前詢問"
+msgstr "複製影像到新的膠卷資料夾前詢問"
 
 #: ../build/src/preferences_gen.h:2884
 msgid "always ask the user before any image file is copied."
-msgstr "複製任何影像前詢問使用者。"
+msgstr "複製任何影像前要先詢問使用者。"
 
 #: ../build/src/preferences_gen.h:2892
 msgid "ask before removing empty folders"
-msgstr "刪除空資料夾前詢問"
+msgstr "移除空資料夾前詢問"
 
 #: ../build/src/preferences_gen.h:2904
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
-msgstr ""
-"刪除任何空資料夾前皆要詢問使用者。此一狀況有可能發生於移動或刪除影像前。"
+msgstr "移除任何空資料夾前皆要詢問使用者。此狀況可能在移動或刪除影像後發生。"
 
 #: ../build/src/preferences_gen.h:2912
 msgid "ask before deleting a tag"
@@ -575,13 +574,13 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3004
 msgid "number of folder levels to show in lists"
-msgstr "列表中要顯示的目錄級別"
+msgstr "列表中要顯示的資料夾層級"
 
 #: ../build/src/preferences_gen.h:3023
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
-msgstr "指定膠捲名稱中要顯示的目錄層數，從右邊開始"
+msgstr "指定膠卷名稱中要顯示的資料夾層數，從右邊開始"
 
 #: ../build/src/preferences_gen.h:3031
 msgid "overlay txt sidecar over zoomed images"
@@ -594,7 +593,7 @@ msgid ""
 "import time or the crawler has to be enabled"
 msgstr ""
 "當圖像旁邊有一個文字檔時，它可以在光桌上覆蓋在縮放的影像之上。該文字檔需要在"
-"匯入時就準備好，或是抓取工具必須已被開啟。"
+"匯入時就準備好，或是抓取工具必須已被開啟"
 
 #: ../build/src/preferences_gen.h:3051
 msgid "mouse wheel scrolls modules side panel by default"
@@ -641,7 +640,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3138
 msgid "method to use for getting the display profile"
-msgstr "用於取得顯示描述檔的方法"
+msgstr "用於獲取顯示描述檔的方法"
 
 #: ../build/src/preferences_gen.h:3149 ../build/src/preferences_gen.h:3174
 msgctxt "preferences"
@@ -663,8 +662,8 @@ msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
 msgstr ""
-"此選項允許一個強制方法來取得目前顯示描述檔。當替代方案給出錯誤結果時，這是一"
-"個有用的方法。"
+"此選項允許一個強制方法來獲取目前顯示描述檔。當替代方案給出錯誤結果時，這是一"
+"個有用的方法"
 
 #: ../build/src/preferences_gen.h:3207
 msgid "core options"
@@ -686,16 +685,16 @@ msgid ""
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
 msgstr ""
-"如果啟用，暫存縮圖將進行色彩管理，以便光桌和幻燈片可以顯示正確的顏色。否則一"
+"如果啟用，暫存縮圖將進行色彩管理，以便光桌和幻燈片可以顯示正確的色彩。否則一"
 "旦顯示描述檔改變，結果可能會出錯。"
 
 #: ../build/src/preferences_gen.h:3239
 msgid "always use LittleCMS 2 to apply output color profile"
-msgstr "總是使用LittleCMS 2來套用輸出色彩描述檔"
+msgstr "總是使用 LittleCMS 2 來套用輸出色彩描述檔"
 
 #: ../build/src/preferences_gen.h:3251
 msgid "this is slower than the default."
-msgstr "這將會比預設慢"
+msgstr "這將會比預設慢。"
 
 #: ../build/src/preferences_gen.h:3259
 msgid "do high quality processing for slideshow"
@@ -703,7 +702,7 @@ msgstr "於投影片放映時以高品質處理"
 
 #: ../build/src/preferences_gen.h:3271
 msgid "same option as for export, but applies to slideshow."
-msgstr "以匯出相同選項，但用於投影片放映"
+msgstr "以匯出相同選項，但用於投影片放映。"
 
 #: ../build/src/preferences_gen.h:3279
 msgid "demosaicing for zoomed out darkroom mode"
@@ -712,12 +711,12 @@ msgstr "為暗房模式下放大的影像去馬賽克"
 #: ../build/src/preferences_gen.h:3290
 msgctxt "preferences"
 msgid "always bilinear (fast)"
-msgstr "總是使用雙線性法（快速）"
+msgstr "總是使用 bilinear（快速）"
 
 #: ../build/src/preferences_gen.h:3295 ../build/src/preferences_gen.h:3315
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
-msgstr "最多 PPG（合宜）"
+msgstr "至多 PPG（合理）"
 
 #: ../build/src/preferences_gen.h:3300
 msgctxt "preferences"
@@ -742,12 +741,12 @@ msgstr "像素內插器"
 #: ../build/src/preferences_gen.h:3337
 msgctxt "preferences"
 msgid "bilinear"
-msgstr "bilinear"
+msgstr "雙線性"
 
 #: ../build/src/preferences_gen.h:3342
 msgctxt "preferences"
 msgid "bicubic"
-msgstr "bicubic"
+msgstr "雙立方"
 
 #: ../build/src/preferences_gen.h:3347
 msgctxt "preferences"
@@ -764,7 +763,7 @@ msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
-"用於轉動和鏡頭校正的像素內插器 (bilinear, bicubic, lanczos2, lanczos3)。"
+"用於轉動和鏡頭修正的像素內插器 (bilinear, bicubic, lanczos2, lanczos3)。"
 
 #: ../build/src/preferences_gen.h:3378
 msgid "auto-apply basecurve"
@@ -808,11 +807,11 @@ msgstr "為每個圖片寫入附屬檔案"
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
-msgstr "這些冗餘檔案以後可重新匯入進其他資料庫,並保留您對影像的更改。"
+msgstr "這些冗餘檔案以後可重新匯入進其他資料庫，並保留您對影像的更改。"
 
 #: ../build/src/preferences_gen.h:3467
 msgid "store xmp tags in compressed format"
-msgstr "在壓縮格式中儲存xmp標籤"
+msgstr "在壓縮格式中儲存 xmp 標籤"
 
 #: ../build/src/preferences_gen.h:3488 ../build/src/preferences_gen.h:3503
 msgctxt "preferences"
@@ -825,18 +824,18 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"xmp標籤中的條目可能會變得相當大，可能會超出存儲在輸出文件中歷史紀錄的可用空"
-"間。此選項允許壓縮xmp標籤並節省空間。"
+"xmp 標籤中的條目可能會變得相當大，可能會超出存儲在輸出文件中歷史紀錄的可用空"
+"間。此選項允許壓縮 xmp 標籤並節省空間。"
 
 #: ../build/src/preferences_gen.h:3514
 msgid "look for updated xmp files on startup"
-msgstr "在啟動時尋找更新的xmp檔案"
+msgstr "在啟動時尋找更新的 xmp 檔"
 
 #: ../build/src/preferences_gen.h:3526
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
-msgstr "啟動時檢查所有xmp檔案的文件修改時間，以檢查是否有在此期間得到了更新"
+msgstr "啟動時檢查所有 xmp 檔的文件修改時間，以檢查是否有在此期間得到了更新"
 
 #: ../build/src/preferences_gen.h:3534
 msgid "cpu / gpu / memory"
@@ -844,7 +843,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3543
 msgid "memory in megabytes to use for thumbnail cache"
-msgstr "在記憶體中以MB作為單位以用於縮圖暫存"
+msgstr "在記憶體中以 MB 作為單位以用於縮圖暫存"
 
 #: ../build/src/preferences_gen.h:3563
 msgid ""
@@ -868,8 +867,8 @@ msgstr ""
 "如果啟用，則當記憶體暫存被清理時將縮圖寫入硬碟 (.cache/darktable/)。請注意，"
 "這可能需要大量記憶體（對於20k的影像為幾GB），並且永遠不會再刪除暫存的縮圖。若"
 "您想要的話，雖然需要手動刪除這些，但這是安全的行為。光桌的校能將在進行很多瀏"
-"覽行為時大大提昇。若要離線產生您圖集中所有的縮圖，請執行\"darktable-generate-"
-"cache\"。"
+"覽行為時大大提昇。若要離線產生您圖集中所有的縮圖，請執行 \"darktable-"
+"generate-cache\"。"
 
 #: ../build/src/preferences_gen.h:3591
 msgid "enable disk backend for full preview cache"
@@ -894,7 +893,7 @@ msgid ""
 "during import. the cache will grow to a maximum of twice this number of full "
 "resolution image buffers (needs a restart)."
 msgstr ""
-"此項控制後台在匯入使用產生縮圖需要的執行緒數量, 暫存容量會成長到最高2倍于這個"
+"此項控制後台在匯入使用產生縮圖需要的執行緒數量，暫存容量會成長到最高2倍于這個"
 "全解析度圖片的緩衝區（需重新啟動）"
 
 #: ../build/src/preferences_gen.h:3638
@@ -922,19 +921,19 @@ msgid ""
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
 msgstr ""
-"如果設置為正值非零值,則此變數定義為單個影像緩衝區平鋪應採用的最小記憶體量 "
-"(MB)。此設定值較host_memory_limit優先（需重新啟動）。"
+"如果設置為正值非零值，則此變數定義為單個影像緩衝區平鋪應採用的最小記憶體量 "
+"(MB)。此設定值較 host_memory_limit 優先（需重新啟動）。"
 
 #: ../build/src/preferences_gen.h:3694
 msgid "activate OpenCL support"
-msgstr "啟用OpenCL支援"
+msgstr "啟用 OpenCL 支援"
 
 #: ../build/src/preferences_gen.h:3706
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
-"如果存在，將在您系統中使用OpenCL以提高處理速度。此功能可隨時開啟或關閉。"
+"如果存在，將在您系統中使用 OpenCL 以提高處理速度。此功能可隨時開啟或關閉。"
 
 #: ../build/src/preferences_gen.h:3707 ../build/src/preferences_gen.h:3762
 msgid "not available"
@@ -947,7 +946,7 @@ msgstr "目前系統不支援"
 
 #: ../build/src/preferences_gen.h:3722
 msgid "OpenCL scheduling profile"
-msgstr "OpenCL排程配置檔"
+msgstr "OpenCL 排程描述檔"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3733 ../build/src/preferences_gen.h:3758
@@ -959,12 +958,12 @@ msgstr "預設"
 #: ../build/src/preferences_gen.h:3738
 msgctxt "preferences"
 msgid "multiple GPUs"
-msgstr "多個GPU"
+msgstr "多個 GPU"
 
 #: ../build/src/preferences_gen.h:3743
 msgctxt "preferences"
 msgid "very fast GPU"
-msgstr "極速GPU"
+msgstr "極速 GPU"
 
 #: ../build/src/preferences_gen.h:3761
 msgid ""
@@ -1048,7 +1047,7 @@ msgstr ""
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
 #: ../src/libs/styles.c:300 ../src/lua/preferences.c:631
 msgid "select directory"
-msgstr "選擇目錄"
+msgstr "選取目錄"
 
 #: ../build/src/preferences_gen.h:3921
 msgid ""
@@ -1058,7 +1057,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3951
 msgid "session options"
-msgstr "session選項"
+msgstr "工作階段選項"
 
 #: ../build/src/preferences_gen.h:3954
 msgid "base directory naming pattern"
@@ -1066,7 +1065,7 @@ msgstr "根目錄命名模式"
 
 #: ../build/src/preferences_gen.h:3970 ../build/src/preferences_gen.h:3994
 msgid "part of full import path for an import session"
-msgstr "匯入session的完整匯入路徑之部份"
+msgstr "匯入工作階段的完整匯入路徑之部份"
 
 #: ../build/src/preferences_gen.h:3978
 msgid "sub directory naming pattern"
@@ -1078,7 +1077,7 @@ msgstr "檔案命名模式"
 
 #: ../build/src/preferences_gen.h:4018
 msgid "file naming pattern used for a import session"
-msgstr "匯入session的檔案命名模式"
+msgstr "匯入工作階段的檔案命名模式"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -1086,8 +1085,8 @@ msgid ""
 "them through a lighttable. It also enables you to develop raw images and "
 "enhance them in a darkroom."
 msgstr ""
-"darktable用資料庫管理您的數位負片，並讓您通過光桌檢視。它還可以讓您編輯原始圖"
-"像和在暗房中加強它們。"
+"darktable 用資料庫管理您的數位負片，並讓您通過光桌檢視。它還可以讓您編輯原始"
+"圖像和在暗房中加強它們。"
 
 #: ../data/darktable.appdata.xml.in.h:3
 msgid ""
@@ -1162,11 +1161,11 @@ msgid ""
 "max dE: %.02f"
 msgstr ""
 "平均 dE: %.02f\n"
-"最大 dE： %.02f"
+"最大 dE：%.02f"
 
 #: ../src/cli/main.c:127
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
-msgstr "TODO： 很抱歉，由於API的限制，我們目前還沒有設定BBP"
+msgstr "TODO：很抱歉，由於 API 的限制，我們目前還沒有設定 BBP"
 
 #: ../src/cli/main.c:139
 msgid "unknown option for --hq"
@@ -1183,21 +1182,21 @@ msgstr ""
 #: ../src/cli/main.c:235
 #, c-format
 msgid "error: output file is a directory. please specify file name"
-msgstr "發生錯誤：輸出檔案為一目錄。請指定檔案名稱。"
+msgstr "發生錯誤：輸出檔案為一目錄。請指定檔案名稱"
 
 #: ../src/cli/main.c:244
 msgid "output file already exists, it will get renamed"
-msgstr "輸出檔案已經存在，它將會被重命名"
+msgstr "輸出檔案已經存在，它將會重新命名"
 
 #: ../src/cli/main.c:261
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "發生錯誤：無法開啟目錄 %s"
+msgstr "發生錯誤：無法開啟 %s 資料夾"
 
 #: ../src/cli/main.c:279
 #, c-format
 msgid "error: can't open file %s"
-msgstr "發生錯誤：無法打開檔案 %s"
+msgstr "發生錯誤：無法打開 %s 檔案"
 
 #: ../src/cli/main.c:293
 #, c-format
@@ -1207,7 +1206,7 @@ msgstr "無影像可匯出，中止\n"
 #: ../src/cli/main.c:307
 #, c-format
 msgid "error: can't open xmp file %s"
-msgstr "發生錯誤：無法打開xmp檔案 %s"
+msgstr "發生錯誤：無法打開 xmp 檔案 %s"
 
 #: ../src/cli/main.c:325
 msgid "empty history stack"
@@ -1221,16 +1220,16 @@ msgstr "無法找到硬碟儲存模組。請檢查您的安裝是否有誤，有
 
 #: ../src/cli/main.c:356
 msgid "failed to get parameters from storage module, aborting export ..."
-msgstr "由儲存模組取得參數失敗，匯出中斷..."
+msgstr "由儲存模組獲取參數失敗，匯出中斷..."
 
 #: ../src/cli/main.c:369
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "未知副檔名 「.%s」"
+msgstr "未知副檔名「.%s」"
 
 #: ../src/cli/main.c:378
 msgid "failed to get parameters from format module, aborting export ..."
-msgstr "從格式模組取得參數失敗，匯出中斷..."
+msgstr "從格式模組獲取參數失敗，匯出中斷..."
 
 #: ../src/common/collection.c:521
 msgid "too much time to update aspect ratio for the collection"
@@ -1308,12 +1307,12 @@ msgstr ""
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
 #: ../src/views/darkroom.c:2136
 msgid "softproof profile"
-msgstr "軟式打樣配置"
+msgstr "軟式打樣描述檔"
 
 #: ../src/common/colorspaces.c:1393 ../src/common/colorspaces.c:1396
 #: ../src/common/colorspaces.c:1616 ../src/common/colorspaces.c:1638
 msgid "system display profile"
-msgstr "系統顯示配置"
+msgstr "系統顯示描述檔"
 
 #: ../src/common/colorspaces.c:1402
 msgid "sRGB (e.g. JPG)"
@@ -1321,7 +1320,7 @@ msgstr "sRGB（例如JPG）"
 
 #: ../src/common/colorspaces.c:1406 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
-msgstr "sRGB（網絡安全色）"
+msgstr "sRGB（網路安全色）"
 
 #: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1604
 #: ../src/iop/colorin.c:2138 ../src/libs/print_settings.c:1034
@@ -1373,7 +1372,7 @@ msgstr "Lab"
 
 #: ../src/common/colorspaces.c:1464 ../src/common/colorspaces.c:1614
 msgid "linear infrared BGR"
-msgstr "線性紅外BGR"
+msgstr "線性紅外 BGR"
 
 #: ../src/common/colorspaces.c:1468
 msgid "BRG (for testing)"
@@ -1386,7 +1385,7 @@ msgstr "sRGB"
 
 #: ../src/common/colorspaces.c:1618
 msgid "embedded ICC profile"
-msgstr "嵌入ICC色彩描述檔"
+msgstr "嵌入 ICC 描述檔"
 
 #: ../src/common/colorspaces.c:1620
 msgid "embedded matrix"
@@ -1394,19 +1393,19 @@ msgstr "嵌入矩陣"
 
 #: ../src/common/colorspaces.c:1622
 msgid "standard color matrix"
-msgstr "標準顏色矩陣"
+msgstr "標準色彩矩陣"
 
 #: ../src/common/colorspaces.c:1624
 msgid "enhanced color matrix"
-msgstr "增強顏色矩陣"
+msgstr "增強色彩矩陣"
 
 #: ../src/common/colorspaces.c:1626
 msgid "vendor color matrix"
-msgstr "供應商顏色矩陣"
+msgstr "供應商色彩矩陣"
 
 #: ../src/common/colorspaces.c:1628
 msgid "alternate color matrix"
-msgstr "備用顏色矩陣"
+msgstr "備用色彩矩陣"
 
 #: ../src/common/colorspaces.c:1630
 msgid "BRG (experimental)"
@@ -1439,7 +1438,7 @@ msgstr ""
 #: ../src/common/cups_print.c:408
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "找不到檔案 「%s」 列印，影像 %d 於 「%s」"
+msgstr "找不到檔案「%s」列印，影像 %d 於「%s」"
 
 #: ../src/common/cups_print.c:427
 msgid "failed to create temporary file for printing options"
@@ -1453,32 +1452,32 @@ msgstr ""
 #: ../src/common/cups_print.c:558
 #, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "列印 「%s」 於 「%s」 時發生錯誤"
+msgstr "列印「%s」於「%s」時發生錯誤"
 
 #: ../src/common/cups_print.c:560
 #, c-format
 msgid "printing `%s' on `%s'"
-msgstr "列印 「%s」 於 「%s」"
+msgstr "列印「%s」於「%s」"
 
 #: ../src/common/darktable.c:237
 #, c-format
 msgid "found strange path `%s'"
-msgstr "發現異常路徑 「%s」"
+msgstr "發現異常路徑「%s」"
 
 #: ../src/common/darktable.c:254
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "載入目錄時發生錯誤 「%s」"
+msgstr "載入目錄時發生錯誤「%s」"
 
 #: ../src/common/darktable.c:277
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "檔案 「%s」 使用了未知格式！"
+msgstr "檔案「%s」使用了未知格式！"
 
 #: ../src/common/darktable.c:290 ../src/libs/import.c:825
 #, c-format
 msgid "error loading file `%s'"
-msgstr "載入檔案發生時錯誤 「%s」"
+msgstr "載入檔案發生時錯誤「%s」"
 
 #: ../src/common/darktable.c:811
 msgid "darktable - run performance configuration?"
@@ -1533,7 +1532,7 @@ msgstr "darktable - 資料庫鎖定時發生錯誤"
 #: ../src/common/database.c:1870 ../src/common/database.c:2041
 #: ../src/common/database.c:2281 ../src/common/database.c:2359
 msgid "close darktable"
-msgstr "關閉darktable"
+msgstr "關閉 darktable"
 
 #: ../src/common/database.c:1981
 #, c-format
@@ -1718,7 +1717,7 @@ msgstr[0] "%d 本地副本已被同步"
 #: ../src/common/imageio.c:654 ../src/common/mipmap_cache.c:1060
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "影像 「%s」 無法取得！"
+msgstr "影像「%s」無法獲取！"
 
 #: ../src/common/imageio.c:672
 #, c-format
@@ -1740,13 +1739,13 @@ msgstr "匯出"
 #: ../src/common/imageio.c:683
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "無法找到用於匯出的樣式 「%s」。"
+msgstr "無法找到用於匯出的樣式「%s」。"
 
 #: ../src/common/import_session.c:272
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
-msgstr "無法擴展為session的唯一檔案名，請檢查您的匯入session設定"
+msgstr "無法擴展為工作階段的唯一檔案名，請檢查您的匯入工作階段設定。"
 
 #: ../src/common/iop_profile.c:83
 #, c-format
@@ -1760,35 +1759,35 @@ msgstr "一般泊松分佈"
 #: ../src/common/noiseprofiles.c:62
 #, c-format
 msgid "noiseprofile file `%s' is not valid"
-msgstr "雜訊配置檔 「%s」 無效"
+msgstr "雜訊描述檔「%s」無效"
 
 #: ../src/common/opencl.c:792
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
-msgstr "透過opencl的GPU硬體加速因緩慢而被關閉。"
+msgstr "透過 opencl 的 GPU 硬體加速因緩慢而被關閉。"
 
 #: ../src/common/opencl.c:799
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
-msgstr "偵測到多個GPU - opencl排程配置檔已被對應設定。"
+msgstr "偵測到多個 GPU - opencl 排程描述檔已被對應設定。"
 
 #: ../src/common/opencl.c:806
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
-msgstr "偵測到極速GPU - opencl排程配置檔已被對應設定。"
+msgstr "偵測到極速 GPU - opencl 排程描述檔已被對應設定。"
 
 #: ../src/common/opencl.c:813
 msgid "opencl scheduling profile set to default."
-msgstr "opencl排程配置檔設為預設。"
+msgstr "opencl 排程描述檔設為預設。"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1927
 #: ../src/libs/print_settings.c:1286
 msgid "mm"
-msgstr "毫米"
+msgstr "公釐"
 
 #: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1287
 msgid "cm"
-msgstr "釐米"
+msgstr "公分"
 
 #: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1288
 msgid "inch"
@@ -1816,7 +1815,7 @@ msgstr "legal"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
-msgstr "不再支援GNOME密鑰環後端。請設定一個不同的"
+msgstr "不再支援 GNOME 鑰匙圈後端。請設定一個不同的"
 
 #: ../src/common/ratings.c:142
 #, c-format
@@ -1837,7 +1836,7 @@ msgstr "沒有選中任何圖片可用以評級"
 #: ../src/common/styles.c:188
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "名為 「%s」 的樣式已經存在"
+msgstr "名為「%s」的樣式已經存在"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:321 ../src/common/styles.c:325
@@ -1852,7 +1851,7 @@ msgstr "樣式/套用 %s"
 #: ../src/common/styles.c:416 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "樣式 「%s」 建立成功"
+msgstr "樣式「%s」建立成功"
 
 #. fail :(
 #: ../src/common/styles.c:521 ../src/common/styles.c:539
@@ -1904,7 +1903,7 @@ msgstr ""
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
-msgstr "選擇"
+msgstr "選取"
 
 #: ../src/control/crawler.c:346
 msgid "path"
@@ -1920,7 +1919,7 @@ msgstr "資料庫時間戳記"
 
 #: ../src/control/crawler.c:363
 msgid "updated xmp sidecar files found"
-msgstr "更新找到的xmp附屬檔案"
+msgstr "更新找到的 xmp 附屬檔案"
 
 #: ../src/control/crawler.c:365
 msgid "_close"
@@ -1928,15 +1927,15 @@ msgstr "關閉(_C)"
 
 #: ../src/control/crawler.c:380 ../src/libs/select.c:101
 msgid "select all"
-msgstr "選擇全部"
+msgstr "選取全部"
 
 #: ../src/control/crawler.c:387
 msgid "reload selected xmp files"
-msgstr "重新載入選擇的xmp檔案"
+msgstr "重新載入選取的 xmp 檔"
 
 #: ../src/control/crawler.c:388
 msgid "overwrite selected xmp files"
-msgstr "覆寫選擇的xmp檔案"
+msgstr "覆寫選取的 xmp 檔"
 
 #: ../src/control/jobs/camera_jobs.c:86
 #, c-format
@@ -1974,7 +1973,7 @@ msgstr "從相機匯入影像"
 
 #: ../src/control/jobs/control_jobs.c:142
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr "目標目錄建立膠捲失敗，移動中斷.."
+msgstr "目標目錄建立膠卷失敗，移動中斷.."
 
 #: ../src/control/jobs/control_jobs.c:340
 msgid "exposure bracketing only works on raw images."
@@ -1993,7 +1992,7 @@ msgstr[0] "合併 %d 張影像"
 #: ../src/control/jobs/control_jobs.c:504
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "寫入合併的hdr 「%s」"
+msgstr "寫入合併的 HDR「%s」"
 
 #: ../src/control/jobs/control_jobs.c:530
 #, c-format
@@ -2126,7 +2125,7 @@ msgstr ""
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "影像 「%s」 無法取得"
+msgstr "影像「%s」無法獲取"
 
 #: ../src/control/jobs/control_jobs.c:1383
 msgid "merge hdr image"
@@ -2189,7 +2188,7 @@ msgstr "移動影像"
 #: ../src/control/jobs/control_jobs.c:1515
 #: ../src/control/jobs/control_jobs.c:1575
 msgid "_select as destination"
-msgstr "選擇目的地(_S)"
+msgstr "選取目的地(_S)"
 
 #: ../src/control/jobs/control_jobs.c:1536
 #, c-format
@@ -2201,7 +2200,7 @@ msgid_plural ""
 "(all unselected duplicates will be moved along)"
 msgstr[0] ""
 "你確定要從硬碟移動 %d 張已選影像至 %s 嗎？\n"
-"（所有未選擇的重複影像將單獨移動）"
+"（所有未選取的重複影像將單獨移動）"
 
 #: ../src/control/jobs/control_jobs.c:1545
 msgid "move image?"
@@ -2235,7 +2234,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:1699
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr "從儲存模組 「%s」 取得參數失敗, 匯出中斷.."
+msgstr "從儲存模組「%s」獲取參數失敗，匯出中斷.."
 
 #: ../src/control/jobs/control_jobs.c:1714
 msgid "export images"
@@ -2311,15 +2310,15 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1560
 msgid "sliders for L channel"
-msgstr "L通道滑動條"
+msgstr "L 通道滑動條"
 
 #: ../src/develop/blend_gui.c:1560
 msgid "sliders for a channel"
-msgstr "a通道滑動條"
+msgstr "a 通道滑動條"
 
 #: ../src/develop/blend_gui.c:1560
 msgid "sliders for b channel"
-msgstr "b通道滑動條"
+msgstr "b 通道滑動條"
 
 #: ../src/develop/blend_gui.c:1561
 msgid "sliders for chroma channel (of LCh)"
@@ -2393,9 +2392,9 @@ msgid ""
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
 "基于由這個模組收到的輸入的調整：\n"
-"*由上標定義的範圍： 完全混合\n"
-"*由下標定義的範圍： 完全不混合\n"
-"*相鄰的上/下標之間的範圍： 逐漸混合"
+"*由上標定義的範圍：完全混合\n"
+"*由下標定義的範圍：完全不混合\n"
+"*相鄰的上/下標之間的範圍：逐漸混合"
 
 #: ../src/develop/blend_gui.c:1572
 msgid ""
@@ -2405,9 +2404,9 @@ msgid ""
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
 "基于這個模組未混合的輸出的調整：\n"
-"*由上標定義的範圍： 完全混合\n"
-"*由下標定義的範圍： 完全不混合\n"
-"*相鄰的上 / 下標之間的範圍： 逐漸混合"
+"*由上標定義的範圍：完全混合\n"
+"*由下標定義的範圍：完全不混合\n"
+"*相鄰的上 / 下標之間的範圍：逐漸混合"
 
 #: ../src/develop/blend_gui.c:1732 ../src/iop/colorzones.c:2444
 #: ../src/iop/tonecurve.c:1378
@@ -2612,7 +2611,7 @@ msgstr "色調"
 #: ../src/develop/blend_gui.c:2480
 msgctxt "blendmode"
 msgid "color"
-msgstr "顏色"
+msgstr "色彩"
 
 #: ../src/develop/blend_gui.c:2481
 msgctxt "blendmode"
@@ -2622,52 +2621,52 @@ msgstr "色彩調整"
 #: ../src/develop/blend_gui.c:2483
 msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr "Lab亮度"
+msgstr "Lab 亮度"
 
 #: ../src/develop/blend_gui.c:2485
 msgctxt "blendmode"
 msgid "Lab color"
-msgstr "Lab顏色"
+msgstr "Lab 色彩"
 
 #: ../src/develop/blend_gui.c:2486
 msgctxt "blendmode"
 msgid "Lab L-channel"
-msgstr "Lab L通道"
+msgstr "Lab L 通道"
 
 #: ../src/develop/blend_gui.c:2488
 msgctxt "blendmode"
 msgid "Lab a-channel"
-msgstr "Lab a通道"
+msgstr "Lab a 通道"
 
 #: ../src/develop/blend_gui.c:2490
 msgctxt "blendmode"
 msgid "Lab b-channel"
-msgstr "Lab b通道"
+msgstr "Lab b 通道"
 
 #: ../src/develop/blend_gui.c:2492
 msgctxt "blendmode"
 msgid "HSV lightness"
-msgstr "HSV亮度"
+msgstr "HSV 亮度"
 
 #: ../src/develop/blend_gui.c:2494
 msgctxt "blendmode"
 msgid "HSV color"
-msgstr "HSV顏色"
+msgstr "HSV 色彩"
 
 #: ../src/develop/blend_gui.c:2495
 msgctxt "blendmode"
 msgid "RGB red channel"
-msgstr "RGB紅色通道"
+msgstr "RGB 紅色通道"
 
 #: ../src/develop/blend_gui.c:2497
 msgctxt "blendmode"
 msgid "RGB green channel"
-msgstr "RGB綠色通道"
+msgstr "RGB 綠色通道"
 
 #: ../src/develop/blend_gui.c:2499
 msgctxt "blendmode"
 msgid "RGB blue channel"
-msgstr "RGB藍色通道"
+msgstr "RGB 藍色通道"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:2503
@@ -2705,7 +2704,7 @@ msgstr "混合模式"
 
 #: ../src/develop/blend_gui.c:2574
 msgid "choose blending mode"
-msgstr "選擇混合模式"
+msgstr "選取混合模式"
 
 #: ../src/develop/blend_gui.c:2734 ../src/iop/watermark.c:1533
 msgid "opacity"
@@ -2763,7 +2762,7 @@ msgstr "輸入影像"
 
 #: ../src/develop/blend_gui.c:2791
 msgid "choose to guide mask by input or output image"
-msgstr "以輸入或輸出影像來選擇引導遮罩"
+msgstr "以輸入或輸出影像來選取引導遮罩"
 
 #: ../src/develop/blend_gui.c:2797
 msgid "feathering radius"
@@ -2799,7 +2798,7 @@ msgstr "遮罩對比"
 #: ../src/develop/blend_gui.c:2825
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
-msgstr "給出混合遮罩的色調曲線s形狀以調整其對比度"
+msgstr "給出混合遮罩的色調曲線 S 形狀以調整其對比度"
 
 #: ../src/develop/blend_gui.c:2832
 msgid ""
@@ -2819,7 +2818,7 @@ msgstr "遮罩優化"
 #: ../src/develop/develop.c:1713
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s： 模組 「%s」 版本不相容： %d != %d"
+msgstr "%s：模組「%s」版本不相容：%d != %d"
 
 #: ../src/develop/imageop.c:1007
 msgid "new instance"
@@ -2897,7 +2896,7 @@ msgid ""
 "middle-click creates new instance"
 msgstr ""
 "多個執行實體操作\n"
-"滑鼠中鍵單擊創建新執行實體"
+"滑鼠中鍵點按創建新執行實體"
 
 #: ../src/develop/imageop.c:1969 ../src/libs/lib.c:984
 msgid "reset parameters"
@@ -2915,17 +2914,17 @@ msgid ""
 "middle-click to apply on new instance"
 msgstr ""
 "預設\n"
-"滑鼠中鍵單擊以套用在新執行實體上"
+"滑鼠中鍵點按以套用在新執行實體上"
 
 #: ../src/develop/lightroom.c:1075
 msgid "cannot find lightroom XMP!"
-msgstr "無法找到lightroom XMP！"
+msgstr "找不到 lightroom XMP！"
 
 #: ../src/develop/lightroom.c:1107 ../src/develop/lightroom.c:1129
 #: ../src/develop/lightroom.c:1149
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "「%s」 不是lightroom XMP！"
+msgstr "「%s」不是 lightroom XMP！"
 
 #. tags
 #: ../src/develop/lightroom.c:1508 ../src/gui/camera_import_dialog.c:465
@@ -2942,7 +2941,7 @@ msgstr "評級"
 #: ../src/develop/lightroom.c:1530 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
-msgstr "地理標籤"
+msgstr "地理標記"
 
 #. DT_COLLECTION_SORT_ID
 #: ../src/develop/lightroom.c:1539 ../src/libs/collect.h:34
@@ -3066,11 +3065,11 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:346
 msgid "ctrl+click to add a sharp node"
-msgstr "ctrl + 滑鼠單擊以添加銳利節點"
+msgstr "ctrl + 滑鼠點按以添加銳利節點"
 
 #: ../src/develop/masks/masks.c:348
 msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "ctrl + 滑鼠單擊以在平滑/銳利節點間切換"
+msgstr "ctrl + 滑鼠點按以在平滑/銳利節點間切換"
 
 #: ../src/develop/masks/masks.c:350
 msgid "right-click to reset curvature"
@@ -3078,7 +3077,7 @@ msgstr "滑鼠右鍵以重設曲率"
 
 #: ../src/develop/masks/masks.c:352
 msgid "ctrl+click to add a node"
-msgstr "ctrl + 滑鼠單擊以添加節點"
+msgstr "ctrl + 滑鼠點按以添加節點"
 
 #: ../src/develop/masks/masks.c:354 ../src/develop/masks/masks.c:395
 #, c-format
@@ -3113,7 +3112,7 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:372
 msgid "ctrl+click to rotate"
-msgstr "ctrl + 滑鼠單擊以旋轉"
+msgstr "ctrl + 滑鼠點按以旋轉"
 
 #: ../src/develop/masks/masks.c:375
 #, c-format
@@ -3171,7 +3170,7 @@ msgstr "%s 的副本"
 #: ../src/develop/masks/masks.c:1401
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s： 遮罩版本不相符： %d != %d"
+msgstr "%s：遮罩版本不相符：%d != %d"
 
 #: ../src/develop/masks/masks.c:2158 ../src/libs/masks.c:1053
 msgid "add existing shape"
@@ -3189,16 +3188,16 @@ msgstr "遮罩無法包含自己"
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
-msgstr "darktable在您的OpenCL設定中發現了問題；本次session關閉OpenCL！"
+msgstr "darktable 在您的 OpenCL 設定中發現了問題；本次工作階段將關閉 OpenCL！"
 
 #: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1161
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "模組 「%s」 平鋪失敗。輸出可能會出現混亂。"
+msgstr "模組「%s」平鋪失敗。輸出可能會出現混亂。"
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
-msgstr "雙擊以重設"
+msgstr "連點兩下重設"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -3339,12 +3338,12 @@ msgstr "建立快取目錄\n"
 #: ../src/generate-cache/main.c:55
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "建立快取目錄 「%s」\n"
+msgstr "建立快取目錄「%s」\n"
 
 #: ../src/generate-cache/main.c:58
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "無法建立目錄 「%s」！\n"
+msgstr "無法建立目錄「%s」！\n"
 
 #: ../src/generate-cache/main.c:82
 #, c-format
@@ -3371,7 +3370,7 @@ msgstr ""
 #: ../src/generate-cache/main.c:228
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
-msgstr "發生錯誤：請確定min_mip <= max_mip\n"
+msgstr "發生錯誤：請確定 min_mip <= max_mip\n"
 
 #: ../src/generate-cache/main.c:233
 #, c-format
@@ -3427,7 +3426,7 @@ msgstr "編輯"
 #: ../src/gui/accelerators.c:62 ../src/gui/accelerators.c:108
 msgctxt "accel"
 msgid "dynamic"
-msgstr "動態"
+msgstr ""
 
 #: ../src/gui/accelerators.c:67 ../src/gui/accelerators.c:114
 msgctxt "accel"
@@ -3444,7 +3443,7 @@ msgstr "保存為預設值"
 
 #: ../src/gui/camera_import_dialog.c:267
 msgid "reset value to default"
-msgstr "重設回預設值"
+msgstr "重設到預設值"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1181
@@ -3483,24 +3482,24 @@ msgstr "一般"
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
-msgstr "忽略JPEG檔案"
+msgstr "忽略 JPEG 檔"
 
 #: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
 msgstr ""
-"不載入副檔名為 .jpg 或 .jpeg 的檔案。當RAW和JPEG影像存在於同一個目錄時，使用"
-"該選項很有效。"
+"不載入副檔名為 .jpg 或 .jpeg 的檔案。當 RAW 和 JPEG 影像存在於同一個目錄時，"
+"使用該選項很有效。"
 
 #. default metadata
 #: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
 msgid "apply metadata on import"
-msgstr "匯入時套用後設資料(metadata)"
+msgstr "匯入時套用中介資料"
 
 #: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:469
 msgid "apply some metadata to all newly imported images."
-msgstr "所有新匯入的影像套用後設資料(metadata)。"
+msgstr "所有新匯入的影像套用中介資料。"
 
 #: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:510
 msgid "comma separated list of tags"
@@ -3533,7 +3532,7 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"如果您需要覆蓋拍攝時間，選擇此項：\n"
+"如果您需要覆蓋拍攝時間，選取此項：\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
@@ -3549,7 +3548,7 @@ msgstr "設定"
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
-msgstr "從下面的列表中選擇影像以匯入到一個新的膠捲"
+msgstr "從下面的列表中選取影像以匯入到一個新的膠卷"
 
 #: ../src/gui/camera_import_dialog.c:754
 msgid "please use YYYY-MM-DD format for date override"
@@ -3727,27 +3726,27 @@ msgstr "$(SECOND) - 秒"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - EXIF年"
+msgstr "$(EXIF_YEAR) - EXIF 年"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - EXIF月"
+msgstr "$(EXIF_MONTH) - EXIF 月"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - EXIF日"
+msgstr "$(EXIF_DAY) - EXIF 日"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - EXIF時"
+msgstr "$(EXIF_HOUR) - EXIF 時"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - EXIF分"
+msgstr "$(EXIF_MINUTE) - EXIF 分"
 
 #: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - EXIF秒"
+msgstr "$(EXIF_SECOND) - EXIF 秒"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
@@ -3779,11 +3778,11 @@ msgstr "$(HOME) - 家目錄"
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - 桌面目錄"
+msgstr "$(DESKTOP) - 桌面資料夾"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(TITLE) - title from metadata"
-msgstr "$(TITLE) - 源自後設資料(metadata)的標題"
+msgstr "$(TITLE) - 源自中介資料的標題"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(DESCRIPTION) - description from metadata"
@@ -3791,15 +3790,15 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
-msgstr "$(CREATOR) - 源自後設資料(metadata)的創建者"
+msgstr "$(CREATOR) - 源自中介資料的創建者"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(PUBLISHER) - 源自後設資料(metadata)的發佈者"
+msgstr "$(PUBLISHER) - 源自中介資料的發佈者"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RIGHTS) - 源自後設資料(metadata)的權限"
+msgstr "$(RIGHTS) - 源自中介資料的權限"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
@@ -3861,7 +3860,7 @@ msgstr "全部"
 
 #: ../src/gui/guides.c:445
 msgid "show some extra guides"
-msgstr "顯示額外的參考綫"
+msgstr "顯示額外的參考線"
 
 #: ../src/gui/guides.c:483
 msgid "grid"
@@ -3894,20 +3893,20 @@ msgstr "黃金比例"
 
 #: ../src/gui/hist_dialog.c:171
 msgid "select parts"
-msgstr "選擇零件"
+msgstr "選取零件"
 
 #: ../src/gui/hist_dialog.c:172
 msgid "select _all"
-msgstr "選擇全部"
+msgstr "選取全部"
 
 #: ../src/gui/hist_dialog.c:172
 msgid "select _none"
-msgstr "不選擇"
+msgstr "不選取"
 
 #: ../src/gui/hist_dialog.c:172 ../src/gui/preferences.c:1390
 #: ../src/gui/presets.c:387 ../src/libs/lib.c:228
 msgid "_ok"
-msgstr "好(_O)"
+msgstr "確定(_O)"
 
 #: ../src/gui/hist_dialog.c:198 ../src/gui/styles_dialog.c:349
 #: ../src/gui/styles_dialog.c:358
@@ -3944,13 +3943,13 @@ msgstr "介面語言"
 
 #: ../src/gui/preferences.c:242
 msgid "double click to reset to the system language"
-msgstr "滑鼠雙擊以重設至系統語言"
+msgstr "連點兩下以重設至系統語言"
 
 #: ../src/gui/preferences.c:244
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
-msgstr "設定該語言至使用者介面。系統預設以星號*標示（需重新啟動）"
+msgstr "設定該語言至使用者介面。系統預設以星號 * 標示（需重新啟動）"
 
 #: ../src/gui/preferences.c:253
 msgid "theme"
@@ -3962,7 +3961,7 @@ msgstr ""
 
 #: ../src/gui/preferences.c:288
 msgid "darktable preferences"
-msgstr "darktable偏好設定"
+msgstr "darktable 偏好設定"
 
 #: ../src/gui/preferences.c:290
 msgid "close"
@@ -3994,7 +3993,7 @@ msgstr "鏡頭"
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:118
 msgid "ISO"
-msgstr "ISO感光度"
+msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:523 ../src/gui/preferences.c:1466
@@ -4068,7 +4067,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1116 ../src/gui/presets.c:182 ../src/libs/lib.c:340
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "確定要刪除預設 「%s」？"
+msgstr "確定要刪除預設「%s」？"
 
 #: ../src/gui/preferences.c:1120 ../src/gui/presets.c:186 ../src/libs/lib.c:344
 msgid "delete preset?"
@@ -4077,12 +4076,12 @@ msgstr "刪除預設？"
 #. Non-zero value indicates export
 #: ../src/gui/preferences.c:1156
 msgid "select file to export"
-msgstr "選擇匯出檔案"
+msgstr "選取匯出檔案"
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1182
 msgid "select file to import"
-msgstr "選擇匯入檔案"
+msgstr "選取匯入檔案"
 
 #: ../src/gui/preferences.c:1183 ../src/gui/preferences.c:1267
 #: ../src/libs/collect.c:243 ../src/libs/copy_history.c:79
@@ -4109,7 +4108,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1385 ../src/gui/presets.c:385
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "編輯 「%s」 -> 模組 「%s」"
+msgstr "編輯「%s」-> 模組「%s」"
 
 #: ../src/gui/preferences.c:1408 ../src/gui/presets.c:408 ../src/libs/lib.c:252
 msgid "description or further information"
@@ -4146,11 +4145,11 @@ msgstr "相符鏡頭的字串（使用 % 作為萬用字元）"
 
 #: ../src/gui/preferences.c:1456 ../src/gui/presets.c:454
 msgid "minimum ISO value"
-msgstr "最小ISO值"
+msgstr "最小 ISO 值"
 
 #: ../src/gui/preferences.c:1459 ../src/gui/presets.c:457
 msgid "maximum ISO value"
-msgstr "最大ISO值"
+msgstr "最大 ISO 值"
 
 #: ../src/gui/preferences.c:1470 ../src/gui/presets.c:468
 msgid "minimum exposure time"
@@ -4185,7 +4184,7 @@ msgstr "格式"
 #: ../src/gui/preferences.c:1618 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
 msgid "_select as output destination"
-msgstr "選擇為輸出目的地(_S)"
+msgstr "選取為輸出目的地(_S)"
 
 #: ../src/gui/preferences.c:1629
 #, c-format
@@ -4213,7 +4212,7 @@ msgstr "未命名預設"
 msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
-msgstr "預設 「%s」 已存在。您想覆蓋它嗎？"
+msgstr "預設「%s」已存在。您想覆蓋它嗎？"
 
 #: ../src/gui/presets.c:259 ../src/libs/lib.c:154
 msgid "overwrite preset?"
@@ -4304,12 +4303,12 @@ msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
 msgstr ""
-"1:1的複製選定的影像。\n"
+"1:1 的複製選定的影像。\n"
 "以下全域選項是不適用的！"
 
 #: ../src/imageio/format/exr.cc:189
 msgid "the selected output profile doesn't work well with exr"
-msgstr "選定的輸出配置檔與exr不相容"
+msgstr "選定的輸出描述檔與 exr 不相容"
 
 #: ../src/imageio/format/exr.cc:336
 msgid "OpenEXR (float)"
@@ -4361,7 +4360,7 @@ msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:659
 msgid "DCP mode"
-msgstr "DCP模式"
+msgstr "DCP 模式"
 
 #: ../src/imageio/format/j2k.c:661
 msgid "Cinema2K, 24FPS"
@@ -4402,7 +4401,7 @@ msgstr "無效邊界尺寸，使用0"
 #: ../src/imageio/storage/gallery.c:390 ../src/imageio/storage/piwigo.c:969
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "無法匯出至檔案 「%s」！"
+msgstr "無法匯出至檔案「%s」！"
 
 #: ../src/imageio/format/pdf.c:412
 msgid "PDF"
@@ -4421,7 +4420,7 @@ msgstr "標題"
 
 #: ../src/imageio/format/pdf.c:593
 msgid "enter the title of the pdf"
-msgstr "輸入pdf的標題"
+msgstr "輸入 pdf 的標題"
 
 #. // papers
 #: ../src/imageio/format/pdf.c:606 ../src/libs/print_settings.c:1271
@@ -4434,9 +4433,9 @@ msgid ""
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
 "example: 210 mm x 2.97 cm"
 msgstr ""
-"pdf的紙張尺寸\n"
+"pdf 的紙張尺寸\n"
 "列表中的任何一個或 \"<width> [unit] x <height> <unit>\n"
-"範例： 210 mm x 2.97 cm"
+"範例：210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:621
 msgid "page orientation"
@@ -4454,7 +4453,7 @@ msgstr "橫向"
 
 #: ../src/imageio/format/pdf.c:626
 msgid "paper orientation of the pdf"
-msgstr "pdf的頁面方向"
+msgstr "pdf 的頁面方向"
 
 #. border
 #: ../src/imageio/format/pdf.c:631
@@ -4467,9 +4466,9 @@ msgid ""
 "format: size + unit\n"
 "examples: 10 mm, 1 inch"
 msgstr ""
-"pdf周圍的空白空間\n"
-"格式： 尺寸 + 單位\n"
-"範例： 10 mm, 1 inch"
+"pdf 周圍的空白空間\n"
+"格式：尺寸 + 單位\n"
+"範例：10 mm, 1 inch"
 
 #. dpi
 #: ../src/imageio/format/pdf.c:653
@@ -4478,7 +4477,7 @@ msgstr "dpi"
 
 #: ../src/imageio/format/pdf.c:661
 msgid "dpi of the images inside the pdf"
-msgstr "pdf中影像的dpi"
+msgstr "pdf 中影像的 dpi"
 
 #: ../src/imageio/format/pdf.c:668
 msgid "rotate images"
@@ -4488,7 +4487,7 @@ msgstr "旋轉影像"
 msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
-msgstr "列印時可以旋轉影像以與pdf的方向相符，從而浪費較少的空間"
+msgstr "列印時可以旋轉影像以與 pdf 的方向相符，從而浪費較少的空間"
 
 #: ../src/imageio/format/pdf.c:680
 msgid "TODO: pages"
@@ -4506,15 +4505,15 @@ msgstr "聯繫表"
 #. g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
 #: ../src/imageio/format/pdf.c:686
 msgid "what pages should be added to the pdf"
-msgstr "應該將哪些頁面添加到pdf中"
+msgstr "應該將哪些頁面添加到 pdf 中"
 
 #: ../src/imageio/format/pdf.c:693
 msgid "embed icc profiles"
-msgstr "嵌入icc配置檔"
+msgstr "嵌入 icc 描述檔"
 
 #: ../src/imageio/format/pdf.c:698
 msgid "images can be tagged with their icc profile"
-msgstr "可以用他們的icc配置檔標記的影像"
+msgstr "可以用他們的 icc 描述檔標籤的影像"
 
 #: ../src/imageio/format/pdf.c:704 ../src/imageio/format/png.c:526
 #: ../src/imageio/format/tiff.c:472
@@ -4694,12 +4693,12 @@ msgstr ""
 #: ../src/imageio/storage/latex.c:273
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "無法建立目錄 「%s」!"
+msgstr "無法建立目錄「%s」!"
 
 #: ../src/imageio/storage/disk.c:288
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "無法寫入目錄 「%s」！"
+msgstr "無法寫入目錄「%s」！"
 
 #: ../src/imageio/storage/disk.c:318
 #, c-format
@@ -4712,7 +4711,7 @@ msgstr[0] ""
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
-msgstr[0] "%d/%d 匯出至 「%s」"
+msgstr[0] "%d/%d 匯出至「%s」"
 
 #: ../src/imageio/storage/disk.c:396
 msgid ""
@@ -4728,7 +4727,7 @@ msgstr "以郵件發送"
 
 #: ../src/imageio/storage/email.c:197
 msgid "images exported from darktable"
-msgstr "由darktable匯出的影像"
+msgstr "由 darktable 匯出的影像"
 
 #: ../src/imageio/storage/email.c:250
 msgid "could not launch email client!"
@@ -4744,7 +4743,7 @@ msgstr "輸入網站標題"
 
 #: ../src/imageio/storage/latex.c:71
 msgid "LaTeX book template"
-msgstr "LaTeX書籍模板"
+msgstr "LaTeX 書籍模板"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:194
@@ -4857,7 +4856,7 @@ msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:875
 msgid "click login button to start"
-msgstr "要開始請點擊登入按鈕"
+msgstr "要開始請點按登入按鈕"
 
 #: ../src/imageio/storage/piwigo.c:988
 msgid "cannot create a new piwigo album!"
@@ -4924,7 +4923,7 @@ msgstr "資料等待中 - 請重複"
 
 #: ../src/iop/ashift.c:2758
 msgid "could not detect structural data in image"
-msgstr "無法偵測影像中的結構數據"
+msgstr "無法偵測影像中的結構資料"
 
 #: ../src/iop/ashift.c:2769
 msgid "could not run outlier removal"
@@ -4932,11 +4931,11 @@ msgstr "無法刪除異常值"
 
 #: ../src/iop/ashift.c:2823
 msgid "not enough structure for automatic correction"
-msgstr "沒有足夠的結構進行自動校正"
+msgstr "沒有足夠的結構進行自動修正"
 
 #: ../src/iop/ashift.c:2828
 msgid "automatic correction failed, please correct manually"
-msgstr "自動校正失敗，請手動校正"
+msgstr "自動修正失敗，請手動修正"
 
 #: ../src/iop/ashift.c:4629 ../src/iop/ashift.c:4630 ../src/iop/ashift.c:4735
 #: ../src/iop/ashift.c:4736
@@ -5020,7 +5019,7 @@ msgstr "自動貼緊"
 
 #: ../src/iop/ashift.c:4931
 msgid "get structure"
-msgstr "取得結構"
+msgstr "獲取結構"
 
 #: ../src/iop/ashift.c:4976
 msgid "rotate image"
@@ -5028,7 +5027,7 @@ msgstr "旋轉影像"
 
 #: ../src/iop/ashift.c:4977 ../src/iop/ashift.c:4978
 msgid "apply lens shift correction in one direction"
-msgstr "在一個方向上套用鏡頭移位校正"
+msgstr "在一個方向上套用鏡頭移位修正"
 
 #: ../src/iop/ashift.c:4979
 msgid "shear the image along one diagonal"
@@ -5046,23 +5045,23 @@ msgstr "自動裁剪以避免黑邊"
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
-msgstr "鏡頭模式的透視校正：通用或根據焦點長度"
+msgstr "鏡頭模式的透視修正：通用或根據焦點長度"
 
 #: ../src/iop/ashift.c:4984
 msgid "focal length of the lens, default value set from exif data if available"
-msgstr "鏡頭的焦距，若有則從exif數據設定預設值"
+msgstr "鏡頭的焦距，若有則從exif資料設定預設值"
 
 #: ../src/iop/ashift.c:4986
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
-msgstr "相機偵測器的裁剪係數，若有則從exif數據設定預設值，通常需要手動設定"
+msgstr "相機偵測器的裁剪係數，若有則從exif資料設定預設值，通常需要手動設定"
 
 #: ../src/iop/ashift.c:4989
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
-msgstr "鏡頭相依的校正等級，全鏡頭設為最大相依性，對於通用案例設為零"
+msgstr "鏡頭相依的修正等級，全鏡頭設為最大相依性，對於通用案例設為零"
 
 #: ../src/iop/ashift.c:4991
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
@@ -5143,7 +5142,7 @@ msgstr "粗"
 
 #: ../src/iop/atrous.c:1092
 msgid "denoise & sharpen"
-msgstr "降噪 & 鋭化"
+msgstr "降噪和鋭化"
 
 #: ../src/iop/atrous.c:1106
 msgctxt "atrous"
@@ -5254,17 +5253,17 @@ msgstr "色度（chroma）"
 
 #: ../src/iop/atrous.c:1882
 msgid "change color saturation at each feature size"
-msgstr "以每個特性大小改變顏色飽和度"
+msgstr "以每個特性大小改變色彩飽和度"
 
 #: ../src/iop/atrous.c:1884
 msgid "edges"
-msgstr "邊緣"
+msgstr "邊線"
 
 #: ../src/iop/atrous.c:1886
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
-msgstr "以每個特性大小改變邊緣光暈僅更改亮度和色度分頁的結果"
+msgstr "以每個特性大小改變邊線光暈僅更改亮度和色度分頁的結果"
 
 #: ../src/iop/atrous.c:1914 ../src/iop/colorzones.c:2499
 #: ../src/iop/soften.c:758
@@ -5356,7 +5355,7 @@ msgstr "基礎曲線"
 
 #: ../src/iop/basecurve.c:2151
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "橫軸：輸入，縱軸：輸出。於RGB通道使用"
+msgstr "橫軸：輸入，縱軸：輸出。於 RGB 通道使用"
 
 #: ../src/iop/basecurve.c:2156 ../src/iop/lens.cc:2441
 #: ../src/iop/tonecurve.c:1443 ../src/iop/vignette.c:1158
@@ -5554,7 +5553,7 @@ msgstr ""
 
 #: ../src/iop/basicadj.c:733 ../src/iop/exposure.c:886
 msgid "adjust the exposure correction"
-msgstr "調整曝光校正"
+msgstr "調整曝光修正"
 
 #: ../src/iop/basicadj.c:739
 msgid "highlight compression"
@@ -5687,7 +5686,7 @@ msgstr "區域拉普拉斯濾波器"
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
-msgstr "用於局部對比度增強的濾波器。雙邊更快，但極端設定會導致邊緣周遭的瑕疵。"
+msgstr "用於局部對比度增強的濾波器。雙邊更快，但極端設定會導致邊線周遭的瑕疵。"
 
 #: ../src/iop/bilat.c:491 ../src/iop/globaltonemap.c:755
 msgid "detail"
@@ -5703,11 +5702,11 @@ msgstr "粗糙度"
 
 #: ../src/iop/bilat.c:498
 msgid "feature size of local details (spatial sigma of bilateral filter)"
-msgstr "局部細節的特徵尺寸（雙邊濾波器的空間sigma）"
+msgstr "局部細節的特徵尺寸（雙邊濾波器的空間 sigma）"
 
 #: ../src/iop/bilat.c:503
 msgid "L difference to detect edges (range sigma of bilateral filter)"
-msgstr "L差異以檢測邊緣（雙邊濾波器的範圍sigma）"
+msgstr "L差異以檢測邊線（雙邊濾波器的範圍 sigma）"
 
 #: ../src/iop/bilat.c:507 ../src/iop/monochrome.c:627 ../src/iop/shadhi.c:843
 #: ../src/iop/splittoning.c:674
@@ -5846,7 +5845,7 @@ msgstr "邊框大小"
 #: ../src/iop/borders.c:200
 msgctxt "accel"
 msgid "pick border color from image"
-msgstr "從影像中選擇邊框顏色"
+msgstr "從影像中選取邊框色彩"
 
 #: ../src/iop/borders.c:201
 msgctxt "accel"
@@ -5861,7 +5860,7 @@ msgstr ""
 #: ../src/iop/borders.c:203
 msgctxt "accel"
 msgid "pick frame line color from image"
-msgstr "從影像中選擇分幀線顏色"
+msgstr "從影像中選取分幀線色彩"
 
 #: ../src/iop/borders.c:598
 msgid "15:10 postcard white"
@@ -5957,7 +5956,7 @@ msgstr "寬高比"
 
 #: ../src/iop/borders.c:1019
 msgid "select the aspect ratio or right click and type your own (w:h)"
-msgstr "選擇縱橫比或右鍵單擊並自定義 (w:h)"
+msgstr "選取縱橫比或右鍵點按並自定義 (w:h)"
 
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/iop/borders.c:1022 ../src/libs/collect.h:38
@@ -5986,7 +5985,7 @@ msgstr "水平位置"
 msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
-msgstr "選擇相對於頂部的水平位置比或右鍵單擊並自定義 (y:h)"
+msgstr "選取相對於頂部的水平位置比或右鍵點按並自定義 (y:h)"
 
 #: ../src/iop/borders.c:1048
 msgid "custom horizontal position"
@@ -6000,7 +5999,7 @@ msgstr "垂直位置"
 msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
-msgstr "選擇相對於頂部的垂直位置比或右鍵單擊並自定義 (x:w)"
+msgstr "選取相對於頂部的垂直位置比或右鍵點按並自定義 (x:w)"
 
 #: ../src/iop/borders.c:1062
 msgid "custom vertical position"
@@ -6024,27 +6023,27 @@ msgstr "從圖片側開始的框架線偏移量"
 
 #: ../src/iop/borders.c:1086
 msgid "select border color"
-msgstr "選擇邊框顏色"
+msgstr "選取邊框色彩"
 
 #: ../src/iop/borders.c:1087
 msgid "border color"
-msgstr "邊框顏色"
+msgstr "邊框色彩"
 
 #: ../src/iop/borders.c:1091
 msgid "pick border color from image"
-msgstr "從影像中選擇邊框顏色"
+msgstr "從影像中選取邊框色彩"
 
 #: ../src/iop/borders.c:1102
 msgid "select frame line color"
-msgstr "選擇分幀線顏色"
+msgstr "選取分幀線色彩"
 
 #: ../src/iop/borders.c:1103
 msgid "frame line color"
-msgstr "分幀線顏色"
+msgstr "分幀線色彩"
 
 #: ../src/iop/borders.c:1107
 msgid "pick frame line color from image"
-msgstr "從影像中選擇分幀線顏色"
+msgstr "從影像中選取分幀線色彩"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:55
@@ -6053,14 +6052,14 @@ msgstr "色差"
 
 #: ../src/iop/cacorrect.c:1565
 msgid "automatic chromatic aberration correction"
-msgstr "自動色差校正"
+msgstr "自動色差修正"
 
 #: ../src/iop/cacorrect.c:1568
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
 msgstr ""
-"自動色差校正\n"
+"自動色差修正\n"
 "停用非拜耳偵測器"
 
 #: ../src/iop/cacorrect.c:1571
@@ -6068,8 +6067,8 @@ msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
 msgstr ""
-"自動色差校正\n"
-"只作用於raw影像。"
+"自動色差修正\n"
+"只作用於 raw 影像。"
 
 #: ../src/iop/channelmixer.c:112
 msgid "channel mixer"
@@ -6203,7 +6202,7 @@ msgstr "裁剪和旋轉"
 
 #: ../src/iop/clipping.c:1613
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "非法的比例格式。應該是 \"數字：數字\""
+msgstr "無效的比例格式。應該用「數字:數字」"
 
 #: ../src/iop/clipping.c:1744 ../src/iop/clipping.c:2090
 msgid "full"
@@ -6215,7 +6214,7 @@ msgstr "舊系統"
 
 #: ../src/iop/clipping.c:1746
 msgid "correction applied"
-msgstr "已套用的校正"
+msgstr "已套用的修正"
 
 #: ../src/iop/clipping.c:2031
 msgid "main"
@@ -6280,11 +6279,11 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2086
 msgid "keystone"
-msgstr "梯形校正"
+msgstr "梯形修正"
 
 #: ../src/iop/clipping.c:2091
 msgid "set perspective correction for your image"
-msgstr "為您的影像設置透視校正"
+msgstr "為您的影像設置透視修正"
 
 #: ../src/iop/clipping.c:2103
 msgid "freehand"
@@ -6361,7 +6360,7 @@ msgstr "3:1, panorama"
 #: ../src/iop/clipping.c:2154 ../src/iop/clipping.c:2166
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "無效的比例格式： 「%s」，應該是 \"數字：數字\""
+msgstr "無效的比例格式：「%s」，應該用「數字:數字」"
 
 #: ../src/iop/clipping.c:2213
 msgid ""
@@ -6559,7 +6558,7 @@ msgstr "對比支點"
 
 #: ../src/iop/colorbalance.c:2416
 msgid "adjust to match a neutral tone"
-msgstr "調整以匹配中性色調"
+msgstr "調整以比對中性色調"
 
 #: ../src/iop/colorbalance.c:2485 ../src/iop/colorbalance.c:2497
 msgid "factor of "
@@ -6572,7 +6571,7 @@ msgstr "倍"
 #. lift
 #: ../src/iop/colorbalance.c:2503
 msgid "shadows : lift / offset"
-msgstr "陰影 ： 提升 / 偏移"
+msgstr "陰影 ：提升 / 偏移"
 
 #: ../src/iop/colorbalance.c:2505
 msgid "factor of lift"
@@ -6585,12 +6584,12 @@ msgstr "提升"
 #: ../src/iop/colorbalance.c:2513 ../src/iop/colorbalance.c:2563
 #: ../src/iop/colorbalance.c:2612
 msgid "select the hue"
-msgstr "選擇色調"
+msgstr "選取色調"
 
 #: ../src/iop/colorbalance.c:2526 ../src/iop/colorbalance.c:2576
 #: ../src/iop/colorbalance.c:2625
 msgid "select the saturation"
-msgstr "選擇飽和度"
+msgstr "選取飽和度"
 
 #: ../src/iop/colorbalance.c:2531
 msgid "factor of red for lift"
@@ -6607,7 +6606,7 @@ msgstr "提升的藍色係數"
 #. gamma
 #: ../src/iop/colorbalance.c:2553
 msgid "mid-tones : gamma / power"
-msgstr "中間色調 ： 伽馬 / 功率"
+msgstr "中間色調 ：伽馬 / 功率"
 
 #: ../src/iop/colorbalance.c:2555
 msgid "factor of gamma"
@@ -6633,7 +6632,7 @@ msgstr "伽馬的藍色係數"
 #. gain
 #: ../src/iop/colorbalance.c:2602
 msgid "highlights : gain / slope"
-msgstr "亮點 ： 增益 / 斜率"
+msgstr "亮點 ：增益 / 斜率"
 
 #: ../src/iop/colorbalance.c:2604
 msgid "factor of gain"
@@ -6665,7 +6664,7 @@ msgstr "調適整個直方圖並使平均亮度居中"
 
 #: ../src/iop/colorbalance.c:2671
 msgid "optimize the RGB curves to remove color casts"
-msgstr "最佳化RGB曲線以消除色偏"
+msgstr "最佳化 RGB 曲線以消除色偏"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -6692,7 +6691,7 @@ msgstr "it8膚色"
 
 #: ../src/iop/colorchecker.c:303
 msgid "helmholtz/kohlrausch monochrome"
-msgstr "helmholtz/kohlrausch單色"
+msgstr "helmholtz/kohlrausch 單色"
 
 #: ../src/iop/colorchecker.c:318
 msgid "Fuji Astia emulation"
@@ -6800,7 +6799,7 @@ msgstr "綠 vs 洋紅"
 
 #: ../src/iop/colorcontrast.c:408
 msgid "steepness of the a* curve in Lab"
-msgstr "Lab色彩空間中a*曲線的陡度"
+msgstr "Lab 色彩空間中 a* 曲線的陡度"
 
 #: ../src/iop/colorcontrast.c:414
 msgid "blue vs yellow"
@@ -6808,11 +6807,11 @@ msgstr "藍 vs 黃"
 
 #: ../src/iop/colorcontrast.c:416
 msgid "steepness of the b* curve in Lab"
-msgstr "Lab色彩空間中b*曲線的陡度"
+msgstr "Lab 色彩空間中 b* 曲線的陡度"
 
 #: ../src/iop/colorcorrection.c:69
 msgid "color correction"
-msgstr "色彩校正"
+msgstr "色彩修正"
 
 #: ../src/iop/colorcorrection.c:96
 msgid "warm tone"
@@ -6838,7 +6837,7 @@ msgstr "設定全域飽和度"
 
 #: ../src/iop/colorin.c:124
 msgid "input color profile"
-msgstr "匯入色彩配置檔"
+msgstr "匯入色彩描述檔"
 
 #: ../src/iop/colorin.c:477
 #, c-format
@@ -6850,15 +6849,15 @@ msgstr ""
 #: ../src/iop/colorin.c:1587
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "「%s」 找不到色彩矩陣！"
+msgstr "「%s」找不到色彩矩陣！"
 
 #: ../src/iop/colorin.c:1622
 msgid "input profile could not be generated!"
-msgstr "輸入配置檔無法產生！"
+msgstr "輸入描述檔無法產生！"
 
 #: ../src/iop/colorin.c:1704
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr "不支援的輸入配置檔已被線性Rec709 RGB取代！"
+msgstr "不支援的輸入描述檔已被線性 Rec709 RGB 取代！"
 
 #: ../src/iop/colorin.c:2098
 msgid "input profile"
@@ -6872,7 +6871,7 @@ msgstr ""
 #: ../src/iop/colorout.c:894
 #, c-format
 msgid "ICC profiles in %s or %s"
-msgstr "ICC配置檔在 %s 或 %s"
+msgstr "ICC 描述檔在 %s 或 %s"
 
 #: ../src/iop/colorin.c:2134
 msgid "gamut clipping"
@@ -6880,7 +6879,7 @@ msgstr "色域剪輯"
 
 #: ../src/iop/colorin.c:2142
 msgid "confine Lab values to gamut of RGB color space"
-msgstr "將Lab色彩空間值限制為RGB色彩空間的色域"
+msgstr "將 Lab 色彩空間值限制為 RGB 色彩空間的色域"
 
 #: ../src/iop/colorize.c:88
 msgid "colorize"
@@ -6899,11 +6898,11 @@ msgstr "來源混合"
 
 #: ../src/iop/colorize.c:429 ../src/iop/splittoning.c:628
 msgid "select the hue tone"
-msgstr "選擇色相的色調"
+msgstr "選取色相的色調"
 
 #: ../src/iop/colorize.c:440
 msgid "select the saturation shadow tone"
-msgstr "選擇陰影色調的飽和度"
+msgstr "選取陰影色調的飽和度"
 
 #: ../src/iop/colorize.c:453
 msgid "source mix"
@@ -6919,7 +6918,7 @@ msgstr "源亮度的混合值"
 
 #: ../src/iop/colormapping.c:143
 msgid "color mapping"
-msgstr "顏色映射"
+msgstr "色彩映射"
 
 #: ../src/iop/colormapping.c:164
 msgctxt "accel"
@@ -6939,12 +6938,12 @@ msgstr ""
 #: ../src/iop/colormapping.c:168
 msgctxt "accel"
 msgid "acquire as source"
-msgstr "作為來源取得"
+msgstr "作為來源獲取"
 
 #: ../src/iop/colormapping.c:169
 msgctxt "accel"
 msgid "acquire as target"
-msgstr "作為目標取得"
+msgstr "作為目標獲取"
 
 #: ../src/iop/colormapping.c:1123
 msgid "source clusters:"
@@ -6956,7 +6955,7 @@ msgstr "目標叢集："
 
 #: ../src/iop/colormapping.c:1145
 msgid "acquire as source"
-msgstr "作為來源取得"
+msgstr "作為來源獲取"
 
 #: ../src/iop/colormapping.c:1147
 msgid "analyze this image as a source image"
@@ -6964,7 +6963,7 @@ msgstr "以此影像為來源影像執行分析"
 
 #: ../src/iop/colormapping.c:1151
 msgid "acquire as target"
-msgstr "作為目標取得"
+msgstr "作為目標獲取"
 
 #: ../src/iop/colormapping.c:1153
 msgid "analyze this image as a target image"
@@ -6986,7 +6985,7 @@ msgstr "色彩支配"
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
-msgstr "設定叢集如何映射。低階值：基于顏色近似，高階值：基于色彩支配"
+msgstr "設定叢集如何映射。低階值：基于色彩近似，高階值：基于色彩支配"
 
 #: ../src/iop/colormapping.c:1173
 msgid "histogram equalization"
@@ -6998,19 +6997,19 @@ msgstr "直方圖等化等級"
 
 #: ../src/iop/colorout.c:81
 msgid "output color profile"
-msgstr "匯出色彩配置檔"
+msgstr "匯出色彩描述檔"
 
 #: ../src/iop/colorout.c:667
 msgid "missing output profile has been replaced by sRGB!"
-msgstr "遺失的輸出配置檔已被sRGB取代！"
+msgstr "遺失的輸出描述檔已被 sRGB 取代！"
 
 #: ../src/iop/colorout.c:686
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "遺失的軟式打樣配置檔已被sRGB取代！"
+msgstr "遺失的軟式打樣描述檔已被 sRGB 取代！"
 
 #: ../src/iop/colorout.c:729
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr "不支援的匯出配置檔已被sRGB替代！"
+msgstr "不支援的匯出描述檔已被 sRGB 取代！"
 
 #: ../src/iop/colorout.c:870
 msgid "output intent"
@@ -7047,7 +7046,7 @@ msgstr "絶對色度"
 
 #: ../src/iop/colorout.c:891
 msgid "rendering intent"
-msgstr "渲染目的"
+msgstr "算繪目的"
 
 #: ../src/iop/colorreconstruction.c:128
 msgid "color reconstruction"
@@ -7093,19 +7092,19 @@ msgstr "飽和色彩"
 
 #: ../src/iop/colorreconstruction.c:1410
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr "亮度值高於此閾值的像素被校正"
+msgstr "亮度值高於此閾值的像素被修正"
 
 #: ../src/iop/colorreconstruction.c:1411
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "在空間維度上尋找替換顏色的距離"
+msgstr "在空間維度上尋找替換色彩的距離"
 
 #: ../src/iop/colorreconstruction.c:1412
 msgid "how far to look for replacement colors in the luminance dimension"
-msgstr "在亮度維度上尋找替換顏色的距離"
+msgstr "在亮度維度上尋找替換色彩的距離"
 
 #: ../src/iop/colorreconstruction.c:1413
 msgid "if and how to give precedence to specific replacement colors"
-msgstr "若要以及如何優先考慮特定的替換顏色"
+msgstr "若要以及如何優先考慮特定的替換色彩"
 
 #: ../src/iop/colorreconstruction.c:1414
 msgid "the hue tone which should be given precedence over other hue tones"
@@ -7113,7 +7112,7 @@ msgstr "應該優先於其他色調的色調"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
-msgstr "顏色轉換"
+msgstr "色彩轉換"
 
 #: ../src/iop/colortransfer.c:121
 msgctxt "accel"
@@ -7133,7 +7132,7 @@ msgid ""
 msgstr ""
 "該模組未來將被移除\n"
 "請關掉該模組\n"
-"並使用新的顏色映射模組。"
+"並使用新的色彩映射模組。"
 
 #: ../src/iop/colortransfer.c:688
 msgid "number of clusters to find in image"
@@ -7207,7 +7206,7 @@ msgstr ""
 
 #: ../src/iop/colorzones.c:2481
 msgid "select by"
-msgstr "選擇于"
+msgstr "選取于"
 
 #: ../src/iop/colorzones.c:2482
 msgid "choose selection criterion, will be the abscissa in the graph"
@@ -7294,16 +7293,16 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
-"色採保護方法：\n"
+"色彩保護方法：\n"
 " - 全域平均：快速，但可能會在高放大倍數的預覽顯示略微錯誤；相較於區域平均，有"
 "時可能會保護飽和度太多或太少\n"
-" - 區域平均：較慢，透過使用鄰近像素作為顏色參考，可能比全域更好地保護飽和度，"
+" - 區域平均：較慢，透過使用鄰近像素作為色彩參考，可能比全域更好地保護飽和度，"
 "因此當需要時它仍然可以允許更多的去飽和度\n"
 " - 靜態：快速，僅使用閾值作為靜態限制"
 
 #: ../src/iop/defringe.c:486
 msgid "edge detection radius"
-msgstr ""
+msgstr "邊線偵測半徑"
 
 #: ../src/iop/defringe.c:494
 msgid "radius for detecting fringe"
@@ -7320,12 +7319,12 @@ msgstr "去馬賽克"
 #: ../src/iop/demosaic.c:182
 msgctxt "accel"
 msgid "edge threshold"
-msgstr "邊緣閾值"
+msgstr "邊線閾值"
 
 #: ../src/iop/demosaic.c:4918
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "「%s」 找不到4bayer影像的顏色矩陣！"
+msgstr "「%s」找不到 4bayer 影像的色彩矩陣！"
 
 #: ../src/iop/demosaic.c:5124 ../src/iop/demosaic.c:5133
 #: ../src/iop/dither.c:803 ../src/iop/highlights.c:1093
@@ -7350,7 +7349,7 @@ msgstr "通過（單色）（實驗性的）"
 
 #: ../src/iop/demosaic.c:5130 ../src/iop/demosaic.c:5140
 msgid "demosaicing raw data method"
-msgstr "raw資料去馬賽克方法"
+msgstr "raw 資料去馬賽克方法"
 
 #: ../src/iop/demosaic.c:5135
 msgid "VNG"
@@ -7374,17 +7373,17 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
-"邊緣閥值中值\n"
-"0.0為關閉\n"
-"1.0為忽略邊緣。"
+"邊線閥值中值\n"
+"0.0 為關閉\n"
+"1.0 為忽略邊線。"
 
 #: ../src/iop/demosaic.c:5145
 msgid "edge threshold"
-msgstr "邊緣閾值"
+msgstr "邊線閾值"
 
 #: ../src/iop/demosaic.c:5149
 msgid "color smoothing"
-msgstr "顏色平滑"
+msgstr "色彩平滑"
 
 #: ../src/iop/demosaic.c:5152
 msgid "one time"
@@ -7412,7 +7411,7 @@ msgstr "計數去馬賽克後色彩平滑的階數中位數"
 
 #: ../src/iop/demosaic.c:5161
 msgid "match greens"
-msgstr "匹配綠色"
+msgstr "比對綠色"
 
 #: ../src/iop/demosaic.c:5162
 msgid "disabled"
@@ -7432,7 +7431,7 @@ msgstr "整體和局部平均"
 
 #: ../src/iop/demosaic.c:5166
 msgid "green channels matching method"
-msgstr "綠色通道匹配方法"
+msgstr "綠色通道比對方法"
 
 #: ../src/iop/demosaic.c:5178
 msgid ""
@@ -7440,7 +7439,7 @@ msgid ""
 "only needed for raw images."
 msgstr ""
 "去馬賽克\n"
-"僅有raw影像需要。"
+"僅有 raw 影像需要。"
 
 #: ../src/iop/denoiseprofile.c:574
 msgid "denoise (profiled)"
@@ -7484,7 +7483,7 @@ msgstr ""
 #: ../src/iop/denoiseprofile.c:3338
 #, c-format
 msgid "found match for ISO %d"
-msgstr "找到與 ISO %d 匹配"
+msgstr "找到與 ISO %d 比對"
 
 #: ../src/iop/denoiseprofile.c:3347
 #, c-format
@@ -7595,7 +7594,7 @@ msgstr ""
 #: ../src/iop/denoiseprofile.c:4467 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
 msgid "profile"
-msgstr "配置檔"
+msgstr "描述檔"
 
 #: ../src/iop/denoiseprofile.c:4469
 msgid "color mode"
@@ -7656,15 +7655,15 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4491
 msgid "profile used for variance stabilization"
-msgstr "用於穩定變異數的配置檔"
+msgstr "用於穩定變異數的描述檔"
 
 #: ../src/iop/denoiseprofile.c:4492
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
-"降噪核心採用的方法。非局部平均值對於「亮度」渲染作用最好，小波對於「色彩」渲"
-"染效果最好"
+"降噪核心採用的方法。非局部平均值對於「亮度」算繪作用最好，小波對於「色彩」算"
+"繪效果最好"
 
 #: ../src/iop/denoiseprofile.c:4495
 msgid ""
@@ -7849,7 +7848,7 @@ msgstr "魔術燈預設"
 #: ../src/iop/rawoverexposed.c:288
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "無法從影像取得raw緩衝區 「%s」"
+msgstr "無法從影像取得 raw 緩衝區「%s」"
 
 #: ../src/iop/exposure.c:868 ../src/iop/levels.c:693
 msgctxt "mode"
@@ -7871,7 +7870,7 @@ msgstr ""
 #: ../src/iop/exposure.c:903
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
-msgstr "裁剪亮值的百分比，切換顏色選擇器以啟動"
+msgstr "裁剪亮值的百分比，切換色彩選取器以啟動"
 
 #: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1102
 #: ../src/views/darkroom.c:1996
@@ -7885,7 +7884,7 @@ msgstr "百分位"
 #: ../src/iop/exposure.c:920
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
-msgstr "直方圖中的哪個位置用於去閃爍的計量。例如：50％是中位數"
+msgstr "直方圖中的哪個位置用於去閃爍的計量。例如：50％ 是中位數"
 
 #: ../src/iop/exposure.c:925
 msgid "target level"
@@ -7894,16 +7893,16 @@ msgstr "目標等級"
 #: ../src/iop/exposure.c:928
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
-msgstr "在何處放置處理過的照片的曝光等級，EV低於曝光過度。"
+msgstr "在何處放置處理過的照片的曝光等級，EV 低於曝光過度。"
 
 #: ../src/iop/exposure.c:932
 msgid "computed EC: "
-msgstr "計算過之EC："
+msgstr "計算過之 EC："
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:936
 msgid "what exposure correction has actually been used"
-msgstr "實際使用了什麼曝光校正"
+msgstr "實際使用了什麼曝光修正"
 
 #: ../src/iop/filmic.c:174
 msgid "filmic"
@@ -7962,8 +7961,8 @@ msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
-"調整以匹配主體的平均亮度。\n"
-"除了在背光情況下，這應該是18％左右。"
+"調整以比對主體的平均亮度。\n"
+"除了在背光情況下，這應該是 18％ 左右。"
 
 #: ../src/iop/filmic.c:1703 ../src/iop/filmicrgb.c:1477
 msgid "white relative exposure"
@@ -8014,7 +8013,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1749
 msgid "filmic S curve"
-msgstr "電影化S曲線"
+msgstr "電影化 S 曲線"
 
 #: ../src/iop/filmic.c:1756 ../src/iop/filmicrgb.c:1533
 msgid ""
@@ -8117,7 +8116,7 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
-"輸出純黑的亮度，應為0％\n"
+"輸出純黑的亮度，應為 0％\n"
 "除非你想要一個褪色的外觀"
 
 #: ../src/iop/filmic.c:1853 ../src/iop/filmicrgb.c:1597
@@ -8356,15 +8355,15 @@ msgstr "垂直翻轉"
 
 #: ../src/iop/flip.c:408
 msgid "rotate by -90 degrees"
-msgstr "旋轉-90度"
+msgstr "旋轉 -90 度"
 
 #: ../src/iop/flip.c:410
 msgid "rotate by  90 degrees"
-msgstr "旋轉90度"
+msgstr "旋轉 90 度"
 
 #: ../src/iop/flip.c:412
 msgid "rotate by 180 degrees"
-msgstr "旋轉180度"
+msgstr "旋轉 180 度"
 
 #: ../src/iop/flip.c:528
 msgid "rotate"
@@ -8372,21 +8371,21 @@ msgstr "旋轉"
 
 #: ../src/iop/flip.c:532
 msgid "rotate 90 degrees CCW"
-msgstr "逆時針旋轉90度"
+msgstr "逆時針旋轉 90 度"
 
 #: ../src/iop/flip.c:537
 msgid "rotate 90 degrees CW"
-msgstr "順時針旋轉90度"
+msgstr "順時針旋轉 90 度"
 
 #: ../src/iop/flip.c:549 ../src/libs/live_view.c:168
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
-msgstr "逆時針旋轉90度"
+msgstr "逆時針旋轉 90 度"
 
 #: ../src/iop/flip.c:550 ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
-msgstr "順時針旋轉90度"
+msgstr "順時針旋轉 90 度"
 
 #: ../src/iop/gamma.c:43
 msgctxt "modulename"
@@ -8431,59 +8430,59 @@ msgstr "目標"
 
 #: ../src/iop/globaltonemap.c:748
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr "色調映射器的明度單位為cd/m2"
+msgstr "色調映射器的明度單位為 cd/m2"
 
 #: ../src/iop/graduatednd.c:71
 msgid "neutral gray ND2 (soft)"
-msgstr "中性灰ND2（軟）"
+msgstr "中性灰 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:74
 msgid "neutral gray ND4 (soft)"
-msgstr "中性灰ND4（軟）"
+msgstr "中性灰 ND4 (軟)"
 
 #: ../src/iop/graduatednd.c:77
 msgid "neutral gray ND8 (soft)"
-msgstr "中性灰ND8（軟）"
+msgstr "中性灰ND8 (軟)"
 
 #: ../src/iop/graduatednd.c:80
 msgid "neutral gray ND2 (hard)"
-msgstr "中性灰ND2（硬）"
+msgstr "中性灰 ND2 (硬)"
 
 #: ../src/iop/graduatednd.c:83
 msgid "neutral gray ND4 (hard)"
-msgstr "中性灰ND4（硬）"
+msgstr "中性灰 ND4 (硬)"
 
 #: ../src/iop/graduatednd.c:86
 msgid "neutral gray ND8 (hard)"
-msgstr "中性灰ND8（硬）"
+msgstr "中性灰 ND8 (硬)"
 
 #: ../src/iop/graduatednd.c:89
 msgid "orange ND2 (soft)"
-msgstr "橘色ND2(軟)"
+msgstr "橘色 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:92
 msgid "yellow ND2 (soft)"
-msgstr "黃色ND2(黃)"
+msgstr "黃色 ND2 (黃)"
 
 #: ../src/iop/graduatednd.c:95
 msgid "purple ND2 (soft)"
-msgstr "紫色ND2(軟)"
+msgstr "紫色 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:98
 msgid "green ND2 (soft)"
-msgstr "綠色ND2(軟)"
+msgstr "綠色 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:101
 msgid "red ND2 (soft)"
-msgstr "紅色ND2(軟)"
+msgstr "紅色 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:104
 msgid "blue ND2 (soft)"
-msgstr "藍色ND2(軟)"
+msgstr "藍色 ND2 (軟)"
 
 #: ../src/iop/graduatednd.c:107
 msgid "brown ND4 (soft)"
-msgstr "褐色ND4(軟)"
+msgstr "褐色 ND4 (軟)"
 
 #: ../src/iop/graduatednd.c:143
 msgid "graduated density"
@@ -8520,15 +8519,15 @@ msgstr ""
 
 #: ../src/iop/graduatednd.c:1241
 msgid "rotation of filter -180 to 180 degrees"
-msgstr "濾波器可旋轉角度-180至180度"
+msgstr "濾波器可旋轉角度 -180 至 180 度"
 
 #: ../src/iop/graduatednd.c:1260
 msgid "select the hue tone of filter"
-msgstr "選擇濾波器的色調"
+msgstr "選取濾波器的色調"
 
 #: ../src/iop/graduatednd.c:1271
 msgid "select the saturation of filter"
-msgstr "選擇濾波器的飽和度"
+msgstr "選取濾波器的飽和度"
 
 #: ../src/iop/graduatednd.c:1301
 #, c-format
@@ -8566,7 +8565,7 @@ msgstr ""
 
 #: ../src/iop/grain.c:633
 msgid "the grain size (~ISO of the film)"
-msgstr "顆粒大小（膠片的ISO感光度）"
+msgstr "顆粒大小（膠卷的 ~ISO 感光度）"
 
 #: ../src/iop/grain.c:641
 msgid "the strength of applied grain"
@@ -8620,7 +8619,7 @@ msgstr "截取亮點"
 
 #: ../src/iop/highlights.c:1095
 msgid "reconstruct in LCh"
-msgstr "重建LCh"
+msgstr "重建 LCh"
 
 #: ../src/iop/highlights.c:1096
 msgid "reconstruct color"
@@ -8682,29 +8681,29 @@ msgstr "減小熱像素的閾值"
 
 #: ../src/iop/hotpixels.c:479
 msgid "strength of hot pixel correction"
-msgstr "熱像素校正力度"
+msgstr "熱像素修正力度"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:484
 msgid "detect by 3 neighbors"
-msgstr "由3個鄰近點檢測"
+msgstr "由 3 個鄰近點檢測"
 
 #: ../src/iop/hotpixels.c:491
 msgid "mark fixed pixels"
-msgstr "標記修復的像素"
+msgstr "標籤修復的像素"
 
 #: ../src/iop/hotpixels.c:503
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
-"熱像素校正\n"
-"僅適用於raw影像。"
+"熱像素修正\n"
+"僅適用於 raw 影像。"
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "「%s」 找不到4bayer影像的色彩矩陣"
+msgstr "「%s」找不到 4bayer 影像的色彩矩陣"
 
 #: ../src/iop/invert.c:114
 msgid "invert"
@@ -8713,11 +8712,11 @@ msgstr "反轉"
 #: ../src/iop/invert.c:134
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "從影像中選取膠片材料的顏色"
+msgstr "從影像中選取膠片材料的色彩"
 
 #: ../src/iop/invert.c:607
 msgid "color of film material"
-msgstr "膠片材料的顏色"
+msgstr "膠片材料的色彩"
 
 #: ../src/iop/invert.c:613
 msgid "brightness of film material"
@@ -8725,11 +8724,11 @@ msgstr ""
 
 #: ../src/iop/invert.c:637
 msgid "select color of film material"
-msgstr "選擇膠片材料的顏色"
+msgstr "選取膠片材料的色彩"
 
 #: ../src/iop/invert.c:642
 msgid "pick color of film material from image"
-msgstr "從影像中選取膠片材料的顏色"
+msgstr "從影像中選取膠片材料的色彩"
 
 #: ../src/iop/lens.cc:147
 msgid "lens correction"
@@ -8773,7 +8772,7 @@ msgstr "鏡頭型號"
 #: ../src/iop/lens.cc:180
 msgctxt "accel"
 msgid "select corrections"
-msgstr "選擇修正方式"
+msgstr "選取修正方式"
 
 #: ../src/iop/lens.cc:1602
 #, c-format
@@ -8790,7 +8789,7 @@ msgstr ""
 
 #: ../src/iop/lens.cc:1815
 msgid "camera/lens not found - please select manually"
-msgstr "未找到 相機 / 鏡頭 - 請手動選擇"
+msgstr "未找到 相機 / 鏡頭 - 請手動選取"
 
 #: ../src/iop/lens.cc:1818
 msgid "try to locate your camera/lens in the above two menus"
@@ -8870,7 +8869,7 @@ msgstr "欲套用的修正"
 
 #: ../src/iop/lens.cc:2422
 msgid "geometry"
-msgstr "幾何校正"
+msgstr "幾何修正"
 
 #: ../src/iop/lens.cc:2424
 msgid "target geometry"
@@ -8942,7 +8941,7 @@ msgstr "橫向色差藍色"
 
 #: ../src/iop/lens.cc:2472
 msgid "corrections done: "
-msgstr "修正完成： "
+msgstr "修正完成："
 
 #: ../src/iop/lens.cc:2473
 msgid "which corrections have actually been done"
@@ -8965,7 +8964,7 @@ msgstr ""
 #: ../src/iop/levels.c:711 ../src/iop/rgblevels.c:1063
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
-msgstr "拖曳把手以設定黑色，灰色和白色點。在L通道上操作。"
+msgstr "拖曳把手以設定黑色，灰色和白色點。在 L 通道上操作。"
 
 #: ../src/iop/levels.c:725 ../src/iop/rgblevels.c:1096
 msgid "apply auto levels"
@@ -8973,15 +8972,15 @@ msgstr "套用自動色階"
 
 #: ../src/iop/levels.c:728 ../src/iop/rgblevels.c:1077
 msgid "pick black point from image"
-msgstr "從影像中選擇黑點"
+msgstr "從影像中選取黑點"
 
 #: ../src/iop/levels.c:732 ../src/iop/rgblevels.c:1081
 msgid "pick medium gray point from image"
-msgstr "從影像中選擇中灰色點"
+msgstr "從影像中選取中灰色點"
 
 #: ../src/iop/levels.c:736 ../src/iop/rgblevels.c:1085
 msgid "pick white point from image"
-msgstr "從影像中選擇白點"
+msgstr "從影像中選取白點"
 
 #: ../src/iop/levels.c:751
 msgid "black percentile"
@@ -9034,7 +9033,7 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3503
 msgid "click to edit nodes"
-msgstr "單擊以編輯節點"
+msgstr "點按以編輯節點"
 
 #: ../src/iop/liquify.c:3569
 msgid ""
@@ -9042,7 +9041,7 @@ msgid ""
 "right-click to remove a warp."
 msgstr ""
 "使用工具添加彎曲。\n"
-"右鍵單擊以刪除彎曲。"
+"右鍵點按以刪除彎曲。"
 
 #: ../src/iop/liquify.c:3572
 msgid "warps|nodes count:"
@@ -9197,15 +9196,15 @@ msgstr "濾鏡階數"
 
 #: ../src/iop/lowpass.c:674
 msgid "0th order"
-msgstr "0階"
+msgstr "0 階"
 
 #: ../src/iop/lowpass.c:675
 msgid "1st order"
-msgstr "1階"
+msgstr "1 階"
 
 #: ../src/iop/lowpass.c:676
 msgid "2nd order"
-msgstr "2階"
+msgstr "2 階"
 
 #: ../src/iop/lowpass.c:677
 msgid "filter order of gaussian blur"
@@ -9242,7 +9241,7 @@ msgstr "低通濾波器的亮度調節"
 
 #: ../src/iop/lowpass.c:704
 msgid "color saturation of lowpass filter"
-msgstr "低通濾鏡的顏色飽和度"
+msgstr "低通濾鏡的色彩飽和度"
 
 #: ../src/iop/lowpass.c:705
 msgid "which filter to use for blurring"
@@ -9481,7 +9480,7 @@ msgstr "曝光過度"
 
 #: ../src/iop/profile_gamma.c:105
 msgid "unbreak input profile"
-msgstr "修復輸入配置檔"
+msgstr "修復輸入描述檔"
 
 #. dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
 #: ../src/iop/profile_gamma.c:127
@@ -9516,23 +9515,23 @@ msgstr ""
 
 #: ../src/iop/profile_gamma.c:160
 msgid "16 EV dynamic range (generic)"
-msgstr "16 EV動態範圍（通用）"
+msgstr "16 EV 動態範圍（通用）"
 
 #: ../src/iop/profile_gamma.c:165
 msgid "14 EV dynamic range (generic)"
-msgstr "14 EV動態範圍（通用）"
+msgstr "14 EV 動態範圍（通用）"
 
 #: ../src/iop/profile_gamma.c:170
 msgid "12 EV dynamic range (generic)"
-msgstr "12 EV動態範圍（通用）"
+msgstr "12 EV 動態範圍（通用）"
 
 #: ../src/iop/profile_gamma.c:175
 msgid "10 EV dynamic range (generic)"
-msgstr "10 EV動態範圍（通用）"
+msgstr "10 EV 動態範圍（通用）"
 
 #: ../src/iop/profile_gamma.c:180
 msgid "08 EV dynamic range (generic)"
-msgstr "08 EV動態範圍（通用）"
+msgstr "08 EV 動態範圍（通用）"
 
 #: ../src/iop/profile_gamma.c:865
 msgid "tone mapping method"
@@ -9591,7 +9590,7 @@ msgstr "透過一些猜測進行最佳化"
 
 #: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
-msgstr "raw降噪"
+msgstr "raw 降噪"
 
 #: ../src/iop/rawdenoise.c:144
 msgctxt "accel"
@@ -9607,16 +9606,16 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
-"raw降噪\n"
+"raw 降噪\n"
 "僅適用於raw影像。"
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
-msgstr "raw過曝"
+msgstr "raw 過曝"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop x"
-msgstr "裁剪x"
+msgstr "裁剪 x"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop from left border"
@@ -9624,7 +9623,7 @@ msgstr "自左邊界裁剪"
 
 #: ../src/iop/rawprepare.c:47
 msgid "crop y"
-msgstr "裁剪y"
+msgstr "裁剪 y"
 
 #: ../src/iop/rawprepare.c:47
 msgid "crop from top"
@@ -9649,7 +9648,7 @@ msgstr "自下裁剪"
 #: ../src/iop/rawprepare.c:97
 msgctxt "modulename"
 msgid "raw black/white point"
-msgstr "raw黑/白點"
+msgstr "raw 黑/白點"
 
 #: ../src/iop/rawprepare.c:124
 msgid "passthrough"
@@ -9676,16 +9675,16 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"原始黑/白點校正\n"
+"原始黑/白點修正\n"
 "僅適用於需要它的偵測器。"
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "4區域曝光補償 0.25EV"
+msgstr "4 區域曝光補償 0.25EV"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "4區域陰影補償 -0.25EV"
+msgstr "4 區域陰影補償 -0.25EV"
 
 #: ../src/iop/relight.c:90
 msgid "fill light"
@@ -9737,7 +9736,7 @@ msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
 msgstr ""
-"要添加形狀，請選擇演算法和形狀類型，然後單擊影像。\n"
+"要添加形狀，請選取演算法和形狀類型，然後點按影像。\n"
 "形狀被添加到當前比例"
 
 #: ../src/iop/retouch.c:2647
@@ -9822,15 +9821,15 @@ msgstr "自動分級"
 
 #: ../src/iop/retouch.c:2864
 msgid "shape selected:"
-msgstr "形狀選擇："
+msgstr "形狀選取："
 
 #: ../src/iop/retouch.c:2868
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
 msgstr ""
-"點擊一個形狀來選擇它，\n"
-"取消選擇點擊空白區域"
+"點按一個形狀來選取它，\n"
+"取消選取點按空白區域"
 
 #: ../src/iop/retouch.c:2875
 msgid "fill mode"
@@ -9850,11 +9849,11 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2890 ../src/iop/retouch.c:2891
 msgid "select fill color"
-msgstr "選擇填充色彩"
+msgstr "選取填充色彩"
 
 #: ../src/iop/retouch.c:2897
 msgid "pick fill color from image"
-msgstr "自影像選擇填充色彩"
+msgstr "自影像選取填充色彩"
 
 #: ../src/iop/retouch.c:2901
 msgid "fill color: "
@@ -10032,7 +10031,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:1584
 msgid "pick GUI color from image"
-msgstr "從圖片選取GUI顏色"
+msgstr "從圖片選取GUI色彩"
 
 #: ../src/iop/rgbcurve.c:1638 ../src/iop/rgbcurve.c:1640
 msgid "compensate middle grey"
@@ -10110,7 +10109,7 @@ msgstr "壓縮"
 
 #: ../src/iop/shadhi.c:847
 msgid "shadows color adjustment"
-msgstr "陰影顏色調整"
+msgstr "陰影色彩調整"
 
 #: ../src/iop/shadhi.c:848
 msgid "highlights color adjustment"
@@ -10203,12 +10202,12 @@ msgstr ""
 #: ../src/iop/splittoning.c:110
 msgctxt "accel"
 msgid "pick primary color"
-msgstr "選取首要顏色"
+msgstr "選取首要色彩"
 
 #: ../src/iop/splittoning.c:111
 msgctxt "accel"
 msgid "pick secondary color"
-msgstr "選取次要顏色"
+msgstr "選取次要色彩"
 
 #: ../src/iop/splittoning.c:113
 msgctxt "accel"
@@ -10253,11 +10252,11 @@ msgstr "巧克力棕"
 
 #: ../src/iop/splittoning.c:615
 msgid "select tone color"
-msgstr "選擇色調的色彩"
+msgstr "選取色調的色彩"
 
 #: ../src/iop/splittoning.c:639
 msgid "select the saturation tone"
-msgstr "選擇飽和度色調"
+msgstr "選取飽和度色調"
 
 #: ../src/iop/splittoning.c:682
 msgid "balance"
@@ -10293,9 +10292,9 @@ msgid ""
 "use the mouse wheel to adjust size.\n"
 "right click to remove a shape."
 msgstr ""
-"單擊一個形狀並在畫布上拖曳。\n"
+"點按一個形狀並在畫布上拖曳。\n"
 "使用滾輪調整大小。\n"
-"右鍵單擊以刪除形狀。"
+"右鍵點按以刪除形狀。"
 
 #: ../src/iop/spots.c:719
 msgctxt "accel"
@@ -10365,12 +10364,12 @@ msgstr "點"
 #: ../src/iop/temperature.c:962
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "「%s」 找不到影像的色彩矩陣"
+msgstr "「%s」找不到影像的色彩矩陣"
 
 #: ../src/iop/temperature.c:986
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
-msgstr "無法從 「%s」 讀取相機白平衡資訊！"
+msgstr "無法從「%s」讀取相機白平衡資訊！"
 
 #: ../src/iop/temperature.c:1369
 msgid "magenta"
@@ -10428,7 +10427,7 @@ msgstr "色彩空間"
 
 #: ../src/iop/tonecurve.c:1347
 msgid "Lab, linked channels"
-msgstr "Lab色彩空間，連結通道"
+msgstr "Lab 色彩空間，連結通道"
 
 #: ../src/iop/tonecurve.c:1348
 msgid "Lab, independent channels"
@@ -10444,8 +10443,8 @@ msgid ""
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
-"如果設置為自動，則a和b曲線無效並且不顯示。每個像素的色度（a和b）會基於L曲線數"
-"據調整。XYZ也是類似，但會在XYZ空間中套用飽和度變化。"
+"如果設置為自動，則a和b曲線無效並且不顯示。每個像素的色度（a和b）會基於L曲線資"
+"料調整。XYZ也是類似，但會在XYZ空間中套用飽和度變化。"
 
 #: ../src/iop/tonecurve.c:1362
 msgid "  L  "
@@ -10453,7 +10452,7 @@ msgstr "  L  "
 
 #: ../src/iop/tonecurve.c:1364
 msgid "tonecurve for L channel"
-msgstr "L通道色調曲線"
+msgstr "L 通道色調曲線"
 
 #: ../src/iop/tonecurve.c:1366
 msgid "  a  "
@@ -10461,7 +10460,7 @@ msgstr "  a  "
 
 #: ../src/iop/tonecurve.c:1368
 msgid "tonecurve for a channel"
-msgstr "a通道色調曲線"
+msgstr "a 通道色調曲線"
 
 #: ../src/iop/tonecurve.c:1370
 msgid "  b  "
@@ -10469,7 +10468,7 @@ msgstr "  b  "
 
 #: ../src/iop/tonecurve.c:1372
 msgid "tonecurve for b channel"
-msgstr "b通道色調曲線"
+msgstr "b 通道色調曲線"
 
 #: ../src/iop/tonecurve.c:1445
 msgid "log"
@@ -10948,7 +10947,7 @@ msgid ""
 "1 produces a circle or ellipse\n"
 "2 produces a diamond"
 msgstr ""
-"“形狀係數\n"
+"形狀係數\n"
 "0產生一個矩形\n"
 "1產生一個圓或橢圓\n"
 "2生產一個菱形"
@@ -10982,7 +10981,7 @@ msgstr ""
 
 #: ../src/iop/watermark.c:284
 msgid "watermark"
-msgstr "浮水印"
+msgstr "水印"
 
 #: ../src/iop/watermark.c:309
 msgctxt "accel"
@@ -10997,12 +10996,12 @@ msgstr "不透明度"
 #: ../src/iop/watermark.c:313
 msgctxt "accel"
 msgid "x offset"
-msgstr "x水平偏移"
+msgstr "x 水平偏移"
 
 #: ../src/iop/watermark.c:314
 msgctxt "accel"
 msgid "y offset"
-msgstr "y垂直偏移"
+msgstr "y 垂直偏移"
 
 #: ../src/iop/watermark.c:1457
 msgid "content"
@@ -11010,24 +11009,24 @@ msgstr "內容"
 
 #: ../src/iop/watermark.c:1464
 msgid "marker"
-msgstr "標記"
+msgstr "標籤"
 
 #: ../src/iop/watermark.c:1467
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
-msgstr "SVG浮水印在 %s/浮水印 或 %s/浮水印"
+msgstr "SVG 水印在 %s/水印 或 %s/水印"
 
 #: ../src/iop/watermark.c:1486
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"浮水印顏色，標記：\n"
+"水印色彩，標籤：\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1488
 msgid "select watermark color"
-msgstr "選擇浮水印色彩"
+msgstr "選取水印色彩"
 
 #: ../src/iop/watermark.c:1491
 msgid "pick color from image"
@@ -11043,7 +11042,7 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"文字字串，標記：\n"
+"文字字串，標籤：\n"
 "$(WATERMARK_TEXT)"
 
 #. Text font
@@ -11058,7 +11057,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"文字字型，標記：\n"
+"文字字型，標籤：\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -11100,24 +11099,24 @@ msgstr "對齊"
 
 #: ../src/iop/watermark.c:1573
 msgid "x offset"
-msgstr "x水平偏移"
+msgstr "x 水平偏移"
 
 #: ../src/iop/watermark.c:1576
 msgid "y offset"
-msgstr "y垂直偏移"
+msgstr "y 垂直偏移"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1581
 msgid "the opacity of the watermark"
-msgstr "浮水印的透明度"
+msgstr "水印的透明度"
 
 #: ../src/iop/watermark.c:1582
 msgid "the scale of the watermark"
-msgstr "浮水印的尺寸"
+msgstr "水印的尺寸"
 
 #: ../src/iop/watermark.c:1583
 msgid "the rotation of the watermark"
-msgstr "浮水印的旋轉"
+msgstr "水印的旋轉"
 
 #: ../src/iop/zonesystem.c:117
 msgid "zone system"
@@ -11132,8 +11131,8 @@ msgid ""
 msgstr ""
 "明度區域\n"
 "使用滑鼠滾輪改變區域數量\n"
-"在邊框左擊建立一個標記\n"
-"右擊標記刪除"
+"在邊框點按左鍵建立一個標籤\n"
+"點按右鍵標籤刪除"
 
 #: ../src/libs/backgroundjobs.c:53
 msgid "background jobs"
@@ -11215,7 +11214,7 @@ msgid ""
 "you can use this in conjunction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
-"要捕捉的影像序列數,\n"
+"要捕捉的影像序列數，\n"
 "您可以將此功能與延遲模式共同使用來創造定格動畫。"
 
 #: ../src/libs/camera.c:486
@@ -11276,16 +11275,16 @@ msgstr "蒐集影像"
 
 #: ../src/libs/collect.c:242
 msgid "search filmroll"
-msgstr "搜尋膠捲"
+msgstr "搜尋膠卷"
 
 #: ../src/libs/collect.c:323
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
-msgstr "為 %s 中膠捲選擇新的路徑有問題"
+msgstr "為 %s 中膠卷選取新的路徑有問題"
 
 #: ../src/libs/collect.c:375
 msgid "search filmroll..."
-msgstr "搜尋膠捲..."
+msgstr "搜尋膠卷..."
 
 #: ../src/libs/collect.c:379
 msgid "remove..."
@@ -11301,7 +11300,7 @@ msgstr "沒有變動"
 
 #: ../src/libs/collect.c:1332
 msgid "not tagged"
-msgstr "未被標記"
+msgstr "未被標籤"
 
 #: ../src/libs/collect.c:1344
 msgid "copied locally"
@@ -11329,7 +11328,7 @@ msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
 msgstr ""
-"輸入您的查詢，使用<、<=、>、>=、<>、=、[;] 為操作符，以此格式輸入日期： YYYY:"
+"輸入您的查詢，使用<、<=、>、>=、<>、=、[;] 為操作符，以此格式輸入日期：YYYY:"
 "MM:DD HH:MM:SS （只有年份是強制性的）"
 
 #: ../src/libs/collect.c:1767
@@ -11340,7 +11339,7 @@ msgstr ""
 #: ../src/libs/collect.c:1772 ../src/libs/collect.c:2192
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "輸入你的查詢, 使用 「%」 作為萬用字元"
+msgstr "輸入你的查詢， 使用「%」作為萬用字元"
 
 #: ../src/libs/collect.c:2104
 msgid "narrow down search"
@@ -11368,7 +11367,7 @@ msgstr "改為：排除"
 
 #: ../src/libs/collect.h:32
 msgid "film roll"
-msgstr "膠捲"
+msgstr "膠卷"
 
 #: ../src/libs/collect.h:32
 msgid "folders"
@@ -11425,7 +11424,7 @@ msgstr "新增取樣"
 
 #: ../src/libs/colorpicker.c:396
 msgid "hover to highlight sample on canvas, click to lock sample"
-msgstr "在畫布的亮點樣本上點擊滑鼠鎖定"
+msgstr "在畫布的亮點樣本上點按滑鼠鎖定"
 
 #: ../src/libs/colorpicker.c:412
 msgid "X"
@@ -11457,7 +11456,7 @@ msgstr "最大"
 
 #: ../src/libs/colorpicker.c:612
 msgid "restrict histogram to selection"
-msgstr "限製為選擇部分的直方圖"
+msgstr "限製為選取部分的直方圖"
 
 #: ../src/libs/colorpicker.c:645 ../src/libs/export_metadata.c:160
 msgid "add"
@@ -11477,12 +11476,12 @@ msgstr "打開附屬檔案"
 
 #: ../src/libs/copy_history.c:88
 msgid "XMP sidecar files"
-msgstr "XMP附屬檔案"
+msgstr "XMP 附屬檔案"
 
 #: ../src/libs/copy_history.c:105
 #, c-format
 msgid "error loading file '%s'"
-msgstr "載入檔案時發生錯誤 「%s」"
+msgstr "載入檔案時發生錯誤「%s」"
 
 #: ../src/libs/copy_history.c:166
 #, c-format
@@ -11585,12 +11584,12 @@ msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"打開一個XMP附屬檔案\n"
+"打開一個 XMP 附屬檔案\n"
 "並且套用到已選影像"
 
 #: ../src/libs/copy_history.c:369
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "將歷史記錄和標籤寫入XMP附屬檔案"
+msgstr "將歷史記錄和標籤寫入 XMP 附屬檔案"
 
 #: ../src/libs/copy_history.c:394
 msgctxt "accel"
@@ -11629,11 +11628,11 @@ msgstr "寫入附屬檔案"
 
 #: ../src/libs/duplicate.c:67
 msgid "duplicate manager"
-msgstr "複製管理器"
+msgstr "重複管理器"
 
 #: ../src/libs/duplicate.c:494
 msgid "existing duplicates"
-msgstr "重複已存在"
+msgstr "存在重複項目"
 
 #: ../src/libs/duplicate.c:497
 msgid "create a 'virgin' duplicate of the image without any development"
@@ -11641,11 +11640,11 @@ msgstr ""
 
 #: ../src/libs/duplicate.c:501
 msgid "create a duplicate of the image with same history stack"
-msgstr "使用相同的歷史紀錄建立影像的副本"
+msgstr "使用相同的歷史紀錄建立影像的複本"
 
 #: ../src/libs/export.c:71
 msgid "export selected"
-msgstr "匯出選中的"
+msgstr "匯出選中項目"
 
 #: ../src/libs/export.c:129
 msgid "export to disk"
@@ -11677,7 +11676,7 @@ msgid ""
 "set to 0 for no scaling"
 msgstr ""
 "最大匯出寬度\n"
-"設為0防止縮放"
+"設為 0 防止縮放"
 
 #: ../src/libs/export.c:608
 msgid ""
@@ -11685,7 +11684,7 @@ msgid ""
 "set to 0 for no scaling"
 msgstr ""
 "最大匯出高度\n"
-"設為0防止縮放"
+"設為 0 防止縮放"
 
 #: ../src/libs/export.c:615
 msgid "max size"
@@ -11715,7 +11714,7 @@ msgstr "影像設定"
 #: ../src/libs/export.c:660 ../src/libs/print_settings.c:1442
 #, c-format
 msgid "output ICC profiles in %s or %s"
-msgstr "以 %s 或 %s 輸出ICC配置檔"
+msgstr "以 %s 或 %s 輸出 ICC 描述檔"
 
 #: ../src/libs/export.c:680 ../src/libs/print_settings.c:1467
 msgid "style"
@@ -11925,15 +11924,15 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:420
 msgid "ok"
-msgstr "好"
+msgstr "確定"
 
 #: ../src/libs/geotagging.c:473
 msgid "open GPX file"
-msgstr "打開GPX檔案"
+msgstr "開啟 GPX 檔"
 
 #: ../src/libs/geotagging.c:490
 msgid "GPS data exchange format"
-msgstr "GPS數據交換格式"
+msgstr "GPS 資料交換格式"
 
 #: ../src/libs/geotagging.c:500
 msgid "camera time zone"
@@ -11944,7 +11943,7 @@ msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
-"大多數相機不在EXIF檔案中儲存時區。請給予正確的時區，這樣GPX數據能夠正確匹配"
+"大多數相機不在EXIF檔案中儲存時區。請給予正確的時區，這樣GPX資料能夠正確比對"
 
 #: ../src/libs/geotagging.c:792
 msgid ""
@@ -11952,7 +11951,7 @@ msgid ""
 "format: [+-]?[[hh:]mm:]ss"
 msgstr ""
 "時間偏移\n"
-"格式： [+-]?[[hh:]mm:]ss"
+"格式：[+-]?[[hh:]mm:]ss"
 
 #: ../src/libs/geotagging.c:802
 msgid "calculate the time offset from an image"
@@ -11969,7 +11968,7 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
-msgstr "解析GPX檔案並更新所選影像的位置"
+msgstr "解析 GPX 檔並更新所選影像的位置"
 
 #: ../src/libs/histogram.c:48
 msgid "histogram"
@@ -11989,27 +11988,27 @@ msgstr "設定直方圖為對數模式"
 
 #: ../src/libs/histogram.c:389
 msgid "click to hide red channel"
-msgstr "單擊隱藏紅色通道"
+msgstr "點按隱藏紅色通道"
 
 #: ../src/libs/histogram.c:389
 msgid "click to show red channel"
-msgstr "單擊顯示紅色通道"
+msgstr "點按顯示紅色通道"
 
 #: ../src/libs/histogram.c:394
 msgid "click to hide green channel"
-msgstr "單擊隱藏綠色通道"
+msgstr "點按隱藏綠色通道"
 
 #: ../src/libs/histogram.c:395
 msgid "click to show green channel"
-msgstr "單擊顯示綠色通道"
+msgstr "點按顯示綠色通道"
 
 #: ../src/libs/histogram.c:400
 msgid "click to hide blue channel"
-msgstr "單擊隱藏藍色通道"
+msgstr "點按隱藏藍色通道"
 
 #: ../src/libs/histogram.c:400
 msgid "click to show blue channel"
-msgstr "單擊顯示藍色通道"
+msgstr "點按顯示藍色通道"
 
 #: ../src/libs/histogram.c:406
 msgid ""
@@ -12017,7 +12016,7 @@ msgid ""
 "doubleclick resets"
 msgstr ""
 "拖曳以更改黑點\n"
-"雙擊重設"
+"連點兩下重設"
 
 #. connect callbacks
 #: ../src/libs/histogram.c:411 ../src/libs/histogram.c:579
@@ -12026,7 +12025,7 @@ msgid ""
 "doubleclick resets"
 msgstr ""
 "拖曳以更改曝光，\n"
-"雙擊重設"
+"連點兩下重設"
 
 #: ../src/libs/histogram.c:614
 msgctxt "accel"
@@ -12111,11 +12110,11 @@ msgstr "複製到其它目錄"
 
 #: ../src/libs/image.c:394
 msgid "create HDR"
-msgstr "建立HDR"
+msgstr "製作 HDR"
 
 #: ../src/libs/image.c:399
 msgid "create a high dynamic range image from selected shots"
-msgstr "從一系列選中的圖片製作HDR高動態範圍成像"
+msgstr "從一系列選中的圖片製作 HDR 高動態範圍成像"
 
 #: ../src/libs/image.c:401
 msgid "duplicate"
@@ -12127,11 +12126,11 @@ msgstr "添加一個重複的集合，包括它的歷史記錄"
 
 #: ../src/libs/image.c:411
 msgid "rotate selected images 90 degrees CCW"
-msgstr "逆時針90度旋轉選中影像"
+msgstr "逆時針 90 度旋轉選中影像"
 
 #: ../src/libs/image.c:417
 msgid "rotate selected images 90 degrees CW"
-msgstr "順時針90度旋轉選中影像"
+msgstr "順時針 90 度旋轉選中影像"
 
 #: ../src/libs/image.c:421
 msgid "reset rotation"
@@ -12139,7 +12138,7 @@ msgstr "重設旋轉"
 
 #: ../src/libs/image.c:424
 msgid "reset rotation to EXIF data"
-msgstr "將重設的旋轉訊息放入EXIF"
+msgstr "將重設的旋轉訊息放入 EXIF"
 
 #: ../src/libs/image.c:429
 msgid "copy locally"
@@ -12257,22 +12256,22 @@ msgstr ""
 #: ../src/libs/image.c:567
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CW"
-msgstr "順時針90度旋轉選中影像"
+msgstr "順時針 90 度旋轉選中影像"
 
 #: ../src/libs/image.c:568
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
-msgstr "逆時針90度旋轉選中影像"
+msgstr "逆時針 90 度旋轉選中影像"
 
 #: ../src/libs/image.c:569
 msgctxt "accel"
 msgid "create HDR"
-msgstr "建立HDR"
+msgstr "製作 HDR"
 
 #: ../src/libs/image.c:570
 msgctxt "accel"
 msgid "duplicate"
-msgstr "複製"
+msgstr "再製"
 
 #: ../src/libs/image.c:571
 msgctxt "accel"
@@ -12353,7 +12352,7 @@ msgstr "匯入目錄"
 #: ../src/libs/import.c:226
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "裝置\"%s\" 連接到\"%s\" 連接埠。"
+msgstr "「%s」裝置連接到「%s」連接埠。"
 
 #: ../src/libs/import.c:236
 msgid "import from camera"
@@ -12381,7 +12380,7 @@ msgstr "遞迴地匯入目錄"
 #: ../src/libs/import.c:450
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
-msgstr "遞歸匯入子目錄，每個目錄將作為一個新的膠捲。"
+msgstr "遞歸匯入子目錄，每個目錄將作為一個新的膠卷。"
 
 #: ../src/libs/import.c:785
 msgid "supported images"
@@ -12393,7 +12392,7 @@ msgstr "檔案格式未知！"
 
 #: ../src/libs/import.c:866
 msgid "import film"
-msgstr "匯入膠捲"
+msgstr "匯入膠卷"
 
 #. add import single image buttons
 #: ../src/libs/import.c:982
@@ -12402,7 +12401,7 @@ msgstr ""
 
 #: ../src/libs/import.c:986
 msgid "select one or more images to import"
-msgstr "選擇一個或多個影像匯入"
+msgstr "選取一個或多個影像匯入"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
@@ -12411,7 +12410,7 @@ msgstr ""
 
 #: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
-msgstr "選擇一個目錄作為影像膠卷匯入"
+msgstr "選取一個目錄作為影像膠卷匯入"
 
 #. add the rescan button
 #: ../src/libs/import.c:1006
@@ -12425,7 +12424,7 @@ msgstr "搜尋剛插入的裝置"
 #: ../src/libs/lib.c:226
 #, c-format
 msgid "edit `%s'"
-msgstr "編輯 「%s」"
+msgstr "編輯「%s」"
 
 #: ../src/libs/lib.c:504
 msgid "nothing to save"
@@ -12553,12 +12552,12 @@ msgstr "飽和度"
 #: ../src/libs/live_view.c:418
 msgctxt "blendmode"
 msgid "color dodge"
-msgstr "顏色減淡"
+msgstr "色彩減淡"
 
 #: ../src/libs/live_view.c:419
 msgctxt "blendmode"
 msgid "color burn"
-msgstr "顏色加深"
+msgstr "色彩加深"
 
 #: ../src/libs/live_view.c:420
 msgctxt "blendmode"
@@ -12588,7 +12587,7 @@ msgstr "HSL飽和度"
 #: ../src/libs/live_view.c:426
 msgctxt "blendmode"
 msgid "HSL color"
-msgstr "HSL顏色"
+msgstr "HSL色彩"
 
 #: ../src/libs/live_view.c:427
 msgctxt "blendmode"
@@ -12629,7 +12628,7 @@ msgstr "地圖來源"
 
 #: ../src/libs/map_settings.c:109
 msgid "select the source of the map. some entries might not work"
-msgstr "選擇地圖來源。有些表項可能無法正常工作"
+msgstr "選取地圖來源。有些表項可能無法正常工作"
 
 #: ../src/libs/masks.c:246
 #, c-format
@@ -12682,7 +12681,7 @@ msgstr "已建立形狀"
 
 #: ../src/libs/metadata.c:56
 msgid "metadata editor"
-msgstr "編輯後設資料(metadata)"
+msgstr "編輯中介資料"
 
 #: ../src/libs/metadata.c:84
 msgid "<leave unchanged>"
@@ -12695,11 +12694,11 @@ msgstr "清空"
 
 #: ../src/libs/metadata.c:395
 msgid "remove metadata from selected images"
-msgstr "從選中的影像移除後設資料(metadata)"
+msgstr "從選中的影像移除中介資料"
 
 #: ../src/libs/metadata.c:401
 msgid "write metadata for selected images"
-msgstr "向選中的影像寫入後設資料(metadata)"
+msgstr "向選中的影像寫入中介資料"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:439
@@ -12707,6 +12706,7 @@ msgid "CC BY"
 msgstr "CC BY"
 
 #: ../src/libs/metadata.c:439
+#, fuzzy
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "創作共用授權條款 (CC BY)"
 
@@ -12715,6 +12715,7 @@ msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
 #: ../src/libs/metadata.c:440
+#, fuzzy
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "創作共用授權條款 (CC BY-SA)"
 
@@ -12723,6 +12724,7 @@ msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
 #: ../src/libs/metadata.c:441
+#, fuzzy
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "創作共用授權條款 (CC BY-ND)"
 
@@ -12731,6 +12733,7 @@ msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
 #: ../src/libs/metadata.c:442
+#, fuzzy
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "創作共用授權條款 (CC BY-NC)"
 
@@ -12739,6 +12742,7 @@ msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
 #: ../src/libs/metadata.c:444
+#, fuzzy
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "創作共用授權條款 (CC BY-NC-SA)"
 
@@ -12747,6 +12751,7 @@ msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
 #: ../src/libs/metadata.c:446
+#, fuzzy
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "創作共用授權條款 (CC BY-NC-ND)"
 
@@ -12761,7 +12766,7 @@ msgstr "保留所有權利。"
 #. internal
 #: ../src/libs/metadata_view.c:99
 msgid "filmroll"
-msgstr "膠捲"
+msgstr "膠卷"
 
 #: ../src/libs/metadata_view.c:101
 msgid "group id"
@@ -12778,7 +12783,7 @@ msgstr "完整路徑"
 
 #: ../src/libs/metadata_view.c:107
 msgid "flags"
-msgstr "標記"
+msgstr "標籤"
 
 #: ../src/libs/metadata_view.c:117
 msgid "focus distance"
@@ -12826,7 +12831,7 @@ msgid ""
 "double click to jump to film roll\n"
 "%s"
 msgstr ""
-"雙擊跳至膠卷\n"
+"連點兩下跳至膠卷\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:292
@@ -12847,7 +12852,7 @@ msgstr "hdr"
 
 #: ../src/libs/metadata_view.c:297
 msgid "marked for deletion"
-msgstr "標記為刪除"
+msgstr "標籤為刪除"
 
 #: ../src/libs/metadata_view.c:298
 msgid "auto-applying presets applied"
@@ -12855,7 +12860,7 @@ msgstr "已套用自動套用預設"
 
 #: ../src/libs/metadata_view.c:299
 msgid "legacy flag. set for all new images"
-msgstr "傳統標記。為所有新影像設置"
+msgstr "傳統標籤。為所有新影像設置"
 
 #: ../src/libs/metadata_view.c:301
 msgid "has .txt"
@@ -12926,7 +12931,7 @@ msgstr ""
 #: ../src/libs/metadata_view.c:415
 #, c-format
 msgid "loader: %s"
-msgstr "載入： %s"
+msgstr "載入：%s"
 
 #: ../src/libs/metadata_view.c:704
 msgctxt "accel"
@@ -12943,7 +12948,7 @@ msgstr "僅顯示啟動的模組"
 
 #: ../src/libs/modulegroups.c:206
 msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr "只顯示您最喜歡的模組（在下面的「更多模組」中選擇）"
+msgstr "只顯示您最喜歡的模組（在下面的「更多模組」中選取）"
 
 #: ../src/libs/modulegroups.c:212
 msgid "basic group"
@@ -12959,7 +12964,7 @@ msgstr "色彩群組"
 
 #: ../src/libs/modulegroups.c:230
 msgid "correction group"
-msgstr "校正群組"
+msgstr "修正群組"
 
 #: ../src/libs/modulegroups.c:236
 msgid "effects group"
@@ -13148,38 +13153,38 @@ msgstr "列印設定"
 #: ../src/libs/print_settings.c:237 ../src/libs/print_settings.c:435
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "處理 「%s」，為 「%s」"
+msgstr "處理「%s」，為「%s」"
 
 #: ../src/libs/print_settings.c:279
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "無法開啟印表機配置檔 「%s」"
+msgstr "無法開啟印表機描述檔「%s」"
 
 #: ../src/libs/print_settings.c:288
 #, c-format
 msgid "error getting output profile for image %d"
-msgstr "取得影像 %d 的輸出配置檔時發生錯誤"
+msgstr "獲取影像 %d 的輸出描述檔時發生錯誤"
 
 #: ../src/libs/print_settings.c:296
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "無法套用印表機配置檔 「%s」"
+msgstr "無法套用印表機描述檔「%s」"
 
 #: ../src/libs/print_settings.c:316
 msgid "failed to create temporary pdf for printing"
-msgstr "無法建立用於列印的臨時pdf"
+msgstr "無法建立用於列印的臨時 pdf"
 
 #: ../src/libs/print_settings.c:390
 msgid "cannot print until a picture is selected"
-msgstr "在未選擇影像之前無法列印"
+msgstr "在未選取影像之前無法列印"
 
 #: ../src/libs/print_settings.c:395
 msgid "cannot print until a printer is selected"
-msgstr "在未選擇印表機之前無法列印"
+msgstr "在未選取印表機之前無法列印"
 
 #: ../src/libs/print_settings.c:400
 msgid "cannot print until a paper is selected"
-msgstr "在未選擇紙張之前無法列印"
+msgstr "在未選取紙張之前無法列印"
 
 #. in this case no need to release from cache what we couldn't get
 #: ../src/libs/print_settings.c:427
@@ -13207,7 +13212,7 @@ msgstr "印表機驅動程序中的色彩管理"
 #: ../src/libs/print_settings.c:1229
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "印表機ICC配置檔在 %s 或 %s"
+msgstr "印表機 ICC 描述檔在 %s 或 %s"
 
 #: ../src/libs/print_settings.c:1251
 msgid "black point compensation"
@@ -13215,7 +13220,7 @@ msgstr "黑點補償"
 
 #: ../src/libs/print_settings.c:1259
 msgid "activate black point compensation when applying the printer profile"
-msgstr "套用印表機配置檔時啟用黑點補償"
+msgstr "套用印表機描述檔時啟用黑點補償"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/libs/print_settings.c:1265
@@ -13241,7 +13246,7 @@ msgid ""
 " > 1 means that the image is upscaled\n"
 " a too large value may result in poor print quality"
 msgstr ""
-"本地印表機DPI的影像比例係數：\n"
+"本地印表機 DPI 的影像比例係數：\n"
 " < 1 表示被縮小（最佳品質）\n"
 " > 1 表示影像已放大\n"
 "太大的值可能導致列印品質不佳"
@@ -13316,81 +13321,81 @@ msgstr " 但非 "
 
 #: ../src/libs/select.c:104
 msgid "select all images in current collection"
-msgstr "選擇目前集合中的所有影像"
+msgstr "選取目前集合中的所有影像"
 
 #: ../src/libs/select.c:108
 msgid "select none"
-msgstr "不選擇"
+msgstr "不選取"
 
 #: ../src/libs/select.c:111
 msgid "clear selection"
-msgstr "清除選擇"
+msgstr "清除選取"
 
 #: ../src/libs/select.c:116
 msgid "invert selection"
-msgstr "反轉選擇"
+msgstr "反轉選取"
 
 #: ../src/libs/select.c:118
 msgid ""
 "select unselected images\n"
 "in current collection"
 msgstr ""
-"選擇目前集合中\n"
+"選取目前集合中\n"
 "未被選取的影像"
 
 #: ../src/libs/select.c:123
 msgid "select film roll"
-msgstr "選擇膠捲"
+msgstr "選取膠卷"
 
 #: ../src/libs/select.c:126
 msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"選擇同一膠卷中\n"
+"選取同一膠卷中\n"
 "全部的影像"
 
 #: ../src/libs/select.c:131
 msgid "select untouched"
-msgstr "選擇未變動的"
+msgstr "選取未變動的"
 
 #: ../src/libs/select.c:134
 msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"選擇目前集合中\n"
+"選取目前集合中\n"
 "未變動的影像"
 
 #. setup selection accelerators
 #: ../src/libs/select.c:251 ../src/libs/tools/filmstrip.c:209
 msgctxt "accel"
 msgid "select all"
-msgstr "選擇全部"
+msgstr "選取全部"
 
 #: ../src/libs/select.c:252 ../src/libs/tools/filmstrip.c:210
 msgctxt "accel"
 msgid "select none"
-msgstr "不選擇"
+msgstr "不選取"
 
 #: ../src/libs/select.c:253 ../src/libs/tools/filmstrip.c:212
 msgctxt "accel"
 msgid "invert selection"
-msgstr "反轉選擇"
+msgstr "反轉選取"
 
 #: ../src/libs/select.c:254 ../src/libs/tools/filmstrip.c:213
 msgctxt "accel"
 msgid "select film roll"
-msgstr "選擇膠捲"
+msgstr "選取膠卷"
 
 #: ../src/libs/select.c:255 ../src/libs/tools/filmstrip.c:214
 msgctxt "accel"
 msgid "select untouched"
-msgstr "選擇未變動的"
+msgstr "選取未變動項"
 
 #: ../src/libs/session.c:47
 msgid "session"
-msgstr "session"
+msgstr "工作階段"
 
 #: ../src/libs/session.c:109
 msgid "create"
@@ -13441,11 +13446,11 @@ msgstr ""
 
 #: ../src/libs/styles.c:323
 msgid "select style"
-msgstr "選擇風格"
+msgstr "選取風格"
 
 #: ../src/libs/styles.c:336
 msgid "darktable style files"
-msgstr "darktable樣式檔案"
+msgstr "darktable 樣式檔案"
 
 #: ../src/libs/styles.c:411
 msgid ""
@@ -13453,7 +13458,7 @@ msgid ""
 "doubleclick to apply"
 msgstr ""
 "可用樣式，\n"
-"雙擊套用"
+"連點兩下套用"
 
 #: ../src/libs/styles.c:417
 msgid "filter style names"
@@ -13505,7 +13510,7 @@ msgstr "匯出樣式到一個樣式檔案"
 
 #: ../src/libs/tagging.c:99
 msgid "tagging"
-msgstr "標籤"
+msgstr "標記"
 
 #: ../src/libs/tagging.c:124
 msgctxt "accel"
@@ -13559,7 +13564,7 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"真的要刪除標籤 「%s」？\n"
+"真的要刪除「%s」標籤？\n"
 "%d 張影像正在使用此標籤！"
 
 #: ../src/libs/tagging.c:1230
@@ -13709,7 +13714,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2143
 msgid "Select a keyword file"
-msgstr "選擇關鍵字檔案"
+msgstr "選取關鍵字檔案"
 
 #: ../src/libs/tagging.c:2146
 msgid "_import"
@@ -13726,7 +13731,7 @@ msgstr "%zd 標籤已匯入"
 
 #: ../src/libs/tagging.c:2184
 msgid "Select file to export to"
-msgstr "選擇要匯出的檔案"
+msgstr "選取要匯出的檔案"
 
 #: ../src/libs/tagging.c:2187
 msgid "_export"
@@ -13807,7 +13812,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2715
 msgid "import tags from a Lightroom keyword file"
-msgstr "從Lightroom關鍵字檔案匯入標籤"
+msgstr "從 Lightroom 關鍵字檔案匯入標籤"
 
 #: ../src/libs/tagging.c:2720
 msgctxt "verb"
@@ -13816,7 +13821,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2723
 msgid "export all tags to a Lightroom keyword file"
-msgstr "匯入所有的標籤至Lightroom關鍵字檔案"
+msgstr "匯入所有的標籤至 Lightroom 關鍵字檔案"
 
 #: ../src/libs/tagging.c:2730
 msgid "toggle list / tree view"
@@ -13892,7 +13897,7 @@ msgstr "darktable"
 #: ../src/libs/tools/darktable.c:251
 #, c-format
 msgid "copyright (c) the authors 2009-%s"
-msgstr "作者版權所有 (c) 2009-%s"
+msgstr "著作權所有 (c) 作者群 2009-%s"
 
 #: ../src/libs/tools/darktable.c:255
 msgid "organize and develop images from digital cameras"
@@ -13900,7 +13905,9 @@ msgstr "組織和開發數位相機匯出的影像"
 
 #: ../src/libs/tools/darktable.c:270
 msgid "translator-credits"
-msgstr "翻譯貢獻者"
+msgstr ""
+"Shou-Chieh Hsu <duidae@gmail.com>, 2019.\n"
+"Cheng-Chia Tseng <zerngjia@gmail.com>, 2019."
 
 #: ../src/libs/tools/filmstrip.c:146
 msgid "filmstrip"
@@ -14066,7 +14073,7 @@ msgstr "顯示影像疊加"
 
 #: ../src/libs/tools/global_toolbox.c:108
 msgid "enable this, then click on a control element to see its online help"
-msgstr "啟用此功能，然後單擊控制元件以查看其線上協助"
+msgstr "啟用此功能，然後點按控制元件以查看其線上協助"
 
 #: ../src/libs/tools/global_toolbox.c:118
 msgid "show global preferences"
@@ -14192,16 +14199,16 @@ msgstr "其他"
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
 msgid "reset lib parameters"
-msgstr "重設lib參數"
+msgstr "重設 lib 參數"
 
 #: ../src/lua/preferences.c:644
 msgid "select file"
-msgstr "選擇檔案"
+msgstr "選取檔案"
 
 #: ../src/lua/preferences.c:724
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "雙擊以重設為 「%f」"
+msgstr "連點兩下重設回「%f」"
 
 #: ../src/lua/preferences.c:800
 msgid "lua options"
@@ -14226,7 +14233,7 @@ msgstr "沒有發現使用者的預設喜好模組"
 #: ../src/views/darkroom.c:1139
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "在當前影像使用 「%s」 樣式"
+msgstr "在當前影像使用「%s」樣式"
 
 #: ../src/views/darkroom.c:1251
 msgid "no styles have been created yet"
@@ -14253,16 +14260,16 @@ msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"在曝光指示上切換raw\n"
+"在曝光指示上切換 raw\n"
 "右鍵查看選項"
 
 #: ../src/views/darkroom.c:1969
 msgid "mark with CFA color"
-msgstr "用CFA色彩標記"
+msgstr "用 CFA 色彩標籤"
 
 #: ../src/views/darkroom.c:1970
 msgid "mark with solid color"
-msgstr "用純色標記"
+msgstr "用純色標籤"
 
 #: ../src/views/darkroom.c:1971
 msgid "false color"
@@ -14270,7 +14277,7 @@ msgstr "假色"
 
 #: ../src/views/darkroom.c:1973
 msgid "select how to mark the clipped pixels"
-msgstr "選擇如何標記剪切的像素"
+msgstr "選取如何標籤剪切的像素"
 
 #: ../src/views/darkroom.c:1980 ../src/views/darkroom.c:2032
 msgid "color scheme"
@@ -14301,8 +14308,8 @@ msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
-"選擇純色以指示曝光過度。\n"
-"僅當模式=標記為純色時才會使用"
+"選取純色以指示曝光過度。\n"
+"僅當模式=標籤為純色時才會使用"
 
 #: ../src/views/darkroom.c:1998
 msgid ""
@@ -14332,7 +14339,7 @@ msgstr "紫 & 綠"
 
 #: ../src/views/darkroom.c:2037
 msgid "select colors to indicate over/under exposure"
-msgstr "選擇色彩來表示曝光過度/不足"
+msgstr "選取色彩來表示曝光過度/不足"
 
 #: ../src/views/darkroom.c:2046
 msgid "lower threshold"
@@ -14356,7 +14363,7 @@ msgid ""
 "right click for profile options"
 msgstr ""
 "切換軟式打樣\n"
-"右鍵查看配置檔選項"
+"右鍵查看描述檔選項"
 
 #: ../src/views/darkroom.c:2081
 msgid ""
@@ -14364,7 +14371,7 @@ msgid ""
 "right click for profile options"
 msgstr ""
 "切換色域檢查\n"
-"右鍵查看配置檔選項"
+"右鍵查看描述檔選項"
 
 #: ../src/views/darkroom.c:2109 ../src/views/lighttable.c:4903
 msgid "display intent"
@@ -14376,7 +14383,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2137 ../src/views/lighttable.c:4919
 msgid "display profile"
-msgstr "顯示配置"
+msgstr "顯示描述檔"
 
 #: ../src/views/darkroom.c:2138 ../src/views/lighttable.c:4923
 msgid "preview display profile"
@@ -14389,7 +14396,7 @@ msgstr ""
 #: ../src/views/darkroom.c:2193 ../src/views/lighttable.c:4953
 #, c-format
 msgid "display ICC profiles in %s or %s"
-msgstr "顯示ICC配置檔在 %s 或 %s"
+msgstr "顯示 ICC 描述檔在 %s 或 %s"
 
 #: ../src/views/darkroom.c:2196 ../src/views/lighttable.c:4956
 #, c-format
@@ -14399,7 +14406,7 @@ msgstr ""
 #: ../src/views/darkroom.c:2199
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
-msgstr "軟式打樣ICC配置檔在 %s 或 %s"
+msgstr "軟式打樣 ICC 描述檔在 %s 或 %s"
 
 #: ../src/views/darkroom.c:2202
 #, c-format
@@ -14451,7 +14458,7 @@ msgstr ""
 #: ../src/views/darkroom.c:3332
 msgctxt "accel"
 msgid "raw overexposed"
-msgstr "raw曝光過度"
+msgstr "raw 曝光過度"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3335
@@ -14668,12 +14675,12 @@ msgstr "影像重新排列為網格"
 #: ../src/views/lighttable.c:4437
 msgctxt "accel"
 msgid "select toggle image"
-msgstr "選擇切換影像"
+msgstr "選取切換影像"
 
 #: ../src/views/lighttable.c:4438
 msgctxt "accel"
 msgid "select single image"
-msgstr "選擇單一影像"
+msgstr "選取單一影像"
 
 #. Preview key
 #: ../src/views/lighttable.c:4441
@@ -14825,7 +14832,7 @@ msgstr "連機拍攝"
 #: ../src/views/tethering.c:150
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "新的工作階段啟動 「%s」"
+msgstr "新的工作階段啟動「%s」"
 
 #: ../src/views/tethering.c:252
 msgid "no camera with tethering support available for use..."
@@ -14892,16 +14899,16 @@ msgid "Action"
 msgstr ""
 
 #~ msgid "width of the side panels in pixels"
-#~ msgstr "邊欄寬度（像素）"
+#~ msgstr "側面板寬度，單位為像素"
 
 #~ msgid "(needs a restart)"
-#~ msgstr "（請重新啟動程式以生效）"
+#~ msgstr "（需要重新啟動程式）"
 
 #~ msgid "enable filmstrip"
 #~ msgstr "啟用幻燈片"
 
 #~ msgid "enable the filmstrip in darkroom, tethering and map modes."
-#~ msgstr "在暗房、連機拍攝與地圖模式中啟用幻燈片"
+#~ msgstr "在暗房、連機拍攝與地圖模式中啟用幻燈片。"
 
 #~ msgid ""
 #~ "when exporting images the hierarchical tags are also added as a simple "
@@ -14920,23 +14927,23 @@ msgstr ""
 #~ "pixelpipes in parallel on two different GPUs; very fast GPU - process "
 #~ "both pixelipes sequentially on the GPU."
 #~ msgstr ""
-#~ "定義在啟用OpenCL之系統的情況下，如何預覽和完整pixelpipe任務是如何被排程"
-#~ "的。預設 - 完全GPU運算與CPU運算預覽管道（可通過配置參數進行調整）；多個"
-#~ "GPU  - 在兩個不同的GPU上平行處理兩個pixelpipe；極速GPU  - 在GPU上依次處理"
-#~ "兩個pixelpipe"
+#~ "定義在啟用 OpenCL 之系統的情況下，如何預覽和完整 pixelpipe 任務是如何被排"
+#~ "程的。預設 - 完全 GPU 運算與 CPU 運算預覽管道（可通過配置參數進行調整）；"
+#~ "多個GPU - 在兩個不同的GPU上平行處理兩個 pixelpipe；極速 GPU - 在 GPU 上依"
+#~ "次處理兩個 pixelpipe"
 
 #~ msgid ""
 #~ "the image will first be processed in full resolution, and downscaled at "
 #~ "the very end. this can result in better quality sometimes, but will "
 #~ "always be slower."
 #~ msgstr ""
-#~ "首先在全解析度下處理影像, 最後再縮小。如此有時能得到更高的品質,但速度會較"
+#~ "首先在全解析度下處理影像，最後再縮小。如此有時能得到更高的品質，但速度會較"
 #~ "慢。"
 
 #~ msgid ""
 #~ "darktable supports most modern camera's raw formats, and does all of its "
 #~ "processing at very high precision."
-#~ msgstr "darktable支援大多數現代相機的原始格式，並以高精度處理。"
+#~ msgstr "darktable 支援大多數現代相機的原始格式，並以高精度處理。"
 
 #~ msgid "working.."
 #~ msgstr "工作中.."
@@ -14950,12 +14957,12 @@ msgstr ""
 #~ msgstr "顯示遮罩目前被另一個模組關閉"
 
 #~ msgid "double click to reset"
-#~ msgstr "滑鼠雙擊以重設"
+#~ msgstr "連點兩下以重設"
 
 #~ msgid ""
 #~ "activate blending: uniformly, with drawn mask, with parametric mask, or "
 #~ "combination of both"
-#~ msgstr "啟用渲染：統一渲染，使用繪製遮罩，使用參數遮罩，或者兩者組合"
+#~ msgstr "啟用算繪：統一算繪，使用繪製遮罩，使用參數遮罩，或者兩者組合"
 
 #~ msgid "mask brightness"
 #~ msgstr "遮罩亮度"
@@ -14965,8 +14972,8 @@ msgstr ""
 #~ "click to display channel. hover over parametric mask slider to select "
 #~ "channel for display"
 #~ msgstr ""
-#~ "顯示遮罩和/或顏色通道。按住Ctrl鍵滑鼠單擊以顯示遮罩，按住Shift鍵並滑鼠單擊"
-#~ "顯示通道。將游標停在參數化遮罩滑動條上以選擇為顯示的通道"
+#~ "顯示遮罩和/或色彩通道。按住Ctrl鍵滑鼠點按以顯示遮罩，按住Shift鍵並滑鼠點按"
+#~ "顯示通道。將游標停在參數化遮罩滑動條上以選取為顯示的通道"
 
 #~ msgid "blend options"
 #~ msgstr "混合選項"
@@ -14988,8 +14995,8 @@ msgstr ""
 #~ "shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
 #~ "shift+scroll to set feather size, ctrl+click to rotate"
 #~ msgstr ""
-#~ "shift + 滑鼠單擊切換羽化模式，ctrl + 滾輪以設定形狀不透明度，\n"
-#~ "shift + 滾輪以設定羽化尺寸，ctrl + 滑鼠單擊以旋轉"
+#~ "shift + 滑鼠點按切換羽化模式，ctrl + 滾輪以設定形狀不透明度，\n"
+#~ "shift + 滾輪以設定羽化尺寸，ctrl + 滑鼠點按以旋轉"
 
 #~ msgid ""
 #~ "scroll to set brush size, shift+scroll to set hardness,\n"
@@ -15014,15 +15021,15 @@ msgstr ""
 #~ "have to login into your facebook account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "步驟 1： 您的瀏覽器的新視窗或分頁應該已載入。您必須登入到你的facebook帳戶"
-#~ "並授權darktable上傳照片再繼續。"
+#~ "步驟 1：您的瀏覽器的新視窗或分頁應該已載入。您必須登入到你的facebook帳戶並"
+#~ "授權darktable上傳照片再繼續。"
 
 #~ msgid ""
 #~ "step 2: paste your browser URL and click the OK button once you are done."
-#~ msgstr "步驟2： 當您完成操作後,貼上瀏覽器中的網址並點擊OK。"
+#~ msgstr "步驟2：當您完成操作後，貼上瀏覽器中的網址並點按「確定」。"
 
 #~ msgid "facebook authentication"
-#~ msgstr "Facebook授權"
+#~ msgstr "Facebook 身份核對"
 
 #~ msgid "URL:"
 #~ msgstr "網址："
@@ -15060,7 +15067,7 @@ msgstr ""
 #~ msgstr "登出"
 
 #~ msgid "facebook webalbum"
-#~ msgstr "facebook線上相簿"
+#~ msgstr "facebook 線上相簿"
 
 #~ msgid "summary"
 #~ msgstr "摘要"
@@ -15093,21 +15100,21 @@ msgstr ""
 
 #, c-format
 #~ msgid "flickr authentication: %s"
-#~ msgstr "flickr 授權：%s"
+#~ msgstr "flickr 身份核對：%s"
 
 #~ msgid ""
 #~ "step 1: a new window or tab of your browser should have been loaded. you "
 #~ "have to login into your flickr account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "步驟1： 您的瀏覽器的新視窗或分頁應該已載入。在繼續前您必須在登入您的flickr"
+#~ "步驟1：您的瀏覽器的新視窗或分頁應該已載入。在繼續前您必須在登入您的flickr"
 #~ "帳號並且授權darktable上傳照片。"
 
 #~ msgid "step 2: click the OK button once you are done."
-#~ msgstr "步驟2： 當你完成操作後，點擊OK按鈕。"
+#~ msgstr "步驟2：當你完成操作後，點按「確定」按鈕。"
 
 #~ msgid "flickr authentication"
-#~ msgstr "flickr 授權"
+#~ msgstr "flickr 身份核對"
 
 #~ msgid "flickr webalbum"
 #~ msgstr "flickr 線上相簿"
@@ -15116,10 +15123,10 @@ msgstr ""
 #~ msgstr "沒有相簿"
 
 #~ msgid "flickr user"
-#~ msgstr "flickr使用者"
+#~ msgstr "flickr 使用者"
 
 #~ msgid "flickr login"
-#~ msgstr "登入Flickr"
+#~ msgstr "登入 Flickr"
 
 #~ msgid "export tags"
 #~ msgstr "匯出標籤"
@@ -15134,34 +15141,34 @@ msgstr ""
 #~ msgstr "我的新照片集"
 
 #~ msgid "exported from darktable"
-#~ msgstr "由darktable匯出"
+#~ msgstr "由 darktable 匯出"
 
 #~ msgid "could not upload to flickr!"
-#~ msgstr "無法上傳至flickr！"
+#~ msgstr "無法上傳至 flickr！"
 
 #, c-format
 #~ msgid "%d/%d exported to flickr webalbum"
 #~ msgid_plural "%d/%d exported to flickr webalbum"
-#~ msgstr[0] "%d/%d 匯出至flickr線上相簿"
+#~ msgstr[0] "%d/%d 匯出至 flickr 線上相簿"
 
 #~ msgid ""
 #~ "step 1: a new window or tab of your browser should have been loaded. you "
 #~ "have to login into your google+ account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "步驟1： 您的瀏覽器的新視窗或分頁應該已載入。在繼續前您必須在登入您的google"
+#~ "步驟1：您的瀏覽器的新視窗或分頁應該已載入。在繼續前您必須在登入您的google"
 #~ "+帳號並且授權darktable上傳照片。"
 
 #~ msgid ""
 #~ "step 2: paste the verification code shown to you in the browser and click "
 #~ "the OK button once you are done."
-#~ msgstr "步驟2： 在瀏覽器上貼上顯示的驗證碼後並點擊OK按鈕。"
+#~ msgstr "步驟2：在瀏覽器上貼上顯示的驗證碼後並點按「確定」按鈕。"
 
 #~ msgid "google+ authentication"
-#~ msgstr "google+授權"
+#~ msgstr "google+ 身份核對"
 
 #~ msgid "verification code:"
-#~ msgstr "驗證完成"
+#~ msgstr "驗證碼："
 
 #~ msgid "please enter the verification code"
 #~ msgstr "請輸入驗證碼"
@@ -15170,33 +15177,33 @@ msgstr ""
 #~ msgstr "drop box"
 
 #~ msgid "google+ photos"
-#~ msgstr "google+相片"
+#~ msgstr "google+ 相片"
 
 #~ msgid "unable to export photo to google+ album"
-#~ msgstr "無法匯出相片至google+相簿"
+#~ msgstr "無法匯出相片至 google+ 相簿"
 
 #, c-format
 #~ msgid "%d/%d exported to google+ album"
 #~ msgid_plural "%d/%d exported to google+ album"
-#~ msgstr[0] "%d/%d 匯出至google+相簿"
+#~ msgstr[0] "%d/%d 匯出至 google+ 相簿"
 
 #~ msgid ""
 #~ "automatically correct for vertical perspective distortion\n"
 #~ "ctrl-click to only fit rotation\n"
 #~ "shift-click to only fit lens shift"
 #~ msgstr ""
-#~ "自動校正垂直透視變形\n"
-#~ "ctrl + 滑鼠單擊以適應旋轉\n"
-#~ "shift + 滑鼠單擊以適應鏡頭移位"
+#~ "自動修正垂直透視變形\n"
+#~ "ctrl + 滑鼠點按以適應旋轉\n"
+#~ "shift + 滑鼠點按以適應鏡頭移位"
 
 #~ msgid ""
 #~ "automatically correct for horizontal perspective distortion\n"
 #~ "ctrl-click to only fit rotation\n"
 #~ "shift-click to only fit lens shift"
 #~ msgstr ""
-#~ "自動校正水平透視變形\n"
-#~ "ctrl + 滑鼠單擊以適應旋轉\n"
-#~ "shift + 滑鼠單擊以適應鏡頭移位"
+#~ "自動修正水平透視變形\n"
+#~ "ctrl + 滑鼠點按以適應旋轉\n"
+#~ "shift + 滑鼠點按以適應鏡頭移位"
 
 #~ msgid ""
 #~ "automatically correct for vertical and horizontal perspective "
@@ -15205,10 +15212,10 @@ msgstr ""
 #~ "shift-click to only fit lens shift\n"
 #~ "ctrl-shift-click to only fit rotation and lens shift"
 #~ msgstr ""
-#~ "自動校正垂直與水平透視變形；適應旋轉，兩個方向的鏡頭移位，以及剪切ctrl + "
-#~ "滑鼠單擊以適應旋轉\n"
-#~ "shift + 滑鼠單擊以適應鏡頭移位\n"
-#~ "ctrl + shift + 滑鼠單擊以適應旋轉與鏡頭移位"
+#~ "自動修正垂直與水平透視變形；適應旋轉，兩個方向的鏡頭移位，以及剪切ctrl + "
+#~ "滑鼠點按以適應旋轉\n"
+#~ "shift + 滑鼠點按以適應鏡頭移位\n"
+#~ "ctrl + shift + 滑鼠點按以適應旋轉與鏡頭移位"
 
 #~ msgid ""
 #~ "analyse line structure in image\n"
@@ -15217,15 +15224,15 @@ msgstr ""
 #~ "ctrl-shift-click for a combination of both methods"
 #~ msgstr ""
 #~ "分析影像中的線條結構\n"
-#~ "ctrl + 滑鼠單擊以獲得額外的邊緣增強\n"
-#~ "shift + 滑鼠單擊以獲得更多細節增強功能\n"
-#~ "ctrl + shift + 滑鼠單擊以獲取兩種方法的組合"
+#~ "ctrl + 滑鼠點按以獲得額外的邊線增強\n"
+#~ "shift + 滑鼠點按以獲得更多細節增強功能\n"
+#~ "ctrl + shift + 滑鼠點按以獲取兩種方法的組合"
 
 #~ msgid "equalizer"
 #~ msgstr "等化器"
 
 #~ msgid "local laplacian: inconsistent output"
-#~ msgstr "區域拉普拉斯算子：輸出不一致"
+#~ msgstr "局部拉普拉斯運算：輸出不一致"
 
 #~ msgid "B/W"
 #~ msgstr "B/W"
@@ -15248,10 +15255,10 @@ msgstr ""
 #~ msgstr ""
 #~ "(%2.2f %2.2f %2.2f)\n"
 #~ "改變的修補程式標有大綱\n"
-#~ "點擊選擇\n"
-#~ "雙擊重設\n"
-#~ "右鍵單擊刪除修補程式\n"
-#~ "在以顏色選擇時按住Shift+單擊來替換修補程式"
+#~ "點按選取\n"
+#~ "連點兩下重設\n"
+#~ "右鍵點按刪除修補程式\n"
+#~ "在以色彩選取時按住 Shift+點按 來替換修補程式"
 
 #~ msgid ""
 #~ "drag the line for split toning. bright means highlights, dark means "
@@ -15259,7 +15266,7 @@ msgstr ""
 #~ msgstr "拖曳色調分割線。明亮表示亮點，黑表示陰影。使用滑鼠滾輪改變飽和度。"
 
 #~ msgid "output profile"
-#~ msgstr "輸出配置檔"
+#~ msgstr "輸出描述檔"
 
 #~ msgid "chroma (use on 1st instance)"
 #~ msgstr "色度（使用在第一個實體）"
@@ -15274,7 +15281,7 @@ msgstr ""
 #~ msgstr "適應黑色色階"
 
 #~ msgid "double click to reset curve"
-#~ msgstr "雙擊重設曲線"
+#~ msgstr "連點兩下重設曲線"
 
 #~ msgid ""
 #~ "number of stops between middle grey and pure white\n"
@@ -15291,7 +15298,7 @@ msgstr ""
 #~ "useful in conjunction with \"auto tune levels\""
 #~ msgstr ""
 #~ "放大或縮小計算的動態範圍\n"
-#~ "有助於連結\"自動調整等級\""
+#~ "有助於連結「自動調整等級」"
 
 #~ msgid "slope of the linear part of the curve"
 #~ msgstr "曲線的線性部分的斜率"
@@ -15312,7 +15319,9 @@ msgstr ""
 #~ msgid ""
 #~ "desaturates the output, if the contrast adjustment\n"
 #~ "produces over-saturation in shadows"
-#~ msgstr "若對比度調整在陰影中產生過飽和度，則對輸出去飽和化\n"
+#~ msgstr ""
+#~ "若對比度調整在陰影中產生過飽和度，\n"
+#~ "則對輸出去飽和化"
 
 #~ msgid "black luminance"
 #~ msgstr "黑色亮度"
@@ -15341,7 +15350,9 @@ msgstr ""
 #~ msgid ""
 #~ "compression of graduation:\n"
 #~ "0% = soft, 100% = hard"
-#~ msgstr "壓縮等級0%=軟 100%=硬"
+#~ msgstr ""
+#~ "漸變等級：\n"
+#~ "0%= 軟，100% = 硬"
 
 #~ msgid "module disabled for monochrome image"
 #~ msgstr "對單色影像停用模組"
@@ -15373,7 +15384,7 @@ msgstr ""
 #~ "scrool to change size\n"
 #~ "shift-scroll to change strength - ctrl-scroll to change direction"
 #~ msgstr ""
-#~ "單擊並拖動以添加點\n"
+#~ "點按並拖動以添加點\n"
 #~ "以滾輪改變大小\n"
 #~ "shift-滾輪改變強度 - ctrl-滾輪改變方向"
 
@@ -15382,7 +15393,7 @@ msgstr ""
 #~ "scrool to change size\n"
 #~ "shift-scroll to change strength - ctrl-scroll to change direction"
 #~ msgstr ""
-#~ "單擊並拖動以添加線\n"
+#~ "點按並拖動以添加線\n"
 #~ "以滾輪改變大小\n"
 #~ "shift-滾輪改變強度 - ctrl-滾輪改變方向"
 
@@ -15391,7 +15402,7 @@ msgstr ""
 #~ "scrool to change size\n"
 #~ "shift-scroll to change strength - ctrl-scroll to change direction"
 #~ msgstr ""
-#~ "單擊並拖動以添加曲線\n"
+#~ "點按並拖動以添加曲線\n"
 #~ "以滾輪改變大小\n"
 #~ "shift-滾輪改變強度 - ctrl-滾輪改變方向"
 
@@ -15399,22 +15410,22 @@ msgstr ""
 #~ "ctrl-click: add node - right click: remove path\n"
 #~ "ctrl-alt-click: toggle line/curve"
 #~ msgstr ""
-#~ "ctrl鍵單擊：添加節點 - 右鍵單擊：刪除路徑\n"
-#~ "ctrl-alt-click：切換線/曲線"
+#~ "ctrl鍵點按：添加節點 - 右鍵點按：刪除路徑\n"
+#~ "ctrl-alt-點按：切換線/曲線"
 
 #~ msgid ""
 #~ "click and drag to move - click: show/hide feathering controls\n"
 #~ "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 #~ msgstr ""
-#~ "單擊並拖曳以移動 - 單擊：顯示/隱藏羽化控制\n"
-#~ "ctrl鍵單擊：自動平滑，尖點，平滑，對稱 - 右鍵單擊刪除"
+#~ "點按並拖曳以移動 - 點按：顯示/隱藏羽化控制\n"
+#~ "ctrl 點按：自動平滑，尖點，平滑，對稱 - 右鍵點按刪除"
 
 #~ msgid ""
 #~ "drag to adjust warp strength\n"
 #~ "ctrl-click: linear, grow, and shrink"
 #~ msgstr ""
 #~ "拖曳以調整彎曲強度\n"
-#~ "ctrl鍵單擊：線性，增長和縮小"
+#~ "ctrl 點按：線性，增長和縮小"
 
 #~ msgctxt "accel"
 #~ msgid "grey point"
@@ -15432,7 +15443,7 @@ msgstr ""
 #~ "當雜訊干擾測量時，這是有用的"
 
 #~ msgid "select the center of fill-light"
-#~ msgstr "選擇補光的中心位置"
+#~ msgstr "選取補光的中心位置"
 
 #~ msgid ""
 #~ "automatic pixel rotation\n"
@@ -15465,7 +15476,7 @@ msgstr ""
 #~ msgstr "用選擇的色彩擦除細節或填充"
 
 #~ msgid "Lab, independant channels"
-#~ msgstr "Lab色彩空間，獨立通道"
+#~ msgstr "Lab 色彩空間，獨立通道"
 
 #~ msgid "log-log (xy)"
 #~ msgstr "log-log (xy)"
@@ -15483,10 +15494,10 @@ msgstr ""
 #~ msgstr "載入附屬檔案"
 
 #~ msgid "create a 'virgin' duplicate of the image without any developpement"
-#~ msgstr "在沒有任何修改的情況下建立影像的\"第一個\"副本"
+#~ msgstr "在沒有任何修改的情況下建立影像的「原初」複本"
 
 #~ msgid "apply GPX track file"
-#~ msgstr "應用GPX路徑檔案"
+#~ msgstr "套用 GPX 路徑檔案"
 
 #~ msgid "move"
 #~ msgstr "移動"
@@ -15518,14 +15529,14 @@ msgstr ""
 #~ "doubleclick to detach"
 #~ msgstr ""
 #~ "附加標籤\n"
-#~ "雙擊分離"
+#~ "連點兩下分離"
 
 #~ msgid ""
 #~ "related tags,\n"
 #~ "doubleclick to attach"
 #~ msgstr ""
 #~ "相關標籤\n"
-#~ "雙擊附加"
+#~ "連點兩下附加"
 
 #~ msgid "delete selected tag"
 #~ msgstr "刪除選中的標籤"
@@ -15552,7 +15563,7 @@ msgstr ""
 #~ msgstr "您操作錯誤！"
 
 #~ msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
-#~ msgstr "是，我了解。請讓我用32位元darktable來凌遲自己吧。(_Y)"
+#~ msgstr "是，我了解(_Y)。請讓我用 32 位元 darktable 來凌遲自己吧。"
 
 #~ msgid ""
 #~ "warning!\n"
@@ -15565,9 +15576,9 @@ msgstr ""
 #~ "fixed.\n"
 #~ msgstr ""
 #~ "警告！\n"
-#~ "您正在使用32位元版本的darktable。\n"
-#~ "32位元版本的虛擬地址空間非常有限。\n"
-#~ "我們已經有相當多的回報指出，使用32位元版本的darktable會出現零星的問題和崩"
-#~ "潰。\n"
-#~ "我們強烈建議您切換到適當的64位元版本。\n"
+#~ "您正在使用 32 位元版本的 darktable。\n"
+#~ "32 位元版本的虛擬地址空間非常有限。\n"
+#~ "我們已經有相當多的回報指出，使用 32 位元版本的 darktable 會出現零星問題和"
+#~ "崩潰。\n"
+#~ "我們強烈建議您切換到適當的 64 位元版本。\n"
 #~ "否則，您保證會遇到無法解決的問題。\n"
