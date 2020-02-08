@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-09 01:38+0800\n"
-"PO-Revision-Date: 2020-02-09 02:06+0800\n"
+"PO-Revision-Date: 2020-02-09 02:17+0800\n"
 "Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Traditional Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -30,7 +30,7 @@ msgstr "自數碼相機整理和編輯影像"
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "圖形;照片;相片;攝影;raw；"
+msgstr "圖形;照片;相片;攝影;graphics;photography;raw;"
 
 #: ../build/src/preferences_gen.h:1956
 msgid "GUI options"
@@ -797,7 +797,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3438
 msgid "xmp"
-msgstr ""
+msgstr "xmp"
 
 #: ../build/src/preferences_gen.h:3447
 msgid "write sidecar file for each image"
@@ -1125,12 +1125,12 @@ msgstr "列印您的影像"
 #: ../src/bauhaus/bauhaus.c:2265
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2267
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1514
 #: ../src/control/jobs/control_jobs.c:1574 ../src/gui/hist_dialog.c:171
@@ -1409,31 +1409,31 @@ msgstr "備用色彩矩陣"
 
 #: ../src/common/colorspaces.c:1630
 msgid "BRG (experimental)"
-msgstr ""
+msgstr "BRG (實驗中)"
 
 #: ../src/common/colorspaces.c:1640
 msgid "gamma22 Rec709"
-msgstr ""
+msgstr "gamma22 Rec709"
 
 #: ../src/common/colorspaces.c:1642
 msgid "ProPhoto RGB"
-msgstr ""
+msgstr "ProPhoto RGB"
 
 #: ../src/common/colorspaces.c:1644
 msgid "PQ Rec2020"
-msgstr ""
+msgstr "PQ Rec2020"
 
 #: ../src/common/colorspaces.c:1646
 msgid "HLG Rec2020"
-msgstr ""
+msgstr "HLG Rec2020"
 
 #: ../src/common/colorspaces.c:1648
 msgid "PQ P3"
-msgstr ""
+msgstr "PQ P3"
 
 #: ../src/common/colorspaces.c:1650
 msgid "HLG P3"
-msgstr ""
+msgstr "HLG P3"
 
 #: ../src/common/cups_print.c:408
 #, c-format
@@ -1447,7 +1447,7 @@ msgstr "無法為列印選項產生暫時文件"
 #: ../src/common/cups_print.c:495
 #, c-format
 msgid "printing on `%s' cancelled"
-msgstr ""
+msgstr "「%s」的列印已取消"
 
 #: ../src/common/cups_print.c:558
 #, c-format
@@ -1564,11 +1564,11 @@ msgstr ""
 
 #: ../src/common/database.c:2040
 msgid "darktable - schema migration"
-msgstr ""
+msgstr "darktable - schema 遷移"
 
 #: ../src/common/database.c:2041
 msgid "upgrade database"
-msgstr ""
+msgstr "升級資料庫"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
@@ -1894,7 +1894,7 @@ msgstr "m"
 
 #: ../src/control/control.c:295
 msgid "working..."
-msgstr ""
+msgstr "處理中..."
 
 #: ../src/control/control.c:673
 #, c-format
@@ -2028,7 +2028,7 @@ msgstr "實體刪除"
 
 #: ../src/control/jobs/control_jobs.c:749
 msgid "physically delete all files"
-msgstr ""
+msgstr "實體刪除所有檔案"
 
 #: ../src/control/jobs/control_jobs.c:751
 msgid "only remove from the collection"
@@ -5383,7 +5383,7 @@ msgstr "縮放以在圖表中使用。使用對數尺度以在黑色區塊進行
 #: ../src/iop/rgbcurve.c:1646 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1430
 msgid "preserve colors"
-msgstr ""
+msgstr "保留色彩"
 
 #: ../src/iop/basecurve.c:2166 ../src/iop/basecurve.c:2179
 #: ../src/iop/basicadj.c:753 ../src/iop/clipping.c:1741
@@ -5478,7 +5478,7 @@ msgstr "曝光偏差"
 
 #: ../src/iop/basicadj.c:95
 msgid "basic adjustments"
-msgstr ""
+msgstr "基本調整"
 
 #: ../src/iop/basicadj.c:115
 msgctxt "accel"
@@ -5549,7 +5549,7 @@ msgstr ""
 #: ../src/iop/soften.c:749
 #, c-format
 msgid "%.2f EV"
-msgstr ""
+msgstr "%.2f EV"
 
 #: ../src/iop/basicadj.c:733 ../src/iop/exposure.c:886
 msgid "adjust the exposure correction"
@@ -6149,35 +6149,35 @@ msgstr "B/W 藍色偽影減小"
 
 #: ../src/iop/channelmixer.c:540
 msgid "B/W Ilford Delta 100-400"
-msgstr ""
+msgstr "B/W Ilford Delta 100-400"
 
 #: ../src/iop/channelmixer.c:546
 msgid "B/W Ilford Delta 3200"
-msgstr ""
+msgstr "B/W Ilford Delta 3200"
 
 #: ../src/iop/channelmixer.c:552
 msgid "B/W Ilford FP4"
-msgstr ""
+msgstr "B/W Ilford FP4"
 
 #: ../src/iop/channelmixer.c:558
 msgid "B/W Ilford HP5"
-msgstr ""
+msgstr "B/W Ilford HP5"
 
 #: ../src/iop/channelmixer.c:564
 msgid "B/W Ilford SFX"
-msgstr ""
+msgstr "B/W Ilford SFX"
 
 #: ../src/iop/channelmixer.c:570
 msgid "B/W Kodak T-Max 100"
-msgstr ""
+msgstr "B/W Kodak T-Max 100"
 
 #: ../src/iop/channelmixer.c:576
 msgid "B/W Kodak T-max 400"
-msgstr ""
+msgstr "B/W Kodak T-max 400"
 
 #: ../src/iop/channelmixer.c:582
 msgid "B/W Kodak Tri-X 400"
-msgstr ""
+msgstr "B/W Kodak Tri-X 400"
 
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
@@ -6218,11 +6218,11 @@ msgstr "已套用的修正"
 
 #: ../src/iop/clipping.c:2031
 msgid "main"
-msgstr ""
+msgstr "主要"
 
 #: ../src/iop/clipping.c:2032
 msgid "margins"
-msgstr ""
+msgstr "邊緣"
 
 #: ../src/iop/clipping.c:2041 ../src/libs/live_view.c:374
 msgid "flip"
@@ -6247,7 +6247,7 @@ msgstr "右擊在影像上拖曳可以得到一條直線"
 
 #: ../src/iop/clipping.c:2058
 msgid "left"
-msgstr ""
+msgstr "左側"
 
 #: ../src/iop/clipping.c:2061
 msgid "the left margin cannot overlap with the right margin"
@@ -6255,7 +6255,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2065
 msgid "right"
-msgstr ""
+msgstr "右側"
 
 #: ../src/iop/clipping.c:2068
 msgid "the right margin cannot overlap with the left margin"
@@ -6263,7 +6263,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2072
 msgid "top"
-msgstr ""
+msgstr "上方"
 
 #: ../src/iop/clipping.c:2075
 msgid "the top margin cannot overlap with the bottom margin"
@@ -6271,7 +6271,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2079
 msgid "bottom"
-msgstr ""
+msgstr "下方"
 
 #: ../src/iop/clipping.c:2082
 msgid "the bottom margin cannot overlap with the top margin"
@@ -7530,23 +7530,23 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4369 ../src/iop/rawdenoise.c:1009
 msgid "R"
-msgstr "紅"
+msgstr "R"
 
 #: ../src/iop/denoiseprofile.c:4371 ../src/iop/rawdenoise.c:1011
 msgid "G"
-msgstr "綠"
+msgstr "G"
 
 #: ../src/iop/denoiseprofile.c:4373 ../src/iop/rawdenoise.c:1013
 msgid "B"
-msgstr "藍"
+msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4382
 msgid "Y0"
-msgstr ""
+msgstr "Y0"
 
 #: ../src/iop/denoiseprofile.c:4384
 msgid "U0V0"
-msgstr ""
+msgstr "U0V0"
 
 #: ../src/iop/denoiseprofile.c:4419
 msgid "whitebalance-adaptive transform"
@@ -7598,7 +7598,7 @@ msgstr "描述檔"
 
 #: ../src/iop/denoiseprofile.c:4469
 msgid "color mode"
-msgstr ""
+msgstr "色彩模式"
 
 #: ../src/iop/denoiseprofile.c:4470 ../src/iop/nlmeans.c:849
 msgid "patch size"
@@ -7622,7 +7622,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4478
 msgid "preserve shadows"
-msgstr ""
+msgstr "保留陰影"
 
 #: ../src/iop/denoiseprofile.c:4479
 msgid "bias correction"
@@ -7651,7 +7651,7 @@ msgstr "RGB"
 
 #: ../src/iop/denoiseprofile.c:4485
 msgid "Y0U0V0"
-msgstr ""
+msgstr "Y0U0V0"
 
 #: ../src/iop/denoiseprofile.c:4491
 msgid "profile used for variance stabilization"
@@ -7938,11 +7938,11 @@ msgstr ""
 
 #: ../src/iop/filmic.c:360
 msgid "16 EV (HDR)"
-msgstr ""
+msgstr "16 EV (HDR)"
 
 #: ../src/iop/filmic.c:367
 msgid "18 EV (HDR++)"
-msgstr ""
+msgstr "18 EV (HDR++)"
 
 #: ../src/iop/filmic.c:1681
 msgid "read-only graph, use the parameters below to set the nodes"
@@ -8254,7 +8254,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:1454
 msgid "display"
-msgstr ""
+msgstr "顯示"
 
 #: ../src/iop/filmicrgb.c:1466
 msgid ""
@@ -9327,11 +9327,11 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1439
 msgid "select lut file"
-msgstr ""
+msgstr "選取 lut 檔"
 
 #: ../src/iop/lut3d.c:1440
 msgid "_select"
-msgstr ""
+msgstr "選取(_S)"
 
 #: ../src/iop/lut3d.c:1458
 msgid "hald cluts (png), 3D lut (cube) or gmic compressed lut (gmz)"
@@ -9378,19 +9378,19 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1566
 msgid "enter lut name"
-msgstr ""
+msgstr "輸入 lut 名稱"
 
 #: ../src/iop/lut3d.c:1588
 msgid "select the LUT"
-msgstr ""
+msgstr "選取 LUT"
 
 #: ../src/iop/lut3d.c:1601
 msgid "application color space"
-msgstr ""
+msgstr "應用程式色彩空間"
 
 #: ../src/iop/lut3d.c:1603
 msgid "Adobe RGB"
-msgstr ""
+msgstr "Adobe RGB"
 
 #: ../src/iop/lut3d.c:1604
 msgid "gamma rec709 RGB"
@@ -9410,7 +9410,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1612
 msgid "interpolation"
-msgstr ""
+msgstr "內插法"
 
 #: ../src/iop/lut3d.c:1613
 msgid "tetrahedral"
@@ -10007,7 +10007,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:1551 ../src/iop/rgblevels.c:1032
 msgid "  R  "
-msgstr ""
+msgstr "  R  "
 
 #: ../src/iop/rgbcurve.c:1554 ../src/iop/rgblevels.c:1035
 msgid "curve nodes for r channel"
@@ -10015,7 +10015,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:1556 ../src/iop/rgblevels.c:1037
 msgid "  G  "
-msgstr ""
+msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1559 ../src/iop/rgblevels.c:1040
 msgid "curve nodes for g channel"
@@ -10023,7 +10023,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:1561 ../src/iop/rgblevels.c:1042
 msgid "  B  "
-msgstr ""
+msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1564 ../src/iop/rgblevels.c:1045
 msgid "curve nodes for b channel"
@@ -10609,63 +10609,63 @@ msgstr ""
 #: ../src/iop/toneequal.c:2503
 #, c-format
 msgid "%+.1f EV"
-msgstr ""
+msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:3215
 msgid "simple"
-msgstr ""
+msgstr "簡易"
 
 #: ../src/iop/toneequal.c:3216
 msgid "advanced"
-msgstr ""
+msgstr "進階"
 
 #: ../src/iop/toneequal.c:3217
 msgid "masking"
-msgstr ""
+msgstr "遮罩"
 
 #: ../src/iop/toneequal.c:3230
 msgid "-8 EV"
-msgstr ""
+msgstr "-8 EV"
 
 #: ../src/iop/toneequal.c:3236
 msgid "-7 EV"
-msgstr ""
+msgstr "-7 EV"
 
 #: ../src/iop/toneequal.c:3242
 msgid "-6 EV"
-msgstr ""
+msgstr "-6 EV"
 
 #: ../src/iop/toneequal.c:3248
 msgid "-5 EV"
-msgstr ""
+msgstr "-5 EV"
 
 #: ../src/iop/toneequal.c:3254
 msgid "-4 EV"
-msgstr ""
+msgstr "-4 EV"
 
 #: ../src/iop/toneequal.c:3260
 msgid "-3 EV"
-msgstr ""
+msgstr "-3 EV"
 
 #: ../src/iop/toneequal.c:3266
 msgid "-2 EV"
-msgstr ""
+msgstr "-2 EV"
 
 #: ../src/iop/toneequal.c:3272
 msgid "-1 EV"
-msgstr ""
+msgstr "-1 EV"
 
 #: ../src/iop/toneequal.c:3278
 msgid "+0 EV"
-msgstr ""
+msgstr "+0 EV"
 
 #: ../src/iop/toneequal.c:3296
 msgid "double-click to reset the curve"
-msgstr ""
+msgstr "連點兩下重設曲線"
 
 #: ../src/iop/toneequal.c:3303
 msgid "curve smoothing"
-msgstr ""
+msgstr "曲線平滑化"
 
 #: ../src/iop/toneequal.c:3304
 msgid ""
@@ -12179,11 +12179,11 @@ msgstr "評級"
 
 #: ../src/libs/image.c:465
 msgid "select ratings metadata"
-msgstr ""
+msgstr "選取評級中介資料"
 
 #: ../src/libs/image.c:470
 msgid "colors"
-msgstr ""
+msgstr "色彩"
 
 #: ../src/libs/image.c:472
 msgid "select colors metadata"
@@ -12223,7 +12223,7 @@ msgstr ""
 
 #: ../src/libs/image.c:523
 msgid "merge"
-msgstr ""
+msgstr "合併"
 
 #: ../src/libs/image.c:525
 msgid "how to handle existing metadata"
@@ -12406,7 +12406,7 @@ msgstr "選取一個或多個影像匯入"
 #. adding the import folder button
 #: ../src/libs/import.c:993
 msgid "folder..."
-msgstr ""
+msgstr "資料夾..."
 
 #: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
@@ -12653,7 +12653,7 @@ msgstr "組合形狀"
 
 #: ../src/libs/masks.c:1150
 msgid "use inverted shape"
-msgstr ""
+msgstr "使用反轉形狀"
 
 #: ../src/libs/masks.c:1156
 msgid "mode : union"
@@ -12819,7 +12819,7 @@ msgstr "海拔"
 
 #: ../src/libs/metadata_view.c:138
 msgid "categories"
-msgstr ""
+msgstr "類別"
 
 #: ../src/libs/metadata_view.c:149
 msgid "image information"
@@ -12926,7 +12926,7 @@ msgstr "netpnm"
 
 #: ../src/libs/metadata_view.c:410
 msgid "avif"
-msgstr ""
+msgstr "avif"
 
 #: ../src/libs/metadata_view.c:415
 #, c-format
@@ -12973,7 +12973,7 @@ msgstr "效果群組"
 #. search box
 #: ../src/libs/modulegroups.c:248
 msgid "search module"
-msgstr ""
+msgstr "搜尋模組"
 
 #: ../src/libs/modulegroups.c:254
 msgid "search modules by name or tag"
@@ -13475,7 +13475,7 @@ msgstr "樣式套用前建立一個此影像的複製品"
 #. create
 #: ../src/libs/styles.c:445
 msgid "create..."
-msgstr ""
+msgstr "建立..."
 
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
@@ -13553,7 +13553,7 @@ msgstr "刪除標籤？"
 #: ../src/libs/tagging.c:1540
 #, c-format
 msgid "tag: %s "
-msgstr ""
+msgstr "標籤：%s "
 
 #: ../src/libs/tagging.c:1194
 #, c-format
@@ -14888,7 +14888,7 @@ msgstr ""
 
 #: ../src/views/view.c:2390
 msgid "mouse actions"
-msgstr ""
+msgstr "滑鼠動作"
 
 #: ../src/views/view.c:2428
 msgid "Accel"
@@ -14896,7 +14896,7 @@ msgstr ""
 
 #: ../src/views/view.c:2430
 msgid "Action"
-msgstr ""
+msgstr "動作"
 
 #~ msgid "width of the side panels in pixels"
 #~ msgstr "側面板寬度，單位為像素"
