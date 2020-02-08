@@ -1,0 +1,193 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 id="blending_mask_refinement">
+
+  <title>Mask refinement and additional controls</title>
+
+  <sect4 status="final" id="blending_mask_refinement_overview">
+
+    <title>Overview</title>
+
+    <para>
+      When a <quote>parametric masks</quote>, a <quote>drawn mask</quote> or a combination of
+      both is active several additional sliders are shown that allow for a meticulous refinement
+      of the mask.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              When blending with a mask there are some additional options to deal with the final
+              mask: you may feather the mask, blur the mask, adjust the mask's brightness and
+              contrast, temporarily disable the mask, or display it as an overlay image. The
+              latter option is particularly useful for examining the effect of the following
+              controls.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/concepts/images/mask_refinement.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <sect5 id="blending_mask_refinement_feathering_guide">
+      <title>feathering guide</title>
+      <para>
+        Mask feathering smoothens a drawn or parametric mask non-uniformly such that the mask's
+        edges are adjusted automatically to match the edges of the image. This mask smoothing is
+        guided either by the module's input image or by its output (before blending), depending
+        on what is selected in the <quote>feathering guide</quote> combobox. The feathering is
+        particularly sensitive to this choice for edge-modifying modules, i.e., modules for
+        sharpening or blurring an image.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_feathering_radius">
+      <title>feathering radius</title>
+      <para>
+        The <quote>feathering radius</quote> slider adjusts the strength of the feathering
+        effect. Feathering works best if the drawn and/or parametric mask's edges already match
+        approximately some edges in the guiding image. The larger the <quote>feathering
+        radius</quote> the better the feathering algorithm can align mask edges to more distant
+        edges of the image. If this radius is too large, however, the feathered mask may
+        overshoot. This means it cover regions that the user actually wants to exclude.
+        Feathering is turned off if the feathering radius is set to&nbsp;0.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_blur">
+      <title>mask blur</title>
+      <para>
+        Blurring the mask creates a softer transition between blended and unblended parts of an
+        image and avoids artifacts. The mask blur slider controls the radius of a gaussian blur
+        applied to the final blend mask. The higher the radius, the stronger the
+        blur&nbsp;&ndash; or set to 0 for an unblurred mask. Gaussian blur is always applied
+        after feathering if both kinds of mask adjustment are activated. This order allows to
+        smooth sharp edges or artefacts that may result by feathering.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_mask_brightness">
+      <title>mask opacity</title>
+      <para>
+        The strength of the module's effect is determined by the mask's local opacity.
+        Feathering and blurring the mask may result in a mask with reduced opacity, which
+        implies a reduced effect. Therefore, the <quote>mask opacity</quote> slider allows to
+        readjust the mask opacity. If the opacity is decreased (negative slider values) least
+        opaque parts are affected stronger than most opaque parts. Contrary, if the mask opacity
+        is increased (positive slider values) most opaque parts are affected stronger than least
+        opaque parts. As a consequence, completely opaque portions of the mask always remain
+        opaque and completely transparent portions remain transparent. This is to ensure that
+        regions which have been excluded from or included to a module's effect by setting the
+        mask's opacity to 0% or 100% remain excluded or included even if the mask opacity is
+        adjusted by this slider.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_mask_contrast">
+      <title>mask contrast</title>
+      <para>
+        This slider increases or decreases the mask contrast. This means it allows to modify the
+        transition between opaque and transparent mask parts.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_temp_off">
+      <title>temporarily switch off mask</title>
+      <para>
+        Sometimes it is useful to visualize the module's effect without the mask taking action.
+        You can do so by clicking on the
+        <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
+        symbol, which will temporarily deactivate the mask&nbsp;&ndash; the selected blend mode
+        and opacity remain in effect. Switch this button on and off to see if the mask is acting
+        on the image as intended.
+      </para>
+    </sect5>
+
+    <sect5 id="blending_mask_refinement_display">
+      <title>display mask</title>
+      <para>
+        Clicking on the
+        <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
+        symbol will display the current mask as a yellow overlay over a black-and-white version
+        of your image. Solid yellow indicates an opacity of 100%; a fully visible gray
+        background image without yellow overlay indicates an opacity of 0%.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <sect5 id="blending_examples_feathering">
+      <title>Feathering a drawn mask</title>
+      <para>
+        <informaltable frame="none">
+          <tgroup cols="4" colsep="0" rowsep="0">
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_1.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_2.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_3.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_4.png" scalefit="1" width="96%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        It can be rather tedious to create a drawn mask by hand, which matches precisely a
+        particular object or person in an image. In this example, we want to enhance the color
+        contrast of the lion sculpture shown in the left image above without affecting the
+        background. For this purpose, a rough selection of the sculpture is created by a drawn
+        mask. See the second image above, where the <quote>displays mask</quote> feature is
+        active. Note that the mask is rather fuzzy and it does not match precisely the lion
+        sculpture. Adjusting the feathering radius, the mask opacity and the mask contrast leads
+        to a well matching mask with little effort. In the third image above the feathering
+        radius has been adjusted to 50, a blur radius of 5 was chosen to smooth the mask to some
+        degree. The mask opacity and the mask contrast have been increased to 0.3 and 0.5,
+        respectively, to further enhance the mask. The last image above shows the final result,
+        where the color enhancement via the color contrast module (see
+        <xref
+	linkend="color_contrast"/>) is restricted to the lion sculpture due to the mask.
+      </para>
+      <para>
+        Mask feathering works in this example particularly well because the sculpture in the
+        original image is well separated from the blurry background. The distinct edge at the
+        border of the sculpture guides the feathering mask adjustment to match the shape of the
+        sculpture. Note that feathering can be applied to drawn masks as well as to parametric
+        masks.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

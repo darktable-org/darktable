@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/tags.h"
+#include "common/variables.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -25,9 +26,9 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -46,7 +47,7 @@
 #include "common/utility.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-DT_MODULE_INTROSPECTION(4, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -74,7 +75,7 @@ typedef struct dt_iop_watermark_params_t
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
   /* simple text */
-  char text[64];
+  char text[512];
   /* text color */
   float color[3];
   /* text font */
@@ -91,7 +92,7 @@ typedef struct dt_iop_watermark_data_t
   float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
-  char text[64];
+  char text[512];
   float color[3];
   char font[64];
 } dt_iop_watermark_data_t;
@@ -108,12 +109,14 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *text;
   GtkWidget *colorpick;
   GtkWidget *fontsel;
+  GtkToggleButton *color_picker_button;
+  dt_iop_color_picker_t color_picker;
 } dt_iop_watermark_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -147,10 +150,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
-
     return 0;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -187,7 +189,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v3_t
     {
@@ -226,6 +228,53 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
+  else if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_watermark_params_v4_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      /** Rotation **/
+      float rotate;
+      dt_iop_watermark_base_scale_t sizeto;
+      char filename[64];
+      /* simple text */
+      char text[64];
+      /* text color */
+      float color[3];
+      /* text font */
+      char font[64];
+    } dt_iop_watermark_params_v4_t;
+
+    dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->sizeto = o->sizeto;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, o->text, sizeof(n->text));
+    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->color[0] = o->color[0];
+    n->color[1] = o->color[1];
+    n->color[2] = o->color[2];
+    return 0;
+  }
   return 1;
 }
 
@@ -240,14 +289,19 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("watermark", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 int operation_tags()
 {
   return IOP_TAG_DECORATION;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -289,10 +343,17 @@ static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *te
 // replace < and > with &lt; and &gt;. any more? Yes! & -> &amp;
 static gchar *_string_escape(const gchar *string)
 {
-  gchar *result;
+  gchar *result, *result_old;
   result = dt_util_str_replace(string, "&", "&amp;");
-  result = dt_util_str_replace(result, "<", "&lt;");
-  result = dt_util_str_replace(result, ">", "&gt;");
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, "<", "&lt;");
+  g_free(result_old);
+
+  result_old = result;
+  result = dt_util_str_replace(result_old, ">", "&gt;");
+  g_free(result_old);
+
   return result;
 }
 
@@ -749,17 +810,17 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
     {
-      latitude = dt_util_latitude_str(image->latitude);
-      longitude = dt_util_longitude_str(image->longitude);
-      elevation = dt_util_elevation_str(image->elevation);
+      latitude = dt_util_latitude_str(image->geoloc.latitude);
+      longitude = dt_util_longitude_str(image->geoloc.longitude);
+      elevation = dt_util_elevation_str(image->geoloc.elevation);
     }
     else
     {
-      const gchar NS = image->latitude < 0 ? 'S' : 'N';
-      const gchar EW = image->longitude < 0 ? 'W' : 'E';
-      if(image->latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->latitude));
-      if(image->longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->longitude));
-      if(image->elevation) elevation = g_strdup_printf("%.2f %s", image->elevation, _("m"));
+      const gchar NS = image->geoloc.latitude < 0 ? 'S' : 'N';
+      const gchar EW = image->geoloc.longitude < 0 ? 'W' : 'E';
+      if(image->geoloc.latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->geoloc.latitude));
+      if(image->geoloc.longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->geoloc.longitude));
+      if(image->geoloc.elevation) elevation = g_strdup_printf("%.2f %s", image->geoloc.elevation, _("m"));
     }
     gchar *parts[4] = { 0 };
     int i = 0;
@@ -797,6 +858,22 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_free(location);
 
   }
+
+  // standard calculation on the remaining variables
+  const int32_t flags = dt_lib_export_metadata_get_conf_flags();
+  dt_variables_params_t *params;
+  dt_variables_params_init(&params);
+  params->filename = image->filename;
+  params->jobcode = "watermark";
+  params->sequence = 0;
+  params->imgid = image->id;
+  dt_variables_set_tags_flags(params, flags);
+  svgdoc = dt_variables_expand(params, svgdata, FALSE);
+  if(svgdoc != svgdata)
+  {
+    g_free(svgdata);
+    svgdata = svgdoc;
+  }
   return svgdoc;
 }
 
@@ -807,7 +884,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  double angle = (M_PI / 180) * -data->rotate;
+  const float angle = (M_PI / 180) * (-data->rotate);
 
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc(self, data, &piece->pipe->image);
@@ -818,22 +895,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   /* setup stride for performance */
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
-  /* create cairo memory surface */
+  /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
                                                                  roi_out->height, stride);
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
-
-  /* create cairo context and setup transformation/scale */
-  cairo_t *cr = cairo_create(surface);
 
   // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -844,6 +918,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   g_free(svgdoc);
   if(!svg || error)
   {
+    cairo_surface_destroy(surface);
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -859,7 +934,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
   const float ih = piece->buf_in.height;
-  const float uscale = data->scale / 100.0; // user scale, from GUI in percent
+  const float uscale = data->scale / 100.0f; // user scale, from GUI in percent
 
   // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
   // scale is the scale of the watermark itself and is used only to render it.
@@ -934,12 +1009,44 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
+  /* For the rotation we need an extra cairo image as rotations are buggy  via rsvg_handle_render_cairo.
+     distortions and blurred images are obvious but you also can easily have crashes.
+  */
+
+  /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
+  const float svg_offset_x = ceilf(3.0f * scale);
+  const float svg_offset_y = ceilf(3.0f * scale);
+
+  const int watermark_width =  (int)((dimension.width  * scale) + 3* svg_offset_x);
+  const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
+
+  const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
+  guint8 *image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
+
+  cairo_surface_t *surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
+                                                                 watermark_height, stride_two);
+  if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
+  {
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface_two)));
+    cairo_surface_destroy(surface);
+    g_object_unref(svg);
+    g_free(image);
+    g_free(image_two);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    return;
+  }
+
+  /* create cairo context and setup transformation/scale */
+  cairo_t *cr = cairo_create(surface);
+  /* create cairo context for the scaled watermark */
+  cairo_t *cr_two = cairo_create(surface_two);
+
   // compute bounding box of rotated watermark
-  float bb_width, bb_height;
-  bb_width = fabs(svg_width * cos(angle)) + fabs(svg_height * sin(angle));
-  bb_height = fabs(svg_width * sin(angle)) + fabs(svg_height * cos(angle));
-  float bX = bb_width / 2.0 - svg_width / 2.0;
-  float bY = bb_height / 2.0 - svg_height / 2.0;
+  const float bb_width = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
+  const float bb_height = fabsf(svg_width * sinf(angle)) + fabsf(svg_height * cosf(angle));
+  const float bX = bb_width / 2.0f - svg_width / 2.0f;
+  const float bY = bb_height / 2.0f - svg_height / 2.0f;
 
   // compute translation for the given alignment in image dimension
 
@@ -947,14 +1054,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(data->alignment >= 0 && data->alignment < 3) // Align to verttop
     ty = bY;
   else if(data->alignment >= 3 && data->alignment < 6) // Align to vertcenter
-    ty = (ih / 2.0) - (svg_height / 2.0);
+    ty = (ih / 2.0f) - (svg_height / 2.0f);
   else if(data->alignment >= 6 && data->alignment < 9) // Align to vertbottom
     ty = ih - svg_height - bY;
 
   if(data->alignment == 0 || data->alignment == 3 || data->alignment == 6)
     tx = bX;
   else if(data->alignment == 1 || data->alignment == 4 || data->alignment == 7)
-    tx = (iw / 2.0) - (svg_width / 2.0);
+    tx = (iw / 2.0f) - (svg_width / 2.0f);
   else if(data->alignment == 2 || data->alignment == 5 || data->alignment == 8)
     tx = iw - svg_width - bX;
 
@@ -968,30 +1075,35 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_translate(cr, tx * roi_out->scale, ty * roi_out->scale);
 
   // compute the center of the svg to rotate from the center
-  float cX = svg_width / 2.0 * roi_out->scale;
-  float cY = svg_height / 2.0 * roi_out->scale;
+  const float cX = svg_width / 2.0f * roi_out->scale;
+  const float cY = svg_height / 2.0f * roi_out->scale;
 
   cairo_translate(cr, cX, cY);
   cairo_rotate(cr, angle);
   cairo_translate(cr, -cX, -cY);
 
-  // now set proper scale for the watermark itself
-  cairo_scale(cr, scale, scale);
-
+  // now set proper scale and translationfor the watermark itself
+  cairo_translate(cr_two, svg_offset_x,svg_offset_y);
+  cairo_scale(cr_two, scale, scale);
   /* render svg into surface*/
-  rsvg_handle_render_cairo(svg, cr);
+  rsvg_handle_render_cairo(svg, cr_two);
+  cairo_surface_flush(surface_two);
+
+  cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);
+  cairo_paint(cr);
 
   // no more non-thread safe rsvg usage
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   cairo_destroy(cr);
+  cairo_destroy(cr_two);
 
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
 
   /* render surface on output */
   guint8 *sd = image;
-  float opacity = data->opacity / 100.0;
+  const float opacity = data->opacity / 100.0f;
   /*
   #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(in, out,sd,opacity) schedule(static)
@@ -1000,11 +1112,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int j = 0; j < roi_out->height; j++)
     for(int i = 0; i < roi_out->width; i++)
     {
-      float alpha = (sd[3] / 255.0) * opacity;
+      const float alpha = (sd[3] / 255.0f) * opacity;
       /* svg uses a premultiplied alpha, so only use opacity for the blending */
-      out[0] = ((1.0 - alpha) * in[0]) + (opacity * (sd[2] / 255.0));
-      out[1] = ((1.0 - alpha) * in[1]) + (opacity * (sd[1] / 255.0));
-      out[2] = ((1.0 - alpha) * in[2]) + (opacity * (sd[0] / 255.0));
+      out[0] = ((1.0f - alpha) * in[0]) + (opacity * (sd[2] / 255.0f));
+      out[1] = ((1.0f - alpha) * in[1]) + (opacity * (sd[1] / 255.0f));
+      out[2] = ((1.0f - alpha) * in[2]) + (opacity * (sd[0] / 255.0f));
       out[3] = in[3];
 
       out += ch;
@@ -1015,8 +1127,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* clean up */
   cairo_surface_destroy(surface);
+  cairo_surface_destroy(surface_two);
   g_object_unref(svg);
   g_free(image);
+  g_free(image_two);
 }
 
 static void watermark_callback(GtkWidget *tb, gpointer user_data)
@@ -1032,6 +1146,31 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
+     && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
+     && fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  {
+    // interrupt infinite loops
+    return;
+  }
+
+  GdkRGBA c = {.red   = self->picked_color[0],
+               .green = self->picked_color[1],
+               .blue  = self->picked_color[2],
+               .alpha = 1.0 };
+
+  p->color[0] = self->picked_color[0];
+  p->color[1] = self->picked_color[1];
+  p->color[2] = self->picked_color[2];
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
 {
@@ -1170,7 +1309,7 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  snprintf(p->font, sizeof(p->font), "%s", gtk_font_button_get_font_name(GTK_FONT_BUTTON(button)));
+  snprintf(p->font, sizeof(p->font), "%s", gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)));
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1261,9 +1400,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)module->params;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   dt_bauhaus_slider_set(g->opacity, p->opacity);
   dt_bauhaus_slider_set_soft(g->scale, p->scale);
   dt_bauhaus_slider_set(g->rotate, p->rotate);
@@ -1279,7 +1417,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
-  gtk_font_button_set_font_name(GTK_FONT_BUTTON(g->fontsel), p->font);
+  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
 }
 
 void init(dt_iop_module_t *module)
@@ -1288,10 +1426,8 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = calloc(1, sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 971; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){
+  dt_iop_watermark_params_t tmp = {
     100.0, 100.0, 0.0, 0.0, 4, 0.0, DT_SCALE_IMAGE, { "darktable.svg" }, { "" }, {0.0, 0.0, 0.0}, {"DejaVu Sans 10"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -1302,6 +1438,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1341,15 +1479,23 @@ void gui_init(struct dt_iop_module_t *self)
   float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
   GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
   label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
 
+  g->color_picker_button = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  g_signal_connect(G_OBJECT(g->color_picker_button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+
+  gtk_box_pack_start(GTK_BOX(box), g->colorpick, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->color_picker_button), FALSE, TRUE, 0);
+
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), g->colorpick, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), box, label, GTK_POS_RIGHT, 2, 1);
 
   // Simple text
   label = gtk_label_new(_("text"));
@@ -1415,7 +1561,6 @@ void gui_init(struct dt_iop_module_t *self)
   for(int i = 0; i < 9; i++)
   {
     g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << i), NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(g->align[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), i%3, i/3, 1, 1);
     g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }
@@ -1450,13 +1595,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   refresh_watermarks(self);
 
-
   g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->sizeto), "value-changed", G_CALLBACK(sizeto_callback), self);
 
   g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
+
+  dt_iop_init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->color_picker_button),
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1464,6 +1614,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
+  dt_gui_key_accel_block_on_focus_disconnect(g->text);
   g->watermarks_filenames = NULL;
   free(self->gui_data);
   self->gui_data = NULL;

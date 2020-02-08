@@ -45,8 +45,10 @@
 
       <para>
         Copy the history stack of the selected image. You will be prompted for which items are
-        to be include. If more than one image is selected, the history stack is taken from the
+        to be included. If more than one image is selected, the history stack is taken from the
         image that has been selected first.
+
+        A double-click on an item copies that item only and close the dialog.
       </para>
 
     </sect4>
@@ -91,8 +93,8 @@
       <title>paste all</title>
 
       <para>
-        Paste all previously copied items of a history history stack onto all selected images.
-        This button is greyed out, until a history stack is copied from another image.
+        Paste all previously copied items of a history stack onto all selected images. This
+        button is greyed out, until a history stack is copied from another image.
       </para>
 
     </sect4>
@@ -103,8 +105,30 @@
 
       <para>
         This setting defines how a new history stack behaves when pasted on an image that
-        already has a history stack. The <quote>overwrite</quote> mode deletes the previous
-        history stack, whereas <quote>append</quote> will concatenate the two history stacks.
+        already has a history stack. In simple terms the <quote>overwrite</quote> mode deletes
+        the previous history stack, whereas <quote>append</quote> will concatenate the two
+        history stacks.
+      </para>
+
+      <para>
+        A copied history stack can have multiple entries of the same module either with the
+        same name (see <xref linkend="history"/>) or with different names (see
+        <xref linkend="multiple_instances"/>) and pasting behaves differently depending on the
+        mode setting. On append mode, modules from the source image will be merged into the
+        destination image in the following way: for each copied module of the source image, if
+        there is a module in the destination image with the same name it will replace it. If
+        there is not a such module, a new instance will be created. In both cases the instance
+        is placed on top of the history stack. The <quote>copy all</quote>/<quote>paste
+        all</quote> action with this mode will only copy the respective last instance of all
+        modules with the same name to the source image.
+      </para>
+
+      <para>
+        In overwrite mode the behavior is the same except that the history of the destination
+        image is deleted before the paste operation. The <quote>copy all</quote>/<quote>paste
+        all</quote> action with this mode works differently; it will make an exact duplicate of
+        the source image history to the destination image with all instances of all names of the
+        modules.
       </para>
 
       <para>

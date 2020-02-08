@@ -30,7 +30,7 @@ DT_MODULE(1)
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *ivoid,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   const dt_imageio_module_data_t *const pfm = data;
   int status = 0;
@@ -47,7 +47,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     while((len + 1 + off) & 0xf) off++;
     while(off-- > 0) fprintf(f, "0");
     fprintf(f, "\n");
-    void *buf_line = dt_alloc_align(16, 3 * sizeof(float) * pfm->width);
+    void *buf_line = dt_alloc_align(64, 3 * sizeof(float) * pfm->width);
     for(int j = 0; j < pfm->height; j++)
     {
       // NOTE: pfm has rows in reverse order

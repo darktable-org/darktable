@@ -44,7 +44,6 @@ extern "C" {
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 }
@@ -75,14 +74,19 @@ const char *name()
 }
 
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("tone mapping", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -164,7 +168,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // Plus :
   //  Before compressing the base intensity , we remove average base intensity in order to not have
   //  variable average intensity when varying compression factor.
-  //  after compression we substract 2.0 to have an average intensity at middle tone.
+  //  after compression we subtract 2.0 to have an average intensity at middle tone.
   //
 
   const float contr = 1. / data->contrast;
@@ -267,7 +271,6 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 142; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
 }
@@ -276,6 +279,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

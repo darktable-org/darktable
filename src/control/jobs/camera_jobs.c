@@ -391,7 +391,7 @@ dt_job_t *dt_camera_import_job_create(const char *jobcode, GList *images, struct
   dt_control_job_add_progress(job, _("import images from camera"), FALSE);
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
-  /* intitialize import session for camera import job */
+  /* initialize import session for camera import job */
   if(time_override != 0) dt_import_session_set_time(params->shared.session, time_override);
   dt_import_session_set_name(params->shared.session, jobcode);
 

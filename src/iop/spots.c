@@ -26,7 +26,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -56,14 +55,19 @@ const char *name()
   return _("spot removal");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("spot removal", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -160,24 +164,38 @@ static void _resynch_params(struct dt_iop_module_t *self)
 }
 
 
-static void _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
+static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path)) ||
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_circle)) ||
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse)))
+
+  // we check the nb of shapes limit
+  dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
+  guint nb = 0;
+  if(grp && (grp->type & DT_MASKS_GROUP)) nb = g_list_length(grp->points);
+
+  if(nb >= 64)
+  {
+    dt_control_log(_("spot module is limited to 64 shapes. please add a new instance !"));
+  }
+
+  if(nb < 64
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_circle))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse))))
   {
     // we unset the creation mode
     dt_masks_change_form_gui(NULL);
   }
-  if (widget != g->bt_path) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  if (widget != g->bt_circle) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  if (widget != g->bt_ellipse) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+  if(widget != g->bt_path || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
+  if(widget != g->bt_circle || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
+  if(widget != g->bt_ellipse || nb >= 64) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+
+  return (nb < 64);
 }
 
 static gboolean _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -191,7 +209,7 @@ static gboolean _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
 }
 static gboolean _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -205,7 +223,7 @@ static gboolean _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_
 }
 static gboolean _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  _reset_form_creation(widget, self);
+  if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
@@ -324,7 +342,7 @@ static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   masks_point_denormalize(piece, roi, target, 1, points);
   masks_point_denormalize(piece, roi, source, 1, points + 2);
 
-  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2);
+  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
   if(!res) return res;
 
   *dx = points[0] - points[2];
@@ -360,19 +378,17 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
+              float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int ch)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
 
-  const int ch = piece->colors;
-  const float *in = (float *)i;
-  float *out = (float *)o;
-
 // we don't modify most of the image:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, in)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -416,7 +432,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         masks_point_denormalize(piece, roi_in, circle->center, 1, points);
         masks_point_denormalize(piece, roi_in, form->source, 1, points + 2);
 
-        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2))
+        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2))
         {
           forms = g_list_next(forms);
           pos++;
@@ -467,9 +483,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
             const float f = filter[xx - posx + 1] * filter[yy - posy + 1];
             for(int c = 0; c < ch; c++)
-              out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
-                  = out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
-                    + in[4 * ((size_t)roi_in->width * (yy - posy + posy_source - roi_in->y) + xx - posx
+              out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
+                  = out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
+                    + in[ch * ((size_t)roi_in->width * (yy - posy + posy_source - roi_in->y) + xx - posx
                               + posx_source - roi_in->x) + c] * f;
           }
         }
@@ -491,7 +507,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           forms = g_list_next(forms);
           pos++;
-          free(mask);
+          dt_free_align(mask);
 
           continue;
         }
@@ -516,13 +532,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                              + (int)((xx - fls) / roi_in->scale)] * grpt->opacity;
 
               for(int c = 0; c < ch; c++)
-                out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
-                    = out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
-                      + in[4 * ((size_t)roi_in->width * (yy - dy - roi_in->y) + xx - dx - roi_in->x) + c] * f;
+                out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
+                    = out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
+                      + in[ch * ((size_t)roi_in->width * (yy - dy - roi_in->y) + xx - dx - roi_in->x) + c] * f;
             }
           }
         }
-        free(mask);
+        dt_free_align(mask);
       }
       pos++;
       forms = g_list_next(forms);
@@ -530,17 +546,30 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const float *in = (float *)i;
+  float *out = (float *)o;
+  _process(self, piece, in, out, roi_in, roi_out, piece->colors);
+}
+
+void distort_mask(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  _process(self, piece, in, out, roi_in, roi_out, 1);
+}
+
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
+  module->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_spots_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 171; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -554,8 +583,10 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
+  free(module->global_data); // just to be sure
+  module->global_data = NULL;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -632,13 +663,12 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(14);
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));
@@ -649,7 +679,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
   gtk_widget_set_tooltip_text(g->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_path), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
 
   g->bt_ellipse
@@ -657,7 +686,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_ellipse), self);
   gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_ellipse), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
 
   g->bt_circle
@@ -665,7 +693,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);
   gtk_widget_set_tooltip_text(g->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_circle, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
@@ -690,7 +717,7 @@ void gui_cleanup(dt_iop_module_t *self)
 void init_key_accels (dt_iop_module_so_t *module)
 {
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot ellipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
 }
@@ -741,7 +768,7 @@ void connect_key_accels (dt_iop_module_t *module)
   dt_accel_connect_iop (module, "spot circle tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot elipse tool", closure);
+  dt_accel_connect_iop (module, "spot ellipse tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
   dt_accel_connect_iop (module, "spot path tool", closure);

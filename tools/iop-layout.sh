@@ -14,9 +14,9 @@ EFFECT=5
 
 module_group=(
     $BASIC
-    $COLOR
     $CORRECT
     $TONE
+    $COLOR
     $EFFECT
 )
 
@@ -25,72 +25,77 @@ module_group=(
 ###
 
 group_basic=(
-    'base curve'
-    'crop and rotate'
+    'basecurve'
+    'clipping'
     'demosaic'
     'exposure'
-    'graduated density'
-    'input color profile'
+    'graduatednd'
+    'colorin'
     'invert'
-    'lens correction'
-    'orientation'
-    'output color profile'
-    'perspective correction'
-    'raw black/white point'
-    'rotate pixels'
-    'scale pixels'
-    'tone mapping'
-    'unbreak input profile'
-    'white balance'
+    'lens'
+    'flip'
+    'colorout'
+    'ashift'
+    'rawprepare'
+    'rotatepixels'
+    'scalepixels'
+    'tonemap'
+    'profile_gamma'
+    'temperature'
+    'filmic'
+    'filmicrgb'
+    'basicadj'
 )
 
 group_tone=(
     'bloom'
-    'color balance'
-    'contrast brightness saturation'
-    'equalizer'
-    'fill light'
-    'global tonemap'
+    'colisa'
+    'atrous'
+    'relight'
+    'globaltonemap'
     'levels'
-    'local contrast'
-    'shadows and highlights'
-    'tone curve'
-    'zone system'
-    'filmic'
+    'rgblevels'
+    'bilat'
+    'shadhi'
+    'tonecurve'
+    'zonesystem'
+    'rgbcurve'
 )
 
 group_color=(
-    'channel mixer'
-    'color contrast'
-    'color correction'
-    'color look up table'
-    'color mapping'
-    'color transfer'
-    'color zones'
+    'channelmixer'
+    'colorbalance'
+    'colorcontrast'
+    'colorcorrection'
+    'colorchecker'
+    'colormapping'
+    'colortransfer'
+    'colorzones'
     'colorize'
-    'lowlight vision'
+    'lowlight'
+    'lut3d'
     'monochrome'
-    'split toning'
+    'splittoning'
     'velvia'
     'vibrance'
 )
 
 group_correct=(
-    'chromatic aberrations'
-    'color reconstruction'
+    'cacorrect'
+    'colorreconstruct'
     'defringe'
-    'denoise (bilateral filter)'
-    'denoise (non-local means)'
-    'denoise (profiled)'
-    'dithering'
-    'haze removal'
-    'highlight reconstruction'
-    'hot pixels'
-    'raw denoise'
+    'bilateral'
+    'nlmeans'
+    'denoiseprofile'
+    'dither'
+    'hazeremoval'
+    'highlights'
+    'hotpixels'
+    'rawdenoise'
 )
 
 group_effect=(
-    'framing'
+    'borders'
     'grain'
     'highpass'
     'liquify'
@@ -98,14 +103,16 @@ group_effect=(
     'retouch'
     'sharpen'
     'soften'
-    'spot removal'
-    'vignetting'
+    'spots'
+    'vignette'
     'watermark'
 )
 
 ######################################### END OF CONFIGURATION HERE
 
-FILE=$HOME/.config/darktable/darktablerc
+[ -z $DT_CONFIGDIR ] && DT_CONFIGDIR=$HOME/.config/darktable
+
+FILE=$DT_CONFIGDIR/darktablerc
 
 [ ! -f $FILE ] && echo darktable configuration file 'darktablerc' does not exists && exit 1
 
@@ -156,11 +163,11 @@ function set_iop_group()
     while [ "x${LIST[pos]}" != "x" ]; do
         name=${LIST[pos]}
         pos=$(( $pos + 1 ))
-        echo "plugins/darkroom/group/$name=$GROUP_POS" >> $FILE
+        echo "plugins/darkroom/$name/modulegroup=$GROUP_POS" >> $FILE
     done
 }
 
-sed -i "/plugins\/darkroom\/group\//d" $FILE
+sed -i "/plugins\/darkroom\/[^/]*\/modulegroup/d" $FILE
 
 set_iop_group $BASIC   "${group_basic[@]}"
 set_iop_group $TONE    "${group_tone[@]}"

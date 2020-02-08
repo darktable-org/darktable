@@ -30,7 +30,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -40,16 +39,16 @@
 #include <string.h>
 
 /** Crazy presets b&w ...
-  Film Type			R		G		B						R	G	B
-  AGFA 200X		18		41		41		Ilford Pan F		33	36	31
-  Agfapan 25		25		39		36		Ilford SFX		36	31	33
-  Agfapan 100		21		40		39		Ilford XP2 Super	21	42	37
-  Agfapan 400		20		41		39		Kodak T-Max 100	24	37	39
-  Ilford Delta 100	21		42		37		Kodak T-Max 400	27	36	37
-  Ilford Delta 400	22		42		36		Kodak Tri-X 400	25	35	40
-  Ilford Delta 3200	31		36		33		Normal Contrast	43	33	30
-  Ilford FP4		28		41		31		High Contrast		40	34	60
-  Ilford HP5		23		37		40		Generic B/W		24	68	8
+  Film Type     R   G   B           R G B
+  AGFA 200X   18    41    41    Ilford Pan F    33  36  31
+  Agfapan 25    25    39    36    Ilford SFX    36  31  33
+  Agfapan 100   21    40    39    Ilford XP2 Super  21  42  37
+  Agfapan 400   20    41    39    Kodak T-Max 100 24  37  39
+  Ilford Delta 100  21    42    37    Kodak T-Max 400 27  36  37
+  Ilford Delta 400  22    42    36    Kodak Tri-X 400 25  35  40
+  Ilford Delta 3200 31    36    33    Normal Contrast 43  33  30
+  Ilford FP4    28    41    31    High Contrast   40  34  60
+  Ilford HP5    23    37    40    Generic B/W   24  68  8
 */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -90,10 +89,8 @@ typedef struct dt_iop_channelmixer_params_t
 typedef struct dt_iop_channelmixer_gui_data_t
 {
   GtkBox *vbox;
-  GtkWidget *combo1;                      // Output channel
-  GtkLabel *dtlabel1, *dtlabel2;          // output channel, source channels
-  GtkLabel *label1, *label2, *label3;     // red, green, blue
-  GtkWidget *scale1, *scale2, *scale3;    // red, green, blue
+  GtkWidget *output_channel;                      // Output channel
+  GtkWidget *scale_red, *scale_green, *scale_blue;    // red, green, blue
 } dt_iop_channelmixer_gui_data_t;
 
 typedef struct dt_iop_channelmixer_data_t
@@ -120,12 +117,16 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("channel mixer", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
@@ -138,11 +139,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g =
     (dt_iop_channelmixer_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_red));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_green));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_blue));
 }
-#endif
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -155,7 +155,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, gray_mix_mode, ivoid, ovoid, roi_out) \
+  shared(data) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -238,7 +241,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->data;
+  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->global_data;
 
   cl_mem dev_red = NULL;
   cl_mem dev_green = NULL;
@@ -313,10 +316,10 @@ static void red_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
-  if(combo1_index >= 0)
+  const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
+  if(output_channel_index >= 0)
   {
-    p->red[combo1_index] = dt_bauhaus_slider_get(slider);
+    p->red[output_channel_index] = dt_bauhaus_slider_get(slider);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -327,10 +330,10 @@ static void green_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
-  if(combo1_index >= 0)
+  const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
+  if(output_channel_index >= 0)
   {
-    p->green[combo1_index] = dt_bauhaus_slider_get(slider);
+    p->green[output_channel_index] = dt_bauhaus_slider_get(slider);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -342,10 +345,10 @@ static void blue_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
-  if(combo1_index >= 0)
+  const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
+  if(output_channel_index >= 0)
   {
-    p->blue[combo1_index] = dt_bauhaus_slider_get(slider);
+    p->blue[output_channel_index] = dt_bauhaus_slider_get(slider);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -358,15 +361,15 @@ static void output_callback(GtkComboBox *combo, gpointer user_data)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
 
   // p->output_channel= gtk_combo_box_get_active(combo);
-  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
-  if(combo1_index >= 0)
+  const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
+  if(output_channel_index >= 0)
   {
-    dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
-    dt_bauhaus_slider_set_default(g->scale1, combo1_index == CHANNEL_RED ? 1.0 : 0.0);
-    dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
-    dt_bauhaus_slider_set_default(g->scale2, combo1_index == CHANNEL_GREEN ? 1.0 : 0.0);
-    dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
-    dt_bauhaus_slider_set_default(g->scale3, combo1_index == CHANNEL_BLUE ? 1.0 : 0.0);
+    dt_bauhaus_slider_set(g->scale_red, p->red[output_channel_index]);
+    dt_bauhaus_slider_set_default(g->scale_red, output_channel_index == CHANNEL_RED ? 1.0 : 0.0);
+    dt_bauhaus_slider_set(g->scale_green, p->green[output_channel_index]);
+    dt_bauhaus_slider_set_default(g->scale_green, output_channel_index == CHANNEL_GREEN ? 1.0 : 0.0);
+    dt_bauhaus_slider_set(g->scale_blue, p->blue[output_channel_index]);
+    dt_bauhaus_slider_set_default(g->scale_blue, output_channel_index == CHANNEL_BLUE ? 1.0 : 0.0);
   }
   // dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -403,14 +406,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
-  // gtk_combo_box_set_active(g->combo1, p->output_channel);
 
-  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
-  if(combo1_index >= 0)
+  const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
+  if(output_channel_index >= 0)
   {
-    dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
-    dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
-    dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+    dt_bauhaus_slider_set(g->scale_red, p->red[output_channel_index]);
+    dt_bauhaus_slider_set(g->scale_green, p->green[output_channel_index]);
+    dt_bauhaus_slider_set(g->scale_blue, p->blue[output_channel_index]);
   }
 }
 
@@ -419,7 +421,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 828; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
@@ -433,6 +434,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -445,43 +448,43 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* output */
-  g->combo1 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combo1, NULL, _("destination"));
-  dt_bauhaus_combobox_add(g->combo1, _("hue"));
-  dt_bauhaus_combobox_add(g->combo1, _("saturation"));
-  dt_bauhaus_combobox_add(g->combo1, _("lightness"));
-  dt_bauhaus_combobox_add(g->combo1, _("red"));
-  dt_bauhaus_combobox_add(g->combo1, _("green"));
-  dt_bauhaus_combobox_add(g->combo1, _("blue"));
-  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "gray"));
-  dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED);
+  g->output_channel = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->output_channel, NULL, _("destination"));
+  dt_bauhaus_combobox_add(g->output_channel, _("hue"));
+  dt_bauhaus_combobox_add(g->output_channel, _("saturation"));
+  dt_bauhaus_combobox_add(g->output_channel, _("lightness"));
+  dt_bauhaus_combobox_add(g->output_channel, _("red"));
+  dt_bauhaus_combobox_add(g->output_channel, _("green"));
+  dt_bauhaus_combobox_add(g->output_channel, _("blue"));
+  dt_bauhaus_combobox_add(g->output_channel, C_("channelmixer", "gray"));
+  dt_bauhaus_combobox_set(g->output_channel, CHANNEL_RED);
 
-  g_signal_connect(G_OBJECT(g->combo1), "value-changed", G_CALLBACK(output_callback), self);
+  g_signal_connect(G_OBJECT(g->output_channel), "value-changed", G_CALLBACK(output_callback), self);
 
   /* red */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale1, _("amount of red channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("red"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(red_callback), self);
+  g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
+  gtk_widget_set_tooltip_text(g->scale_red, _("amount of red channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_red, NULL, _("red"));
+  g_signal_connect(G_OBJECT(g->scale_red), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale2, _("amount of green channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("green"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(green_callback), self);
+  g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
+  gtk_widget_set_tooltip_text(g->scale_green, _("amount of green channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_green, NULL, _("green"));
+  g_signal_connect(G_OBJECT(g->scale_green), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale3, _("amount of blue channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale3, NULL, _("blue"));
-  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(blue_callback), self);
+  g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
+  gtk_widget_set_tooltip_text(g->scale_blue, _("amount of blue channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_blue, NULL, _("blue"));
+  g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
 
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->output_channel), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_red), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_green), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_blue), TRUE, TRUE, 0);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -513,7 +516,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.800, 0, 0, 1, 0 } },
                              sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("B/W"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("B/W luminance-based"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.72 },
                                                               { 0, 0, 0, 0, 0, 1, 0.07 } },
@@ -533,6 +536,55 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0, 0, 0, 0, 0.750 },
                                                               { 0, 0, 0, 0, 0, 0, -0.15 } },
                              sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford Delta 100-400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.21 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.42 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford Delta 3200"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.31 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.33 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford FP4"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.28 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.41 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.31 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford HP5"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.23 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.40 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford SFX"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.31 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.33 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak T-Max 100"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.24 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.39 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak T-max 400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.27 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak Tri-X 400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.25 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.35 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.40 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

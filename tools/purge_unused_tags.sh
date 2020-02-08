@@ -5,6 +5,11 @@
 #        -p  do the purge, otherwise only display unused tags
 #
 
+if ! which sqlite3 > /dev/null; then
+    echo error: please install sqlite3 binary.
+    exit 1
+fi
+
 LIBDB=$HOME/.config/darktable/library.db
 DATADB=$HOME/.config/darktable/data.db
 

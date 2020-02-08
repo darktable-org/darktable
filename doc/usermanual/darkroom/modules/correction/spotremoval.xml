@@ -56,14 +56,22 @@
 
     <para>
       Select the desired shape by clicking the corresponding icon, then click on the canvas to
-      choose the area to be healed, i.e. the <emphasis>target area</emphasis>.
+      choose the area to be healed, i.e. the target area. A cross is displayed where the source
+      area will be positioned.
     </para>
 
     <para>
-      The <emphasis>source area</emphasis> is preliminary positioned at a location with a
-      default distance to the target. Source area and target area can then be shifted
-      independently until the result matches your expectations. An arrow helps to tell source
-      from target area.
+      The source positioning has two modes: absolute or relative. To set the absolute mode,
+      while creating a shape, <emphasis>Shift+Ctrl+click</emphasis> on the desired position.
+      From now on, all new shapes will have the source created at that position. To set the
+      relative mode, still while creating a shape, <emphasis>Shift+click</emphasis> on the
+      desired position. The current shape will have the source created at that position and the
+      subsequent ones will have the source created at the same relative position.
+    </para>
+
+    <para>
+      After creation source area and target area can be shifted independently until the result
+      matches your expectations. An arrow helps to tell source from target area.
     </para>
 
     <para>

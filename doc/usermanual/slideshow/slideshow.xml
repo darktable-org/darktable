@@ -47,7 +47,7 @@
     <para>
       The image display is optimized to take full advantage of your screen size. You should
       therefore put darktable into fullscreen mode which is toggled by pressing
-      <emphasis>F11</emphasis>. You may press <emphasis>TAB</emphasis> in order to hide all
+      <emphasis>F11</emphasis>. You may press <emphasis>Tab</emphasis> key in order to hide all
       remaining panels&nbsp;&ndash; namely the filtering option in the top panel.
     </para>
 
@@ -66,7 +66,23 @@
           <tbody>
             <row>
               <entry>
-                <emphasis>left-click</emphasis>
+                <emphasis>+</emphasis> or <emphasis>Up</emphasis>
+              </entry>
+              <entry>
+                increase delay between each image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>-</emphasis> or <emphasis>Down</emphasis>
+              </entry>
+              <entry>
+                decrease delay between each image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>left-click</emphasis> or <emphasis>right</emphasis> or <emphasis>Shift+right</emphasis>
               </entry>
               <entry>
                 switch to the next image of the collection
@@ -74,7 +90,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>right-click</emphasis>
+                <emphasis>right-click</emphasis> or <emphasis>left</emphasis> or <emphasis>Shift+left</emphasis>
               </entry>
               <entry>
                 switch to the previous image of the collection
@@ -82,11 +98,11 @@
             </row>
             <row>
               <entry>
-                <emphasis>space</emphasis>
+                <emphasis>spacebar</emphasis>
               </entry>
               <entry>
                 start and stop auto-advance mode which automatically switches to the next images
-                every five seconds and after the last image loops back to the beginning
+                every five seconds by default.
               </entry>
             </row>
             <row>

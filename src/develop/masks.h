@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (4)
+#define DEVELOP_MASKS_VERSION (6)
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -59,6 +59,12 @@ typedef enum dt_masks_points_states_t
   DT_MASKS_POINT_STATE_NORMAL = 1,
   DT_MASKS_POINT_STATE_USER = 2
 } dt_masks_points_states_t;
+
+typedef enum dt_masks_gradient_states_t
+{
+  DT_MASKS_GRADIENT_STATE_LINEAR = 1,
+  DT_MASKS_GRADIENT_STATE_SIGMOIDAL = 2
+} dt_masks_gradient_states_t;
 
 typedef enum dt_masks_edit_mode_t
 {
@@ -137,6 +143,8 @@ typedef struct dt_masks_point_gradient_t
   float rotation;
   float compression;
   float steepness;
+  float curvature;
+  dt_masks_gradient_states_t state;
 } dt_masks_point_gradient_t;
 
 /** structure used to store all forms's id for a group */
@@ -197,6 +205,8 @@ typedef struct dt_masks_form_gui_t
 
   // values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
+  // TRUE if mouse has leaved the center window
+  gboolean mouse_leaved_center;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -213,6 +223,7 @@ typedef struct dt_masks_form_gui_t
   gboolean source_dragging;
   gboolean form_rotating;
   gboolean border_toggling;
+  gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;
@@ -275,18 +286,19 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
+/** we create a completely new form and add it to darktable.develop->allforms. */
+dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type);
+/** replace dev->forms with forms */
+void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 /** returns a form with formid == id from a list of forms */
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
 /** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
 
 /** read the forms from the db */
-void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
-void dt_masks_read_forms(dt_develop_t *dev);
+void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid);
 /** write the forms into the db */
-void dt_masks_write_forms_ext(dt_develop_t *dev, const int imgid, gboolean undo);
-void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev);
-void dt_masks_write_forms(dt_develop_t *dev);
+void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
 void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
@@ -307,6 +319,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery);
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
+int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui datas */
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
@@ -332,6 +345,8 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
 void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+/* returns a duplicate tof form, including the formid */
+dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */
 GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 
@@ -346,9 +361,14 @@ void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
 void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const float x, const float y);
 void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
                                            const float pzy);
+void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int mask_type, dt_masks_form_t *form,
+                                                   const float pzx, const float pzy);
 void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float initial_xpos,
                                          const float initial_ypos, const float xpos, const float ypos, float *px,
                                          float *py, const int adding);
+
+/** return the list of possible mouse actions */
+GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
 
 /** code for dynamic handling of intermediate buffers */
 static inline
@@ -362,8 +382,9 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
     strncpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->tag[sizeof(a->tag)-1] = '\0';
     a->pos = 0;
-    a->size = size;
-    a->buffer = (float *)malloc(size * sizeof(float));
+    const size_t bufsize = dt_round_size(size * sizeof(float), 64);
+    a->size = bufsize / sizeof(float);
+    a->buffer = (float *)dt_alloc_align(64, bufsize);
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
              (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -386,9 +407,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
     float *oldbuffer = a->buffer;
     size_t oldsize = a->size;
     a->size *= 2;
-    a->buffer = (float *)realloc(a->buffer, a->size * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
+    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
     if(a->buffer == NULL)
     {
       // not much we can do here except of emitting an error message
@@ -398,9 +417,44 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
       a->buffer = oldbuffer;
       return;
     }
+    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
+    dt_free_align(oldbuffer);
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer, oldbuffer);
   }
   a->buffer[a->pos++] = value;
 }
+
+static inline
+void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(a->pos + n >= a->size)
+  {
+    if(a->size == 0) return;
+    float *oldbuffer = a->buffer;
+    size_t oldsize = a->size;
+    while(a->pos + n >= a->size) a->size *= 2;
+    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
+    if(a->buffer == NULL)
+    {
+      // not much we can do here except of emitting an error message
+      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
+              (unsigned long)a->size);
+      a->size = oldsize;
+      a->buffer = oldbuffer;
+      return;
+    }
+    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
+    dt_free_align(oldbuffer);
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer, oldbuffer);
+  }
+  memcpy(a->buffer + a->pos, values, n * sizeof(float));
+  a->pos += n;
+}
+
 
 static inline
 float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
@@ -460,9 +514,18 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   if(a == NULL) return;
   dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
           a->buffer);
-  free(a->buffer);
+  dt_free_align(a->buffer);
   free(a);
 }
+
+static inline
+int dt_masks_roundup(int num, int mult)
+{
+  const int rem = num % mult;
+
+  return (rem == 0) ? num : num + mult - rem;
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

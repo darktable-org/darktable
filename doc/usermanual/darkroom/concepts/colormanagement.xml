@@ -59,7 +59,7 @@
       In order for darktable to accurately render colors on screen it needs to find the correct
       display profile of your monitor. In general this requires your monitor to be properly
       calibrated and profiled, and it needs the profile to be correctly installed on your
-      system. darktable querys your X display server's <emphasis>xatom</emphasis> as well as the
+      system. darktable queries your X display server's <emphasis>xatom</emphasis> as well as the
       system service <emphasis>colord</emphasis> (if available) for the right profile. If needed
       you can enforce a specific method in the GUI preferences dialog (see
       <xref linkend="gui_options"/>).
@@ -67,7 +67,7 @@
 
     <para>
       To investigate your display profile configuration you can call the
-      <filename>darktable-cmstest</filename> binary which prints out useful information like
+      <filename>darktable-cmstest</filename> binary (Linux only) which prints out useful information like
       profile name per monitor and tells you if the system is correctly configured (see
       <xref linkend="darktable_cmstest_commandline_parameters"/>).
     </para>

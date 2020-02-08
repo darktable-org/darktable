@@ -8,7 +8,7 @@
           global/quit
         </entry>
         <entry>
-          &lt;Primary&gt;q
+          Ctrl+Q
         </entry>
       </row>
       <row>
@@ -16,7 +16,7 @@
           global/lighttable view
         </entry>
         <entry>
-          l
+          L
         </entry>
       </row>
       <row>
@@ -24,7 +24,7 @@
           global/darkroom view
         </entry>
         <entry>
-          d
+          D
         </entry>
       </row>
       <row>
@@ -32,7 +32,7 @@
           global/tethering view
         </entry>
         <entry>
-          t
+          T
         </entry>
       </row>
       <row>
@@ -40,7 +40,7 @@
           global/map view
         </entry>
         <entry>
-          m
+          M
         </entry>
       </row>
       <row>
@@ -48,7 +48,7 @@
           global/slideshow view
         </entry>
         <entry>
-          s
+          S
         </entry>
       </row>
       <row>
@@ -56,7 +56,7 @@
           global/print view
         </entry>
         <entry>
-          p
+          P
         </entry>
       </row>
       <row>
@@ -64,7 +64,7 @@
           global/switch view
         </entry>
         <entry>
-          period
+          Period (.)
         </entry>
       </row>
       <row>
@@ -72,7 +72,7 @@
           global/toggle header
         </entry>
         <entry>
-          &lt;Primary&gt;h
+          Ctrl+H
         </entry>
       </row>
       <row>
@@ -104,7 +104,7 @@
           global/zoom in
         </entry>
         <entry>
-          &lt;Primary&gt;KP_plus
+          Ctrl+Plus sign
         </entry>
       </row>
       <row>
@@ -112,7 +112,15 @@
           global/zoom out
         </entry>
         <entry>
-          &lt;Primary&gt;KP_minus
+          Ctrl+Minus sign
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/shortcut window
+        </entry>
+        <entry>
+          H
         </entry>
       </row>
       <row>
@@ -144,7 +152,7 @@
           modules/copy_history/copy all
         </entry>
         <entry>
-          &lt;Primary&gt;c
+          Ctrl+C
         </entry>
       </row>
       <row>
@@ -152,7 +160,7 @@
           modules/copy_history/copy
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;c
+          Ctrl+Shift+C
         </entry>
       </row>
       <row>
@@ -160,7 +168,7 @@
           modules/copy_history/paste all
         </entry>
         <entry>
-          &lt;Primary&gt;v
+          Ctrl+V
         </entry>
       </row>
       <row>
@@ -168,7 +176,7 @@
           modules/copy_history/paste
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;v
+          Ctrl+Shift+V
         </entry>
       </row>
       <row>
@@ -176,7 +184,7 @@
           modules/export/export
         </entry>
         <entry>
-          &lt;Primary&gt;e
+          Ctrl+E
         </entry>
       </row>
       <row>
@@ -224,7 +232,7 @@
           modules/filmstrip/copy history
         </entry>
         <entry>
-          &lt;Primary&gt;c
+          Ctrl+C
         </entry>
       </row>
       <row>
@@ -232,7 +240,7 @@
           modules/filmstrip/copy history parts
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;c
+          Ctrl+Shift+C
         </entry>
       </row>
       <row>
@@ -240,7 +248,7 @@
           modules/filmstrip/duplicate image
         </entry>
         <entry>
-          &lt;Primary&gt;d
+          Ctrl+D
         </entry>
       </row>
       <row>
@@ -248,7 +256,7 @@
           modules/filmstrip/invert selection
         </entry>
         <entry>
-          &lt;Primary&gt;i
+          Ctrl+I
         </entry>
       </row>
       <row>
@@ -256,7 +264,7 @@
           modules/filmstrip/paste history
         </entry>
         <entry>
-          &lt;Primary&gt;v
+          Ctrl+V
         </entry>
       </row>
       <row>
@@ -264,7 +272,7 @@
           modules/filmstrip/paste history parts
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;v
+          Ctrl+Shift+V
         </entry>
       </row>
       <row>
@@ -320,7 +328,7 @@
           modules/filmstrip/rate reject
         </entry>
         <entry>
-          r
+          R
         </entry>
       </row>
       <row>
@@ -328,7 +336,7 @@
           modules/filmstrip/select all
         </entry>
         <entry>
-          &lt;Primary&gt;a
+          Ctrl+A
         </entry>
       </row>
       <row>
@@ -336,7 +344,7 @@
           modules/filmstrip/select none
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;a
+          Ctrl+Shift+A
         </entry>
       </row>
       <row>
@@ -344,7 +352,7 @@
           modules/image/duplicate
         </entry>
         <entry>
-          &lt;Primary&gt;d
+          Ctrl+D
         </entry>
       </row>
       <row>
@@ -352,7 +360,7 @@
           modules/image/group
         </entry>
         <entry>
-          &lt;Primary&gt;g
+          Ctrl+G
         </entry>
       </row>
       <row>
@@ -368,7 +376,7 @@
           modules/image/ungroup
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;g
+          Ctrl+Shift+G
         </entry>
       </row>
       <row>
@@ -376,7 +384,7 @@
           modules/import/import folder
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;i
+          Ctrl+Shift+I
         </entry>
       </row>
       <row>
@@ -384,7 +392,7 @@
           modules/lighttable_mode/invert selection
         </entry>
         <entry>
-          &lt;Primary&gt;i
+          Ctrl+I
         </entry>
       </row>
       <row>
@@ -392,7 +400,7 @@
           modules/lighttable_mode/select all
         </entry>
         <entry>
-          &lt;Primary&gt;a
+          Ctrl+A
         </entry>
       </row>
       <row>
@@ -400,7 +408,7 @@
           modules/lighttable_mode/select none
         </entry>
         <entry>
-          &lt;Primary&gt;&lt;Shift&gt;a
+          Ctrl+Shift+A
         </entry>
       </row>
       <row>
@@ -408,7 +416,7 @@
           modules/lighttable_mode/zoom in
         </entry>
         <entry>
-          &lt;Alt&gt;2
+          Alt+2
         </entry>
       </row>
       <row>
@@ -416,7 +424,7 @@
           modules/lighttable_mode/zoom max
         </entry>
         <entry>
-          &lt;Alt&gt;1
+          Alt+1
         </entry>
       </row>
       <row>
@@ -424,7 +432,7 @@
           modules/lighttable_mode/zoom min
         </entry>
         <entry>
-          &lt;Alt&gt;4
+          Alt+4
         </entry>
       </row>
       <row>
@@ -432,7 +440,7 @@
           modules/lighttable_mode/zoom out
         </entry>
         <entry>
-          &lt;Alt&gt;3
+          Alt+3
         </entry>
       </row>
       <row>
@@ -440,7 +448,7 @@
           modules/live_view/toggle live view
         </entry>
         <entry>
-          v
+          V
         </entry>
       </row>
       <row>
@@ -448,7 +456,7 @@
           modules/metadata_view/jump to film roll
         </entry>
         <entry>
-          &lt;Primary&gt;j
+          Ctrl+J
         </entry>
       </row>
       <row>
@@ -456,7 +464,7 @@
           modules/recentcollect/jump back to previous collection
         </entry>
         <entry>
-          &lt;Primary&gt;k
+          Ctrl+K
         </entry>
       </row>
       <row>
@@ -464,7 +472,7 @@
           modules/tagging/tag
         </entry>
         <entry>
-          &lt;Primary&gt;t
+          Ctrl+T
         </entry>
       </row>
       <row>
@@ -472,7 +480,7 @@
           views/darkroom/undo
         </entry>
         <entry>
-          &lt;Primary&gt;z
+          Ctrl+Z
         </entry>
       </row>
       <row>
@@ -480,7 +488,7 @@
           views/darkroom/redo
         </entry>
         <entry>
-          &lt;Primary&gt;y
+          Ctrl+Y
         </entry>
       </row>
       <row>
@@ -512,7 +520,7 @@
           views/darkroom/export
         </entry>
         <entry>
-          &lt;Primary&gt;e
+          Ctrl+E
         </entry>
       </row>
       <row>
@@ -520,7 +528,7 @@
           views/darkroom/full preview
         </entry>
         <entry>
-          z
+          Z
         </entry>
       </row>
       <row>
@@ -528,7 +536,7 @@
           views/darkroom/gamut check
         </entry>
         <entry>
-          &lt;Primary&gt;g
+          Ctrl+G
         </entry>
       </row>
       <row>
@@ -544,7 +552,7 @@
           views/darkroom/image forward
         </entry>
         <entry>
-          space
+          Spacebar
         </entry>
       </row>
       <row>
@@ -576,7 +584,7 @@
           views/darkroom/overexposed
         </entry>
         <entry>
-          o
+          O
         </entry>
       </row>
       <row>
@@ -584,7 +592,7 @@
           views/darkroom/softproof
         </entry>
         <entry>
-          &lt;Primary&gt;s
+          Ctrl+S
         </entry>
       </row>
       <row>
@@ -592,7 +600,7 @@
           views/darkroom/toggle film strip
         </entry>
         <entry>
-          &lt;Primary&gt;f
+          Ctrl+F
         </entry>
       </row>
       <row>
@@ -600,7 +608,7 @@
           views/darkroom/zoom close-up
         </entry>
         <entry>
-          &lt;Alt&gt;1
+          Alt+1
         </entry>
       </row>
       <row>
@@ -608,7 +616,7 @@
           views/darkroom/zoom fill
         </entry>
         <entry>
-          &lt;Alt&gt;2
+          Alt+2
         </entry>
       </row>
       <row>
@@ -616,7 +624,7 @@
           views/darkroom/zoom fit
         </entry>
         <entry>
-          &lt;Alt&gt;3
+          Alt+3
         </entry>
       </row>
       <row>
@@ -664,7 +672,7 @@
           views/lighttable/navigate down
         </entry>
         <entry>
-          &lt;Shift&gt;g
+          Shift+G
         </entry>
       </row>
       <row>
@@ -688,15 +696,7 @@
           views/lighttable/navigate up
         </entry>
         <entry>
-          g
-        </entry>
-      </row>
-      <row>
-        <entry>
-          views/lighttable/preview with focus detection
-        </entry>
-        <entry>
-          &lt;Primary&gt;z
+          G
         </entry>
       </row>
       <row>
@@ -704,7 +704,15 @@
           views/lighttable/preview
         </entry>
         <entry>
-          z
+          W
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/lighttable/preview with focus detection
+        </entry>
+        <entry>
+          Ctrl+W
         </entry>
       </row>
       <row>
@@ -760,7 +768,7 @@
           views/lighttable/rate reject
         </entry>
         <entry>
-          r
+          R
         </entry>
       </row>
       <row>
@@ -768,7 +776,7 @@
           views/lighttable/realign images to grid
         </entry>
         <entry>
-          l
+          L
         </entry>
       </row>
       <row>
@@ -824,7 +832,23 @@
           views/lighttable/select toggle image
         </entry>
         <entry>
-          space
+          Spacebar
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/lighttable/sticky preview
+        </entry>
+        <entry>
+          Alt+W
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/lighttable/sticky preview with focus detection
+        </entry>
+        <entry>
+          Ctrl+Alt+W
         </entry>
       </row>
       <row>
@@ -832,7 +856,7 @@
           views/map/undo
         </entry>
         <entry>
-          &lt;Primary&gt;z
+          Ctrl+Z
         </entry>
       </row>
       <row>
@@ -840,7 +864,7 @@
           views/map/redo
         </entry>
         <entry>
-          &lt;Primary&gt;y
+          Ctrl+Y
         </entry>
       </row>
       <row>
@@ -848,7 +872,7 @@
           views/map/toggle film strip
         </entry>
         <entry>
-          &lt;Primary&gt;f
+          Ctrl+F
         </entry>
       </row>
       <row>
@@ -856,7 +880,7 @@
           views/map/undo
         </entry>
         <entry>
-          &lt;Primary&gt;z
+          Ctrl+Z
         </entry>
       </row>
       <row>
@@ -864,7 +888,7 @@
           views/print/toggle film strip
         </entry>
         <entry>
-          &lt;Primary&gt;f
+          Ctrl+F
         </entry>
       </row>
       <row>
@@ -872,7 +896,7 @@
           views/slideshow/start and stop
         </entry>
         <entry>
-          space
+          Spacebar
         </entry>
       </row>
       <row>
@@ -880,7 +904,7 @@
           views/tethering/toggle film strip
         </entry>
         <entry>
-          &lt;Primary&gt;f
+          Ctrl+F
         </entry>
       </row>
     </tbody>

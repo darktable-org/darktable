@@ -42,12 +42,14 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "history")) return "history.html#history";
   if(!strcmp(name, "colorpicker")) return "global_color_picker.html#global_color_picker";
   if(!strcmp(name, "masks")) return "mask_manager.html#mask_manager";
+  if(!strcmp(name, "duplicate")) return "duplicate.html#duplicate";
   if(!strcmp(name, "modulelist")) return "more_modules.html#more_modules";
   if(!strcmp(name, "location")) return "find_location.html#find_location";
   if(!strcmp(name, "map_settings")) return "map_settings.html#map_settings";
   if(!strcmp(name, "print_settings")) return "print_settings.html#print_settings";
-  if(!strcmp(name, "global_toolbox")) return NULL; //TODO differenciate preference from group etc
+  if(!strcmp(name, "global_toolbox")) return NULL;
   if(!strcmp(name, "global_toolbox_preferences")) return "preferences.html#preferences";
+  if(!strcmp(name, "global_toolbox_help")) return "contextual_help.html#contextual_help";
   if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
   if(!strcmp(name, "module_toolbox")) return NULL;
   if(!strcmp(name, "view_toolbox")) return NULL;
@@ -114,7 +116,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "liquify")) return "correction_group.html#liquify";
   if(!strcmp(name, "ashift")) return "correction_group.html#perspective_correction";
   if(!strcmp(name, "lens")) return "correction_group.html#lens_correction";
-  if(!strcmp(name, "retouch")) return NULL; // TODO
+  if(!strcmp(name, "retouch")) return "correction_group.html#retouch";
   if(!strcmp(name, "spots")) return "correction_group.html#spot_removal";
   if(!strcmp(name, "exposure")) return "modules.html#exposure";
   if(!strcmp(name, "tonemap")) return "tone_group.html#tonemapping";
@@ -127,6 +129,6 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "temperature")) return "modules.html#whitebalance";
   if(!strcmp(name, "invert")) return "modules.html#invert";
   if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
-
+  if(!strcmp(name, "filmic")) return "tone_group.html#filmic";
   return NULL;
 }

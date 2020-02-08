@@ -348,13 +348,13 @@
 <secondary>register_lib</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean, 
-	<emphasis><link linkend="darktable_register_lib_resetable">resetable</link></emphasis> : boolean, 
-	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ], 
-	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>, 
-	<emphasis><link linkend="darktable_register_lib_view_enter">view_enter</link></emphasis> : function, 
+	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean,
+	<emphasis><link linkend="darktable_register_lib_resettable">resettable</link></emphasis> : boolean,
+	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ],
+	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>,
+	<emphasis><link linkend="darktable_register_lib_view_enter">view_enter</link></emphasis> : function,
 	<emphasis><link linkend="darktable_register_lib_view_leave">view_leave</link></emphasis> : function
 )</synopsis>
 <para>Register a new lib object. A lib is a graphical element of darktable's user interface</para>
@@ -378,7 +378,7 @@
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_lib_resetable"><term>resetable</term><listitem>
+<varlistentry id="darktable_register_lib_resettable"><term>resettable</term><listitem>
 <synopsis>boolean</synopsis>
 <para>whether this lib has a reset button or not</para>
 
@@ -742,6 +742,100 @@
 </variablelist>
 </section>
 
+<section status="final" id="darktable_gui_panel_visible">
+<title>darktable.gui.panel_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_visible_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+) : boolean</synopsis>
+<para>Determines if the specified panel is visible.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_visible_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to check.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>true if the panel is visible, false if not</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_hide">
+<title>darktable.gui.panel_hide</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_hide</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_hide_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)</synopsis>
+<para>Hides the specified panel.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_hide_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to hide.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_show">
+<title>darktable.gui.panel_show</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_show</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_show_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)</synopsis>
+<para>Shows the specified panel.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_show_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to show.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_hide_all">
+<title>darktable.gui.panel_hide_all</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_hide_all</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Hide all panels.</para>
+
+</section>
+
+<section status="final" id="darktable_gui_panel_show_all">
+<title>darktable.gui.panel_show_all</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_show_all</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Show all panels.</para>
+
+</section>
+
 <section status="final" id="darktable_gui_create_job">
 <title>darktable.gui.create_job</title>
 <indexterm>
@@ -906,6 +1000,34 @@
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_views_darkroom_display_image">
+<title>darktable.gui.views.darkroom.display_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>display_image</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_views_darkroom_display_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Display an image in darkroom view.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_darkroom_display_image_image"><term>[image]</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to be displayed. If the image is not given, nothing will be changed.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image currently displayed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_views_lighttable">
@@ -1606,6 +1728,119 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_libs_filter_sort">
+<title>darktable.gui.libs.filter.sort</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sort</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_sort_sort">sort</link></emphasis> : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link>]
+) : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>Change the collection sort field.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_sort_sort"><term>[sort]</term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>The new field to sort by. If empty the current sort field is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>The current sort field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_sort_order">
+<title>darktable.gui.libs.filter.sort_order</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sort_order</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_sort_order_order">order</link></emphasis> : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link>]
+) : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>Change the collection sort order.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_sort_order_order"><term>[order]</term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>The order to sort by. If empty the current sort order is unchanged.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>The current sort order.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_rating">
+<title>darktable.gui.libs.filter.rating</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rating</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_rating_rating">rating</link></emphasis> : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link>]
+) : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>Change the collection rating filter.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_rating_rating"><term>[rating]</term><listitem>
+<synopsis><link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>The new rating field to filter by. If empty the current rating field is unchanged.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>The current rating field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_rating_comparator">
+<title>darktable.gui.libs.filter.rating_comparator</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rating_comparator</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_rating_comparator_comparator">comparator</link></emphasis> : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link>]
+) : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>Change the collection filter comparison field.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_rating_comparator_comparator"><term>[comparator]</term><listitem>
+<synopsis><link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>The new comparison field to filter the rating by. If empty the current rating comparison field is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>The current rating comparison field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_ratings">
@@ -1614,7 +1849,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>ratings</secondary>
 </indexterm>
-<para>The starts to set the rating of an image</para>
+<para>The stars to set the rating of an image</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -1749,6 +1984,63 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_libs_lighttable_mode_layout">
+<title>darktable.gui.libs.lighttable_mode.layout</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>layout</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_layout_layout">layout</link></emphasis> : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link>]
+) : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>Allows to change the lighttable layout.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_lighttable_mode_layout_layout"><term>[layout]</term><listitem>
+<synopsis><link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>The layout to switch to. If empty the current layout is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>the current layout</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_lighttable_mode_zoom_level">
+<title>darktable.gui.libs.lighttable_mode.zoom_level</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>zoom_level</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_zoom_level_level">level</link></emphasis> : number]
+) : number</synopsis>
+<para>Change the lighttable zoom level.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_lighttable_mode_zoom_level_level"><term>[level]</term><listitem>
+<synopsis>number</synopsis>
+<para>The zoom level to switch to. If empty the current zoom level is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>number</synopsis>
+<para>the current zoom level</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_copy_history">
@@ -2444,6 +2736,34 @@ end</programlisting></para>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis>table of <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>A table of tags that are attached to the image.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_tags_get_tagged_images">
+<title>darktable.tags.get_tagged_images</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>get_tagged_images</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_tags_get_tagged_images_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
+) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Gets all images with the attached tag.</para>
+
+<variablelist>
+<varlistentry id="darktable_tags_get_tagged_images_tag"><term>tag</term><listitem>
+<synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag to search images for.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>A table of images that have the tag attached.</para>
 
 </listitem></varlistentry>
 
@@ -4247,6 +4567,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a RAW file.</para>
+<para>WARNING: This is a flag that gets set the first time the image is opened, either by an edit or thumbnail generation.  If images are imported using
+darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be correct.</para>
 
 </section>
 
@@ -6893,6 +7215,133 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_collection_sort_t">
+<title>types.dt_collection_sort_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_sort_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different elements on which a collection can be sorted</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_SORT_NONE</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_FILENAME</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_DATETIME</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_RATING</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ID</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_COLOR</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_GROUP</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_PATH</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_CUSTOM_ORDER</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_TITLE</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_DESCRIPTION</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ASPECT_RATIO</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_SHUFFLE</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_sort_order_t">
+<title>types.dt_collection_sort_order_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_sort_order_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different orders that a collection can be sorted in</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_SORT_ORDER_ASCENDING</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ORDER_DESCENDING</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_filter_t">
+<title>types.dt_collection_filter_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_filter_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different elements on which a collection can be filtered</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_FILTER_ALL</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_NO</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_1</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_2</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_3</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_4</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_5</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_REJECT</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_NOT_REJECT</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_rating_comperator_t">
+<title>types.dt_collection_rating_comperator_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_rating_comperator_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different ways in which a collection filter can be compared</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_RATING_COMP_LT</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_LEQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_EQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_GEQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_GT</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_NE</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_N_COMPS</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_lua_orientation_t">
 <title>types.dt_lua_orientation_t</title>
 <indexterm>
@@ -7416,6 +7865,66 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </variablelist>
 </section>
 
+</section>
+
+<section status="final" id="types_dt_ui_panel_t">
+<title>types.dt_ui_panel_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_ui_panel_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different user interface panels</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_UI_PANEL_TOP</para></listitem>
+<listitem><para>DT_UI_PANEL_CENTER_TOP</para></listitem>
+<listitem><para>DT_UI_PANEL_CENTER_BOTTOM</para></listitem>
+<listitem><para>DT_UI_PANEL_LEFT</para></listitem>
+<listitem><para>DT_UI_PANEL_RIGHT</para></listitem>
+<listitem><para>DT_UI_PANEL_BOTTOM</para></listitem>
+<listitem><para>DT_UI_PANEL_SIZE</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lighttable_layout_t">
+<title>types.dt_lighttable_layout_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lighttable_layout_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different lighttable layouts</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_FIRST</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_ZOOMABLE</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_FILEMANAGER</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_CULLING</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_LAST</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_widget">

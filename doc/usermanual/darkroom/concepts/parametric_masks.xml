@@ -1,9 +1,9 @@
-<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="final" id="parametric_mask">
+<sect3 status="final" id="parametric_mask">
 
   <title>Parametric mask</title>
 
@@ -27,7 +27,7 @@
     The parametric mask is a powerful tool with a certain level of complexity.
   </para>
 
-  <sect3 status="final" id="parametric_mask_overview">
+  <sect4 status="final" id="parametric_mask_overview">
 
     <title>Overview</title>
 
@@ -51,9 +51,9 @@
       has full effect.
     </para>
 
-  </sect3>
+  </sect4>
 
-  <sect3 id="parametric_mask_usage">
+  <sect4 id="parametric_mask_usage">
 
     <title>Usage</title>
 
@@ -77,10 +77,8 @@
       </informaltable>
     </para>
 
-    <sect4 id="parametric_mask_usage_tabs">
-
+    <sect5 id="parametric_mask_usage_tabs">
       <title>Channel tabs</title>
-
       <para>
         Each tab selects a data channel&nbsp;&ndash; real or virtual. Modules acting in Lab
         color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh).
@@ -89,15 +87,13 @@
         <ulink url="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
         spaces</ulink> for a deeper look.
       </para>
-
       <para>
         Each tab provides two sliders for its data channels: one for the input data that the
         module receives and one for the output data that the module produces prior to blending.
       </para>
-
       <para>
         You can inspect the image data corresponding to an individual color channel by holding
-        down the <emphasis>shift</emphasis> key while entering the respective slider with the
+        down the <emphasis>Shift</emphasis> key while entering the respective slider with the
         mouse cursor. The center image changes to display the selected color channel either in
         graycale values or in false colors, depending on the corresponding preference setting in
         <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
@@ -105,13 +101,10 @@
         overlaid to the image. When leaving the slider the image goes back to normal after a
         short delay.
       </para>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="parametric_mask_usage_sliders">
-
+    <sect5 id="parametric_mask_usage_sliders">
       <title>Color channel sliders</title>
-
       <para>
         With the color channel slider you construct a trapezoidal opacity function. For this
         purpose there are four markers per slider. Two triangles above the slider mark the range
@@ -119,14 +112,12 @@
         opacity is zero. Intermediate points between full and zero opacities are given a
         proportional opacity.
       </para>
-
       <para>
         The filled triangles, or inside markers, indicate the closed (mostly narrower) edge of
         the trapezoidal function. The open triangles, or outside markers, indicate the open
         (mostly wider) edge of the trapezoidal function. The sequence of the markers always
         remains unchanged: they can touch but they can not switch position.
       </para>
-
       <para>
         A polarity button (
         <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center" />
@@ -137,7 +128,6 @@
         confirmation provided by exchanging the upper and the lower triangle markers. These two
         types of trapezoidal functions are represented graphically in the following images.
       </para>
-
       <para>
         <informaltable frame="none">
           <tgroup cols="2" colsep="0" rowsep="0">
@@ -189,7 +179,6 @@
           </tgroup>
         </informaltable>
       </para>
-
       <para>
         In their default state all markers are at their extreme positions, maximum left and
         maximum right, respectively. In this state a <emphasis>range select</emphasis> function
@@ -197,31 +186,24 @@
         from there one can move the sliders inwards to gradually take out more an more parts of
         the image except of the remaining narrow range.
       </para>
-
       <para>
         A <emphasis>range de-select</emphasis> function per default deselects the whole range of
         values, giving an <quote>all-zero</quote> mask as a starting point. Moving the sliders
         inwards gradually extends the mask more and more except of the remaining narrow range.
       </para>
-
       <para>
         For more information on the polarity feature read <xref linkend="combined_masks"/>.
       </para>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="parametric_mask_usage_buttons">
-
+    <sect5 id="parametric_mask_usage_buttons">
       <title>Control buttons</title>
-
       <indexterm>
         <primary>color picker</primary>
       </indexterm>
-
       <para>
         Control buttons help you when designing a parametric mask.
       </para>
-
       <para>
         With the color picker button
         <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
@@ -230,7 +212,6 @@
         switch between point and area sampling mode from within the global color picker panel
         (see <xref linkend="global_color_picker"/>).
       </para>
-
       <para>
         With the invert button
         <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
@@ -238,25 +219,32 @@
         mask) and change the method how channels are combined into the final mask. More on that
         topic can be found in <xref linkend="combined_masks"/>.
       </para>
-
       <para>
         With the reset button
         <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" />
         you can put all settings back to their default state.
       </para>
+    </sect5>
 
-    </sect4>
+    <sect5 id="blending_usage_mask_combination_inversion_combine">
+      <title>combine masks</title>
+      <para>
+        When either a <quote>parametric masks</quote>, or the combination of <quote>drawn and
+        parametric mask</quote> is active an additional combobox is shown that controls how the
+        individual masks are combined to form the final mask. This option also allows to invert
+        the final mask. Details on the combination of individual masks can be found in
+        <xref linkend="combined_masks"/>.
+      </para>
+    </sect5>
 
-  </sect3>
+  </sect4>
 
-  <sect3 status="final" id="parametric_mask_examples">
+  <sect4 status="final" id="parametric_mask_examples">
 
-    <title>Examples</title>
+    <title>Example</title>
 
-    <sect4 id="parametric_mask_examples_colorkey">
-
+    <sect5 id="parametric_mask_examples_colorkey">
       <title>Colorkey effect</title>
-
       <para>
         <informaltable frame="none">
           <tgroup cols="2" colsep="0" rowsep="0">
@@ -318,9 +306,8 @@
           </tgroup>
         </informaltable>
       </para>
+    </sect5>
 
-    </sect4>
+  </sect4>
 
-  </sect3>
-
-</sect2>
+</sect3>

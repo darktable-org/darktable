@@ -25,7 +25,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -42,7 +41,6 @@ typedef struct dt_iop_scalepixels_params_t
 
 typedef struct dt_iop_scalepixels_gui_data_t
 {
-  GtkWidget *pixel_aspect_ratio;
 } dt_iop_scalepixels_gui_data_t;
 
 typedef struct dt_iop_scalepixels_data_t {
@@ -51,6 +49,7 @@ typedef struct dt_iop_scalepixels_data_t {
   float y_scale;
 } dt_iop_scalepixels_data_t;
 
+static dt_iop_scalepixels_gui_data_t dummy;
 
 const char *name()
 {
@@ -62,14 +61,19 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("scale pixels", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int operation_tags()
 {
   return IOP_TAG_DISTORT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
@@ -124,6 +128,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // TODO
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
@@ -185,7 +197,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const dt_iop_scalepixels_data_t * const d = piece->data;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(interpolation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch_width, d, ivoid, ovoid, roi_in, roi_out) \
+  shared(interpolation) \
+  schedule(static)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -253,11 +268,11 @@ end:
 
 void gui_update(dt_iop_module_t *self)
 {
+  if(!self->widget) return;
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel scaling\nonly works for the sensors that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling only works for the sensors that need it."));
 }
 
 void init(dt_iop_module_t *self)
@@ -268,27 +283,28 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
-  self->priority = 257; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
-  self->gui_data = NULL;
+  self->gui_data = &dummy;
 }
 
 void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 

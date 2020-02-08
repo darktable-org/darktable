@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-#define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
+#define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
@@ -42,6 +42,9 @@ typedef struct dt_gui_widgets_t
   GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
   GtkGrid *panel_right;
 
+  /* resize of left/right panels */
+  gboolean panel_handle_dragging;
+  int panel_handle_x, panel_handle_y;
 } dt_gui_widgets_t;
 
 typedef struct dt_gui_scrollbars_t
@@ -53,14 +56,34 @@ typedef struct dt_gui_scrollbars_t
     gboolean dragging;
 } dt_gui_scrollbars_t;
 
-typedef enum dt_gui_color_t {
+typedef enum dt_gui_color_t
+{
   DT_GUI_COLOR_BG = 0,
   DT_GUI_COLOR_DARKROOM_BG,
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_FONT,
+  DT_GUI_COLOR_PRINT_BG,
   DT_GUI_COLOR_BRUSH_CURSOR,
   DT_GUI_COLOR_BRUSH_TRACE,
+  DT_GUI_COLOR_THUMBNAIL_BG,
+  DT_GUI_COLOR_THUMBNAIL_SELECTED_BG,
+  DT_GUI_COLOR_THUMBNAIL_HOVER_BG,
+  DT_GUI_COLOR_THUMBNAIL_OUTLINE,
+  DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE,
+  DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE,
+  DT_GUI_COLOR_THUMBNAIL_FONT,
+  DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT,
+  DT_GUI_COLOR_THUMBNAIL_HOVER_FONT,
+  DT_GUI_COLOR_THUMBNAIL_BORDER,
+  DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER,
+  DT_GUI_COLOR_FILMSTRIP_BG,
+  DT_GUI_COLOR_CULLING_SELECTED_BORDER,
+  DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER,
+  DT_GUI_COLOR_PREVIEW_HOVER_BORDER,
+  DT_GUI_COLOR_LOG_BG,
+  DT_GUI_COLOR_LOG_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -86,6 +109,7 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   gboolean show_overlays;
+  gboolean show_focus_peaking;
 
   double dpi, dpi_factor, ppd;
 
@@ -95,6 +119,9 @@ typedef struct dt_gui_gtk_t
   GtkWidget *scroll_to[2]; // one for left, one for right
 
   gint scroll_mask;
+  guint sidebar_scroll_mask;
+
+  cairo_filter_t filter_image;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
@@ -163,6 +190,20 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
+
+/* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
+ * So if Shift changes scrolling effect, both scrolls should be handled the same.
+ * For this case (or if it's otherwise useful) use the following 2 functions. */
+
+/* Return sum of scroll deltas from event. Return TRUE if any deltas
+ * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
+ * GDK_SCROLL_SMOOTH style scroll events. */
+gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
+/* Same as above, except accumulate smooth scrolls deltas of < 1 and
+ * only set delta and return TRUE once scrolls accumulate to >= 1.
+ * Effectively makes smooth scroll events act like old-style unit
+ * scroll events. */
+gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
@@ -261,8 +302,6 @@ void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkC
 void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
-/** show or hide outermost borders with expand arrows */
-void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief update scrollbars for current view */
@@ -271,6 +310,8 @@ void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, gboolean show);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
+/** \brief toggle view of header */
+void dt_ui_toggle_header(struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
@@ -288,9 +329,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
-  g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
-  gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
-  gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
@@ -300,15 +339,31 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
+static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
+{
+  // force the notebook tabs to fill the available width
+  for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
+    gtk_container_child_set(GTK_CONTAINER(notebook),
+                            gtk_notebook_get_nth_page(notebook, i),
+                            "tab-expand", TRUE, "tab-fill", TRUE, (char *)NULL);
+}
+
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
 // this expects gtk_init() to be called already which should be the case during most of dt's init phase.
 gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
                                               const char *yes_text);
 
+// similar to the one above. this one asks the user for some string. the hint is shown in the empty entry box
+char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
+                                           const char *no_text, const char *yes_text);
+
 void *dt_gui_show_splashscreen();
 void dt_gui_close_splashscreen(void *splashscreen);
 
 void dt_gui_add_help_link(GtkWidget *widget, const char *link);
+
+// load a CSS theme
+void dt_gui_load_theme(const char *theme);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

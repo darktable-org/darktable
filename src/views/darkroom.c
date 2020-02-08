@@ -22,6 +22,8 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -42,8 +44,16 @@
 #include "libs/colorpicker.h"
 #include "views/view.h"
 #include "views/view_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
+
+#ifdef USE_LUA
+#include "lua/image.h"
+#endif
 
 #include <gdk/gdkkeysyms.h>
+#include <glib.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,6 +61,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#ifndef G_SOURCE_FUNC // Defined for glib >= 2.58
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
+#endif
 
 DT_MODULE(1)
 
@@ -87,17 +101,53 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 
+static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 
-const char *name(dt_view_t *self)
+static void _darkroom_display_second_window(dt_develop_t *dev);
+static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
+
+const char *name(const dt_view_t *self)
 {
   return _("darkroom");
 }
+
+#ifdef USE_LUA
+
+static int display_image_cb(lua_State *L)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_lua_image_t imgid = -1;
+  if(luaL_testudata(L, 1, "dt_lua_image_t"))
+  {
+    luaA_to(L, dt_lua_image_t, &imgid, 1);
+    dt_dev_change_image(dev, imgid);
+  }
+  else
+  {
+    // ensure the image infos in db is up to date
+    dt_dev_write_history(dev);
+  }
+  luaA_push(L, dt_lua_image_t, &dev->image_storage.id);
+  return 1;
+}
+
+#endif
 
 
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
+
+#ifdef USE_LUA
+  lua_State *L = darktable.lua_state.state;
+  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, display_image_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "display_image");
+#endif
 }
 
 uint32_t view(const dt_view_t *self)
@@ -108,17 +158,46 @@ uint32_t view(const dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  if(dev->second_window.second_wnd)
+  {
+    if(gtk_widget_is_visible(dev->second_window.second_wnd))
+    {
+      dt_conf_set_bool("second_window/last_visible", TRUE);
+      _darkroom_ui_second_window_write_config(dev->second_window.second_wnd);
+    }
+    else
+      dt_conf_set_bool("second_window/last_visible", FALSE);
+
+    gtk_widget_destroy(dev->second_window.second_wnd);
+    dev->second_window.second_wnd = NULL;
+    dev->second_window.widget = NULL;
+  }
+  else
+  {
+    dt_conf_set_bool("second_window/last_visible", FALSE);
+  }
+
   dt_dev_cleanup(dev);
   free(dev);
 }
 
 static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
 {
-  int fd = GPOINTER_TO_INT(closure);
+  const int fd = GPOINTER_TO_INT(closure);
   ssize_t res = write(fd, data, length);
   if(res != length)
     return CAIRO_STATUS_WRITE_ERROR;
   return CAIRO_STATUS_SUCCESS;
+}
+
+static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->iso_12646.enabled)
+    return DT_DARKROOM_LAYOUT_COLOR_ASSESMENT;
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
 }
 
 void expose(
@@ -132,16 +211,16 @@ void expose(
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_save(cri);
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
 
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
   if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     GList *modules = dev->iop;
     while(modules)
@@ -150,16 +229,27 @@ void expose(
       dt_iop_gui_update(module);
       modules = g_list_next(modules);
     }
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     dev->gui_synch = 0;
   }
 
   if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
+  {
     dt_dev_process_image(dev);
+  }
+
   if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
+  {
     dt_dev_process_preview(dev);
+  }
+
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+     || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
+  {
+    dt_dev_process_preview2(dev);
+  }
 
   dt_pthread_mutex_t *mutex = NULL;
   int stride;
@@ -167,12 +257,10 @@ void expose(
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
+  const float backbuf_scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
-  static float roi_hash_old = -1.0f;
-  // compute patented dreggn hash so we don't need to check all values:
-  const float roi_hash = width + 7.0f * height + 23.0f * zoom + 42.0f * zoom_x + 91.0f * zoom_y
-                         + 666.0f * zoom;
 
   if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
   {
@@ -193,69 +281,149 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  if((dev->image_status == DT_DEV_PIXELPIPE_VALID)
-     && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
+  if(dev->pipe->output_backbuf && // do we have an image?
+    dev->pipe->output_imgid == dev->image_storage.id && // is the right image?
+    dev->pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
+    dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
-    roi_hash_old = roi_hash;
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    float wd = dev->pipe->backbuf_width;
-    float ht = dev->pipe->backbuf_height;
+    float wd = dev->pipe->output_backbuf_width;
+    float ht = dev->pipe->output_backbuf_height;
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    surface = dt_cairo_image_surface_create_for_data(dev->pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
-    if(dev->full_preview)
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
     else
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    {
+      if(dev->full_preview)
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
+      else
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+
+    cairo_translate(cr, ceilf(.5f * (width - wd)), ceilf(.5f * (height - ht)));
     if(closeup)
     {
       const double scale = 1<<closeup;
       cairo_scale(cr, scale, scale);
       cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
     }
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, -tb / 3, -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, .3, .3, .3);
-    cairo_stroke(cr);
+    if(closeup)
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    else
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+
+    cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && (roi_hash != roi_hash_old))
+  else if(dev->preview_pipe->output_backbuf && dev->preview_pipe->output_imgid == dev->image_storage.id)
   {
     // draw preview
-    roi_hash_old = roi_hash;
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
-    const float wd = dev->preview_pipe->backbuf_width;
-    const float ht = dev->preview_pipe->backbuf_height;
+    const float wd = dev->preview_pipe->output_backbuf_width;
+    const float ht = dev->preview_pipe->output_backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+
+    if(dev->iso_12646.enabled)
+    {
+      // force middle grey in background
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+    }
+    else
+    {
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    }
+
     cairo_paint(cr);
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cr, 2 * tb / 3, 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_fill(cr);
+    }
+
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
-    cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
+
+    cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image_storage.id;
+  }
+  else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+
+    // waiting message
+    PangoRectangle ink;
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    pango_layout_set_text(layout, load_txt, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+    pango_cairo_layout_path(cr, layout);
+    cairo_set_line_width(cr, 2.0);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_stroke_preserve(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+    cairo_fill(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+    g_free(load_txt);
     image_surface_imgid = dev->image_storage.id;
   }
   cairo_restore(cri);
@@ -280,9 +448,9 @@ void expose(
     g_assert(darktable.develop->proxy.snapshot.filename != NULL);
 
     /* Store current image surface to snapshot file.
-       FIXME: add checks so that we dont make snapshots of preview pipe image surface.
+       FIXME: add checks so that we don't make snapshots of preview pipe image surface.
     */
-    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY, 0600);
+    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
     cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
     close(fd);
   }
@@ -327,6 +495,7 @@ void expose(
         cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
                         (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
         cairo_stroke(cri);
+        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
@@ -364,7 +533,6 @@ void expose(
     cairo_scale(cri, zoom_scale, zoom_scale);
     cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-    // cairo_set_operator(cri, CAIRO_OPERATOR_XOR);
     cairo_set_line_width(cri, 1.0 / zoom_scale);
     cairo_set_source_rgb(cri, .2, .2, .2);
 
@@ -382,17 +550,23 @@ void expose(
     }
     else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
-      cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd, .02 * wd, .02 * wd);
+      const float size = (wd + ht) / 2.0;
+      cairo_rectangle(cri,
+                      point[0] * wd - .01 * size,
+                      point[1] * ht - .01 * size,
+                      .02 * size, .02 * size);
       cairo_stroke(cri);
 
       cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, (point[0] - 0.01) * wd + 1.0 / zoom_scale,
-                      point[1] * ht - 0.01 * wd + 1.0 / zoom_scale, .02 * wd - 2. / zoom_scale,
-                      .02 * wd - 2. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + 1. / zoom_scale);
-      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - 1. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd - .01 * wd + 1. / zoom_scale, point[1] * ht);
-      cairo_line_to(cri, point[0] * wd + .01 * wd - 1. / zoom_scale, point[1] * ht);
+      cairo_rectangle(cri,
+                      point[0] * wd - .01 * size + 1.0 / zoom_scale,
+                      point[1] * ht - .01 * size + 1.0 / zoom_scale,
+                      .02 * size - 2. / zoom_scale,
+                      .02 * size - 2. / zoom_scale);
+      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
+      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
+      cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
+      cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
       cairo_stroke(cri);
     }
   }
@@ -492,17 +666,13 @@ int try_enter(dt_view_t *self)
 
 static void select_this_image(const int imgid)
 {
-  // select this image, if no multiple selection:
-  if(dt_collection_get_selected_count(NULL) < 2)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
@@ -516,6 +686,29 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // disable color picker when changing image
+  if(dev->gui_module)
+  {
+    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  }
+
+  // update aspect ratio
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+  }
+  else
+  {
+    dt_image_set_aspect_ratio(dev->image_storage.id);
+  }
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
+
+  // prevent accels_window to refresh
+  darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
   // in darkroom mode before they touch the pipes (init buffers etc).
@@ -527,6 +720,12 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) return;
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
+    dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
+    return;
+  }
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
+  {
+    dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
     return;
   }
@@ -552,6 +751,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // if()
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
+    dt_image_reset_final_size(dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
   }
 
@@ -568,9 +768,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   while(dev->history)
   {
     // clear history of old image
-    free(((dt_dev_history_item_t *)dev->history->data)->params);
-    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
-    free((dt_dev_history_item_t *)dev->history->data);
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
+    dt_dev_free_history_item(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
 
@@ -578,26 +777,29 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   const guint nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
   for(int i = nb_iop - 1; i >= 0; i--)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop, i));
 
-    // the base module is the one with the highest multi_priority
+    // the base module is the one with the lowest multi_priority
     const guint clen = g_list_length(dev->iop);
     int base_multi_priority = 0;
     for(int k = 0; k < clen; k++)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(g_list_nth_data(dev->iop, k));
-      if(strcmp(module->op, mod->op) == 0) base_multi_priority = MAX(base_multi_priority, mod->multi_priority);
+      if(strcmp(module->op, mod->op) == 0) base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
     }
 
     if(module->multi_priority == base_multi_priority) // if the module is the "base" instance, we keep it
     {
+      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
       dt_iop_reload_defaults(module);
@@ -622,7 +824,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       free(module);
     }
   }
-  
+  dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
+
   // we also clear the saved modules
   while(dev->alliop)
   {
@@ -630,10 +833,16 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
-  
+  // and masks
+  g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
+  dev->forms = NULL;
+  g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
+  dev->allforms = NULL;
+
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-  dt_masks_read_forms(dev);
+  if(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))
+    dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
@@ -647,37 +856,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       {
         module->gui_init(module);
         dt_iop_reload_defaults(module);
-        // we search the base iop corresponding
-        GList *mods = g_list_first(dev->iop);
-        dt_iop_module_t *base = NULL;
-        int pos_module = 0;
-        int pos_base = 0;
-        int pos = 0;
-        while(mods)
-        {
-          dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
-          if(mod->multi_priority == 0 && mod->instance == module->instance)
-          {
-            base = mod;
-            pos_base = pos;
-          }
-          else if(mod == module)
-            pos_module = pos;
-          mods = g_list_next(mods);
-          pos++;
-        }
-        if(!base) continue;
 
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-        GValue gv = { 0, { { 0 } } };
-        g_value_init(&gv, G_TYPE_INT);
-        gtk_container_child_get_property(
-            GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-            base->expander, "position", &gv);
-        gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                              expander, g_value_get_int(&gv) + pos_base - pos_module);
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
         dt_iop_gui_update_blending(module);
       }
@@ -686,20 +868,24 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       module->accel_closures = NULL;
       if(module->connect_key_accels) module->connect_key_accels(module);
       dt_iop_connect_common_accels(module);
-
-      // we update show params for multi-instances for each other instances
-      dt_dev_modules_update_multishow(module->dev);
     }
     else
     {
       //  update the module header to ensure proper multi-name display
-      if(!dt_iop_is_hidden(module)) dt_iop_gui_update_header(module);
+      if(!dt_iop_is_hidden(module))
+      {
+        if(module->change_image) module->change_image(module);
+        dt_iop_gui_update_header(module);
+      }
     }
 
     modules = g_list_previous(modules);
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
+
+  // set the module list order
+  dt_dev_reorder_gui_module_list(dev);
 
   if(active_plugin)
   {
@@ -723,7 +909,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -732,11 +918,21 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_view_filmstrip_prefetch();
 
   // release pixel pipe mutices
+  dt_pthread_mutex_BAD_unlock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
   dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
 
   // update hint message
   dt_collection_hint_message(darktable.collection);
+
+  // update accels_window
+  darktable.view_manager->accels_window.prevent_refresh = FALSE;
+  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
+
+  // just make sure at this stage we have only history info into the undo, all automatic
+  // tagging should be ignored.
+  dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 }
 
 static void film_strip_activated(const int imgid, void *data)
@@ -745,17 +941,6 @@ static void film_strip_activated(const int imgid, void *data)
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  // disable color picker when changing image
-  if(dev->gui_module)
-  {
-    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  }
-
-  // first compute/update possibly new aspect ratio of current picture
-  dt_image_set_aspect_ratio(dev->image_storage.id);
-
-  // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
   dt_dev_change_image(dev, imgid);
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -803,10 +988,10 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff)
 
       if(!dev->image_loading)
       {
+        dt_dev_change_image(dev, imgid);
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
         // record the imgid to display when going back to lighttable
         dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-        dt_dev_change_image(dev, imgid);
       }
     }
     sqlite3_finalize(stmt);
@@ -832,7 +1017,6 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(closeup);
-      dt_dev_invalidate(dev);
       break;
     case 2:
       zoom_x = zoom_y = 0.0f;
@@ -841,31 +1025,32 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(0);
-      dt_dev_invalidate(dev);
       break;
     case 3:
       dt_control_set_dev_zoom(DT_ZOOM_FIT);
       dt_control_set_dev_zoom_x(0);
       dt_control_set_dev_zoom_y(0);
       dt_control_set_dev_closeup(0);
-      dt_dev_invalidate(dev);
       break;
     default:
       break;
   }
+  dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
   return TRUE;
 }
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
-
 
 static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
@@ -889,14 +1074,16 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
   gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  gchar *metadata_export = dt_lib_export_metadata_get_conf();
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
   dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
-                    icc_type, icc_filename, icc_intent);
+                    icc_type, icc_filename, icc_intent, metadata_export);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);
   g_free(icc_filename);
+  g_free(metadata_export);
   return TRUE;
 }
 
@@ -916,7 +1103,15 @@ static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
 {
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
+}
+
+static void _darkroom_ui_preview2_pipe_finish_signal_callback(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->second_window.widget)
+    gtk_widget_queue_draw(dev->second_window.widget);
 }
 
 static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
@@ -962,23 +1157,75 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     do
     {
       dt_style_t *style = (dt_style_t *)styles->data;
-      GtkWidget *mi = gtk_menu_item_new_with_label(style->name);
 
       char *items_string = dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
 
       if(style->description && *style->description)
       {
-        tooltip = g_strconcat("<b>", style->description, "</b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
       }
       else
       {
         tooltip = g_strdup(items_string);
       }
 
-      gtk_widget_set_tooltip_markup(mi, tooltip);
+      gchar **split = g_strsplit(style->name, "|", 0);
 
-      gtk_menu_shell_append(menu, mi);
+      // if sub-menu, do not put leading group in final name
+
+      gchar *mi_name = NULL;
+
+      if(split[1])
+      {
+        mi_name = g_strdup(split[1]);
+        for(int i=2; split[i]; i++)
+          mi_name = g_strconcat(mi_name, " | ", split[i], NULL);
+      }
+      else
+        mi_name = g_strdup(split[0]);
+
+      GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
+      gtk_widget_set_tooltip_markup(mi, tooltip);
+      g_free(mi_name);
+
+      // check if we already have a sub-menu with this name
+      GtkMenu *sm = NULL;
+
+      GList *childs = gtk_container_get_children(GTK_CONTAINER(menu));
+      while(childs)
+      {
+        GtkMenuItem *smi = (GtkMenuItem *)childs->data;
+        if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
+        {
+          sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
+          g_list_free(childs);
+          break;
+        }
+        childs = g_list_next(childs);
+      }
+
+      GtkMenuItem *smi = NULL;
+
+      // no sub-menu, but we need one
+      if(!sm && split[1])
+      {
+        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
+        sm = (GtkMenu *)gtk_menu_new();
+        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
+      }
+
+      if(sm)
+        gtk_menu_shell_append(GTK_MENU_SHELL(sm), mi);
+      else
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+      if(smi)
+      {
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
+        gtk_widget_show(GTK_WIDGET(smi));
+      }
+
       g_signal_connect_swapped(G_OBJECT(mi), "activate",
                                G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
                                (gpointer)g_strdup(style->name));
@@ -986,6 +1233,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       g_free(items_string);
       g_free(tooltip);
+      g_strfreev(split);
     } while((styles = g_list_next(styles)) != NULL);
     g_list_free_full(styles, dt_style_free);
   }
@@ -1003,6 +1251,20 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     dt_control_log(_("no styles have been created yet"));
 }
 
+static void _second_window_quickbutton_clicked(GtkWidget *w, dt_develop_t *dev)
+{
+  if(dev->second_window.second_wnd && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+  {
+    _darkroom_ui_second_window_write_config(dev->second_window.second_wnd);
+
+    gtk_widget_destroy(dev->second_window.second_wnd);
+    dev->second_window.second_wnd = NULL;
+    dev->second_window.widget = NULL;
+  }
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+    _darkroom_display_second_window(dev);
+}
+
 /** toolbar buttons */
 
 static gboolean _toolbar_show_popup(gpointer user_data)
@@ -1013,13 +1275,38 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   return FALSE;
 }
 
+/* colour assessment */
+static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if (!d->gui_attached) return;
+
+  d->iso_12646.enabled = !d->iso_12646.enabled;
+  d->width = d->orig_width;
+  d->height = d->orig_height;
+
+  if(d->iso_12646.enabled)
+  {
+    d->border_size = 0.125 * d->width;
+  }
+  else
+  {
+    // Reset border size from config
+    d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
+
+  dt_dev_configure(d, d->width, d->height);
+
+  dt_ui_restore_panels(darktable.gui->ui);
+  dt_dev_reprocess_center(d);
+}
+
 /* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
-  //   dt_dev_reprocess_center(d);
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1053,8 +1340,7 @@ static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void lower_callback(GtkWidget *slider, gpointer user_data)
@@ -1064,8 +1350,7 @@ static void lower_callback(GtkWidget *slider, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void upper_callback(GtkWidget *slider, gpointer user_data)
@@ -1075,8 +1360,7 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 /* rawoverexposed */
@@ -1084,8 +1368,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.enabled = !d->rawoverexposed.enabled;
-  //   dt_dev_reprocess_center(d);
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _rawoverexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1119,8 +1402,7 @@ static void rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_data)
@@ -1130,8 +1412,7 @@ static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -1141,8 +1422,7 @@ static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_d
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1163,7 +1443,7 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 
   _update_softproof_gamut_checking(d);
 
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1172,6 +1452,25 @@ static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *even
   GdkEventButton *e = (GdkEventButton *)event;
 
   gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.softproof_button);
+
+  if(e->button == 3)
+  {
+    _toolbar_show_popup(d->profile.floating_window);
+    return TRUE;
+  }
+  else
+  {
+    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
+    return FALSE;
+  }
+}
+
+static gboolean _second_window_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  GdkEventButton *e = (GdkEventButton *)event;
+
+  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->second_window.button);
 
   if(e->button == 3)
   {
@@ -1204,7 +1503,7 @@ static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 
   _update_softproof_gamut_checking(d);
 
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1270,6 +1569,37 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   }
 }
 
+static void display2_intent_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  const int pos = dt_bauhaus_combobox_get(combo);
+
+  dt_iop_color_intent_t new_intent = darktable.color_profiles->display2_intent;
+
+  // we are not using the int value directly so it's robust against changes on lcms' side
+  switch(pos)
+  {
+    case 0:
+      new_intent = DT_INTENT_PERCEPTUAL;
+      break;
+    case 1:
+      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+      break;
+    case 2:
+      new_intent = DT_INTENT_SATURATION;
+      break;
+    case 3:
+      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
+      break;
+  }
+
+  if(new_intent != darktable.color_profiles->display2_intent)
+  {
+    darktable.color_profiles->display2_intent = new_intent;
+    dt_dev_reprocess_all(d);
+  }
+}
+
 static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
@@ -1301,7 +1631,11 @@ static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
   darktable.color_profiles->softproof_filename[0] = '\0';
 
 end:
-  if(profile_changed) dt_dev_reprocess_all(d);
+  if(profile_changed)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
+    dt_dev_reprocess_all(d);
+  }
 }
 
 static void display_profile_callback(GtkWidget *combo, gpointer user_data)
@@ -1339,6 +1673,86 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+    dt_dev_reprocess_all(d);
+  }
+}
+
+static void display2_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->display2_pos == pos)
+    {
+      if(darktable.color_profiles->display2_type != pp->type
+         || (darktable.color_profiles->display2_type == DT_COLORSPACE_FILE
+             && strcmp(darktable.color_profiles->display2_filename, pp->filename)))
+      {
+        darktable.color_profiles->display2_type = pp->type;
+        g_strlcpy(darktable.color_profiles->display2_filename, pp->filename,
+                  sizeof(darktable.color_profiles->display2_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to system display2 profile. shouldn't happen
+  fprintf(stderr, "can't find preview display profile `%s', using system display profile instead\n",
+          dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
+  darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
+  darktable.color_profiles->display2_filename[0] = '\0';
+
+end:
+  if(profile_changed)
+  {
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display2_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                            DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
+    dt_dev_reprocess_all(d);
+  }
+}
+
+static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->category_pos == pos)
+    {
+      if(darktable.color_profiles->histogram_type != pp->type
+        || (darktable.color_profiles->histogram_type == DT_COLORSPACE_FILE
+            && strcmp(darktable.color_profiles->histogram_filename, pp->filename)))
+      {
+        darktable.color_profiles->histogram_type = pp->type;
+        g_strlcpy(darktable.color_profiles->histogram_filename, pp->filename,
+                  sizeof(darktable.color_profiles->histogram_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to export profile. shouldn't happen
+  fprintf(stderr, "can't find histogram profile `%s', using export profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->histogram_type != DT_COLORSPACE_WORK;
+  darktable.color_profiles->histogram_type = DT_COLORSPACE_WORK;
+  darktable.color_profiles->histogram_filename[0] = '\0';
+
+end:
+  if(profile_changed)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM);
     dt_dev_reprocess_all(d);
   }
 }
@@ -1359,6 +1773,69 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
+
+  // reconstruct dynamic accels list
+  dt_dynamic_accel_get_valid_list();
+}
+
+static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
+{
+  GList *l = darktable.color_profiles->profiles;
+  while(l)
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->display_pos > -1)
+    {
+      if(prof->type == darktable.color_profiles->display_type
+         && (prof->type != DT_COLORSPACE_FILE
+             || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
+      {
+        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display_pos)
+        {
+          dt_bauhaus_combobox_set(cmb_display_profile, prof->display_pos);
+          break;
+        }
+      }
+    }
+    l = g_list_next(l);
+  }
+}
+
+static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
+{
+  GList *l = darktable.color_profiles->profiles;
+  while(l)
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->display2_pos > -1)
+    {
+      if(prof->type == darktable.color_profiles->display2_type
+         && (prof->type != DT_COLORSPACE_FILE
+             || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
+      {
+        if(dt_bauhaus_combobox_get(cmb_display_profile) != prof->display2_pos)
+        {
+          dt_bauhaus_combobox_set(cmb_display_profile, prof->display2_pos);
+          break;
+        }
+      }
+    }
+    l = g_list_next(l);
+  }
+}
+
+static void _display_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+{
+  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
+
+  _update_display_profile_cmb(cmb_display_profile);
+}
+
+static void _display2_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+{
+  GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
+
+  _update_display2_profile_cmb(cmb_display_profile);
 }
 
 /** end of toolbox */
@@ -1423,7 +1900,7 @@ void gui_init(dt_view_t *self)
 
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets
-      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
@@ -1431,19 +1908,39 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
-  const int panel_width = dt_conf_get_int("panel_width");
+  /* create second window display button */
+  dev->second_window.button
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
+                   dev);
+  g_signal_connect(G_OBJECT(dev->second_window.button), "button-press-event",
+                   G_CALLBACK(_second_window_quickbutton_pressed), dev);
+  g_signal_connect(G_OBJECT(dev->second_window.button), "button-release-event",
+                   G_CALLBACK(_profile_quickbutton_released), dev);
+  gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
+  dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
+
+  const int dialog_width = 350;
+
+  /* Enable ISO 12646-compliant colour assessment conditions */
+  dev->iso_12646.button
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(dev->iso_12646.button,
+                              _("toggle ISO 12646 colour assessment conditions"));
+  g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
   /* create rawoverexposed popup tool */
   {
     // the button
     dev->rawoverexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
@@ -1457,17 +1954,12 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -1512,7 +2004,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->overexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle over/under exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
@@ -1526,17 +2018,12 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->overexposed.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -1574,8 +2061,8 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.softproof_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -1588,8 +2075,8 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
-    dev->profile.gamut_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.gamut_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
@@ -1603,17 +2090,12 @@ void gui_init(dt_view_t *self)
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -1631,18 +2113,34 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
     dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
+    GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(display2_intent, NULL, _("preview display intent"));
+    gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+    dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
+    dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
+    dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
+    dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
+
     if(!force_lcms2)
     {
       gtk_widget_set_no_show_all(display_intent, TRUE);
       gtk_widget_set_visible(display_intent, FALSE);
+      gtk_widget_set_no_show_all(display2_intent, TRUE);
+      gtk_widget_set_visible(display2_intent, FALSE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *histogram_profile = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_widget_set_label(softproof_profile, NULL, _("softproof profile"));
     dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
+    dt_bauhaus_widget_set_label(display2_profile, NULL, _("preview display profile"));
+    dt_bauhaus_widget_set_label(histogram_profile, NULL, _("histogram profile"));
     gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), histogram_profile, TRUE, TRUE, 0);
 
     GList *l = darktable.color_profiles->profiles;
     while(l)
@@ -1658,6 +2156,16 @@ void gui_init(dt_view_t *self)
           dt_bauhaus_combobox_set(display_profile, prof->display_pos);
         }
       }
+      if(prof->display2_pos > -1)
+      {
+        dt_bauhaus_combobox_add(display2_profile, prof->name);
+        if(prof->type == darktable.color_profiles->display2_type
+           && (prof->type != DT_COLORSPACE_FILE
+               || !strcmp(prof->filename, darktable.color_profiles->display2_filename)))
+        {
+          dt_bauhaus_combobox_set(display2_profile, prof->display2_pos);
+        }
+      }
       // the system display profile is only suitable for display purposes
       if(prof->out_pos > -1)
       {
@@ -1667,6 +2175,16 @@ void gui_init(dt_view_t *self)
               || !strcmp(prof->filename, darktable.color_profiles->softproof_filename)))
           dt_bauhaus_combobox_set(softproof_profile, prof->out_pos);
       }
+      if(prof->category_pos > -1)
+      {
+        dt_bauhaus_combobox_add(histogram_profile, prof->name);
+        if(prof->type == darktable.color_profiles->histogram_type
+          && (prof->type != DT_COLORSPACE_FILE
+              || !strcmp(prof->filename, darktable.color_profiles->histogram_filename)))
+        {
+          dt_bauhaus_combobox_set(histogram_profile, prof->category_pos);
+        }
+      }
       l = g_list_next(l);
     }
 
@@ -1675,32 +2193,323 @@ void gui_init(dt_view_t *self)
     char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(display_profile, tooltip);
     g_free(tooltip);
+    tooltip = g_strdup_printf(_("preview display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(display2_profile, tooltip);
+    g_free(tooltip);
     tooltip = g_strdup_printf(_("softproof ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(softproof_profile, tooltip);
+    g_free(tooltip);
+    tooltip = g_strdup_printf(_("histogram and color picker ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(histogram_profile, tooltip);
     g_free(tooltip);
     g_free(system_profile_dir);
     g_free(user_profile_dir);
 
     g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
+    g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(display2_intent_callback), dev);
+    g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
+    g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
 
     _update_softproof_gamut_checking(dev);
 
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display_intent);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_preference_changed),
+                              (gpointer)display2_intent);
+    // and when profiles change
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                              G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                              G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+  }
+
+  darktable.view_manager->proxy.darkroom.view = self;
+  darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
+  dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+}
+
+enum
+{
+  DND_TARGET_IOP,
+};
+
+/** drag and drop module list */
+static const GtkTargetEntry _iop_target_list_internal[] = { { "iop", GTK_TARGET_SAME_WIDGET, DND_TARGET_IOP } };
+static const guint _iop_n_targets_internal = G_N_ELEMENTS(_iop_target_list_internal);
+
+static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y)
+{
+  dt_iop_module_t *module_dest = NULL;
+
+  GtkWidget *widget_dest = NULL;
+  GList *children = gtk_container_get_children(GTK_CONTAINER(container));
+  for(GList *l = children; l != NULL; l = g_list_next(l))
+  {
+    GtkWidget *w = GTK_WIDGET(l->data);
+
+    if(w && gtk_widget_is_visible(w))
+    {
+      GtkAllocation allocation_w = {0};
+      gtk_widget_get_allocation(w, &allocation_w);
+      if(y <= allocation_w.y + allocation_w.height + DT_PIXEL_APPLY_DPI(8) && y >= allocation_w.y - DT_PIXEL_APPLY_DPI(8))
+      {
+        widget_dest = w;
+        break;
+      }
+    }
+  }
+  g_list_free(children);
+
+  if(widget_dest)
+  {
+    GList *modules = g_list_first(darktable.develop->iop);
+    while(modules)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      if(mod->expander == widget_dest)
+      {
+        module_dest = mod;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  return module_dest;
+}
+
+static dt_iop_module_t *_get_dnd_source_module(GtkBox *container)
+{
+  dt_iop_module_t *module_source = NULL;
+  gpointer *source_data = g_object_get_data(G_OBJECT(container), "source_data");
+  if(source_data) module_source = (dt_iop_module_t *)source_data;
+
+  return module_source;
+}
+
+// this will be used for a custom highlight, if ever implemented
+static void _on_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+}
+
+// FIXME: default highlight for the dnd is barely visible
+// it should be possible to configure it
+static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
+{
+  GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+  dt_iop_module_t *module_src = _get_dnd_source_module(container);
+  if(module_src && module_src->expander)
+  {
+    GdkWindow *window = gtk_widget_get_parent_window(module_src->expander);
+    if(window)
+    {
+      GtkAllocation allocation_w = {0};
+      gtk_widget_get_allocation(module_src->expander, &allocation_w);
+
+      GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
+                                                     allocation_w.width, allocation_w.height);
+      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, 0);
+    }
+  }
+}
+
+static void _on_drag_data_get(GtkWidget *widget, GdkDragContext *context,
+                              GtkSelectionData *selection_data, guint info, guint time,
+                              gpointer user_data)
+{
+  gpointer *target_data = g_object_get_data(G_OBJECT(widget), "target_data");
+  guint number_data = 0;
+  if(target_data) number_data = GPOINTER_TO_UINT(target_data[DND_TARGET_IOP]);
+  gtk_selection_data_set(selection_data, gdk_atom_intern("iop", TRUE), // type
+                                        32,                            // format
+                                        (guchar*)&number_data,         // data
+                                        1);                            // length
+}
+
+static gboolean _on_drag_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, gpointer user_data)
+{
+  GdkAtom target_atom = GDK_NONE;
+
+  target_atom = gdk_atom_intern("iop", TRUE);
+
+  gtk_drag_get_data(widget, dc, target_atom, time);
+
+  return TRUE;
+}
+
+static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, gpointer user_data)
+{
+  gboolean can_moved = FALSE;
+  GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+  dt_iop_module_t *module_src = _get_dnd_source_module(container);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+
+  if(module_src && module_dest && module_src != module_dest)
+  {
+    if(module_src->iop_order < module_dest->iop_order)
+      can_moved = dt_ioppr_check_can_move_after_iop(darktable.develop->iop, module_src, module_dest);
+    else
+      can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
+  }
+
+  if(can_moved)
+  {
+    gdk_drag_status(dc, GDK_ACTION_COPY, time);
+    GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
+    if(w) gtk_drag_unhighlight(w);
+    g_object_set_data(G_OBJECT(widget), "highlighted", (gpointer)module_dest->expander);
+    gtk_drag_highlight(module_dest->expander);
+  }
+  else
+  {
+    gdk_drag_status(dc, 0, time);
+    GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
+    if(w)
+    {
+      gtk_drag_unhighlight(w);
+      g_object_set_data(G_OBJECT(widget), "highlighted", (gpointer)FALSE);
+    }
+  }
+
+  return can_moved;
+}
+
+static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x, gint y,
+                                   GtkSelectionData *selection_data,
+                                   guint info, guint time, gpointer user_data)
+{
+  int moved = 0;
+  GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+  dt_iop_module_t *module_src = _get_dnd_source_module(container);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+
+  if(module_src && module_dest && module_src != module_dest)
+  {
+    if(module_src->iop_order < module_dest->iop_order)
+    {
+      /* printf("[_on_drag_data_received] moving %s %s(%f) after %s %s(%f)\n",
+          module_src->op, module_src->multi_name, module_src->iop_order,
+          module_dest->op, module_dest->multi_name, module_dest->iop_order); */
+      moved = dt_ioppr_move_iop_after(darktable.develop, module_src, module_dest);
+    }
+    else
+    {
+      /* printf("[_on_drag_data_received] moving %s %s(%f) before %s %s(%f)\n",
+          module_src->op, module_src->multi_name, module_src->iop_order,
+          module_dest->op, module_dest->multi_name, module_dest->iop_order); */
+      moved = dt_ioppr_move_iop_before(darktable.develop, module_src, module_dest);
+    }
+  }
+  else
+  {
+    if(module_src == NULL)
+      fprintf(stderr, "[_on_drag_data_received] can't find source module\n");
+    if(module_dest == NULL)
+      fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
+  }
+
+  gtk_drag_finish(dc, TRUE, FALSE, time);
+
+  if(moved)
+  {
+    // we move the headers
+    GValue gv = { 0, { { 0 } } };
+    g_value_init(&gv, G_TYPE_INT);
+    gtk_container_child_get_property(
+        GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)), module_dest->expander,
+        "position", &gv);
+    gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
+        module_src->expander, g_value_get_int(&gv));
+
+    // we update the headers
+    dt_dev_modules_update_multishow(module_src->dev);
+
+    dt_dev_add_history_item(module_src->dev, module_src, TRUE);
+
+    dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
+
+    // we rebuild the pipe
+    module_src->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+    module_src->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    module_src->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    module_src->dev->pipe->cache_obsolete = 1;
+    module_src->dev->preview_pipe->cache_obsolete = 1;
+    module_src->dev->preview2_pipe->cache_obsolete = 1;
+
+    // invalidate buffers and force redraw of darkroom
+    dt_dev_invalidate_all(module_src->dev);
+  }
+}
+
+static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
+{
+  GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
+  if(w)
+  {
+    gtk_drag_unhighlight(w);
+    g_object_set_data(G_OBJECT(widget), "highlighted", (gpointer)FALSE);
+  }
+}
+
+static void _register_modules_drag_n_drop(dt_view_t *self)
+{
+  if(darktable.gui)
+  {
+    GtkWidget *container = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+
+    gtk_drag_source_set(container, GDK_BUTTON1_MASK | GDK_SHIFT_MASK, _iop_target_list_internal, _iop_n_targets_internal, GDK_ACTION_COPY);
+
+    g_object_set_data(G_OBJECT(container), "targetlist", (gpointer)_iop_target_list_internal);
+    g_object_set_data(G_OBJECT(container), "ntarget", GUINT_TO_POINTER(_iop_n_targets_internal));
+
+    g_signal_connect(container, "drag-begin", G_CALLBACK(_on_drag_begin), NULL);
+    g_signal_connect(container, "drag-data-get", G_CALLBACK(_on_drag_data_get), NULL);
+    g_signal_connect(container, "drag-end", G_CALLBACK(_on_drag_end), NULL);
+
+    gtk_drag_dest_set(container, 0, _iop_target_list_internal, _iop_n_targets_internal, GDK_ACTION_COPY);
+
+    g_signal_connect(container, "drag-data-received", G_CALLBACK(_on_drag_data_received), NULL);
+    g_signal_connect(container, "drag-drop", G_CALLBACK(_on_drag_drop), NULL);
+    g_signal_connect(container, "drag-motion", G_CALLBACK(_on_drag_motion), NULL);
+    g_signal_connect(container, "drag-leave", G_CALLBACK(_on_drag_leave), NULL);
+  }
+}
+
+static void _unregister_modules_drag_n_drop(dt_view_t *self)
+{
+  if(darktable.gui)
+  {
+    gtk_drag_source_unset(dt_ui_center(darktable.gui->ui));
+
+    GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_begin), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_get), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_end), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_data_received), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_drop), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_motion), NULL);
+    g_signal_handlers_disconnect_matched(container, G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_on_drag_leave), NULL);
   }
 }
 
 void enter(dt_view_t *self)
 {
+  // prevent accels_window to refresh
+  darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), (gpointer)self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
+                            G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback), (gpointer)self);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -1731,6 +2540,7 @@ void enter(dt_view_t *self)
    * add IOP modules to plugin list
    */
   // avoid triggering of events before plugin is ready:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
@@ -1752,14 +2562,18 @@ void enter(dt_view_t *self)
       dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
     }
 
-    /* setup key accelerators */
+    /* setup key accelerators (only if not hidden) */
     module->accel_closures = NULL;
-    if(module->connect_key_accels) module->connect_key_accels(module);
-    dt_iop_connect_common_accels(module);
+    if(module->so->state != dt_iop_state_HIDDEN)
+    {
+      if(module->connect_key_accels) module->connect_key_accels(module);
+      dt_iop_connect_common_accels(module);
+    }
 
     modules = g_list_previous(modules);
   }
-  darktable.gui->reset = 0;
+  // make signals work again:
+  darktable.gui->reset = reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -1774,9 +2588,6 @@ void enter(dt_view_t *self)
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
-  // make signals work again:
-  darktable.gui->reset = 0;
-
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
@@ -1790,7 +2601,9 @@ void enter(dt_view_t *self)
     }
     g_free(active_plugin);
   }
-  dt_dev_masks_list_change(dev);
+
+  // update module multishow state now modules are loaded
+  dt_dev_modules_update_multishow(dev);
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -1818,16 +2631,36 @@ void enter(dt_view_t *self)
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+
+  _register_modules_drag_n_drop(self);
+
+  if(dt_conf_get_bool("second_window/last_visible"))
+  {
+    _darkroom_display_second_window(dev);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), TRUE);
+  }
+
+  // just make sure at this stage we have only history info into the undo, all automatic
+  // tagging should be ignored.
+  dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
+
+  // update accels_window
+  darktable.view_manager->accels_window.prevent_refresh = FALSE;
 }
 
 void leave(dt_view_t *self)
 {
+  _unregister_modules_drag_n_drop(self);
+
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
                                (gpointer)self);
 
   /* disconnect from pipe finish signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+                               (gpointer)self);
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
                                (gpointer)self);
 
   // store groups for next time:
@@ -1841,34 +2674,50 @@ void leave(dt_view_t *self)
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  // tag image as changed
-  // TODO: only tag the image when there was a real change.
-  guint tagid = 0;
-  dt_tag_new_from_gui("darktable|changed", &tagid);
-  dt_tag_attach(tagid, dev->image_storage.id);
+  // reset color assesment mode
+  if(dev->iso_12646.enabled)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
+    dev->iso_12646.enabled = FALSE;
+    dev->width = dev->orig_width;
+    dev->height = dev->orig_height;
+    dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
+
   // commit image ops to db
   dt_dev_write_history(dev);
+
+  // update aspect ratio
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+  }
+  else
+  {
+    dt_image_set_aspect_ratio(dev->image_storage.id);
+  }
 
   // be sure light table will regenerate the thumbnail:
   // TODO: only if changed!
   // if()
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
+    dt_image_reset_final_size(dev->image_storage.id);
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }
 
-  // update possibly changed aspect ratio
-  dt_image_set_aspect_ratio(dev->image_storage.id);
-
   // clear gui.
 
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_lock(&dev->pipe_mutex);
 
   dev->gui_leaving = 1;
 
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -1877,11 +2726,7 @@ void leave(dt_view_t *self)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
     // printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float
     // *)hist->params, *((float *)hist->params+1));
-    free(hist->params);
-    hist->params = NULL;
-    free(hist->blend_params);
-    hist->blend_params = NULL;
-    free(hist);
+    dt_dev_free_history_item(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
 
@@ -1906,6 +2751,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+  dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
   // cleanup visible masks
@@ -1917,6 +2763,11 @@ void leave(dt_view_t *self)
     dev->form_gui = NULL;
     dt_masks_change_form_gui(NULL);
   }
+  // clear masks
+  g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
+  dev->forms = NULL;
+  g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
+  dev->allforms = NULL;
 
   // take care of the overexposed window
   if(dev->overexposed.timeout > 0) g_source_remove(dev->overexposed.timeout);
@@ -1925,6 +2776,9 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
+  darktable.develop->image_storage.id = -1;
+  // darkroom development could have changed a collection, so update that before being back in lightroom
+  dt_collection_update_query(darktable.collection);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
@@ -1945,12 +2799,19 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
+void mouse_enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  // masks
+  dt_masks_events_mouse_enter(dev->gui_module);
+}
+
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -1988,10 +2849,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     {
       dev->gui_module->color_picker_point[0] = .5f + zoom_x;
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     }
 
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
     return;
   }
@@ -2022,23 +2883,30 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     ctl->button_x = x - offx;
     ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
   }
 }
 
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = darktable.develop;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = darktable.develop;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
+  {
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_control_queue_redraw();
+    return 1;
+  }
   // masks
   if(dev->form_visible) handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
@@ -2053,10 +2921,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
@@ -2078,10 +2946,12 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     {
       dev->gui_module->color_picker_point[0] = .5f + zoom_x;
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dt_dev_invalidate_all(dev);
+
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     }
+
     dt_control_queue_redraw();
+
     return 1;
   }
   // masks
@@ -2132,6 +3002,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     dt_control_set_dev_zoom_x(zoom_x);
     dt_control_set_dev_zoom_y(zoom_y);
     dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
     return 1;
   }
   return 0;
@@ -2144,21 +3016,36 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
 
   /* redraw pipe */
   dt_dev_invalidate(darktable.develop);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
 }
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t tb = dev->border_size;
   const int32_t capwd = self->width  - 2*tb;
   const int32_t capht = self->height - 2*tb;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
   if(width_i > capwd) x += (capwd - width_i) * .5f;
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
+  // dynamic accels
+  if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
+  {
+    gtk_widget_grab_focus(self->dynamic_accel_current->widget);
+    float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
+    float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+
+    if(up)
+      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+    else
+      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
+    return;
+  }
   // masks
   if(dev->form_visible) handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
@@ -2187,9 +3074,15 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   closeup = 0;
   if(up)
   {
-    if(scale == 1.0f && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
-    if(scale >= 2.0f)
+    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if(scale >= 16.0f)
       return;
+    else if(scale >= 8.0f)
+      scale = 16.0;
+    else if(scale >= 4.0f)
+      scale = 8.0;
+    else if(scale >= 2.0f)
+      scale = 4.0;
     else if(scale < fitscale)
       scale += .05f * (1.0f - fitscale);
     else
@@ -2203,35 +3096,57 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       return;
     else if(scale <= fitscale)
       scale -= .05f * (1.0f - fitscale);
-    else
+    else if(scale <= 2.0f)
       scale -= .1f * (1.0f - fitscale);
+    else if(scale <= 4.0f)
+      scale = 2.0f;
+    else if(scale <= 8.0f)
+      scale = 4.0f;
+    else
+      scale = 8.0f;
   }
   // we want to be sure to stop at 1:1 and FIT levels
   if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
   if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-  scale = fmaxf(fminf(scale, 2.0f), 0.5 * fitscale);
+  scale = fmaxf(fminf(scale, 16.0f), 0.5 * fitscale);
 
   // for 200% zoom we want pixel doubling instead of interpolation
-  if(scale > 1.9999f)
+  if(scale > 15.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 4;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 7.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 3;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 3.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 2;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 1.9999f)
   {
     scale = 1.0f; // don't interpolate
     closeup = 1;  // enable closeup mode (pixel doubling)
   }
 
-  dt_control_set_dev_zoom_scale(scale);
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
   if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
+  dt_control_set_dev_zoom_scale(scale);
+  dt_control_set_dev_closeup(closeup);
+  scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
   zoom_x -= mouse_off_x / (procw * scale);
   zoom_y -= mouse_off_y / (proch * scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
-  dt_control_set_dev_closeup(closeup);
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
-
   dt_dev_invalidate(dev);
-
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
 }
 
 int key_released(dt_view_t *self, guint key, guint state)
@@ -2254,6 +3169,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
     dt_dev_invalidate(darktable.develop);
     dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
   }
   // add an option to allow skip mouse events while editing masks
   if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
@@ -2298,7 +3214,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       // we quit the active iop if any
       lib->full_preview_last_module = darktable.develop->gui_module;
       dt_iop_request_focus(NULL);
-      // and we redraw all
       dt_dev_invalidate(darktable.develop);
       dt_control_queue_redraw_center();
     }
@@ -2360,7 +3275,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_control_set_dev_zoom_y(zy);
 
     dt_dev_invalidate(dev);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
 
     return 1;
   }
@@ -2372,6 +3288,14 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
+  // set focus to the search module text box
+  if(key == accels->darkroom_search_modules_focus.accel_key
+     && state == accels->darkroom_search_modules_focus.accel_mods)
+  {
+    dt_dev_modulegroups_search_text_focus(darktable.develop);
+    return 1;
+  }
+
   return 1;
 }
 
@@ -2379,6 +3303,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 void configure(dt_view_t *self, int wd, int ht)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  dev->orig_width = wd;
+  dev->orig_height = ht;
   dt_dev_configure(dev, wd, ht);
 }
 
@@ -2398,6 +3324,9 @@ void init_key_accels(dt_view_t *self)
   // Shortcut to skip images
   dt_accel_register_view(self, NC_("accel", "image forward"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
+
+  // toggle ISO 12646 color assessment condition
+  dt_accel_register_view(self, NC_("accel", "color assessment"), GDK_KEY_b, GDK_CONTROL_MASK);
 
   // toggle raw overexposure indication
   dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_o, GDK_SHIFT_MASK);
@@ -2424,7 +3353,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
 
   // fullscreen view
-  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_z, 0);
+  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_w, 0);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -2432,6 +3361,9 @@ void init_key_accels(dt_view_t *self)
 
   // add an option to allow skip mouse events while editing masks
   dt_accel_register_view(self, NC_("accel", "allow to pan & zoom while editing masks"), GDK_KEY_a, 0);
+
+  // set focus to the search modules text box
+  dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -2478,6 +3410,10 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "image back", closure);
 
+  // toggle ISO 12646 color assessment condition
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->iso_12646.button, NULL);
+  dt_accel_connect_view(self, "color assessment", closure);
+
   // toggle raw overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->rawoverexposed.button, NULL);
   dt_accel_connect_view(self, "raw overexposed", closure);
@@ -2517,6 +3453,824 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_darkroom_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
+
+  // dynamics accels
+  dt_dynamic_accel_get_valid_list();
+}
+
+GSList *mouse_actions(const dt_view_t *self)
+{
+  GSList *lm = NULL;
+  GSList *lm2 = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
+  g_strlcpy(a->name, _("switch to lighttable"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("zoom in the image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("unbounded zoom in the image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_MIDDLE;
+  g_strlcpy(a->name, _("zoom to 100% 200% and back"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[modules] expand module without closing others"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_DRAG_DROP;
+  g_strlcpy(a->name, _("[modules] change module position in pipe"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  const dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->form_visible)
+  {
+    // masks
+    lm2 = dt_masks_mouse_actions(dev->form_visible);
+  }
+  else if(dev->gui_module && dev->gui_module->mouse_actions)
+  {
+    // modules with on canvas actions
+    lm2 = dev->gui_module->mouse_actions(dev->gui_module);
+  }
+
+  // we concatenate the 2 lists
+  GSList *l = lm2;
+  while(l)
+  {
+    a = (dt_mouse_action_t *)l->data;
+    if(a) lm = g_slist_append(lm, a);
+    l = g_slist_next(l);
+  }
+  g_slist_free(lm2);
+
+  return lm;
+}
+
+//-----------------------------------------------------------
+// second darkroom window
+//-----------------------------------------------------------
+
+/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
+ * DPI */
+#define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->second_window.dpi_factor)
+
+static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
+{
+  GtkWidget *widget = dev->second_window.second_wnd;
+  GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
+  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+  g_object_unref(cursor);
+}
+
+static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *cri, int32_t width, int32_t height,
+                                 int32_t pointerx, int32_t pointery)
+{
+  cairo_set_source_rgb(cri, .2, .2, .2);
+  cairo_save(cri);
+
+  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  // account for border, make it transparent for other modules called below:
+  pointerx -= tb;
+  pointery -= tb;
+
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+     || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
+    dt_dev_process_preview2(dev);
+
+  dt_pthread_mutex_t *mutex = NULL;
+  const float zoom_y = dt_second_window_get_dev_zoom_y(dev);
+  const float zoom_x = dt_second_window_get_dev_zoom_x(dev);
+  const dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
+  const int closeup = dt_second_window_get_dev_closeup(dev);
+  const float backbuf_scale = dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd;
+
+  static cairo_surface_t *image_surface = NULL;
+  static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
+
+  if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
+  {
+    // create double-buffered image to draw on, to make modules draw more fluently.
+    image_surface_width = width;
+    image_surface_height = height;
+    if(image_surface) cairo_surface_destroy(image_surface);
+    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    image_surface_imgid = -1; // invalidate old stuff
+  }
+  cairo_surface_t *surface;
+  cairo_t *cr = cairo_create(image_surface);
+
+  if(dev->preview2_pipe->output_backbuf && // do we have an image?
+    dev->preview2_pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
+    dev->preview2_pipe->backbuf_zoom_x == zoom_x && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
+  {
+    // draw image
+    mutex = &dev->preview2_pipe->backbuf_mutex;
+    dt_pthread_mutex_lock(mutex);
+    float wd = dev->preview2_pipe->output_backbuf_width;
+    float ht = dev->preview2_pipe->output_backbuf_height;
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
+    surface
+        = dt_cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    wd /= dev->second_window.ppd;
+    ht /= dev->second_window.ppd;
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+
+    if(closeup)
+    {
+      const double scale = 1<<closeup;
+      cairo_scale(cr, scale, scale);
+      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
+    }
+
+    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_fill(cr);
+
+    if(darktable.gui->show_focus_peaking)
+    {
+      cairo_save(cr);
+      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
+                                  cairo_image_surface_get_width(surface),
+                                  cairo_image_surface_get_height(surface));
+      cairo_restore(cr);
+    }
+
+
+    cairo_surface_destroy(surface);
+    dt_pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image_storage.id;
+  }
+  else if(dev->preview_pipe->output_backbuf)
+  {
+    // draw preview
+    mutex = &dev->preview_pipe->backbuf_mutex;
+    dt_pthread_mutex_lock(mutex);
+
+    const float wd = dev->preview_pipe->output_backbuf_width;
+    const float ht = dev->preview_pipe->output_backbuf_height;
+    const float zoom_scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 1);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+    cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
+    cairo_clip(cr);
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
+    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    cairo_translate(cr, width / 2.0, height / 2.0f);
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
+    cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_fill(cr);
+    cairo_surface_destroy(surface);
+    dt_pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image_storage.id;
+  }
+
+  cairo_restore(cri);
+
+  if(image_surface_imgid == dev->image_storage.id)
+  {
+    cairo_destroy(cr);
+    cairo_set_source_surface(cri, image_surface, 0, 0);
+    cairo_paint(cri);
+  }
+}
+
+static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double x, double y, const int up,
+                                   const int state)
+{
+  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t capwd = dev->second_window.width - 2 * tb;
+  const int32_t capht = dev->second_window.height - 2 * tb;
+  const int32_t width_i = dev->second_window.width;
+  const int32_t height_i = dev->second_window.height;
+  if(width_i > capwd) x += (capwd - width_i) * .5f;
+  if(height_i > capht) y += (capht - height_i) * .5f;
+
+  // free zoom
+  int procw, proch;
+
+  dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
+  int closeup = dt_second_window_get_dev_closeup(dev);
+  float zoom_x = dt_second_window_get_dev_zoom_x(dev);
+  float zoom_y = dt_second_window_get_dev_zoom_y(dev);
+  dt_second_window_get_processed_size(dev, &procw, &proch);
+  float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+  const float fitscale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+  float oldscale = scale;
+
+  // offset from center now (current zoom_{x,y} points there)
+  float mouse_off_x = x - .5 * dev->second_window.width, mouse_off_y = y - .5 * dev->second_window.height;
+  zoom_x += mouse_off_x / (procw * scale);
+  zoom_y += mouse_off_y / (proch * scale);
+  zoom = DT_ZOOM_FREE;
+  closeup = 0;
+  if(up)
+  {
+    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if(scale >= 16.0f)
+      return;
+    else if(scale >= 8.0f)
+      scale = 16.0;
+    else if(scale >= 4.0f)
+      scale = 8.0;
+    else if(scale >= 2.0f)
+      scale = 4.0;
+    else if(scale < fitscale)
+      scale += .05f * (1.0f - fitscale);
+    else
+      scale += .1f * (1.0f - fitscale);
+  }
+  else
+  {
+    if(scale == fitscale && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+      return;
+    else if(scale < 0.5 * fitscale)
+      return;
+    else if(scale <= fitscale)
+      scale -= .05f * (1.0f - fitscale);
+    else if(scale <= 2.0f)
+      scale -= .1f * (1.0f - fitscale);
+    else if(scale <= 4.0f)
+      scale = 2.0f;
+    else if(scale <= 8.0f)
+      scale = 4.0f;
+    else
+      scale = 8.0f;
+  }
+  // we want to be sure to stop at 1:1 and FIT levels
+  if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
+  if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
+  scale = fmaxf(fminf(scale, 16.0f), 0.5 * fitscale);
+
+  // for 200% zoom we want pixel doubling instead of interpolation
+  if(scale > 15.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 4;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 7.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 3;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 3.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 2;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 1.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 1;  // enable closeup mode (pixel doubling)
+  }
+
+  if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
+  if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
+  dt_second_window_set_zoom_scale(dev, scale);
+  dt_second_window_set_dev_closeup(dev, closeup);
+  scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+
+  zoom_x -= mouse_off_x / (procw * scale);
+  zoom_y -= mouse_off_y / (proch * scale);
+  dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+  dt_second_window_set_dev_zoom(dev, zoom);
+  dt_second_window_set_dev_zoom_x(dev, zoom_x);
+  dt_second_window_set_dev_zoom_y(dev, zoom_y);
+
+  // pipe needs to be reconstructed
+  dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
+
+  gtk_widget_queue_draw(widget);
+}
+
+static void second_window_leave(dt_develop_t *dev)
+{
+  // reset any changes the selected plugin might have made.
+  dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
+}
+
+static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, double x, double y, const double pressure,
+                                        const int which, const int type, const uint32_t state)
+{
+  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t capwd = dev->second_window.width - 2 * tb;
+  const int32_t capht = dev->second_window.height - 2 * tb;
+  const int32_t width_i = dev->second_window.width;
+  const int32_t height_i = dev->second_window.height;
+  if(width_i > capwd) x += (capwd - width_i) * .5f;
+  if(height_i > capht) y += (capht - height_i) * .5f;
+
+  dev->second_window.button_x = x - tb;
+  dev->second_window.button_y = y - tb;
+
+  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
+  if(which == 1)
+  {
+    dt_second_window_change_cursor(dev, GDK_HAND1);
+    return 1;
+  }
+  if(which == 2)
+  {
+    // zoom to 1:1 2:1 and back
+    int procw, proch;
+
+    dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
+    int closeup = dt_second_window_get_dev_closeup(dev);
+    float zoom_x = dt_second_window_get_dev_zoom_x(dev);
+    float zoom_y = dt_second_window_get_dev_zoom_y(dev);
+    dt_second_window_get_processed_size(dev, &procw, &proch);
+    const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+
+    zoom_x += (1.0 / scale) * (x - .5f * dev->second_window.width) / procw;
+    zoom_y += (1.0 / scale) * (y - .5f * dev->second_window.height) / proch;
+
+    if(zoom == DT_ZOOM_1)
+    {
+      if(!closeup)
+        closeup = 1;
+      else
+      {
+        zoom = DT_ZOOM_FIT;
+        zoom_x = zoom_y = 0.0f;
+        closeup = 0;
+      }
+    }
+    else
+      zoom = DT_ZOOM_1;
+
+    dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+    dt_second_window_set_dev_zoom(dev, zoom);
+    dt_second_window_set_dev_closeup(dev, closeup);
+    dt_second_window_set_dev_zoom_x(dev, zoom_x);
+    dt_second_window_set_dev_zoom_y(dev, zoom_y);
+
+    // pipe needs to be reconstructed
+    dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
+
+    gtk_widget_queue_draw(widget);
+
+    return 1;
+  }
+  return 0;
+}
+
+static int second_window_button_released(dt_develop_t *dev, const double x, const double y, const int which,
+                                         const uint32_t state)
+{
+  if(which == 1) dt_second_window_change_cursor(dev, GDK_LEFT_PTR);
+  return 1;
+}
+
+static void second_window_mouse_moved(GtkWidget *widget, dt_develop_t *dev, double x, double y,
+                                      const double pressure, const int which)
+{
+  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t capwd = dev->second_window.width - 2 * tb;
+  const int32_t capht = dev->second_window.height - 2 * tb;
+
+  const int32_t width_i = dev->second_window.width;
+  const int32_t height_i = dev->second_window.height;
+  int32_t offx = 0.0f, offy = 0.0f;
+  if(width_i > capwd) offx = (capwd - width_i) * .5f;
+  if(height_i > capht) offy = (capht - height_i) * .5f;
+
+  x += offx;
+  y += offy;
+
+  if(which & GDK_BUTTON1_MASK)
+  {
+    // depending on dev_zoom, adjust dev_zoom_x/y.
+    const dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
+    const int closeup = dt_second_window_get_dev_closeup(dev);
+    int procw, proch;
+    dt_second_window_get_processed_size(dev, &procw, &proch);
+    const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    float old_zoom_x, old_zoom_y;
+    old_zoom_x = dt_second_window_get_dev_zoom_x(dev);
+    old_zoom_y = dt_second_window_get_dev_zoom_y(dev);
+    float zx = old_zoom_x - (1.0 / scale) * (x - dev->second_window.button_x - offx) / procw;
+    float zy = old_zoom_y - (1.0 / scale) * (y - dev->second_window.button_y - offy) / proch;
+    dt_second_window_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
+    dt_second_window_set_dev_zoom_x(dev, zx);
+    dt_second_window_set_dev_zoom_y(dev, zy);
+    dev->second_window.button_x = x - offx;
+    dev->second_window.button_y = y - offy;
+
+    // pipe needs to be reconstructed
+    dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
+
+    gtk_widget_queue_draw(widget);
+  }
+}
+
+static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
+{
+  GtkWidget *widget = dev->second_window.second_wnd;
+
+// check if in HiDPI mode
+#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
+  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
+  if(screen_ppd_overwrite > 0.0)
+  {
+    dev->second_window.ppd = screen_ppd_overwrite;
+    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n",
+             screen_ppd_overwrite);
+  }
+  else
+  {
+#ifndef GDK_WINDOWING_QUARTZ
+    dev->second_window.ppd = gtk_widget_get_scale_factor(widget);
+#else
+    // this do not depends on the window, so we can use the main window value
+    dev->second_window.ppd = darktable.gui->ppd;
+#endif
+    if(dev->second_window.ppd < 0.0)
+    {
+      dev->second_window.ppd = 1.0;
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", dev->second_window.ppd);
+  }
+#else
+  dev->second_window.ppd = 1.0;
+#endif
+  // get the screen resolution
+  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
+  if(screen_dpi_overwrite > 0.0)
+  {
+    dev->second_window.dpi = screen_dpi_overwrite;
+    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
+    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi as specified in "
+                               "the configuration file\n", screen_dpi_overwrite);
+  }
+  else
+  {
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_autoset_dpi(widget);
+#endif
+    dev->second_window.dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
+    if(dev->second_window.dpi < 0.0)
+    {
+      dev->second_window.dpi = 96.0;
+      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi\n", dev->second_window.dpi);
+  }
+  dev->second_window.dpi_factor
+      = dev->second_window.dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
+}
+
+static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt_develop_t *dev)
+{
+  int pointerx, pointery;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int32_t width = allocation.width;
+  int32_t height = allocation.height;
+
+  dev->second_window.width = width;
+  dev->second_window.height = height;
+
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(gtk_widget_get_window(widget),
+                                 gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
+                                 &pointerx, &pointery, NULL);
+#else
+  GdkDevice *device
+      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
+  gdk_window_get_device_position(gtk_widget_get_window(widget), device, &pointerx, &pointery, NULL);
+#endif
+
+  second_window_expose(widget, dev, crf, width, height, pointerx, pointery);
+
+  return TRUE;
+}
+
+static gboolean dt_gui_get_second_window_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
+{
+  // accumulates scrolling regardless of source or the widget being scrolled
+  static gdouble acc_x = 0.0, acc_y = 0.0;
+  gboolean handled = FALSE;
+
+  switch(event->direction)
+  {
+    // is one-unit cardinal, e.g. from a mouse scroll wheel
+    case GDK_SCROLL_LEFT:
+      if(delta_x) *delta_x = -1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_RIGHT:
+      if(delta_x) *delta_x = 1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_UP:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = -1;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = 1;
+      handled = TRUE;
+      break;
+    // is trackpad (or touch) scroll
+    case GDK_SCROLL_SMOOTH:
+#if GTK_CHECK_VERSION(3, 20, 0)
+      // stop events reset accumulated delta
+      if(event->is_stop)
+      {
+        acc_x = acc_y = 0.0;
+        break;
+      }
+#endif
+      // accumulate trackpad/touch scrolls until they make a unit
+      // scroll, and only then tell caller that there is a scroll to
+      // handle
+      acc_x += event->delta_x;
+      acc_y += event->delta_y;
+      if(fabs(acc_x) >= 1.0)
+      {
+        gdouble amt = trunc(acc_x);
+        acc_x -= amt;
+        if(delta_x) *delta_x = (int)amt;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
+      if(fabs(acc_y) >= 1.0)
+      {
+        gdouble amt = trunc(acc_y);
+        acc_y -= amt;
+        if(delta_x && !handled) *delta_x = 0;
+        if(delta_y) *delta_y = (int)amt;
+        handled = TRUE;
+      }
+      break;
+    default:
+      break;
+  }
+  return handled;
+}
+
+static gboolean _second_window_scrolled_callback(GtkWidget *widget, GdkEventScroll *event, dt_develop_t *dev)
+{
+  int delta_y;
+  if(dt_gui_get_second_window_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    second_window_scrolled(widget, dev, event->x, event->y, delta_y < 0, event->state & 0xf);
+    gtk_widget_queue_draw(widget);
+  }
+
+  return TRUE;
+}
+
+static gboolean _second_window_button_pressed_callback(GtkWidget *w, GdkEventButton *event, dt_develop_t *dev)
+{
+  double pressure = 1.0;
+  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
+
+  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  {
+    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+  }
+  second_window_button_pressed(w, dev, event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
+  gtk_widget_grab_focus(w);
+  gtk_widget_queue_draw(w);
+  return FALSE;
+}
+
+static gboolean _second_window_button_released_callback(GtkWidget *w, GdkEventButton *event, dt_develop_t *dev)
+{
+  second_window_button_released(dev, event->x, event->y, event->button, event->state & 0xf);
+  gtk_widget_queue_draw(w);
+  return TRUE;
+}
+
+static gboolean _second_window_mouse_moved_callback(GtkWidget *w, GdkEventMotion *event, dt_develop_t *dev)
+{
+  double pressure = 1.0;
+  GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
+
+  if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
+  {
+    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+  }
+  second_window_mouse_moved(w, dev, event->x, event->y, pressure, event->state);
+  return FALSE;
+}
+
+static gboolean _second_window_leave_callback(GtkWidget *widget, GdkEventCrossing *event, dt_develop_t *dev)
+{
+  second_window_leave(dev);
+  return TRUE;
+}
+
+static gboolean _second_window_configure_callback(GtkWidget *da, GdkEventConfigure *event, dt_develop_t *dev)
+{
+  static int oldw = 0;
+  static int oldh = 0;
+
+  if(oldw != event->width || oldh != event->height)
+  {
+    dev->second_window.width = event->width;
+    dev->second_window.height = event->height;
+
+    // pipe needs to be reconstructed
+    dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    dev->preview2_pipe->cache_obsolete = 1;
+  }
+  oldw = event->width;
+  oldh = event->height;
+
+  dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY2);
+
+#ifndef GDK_WINDOWING_QUARTZ
+  _second_window_configure_ppd_dpi(dev);
+#endif
+
+  return TRUE;
+}
+
+static void _darkroom_ui_second_window_init(GtkWidget *widget, dt_develop_t *dev)
+{
+  const int width = MAX(10, dt_conf_get_int("second_window/window_w"));
+  const int height = MAX(10, dt_conf_get_int("second_window/window_h"));
+
+  dev->second_window.width = width;
+  dev->second_window.height = height;
+
+  const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
+  const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
+  gtk_window_set_default_size(GTK_WINDOW(widget), width, height);
+  gtk_widget_show_all(widget);
+  gtk_window_move(GTK_WINDOW(widget), x, y);
+  gtk_window_resize(GTK_WINDOW(widget), width, height);
+  const int fullscreen = dt_conf_get_bool("second_window/fullscreen");
+  if(fullscreen)
+    gtk_window_fullscreen(GTK_WINDOW(widget));
+  else
+  {
+    gtk_window_unfullscreen(GTK_WINDOW(widget));
+    const int maximized = dt_conf_get_bool("second_window/maximized");
+    if(maximized)
+      gtk_window_maximize(GTK_WINDOW(widget));
+    else
+      gtk_window_unmaximize(GTK_WINDOW(widget));
+  }
+}
+
+static void _darkroom_ui_second_window_write_config(GtkWidget *widget)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gint x, y;
+  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
+  dt_conf_set_int("second_window/window_x", x);
+  dt_conf_set_int("second_window/window_y", y);
+  dt_conf_set_int("second_window/window_w", allocation.width);
+  dt_conf_set_int("second_window/window_h", allocation.height);
+  dt_conf_set_bool("second_window/maximized",
+                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
+  dt_conf_set_bool("second_window/fullscreen",
+                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
+}
+
+static gboolean _second_window_delete_callback(GtkWidget *widget, GdkEvent *event, dt_develop_t *dev)
+{
+  _darkroom_ui_second_window_write_config(dev->second_window.second_wnd);
+
+  dev->second_window.second_wnd = NULL;
+  dev->second_window.widget = NULL;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), FALSE);
+
+  return FALSE;
+}
+
+static gboolean _second_window_key_pressed_callback(GtkWidget *widget, GdkEventKey *event, dt_develop_t *dev)
+{
+  int fullscreen;
+
+  GtkAccelKey key_on, key_off;
+  char path_on[256];
+  char path_off[256];
+  dt_accel_path_global(path_on, sizeof(path_on), "toggle fullscreen");
+  dt_accel_path_global(path_off, sizeof(path_off), "leave fullscreen");
+  gtk_accel_map_lookup_entry(path_on, &key_on);
+  gtk_accel_map_lookup_entry(path_off, &key_off);
+
+  if(event->keyval == key_on.accel_key && (event->state & KEY_STATE_MASK) == key_on.accel_mods)
+  {
+    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
+    if(fullscreen)
+      gtk_window_unfullscreen(GTK_WINDOW(widget));
+    else
+      gtk_window_fullscreen(GTK_WINDOW(widget));
+  }
+  else if(event->keyval == key_off.accel_key && (event->state & KEY_STATE_MASK) == key_off.accel_mods)
+  {
+    gtk_window_unfullscreen(GTK_WINDOW(widget));
+  }
+  else
+  {
+    return FALSE;
+  }
+
+  /* redraw center view */
+  gtk_widget_queue_draw(dev->second_window.widget);
+#ifdef __APPLE__
+  // workaround for GTK Quartz backend bug
+  gtk_window_set_title(GTK_WINDOW(widget), _("darktable - darkroom preview"));
+#endif
+  return TRUE;
+}
+
+static void _darkroom_display_second_window(dt_develop_t *dev)
+{
+  if(dev->second_window.second_wnd == NULL)
+  {
+    dev->second_window.width = -1;
+    dev->second_window.height = -1;
+
+    dev->second_window.second_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(dev->second_window.second_wnd, "second_window");
+
+    _second_window_configure_ppd_dpi(dev);
+
+    gtk_window_set_icon_name(GTK_WINDOW(dev->second_window.second_wnd), "darktable");
+    gtk_window_set_title(GTK_WINDOW(dev->second_window.second_wnd), _("darktable - darkroom preview"));
+
+    GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->second_window.second_wnd), container);
+
+    GtkWidget *widget = gtk_grid_new();
+    gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+
+    dev->second_window.widget = gtk_drawing_area_new();
+    gtk_widget_set_size_request(dev->second_window.widget, DT_PIXEL_APPLY_DPI_2ND_WND(dev, 50), DT_PIXEL_APPLY_DPI_2ND_WND(dev, 200));
+    gtk_widget_set_hexpand(dev->second_window.widget, TRUE);
+    gtk_widget_set_vexpand(dev->second_window.widget, TRUE);
+    gtk_widget_set_app_paintable(dev->second_window.widget, TRUE);
+
+    gtk_grid_attach(GTK_GRID(widget), dev->second_window.widget, 0, 0, 1, 1);
+
+    gtk_widget_set_events(dev->second_window.widget, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                                                         | darktable.gui->scroll_mask);
+
+    /* connect callbacks */
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "draw", G_CALLBACK(_second_window_draw_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "scroll-event",
+                     G_CALLBACK(_second_window_scrolled_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "button-press-event",
+                     G_CALLBACK(_second_window_button_pressed_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "button-release-event",
+                     G_CALLBACK(_second_window_button_released_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "motion-notify-event",
+                     G_CALLBACK(_second_window_mouse_moved_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "leave-notify-event",
+                     G_CALLBACK(_second_window_leave_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.widget), "configure-event",
+                     G_CALLBACK(_second_window_configure_callback), dev);
+
+    g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "delete-event",
+                     G_CALLBACK(_second_window_delete_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "key-press-event",
+                     G_CALLBACK(_second_window_key_pressed_callback), dev);
+
+    _darkroom_ui_second_window_init(dev->second_window.second_wnd, dev);
+  }
+
+  gtk_widget_show_all(dev->second_window.second_wnd);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

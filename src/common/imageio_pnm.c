@@ -72,7 +72,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   unsigned int max;
-  int ret = fscanf(f, "%d ", &max);
+  int ret = fscanf(f, "%u", &max);
   if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(max <= 255)
@@ -132,7 +132,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   unsigned int max;
-  int ret = fscanf(f, "%d ", &max);
+  int ret = fscanf(f, "%u", &max);
   if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(max <= 255)

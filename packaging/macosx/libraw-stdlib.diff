@@ -1,0 +1,18 @@
+--- libraw_r.pc.in.orig	2018-12-05 19:07:09.000000000 +0300
++++ libraw_r.pc.in	2018-12-05 19:07:44.000000000 +0300
+@@ -7,5 +7,5 @@
+ Description: Raw image decoder library (thread-safe)
+ Requires: @PACKAGE_REQUIRES@
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lraw_r -lstdc++@PC_OPENMP@
++Libs: -L${libdir} -lraw_r@PC_OPENMP@
+ Cflags: -I${includedir}/libraw
+--- libraw.pc.in.orig	2018-12-05 19:07:17.000000000 +0300
++++ libraw.pc.in	2018-12-05 19:07:32.000000000 +0300
+@@ -7,5 +7,5 @@
+ Description: Raw image decoder library (non-thread-safe)
+ Requires: @PACKAGE_REQUIRES@
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lraw -lstdc++@PC_OPENMP@
++Libs: -L${libdir} -lraw@PC_OPENMP@
+ Cflags: -I${includedir}/libraw

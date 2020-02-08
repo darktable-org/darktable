@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2018 Heiko Bauke.
+ *    copyright (c) 2018-2019 Heiko Bauke.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,3 +20,8 @@
 
 #define DT_M_PI_F (3.14159265358979324f)
 #define DT_M_PI (3.14159265358979324)
+
+static inline float clamp_range_f(const float x, const float low, const float high)
+{
+  return x > high ? high : (x < low ? low : x);
+}

@@ -32,7 +32,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
@@ -62,6 +61,7 @@ typedef struct dt_iop_lowlight_gui_data_t
   dt_iop_lowlight_params_t drag_params;
   int dragging;
   int x_move;
+  int timeout_handle;
   float draw_xs[DT_IOP_LOWLIGHT_RES], draw_ys[DT_IOP_LOWLIGHT_RES];
   float draw_min_xs[DT_IOP_LOWLIGHT_RES], draw_min_ys[DT_IOP_LOWLIGHT_RES];
   float draw_max_xs[DT_IOP_LOWLIGHT_RES], draw_max_ys[DT_IOP_LOWLIGHT_RES];
@@ -90,9 +90,14 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("lowlight vision", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 
@@ -132,7 +137,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d, XYZ_sw)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, i, o, roi_out, threshold, c) \
+  shared(d, XYZ_sw) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -181,7 +189,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)piece->data;
-  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)self->data;
+  dt_iop_lowlight_global_data_t *gd = (dt_iop_lowlight_global_data_t *)self->global_data;
 
   cl_mem dev_m = NULL;
   cl_int err = -999;
@@ -281,6 +289,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale_blueness, p->blueness);
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -289,7 +302,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 614; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
@@ -304,6 +316,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -672,6 +686,17 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -700,7 +725,11 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
     {
       dt_iop_lowlight_get_params(p, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else if(event->y > height)
   {
@@ -715,12 +744,13 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
         dist = d2;
       }
     }
+    gtk_widget_queue_draw(widget);
   }
   else
   {
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(event->window,
@@ -796,6 +826,7 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -831,6 +862,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
+  c->timeout_handle = 0;
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -855,7 +887,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
   gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->scale_blueness), "value-changed", G_CALLBACK(blueness_callback), self);
 }
@@ -864,6 +896,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

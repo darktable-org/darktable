@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 2.4</title>
+  <title>darktable 3.0</title>
 
   <bookinfo>
 
@@ -17,23 +17,31 @@
       </para>
 
       <para>
-        darktable has been developed with major contribution by Aldric Renaudin, Alexandre
-        Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony Dovgal, Artur de Sousa
-        Rocha, Axel Burri, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian
-        Tellefsen, Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Du&#353;an
-        Kazik, Eckhart Pedersen, Edouard Gomez, Fr&eacute;d&eacute;ric Grollier, Gaspard
-        Jankowiak, Ger Siemerink, Gianluigi Calcaterra, Guilherme Brondani Torri, Guillaume
-        Benny, Henrik Andersson, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jan
-        Kundr&aacute;t, Jean-S&eacute;bastien P&eacute;dron, J&eacute;r&eacute;my Rosen, Jesper
-        Pedersen, Jochen Schr&ouml;der, Johanes Schneider, Johnny Run, Jos&eacute; Carlos
-        Casimiro, Jose Carlos Garcia Sogo, Josep Vicen&ccedil; Moragues Pastor, Kaminsky Andrey,
-        Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Marcel Laubach, Matthias Gehre,
-        Matthieu Volat, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan
-        Kn&iacute;&#382;ek, Moritz Lipp, Olivier Tribout, Pascal de Bruijn, Pascal Obry, Pedro
-        C&ocirc;rte-Real, Petr Styblo, Ralf Brown, Richard Hughes, Richard Levitte, Richard
-        Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon
-        Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Tobias Ellinghaus, Tom
-        Vijlbrief, Ulrich Pegelow, Victor Lamoine, Wolfgang Goetz, Wyatt Olson and many others.
+        darktable has been developed with major contribution by Aldric Renaudin, Alexander V.
+        Smal, Alexandre Prokoudine, Ammon Riley, Anders Brander, Andreas Schneider, Andrea
+        Volpato, Andrew Toskin, Antony Dovgal, Artur de Sousa Rocha, Asma AL-Bahanta,
+        Aur&eacute;lien Pierre, Axel Waggershauser, B&aacute;thory P&eacute;ter, Benoit Brummer,
+        Bernd Steinhauser, Brian Teague, Bruce Guenter, Cherrot Luo, Chris Hodapp, Christian
+        Himpel, Christian Tellefsen, Dan Torop, David Bremner, Dennis Gnad, Dimitrios
+        Psychogios, Du&scaron;an Kazik, Eckhart Pedersen, Edgardo Hoszowski, Edouard Gomez,
+        Fr&eacute;d&eacute;ric Grollier, Gaspard Jankowiak, Germano Massullo, Ger Siemerink,
+        Gianluigi Calcaterra, Gianni Carabelli, Guilherme Brondani Torri, Guillaume Benny, Heiko
+        Bauke, Henrik Andersson, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jan
+        Kundr&aacute;t, J&eacute;r&eacute;my Rosen, Jean-S&eacute;bastien P&eacute;dron, Jesper
+        Pedersen, Jochen Schroeder, Johanes Schneider, Johannes Hanika, Jos&eacute; Carlos
+        Casimiro, Jos&eacute; Carlos Garcia Sogo, Josep V. Moragues, K. Adam Christensen,
+        Kaminsky Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Klaus Post, Loic Guibert, Marcel
+        Laubach, Matja&zcaron; Jeran, Matthias Gehre, Matthieu Moy, Matthieu Volat, Maurizio
+        Paglia, Mauro Bartoccelli, Maximilian Trescher, Michal Babej, Michel Leblond, Mikko
+        Ruohola, Milan Kn&iacute;&zcaron;ek, Moritz Lipp, Nicolas Belleville, Novy Sawai,
+        Olivier Tribout, Pascal de Bruijn, Pascal Obry, Pedro C&ocirc;rte-Real, Peter Budai,
+        Petr Styblo, Pierre Lamot, Ralf Brown, Richard Hughes, Richard Levitte, Richard Wonka,
+        Rikard &Ouml;xler, Robert Bieber, Robert William Hutton, Roman Lebedev, Rostyslav
+        Pidgornyi, Sergey Pavlov, Shlomi Braitbart, Simon Spannagel, Stefan Hoffmeister, Stefan
+        L&ouml;ffler, Stefan Sch&ouml;fegger, Stuart Henderson, Tatica Leandro, Thomas Pryds,
+        Timur I. Davletshin, Tobias Ellinghaus, Torsten Bronger, Ulrich Pegelow, Victor Lamoine,
+        Wolfgang Goetz, Wolfgang Mader, Wyatt Olson, &Zcaron;ilvinas &Zcaron;altiena and many
+        others.
       </para>
 
       <para>
@@ -76,7 +84,7 @@
     </copyright>
 
     <copyright>
-      <year>2012-2017</year>
+      <year>2012-2018</year>
       <holder>Ulrich Pegelow</holder>
     </copyright>
 
@@ -104,6 +112,8 @@
       <informaltable frame="none" width="80%">
         <tgroup cols="3" colsep="0" rowsep="0">
           <colspec colwidth='3cm'/>
+          <colspec colwidth='3cm'/>
+          <colspec colwidth='3cm'/>
           <tbody>
             <row>
               <entry></entry>
@@ -119,10 +129,10 @@
                 user manual
               </entry>
               <entry>
-                2.4.0
+                3.0.0
               </entry>
               <entry>
-                December 2017
+                December 2019
               </entry>
             </row>
             <row>
@@ -130,10 +140,10 @@
                 darktable
               </entry>
               <entry>
-                2.4
+                3.0
               </entry>
               <entry>
-                December 2017
+                December 2019
               </entry>
             </row>
           </tbody>
@@ -143,7 +153,8 @@
 
     <para>
       Translations of this manual to local languages are brought to you by Federico Bruni,
-      Maurizio Paglia, Victor Lamoine, Michel Leblond, and Mar&iacute;a Gracia Leandro.
+      Maurizio Paglia, Victor Lamoine, Michel Leblond, Mar&iacute;a Gracia Leandro, Pierre Metzner,
+      Christian Kanzian, Wolfgang Arndt, Łukasz Karcz, Artur Mercik and Edgar De la Luz.
     </para>
 
     <para>

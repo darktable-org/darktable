@@ -30,7 +30,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -108,10 +107,31 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("global tonemap", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
+ }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "bias", GTK_WIDGET(g->drago.bias));
+  dt_accel_connect_slider_iop(self, "target", GTK_WIDGET(g->drago.max_light));
+  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
+ }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -139,7 +159,10 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -179,7 +202,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     // is NAN which initiates special handling below to avoid inconsistent results. in all
     // other cases we make sure that the preview pipe has left us with proper readings for
     // lwmax. if data are not yet there we need to wait (with timeout).
-    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
       dt_control_log(_("inconsistent output"));
 
     dt_pthread_mutex_lock(&g->lock);
@@ -205,7 +228,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   // PREVIEW pixelpipe stores lwmax
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
     g->lwmax = lwmax;
     g->hash = hash;
@@ -216,7 +239,10 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, lwmax) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, bl, ldc, roi_out, eps) \
+  shared(in, out, lwmax) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -240,7 +266,10 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -300,7 +329,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
-  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->global_data;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_bilateral_cl_t *b = NULL;
 
@@ -339,8 +368,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_pthread_mutex_lock(&g->lock);
       const uint64_t hash = g->hash;
       dt_pthread_mutex_unlock(&g->lock);
-
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_pthread_mutex_lock(&g->lock);
@@ -409,7 +437,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      maximum = dt_alloc_align(16, reducesize * sizeof(float));
+      maximum = dt_alloc_align(64, reducesize * sizeof(float));
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             (size_t)reducesize * sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
@@ -442,7 +470,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
-      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_pthread_mutex_lock(&g->lock);
       g->lwmax = lwmax;
       g->hash = hash;
@@ -664,7 +692,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
   module->default_enabled = 0;
-  module->priority = 542; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_global_tonemap_params_t);
   module->gui_data = NULL;
   dt_iop_global_tonemap_params_t tmp
@@ -677,6 +704,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

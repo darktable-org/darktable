@@ -179,7 +179,7 @@ sub get_introspection_code
 
   # we have to add the outermost struct here
   my $description = $self->get_description();
-  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0, NULL";
+  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof($params_type), 0, NULL";
   my $specific = $self->{type}->get_introspection_code($name_prefix, $params_type);
   my $linear_line = ".Struct = {\n    { $header },\n    $specific\n  }";
   $self->{type}->add_to_linear("", $linear_line);
@@ -257,7 +257,7 @@ sub get_static_const
   my @result;
   push(@result, "static") if($self->{static});
   push(@result, "const") if($self->{const});
-  push(@result, "unsigned") if($self->{unsigned});
+  push(@result, "unsigned") if($self->{unsigned} == 1);
   my $string = join(" ", @result);
   $string .= " " if(@result > 0);
   return $string;
@@ -271,16 +271,7 @@ sub print_tree
 
   my %comment_line = %{$scanner::comments[$self->{lineno}]};
 
-  my @limits = @{$self->{limits}};
-  my $min = $limits[0];
-  my $max = $limits[1];
-  my $default = $limits[2];
-  if($self->{unsigned})
-  {
-    $min = $limits[3];
-    $max = $limits[4];
-    $default = $limits[5];
-  }
+  my ($min, $max, $default) = $self->get_limits();
   my $description = "";
 
   $min = $comment_line{min} if(defined($comment_line{min}));
@@ -298,16 +289,7 @@ sub get_introspection_code
   my ($self, $name_prefix, $params_type) = @_;
 
   my %comment_line = %{$scanner::comments[$self->{lineno}]};
-  my @limits = @{$self->{limits}};
-  my $min = $limits[0];
-  my $max = $limits[1];
-  my $default = $limits[2];
-  if($self->{unsigned})
-  {
-    $min = $limits[3];
-    $max = $limits[4];
-    $default = $limits[5];
-  }
+  my ($min, $max, $default) = $self->get_limits();
 
   $min = $comment_line{min} if(defined($comment_line{min}));
   $max = $comment_line{max} if(defined($comment_line{max}));
@@ -359,7 +341,7 @@ sub get_introspection_code
   return "/* no data for this type */";
 }
 
-#################### CHAR TYPE ####################
+#################### CHAR / INT8_T TYPE ####################
 
 package ast_type_char_node;
 
@@ -372,32 +354,50 @@ sub new
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
-  $reference->{unsigned} = 0;
-  @{$reference->{limits}} = ("G_MININT8", "G_MAXINT8", "0", "0", "G_MAXUINT8", "0");
+  # here "unsigned" is a tri state: 0: signed, -1: unsigned, 2: default.
+  # notice that "default" can be either one, depending on platform!
+  # because we are using "int8_t" and "uint8_t" for explicitly specified signed cases
+  # we never generate "unsigned char", thus the unsigned = 1 shouldn't happen for this type!
+  $reference->{unsigned} = 2; # platform specific "char"
   $reference->{code_type} = "char";
 
   return $reference;
 }
 
+# make this a "uint8_t"
 sub set_unsigned
 {
   my $self = shift;
-  $self->{unsigned} = 1;
+  $self->{unsigned} = -1;
+  $self->{code_type} = "uint8_t";
   return 1;
 }
 
+# make this an "int8_t"
 sub set_signed
 {
   my $self = shift;
   $self->{unsigned} = 0;
+  $self->{code_type} = "int8_t";
   return 1;
 }
 
+# we still use UChar/Char types of the union. only the content is different.
+# TODO: shall we change that?
 sub get_type
 {
   my $self = shift;
-  return "UChar" if($self->{unsigned});
+  return "Int8" if($self->{unsigned} == 0);
+  return "UInt8" if($self->{unsigned} == -1);
   return "Char";
+}
+
+sub get_limits
+{
+  my $self = shift;
+  return ("G_MININT8", "G_MAXINT8", "0") if($self->{unsigned} == 0);
+  return ("0", "G_MAXUINT8", "0") if($self->{unsigned} == -1);
+  return ("CHAR_MIN", "CHAR_MAX", "0");
 }
 
 #################### SHORT TYPE ####################
@@ -414,7 +414,6 @@ sub new
   bless($reference, $self);
 
   $reference->{unsigned} = 0;
-  @{$reference->{limits}} = ("G_MINSHORT", "G_MAXSHORT", "0", "0", "G_MAXUSHORT", "0");
   $reference->{code_type} = "short";
 
   return $reference;
@@ -441,6 +440,13 @@ sub get_type
   return "Short";
 }
 
+sub get_limits
+{
+  my $self = shift;
+  return ("0", "G_MAXUSHORT", "0") if($self->{unsigned});
+  return ("G_MINSHORT", "G_MAXSHORT", "0");
+}
+
 #################### INT TYPE ####################
 
 package ast_type_int_node;
@@ -455,7 +461,6 @@ sub new
   bless($reference, $self);
 
   $reference->{unsigned} = 0;
-  @{$reference->{limits}} = ("G_MININT", "G_MAXINT", "0", "0", "G_MAXUINT", "0");
   $reference->{code_type} = "int";
 
   return $reference;
@@ -480,6 +485,13 @@ sub get_type
   my $self = shift;
   return "UInt" if($self->{unsigned});
   return "Int";
+}
+
+sub get_limits
+{
+  my $self = shift;
+  return ("0", "G_MAXUINT", "0") if($self->{unsigned});
+  return ("G_MININT", "G_MAXINT", "0");
 }
 
 #################### VOID TYPE ####################
@@ -530,7 +542,6 @@ sub new
   bless($reference, $self);
 
   $reference->{unsigned} = 0;
-  @{$reference->{limits}} = ("G_MINLONG", "G_MAXLONG", "0", "0", "G_MAXULONG", "0");
   $reference->{code_type} = "long";
 
   return $reference;
@@ -557,6 +568,13 @@ sub get_type
   return "Long";
 }
 
+sub get_limits
+{
+  my $self = shift;
+  return ("0", "G_MAXULONG", "0") if($self->{unsigned});
+  return ("G_MINLONG", "G_MAXLONG", "0");
+}
+
 #################### FLOAT TYPE ####################
 
 package ast_type_float_node;
@@ -570,7 +588,6 @@ sub new
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
-  @{$reference->{limits}} = ("-G_MAXFLOAT", "G_MAXFLOAT", "0.0", "-G_MAXFLOAT", "G_MAXFLOAT", "0.0");
   $reference->{code_type} = "float";
 
   return $reference;
@@ -579,6 +596,12 @@ sub new
 sub get_type
 {
   return "Float";
+}
+
+sub get_limits
+{
+  my $self = shift;
+  return ("-G_MAXFLOAT", "G_MAXFLOAT", "0.0");
 }
 
 #################### DOUBLE TYPE ####################
@@ -594,7 +617,6 @@ sub new
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
-  @{$reference->{limits}} = ("-G_MINDOUBLE", "G_MAXDOUBLE", "0.0", "-G_MINDOUBLE", "G_MAXDOUBLE", "0.0");
   $reference->{code_type} = "double";
 
   return $reference;
@@ -612,6 +634,12 @@ sub check_tree
   return 0;
 }
 
+sub get_limits
+{
+  my $self = shift;
+  return ("-G_MINDOUBLE", "G_MAXDOUBLE", "0.0");
+}
+
 #################### FLOAT COMPLEX TYPE ####################
 
 package ast_type_float_complex_node;
@@ -625,6 +653,8 @@ sub new
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
+  $reference->{code_type} = "float complex";
+
   return $reference;
 }
 
@@ -633,17 +663,10 @@ sub get_type
   return "FloatComplex";
 }
 
-sub get_introspection_code
+sub get_limits
 {
-  return "";
-}
-
-sub print_tree
-{
-  my ($self, $prefix, $indent) = @_;
-  my $spaces = " "x$indent;
-  my $extra = $self->get_static_const();
-  ast::print_out($prefix.$spaces.$extra."float complex\n");
+  my $self = shift;
+  return ("-G_MAXFLOAT + -G_MAXFLOAT * _Complex_I", "G_MAXFLOAT + G_MAXFLOAT * _Complex_I", "0.0 + 0.0 * _Complex_I");
 }
 
 #################### GBOOLEAN TYPE ####################

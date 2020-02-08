@@ -16,10 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common.h"
 #include "colorspace.cl"
-
-#define BLEND_ONLY_LIGHTNESS     8
+#include "color_conversion.cl"
 
 typedef enum dt_develop_blend_mode_t
 {
@@ -83,14 +81,6 @@ typedef enum dt_develop_mask_combine_mode_t
   DEVELOP_COMBINE_INV_EXCL = (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL),
   DEVELOP_COMBINE_INV_INCL = (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
 } dt_develop_mask_combine_mode_t;
-
-
-typedef enum iop_cs_t 
-{
-  iop_cs_Lab, 
-  iop_cs_rgb, 
-  iop_cs_RAW
-} iop_cs_t;
 
 
 typedef enum dt_develop_blendif_channels_t
@@ -157,7 +147,7 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = (~0) << 2
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
 } dt_dev_pixelpipe_display_mask_t;
 
 
@@ -229,18 +219,25 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
 
 float
-blendif_factor_rgb(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+blendif_factor_rgb(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine,
+    constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
   if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
-  scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f);	// Gray scaled to 0..1
+  if(use_work_profile == 0)
+    scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f); // Gray scaled to 0..1
+  else
+    scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(get_rgb_matrix_luminance(input, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f); // Gray scaled to 0..1
   scaled[DEVELOP_BLENDIF_RED_in]   = clamp(input.x, 0.0f, 1.0f);						// Red
   scaled[DEVELOP_BLENDIF_GREEN_in] = clamp(input.y, 0.0f, 1.0f);						// Green
   scaled[DEVELOP_BLENDIF_BLUE_in]  = clamp(input.z, 0.0f, 1.0f);						// Blue
-  scaled[DEVELOP_BLENDIF_GRAY_out]  = clamp(0.3f*output.x + 0.59f*output.y + 0.11f*output.z, 0.0f, 1.0f);	// Gray scaled to 0..1
+  if(use_work_profile == 0)
+    scaled[DEVELOP_BLENDIF_GRAY_out]  = clamp(0.3f*output.x + 0.59f*output.y + 0.11f*output.z, 0.0f, 1.0f); // Gray scaled to 0..1
+  else
+    scaled[DEVELOP_BLENDIF_GRAY_out]  = clamp(get_rgb_matrix_luminance(output, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f); // Gray scaled to 0..1
   scaled[DEVELOP_BLENDIF_RED_out]   = clamp(output.x, 0.0f, 1.0f);						// Red
   scaled[DEVELOP_BLENDIF_GREEN_out] = clamp(output.y, 0.0f, 1.0f);						// Green
   scaled[DEVELOP_BLENDIF_BLUE_out]  = clamp(output.z, 0.0f, 1.0f);						// Blue
@@ -297,7 +294,8 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
 __kernel void
 blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
+             constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -318,7 +316,8 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
+             constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -333,7 +332,8 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
+             constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -344,7 +344,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
-  float conditional = blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
+  float conditional = blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine, profile_info, profile_lut, use_work_profile);
   
   float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
   opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
@@ -354,7 +354,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
+             const int blend_mode, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -368,10 +368,6 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
-
-  /* save before scaling (for later use) */
-  float ay = a.y;
-  float az = a.z;
 
   /* scale L down to [0; 1] and a,b to [-1; 1] */
   const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
@@ -638,13 +634,6 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   /* we transfer alpha channel of input if mask_display is set, else we save opacity into alpha channel */
   o.w = mask_display ? a.w : opacity;
 
-  /* if module wants to blend only lightness, set a and b to values of input image (saved before scaling) */
-  if (blendflag & BLEND_ONLY_LIGHTNESS)
-  {
-    o.y = ay;
-    o.z = az;
-  }
-
   write_imagef(out, (int2)(x, y), o);
 }
 
@@ -652,7 +641,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
+             const int blend_mode, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -797,7 +786,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
+             const int blend_mode, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1015,10 +1004,10 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if ( x>= width || y >= height || gopacity <= 1e-4f) return;
+  if (x >= width || y >= height) return;
 
   float opacity = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  float scaled_opacity = (2.f * opacity - 1.f) / gopacity;
+  float scaled_opacity = (2.f * opacity / gopacity - 1.f);
   if (1.f - brightness <= 0.f)
     scaled_opacity = opacity <= FLT_EPSILON ? -1.f : 1.f;
   else if (1.f + brightness <= 0.f)
@@ -1052,7 +1041,8 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
 
 __kernel void
 blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-                         const int2 offs, const int mask_display)
+                         const int2 offs, const int mask_display,
+                         constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1108,10 +1098,16 @@ blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b,
       c = clamp(b.z, 0.0f, 1.0f);
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
-      c = clamp(0.3f * a.x + 0.59f * a.y + 0.11f * a.z, 0.0f, 1.0f);
+      if(use_work_profile == 0)
+        c = clamp(0.3f * a.x + 0.59f * a.y + 0.11f * a.z, 0.0f, 1.0f);
+      else
+        c = clamp(get_rgb_matrix_luminance(a, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f);
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      c = clamp(0.3f * b.x + 0.59f * b.y + 0.11f * b.z, 0.0f, 1.0f);
+      if(use_work_profile == 0)
+        c = clamp(0.3f * b.x + 0.59f * b.y + 0.11f * b.z, 0.0f, 1.0f);
+      else
+        c = clamp(get_rgb_matrix_luminance(b, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f);
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
       LCH = Lab_2_LCH(a);

@@ -31,7 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -83,9 +83,14 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("contrast brightness saturation", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 
@@ -111,7 +116,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)piece->data;
-  dt_iop_colisa_global_data_t *gd = (dt_iop_colisa_global_data_t *)self->data;
+  dt_iop_colisa_global_data_t *gd = (dt_iop_colisa_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -180,7 +185,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, height, width) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
@@ -250,7 +258,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     const float contrastm1sq = boost * (d->contrast - 1.0f) * (d->contrast - 1.0f);
     const float contrastscale = sqrt(1.0f + contrastm1sq);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(contrastm1sq, contrastscale) \
+    shared(d) \
+    schedule(static)
 #endif
     for(int k = 0; k < 0x10000; k++)
     {
@@ -272,7 +283,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   const float gamma = (d->brightness >= 0.0f) ? 1.0f / (1.0f + d->brightness) : (1.0f - d->brightness);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(gamma) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int k = 0; k < 0x10000; k++)
   {
@@ -317,7 +331,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_enabled = 0;
-  module->priority = 657; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colisa_params_t);
   module->gui_data = NULL;
   dt_iop_colisa_params_t tmp = (dt_iop_colisa_params_t){ 0, 0, 0 };
@@ -339,6 +352,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

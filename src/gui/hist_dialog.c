@@ -131,6 +131,37 @@ static gboolean _gui_is_set(GList *selops, unsigned int num)
   return FALSE;
 }
 
+void
+tree_on_row_activated (GtkTreeView        *treeview,
+                       GtkTreePath        *path,
+                       GtkTreeViewColumn  *col,
+                       gpointer            userdata)
+{
+  GtkDialog *dialog = GTK_DIALOG(userdata);
+  GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+  GtkTreeIter   iter;
+
+  // unselect all items
+
+  if(gtk_tree_model_get_iter_first(model, &iter))
+  {
+    do
+    {
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, FALSE, -1);
+
+    } while(gtk_tree_model_iter_next(model, &iter));
+  }
+
+  // select now the one that got double-clicked
+
+  if (gtk_tree_model_get_iter(model, &iter, path))
+  {
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, TRUE, -1);
+    // and finally close the dialog
+    g_signal_emit_by_name(dialog, "response", GTK_RESPONSE_OK, NULL);
+  }
+}
+
 int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
   int res;
@@ -145,15 +176,16 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 #endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_container_add(content_area, GTK_WIDGET(box));
+
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(300));
 
   /* create the list of items */
   d->items = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(d->items));
+  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+
   GtkListStore *liststore
       = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 
@@ -177,8 +209,6 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
 
-  gtk_box_pack_start(box, GTK_WIDGET(d->items), TRUE, TRUE, 0);
-
   /* fill list with history items */
   GtkTreeIter iter;
   GList *items = dt_history_get_items(imgid, FALSE);
@@ -186,13 +216,15 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   {
     do
     {
-      dt_history_item_t *item = (dt_history_item_t *)items->data;
+      const dt_history_item_t *item = (dt_history_item_t *)items->data;
 
-      gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_HIST_ITEMS_COL_ENABLED,
-                         iscopy ? TRUE : _gui_is_set(d->selops, item->num), DT_HIST_ITEMS_COL_NAME,
-                         item->name, DT_HIST_ITEMS_COL_NUM, (guint)item->num, -1);
-
+      if(!(get_module_flags(item->op) & IOP_FLAGS_HIDDEN))
+      {
+        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_HIST_ITEMS_COL_ENABLED,
+                           iscopy ? TRUE : _gui_is_set(d->selops, item->num), DT_HIST_ITEMS_COL_NAME,
+                           item->name, DT_HIST_ITEMS_COL_NUM, (guint)item->num, -1);
+      }
     } while((items = g_list_next(items)));
     g_list_free_full(items, dt_history_item_free);
   }
@@ -202,6 +234,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
     return GTK_RESPONSE_CANCEL;
   }
 
+  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback) tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);

@@ -28,7 +28,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -83,9 +82,14 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("bloom", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -126,7 +130,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, roi_out, scale) \
+  shared(data, blurlightness) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -146,7 +153,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(hr, roi_out, scanline_buf, size) \
+    shared(blurlightness) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -180,7 +190,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(hr, npoffs, opoffs, roi_out, size, scanline_buf) \
+    shared(blurlightness) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -214,7 +227,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data, blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data, blurlightness) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -245,7 +261,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
-  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->data;
+  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->global_data;
 
   cl_int err = -999;
   cl_mem dev_tmp[NUM_BUCKETS] = { NULL };
@@ -486,7 +502,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_bloom_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_bloom_params_t));
   module->default_enabled = 0;
-  module->priority = 514; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bloom_params_t);
   module->gui_data = NULL;
   dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t){ 20, 90, 25 };
@@ -498,6 +513,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

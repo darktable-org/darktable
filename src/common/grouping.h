@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <glib.h>
+
 /** add an image to a group */
 void dt_grouping_add_to_group(int group_id, int image_id);
 
@@ -26,6 +28,12 @@ int dt_grouping_remove_from_group(int image_id);
 
 /** make an image the representative of the group it is in. returns the new group_id. */
 int dt_grouping_change_representative(int image_id);
+
+/** get images of the group */
+GList *dt_grouping_get_group_images(const int imgid);
+
+/** add grouped images to images list */
+void dt_grouping_add_grouped_images(GList **images);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

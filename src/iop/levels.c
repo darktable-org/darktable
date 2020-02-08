@@ -34,10 +34,11 @@
 #include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
@@ -50,9 +51,6 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
-static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
-static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
-static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self);
 static void dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data);
 static void dt_iop_levels_percentiles_callback(GtkWidget *slider, gpointer user_data);
@@ -87,10 +85,9 @@ typedef struct dt_iop_levels_gui_data_t
   double mouse_x, mouse_y;
   int dragging, handle_move;
   float drag_start_percentage;
-  dt_iop_levels_pick_t current_pick;
+  dt_iop_color_picker_t color_picker;
   GtkToggleButton *activeToggleButton;
   float last_picked_color;
-  double pick_xy_positions[3][2];
   GtkWidget *percentile_black;
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
@@ -120,14 +117,35 @@ const char *name()
   return _("levels");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("levels", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gray"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->percentile_black));
+  dt_accel_connect_slider_iop(self, "gray", GTK_WIDGET(g->percentile_grey));
+  dt_accel_connect_slider_iop(self, "white", GTK_WIDGET(g->percentile_white));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -236,6 +254,106 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
+static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+{
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  const dt_iop_levels_pick_t current_picker = g->color_picker.current_picker;
+
+  g->color_picker.current_picker = NONE;
+
+  if(button == GTK_WIDGET(g->blackpick))
+    g->color_picker.current_picker = BLACK;
+  else if(button == GTK_WIDGET(g->greypick))
+    g->color_picker.current_picker = GREY;
+  else if(button == GTK_WIDGET(g->whitepick))
+    g->color_picker.current_picker = WHITE;
+
+  if (current_picker == g->color_picker.current_picker)
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
+  else
+    return g->color_picker.current_picker;
+}
+
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+
+  /* we need to save the last picked color to prevent flickering when
+   * changing from one picker to another, as the picked_color value does not
+   * update as rapidly */
+
+  float mean_picked_color = *self->picked_color / 100.0;
+
+  if(self->color_picker_point[0] >= 0.0f
+     && self->color_picker_point[1] >= 0.0f
+     && self->picked_color_max[0] >= 0.0f
+     && mean_picked_color != c->last_picked_color)
+  {
+    float previous_color[3];
+    previous_color[0] = p->levels[0];
+    previous_color[1] = p->levels[1];
+    previous_color[2] = p->levels[2];
+
+    c->last_picked_color = mean_picked_color;
+
+    if(BLACK == c->color_picker.current_picker)
+    {
+      if(mean_picked_color > p->levels[1])
+      {
+        p->levels[0] = p->levels[1] - FLT_EPSILON;
+      }
+      else
+      {
+        p->levels[0] = mean_picked_color;
+      }
+    }
+    else if(GREY == c->color_picker.current_picker)
+    {
+      if(mean_picked_color < p->levels[0] || mean_picked_color > p->levels[2])
+      {
+        p->levels[1] = p->levels[1];
+      }
+      else
+      {
+        p->levels[1] = mean_picked_color;
+      }
+    }
+    else if(WHITE == c->color_picker.current_picker)
+    {
+      if(mean_picked_color < p->levels[1])
+      {
+        p->levels[2] = p->levels[1] + FLT_EPSILON;
+      }
+      else
+      {
+        p->levels[2] = mean_picked_color;
+      }
+    }
+
+    if(previous_color[0] != p->levels[0]
+       || previous_color[1] != p->levels[1]
+       || previous_color[2] != p->levels[2])
+    {
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+  }
+
+}
+
+static void _iop_color_picker_update(dt_iop_module_t *self)
+{
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+  const dt_iop_levels_pick_t which_colorpicker = g->color_picker.current_picker;
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->blackpick), which_colorpicker == BLACK);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greypick), which_colorpicker == GREY);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->whitepick), which_colorpicker == WHITE);
+  darktable.gui->reset = reset;
+}
+
 /*
  * WARNING: unlike commit_params, which is thread safe wrt gui thread and
  * pipes, this function lives in the pipeline thread, and NOT thread safe!
@@ -257,7 +375,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       // contains NANs which initiates special handling below to avoid inconsistent results. in all
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_pthread_mutex_lock(&g->lock);
@@ -278,7 +396,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
     {
-      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_pthread_mutex_lock(&g->lock);
       g->auto_levels[0] = d->levels[0];
       g->auto_levels[1] = d->levels[1];
@@ -301,7 +419,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -351,7 +471,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
+  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->global_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
@@ -469,15 +589,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->blackpick), 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greypick), 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->whitepick), 0);
-}
-
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -506,13 +617,6 @@ void gui_update(dt_iop_module_t *self)
   g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
 
-  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->blackpick), 0);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greypick), 0);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->whitepick), 0);
-  }
-
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -530,7 +634,6 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_levels_params_t));
   self->default_enabled = 0;
   self->request_histogram |= (DT_REQUEST_ON);
-  self->priority = 699; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_levels_params_t);
   self->gui_data = NULL;
 }
@@ -556,6 +659,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -578,10 +683,7 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->dragging = 0;
   c->activeToggleButton = NULL;
-  c->current_pick = NONE;
   c->last_picked_color = -1;
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 2; j++) c->pick_xy_positions[i][j] = -1;
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
@@ -603,7 +705,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
@@ -621,26 +723,20 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
-  gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
   c->blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
 
   c->greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
 
   c->whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
-  GdkRGBA color = { 0 };
-  color.alpha = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->blackpick), &color);
-  color.red = color.green = color.blue = 0.5;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->greypick), &color);
-  color.red = color.green = color.blue = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->whitepick), &color);
-
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->greypick), TRUE, TRUE, 0);
@@ -666,7 +762,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
-  GtkWidget *vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkWidget *vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
@@ -695,9 +791,16 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(autobutton), "clicked", G_CALLBACK(dt_iop_levels_autoadjust_callback),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(dt_iop_levels_pick_black_callback), self);
-  g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(dt_iop_levels_pick_grey_callback), self);
-  g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(dt_iop_levels_pick_white_callback), self);
+  g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
+  g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
+  g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
+
+  dt_iop_init_picker(&c->color_picker,
+              self,
+              DT_COLOR_PICKER_POINT,
+              _iop_color_picker_get_set,
+              _iop_color_picker_apply,
+              _iop_color_picker_update);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -734,69 +837,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
-  float mean_picked_color = *self->picked_color / 100.0;
-
-  /* we need to save the last picked color to prevent flickering when
-   * changing from one picker to another, as the picked_color value does not
-   * update as rapidly */
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && self->color_picker_point[0] >= 0.0f
-     && self->color_picker_point[1] >= 0.0f && self->picked_color_max[0] >= 0.0f
-     && mean_picked_color != c->last_picked_color)
-  {
-    float previous_color[3];
-    previous_color[0] = p->levels[0];
-    previous_color[1] = p->levels[1];
-    previous_color[2] = p->levels[2];
-
-    c->last_picked_color = mean_picked_color;
-
-    if(BLACK == c->current_pick)
-    {
-      if(mean_picked_color > p->levels[1])
-      {
-        p->levels[0] = p->levels[1] - FLT_EPSILON;
-      }
-      else
-      {
-        p->levels[0] = mean_picked_color;
-      }
-      c->pick_xy_positions[0][0] = self->color_picker_point[0];
-      c->pick_xy_positions[0][1] = self->color_picker_point[1];
-    }
-    else if(GREY == c->current_pick)
-    {
-      if(mean_picked_color < p->levels[0] || mean_picked_color > p->levels[2])
-      {
-        p->levels[1] = p->levels[1];
-      }
-      else
-      {
-        p->levels[1] = mean_picked_color;
-      }
-      c->pick_xy_positions[1][0] = self->color_picker_point[0];
-      c->pick_xy_positions[1][1] = self->color_picker_point[1];
-    }
-    else if(WHITE == c->current_pick)
-    {
-      if(mean_picked_color < p->levels[1])
-      {
-        p->levels[2] = p->levels[1] + FLT_EPSILON;
-      }
-      else
-      {
-        p->levels[2] = mean_picked_color;
-      }
-      c->pick_xy_positions[2][0] = self->color_picker_point[0];
-      c->pick_xy_positions[2][1] = self->color_picker_point[1];
-    }
-
-    if(previous_color[0] != p->levels[0] || previous_color[1] != p->levels[1]
-       || previous_color[2] != p->levels[2])
-    {
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-    }
-  }
-
   // clear bg
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
@@ -817,10 +857,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
-  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
-    dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
+  dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
 
   // Drawing the vertical line indicators
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
@@ -1012,6 +1049,8 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
 
+    if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
+
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // Reset
@@ -1052,10 +1091,15 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  dt_iop_color_picker_reset(self, TRUE);
+
   if(c->dragging)
   {
     return FALSE;
   }
+
+  if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
   const float interval = 0.002; // Distance moved for each scroll event
   gdouble delta_y;
@@ -1070,69 +1114,13 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   return FALSE;
 }
 
-static void dt_iop_levels_pick_general_handler(GtkToggleButton *togglebutton, dt_iop_module_t *self,
-                                               double xpick, double ypick, dt_iop_levels_pick_t picklevel)
-{
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-
-  darktable.gui->reset = 1;
-  // we do not require the callback if we deactivate it here
-  if(c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
-  darktable.gui->reset = 0;
-
-  gboolean toggle = gtk_toggle_button_get_active(togglebutton);
-  if(darktable.gui->reset) return;
-
-  if(TRUE == toggle)
-  {
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_lib_colorpicker_set_point(darktable.lib, xpick, ypick);
-    c->activeToggleButton = togglebutton;
-    c->current_pick = picklevel;
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-  {
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    c->activeToggleButton = NULL;
-    c->current_pick = NONE;
-    // gtk_widget_queue_draw(self->widget);
-    dt_control_queue_redraw();
-  }
-
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
-  dt_iop_request_focus(self);
-}
-
-static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-  double xpick = c->pick_xy_positions[0][0];
-  double ypick = c->pick_xy_positions[0][1];
-  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, BLACK);
-}
-
-static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-  double xpick = c->pick_xy_positions[1][0];
-  double ypick = c->pick_xy_positions[1][1];
-  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, GREY);
-}
-
-static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-  double xpick = c->pick_xy_positions[2][0];
-  double ypick = c->pick_xy_positions[2][1];
-  dt_iop_levels_pick_general_handler(togglebutton, self, xpick, ypick, WHITE);
-}
-
 static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_iop_levels_compute_levels_manual(self->histogram, p->levels);
 
@@ -1150,6 +1138,8 @@ static void dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data)
 
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+
+  dt_iop_color_picker_reset(self, TRUE);
 
   const dt_iop_levels_mode_t new_mode
       = GPOINTER_TO_UINT(g_list_nth_data(g->modes, dt_bauhaus_combobox_get(combo)));

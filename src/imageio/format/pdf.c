@@ -28,6 +28,8 @@
 #include "gui/gtkentry.h"
 #include "imageio/format/imageio_format_api.h"
 
+#include <strings.h>
+
 DT_MODULE(1)
 
 // clang-format off
@@ -88,7 +90,7 @@ typedef struct _pdf_icc_t
 // saved params -- just there to get the sizeof() without worrying about padding, ...
 typedef struct dt_imageio_pdf_params_t
 {
-  dt_imageio_module_data_t  parent;
+  dt_imageio_module_data_t  global;
   char                      title[128];
   char                      size[64];
   _pdf_orientation_t        orientation;
@@ -232,7 +234,7 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
 
@@ -309,7 +311,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = malloc(data->width * data->height * 3);
+      image_data = dt_alloc_align(64, data->width * data->height * 3);
       const uint8_t *in_ptr = (const uint8_t *)in;
       uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -320,7 +322,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = dt_alloc_align(64, data->width * data->height * 3 * sizeof(uint16_t));
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -334,9 +336,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.parent.width, d->params.parent.height, d->params.bpp, icc_id, d->page_border);
+  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.global.width, d->params.global.height, d->params.bpp, icc_id, d->page_border);
 
-  free(image_data);
+  dt_free_align(image_data);
 
   d->images = g_list_append(d->images, image);
 
@@ -451,19 +453,20 @@ static void _set_paper_size(dt_imageio_module_format_t *self, const char *text)
 
   g_signal_handlers_block_by_func(d->size, size_toggle_callback, self);
 
-  const GList *labels = dt_bauhaus_combobox_get_labels(d->size);
+  const GList *entries = dt_bauhaus_combobox_get_entries(d->size);
   int pos = 0;
 
-  while(labels)
+  while(entries)
   {
-    const char *l = (char*)labels->data;
-    if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name)) || !strcasecmp(text, l))
+    const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
+    if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name))
+        || !strcasecmp(text, entry->label))
       break;
     pos++;
-    labels = g_list_next(labels);
+    entries = g_list_next(entries);
   }
 
-  if(labels)
+  if(entries)
   {
     // we jumped out of the loop -> found it
     dt_bauhaus_combobox_set(d->size, pos);

@@ -23,6 +23,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -32,8 +33,10 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -202,6 +205,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
     view->connect_key_accels = NULL;
+  if(!g_module_symbol(view->module, "mouse_actions", (gpointer) & (view->mouse_actions)))
+    view->mouse_actions = NULL;
 
   view->accel_closures = NULL;
 
@@ -237,7 +242,7 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 }
 
 /*
-   When expanders get destoyed, they destroy the child
+   When expanders get destroyed, they destroy the child
    so remove the child before that
    */
 static void _remove_child(GtkWidget *child,GtkContainer *container)
@@ -252,41 +257,6 @@ static void _remove_child(GtkWidget *child,GtkContainer *container)
     {
       gtk_container_remove(container,child);
     }
-}
-
-static void bitness_nagging()
-{
-  const int bits = (sizeof(void *) == 4) ? 32 : 64;
-  if((bits < 64) && !dt_conf_get_bool("please_let_me_suffer_by_using_32bit_darktable"))
-  {
-    fprintf(stderr, "warning: 32-bit build!\n");
-
-    GtkWidget *dialog, *content_area;
-    GtkDialogFlags flags;
-
-    // Create the widgets
-    flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
-    dialog = gtk_dialog_new_with_buttons(
-        _("you are making a mistake!"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), flags,
-        _("_yes, i understood. please let me suffer by using 32-bit darktable."), GTK_RESPONSE_NONE,
-        NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-    const gchar *msg = _("warning!\nyou are using a 32-bit build of darktable.\nthe 32-bit build has "
-                          "severely limited virtual address space.\nwe have had numerous reports that "
-                          "darktable exhibits sporadic issues and crashes when using 32-bit builds.\nwe "
-                          "strongly recommend you switch to a proper 64-bit build.\notherwise, you are "
-                          "GUARANTEED to experience issues which cannot be fixed.\n");
-
-    gtk_container_add(GTK_CONTAINER(content_area), gtk_label_new(msg));
-    gtk_widget_show_all(dialog);
-
-    (void)gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
 }
 
 int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
@@ -327,7 +297,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   // destroy old module list
 
-  /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear
+  /*  clear the undo list, for now we do this unconditionally. At some point we will probably want to clear
      only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to
      remove. */
@@ -363,6 +333,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++)
       dt_ui_container_destroy_children(darktable.gui->ui, l);
     vm->current_view = NULL;
+
+    /* remove sticky accels window */
+    if(vm->accels_window.window) dt_view_accels_hide(vm);
     return 0;
   }
 
@@ -374,9 +347,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     int error = new_view->try_enter(new_view);
     if(error) return error;
   }
-
-  // annoy the users that are still on 32 bit systems!
-  bitness_nagging();
 
   /* cleanup current view before initialization of new  */
   if(old_view)
@@ -484,21 +454,11 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
 
+  /* update sticky accels window */
+  if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
+
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
-
-  /* add endmarkers to left and right center containers */
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
-  g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
-  gtk_widget_show(endmarker);
-
-  endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
-  g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), GINT_TO_POINTER(1));
-  gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
-  gtk_widget_show(endmarker);
 
   return 0;
 }
@@ -636,8 +596,10 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
     plugins = g_list_previous(plugins);
   }
 
+  if(handled) return 1;
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_released) v->button_released(v, x, y, which, state);
+  else if(v->button_released)
+    v->button_released(v, x, y, which, state);
 
   return 0;
 }
@@ -663,40 +625,16 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
     plugins = g_list_previous(plugins);
   }
 
+  if(handled) return 1;
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_pressed) return v->button_pressed(v, x, y, pressure, which, type, state);
+  else if(v->button_pressed)
+    return v->button_pressed(v, x, y, pressure, which, type, state);
 
   return 0;
 }
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
-  // ↑ ↑ ↓ ↓ ← → ← → b a
-  static int konami_state = 0;
-  static guint konami_sequence[] = {
-    GDK_KEY_Up,
-    GDK_KEY_Up,
-    GDK_KEY_Down,
-    GDK_KEY_Down,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_b,
-    GDK_KEY_a
-  };
-  if(key == konami_sequence[konami_state])
-  {
-    konami_state++;
-    if(konami_state == G_N_ELEMENTS(konami_sequence))
-    {
-      dt_ctl_switch_mode_to("knight");
-      konami_state = 0;
-    }
-  }
-  else
-    konami_state = 0;
-
   int film_strip_result = 0;
   if(!vm->current_view) return 0;
   if(vm->current_view->key_pressed)
@@ -810,22 +748,6 @@ static inline void dt_view_draw_audio(cairo_t *cr, const float x, const float y,
   cairo_stroke(cr);
 }
 
-static inline void dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
-{
-  const float d = 2.0 * M_PI * 0.1f;
-  const float dx[10] = { sinf(0.0),   sinf(d),     sinf(2 * d), sinf(3 * d), sinf(4 * d),
-                         sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };
-  const float dy[10] = { cosf(0.0),   cosf(d),     cosf(2 * d), cosf(3 * d), cosf(4 * d),
-                         cosf(5 * d), cosf(6 * d), cosf(7 * d), cosf(8 * d), cosf(9 * d) };
-  cairo_move_to(cr, x + r1 * dx[0], y - r1 * dy[0]);
-  for(int k = 1; k < 10; k++)
-    if(k & 1)
-      cairo_line_to(cr, x + r2 * dx[k], y - r2 * dy[k]);
-    else
-      cairo_line_to(cr, x + r1 * dx[k], y - r1 * dy[k]);
-  cairo_close_path(cr);
-}
-
 int32_t dt_view_get_image_to_act_on()
 {
   // this works as follows:
@@ -842,7 +764,10 @@ int32_t dt_view_get_image_to_act_on()
   const int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id(
       darktable.view_manager->proxy.lighttable.view);
 
-  if(zoom == 1 || full_preview_id > 1)
+  const int layout = darktable.view_manager->proxy.lighttable.get_layout(
+      darktable.view_manager->proxy.lighttable.module);
+
+  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -862,8 +787,227 @@ int32_t dt_view_get_image_to_act_on()
   }
 }
 
-int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
-                         int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only)
+// Draw one of the controls that overlay thumbnails (e.g. stars) and check if the pointer is hovering it.
+// cr == NULL --> only check for pointer hovering
+// active --> non zero if the control can be activated by the mouse hovering it
+// return value non zero --> mouse is hovering
+
+int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *cr, const dt_image_t *img,
+                               int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py,
+                               dt_gui_color_t outlinecol, dt_gui_color_t fontcol)
+{
+  int ret = 0; // return value
+
+  // we need to squeeze 5 stars + 2 symbols on a thumbnail width
+  // each of them having a width of 2 * r1 and spaced by r1
+  // that's 14 * r1 of content + 6 * r1 of spacing
+  // inner margins are 0.045 * width
+  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
+  const float r2 = r1 / 2.5f;
+
+  if(cr)
+  {
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  }
+
+  gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
+  float x, y;
+  if(zoom != 1)
+    y = (extended_thumb_overlay ? 0.93 * height : 0.955 * height - r1);
+  else
+    y = 9.0f * r1;
+
+  const int rejected = img && (img->flags & 0x7) == 6;
+
+  // Search which star is hovered by cursor
+  int star = -1;
+
+  if(active)
+  {
+    for(int i = DT_VIEW_STAR_1; i < DT_VIEW_STAR_5 + 1; ++i)
+    {
+      if(zoom != 1)
+        x = 0.5f * width - 5.0f * r1 + (i - DT_VIEW_STAR_1) * 2.5f * r1;
+      else
+        x = 3.0f * r1 + (what - DT_VIEW_STAR_1 + 1.5f) * 2.5f * r1;
+
+      if((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1) star = i;
+    }
+  }
+
+  switch(what)
+  {
+    case DT_VIEW_STAR_1:
+    case DT_VIEW_STAR_2:
+    case DT_VIEW_STAR_3:
+    case DT_VIEW_STAR_4:
+    case DT_VIEW_STAR_5:
+      if(zoom != 1)
+        x = 0.5f * width - 5.0f * r1 + (what - DT_VIEW_STAR_1) * 2.5f * r1;
+      else
+        x = 3.0f * r1 + (what - DT_VIEW_STAR_1 + 1.5f) * 2.5f * r1;
+
+      if(cr) dt_draw_star(cr, x, y, r1, r2);
+
+      if(active && star > what - DT_VIEW_STAR_1)
+      {
+        // hovering display
+        ret = 1;
+        if(cr)
+        {
+          cairo_fill_preserve(cr);
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+          cairo_stroke(cr);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
+        }
+      }
+      else if(cr && img && (img->flags & 0x7) > what - DT_VIEW_STAR_1 && ((star > what - DT_VIEW_STAR_1) || star == -1))
+      {
+        // static display with stars set
+        cairo_fill_preserve(cr);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+        cairo_stroke(cr);
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+      }
+      else if(cr)
+        // empty static display
+        cairo_stroke(cr);
+
+      break;
+
+    case DT_VIEW_REJECT:
+      if(zoom != 1)
+        x = 0.045f * width + r1;
+      else
+        x = 3.0f * r1;
+
+      if(cr && rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
+
+      if(active && (px - x) * (px - x) + (py - y) * (py - y) < r1 * r1)
+      {
+        ret = 1;
+        if(cr)
+        {
+          cairo_new_sub_path(cr);
+          cairo_arc(cr, x, y, r1, 0, 2.0f * M_PI);
+          cairo_stroke(cr);
+        }
+      }
+
+      if(cr)
+      {
+        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+
+        const float r3 = (r1 / sqrtf(2.0f)) * 0.95f;
+
+        // reject cross:
+        cairo_move_to(cr, x - r3, y - r3);
+        cairo_line_to(cr, x + r3, y + r3);
+        cairo_move_to(cr, x + r3, y - r3);
+        cairo_line_to(cr, x - r3, y + r3);
+        cairo_close_path(cr);
+        cairo_stroke(cr);
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
+      }
+
+      break;
+
+    case DT_VIEW_GROUP:
+    {
+      // draw grouping icon and border if the current group is expanded
+      // align to the right, left of altered
+      if(zoom != 1)
+      {
+        x = width * 0.955 - r1 * 4.5;
+        y = height * 0.045;
+      }
+      else
+      {
+        x = (3.0 + 2.0 + 1.0 + 5 * 2.5 + 2.0 + 2.0) * r1;
+        y = y - r1;
+      }
+      if(cr)
+      {
+        cairo_save(cr);
+        if(img && (img->id != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dtgtk_cairo_paint_grouping(cr, x, y, 2 * r1, 2 * r1, 23, NULL);
+        cairo_restore(cr);
+      }
+
+      // mouse is over the audio icon
+      if(active && fabs(px - x - r1) <= .9 * r1 && fabs(py - y - r1) <= .9 * r1) ret = 1;
+
+      break;
+    }
+
+    case DT_VIEW_AUDIO:
+    {
+      // align to right
+      if(zoom != 1)
+      {
+        x = width * 0.955 - r1 * 6;
+        y = height * 0.045 + r1;
+      }
+      else
+        x = (3.0 + 2.0 + 1.0 + 5 * 2.5 + 2.0 + 6.0) * r1;
+      if(cr)
+      {
+        dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dt_view_draw_audio(cr, x, y, r1);
+      }
+
+      // mouse is over the audio icon
+      if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
+
+      break;
+    }
+
+    case DT_VIEW_ALTERED:
+    {
+      // align to right
+      if(zoom != 1)
+      {
+        x = width * 0.955 - r1;
+        y = height * 0.045 + r1;
+      }
+      else
+        x = (3.0 + 2.0 + 1.0 + 5 * 2.5 + 2.0) * r1;
+      if(cr)
+      {
+        dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dt_view_draw_altered(cr, x, y, r1);
+      }
+      if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
+
+      break;
+    }
+
+    default: // if what == DT_VIEW_DESERT just return 0
+      return 0;
+  }
+
+  return ret;
+}
+
+dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
+{
+  // active if zoom>1 or in the proper area
+  const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
+  const gboolean draw_metadata = darktable.gui->show_overlays || in_metadata_zone;
+
+  if(draw_metadata && width > DECORATION_SIZE_LIMIT)
+  {
+    dt_view_image_over_t i;
+    for(i = DT_VIEW_ERR; i < DT_VIEW_END; i++)
+      if(dt_view_process_image_over(i, 1, NULL, NULL, width, height, zoom, px, py, 0, 0)) return i;
+  }
+
+  return DT_VIEW_DESERT;
+}
+
+int dt_view_image_expose(dt_view_image_expose_t *vals)
 {
   int missing = 0;
   const double start = dt_get_wtime();
@@ -871,23 +1015,39 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
 
+  dt_view_image_over_t *image_over = vals->image_over;
+  const uint32_t imgid = vals->imgid;
+  cairo_t *cr = vals->cr;
+  const float width = vals->width;
+  const float height = vals->height;
+  const int32_t zoom = vals->zoom;
+  const int32_t px = vals->px;
+  const int32_t py = vals->py;
+  const gboolean full_preview = vals->full_preview;
+  const gboolean image_only = vals->image_only;
+  const gboolean no_deco = image_only ? TRUE : vals->no_deco;
+  const float full_zoom = vals->full_zoom;
+  const float full_x = vals->full_x;
+  const float full_y = vals->full_y;
+
   // active if zoom>1 or in the proper area
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
 
   const gboolean draw_thumb = TRUE;
-  const gboolean draw_colorlabels = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_local_copy = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_grouping = !image_only;
-  const gboolean draw_selected = !image_only;
-  const gboolean draw_history = !image_only;
-  const gboolean draw_metadata = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_audio = !image_only;
+  const gboolean draw_colorlabels = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_local_copy = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_grouping = !no_deco;
+  const gboolean draw_selected = !no_deco;
+  const gboolean draw_history = !no_deco;
+  const gboolean draw_metadata = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_audio = !no_deco;
 
   cairo_save(cr);
-  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
+  dt_gui_color_t bgcol = DT_GUI_COLOR_THUMBNAIL_BG;
+  dt_gui_color_t fontcol = DT_GUI_COLOR_THUMBNAIL_FONT;
+  dt_gui_color_t outlinecol = DT_GUI_COLOR_THUMBNAIL_OUTLINE;
+
   int selected = 0, is_grouped = 0;
-  // this is a gui thread only thing. no mutex required:
-  const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
   if (draw_selected)
   {
@@ -900,25 +1060,42 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
   }
 
+  // do we need to surround the image ?
+  gboolean surrounded = FALSE;
+  const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!full_preview && darktable.view_manager->proxy.lighttable.view
+     && cur_view == darktable.view_manager->proxy.lighttable.view
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // in culling surrounded images are the ones shown in main view
+    surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
+  }
+  else if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
+  {
+    // in darkroom, surrounded image is the one shown in main view
+    surrounded = (darktable.develop->image_storage.id == imgid);
+  }
+
   dt_image_t buffered_image;
   const dt_image_t *img;
   // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
-  if(darktable.gui->show_overlays || imgsel == imgid || zoom == 1)
+  if(darktable.gui->show_overlays || vals->mouse_over || zoom == 1)
     img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   else
     img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
-    outlinecol = 0.4;
-    bgcol = 0.6;
-    fontcol = 0.5;
+    outlinecol = DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE;
+    bgcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_BG;
+    fontcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT;
   }
-  if(imgsel == imgid || zoom == 1)
+  if(vals->mouse_over || zoom == 1)
   {
-    bgcol = 0.8; // mouse over
-    fontcol = 0.7;
-    outlinecol = 0.6;
+    // mouse over
+    bgcol = DT_GUI_COLOR_THUMBNAIL_HOVER_BG;
+    fontcol = DT_GUI_COLOR_THUMBNAIL_HOVER_FONT;
+    outlinecol = DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE;
   }
   // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
   if(img)
@@ -929,7 +1106,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   }
 
   gboolean draw_thumb_background = FALSE;
-  float imgwd = 0.90f;
+  float imgwd = 0.91f;
   if (image_only)
   {
     imgwd = 1.0;
@@ -944,35 +1121,63 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     draw_thumb_background = TRUE;
   }
 
+  dt_mipmap_cache_t *cache = darktable.mipmap_cache;
+  float fz = 1.0f;
+  if(full_zoom > 0.0f) fz = full_zoom;
+  if(vals->full_zoom100 > 0.0f) fz = fminf(vals->full_zoom100, fz);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, imgwd * width * fz, imgwd * height * fz);
+
+  // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip
-      = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  gboolean buf_sizeok = TRUE;
+  gboolean buf_ok = TRUE;
+  gboolean buf_mipmap = FALSE;
+  int buf_wd = 0;
+  int buf_ht = 0;
+  if(vals->full_surface && *(vals->full_surface) && !*(vals->full_surface_w_lock)
+     && (*(vals->full_surface_id) != imgid || *(vals->full_surface_mip) != mip || !full_preview))
+  {
+    cairo_surface_destroy(*(vals->full_surface));
+    if(vals->full_rgbbuf && *(vals->full_rgbbuf))
+    {
+      free(*(vals->full_rgbbuf));
+      *(vals->full_rgbbuf) = NULL;
+    }
+    *(vals->full_surface) = NULL;
+  }
+  if(!vals->full_surface || !*(vals->full_surface) || *(vals->full_surface_w_lock))
+  {
+    dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+    buf_wd = buf.width;
+    buf_ht = buf.height;
+    if(!buf.buf)
+    {
+      buf_ok = FALSE;
+      buf_sizeok = FALSE;
+    }
+    if(mip != buf.size) buf_sizeok = FALSE;
+    buf_mipmap = TRUE;
+  }
+  else
+  {
+    buf_wd = *(vals->full_surface_wd);
+    buf_ht = *(vals->full_surface_ht);
+  }
 
   if(draw_thumb_background)
   {
-    double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
-           rect_height = height - DT_PIXEL_APPLY_DPI(2), radius = DT_PIXEL_APPLY_DPI(5);
-    double x1, y1, off, off1;
-
-    x1 = x0 + rect_width;
-    y1 = y0 + rect_height;
-    off = radius * 0.666;
-    off1 = radius - off;
-    cairo_move_to(cr, x0, y0 + radius);
-    cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
-    cairo_line_to(cr, x1 - radius, y0);
-    cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
-    cairo_line_to(cr, x1, y1 - radius);
-    cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
-    cairo_line_to(cr, x0 + radius, y1);
-    cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
-    cairo_close_path(cr);
-    cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
+    cairo_rectangle(cr, 0, 0, width, height);
+    dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 0.005 * width);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_stroke(cr);
+    if(vals->filmstrip)
+    {
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+      if(surrounded)
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+      else
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+      cairo_stroke(cr);
+    }
 
     if(img)
     {
@@ -980,18 +1185,18 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      const int fontsize = 0.20 * width;
+      const int fontsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
       const char *ext = img->filename + strlen(img->filename);
       while(ext > img->filename && *ext != '.') ext--;
       ext++;
-      cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      dt_gui_gtk_set_source_rgb(cr, fontcol);
 
       char* upcase_ext = g_ascii_strup(ext, -1);  // extension in capital letters to avoid character descenders
 
-      if (buf.height > buf.width)
+      if(buf_ht > buf_wd)
       {
         int max_chr_width = 0;
         for (int i = 0; upcase_ext[i] != 0; i++)
@@ -1005,7 +1210,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         {
           pango_layout_set_text(layout, &upcase_ext[i], 1);
           pango_layout_get_pixel_extents(layout, &ink, NULL);
-          cairo_move_to(cr, .025 * width - ink.x + (max_chr_width - ink.width) / 2, .2 * height - yoffs);
+          cairo_move_to(cr, .045 * width - ink.x + (max_chr_width - ink.width) / 2, .045 * height - yoffs + fontsize);
           pango_cairo_show_layout(cr, layout);
         }
       }
@@ -1013,7 +1218,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       {
         pango_layout_set_text(layout, upcase_ext, -1);
         pango_layout_get_pixel_extents(layout, &ink, NULL);
-        cairo_move_to(cr, .025 * width - ink.x, .2 * height - fontsize);
+        cairo_move_to(cr, .045 * width - ink.x, .045 * height);
         pango_cairo_show_layout(cr, layout);
       }
       g_free(upcase_ext);
@@ -1025,92 +1230,117 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
   // if we got a different mip than requested, and it's not a skull (8x8 px), we count
   // this thumbnail as missing (to trigger re-exposure)
-  if(buf.size != mip && buf.width != 8 && buf.height != 8) missing = 1;
+  if(!buf_sizeok && buf_wd != 8 && buf_ht != 8) missing = 1;
 
   if (draw_thumb)
   {
     float scale = 1.0;
-
     cairo_surface_t *surface = NULL;
     uint8_t *rgbbuf = NULL;
-    if(buf.buf)
+
+    if(vals->full_surface && *(vals->full_surface) && !*(vals->full_surface_w_lock))
     {
-      rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
-      if(rgbbuf)
+      surface = *(vals->full_surface);
+      rgbbuf = *(vals->full_rgbbuf);
+    }
+    else
+    {
+      if(buf_ok)
       {
-        gboolean have_lock = FALSE;
-        cmsHTRANSFORM transform = NULL;
-
-        if(dt_conf_get_bool("cache_color_managed"))
+        rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
+        if(rgbbuf)
         {
-          pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-          have_lock = TRUE;
+          gboolean have_lock = FALSE;
+          cmsHTRANSFORM transform = NULL;
 
-          // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the screen
-          if(buf.color_space == DT_COLORSPACE_SRGB &&
-             darktable.color_profiles->transform_srgb_to_display)
+          if(dt_conf_get_bool("cache_color_managed"))
           {
-            transform = darktable.color_profiles->transform_srgb_to_display;
-          }
-          else if(buf.color_space == DT_COLORSPACE_ADOBERGB &&
-                  darktable.color_profiles->transform_adobe_rgb_to_display)
-          {
-            transform = darktable.color_profiles->transform_adobe_rgb_to_display;
-          }
-          else
-          {
-            pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-            have_lock = FALSE;
-            if(buf.color_space == DT_COLORSPACE_NONE)
+            pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+            have_lock = TRUE;
+
+            // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the
+            // screen
+            if(buf.color_space == DT_COLORSPACE_SRGB && darktable.color_profiles->transform_srgb_to_display)
             {
-              fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+              transform = darktable.color_profiles->transform_srgb_to_display;
             }
-            else if(buf.color_space != DT_COLORSPACE_DISPLAY)
+            else if(buf.color_space == DT_COLORSPACE_ADOBERGB
+                    && darktable.color_profiles->transform_adobe_rgb_to_display)
             {
-              fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
-                      dt_colorspaces_get_name(buf.color_space, "from file"));
+              transform = darktable.color_profiles->transform_adobe_rgb_to_display;
+            }
+            else
+            {
+              pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+              have_lock = FALSE;
+              if(buf.color_space == DT_COLORSPACE_NONE)
+              {
+                fprintf(stderr,
+                        "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+              }
+              else if(buf.color_space != DT_COLORSPACE_DISPLAY && buf.color_space != DT_COLORSPACE_DISPLAY2)
+              {
+                fprintf(
+                    stderr,
+                    "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
+                    dt_colorspaces_get_name(buf.color_space, "from file"));
+              }
             }
           }
-        }
 
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
 #endif
-        for(int i = 0; i < buf.height; i++)
-        {
-          const uint8_t *in = buf.buf + i * buf.width * 4;
-          uint8_t *out = rgbbuf + i * buf.width * 4;
+          for(int i = 0; i < buf.height; i++)
+          {
+            const uint8_t *in = buf.buf + i * buf.width * 4;
+            uint8_t *out = rgbbuf + i * buf.width * 4;
 
-          if(transform)
-          {
-            cmsDoTransform(transform, in, out, buf.width);
-          }
-          else
-          {
-            for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+            if(transform)
             {
-              out[0] = in[2];
-              out[1] = in[1];
-              out[2] = in[0];
+              cmsDoTransform(transform, in, out, buf.width);
+            }
+            else
+            {
+              for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+              {
+                out[0] = in[2];
+                out[1] = in[1];
+                out[2] = in[0];
+              }
             }
           }
+          if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+          const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
+          surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, stride);
+
+          // we save the surface for later use
+          if(!missing && vals->full_surface && !*(vals->full_surface_w_lock))
+          {
+            *(vals->full_surface_w_lock) = 1;
+            *(vals->full_surface) = surface;
+            *(vals->full_rgbbuf) = rgbbuf;
+            *(vals->full_surface_ht) = buf_ht;
+            *(vals->full_surface_wd) = buf_wd;
+            *(vals->full_surface_mip) = mip;
+            *(vals->full_surface_id) = imgid;
+            *(vals->full_surface_w_lock) = 0;
+          }
         }
-        if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-        const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-        surface
-          = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
       }
-
-      if(zoom == 1 && !image_only)
-      {
-        const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-        scale = fminf((width - 2 * tb) / (float)buf.width, (height - 2 * tb) / (float)buf.height);
-      }
-      else
-        scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
     }
 
+    if(surface)
+    {
+      if(zoom == 1 && !image_only)
+      {
+        const int32_t tb = darktable.develop->border_size;
+        scale = fminf((width - 2 * tb) / (float)buf_wd, (height - 2 * tb) / (float)buf_ht) * fz;
+      }
+      else
+        scale = fminf(width * imgwd / (float)buf_wd, height * imgwd / (float)buf_ht) * fz;
+    }
     // draw centered and fitted:
     cairo_save(cr);
 
@@ -1121,145 +1351,187 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
     cairo_scale(cr, scale, scale);
 
-    if(buf.buf && surface)
+    float rectw = width;
+    float recth = height;
+    float rectx = 0.0f;
+    float recty = 0.0f;
+    if(buf_ok)
     {
-      if (!image_only) cairo_translate(cr, -0.5 * buf.width, -0.5 * buf.height);
+      rectw = buf_wd;
+      recth = buf_ht;
+    }
+
+    if(surface)
+    {
+      // we move the full preview
+      float fx = 0.0f;
+      float fy = 0.0f;
+      if(fz > 1.0f)
+      {
+        int w = width;
+        int h = height;
+        if(zoom == 1 && !image_only)
+        {
+          const int32_t tb = darktable.develop->border_size;
+          w -= 2 * tb;
+          h -= 2 * tb;
+        }
+        // we want to be sure the image stay in the window
+        if(buf_sizeok && vals->full_maxdx && vals->full_maxdy)
+        {
+          *(vals->full_maxdx) = fmaxf(0.0f, (buf_wd * scale - w) / 2);
+          *(vals->full_maxdy) = fmaxf(0.0f, (buf_ht * scale - h) / 2);
+        }
+        fx = fminf((buf_wd * scale - w) / 2, fabsf(full_x));
+        if(full_x < 0) fx = -fx;
+        if(buf_wd * scale <= w) fx = 0;
+        fy = fminf((buf_ht * scale - h) / 2, fabsf(full_y));
+        if(full_y < 0) fy = -fy;
+        if(buf_ht * scale <= h) fy = 0;
+
+        // and we determine the rectangle where the image is display
+        rectw = fminf(w / scale, rectw);
+        recth = fminf(h / scale, recth);
+        rectx = 0.5 * buf_wd - fx / scale - 0.5 * rectw;
+        recty = 0.5 * buf_ht - fy / scale - 0.5 * recth;
+      }
+
+      if(buf_ok && fz == 1.0f && vals->full_w1 && vals->full_h1)
+      {
+        *(vals->full_w1) = buf_wd * scale;
+        *(vals->full_h1) = buf_ht * scale;
+      }
+
+      if(!image_only) cairo_translate(cr, -0.5 * buf_wd + fx / scale, -0.5 * buf_ht + fy / scale);
       cairo_set_source_surface(cr, surface, 0, 0);
       // set filter no nearest:
       // in skull mode, we want to see big pixels.
       // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
       // in between, filtering just makes stuff go unsharp.
-      if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+      if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-      cairo_fill(cr);
-      cairo_surface_destroy(surface);
 
-      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+      cairo_rectangle(cr, rectx, recty, rectw, recth);
+      cairo_fill(cr);
+
+      if(darktable.gui->show_focus_peaking)
+        dt_focuspeaking(cr, width, height, cairo_image_surface_get_data(surface),
+                                           cairo_image_surface_get_width(surface),
+                                           cairo_image_surface_get_height(surface));
+
+      if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
     }
 
-    free(rgbbuf);
+    if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
 
-    if (image_only)
+    if(no_deco)
     {
       cairo_restore(cr);
       cairo_save(cr);
       cairo_new_path(cr);
     }
-    else
+    else if(buf_ok && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
     {
       // border around image
-      cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-      if(buf.buf && (selected || zoom == 1))
+      if(selected && !vals->filmstrip && darktable.gui->colors[DT_GUI_COLOR_CULLING_SELECTED_BORDER].alpha > 0.0)
       {
-        const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
-        if(zoom == 1)
-        {
-          // draw shadow around border
-          cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-          cairo_stroke(cr);
-          // cairo_new_path(cr);
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          float alpha = 1.0f;
-          for(int k = 0; k < 16; k++)
-          {
-            cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-            cairo_new_sub_path(cr);
-            cairo_rectangle(cr, -k / scale, -k / scale, buf.width + 2. * k / scale, buf.height + 2. * k / scale);
-            cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-            alpha *= 0.6f;
-            cairo_fill(cr);
-          }
-        }
-        else
-        {
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          cairo_new_sub_path(cr);
-          cairo_rectangle(cr, -border, -border, buf.width + 2. * border, buf.height + 2. * border);
-          cairo_stroke_preserve(cr);
-          cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
-          cairo_fill(cr);
-        }
+        const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_CULLING_SELECTED_BORDER);
+        cairo_stroke(cr);
       }
-      else if(buf.buf)
+
+      // border around image filmstrip
+      if(selected && vals->filmstrip
+         && darktable.gui->colors[DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER].alpha > 0.0)
       {
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
+        const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER);
+        cairo_stroke(cr);
+      }
+
+      // draw hover border if it's not transparent
+      if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
+      {
+        const float border = DT_PIXEL_APPLY_DPI(2.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
         cairo_stroke(cr);
       }
     }
   }
+
   cairo_restore(cr);
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  cairo_save(cr);
+  const int z1_fontsize = fminf(DT_PIXEL_APPLY_DPI(20.0f), 0.91 * width / 10.0f);
+  if(vals->mouse_over && zoom != 1)
+  {
+    // overlay a dark transparent background on thumbs to help legibility of overlays
+    cairo_set_operator(cr, CAIRO_OPERATOR_MULTIPLY);
+    cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0.8528749999999999 * height,  0, height);
+    cairo_pattern_add_color_stop_rgba(pat, 0, 0.5, 0.5, 0.5, 0);
+    cairo_pattern_add_color_stop_rgba(pat, 0.25, 0.5, 0.5, 0.5, 0.25);
+    cairo_pattern_add_color_stop_rgba(pat, 1, 0.5, 0.5, 0.5, 1);
+    cairo_rectangle(cr, 0, 0.8528749999999999 * height, width, (1.0 - 0.8528749999999999) * height);
+    cairo_set_source (cr, pat);
+    cairo_fill (cr);
+    cairo_pattern_destroy(pat);
+  }
+  cairo_restore(cr);
+
+  if(buf_mipmap) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  if(buf_mipmap && !missing && vals->full_surface && !*(vals->full_surface_w_lock) && mip >= DT_MIPMAP_7)
+  {
+    // we don't need this in the cache anymore, as we already have it in memory for zoom&pan
+    // let's drop it to free space. This reduce the risk of getting out of space...
+    dt_mipmap_cache_evict_at_size(cache, imgid, mip);
+  }
 
   cairo_save(cr);
 
-  const float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
-  if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
+  if(vals->mouse_over || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
       // draw mouseover hover effects, set event hook for mouse button down!
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-      float r1, r2;
-      if(zoom != 1)
-      {
-        r1 = 0.05 * width;
-        r2 = 0.022 * width;
-      }
-      else
-      {
-        r1 = 0.015 * fscale;
-        r2 = 0.007 * fscale;
-      }
 
       const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
-      float x, y;
-      if(zoom != 1)
-        y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
-      else
-        y = .12 * fscale;
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
+
+      // for preview, no frame except if rejected
+      if(zoom == 1 && !image_is_rejected) cairo_new_path(cr);
 
       if(img)
       {
-        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) && extended_thumb_overlay)
+        if(zoom != 1 && (!darktable.gui->show_overlays || vals->mouse_over) && extended_thumb_overlay)
         {
-          const double overlay_height = 0.26 * height;
-          const int exif_offset = DT_PIXEL_APPLY_DPI(3);
-          const int fontsize = 0.18 * overlay_height;
-          const double line_offs = 1.15 * fontsize;
+          // size of stars overlays
+          const double r1 = MIN(DT_PIXEL_APPLY_DPI(20.0), 0.91 * width / 10.0);
+          const double fontsize = MIN(DT_PIXEL_APPLY_DPI(16.0), 0.67 * 0.91 * width / 10.0);
+          const double exif_offset = 0.045 * width;
+          const double line_offs = 1.25 * fontsize;
+          const double overlay_height = 2 * exif_offset + r1 + 1.75 * line_offs;
 
+          const double x0 = 0;
+          const double y0 = height - overlay_height;
+          const double rect_width = width;
+          const double rect_height = overlay_height;
 
-          double x0 = DT_PIXEL_APPLY_DPI(1);
-          double y0 = height - overlay_height;
-          double rect_width = width - DT_PIXEL_APPLY_DPI(2);
-          double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
-          double radius = DT_PIXEL_APPLY_DPI(5);
-          double x1, y1, off, off1;
-
-          x1 = x0 + rect_width;
-          y1 = y0 + rect_height;
-          off = radius * 0.666;
-          off1 = radius - off;
           cairo_save(cr);
-          cairo_move_to(cr, x0, y0 + radius);
-          cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
-          cairo_line_to(cr, x1 - radius, y0);
-          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
-          cairo_line_to(cr, x1, y1 - radius);
-          cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
-          cairo_line_to(cr, x0 + radius, y1);
-          cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
-          cairo_close_path(cr);
-          cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 0.005 * width);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-          cairo_stroke(cr);
+          cairo_rectangle(cr, x0, y0, rect_width, rect_height);
+          dt_gui_gtk_set_source_rgb(cr, bgcol);
+          cairo_fill(cr);
 
           // some exif data
           PangoLayout *layout;
@@ -1268,15 +1540,15 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           layout = pango_cairo_create_layout(cr);
           pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
           pango_layout_set_font_description(layout, desc);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
 
-          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset);
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset / 2.0);
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
           pango_layout_set_width(layout, (int)(PANGO_SCALE * (width - 2 * exif_offset)));
           pango_layout_set_text(layout, img->filename, -1);
           pango_cairo_show_layout(cr, layout);
           char exifline[50];
-          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset + line_offs);
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset / 2.0 + line_offs);
           dt_image_print_exif(img, exifline, sizeof(exifline));
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
           pango_layout_set_text(layout, exifline, -1);
@@ -1287,82 +1559,27 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           cairo_restore(cr);
         }
 
-        for(int k = 0; k < 5; k++)
+        if(!image_is_rejected) // if rejected: draw no stars
         {
-          if(zoom != 1)
-            x = (0.26 + k * 0.12) * width;
-          else
-            x = (.08 + k * 0.04) * fscale;
-
-          if(!image_is_rejected) // if rejected: draw no stars
+          for(int k = 0; k < 5; k++)
           {
-            dt_view_star(cr, x, y, r1, r2);
-            // Only draw hovering effects in stars for the hovered image
-            // printf ("Image selected: %d - Image processed: %d\n", imgsel, imgid);
-            if((imgsel == imgid || zoom == 1) && ((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1))
-            {
-              *image_over = DT_VIEW_STAR_1 + k;
-              cairo_fill(cr);
-            }
-            else if((img->flags & 0x7) > k)
-            {
-              cairo_fill_preserve(cr);
-              cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
-              cairo_stroke(cr);
-              cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-            }
-            else
-              cairo_stroke(cr);
+            const dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
+            if(dt_view_process_image_over(star, vals->mouse_over || zoom == 1, cr, img, width, height, zoom, px,
+                                          py, outlinecol, fontcol))
+              *image_over = star;
           }
         }
       }
 
-      // Image rejected?
-      if(zoom != 1)
-        x = 0.08 * width;
-      else
-        x = .04 * fscale;
+      if(dt_view_process_image_over(DT_VIEW_REJECT, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                    px, py, outlinecol, fontcol))
+        *image_over = DT_VIEW_REJECT;
 
-      if(image_is_rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
-
-      // Only draw hovering effects in stars for the hovered image
-      if((imgsel == imgid || zoom == 1) && ((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1))
+      if(draw_audio && img && (img->flags & DT_IMAGE_HAS_WAV))
       {
-        *image_over = DT_VIEW_REJECT; // mouse sensitive
-        cairo_new_sub_path(cr);
-        cairo_arc(cr, x, y, (r1 + r2) * .5, 0, 2.0f * M_PI);
-        cairo_stroke(cr);
-      }
-
-      if(image_is_rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5));
-
-      // reject cross:
-      cairo_move_to(cr, x - r2, y - r2);
-      cairo_line_to(cr, x + r2, y + r2);
-      cairo_move_to(cr, x + r2, y - r2);
-      cairo_line_to(cr, x - r2, y + r2);
-      cairo_close_path(cr);
-      cairo_stroke(cr);
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
-
-      if(draw_audio)
-      {
-        if(img && (img->flags & DT_IMAGE_HAS_WAV))
-        {
-          // align to right
-          const float s = (r1 + r2) * .5;
-          if(zoom != 1)
-          {
-            x = width * 0.9 - s * 5;
-            y = height * 0.1;
-          }
-          else
-            x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
-          dt_view_draw_audio(cr, x, y, s);
-          // mouse is over the audio icon
-          if(fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
-        }
+        if(dt_view_process_image_over(DT_VIEW_AUDIO, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                      px, py, outlinecol, fontcol))
+          *image_over = DT_VIEW_AUDIO;
       }
 
       if(draw_grouping)
@@ -1382,48 +1599,17 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       // image part of a group?
       if(is_grouped && darktable.gui && darktable.gui->grouping)
       {
-        // draw grouping icon and border if the current group is expanded
-        // align to the right, left of altered
-        const float s = (r1 + r2) * .6;
-        float _x, _y;
-        if(zoom != 1)
-        {
-          _x = width * 0.9 - s * 2.5;
-          _y = height * 0.1 - s * .4;
-        }
-        else
-        {
-          _x = (.04 + 8 * 0.04 - 1.1 * .04) * fscale;
-          _y = y - (.17 * .04) * fscale;
-        }
-        cairo_save(cr);
-        if(img && (imgid != img->group_id)) cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-        dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23, NULL);
-        cairo_restore(cr);
-        // mouse is over the grouping icon
-        if(img && fabs(px - _x - .5 * s) <= .8 * s && fabs(py - _y - .5 * s) <= .8 * s)
+        if(dt_view_process_image_over(DT_VIEW_GROUP, img != NULL, cr, img,
+                                      width, height, zoom, px, py, outlinecol, fontcol))
           *image_over = DT_VIEW_GROUP;
       }
 
       // image altered?
       if(draw_history && dt_image_altered(imgid))
       {
-        // align to right
-        const float s = (r1 + r2) * .5;
-        if(zoom != 1)
-        {
-          x = width * 0.9;
-          y = height * 0.1;
-        }
-        else
-          x = (.04 + 8 * 0.04) * fscale;
-        dt_view_draw_altered(cr, x, y, s);
-        // g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-        if(img && fabsf(px - x) <= 1.2 * s
-           && fabsf(py - y) <= 1.2 * s) // mouse hovers over the altered-icon -> history tooltip!
-        {
+        if(dt_view_process_image_over(DT_VIEW_ALTERED, img != NULL, cr, img,
+                                      width, height, zoom, px, py, outlinecol, fontcol))
           darktable.gui->center_tooltip = 1;
-        }
       }
     }
   }
@@ -1432,9 +1618,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-  if (draw_colorlabels)
+  if(draw_colorlabels && (darktable.gui->show_overlays || vals->mouse_over || full_preview || zoom == 1))
   {
-    // TODO: make mouse sensitive, just as stars!
     // TODO: cache in image struct!
 
     // TODO: there is a branch that sets the bg == colorlabel
@@ -1442,12 +1627,10 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     if(width > DECORATION_SIZE_LIMIT)
     {
       // color labels:
-      const float x[] = {0.84, 0.92, 0.88, 0.84, 0.92};
-      const float y[] = {0.84, 0.84, 0.88, 0.92, 0.92};
-      const float x_zoom[] = {0.27, 0.30, 0.285, 0.27, 0.30};
-      const float y_zoom[] = {0.095, 0.095, 0.11, 0.125, 0.125};
+      const float r = 0.0455 * width / 2.0;
+      const float x[5] = {0.86425, 0.9325, 0.8983749999999999, 0.86425, 0.9325};
+      const float y[5] = {0.86425, 0.86425, 0.8983749999999999, 0.9325, 0.9325};
       const int max_col = sizeof(x) / sizeof(x[0]);
-      const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
 
       gboolean colorlabel_painted = FALSE;
       gboolean painted_col[] = {FALSE, FALSE, FALSE, FALSE, FALSE};
@@ -1462,19 +1645,20 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       {
         cairo_save(cr);
         const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
-        if (col < max_col)
+        if(col < max_col || zoom == 1)
         {
           // see src/dtgtk/paint.c
           if (zoom != 1)
             dtgtk_cairo_paint_label(cr, x[col]  * width, y[col] * height, r * 2, r * 2, col, NULL);
           else
-            dtgtk_cairo_paint_label(cr, x_zoom[col]  * fscale, y_zoom[col] * fscale, r * 2, r * 2, col, NULL);
+            dtgtk_cairo_paint_label(cr, z1_fontsize + col * 0.75f * 1.5f * z1_fontsize, 6.0 * z1_fontsize,
+                                    0.75f * z1_fontsize, 0.75f * z1_fontsize, col, NULL);
           colorlabel_painted = colorlabel_painted || TRUE;
           painted_col[col] = TRUE;
         }
         cairo_restore(cr);
       }
-      if (colorlabel_painted)
+      if(colorlabel_painted && zoom != 1)
       {
         const int dont_fill_col = 7;
         for(int i = 0; i < max_col; i++)
@@ -1482,10 +1666,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           if (!painted_col[i])
           {
             cairo_save(cr);
-            if (zoom != 1)
-              dtgtk_cairo_paint_label(cr, x[i]  * width, y[i] * height, r * 2, r * 2, dont_fill_col, NULL);
-            else
-              dtgtk_cairo_paint_label(cr, x_zoom[i]  * fscale, y_zoom[i] * fscale, r * 2, r * 2, dont_fill_col, NULL);
+            dtgtk_cairo_paint_label(cr, x[i] * width, y[i] * height, r * 2, r * 2, dont_fill_col, NULL);
             cairo_restore(cr);
           }
         }
@@ -1499,50 +1680,30 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     {
       const gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
 
-      if (has_local_copy)
+      if(has_local_copy)
       {
         cairo_save(cr);
 
         if (zoom != 1)
         {
-          double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
-                radius = DT_PIXEL_APPLY_DPI(5);
-          double x1, off, off1;
+          const double x0 = 0, y0 = 0;
+          const double x1 = x0 + width;
 
-          x1 = x0 + rect_width;
-          off = radius * 0.666;
-          off1 = radius - off;
-
-          cairo_move_to(cr, x1 - width * 0.08, y0);
-          cairo_line_to(cr, x1 - radius, y0);
-          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
-          cairo_line_to(cr, x1, y0 + height * 0.08);
+          cairo_move_to(cr, x1 - z1_fontsize, y0);
+          cairo_line_to(cr, x1, y0);
+          cairo_line_to(cr, x1, y0 + z1_fontsize);
           cairo_close_path(cr);
           cairo_set_source_rgb(cr, 1, 1, 1);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 0.005 * width);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-          cairo_stroke(cr);
+          cairo_fill(cr);
         }
         else
         {
-          const float x_zoom = 0.325;
-          const float y_zoom = 0.112;
-          const float edge_length = 0.016 * fscale;
-
-          cairo_rectangle(cr, x_zoom * fscale, y_zoom * fscale, edge_length, edge_length);
-          cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-          cairo_set_line_width(cr, 0.002 * fscale);
-          cairo_stroke(cr);
-
-          cairo_move_to(cr, x_zoom * fscale + edge_length * 0.1, y_zoom * fscale);
-          cairo_line_to(cr, x_zoom * fscale + edge_length, y_zoom * fscale);
-          cairo_line_to(cr, x_zoom * fscale + edge_length, y_zoom * fscale + edge_length * 0.9);
+          cairo_move_to(cr, 0, 0);
+          cairo_line_to(cr, 1.5 * z1_fontsize, 0);
+          cairo_line_to(cr, 0, 1.5 * z1_fontsize);
           cairo_close_path(cr);
           cairo_set_source_rgb(cr, 1, 1, 1);
-          cairo_fill_preserve(cr);
-          cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-          cairo_stroke(cr);
+          cairo_fill(cr);
         }
         cairo_restore(cr);
       }
@@ -1556,18 +1717,17 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
-    const int fontsize = 0.025 * fscale;
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, z1_fontsize * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 
-    cairo_move_to(cr, .02 * fscale, .04 * fscale - fontsize);
+    cairo_move_to(cr, z1_fontsize, z1_fontsize);
     pango_layout_set_text(layout, img->filename, -1);
     pango_cairo_layout_path(cr, layout);
     char exifline[50];
-    cairo_move_to(cr, .02 * fscale, .08 * fscale - fontsize);
+    cairo_move_to(cr, z1_fontsize, 2.25f * z1_fontsize);
     dt_image_print_exif(img, exifline, sizeof(exifline));
     pango_layout_set_text(layout, exifline, -1);
     pango_cairo_layout_path(cr, layout);
@@ -1593,8 +1753,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         PangoLayout *layout;
         PangoFontDescription *desc = pango_font_description_from_string("monospace bold");
         layout = pango_cairo_create_layout(cr);
-        const float fontsize = 0.015 * fscale;
-        pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+        pango_font_description_set_absolute_size(desc, z1_fontsize * PANGO_SCALE);
         pango_layout_set_font_description(layout, desc);
         // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
@@ -1608,7 +1767,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           if(read != 1) break;
           fgetc(f); // munch \n
 
-          cairo_move_to(cr, .02 * fscale, .20 * fscale + .017 * fscale * k - fontsize);
+          cairo_move_to(cr, z1_fontsize, (k + 7.0) * z1_fontsize);
           cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
           pango_layout_set_text(layout, line, -1);
           pango_cairo_layout_path(cr, layout);
@@ -1645,7 +1804,19 @@ dt_view_image_only_expose(
   int32_t offsety)
 {
   dt_view_image_over_t image_over;
-  dt_view_image_expose(&image_over, imgid, cr, width, height, 1, offsetx, offsety, TRUE, TRUE);
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &image_over;
+  params.imgid = imgid;
+  params.cr = cr;
+  params.width = width;
+  params.height = height;
+  params.px = offsetx;
+  params.py = offsety;
+  params.zoom = 1;
+  params.image_only = TRUE;
+  params.full_preview = TRUE;
+
+  dt_view_image_expose(&params);
 }
 
 
@@ -1837,9 +2008,63 @@ void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, 
   if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
 }
 
+dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm)
+{
+  if(vm->proxy.darkroom.view)
+    return vm->proxy.darkroom.get_layout(vm->proxy.darkroom.view);
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
+}
+
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
 {
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
+}
+
+gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_zoom(vm->proxy.lighttable.module);
+  else
+    return 10;
+}
+
+dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
+  else
+    return DT_LIGHTTABLE_ZOOM_FIXED;
+}
+
+void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.view)
+    vm->proxy.lighttable.force_expose_all(vm->proxy.lighttable.view);
+}
+
+dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_layout(vm->proxy.lighttable.module);
+  else
+    return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+}
+
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.culling_is_image_visible(vm->proxy.lighttable.view, imgid);
+  else
+    return FALSE;
+}
+
+gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return (vm->proxy.lighttable.get_full_preview_id(vm->proxy.lighttable.view) != -1);
+  else
+    return FALSE;
 }
 
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos)
@@ -1922,6 +2147,301 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
 }
 #endif
 
+
+static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
+{
+  gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods));
+  if(strcmp(atxt, "")) atxt = dt_util_dstrcat(atxt, "+");
+  switch(ma->action)
+  {
+    case DT_MOUSE_ACTION_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left click"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right click"));
+      break;
+    case DT_MOUSE_ACTION_MIDDLE:
+      atxt = dt_util_dstrcat(atxt, _("Middle click"));
+      break;
+    case DT_MOUSE_ACTION_SCROLL:
+      atxt = dt_util_dstrcat(atxt, _("Scroll"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
+      break;
+    case DT_MOUSE_ACTION_DRAG_DROP:
+      atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
+      break;
+    case DT_MOUSE_ACTION_LEFT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Left click+Drag"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Right click+Drag"));
+      break;
+  }
+
+  return atxt;
+}
+
+static void _accels_window_destroy(GtkWidget *widget, dt_view_manager_t *vm)
+{
+  // set to NULL so we can rely on it after
+  vm->accels_window.window = NULL;
+}
+
+static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_view_manager_t *vm)
+{
+  if(!vm->accels_window.window) return;
+
+  // creating new window
+  GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(win));
+#endif
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
+  gtk_style_context_add_class(context, "accels_window");
+  gtk_window_set_title(win, _("darktable - accels window"));
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+
+  gtk_window_set_resizable(win, TRUE);
+  gtk_window_set_icon_name(win, "darktable");
+  gtk_window_set_default_size(win, alloc.width * 0.7, alloc.height * 0.7);
+  g_signal_connect(win, "destroy", G_CALLBACK(_accels_window_destroy), vm);
+
+  GtkWidget *sw
+      = (GtkWidget *)g_list_first(gtk_container_get_children(GTK_CONTAINER(vm->accels_window.window)))->data;
+  g_object_ref(sw);
+
+  gtk_container_remove(GTK_CONTAINER(vm->accels_window.window), sw);
+  gtk_container_add(GTK_CONTAINER(win), sw);
+  g_object_unref(sw);
+  gtk_widget_destroy(vm->accels_window.window);
+  vm->accels_window.window = GTK_WIDGET(win);
+  gtk_widget_show_all(vm->accels_window.window);
+  gtk_widget_hide(vm->accels_window.sticky_btn);
+
+  vm->accels_window.sticky = TRUE;
+}
+
+void dt_view_accels_show(dt_view_manager_t *vm)
+{
+  if(vm->accels_window.window) return;
+
+  vm->accels_window.sticky = FALSE;
+  vm->accels_window.prevent_refresh = FALSE;
+
+  GtkStyleContext *context;
+  vm->accels_window.window = gtk_window_new(GTK_WINDOW_POPUP);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(vm->accels_window.window);
+#endif
+  context = gtk_widget_get_style_context(vm->accels_window.window);
+  gtk_style_context_add_class(context, "accels_window");
+
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  context = gtk_widget_get_style_context(sw);
+  gtk_style_context_add_class(context, "accels_window_scroll");
+
+  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+  vm->accels_window.flow_box = gtk_flow_box_new();
+  context = gtk_widget_get_style_context(vm->accels_window.flow_box);
+  gtk_style_context_add_class(context, "accels_window_box");
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vm->accels_window.flow_box), GTK_ORIENTATION_HORIZONTAL);
+
+  gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  vm->accels_window.sticky_btn
+      = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
+               _("switch to a classic window which will stay open after key release."), (char *)NULL);
+  g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
+                   vm);
+  context = gtk_widget_get_style_context(vm->accels_window.sticky_btn);
+  gtk_style_context_add_class(context, "accels_window_stick");
+  gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
+
+  dt_view_accels_refresh(vm);
+
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+  // gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
+  gtk_container_add(GTK_CONTAINER(sw), hb);
+  gtk_container_add(GTK_CONTAINER(vm->accels_window.window), sw);
+
+  gtk_window_set_resizable(GTK_WINDOW(vm->accels_window.window), FALSE);
+  gtk_window_set_default_size(GTK_WINDOW(vm->accels_window.window), alloc.width, alloc.height);
+  gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
+  gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(vm->accels_window.window);
+}
+
+void dt_view_accels_hide(dt_view_manager_t *vm)
+{
+  if(vm->accels_window.window && vm->accels_window.sticky) return;
+  if(vm->accels_window.window) gtk_widget_destroy(vm->accels_window.window);
+  vm->accels_window.window = NULL;
+}
+
+void dt_view_accels_refresh(dt_view_manager_t *vm)
+{
+  if(!vm->accels_window.window || vm->accels_window.prevent_refresh) return;
+
+  // drop all existing tables
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.flow_box));
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    gtk_widget_destroy(w);
+    lw = g_list_next(lw);
+  }
+
+  // get the list of valid accel for this view
+  const dt_view_t *cv = dt_view_manager_get_current_view(vm);
+  const dt_view_type_flags_t v = cv->view(cv);
+  GtkStyleContext *context;
+
+  typedef struct _bloc_t
+  {
+    gchar *base;
+    gchar *title;
+    GtkListStore *list_store;
+  } _bloc_t;
+
+  // go through all accels to populate categories with valid ones
+  GList *blocs = NULL;
+  GList *bl = NULL;
+  GSList *l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *da = (dt_accel_t *)l->data;
+    if(da && (da->views & v) == v)
+    {
+      GtkAccelKey ak;
+      if(gtk_accel_map_lookup_entry(da->path, &ak) && ak.accel_key > 0)
+      {
+        // we want the base path
+        gchar **elems = g_strsplit(da->translated_path, "/", -1);
+        if(elems[0] && elems[1] && elems[2])
+        {
+          // do we already have a category ?
+          bl = blocs;
+          _bloc_t *b = NULL;
+          while(bl)
+          {
+            _bloc_t *bb = (_bloc_t *)bl->data;
+            if(strcmp(elems[1], bb->base) == 0)
+            {
+              b = bb;
+              break;
+            }
+            bl = g_list_next(bl);
+          }
+          // if not found, we create it
+          if(!b)
+          {
+            b = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+            b->base = dt_util_dstrcat(NULL, "%s", elems[1]);
+            if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+              b->title = dt_util_dstrcat(NULL, "%s", cv->name(cv));
+            else
+              b->title = dt_util_dstrcat(NULL, "%s", elems[1]);
+            b->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+            blocs = g_list_prepend(blocs, b);
+          }
+          // we add the new line
+          GtkTreeIter iter;
+          gtk_list_store_prepend(b->list_store, &iter);
+          gchar *txt;
+          // for views accels, no need to specify the view name, it's in the category title
+          if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + strlen(elems[2]) + 3;
+          else
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + 2;
+          // for dynamic accel, we need to add the "+scroll"
+          gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ak.accel_key, ak.accel_mods));
+          if(g_str_has_prefix(da->path, "<Darktable>/image operations/") && g_str_has_suffix(da->path, "/dynamic"))
+            atxt = dt_util_dstrcat(atxt, _("+Scroll"));
+          gtk_list_store_set(b->list_store, &iter, 0, atxt, 1, txt, -1);
+          g_free(atxt);
+          g_strfreev(elems);
+        }
+      }
+    }
+    l = g_slist_next(l);
+  }
+
+  // we add the mouse actions too
+  if(cv->mouse_actions)
+  {
+    _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+    bm->base = NULL;
+    bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
+    bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    blocs = g_list_prepend(blocs, bm);
+
+    GSList *lm = cv->mouse_actions(cv);
+    while(lm)
+    {
+      dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
+      if(ma)
+      {
+        GtkTreeIter iter;
+        gtk_list_store_append(bm->list_store, &iter);
+        gchar *atxt = _mouse_action_get_string(ma);
+        gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
+        g_free(atxt);
+      }
+      lm = g_slist_next(lm);
+    }
+    g_slist_free_full(lm, free);
+  }
+
+  // now we create and insert the widget to display all accels by categories
+  bl = blocs;
+  while(bl)
+  {
+    const _bloc_t *bb = (_bloc_t *)bl->data;
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    // the title
+    GtkWidget *lb = gtk_label_new(bb->title);
+    context = gtk_widget_get_style_context(lb);
+    gtk_style_context_add_class(context, "accels_window_cat_title");
+    gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
+
+    // the list of accels
+    GtkWidget *list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(bb->list_store));
+    context = gtk_widget_get_style_context(list);
+    gtk_style_context_add_class(context, "accels_window_list");
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Accel"), renderer, "text", 0, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+    gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
+
+    gtk_flow_box_insert(GTK_FLOW_BOX(vm->accels_window.flow_box), box, -1);
+    g_free(bb->base);
+    g_free(bb->title);
+
+    bl = g_list_next(bl);
+  }
+  g_list_free_full(blocs, free);
+
+  gtk_widget_show_all(vm->accels_window.flow_box);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

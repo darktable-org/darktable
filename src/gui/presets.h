@@ -33,7 +33,7 @@ void dt_gui_presets_update_tv(const char *name, dt_dev_operation_t op, const int
                               const float max);
 void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const int32_t version, const float min,
                               const float max);
-/** update ldr flag: 0-dont care, 1-low dynamic range, 2-raw */
+/** update ldr flag: 0-don't care, 1-low dynamic range, 2-raw */
 void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int32_t version,
                                const int ldrflag);
 /** set auto apply property of preset. */

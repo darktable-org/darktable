@@ -681,6 +681,51 @@ gchar *dt_util_normalize_path(const gchar *_input)
   return filename;
 }
 
+guint dt_util_string_count_char(const char *text, const char needle)
+{
+  guint count = 0;
+  while(text[0])
+  {
+    if (text[0] == needle) count ++;
+    text ++;
+  }
+  return count;
+}
+
+GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
+{
+  if(text == NULL) return NULL;
+  GList *list = NULL;
+  gchar *item = NULL;
+  gchar *entry = g_strdup(text);
+  gchar *prev = entry;
+  int len = strlen(prev);
+  while (len)
+  {
+    gchar *next = g_strstr_len(prev, -1, separator);
+    if (next)
+    {
+      const gchar c = next[0];
+      next[0] = '\0';
+      item = g_strdup(prev);
+      next[0] = c;
+      prev = next + strlen(separator);
+      len = strlen(prev);
+      list = g_list_prepend(list, item);
+      if (!len) list = g_list_prepend(list, g_strdup(""));
+    }
+    else
+    {
+      item = g_strdup(prev);
+      len = 0;
+      list = g_list_prepend(list, item);
+    }
+  }
+  list = g_list_reverse(list);
+  g_free(entry);
+  return list;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

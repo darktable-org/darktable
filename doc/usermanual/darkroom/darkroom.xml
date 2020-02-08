@@ -58,7 +58,7 @@
     <para>
       You normally export multiple images from the lighttable view but you can also export the
       current image directly from the darkroom by using the shortcut
-      <emphasis>ctrl-e</emphasis>. Export parameters are then those currently selected in the
+      <emphasis>Ctrl+E</emphasis>. Export parameters are then those currently selected in the
       lighttable.
     </para>
 

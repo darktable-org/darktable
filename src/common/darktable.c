@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#include "is_supported_platform.h"
+
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
@@ -40,11 +42,13 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/cpuid.h"
+#include "common/file_location.h"
 #include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
+#include "common/iop_order.h"
 #include "common/l10n.h"
 #include "common/mipmap_cache.h"
 #include "common/noiseprofiles.h"
@@ -76,6 +80,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <locale.h>
+#include <limits.h>
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -115,7 +120,8 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql}\n");
+  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder\n");
+  printf("      imageio\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -169,8 +175,6 @@ static void strip_semicolons_from_keymap(const char *path)
   char pathtmp[PATH_MAX] = { 0 };
   FILE *fin = g_fopen(path, "rb");
   FILE *fout;
-  int i;
-  int c = '\0';
 
   if(!fin) return;
 
@@ -183,22 +187,30 @@ static void strip_semicolons_from_keymap(const char *path)
     return;
   }
 
+  int c = '\0';
   // First ignoring the first three lines
-  for(i = 0; i < 3; i++)
+  for(int i = 0; i < 3; i++)
   {
     while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
     while(c == '\n' || c == '\r') c = fgetc(fin);
+    ungetc(c, fin);
   }
 
   // Then ignore the first two characters of each line, copying the rest out
   while(c != EOF)
   {
     fseek(fin, 2, SEEK_CUR);
-    do
+    while(c != '\n' && c != '\r' && c != EOF)
     {
       c = fgetc(fin);
-      if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != '\r' && c != EOF);
+      if(c != '\n' && c != '\r' && c != EOF) fputc(c, fout);
+    }
+    while(c == '\n' || c == '\r')
+    {
+      fputc(c, fout);
+      c = fgetc(fin);
+    }
+    ungetc(c, fin);
   }
 
   fclose(fin);
@@ -347,8 +359,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_set_signal_handlers();
 
-#include "is_supported_platform.h"
-
   int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
@@ -429,10 +439,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.progname = argv[0];
 
   // FIXME: move there into dt_database_t
-  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
+  {
+    dt_pthread_mutex_init(&(darktable.db_image[k]),&(recursive_locking));
+  }
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.dev_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -487,7 +505,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                                       STR(LUA_API_VERSION_PATCH);
 #endif
         printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
-               "  bit depth is %s\n"
+               "  bit depth is %zu bit\n"
 #ifdef _DEBUG
                "  debug build\n"
 #else
@@ -542,7 +560,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                ,
                darktable_package_string,
                darktable_last_commit_year,
-               (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
+               CHAR_BIT * sizeof(void *)
 #if USE_LUA
                    ,
                lua_api_version
@@ -629,7 +647,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
         else if(!strcmp(argv[k + 1], "camsupport"))
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
-        else
+        else if(!strcmp(argv[k + 1], "ioporder"))
+          darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
+        else if(!strcmp(argv[k + 1], "imageio")) {
+          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
+        } else
           return usage(argv[0]);
         k++;
         argv[k-1] = NULL;
@@ -689,6 +711,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k] = NULL;
         break;
       }
+#ifdef __APPLE__
+      else if(!strncmp(argv[k], "-psn_", 5))
+      {
+        // "-psn_*" argument is added automatically by macOS and should be ignored
+        argv[k] = NULL;
+      }
+#endif
       else
         return usage(argv[0]); // fail on unrecognized options
     }
@@ -801,7 +830,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.color_profiles = dt_colorspaces_init();
 
   // initialize the database
-  darktable.db = dt_database_init(dbfilename_from_command, load_data);
+  darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
     printf("ERROR : cannot open database\n");
@@ -809,31 +838,34 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
   {
-    gboolean image_loaded_elsewhere = FALSE;
-#ifndef MAC_INTEGRATION
-    // send the images to the other instance via dbus
-    fprintf(stderr, "trying to open the images in the running instance\n");
-
-    GDBusConnection *connection = NULL;
-    for(int i = 1; i < argc; i++)
+    if (init_gui)
     {
-      // make the filename absolute ...
-      if(argv[i] == NULL || *argv[i] == '\0') continue;
-      gchar *filename = dt_util_normalize_path(argv[i]);
-      if(filename == NULL) continue;
-      if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
-      // ... and send it to the running instance of darktable
-      image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
-                                                           "org.darktable.service.Remote", "Open",
-                                                           g_variant_new("(s)", filename), NULL,
-                                                           G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
-      g_free(filename);
-    }
-    if(connection) g_object_unref(connection);
+      gboolean image_loaded_elsewhere = FALSE;
+#ifndef MAC_INTEGRATION
+      // send the images to the other instance via dbus
+      fprintf(stderr, "trying to open the images in the running instance\n");
+
+      GDBusConnection *connection = NULL;
+      for(int i = 1; i < argc; i++)
+      {
+        // make the filename absolute ...
+        if(argv[i] == NULL || *argv[i] == '\0') continue;
+        gchar *filename = dt_util_normalize_path(argv[i]);
+        if(filename == NULL) continue;
+        if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        // ... and send it to the running instance of darktable
+        image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
+                                                             "org.darktable.service.Remote", "Open",
+                                                             g_variant_new("(s)", filename), NULL,
+                                                             G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
+        g_free(filename);
+      }
+      if(connection) g_object_unref(connection);
 #endif
 
-    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
-
+      if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+    }
+    fprintf(stderr, "ERROR: can't acquire database lock, aborting.\n");
     return 1;
   }
 
@@ -876,6 +908,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.guides = dt_guides_init();
 
+  darktable.themes = NULL;
+
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
@@ -909,7 +943,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
-    if(dt_gui_gtk_init(darktable.gui)) return 1;
+    if(dt_gui_gtk_init(darktable.gui))
+    {
+      fprintf(stderr, "ERROR: can't init gui, aborting.\n");
+      return 1;
+    }
     dt_bauhaus_init();
   }
   else
@@ -919,13 +957,27 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_view_manager_init(darktable.view_manager);
 
   // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
-  if(!darktable.develop) return 1;
+  if(!darktable.develop)
+  {
+    fprintf(stderr, "ERROR: can't init develop system, aborting.\n");
+    return 1;
+  }
 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
+  // load default iop order
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
+  // load iop order rules
+  darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
+  // check if all modules have a iop order assigned
+  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
+  {
+    fprintf(stderr, "ERROR: iop order looks bad, aborting.\n");
+    return 1;
+  }
 
   if(init_gui)
   {
@@ -986,9 +1038,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     localtime_r(&now, &lt);
     if(lt.tm_mon == 3 && lt.tm_mday == 1)
     {
-      int current_year = lt.tm_year + 1900;
-      int last_year = dt_conf_get_int("ui_last/april1st");
-      if(last_year < current_year)
+      const int current_year = lt.tm_year + 1900;
+      const int last_year = dt_conf_get_int("ui_last/april1st");
+      const gboolean kill_april1st = dt_conf_get_bool("ui_last/no_april1st");
+      if(!kill_april1st && last_year < current_year)
       {
         dt_conf_set_int("ui_last/april1st", current_year);
         mode = "knight";
@@ -1087,6 +1140,10 @@ void dt_cleanup()
   dt_points_cleanup(darktable.points);
   free(darktable.points);
   dt_iop_unload_modules_so();
+  g_list_free_full(darktable.iop_order_list, free);
+  darktable.iop_order_list = NULL;
+  g_list_free_full(darktable.iop_order_rules, free);
+  darktable.iop_order_rules = NULL;
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
@@ -1109,10 +1166,15 @@ void dt_cleanup()
 
   dt_capabilities_cleanup();
 
-  dt_pthread_mutex_destroy(&(darktable.db_insert));
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
+  {
+    dt_pthread_mutex_destroy(&(darktable.db_image[k]));
+  }
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.dev_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.readFile_mutex));
 
   dt_exif_cleanup();
 }
@@ -1144,16 +1206,30 @@ void dt_gettime(char *datetime, size_t datetime_len)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
+  const size_t aligned_size = dt_round_size(size, alignment);
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
-  return malloc(size);
+  return malloc(aligned_size);
 #elif defined(_WIN32)
-  return _aligned_malloc(size, alignment);
+  return _aligned_malloc(aligned_size, alignment);
 #else
   void *ptr = NULL;
-  if(posix_memalign(&ptr, alignment, size)) return NULL;
+  if(posix_memalign(&ptr, alignment, aligned_size)) return NULL;
   return ptr;
 #endif
 }
+
+size_t dt_round_size(const size_t size, const size_t alignment)
+{
+  // Round the size of a buffer to the closest higher multiple
+  return ((size % alignment) == 0) ? size : ((size - 1) / alignment + 1) * alignment;
+}
+
+size_t dt_round_size_sse(const size_t size)
+{
+  // Round the size of a buffer to the closest 64 higher multiple
+  return dt_round_size(size, 64);
+}
+
 
 #ifdef _WIN32
 void dt_free_align(void *mem)
@@ -1162,24 +1238,35 @@ void dt_free_align(void *mem)
 }
 #endif
 
-void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+void dt_show_times(const dt_times_t *start, const char *prefix)
 {
-  dt_times_t end;
-  char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
-  int i;
-
   /* Skip all the calculations an everything if -d perf isn't on */
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
+    dt_times_t end;
     dt_get_times(&end);
-    i = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
-                 end.user - start->user);
-    if(suffix != NULL)
+    char buf[140]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
+             end.user - start->user);
+    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+  }
+}
+
+void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+{
+  /* Skip all the calculations an everything if -d perf isn't on */
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end;
+    dt_get_times(&end);
+    char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    const int n = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU) ", prefix, end.clock - start->clock,
+                           end.user - start->user);
+    if(n < sizeof(buf) - 1)
     {
       va_list ap;
       va_start(ap, suffix);
-      buf[i++] = ' ';
-      vsnprintf(buf + i, sizeof buf - i, suffix, ap);
+      vsnprintf(buf + n, sizeof(buf) - n, suffix, ap);
       va_end(ap);
     }
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
@@ -1191,15 +1278,14 @@ void dt_configure_performance()
   const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
-  const int bits = (sizeof(void *) == 4) ? 32 : 64;
+  const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem,
-          threads, atom_cores);
-
-  if(mem >= (8u << 20) && threads > 4 && bits == 64 && atom_cores == 0)
+  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %d cores (%d atom based)\n",
+          bits, mem, threads, atom_cores);
+  if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
   {
-    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom, 64 bit
+    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
 
@@ -1211,9 +1297,9 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem > (2u << 20) && threads >= 4 && bits == 64 && atom_cores == 0)
+  else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
   {
-    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom, 64 bit
+    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
 
@@ -1224,9 +1310,9 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem < (1u << 20) || threads <= 2 || bits == 32 || atom_cores > 0)
+  else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
   {
-    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or 32-bit or for atom processors
+    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or for atom processors
     // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
@@ -1252,7 +1338,7 @@ void dt_configure_performance()
   // store the current performance configure version as the last completed
   // that would prevent further execution of previous performance configuration run
   // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);  
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
 }
 
 

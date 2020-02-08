@@ -29,7 +29,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -108,9 +107,14 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("raw black/white point", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -226,6 +230,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // TODO
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+}
+
 // we're not scaling here (bayer input), so just crop borders
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
@@ -301,7 +313,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -325,7 +340,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -353,7 +371,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(3)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, csx, csy, div, in, out, roi_in, roi_out, sub) \
+    schedule(static) collapse(3)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -387,7 +407,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(csx, csy, d, ivoid, ovoid, roi_in, roi_out) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -446,7 +468,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
   { // raw mosaic, fp, unnormalized
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d, csx, csy, ivoid, ovoid, roi_in, roi_out) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -498,7 +522,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(csx, csy, div, ivoid, ovoid, roi_in, roi_out, sub) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -528,7 +554,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
-  dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->data;
+  dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   cl_mem dev_sub = NULL;
@@ -601,12 +627,14 @@ static int image_is_normalized(const dt_image_t *const image)
   // if raw with floating-point data, if not special magic whitelevel, then it needs normalization
   if((image->flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
   {
-    // magic, see dt_imageio_dng_write_tiff_header()
-    const float normalized_float = 1.0f;
-    uint32_t normalized = *(uint32_t *)&normalized_float;
+    union {
+        float f;
+        uint32_t u;
+    } normalized;
+    normalized.f = 1.0f;
 
     // dng spec is just broken here.
-    return image->raw_white_point == normalized;
+    return image->raw_white_point == normalized.u;
   }
 
   // else, assume normalized
@@ -659,7 +687,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
-  if(!dt_image_is_raw(&piece->pipe->image) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
+  if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -693,7 +721,7 @@ void reload_defaults(dt_iop_module_t *self)
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
                                      .raw_white_point = image->raw_white_point };
 
-  self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+  self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
 
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
@@ -723,9 +751,8 @@ void init(dt_iop_module_t *self)
     // are upgraded and temporary modules are constructed for this, with a 0x0 dev
     // pointer. i suppose the can be solved more elegantly on the other side.
     const dt_image_t *const image = &(self->dev->image_storage);
-    self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+    self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
   }
-  self->priority = 14; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;
 }
@@ -734,6 +761,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)

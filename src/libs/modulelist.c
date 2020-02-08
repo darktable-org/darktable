@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -317,7 +318,7 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTre
   return g_utf8_collate(modulea->name(), moduleb->name());
 }
 
-static char *gen_params(char state, int *size)
+static char *gen_params(char state, int *size, char *names)
 {
   int len = 0;
   char *params = NULL;
@@ -341,7 +342,9 @@ static char *gen_params(char state, int *size)
       params = tmp;
     }
     memcpy(params + len, module->op, op_len);
-    params[new_len - 1] = state;
+    char *pattern = g_strdup_printf("|%s|", module->op);
+    params[new_len - 1] = (names==NULL ? state : strstr(names, pattern)!=NULL);
+    g_free(pattern);
     len = new_len;
   }
 
@@ -353,14 +356,141 @@ void init_presets(dt_lib_module_t *self)
 {
   // add "none" and "all" presets
   int len;
-  char *params_none = gen_params(0, &len);
-  char *params_all = gen_params(1, &len);
+  char *params_none = gen_params(0, &len, NULL);
+  char *params_all = gen_params(1, &len, NULL);
+  dt_lib_presets_add(_("subset: no module"), self->plugin_name, self->version(), params_none, len);
+  dt_lib_presets_add(_("subset: all modules"), self->plugin_name, self->version(), params_all, len);
 
-  dt_lib_presets_add(_("show none"), self->plugin_name, self->version(), params_none, len);
-  dt_lib_presets_add(_("show all"), self->plugin_name, self->version(), params_all, len);
+  /* The modules that are activated by default in the initial configuration:
+   * minimum toolkit to quickely edit 90% of pictures from start to finish
+   * with no headache.
+   * Be sure to always put there the possibly on-by-default modules
+   * */
+  char *params = gen_params(1, &len,
+                                    "|demosaic|temperature|highlights"       // basic raw handling
+                                    "|flip|clipping"                         // cropping & orientation
+                                    "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                                    "|basecurve|toneequal|exposure|rgblevels"// tones
+                                    "|colorin|colorbalance"                  // colors
+                                    "|sharpen|bilat|");                      // local contrast / sharpness
+
+  dt_lib_presets_add(_("subset: default modules"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len, // default modules
+                              "|demosaic|temperature|highlights"       // basic raw handling
+                              "|flip|clipping"                         // cropping & orientation
+                              "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                              "|basecurve|toneequal|exposure|rgblevels"// tones
+                              "|colorin|colorbalance"                  // colors
+                              "|sharpen|bilat"                         // local contrast
+                              // all-purpose addings
+                              "|filmicrgb|tonecurve|rgblevels"                        // tones
+                              "|channelmixer|colorzones|colorchecker|vibrance|lut3d"  // colors
+                              "|atrous"                                               // sharpness
+                              "|cacorrect|defringe|colorreconstruction|");            // image reconstruction
+
+  dt_lib_presets_add(_("workspace: all-purpose"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len, // default modules
+                              "|demosaic|temperature|highlights"       // basic raw handling
+                              "|flip|clipping"                         // cropping & orientation
+                              "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                              "|basecurve|toneequal|exposure|rgblevels"// tones
+                              "|colorin|colorbalance"                  // colors
+                              "|sharpen|bilat"                         // local contrast
+                              // all-purpose addings
+                              "|filmicrgb|tonecurve|rgblevels"                        // tones
+                              "|channelmixer|colorzones|colorchecker|vibrance|lut3d"  // colors
+                              "|atrous"                                               // sharpness
+                              "|cacorrect|defringe|colorreconstruction"               // image reconstruction
+                              // workspace addings
+                              "|rgbcurves"                                            // colors
+                              "|graduatednd|zonesystem|tonemap|shadhi|");             // HDR reconstruction - tones
+
+  dt_lib_presets_add(_("workspace: landscape & HDR"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len,
+                              // default modules
+                              "|demosaic|temperature|highlights"       // basic raw handling
+                              "|flip|clipping"                         // cropping & orientation
+                              "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                              "|basecurve|toneequal|exposure|rgblevels"// tones
+                              "|colorin|colorbalance"                  // colors
+                              "|sharpen|bilat"                         // local contrast
+                              // all-purpose addings
+                              "|filmicrgb|tonecurve|rgblevels"                        // tones
+                              "|channelmixer|colorzones|colorchecker|vibrance|lut3d"  // colors
+                              "|atrous"                                               // sharpness
+                              "|cacorrect|defringe|colorreconstruction"               // image reconstruction
+                              // workspace addings
+                              "|ashift|retouch|");                                     // perspective and spot removal
+
+  dt_lib_presets_add(_("workspace: architecture & streets"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len,
+                              // default modules
+                              "|demosaic|temperature|highlights"       // basic raw handling
+                              "|flip|clipping"                         // cropping & orientation
+                              "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                              "|basecurve|toneequal|exposure|rgblevels"// tones
+                              "|colorin|colorbalance"                  // colors
+                              "|sharpen|bilat"                         // local contrast
+                              // all-purpose addings
+                              "|filmicrgb|tonecurve|rgblevels"                        // tones
+                              "|channelmixer|colorzones|colorchecker|vibrance|lut3d"  // colors
+                              "|atrous"                                               // sharpness
+                              "|cacorrect|defringe|colorreconstruction"               // image reconstruction
+                              // workspace addings
+                              "|rgbcurves"                                            // colors
+                              "|retouch|liquify|soften|");                            // skin retouch
+
+  dt_lib_presets_add(_("workspace: portrait & beauty"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len,
+                              // default modules
+                              "|demosaic|temperature|highlights"       // basic raw handling
+                              "|flip|clipping"                         // cropping & orientation
+                              "|lens|denoiseprofile|hazeremoval"       // correct image issues
+                              "|basecurve|toneequal|exposure|rgblevels"// tones
+                              "|colorin|colorbalance"                  // colors
+                              "|sharpen|bilat"                         // local contrast
+                              // all-purpose addings
+                              "|filmicrgb|tonecurve|rgblevels"                        // tones
+                              "|channelmixer|colorzones|colorchecker|vibrance|lut3d"  // colors
+                              "|atrous"                                               // sharpness
+                              "|cacorrect|defringe|colorreconstruction"               // image reconstruction
+                              // workspace addings
+                              "|bilateral|hotpixels|");                               // extra denoising methods
+
+  dt_lib_presets_add(_("workspace: lowlight & high ISO"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len,
+                        "|velvia|splittoning|colormapping|colorize|colorcorrection"
+                        "|vignette|relight|lowlight|bloom|soften|colisa|monochrome"
+                        "|watermark|border|grain|colorcontrast|");
+
+  dt_lib_presets_add(_("subset: creative modules only"), self->plugin_name, self->version(), params, len);
+
+  free(params);
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|colorout|rawprepare"// raw handling
+                        "|sharpen|bilat|atrous|highpass|lowpass"                    // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|denoiseprofile|bilateral|hotpixels|rawdenoise|nlmeans"    // denoising
+                        "|dither|profile_gamma|invert|scalepixels|rotatepixels|colorchecker|");
+
+  dt_lib_presets_add(_("subset: technical modules only"), self->plugin_name, self->version(), params, len);
+
 
   free(params_none);
   free(params_all);
+  free(params);
 }
 
 void *get_params(dt_lib_module_t *self, int *size)

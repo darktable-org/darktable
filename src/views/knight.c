@@ -329,7 +329,7 @@ typedef struct dt_knight_t
   uint8_t *bunker_buf[4];
 } dt_knight_t;
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("good knight");
 }
@@ -524,7 +524,7 @@ static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pa
   return explosion;
 }
 
-// change the bunker graphics by substracting an explosion sprite
+// change the bunker graphics by subtracting an explosion sprite
 static void _destroy_bunker(dt_knight_t *d, int bunker, int hit_x, int hit_y)
 {
   uint8_t *buf = d->bunker_buf[bunker];
@@ -963,8 +963,6 @@ void enter(dt_view_t *self)
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
-  // also hide arrows
-  dt_ui_border_show(darktable.gui->ui, FALSE);
 
   // set the initial game state
   switch(d->game_state)
@@ -993,7 +991,6 @@ void leave(dt_view_t *self)
 
   // show normal gui again
   dt_control_change_cursor(GDK_LEFT_PTR);
-  dt_ui_border_show(darktable.gui->ui, TRUE);
 
   // stop event loop
   if(d->event_loop > 0) g_source_remove(d->event_loop);
@@ -1050,14 +1047,14 @@ static void _show_top_line(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 static void _show_score_1(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->score_1);
+  snprintf(text, sizeof(text), "%04u", d->score_1);
   _show_text(cr, d->letters, text, (LETTER_WIDTH + LETTER_SPACING * 2) * w, 2 * LETTER_HEIGHT * w, w, h, 'l');
 }
 
 static void _show_score_2(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->score_2);
+  snprintf(text, sizeof(text), "%04u", d->score_2);
   _show_text(cr, d->letters, text, (1.0 - (LETTER_WIDTH + LETTER_SPACING * 2)) * w, 2 * LETTER_HEIGHT * w, w,
              h, 'r');
 }
@@ -1065,7 +1062,7 @@ static void _show_score_2(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 static void _show_high_score(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->high_score);
+  snprintf(text, sizeof(text), "%04u", d->high_score);
   _show_text(cr, d->letters, text, 0.5 * w, 2 * LETTER_HEIGHT * w, w, h, 'c');
 }
 

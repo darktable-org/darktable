@@ -18,6 +18,8 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/splines.cpp"
+  "common/curl_tools.c"
   "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
@@ -31,6 +33,7 @@ FILE(GLOB SOURCE_FILES
   "common/grouping.c"
   "common/guided_filter.c"
   "common/history.c"
+  "common/history_snapshot.c"
   "common/gpx.c"
   "common/image.c"
   "common/image_cache.c"
@@ -51,10 +54,12 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplaciancl.c"
   "common/l10n.c"
   "common/metadata.c"
+  "common/metadata_export.c"
   "common/mipmap_cache.c"
   "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
+  "common/presets.c"
   "common/styles.c"
   "common/selection.c"
   "common/system_signal_handling.c"
@@ -72,6 +77,9 @@ FILE(GLOB SOURCE_FILES
   "common/undo.c"
   "common/usermanual_url.c"
   "common/iop_group.c"
+  "common/iop_order.c"
+  "common/iop_profile.c"
+  "control/conf.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"
@@ -114,7 +122,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -140,6 +148,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/dtwin.c")
   list(APPEND HEADER_FILES "win/dtwin.h")
 
+  list(APPEND SOURCE_FILES "win/filepath.c")
+  list(APPEND HEADER_FILES "win/filepath.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
@@ -158,9 +169,13 @@ endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le")
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ppc64le)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -208,21 +223,12 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES to_library)
 endif()
 
-# Check for base threading library
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
-# Fail if returned library is not pthread
-if(NOT CMAKE_USE_PTHREADS_INIT)
-  message(FATAL_ERROR "POSIX threads: not found")
-endif()
 # Append thread flags/libraries to LIBS
 list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 
 # Need to explicitly link against math library.
 list(APPEND LIBS "-lm")
 
-# Check for openmp
-find_package(OpenMP)
 if(USE_OPENMP)
   if(OpenMP_C_FLAGS)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -232,14 +238,24 @@ if(USE_OPENMP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   endif()
 
+  if(OpenMP_C_INCLUDE_DIRS)
+    include_directories(${OpenMP_C_INCLUDE_DIRS})
+  endif()
+
+  if(OpenMP_CXX_INCLUDE_DIRS)
+    include_directories(${OpenMP_CXX_INCLUDE_DIRS})
+  endif()
+
+  list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
 endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
-	add_definitions(-DUSE_DARKTABLE_PROFILING)
-	set(SOURCES ${SOURCES} "common/profiling.c")
+  add_definitions(-DUSE_DARKTABLE_PROFILING)
+  set(SOURCES ${SOURCES} "common/profiling.c")
 endif()
 
 #
@@ -253,8 +269,8 @@ include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.14 REQUIRED)
-add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_14")
+find_package(GTK3 3.22 REQUIRED)
+add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_22")
 #add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
@@ -302,7 +318,26 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+if (USE_AVIF)
+    find_package(libavif 0.5.2 CONFIG)
+    if (TARGET avif)
+        list(APPEND LIBS avif)
+        add_definitions(-DHAVE_LIBAVIF=1)
+        list(APPEND SOURCES "common/imageio_avif.c")
+        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+    endif()
+endif()
+
+if(USE_LENSFUN)
+  find_package(LensFun)
+  if(LENSFUN_FOUND)
+    include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
+    list(APPEND LIBS ${LensFun_LIBRARIES})
+    add_definitions(${LensFun_DEFINITIONS})
+  endif()
+endif()
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -395,6 +430,15 @@ if(USE_GRAPHICSMAGICK)
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
+
+if(USE_GMIC)
+  find_package(GMIC)
+  if(GMIC_FOUND)
+    add_definitions(-DHAVE_GMIC)
+    include_directories(SYSTEM ${GMIC_INCLUDE_DIRS})
+    list(APPEND LIBS ${GMIC_LIBRARIES})
+  endif(GMIC_FOUND)
+endif(USE_GMIC)
 
 #
 # Add HAVE_xxx defines used by darktable
@@ -489,9 +533,15 @@ if(NOT CUSTOM_CFLAGS)
   #endif()
 
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
+
+  # TODO: check if these flags bring some good :
+  # -ftree-loop-distribution -fivopts -fipa-matrix-reorg -ftracer -fvect-cost-model -fvariable-expansion-in-unroller
+  # -fprefetch-loop-arrays -ftree-vect-loop-version -freorder-blocks-and-partition -fmodulo-sched-allow-regmoves
+  # -ftree-loop-im -ftree-loop-ivcanon -fsplit-ivs-in-unroller -funroll-loops
+  # also, in IOPs, in-loops branches could be forced to be compiled as different loops variants
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
   if(CMAKE_COMPILER_IS_GNUCC)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
@@ -505,7 +555,7 @@ if(NOT CUSTOM_CFLAGS)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   if(CMAKE_COMPILER_IS_GNUCXX)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
@@ -616,9 +666,13 @@ find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
+if(NOT SOURCE_PACKAGE)
   add_definitions(-Werror)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # do not error out on "loop not vectorized" clang OpenMP warnings
+  add_definitions("-Wno-error=pass-failed")
 endif()
 
 # osm gps map library
@@ -824,9 +878,9 @@ endif(BUILD_CMSTEST)
 add_subdirectory(chart)
 
 # have some test programs for unit testing, ...
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
-endif(BUILD_TESTS)
+endif(BUILD_TESTING)
 
 #
 # build darktable executable
@@ -843,16 +897,9 @@ if (WIN32)
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 else()
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-    if (APPLE)
-        # The string "@loader_path" should end up in the executable as-is.
-        set(RPATH_DT "@loader_path")
-    endif()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

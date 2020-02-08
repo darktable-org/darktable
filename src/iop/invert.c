@@ -33,10 +33,10 @@
 #include "develop/imageop_math.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_invert_params_t)
 
@@ -53,6 +53,7 @@ typedef struct dt_iop_invert_gui_data_t
   GtkWidget *picker;
   double RGB_to_CAM[4][3];
   double CAM_to_RGB[3][4];
+  dt_iop_color_picker_t color_picker;
 } dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t
@@ -113,14 +114,19 @@ const char *name()
   return _("invert");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("invert", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -133,25 +139,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
 
   dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
-}
-
-static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  self->request_color_pick
-      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-    dt_control_queue_redraw();
-
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_iop_request_focus(self);
 }
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
@@ -177,29 +164,26 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0.0f) return FALSE;
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
-
   static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   const float *grayrgb = self->picked_color;
 
-  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return FALSE;
+  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return;
 
   for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
 
   dt_iop_invert_params_t *p = self->params;
   for(int k = 0; k < 4; k++) p->color[k] = grayrgb[k];
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   gui_update_from_coeffs(self);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  return FALSE;
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
@@ -208,8 +192,7 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  // turn off the other color picker so that this tool actually works ...
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), FALSE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
@@ -222,7 +205,10 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   {
     dt_colorspaces_rgb_to_cygm(p->color, 1, g->RGB_to_CAM);
   }
-
+  else if(dt_image_is_monochrome(img))
+  { // Just to make sure the monochrome stays monochrome we take the luminosity of the chosen color on all channels
+    p->color[0] = p->color[1] = p->color[2] = 0.21f*c.red + 0.72f*c.green + 0.07f*c.blue ;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -250,7 +236,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(film_rgb_f, in, out, roi_out, xtrans) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -267,7 +256,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   { // bayer float mosaiced
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(film_rgb_f, filters, in, out, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -285,7 +277,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
@@ -326,7 +321,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 val_max = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(film_rgb_f, ivoid, ovoid, roi_out, val_max, val_min, xtrans) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -381,7 +378,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 val_max = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(film_rgb_f, filters, ivoid, ovoid, roi_out, val_max, val_min) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -423,7 +422,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 film = _mm_set_ps(1.0f, d->color[2], d->color[1], d->color[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, film, ivoid, ovoid, roi_out) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -448,7 +449,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
-  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
+  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -511,7 +512,11 @@ void reload_defaults(dt_iop_module_t *self)
   if(!self->dev) return;
 
   if(dt_image_is_monochrome(&self->dev->image_storage))
-    self->hide_enable_button = 1;
+  {
+    self->hide_enable_button = 0;
+    // Here we could provide more for monochrome special cases. As no monochrome camera
+    // has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
+  }
   else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
   {
     dt_iop_invert_gui_data_t *g = self->gui_data;
@@ -544,13 +549,14 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
-  module->priority = 28; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -591,17 +597,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
-}
-
 void gui_update(dt_iop_module_t *self)
 {
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
 
   if(!dt_image_is_monochrome(&self->dev->image_storage))
@@ -609,14 +606,13 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
     dtgtk_reset_label_set_text(g->label, _("color of film material"));
     gui_update_from_coeffs(self);
-
-    if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
   }
   else
   {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
-    dtgtk_reset_label_set_text(g->label, _("module disabled for monochrome image"));
+    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
+    dtgtk_reset_label_set_text(g->label, _("brightness of film material"));
+    gui_update_from_coeffs(self);
+
   }
 }
 
@@ -626,18 +622,17 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
-  g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   g->colorpicker = gtk_color_button_new_with_rgba(&color);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(75), DT_PIXEL_APPLY_DPI(24));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
@@ -645,11 +640,14 @@ void gui_init(dt_iop_module_t *self)
 
   g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
-  gtk_widget_set_size_request(g->picker, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
-  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 5);
+  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+  dt_iop_init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->picker),
+                     DT_COLOR_PICKER_AREA,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

@@ -58,14 +58,13 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   }
   if(button->icon_flags & CPF_CUSTOM_FG)
     fg_color = button->fg;
+  else if(button->icon_flags & CPF_IGNORE_FG_STATE)
+    gtk_style_context_get_color(context, state & ~GTK_STATE_FLAG_SELECTED, &fg_color);
   else
     gtk_style_context_get_color(context, state, &fg_color);
 
   /* fetch flags */
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
-
-  /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
 
   /* update active state paint flag */
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -76,7 +75,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   else
   {
     flags &= ~(CPF_ACTIVE);
-    fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
   }
 
   /* prelight */
@@ -94,11 +92,20 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw standard button background if not transparent nor flat styled */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
+    if(flags & CPF_PRELIGHT || (flags & CPF_ACTIVE && !(flags & CPF_BG_TRANSPARENT)))
     {
-      cairo_rectangle(cr, 0, 0, width, height);
-      gdk_cairo_set_source_rgba(cr, &bg_color);
-      cairo_fill(cr);
+      // When CPF_BG_TRANSPARENT is set, change the background on
+      // PRELIGHT, but not on ACTIVE
+      if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
+      {
+        cairo_rectangle(cr, 0, 0, width, height);
+        gdk_cairo_set_source_rgba(cr, &bg_color);
+        cairo_fill(cr);
+      }
+    }
+    else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
+    {
+      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
@@ -108,7 +115,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     if(!(flags & CPF_DO_NOT_USE_BORDER))
       gtk_render_frame(context, cr, 0, 0, width, height);
   }
-
 
   /* create pango text settings if label exists */
   PangoLayout *layout = NULL;
@@ -128,22 +134,16 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
-    //     if (flags & CPF_IGNORE_FG_STATE)
-    //       state = GTK_STATE_NORMAL;
+    /* set inner border and icon size */
+    float f_border = (1 + 0.66 * (darktable.gui->dpi_factor-1)) * ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
+    int border = round(f_border);
+    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
+    int icon_height = round(height - (f_border * 2));
 
-    int icon_width = text ? height - (border * 2) : width - (border * 2);
-    int icon_height = height - (border * 2);
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
     if(icon_width > 0 && icon_height > 0)
-    {
-      if(text)
-        DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags, icon_data);
-      else
-        DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags, icon_data);
-    }
+        DTGTK_TOGGLEBUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
   }
 
 
@@ -171,7 +171,7 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
+  gtk_widget_set_name(GTK_WIDGET(button), "dt-toggle-button");
   return (GtkWidget *)button;
 }
 

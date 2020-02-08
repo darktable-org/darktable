@@ -254,7 +254,6 @@ static int write_pref(lua_State *L)
 }
 
 
-
 static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -266,6 +265,8 @@ static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_ele
     g_free(text);
   }
 }
+
+
 static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -277,6 +278,8 @@ static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_elem
     g_free(folder);
   }
 }
+
+
 static void response_callback_file(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -286,6 +289,8 @@ static void response_callback_file(GtkDialog *dialog, gint response_id, pref_ele
     dt_conf_set_string(pref_name, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget)));
   }
 }
+
+
 static void response_callback_string(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -295,6 +300,8 @@ static void response_callback_string(GtkDialog *dialog, gint response_id, pref_e
     dt_conf_set_string(pref_name, gtk_entry_get_text(GTK_ENTRY(cur_elt->widget)));
   }
 }
+
+
 static void response_callback_bool(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -304,6 +311,8 @@ static void response_callback_bool(GtkDialog *dialog, gint response_id, pref_ele
     dt_conf_set_bool(pref_name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cur_elt->widget)));
   }
 }
+
+
 static void response_callback_int(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -313,6 +322,8 @@ static void response_callback_int(GtkDialog *dialog, gint response_id, pref_elem
     dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
   }
 }
+
+
 static void response_callback_float(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -322,6 +333,8 @@ static void response_callback_float(GtkDialog *dialog, gint response_id, pref_el
     dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
   }
 }
+
+
 static void response_callback_lua(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -346,6 +359,8 @@ static gboolean reset_widget_enum(GtkWidget *label, GdkEventButton *event, pref_
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_dir(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -356,6 +371,8 @@ static gboolean reset_widget_dir(GtkWidget *label, GdkEventButton *event, pref_e
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_file(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -366,6 +383,8 @@ static gboolean reset_widget_file(GtkWidget *label, GdkEventButton *event, pref_
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_string(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -375,6 +394,8 @@ static gboolean reset_widget_string(GtkWidget *label, GdkEventButton *event, pre
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_bool(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -385,6 +406,8 @@ static gboolean reset_widget_bool(GtkWidget *label, GdkEventButton *event, pref_
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_int(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -394,6 +417,8 @@ static gboolean reset_widget_int(GtkWidget *label, GdkEventButton *event, pref_e
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_float(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -403,6 +428,8 @@ static gboolean reset_widget_float(GtkWidget *label, GdkEventButton *event, pref
   }
   return FALSE;
 }
+
+
 static gboolean reset_widget_lua(GtkWidget *label, GdkEventButton *event, pref_element *cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -426,7 +453,6 @@ static gboolean reset_widget_lua(GtkWidget *label, GdkEventButton *event, pref_e
 }
 
 
-
 static void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
   char pref_name[1024];
@@ -434,23 +460,29 @@ static void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
   gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), 0);
-  char*value= dt_conf_get_string(pref_name);
+  char*value = dt_conf_get_string(pref_name);
   do {
     char * active_entry = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cur_elt->widget));
-    if(!active_entry) {
+    if(!active_entry)
+    {
       gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), -1);
       g_free(active_entry);
       break;
-    }else if(!strcmp(active_entry,value )) {
+    }
+    else if(!strcmp(active_entry, value))
+    {
       g_free(active_entry);
       break;
-    } else {
+    }
+    else
+    {
       gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), gtk_combo_box_get_active(GTK_COMBO_BOX(cur_elt->widget))+1);
       g_free(active_entry);
     }
-  } while (true);
-  free(value);
+  } while(true);
+  g_free(value);
 }
+
 
 static void update_widget_dir(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
@@ -463,6 +495,7 @@ static void update_widget_dir(pref_element* cur_elt,GtkWidget* dialog,GtkWidget*
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
 }
 
+
 static void update_widget_file(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
   char pref_name[1024];
@@ -473,6 +506,7 @@ static void update_widget_file(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
 }
+
 
 static void update_widget_string(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
@@ -485,6 +519,7 @@ static void update_widget_string(pref_element* cur_elt,GtkWidget* dialog,GtkWidg
   g_free(str);
 }
 
+
 static void update_widget_bool(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
   char pref_name[1024];
@@ -493,6 +528,7 @@ static void update_widget_bool(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
 }
+
 
 static void update_widget_int(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
@@ -503,6 +539,7 @@ static void update_widget_int(pref_element* cur_elt,GtkWidget* dialog,GtkWidget*
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
 }
 
+
 static void update_widget_float(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
   char pref_name[1024];
@@ -511,6 +548,7 @@ static void update_widget_float(pref_element* cur_elt,GtkWidget* dialog,GtkWidge
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
 }
+
 
 static void update_widget_lua(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
@@ -524,6 +562,7 @@ static void update_widget_lua(pref_element* cur_elt,GtkWidget* dialog,GtkWidget*
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_lua), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_lua), cur_elt);
 }
+
 
 static int register_pref_sub(lua_State *L)
 {
@@ -754,15 +793,12 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("lua options")));
+  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(tab));
 
   pref_element *cur_elt = pref_list;
   while(cur_elt)
@@ -786,11 +822,14 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   return GTK_GRID(grid);
 }
 
+
 void destroy_tab_lua(GtkGrid *grid)
 {
   if(!grid) return;
   gtk_grid_remove_column(grid,1); // detach all special widgets to avoid having them destroyed
 }
+
+
 int dt_lua_init_preferences(lua_State *L)
 {
   luaA_enum(L, lua_pref_type);

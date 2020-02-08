@@ -17,28 +17,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common.h"
-
-float
-lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
-{
-  // in case the tone curve is marked as linear, return the fast
-  // path to linear unbounded (does not clip x at 1)
-  if(a[0] >= 0.0f)
-  {
-    if(x < 1.0f)
-    {
-      const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-      const int2 p = (int2)((xi & 0xff), (xi >> 8));
-      return read_imagef(lut, sampleri, p).x;
-    }
-    else return a[1] * native_powr(x*a[0], a[2]);
-  }
-  else return x;
-}
+#include "color_conversion.cl"
+#include "rgb_norms.h"
 
 /* we use this exp approximation to maintain full identity with cpu path */
-float 
+float
 fast_expf(const float x)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
@@ -49,14 +32,29 @@ fast_expf(const float x)
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
-  const int k = k0 > 0 ? k0 : 0;
-  const float f = *(const float *)&k;
-  return f;
+  union {
+      float f;
+      int k;
+  } u;
+  u.k = k0 > 0 ? k0 : 0;
+  return u.f;
 }
 
+/*
+  Primary LUT lookup.  Measures the luminance of a given pixel using a selectable function, looks up that
+  luminance in the configured basecurve, and then scales each channel by the result.
+
+  Doing it this way avoids the color shifts documented as being possible in the legacy basecurve approach.
+
+  Also applies a multiplier prior to lookup in order to support fusion.  The idea of doing this here is to
+  emulate the original use case of enfuse, which was to fuse multiple JPEGs from a camera that was set up
+  for exposure bracketing, and which may have had a camera-specific base curve applied.
+*/
 kernel void
 basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              read_only image2d_t table, global float *a)
+              const float mul, read_only image2d_t table, constant float *a, const int preserve_colors,
+              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+              const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -64,10 +62,16 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  // use lut or extrapolation:
-  pixel.x = lookup_unbounded(table, pixel.x, a);
-  pixel.y = lookup_unbounded(table, pixel.y, a);
-  pixel.z = lookup_unbounded(table, pixel.z, a);
+
+  float ratio = 1.f;
+  const float lum = mul * dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
+  if(lum > 0.f)
+  {
+    const float curve_lum = lookup_unbounded(table, lum, a);
+    ratio = mul * curve_lum / lum;
+  }
+  pixel.xyz *= ratio;
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -83,9 +87,16 @@ basecurve_zero(write_only image2d_t out, const int width, const int height)
   write_imagef (out, (int2)(x, y), (float4)0.0f);
 }
 
+/*
+  Original basecurve implementation.  Applies a LUT on a per-channel basis which can cause color shifts.
+
+  These can be undesirable (skin tone shifts), or sometimes may be desired (fiery sunset).  Continue to allow
+  the "old" method but don't make it the default, both for backwards compatibility and for those who are willing
+  to take the risks of "artistic" impacts on their image.
+*/
 kernel void
-basecurve_ev_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                   const float ev, read_only image2d_t table, global float *a)
+basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                   const float mul, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -95,9 +106,9 @@ basecurve_ev_lut(read_only image2d_t in, write_only image2d_t out, const int wid
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   
   // apply ev multiplier and use lut or extrapolation:
-  pixel.x = lookup_unbounded(table, ev * pixel.x, a);
-  pixel.y = lookup_unbounded(table, ev * pixel.y, a);
-  pixel.z = lookup_unbounded(table, ev * pixel.z, a);
+  pixel.x = lookup_unbounded(table, mul * pixel.x, a);
+  pixel.y = lookup_unbounded(table, mul * pixel.y, a);
+  pixel.z = lookup_unbounded(table, mul * pixel.z, a);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

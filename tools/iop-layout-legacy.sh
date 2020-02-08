@@ -25,79 +25,83 @@ module_group=(
 ###
 
 group_basic=(
-    'base curve'
-    'white balance'
-    'shadows and highlights'
-    'orientation'
-    'raw black/white point'
-    'color reconstruction'
+    'basecurve'
+    'temperature'
+    'shadhi'
+    'flip'
+    'rawprepare'
+    'colorreconstruct'
     'demosaic'
-    'contrast brightness saturation'
-    'crop and rotate'
+    'colisa'
+    'clipping'
     'exposure'
-    'highlight reconstruction'
+    'highlights'
     'invert'
+    'basicadj'
 )
 
 group_tone=(
-    'zone system'
-    'tone curve'
-    'tone mapping'
+    'zonesystem'
+    'tonecurve'
+    'rgbcurve'
+    'tonemapping'
     'levels'
-    'fill light'
-    'local contrast'
-    'global tonemap'
+    'rgblevels'
+    'relight'
+    'bilat'
+    'globaltonemap'
     'filmic'
+    'filmicrgb'
 )
 
 group_color=(
-    'unbreak input profile'
+    'profile_gamma'
     'velvia'
     'vibrance'
-    'color balance'
-    'color contrast'
-    'color correction'
-    'color look up table'
-    'output color profile'
-    'channel mixer'
-    'color transfer'
-    'color zones'
-    'input color profile'
+    'colorbalance'
+    'colorcontrast'
+    'colorcorrection'
+    'colorchecker'
+    'colorout'
+    'channelmixer'
+    'colortransfer'
+    'colorzones'
+    'colorin'
     'monochrome'
 )
 
 group_correct=(
-    'perspective correction'
-    'raw denoise'
+    'ashift'
+    'rawdenoise'
     'retouch'
-    'rotate pixels'
-    'scale pixels'
+    'rotatepixels'
+    'scalepixels'
     'sharpen'
-    'spot removal'
-    'hot pixels'
+    'spotremoval'
+    'hotpixels'
     'defringe'
-    'chromatic aberrations'
-    'denoise (bilateral filter)'
-    'denoise (non-local means)'
-    'denoise (profiled)'
-    'dithering'
-    'equalizer'
-    'lens correction'
+    'cacorrect'
+    'bilateral'
+    'nlmeans'
+    'denoiseprofile'
+    'dither'
+    'atrous'
+    'lens'
     'liquify'
-    'haze removal'
+    'hazeremoval'
 )
 
 group_effect=(
     'watermark'
     'bloom'
-    'vignetting'
-    'split toning'
-    'lowlight vision'
+    'vignette'
+    'splittoning'
+    'lowlight'
     'lowpass'
-    'color mapping'
+    'colormapping'
     'colorize'
-    'framing'
-    'graduated density'
+    'borders'
+    'graduatednd'
     'grain'
     'highpass'
     'soften'
@@ -105,7 +109,9 @@ group_effect=(
 
 ######################################### END OF CONFIGURATION HERE
 
-FILE=$HOME/.config/darktable/darktablerc
+[ -z $DT_CONFIGDIR ] && DT_CONFIGDIR=$HOME/.config/darktable
+
+FILE=$DT_CONFIGDIR/darktablerc
 
 [ ! -f $FILE ] && echo darktable configuration file 'darktablerc' does not exists && exit 1
 
@@ -156,11 +162,11 @@ function set_iop_group()
     while [ "x${LIST[pos]}" != "x" ]; do
         name=${LIST[pos]}
         pos=$(( $pos + 1 ))
-        echo "plugins/darkroom/group/$name=$GROUP_POS" >> $FILE
+        echo "plugins/darkroom/$name/modulegroup=$GROUP_POS" >> $FILE
     done
 }
 
-sed -i "/plugins\/darkroom\/group\//d" $FILE
+sed -i "/plugins\/darkroom\/[^/]*\/modulegroup/d" $FILE
 
 set_iop_group $BASIC   "${group_basic[@]}"
 set_iop_group $TONE    "${group_tone[@]}"

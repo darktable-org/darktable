@@ -34,10 +34,10 @@
 #include "develop/tiling.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -50,7 +50,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 typedef struct dt_iop_graduatednd_params_t
 {
   float density;     // The density of filter 0-8 EV
-  float compression; // Default 0% = soft and 100% = hard
+  float hardness; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
   float hue;         // the hue
@@ -114,9 +114,11 @@ void init_presets(dt_iop_module_so_t *self)
 typedef struct dt_iop_graduatednd_gui_data_t
 {
   GtkBox *vbox;
-  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, compression, rotation, hue, saturation
-  GtkWidget *scale1, *scale2, *scale3;                   // density, compression, rotation
+  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, hardness, rotation, hue, saturation
+  GtkWidget *scale1, *scale2, *scale3;                   // density, hardness, rotation
   GtkWidget *gslider1, *gslider2;                        // hue, saturation
+
+  dt_iop_color_picker_t color_picker;
 
   int selected;
   int dragging;
@@ -128,7 +130,7 @@ typedef struct dt_iop_graduatednd_gui_data_t
 typedef struct dt_iop_graduatednd_data_t
 {
   float density;     // The density of filter 0-8 EV
-  float compression; // Default 0% = soft and 100% = hard
+  float hardness; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
   float color[4];    // RGB color of gradient
@@ -147,15 +149,23 @@ int flags()
          | IOP_FLAGS_TILING_FULL_ROI;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("graduated density", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -163,7 +173,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "hardness", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->gslider1));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->gslider2));
 }
 
 static inline float f(const float t, const float c, const float x)
@@ -206,7 +219,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   float pts[4]
       = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
           xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
-  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, pts, 2);
+  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
   pts[2] /= (float)piece->buf_out.width;
@@ -223,7 +236,8 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   r1 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
   // we search v2 so r2 as not the same sign as r1
-  float pas = M_PI / 16.0;
+  const float pas = M_PI / 16.0;
+
   do
   {
     v2 += pas;
@@ -234,6 +248,9 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
 
   if(v2 == M_PI) return 9;
 
+  // set precision for the iterative check
+  const float eps = .0001f;
+
   int iter = 0;
   do
   {
@@ -241,7 +258,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     sinv = sinf(v), cosv = cosf(v);
     r = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
-    if(r < 0.01 && r > -0.01) break;
+    if(r < eps && r > -eps) break;
 
     if(r * r2 < 0)
       v1 = v;
@@ -252,14 +269,29 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     }
 
   } while(iter++ < 1000);
-  if(iter >= 1000) return 8;
+
+  if(iter >= 1000) return 8; // generally in less than 20 iterations all is good, so we are over conservative
 
   // be careful to the gnd direction
-  if(pts[2] - pts[0] > 0 && v > M_PI * 0.5) v = v - M_PI;
-  if(pts[2] - pts[0] > 0 && v < -M_PI * 0.5) v = M_PI + v;
 
-  if(pts[2] - pts[0] < 0 && v < M_PI * 0.5 && v >= 0) v = v - M_PI;
-  if(pts[2] - pts[0] < 0 && v > -M_PI * 0.5 && v < 0) v = v + M_PI;
+  const float diff_x = pts[2] - pts[0];
+  const float MPI2 = (M_PI / 2.0f);
+
+  if(diff_x > eps)
+  {
+    if(v >=  MPI2) v -= M_PI;
+    if(v <  -MPI2) v += M_PI;
+  }
+  else if(diff_x < -eps)
+  {
+    if(v <  MPI2 && v >= 0) v -= M_PI;
+    if(v > -MPI2 && v < 0)  v += M_PI;
+  }
+  else // let's pretend that we are at PI/2
+  {
+    if(v <0) v = -MPI2;
+    else v = MPI2;
+  }
 
   *rotation = -v * 180.0 / M_PI;
 
@@ -382,13 +414,53 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   }
   // now we want that points to take care of distort modules
 
-  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, pts, 2))
+  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2))
     return 0;
   *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
   *ya = pts[1] / self->dev->preview_pipe->backbuf_height;
   *xb = pts[2] / self->dev->preview_pipe->backbuf_width;
   *yb = pts[3] / self->dev->preview_pipe->backbuf_height;
   return 1;
+}
+
+static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
+{
+  float rgb[3];
+  hsl2rgb(rgb, hue, 1.0, 0.5);
+  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+}
+
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+
+  // convert picker RGB 2 HSL
+  float H = .0f, S = .0f, L = .0f;
+  rgb2hsl(self->picked_color, &H, &S, &L);
+
+  if(fabsf(p->hue - H) < 0.0001f && fabsf(p->saturation - S) < 0.0001f)
+  {
+    // interrupt infinite loops
+    return;
+  }
+
+  p->hue        = H;
+  p->saturation = S;
+
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->gslider1, p->hue);
+  dt_bauhaus_slider_set(g->gslider2, p->saturation);
+  update_saturation_slider_end_color(g->gslider2, p->hue);
+  darktable.gui->reset = reset;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
@@ -606,10 +678,11 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       r = p->rotation;
       set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
     }
-    self->dt->gui->reset = 1;
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->scale3, r);
     // dt_bauhaus_slider_set(g->scale4,o);
-    self->dt->gui->reset = 0;
+    darktable.gui->reset = reset;
     p->rotation = r;
     p->offset = o;
     g->dragging = 0;
@@ -641,10 +714,10 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   {
     float comp;
     if(up)
-      comp = fminf(100.0, p->compression + 1.0);
+      comp = fminf(100.0, p->hardness + 1.0);
     else
-      comp = fmaxf(0.0, p->compression - 1.0);
-    if(comp != p->compression)
+      comp = fmaxf(0.0, p->hardness - 1.0);
+    if(comp != p->hardness)
     {
       dt_bauhaus_slider_set(g->scale2, comp);
     }
@@ -674,19 +747,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float offset = data->offset / 100.0 * 2;
 
 #if 1
-  const float filter_compression
-      = 1.0 / filter_radie / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness
+      = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
 
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -695,8 +771,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -732,7 +808,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -741,8 +820,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -799,19 +878,22 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float offset = data->offset / 100.0 * 2;
 
 #if 1
-  const float filter_compression = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness = 1.0 / filter_radie
+                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
 
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -820,8 +902,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
@@ -859,7 +941,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -868,8 +953,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_compression;
-      const float length_inc = sinv * hw_inv * filter_compression;
+                     * filter_hardness;
+      const float length_inc = sinv * hw_inv * filter_hardness;
 
       __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
@@ -914,7 +999,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
-  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->data;
+  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -937,18 +1022,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float density = data->density;
 
 #if 1
-  const float filter_compression = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness = 1.0 / filter_radie
+                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 #else
-  const float compression = data->compression / 100.0f;
-  const float t = 1.0f - .8f / (.8f + compression);
-  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+  const float hardness = data->hardness / 100.0f;
+  const float t = 1.0f - .8f / (.8f + hardness);
+  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
 #endif
 
   const float length_base = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + iy * hh_inv) - 1.0 + offset)
-                            * filter_compression;
-  const float length_inc_y = -cosv * hh_inv * filter_compression;
-  const float length_inc_x = sinv * hw_inv * filter_compression;
+                            * filter_hardness;
+  const float length_inc_y = -cosv * hh_inv * filter_hardness;
+  const float length_inc_x = sinv * hw_inv * filter_hardness;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -1002,12 +1087,12 @@ static void density_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void compression_callback(GtkWidget *slider, gpointer user_data)
+static void hardness_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  p->compression = dt_bauhaus_slider_get(slider);
+  p->hardness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1031,7 +1116,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_graduatednd_data_t *d = (dt_iop_graduatednd_data_t *)piece->data;
 
   d->density = p->density;
-  d->compression = p->compression;
+  d->hardness = p->hardness;
   d->rotation = p->rotation;
   d->offset = p->offset;
 
@@ -1056,20 +1141,16 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
-{
-  float rgb[3];
-  hsl2rgb(rgb, hue, 1.0, 0.5);
-  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
+
+  dt_iop_color_picker_reset(self, TRUE);
+
   dt_bauhaus_slider_set(g->scale1, p->density);
-  dt_bauhaus_slider_set(g->scale2, p->compression);
+  dt_bauhaus_slider_set(g->scale2, p->hardness);
   dt_bauhaus_slider_set(g->scale3, p->rotation);
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
@@ -1086,7 +1167,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 299; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){ 1.0, 0, 0, 50, 0, 0 };
@@ -1098,6 +1178,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void hue_callback(GtkWidget *slider, gpointer user_data)
@@ -1139,18 +1221,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -8.0, 8.0, 0.1, p->density, 2);
-  dt_bauhaus_slider_set_format(g->scale1, "%.2fev");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("density"));
   gtk_widget_set_tooltip_text(g->scale1, _("the density in EV for the filter"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(density_callback), self);
 
-  /* compression */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compression, 0);
+  /* hardness */
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->hardness, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("hardness"));
   /* xgettext:no-c-format */
-  gtk_widget_set_tooltip_text(g->scale2, _("compression of graduation:\n0% = soft, 100% = hard"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(compression_callback), self);
+  gtk_widget_set_tooltip_text(g->scale2, _("hardness of graduation:\n0% = soft, 100% = hard"));
+  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(hardness_callback), self);
 
   /* rotation */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -180, 180, 0.5, p->rotation, 2);
@@ -1177,8 +1259,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(g->gslider1, _("select the hue tone of filter"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider1, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_quad_paint(g->gslider1, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->gslider1, TRUE);
+  g_signal_connect(G_OBJECT(g->gslider1), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
@@ -1188,10 +1271,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->gslider2, _("select the saturation of filter"));
   g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
+
   g->selected = 0;
   g->dragging = 0;
   g->define = 0;
+
+  dt_iop_init_single_picker(&g->color_picker,
+                     self,
+                     g->gslider1,
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1200,6 +1291,35 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+GSList *mouse_actions(struct dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on nodes] change line rotation"), self->name());
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] move line"), self->name());
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change density"), self->name());
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change hardness"), self->name());
+  lm = g_slist_append(lm, a);
+
+  return lm;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

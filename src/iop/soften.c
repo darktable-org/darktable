@@ -34,7 +34,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -91,9 +90,14 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("soften", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -129,7 +133,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* create overexpose image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(brightness, ch, in, out, roi_out, saturation) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -149,18 +155,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
   const size_t scanline_size = (size_t)4 * size;
-  float *const scanline_buf = dt_alloc_align(16, scanline_size * dt_get_num_threads() * sizeof(float));
+  float *const scanline_buf = dt_alloc_align(64, scanline_size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, radius, out, roi_out, scanline_buf, scanline_size) \
+    schedule(static)
 #endif
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
       float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       size_t index = (size_t)y * roi_out->width;
       int hits = 0;
@@ -206,12 +214,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int opoffs = -(radius + 1) * roi_out->width;
     const int npoffs = (radius)*roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, npoffs, opoffs, radius, out, roi_out, \
+                        scanline_buf, scanline_size) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
       float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       int hits = 0;
       size_t index = (size_t)x - radius * roi_out->width;
@@ -262,7 +273,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount_1 = (1 - (d->amount) / 100.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(amount, amount_1, ch, in, out, roi_out) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -286,7 +300,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float saturation = data->saturation / 100.0;
 /* create overexpose image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, brightness, roi_out, saturation) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -306,12 +323,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
-  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * sizeof(__m128));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, radius, roi_out, scanline_buf, size) \
+    shared(out) \
+    schedule(static)
 #endif
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
@@ -344,7 +364,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const int opoffs = -(radius + 1) * roi_out->width;
     const int npoffs = (radius)*roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, npoffs, opoffs, radius, roi_out, scanline_buf, size) \
+    shared(out) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -381,7 +404,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, amount, amount_1, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -397,7 +423,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->data;
+  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->global_data;
 
   cl_int err = -999;
   cl_mem dev_tmp = NULL;
@@ -680,7 +706,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 842; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };
@@ -692,6 +717,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -719,7 +746,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* brightness */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.01, p->brightness, 2);
-  dt_bauhaus_slider_set_format(g->scale3, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->scale3, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("brightness"));
   gtk_widget_set_tooltip_text(g->scale3, _("the brightness of blur"));
   g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(brightness_callback), self);

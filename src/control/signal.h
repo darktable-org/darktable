@@ -56,10 +56,20 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 
-  /** \brief This signal is raised when collection query is changed
+  /** \brief This signal is raised when collection changed
   no param, no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
+
+  /** \brief This signal is raised when collection query is changed
+  no param, no returned value
+    */
+  DT_SIGNAL_COLLECTION_QUERY_CHANGED,
+
+  /** \brief This signal is raised when the selection is changed
+  no param, no returned value
+    */
+  DT_SIGNAL_SELECTION_CHANGED,
 
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
@@ -100,10 +110,23 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 
-  /** \brief This signal is rasied when pipe is finished and the gui is attached
+  /** \brief This signal is raised when develop preview2 pipe process is finished
+  no param, no returned value
+    */
+  DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
+
+  /** \brief This signal is raised when pipe is finished and the gui is attached
   no param, no returned value
     */
   DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+
+  /** \brief This signal is raised when develop history is about to be changed
+    1 : GList *  the current history
+    2 : uint32_t the correpsing history end
+    3 : GList *  the current iop-order list
+  no returned value
+    */
+  DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
 
   /** \brief This signal is raised when develop history is changed
   no param, no returned value
@@ -116,13 +139,19 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_MODULE_REMOVE,
 
-  /** \brief This signal is rasied when image is changed in darkroom */
+  /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
   /** \brief This signal is raised when the screen profile has changed
   no param, no returned value
     */
   DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+
+  /** \brief This signal is raised when a profile is changed by the user
+    1 uint32_t :  the profile type that has changed
+    no return
+    */
+  DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
 
   /** \brief This signal is raised when a new image is imported (not cloned)
     1 uint32_t :  the new image id
@@ -159,6 +188,18 @@ typedef enum dt_signal_t
     no return
    * */
   DT_SIGNAL_CAMERA_DETECTED,
+
+  /** \brief This signal is raised when dt_control_navigation_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+
+  /** \brief This signal is raised when new color picker data are available in the pixelpipe.
+    1 module
+    2 piece
+    no returned value
+  */
+  DT_SIGNAL_CONTROL_PICKERDATA_READY,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT

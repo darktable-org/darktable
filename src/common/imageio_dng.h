@@ -136,7 +136,7 @@ static inline void dt_imageio_dng_write_tiff_header(
       break;
   }
   if(filter == 9u) // xtrans
-    b = dt_imageio_dng_make_tag(33422, BYTE, 36, 240, b, &cnt); /* CFAPATTERN */
+    b = dt_imageio_dng_make_tag(33422, BYTE, 36, 400, b, &cnt); /* CFAPATTERN */
   else // bayer
     b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt); /* CFAPATTERN */
 
@@ -145,10 +145,15 @@ static inline void dt_imageio_dng_write_tiff_header(
   // b = dt_imageio_dng_make_tag(34665, LONG, 1, 264, b, &cnt); // exif ifd
   b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1 << 24) | (2 << 16), b, &cnt); // DNG Version/backward version
   b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1 << 24) | (1 << 16), b, &cnt);
-  uint32_t whitei = *(uint32_t *)&whitelevel;
-  b = dt_imageio_dng_make_tag(50717, LONG, 1, whitei, b, &cnt); // WhiteLevel in float, actually.
-  // b = dt_imageio_dng_make_tag(50708, ASCII, 9, 484, b, &cnt); // unique camera model
-  // b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 328, b, &cnt); // ColorMatrix1 (XYZ->native cam)
+  union {
+      float f;
+      uint32_t u;
+  } white;
+  white.f = whitelevel;
+  b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
+  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
+  b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
+
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
   // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
   b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
@@ -157,7 +162,14 @@ static inline void dt_imageio_dng_write_tiff_header(
   // exif is written later, by exiv2:
   // printf("offset: %d\n", b - buf); // find out where we're writing data
   // apparently this doesn't need byteswap:
-  memcpy(buf+240, xtrans, sizeof(uint8_t)*36);
+  memcpy(buf+400, xtrans, sizeof(uint8_t)*36);
+  // this matrix is generic for XYZ->sRGB / D65
+  int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
+  for(int k = 0; k < 9; k++)
+  {
+    dt_imageio_dng_write_buf(buf, 480+k*8, m[k]);
+    dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
+  }
 
 #if 0
   // mostly garbage below, but i'm too lazy to clean it up:

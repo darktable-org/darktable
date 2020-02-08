@@ -189,6 +189,8 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "FILE_EXTENSION", N_("$(FILE_EXTENSION) - extension of the input image") },
           { "VERSION", N_("$(VERSION) - duplicate version") },
           { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
+          { "MAX_WIDTH", N_("$(MAX_WIDTH) - maximum image export width") },
+          { "MAX_HEIGHT", N_("$(MAX_HEIGHT) - maximum image export height") },
           { "YEAR", N_("$(YEAR) - year") },
           { "MONTH", N_("$(MONTH) - month") },
           { "DAY", N_("$(DAY) - day") },
@@ -210,9 +212,13 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "HOME", N_("$(HOME) - home folder") },
           { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
           { "TITLE", N_("$(TITLE) - title from metadata") },
+          { "DESCRIPTION", N_("$(DESCRIPTION) - description from metadata") },
           { "CREATOR", N_("$(CREATOR) - creator from metadata") },
           { "PUBLISHER", N_("$(PUBLISHER) - publisher from metadata") },
           { "RIGHTS", N_("$(RIGHTS) - rights from metadata") },
+          { "OPENCL", N_("$(OPENCL_ACTIVATED) - whether OpenCL is activated") },
+          { "CATEGORY", N_("$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags") },
+          { "TAGS", N_("$(TAGS) - tags as set in metadata settings") },
           { NULL, NULL } };
 
   return default_path_compl_list;

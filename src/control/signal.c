@@ -49,6 +49,8 @@ static GType pointer_arg[] = { G_TYPE_POINTER };
 static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
+static GType history_will_change_arg[]
+= { G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_POINTER };
 
 
 
@@ -69,6 +71,10 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
+  { "dt-collection-query-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_QUERY_CHANGED
+  { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_TAG_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
@@ -88,8 +94,12 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   { "dt-develop-preview-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
+  { "dt-develop-preview2-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
+  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3,
+    history_will_change_arg, NULL, FALSE }, // DT_SIGNAL_HISTORY_WILL_CHANGE
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_HISTORY_CHANGE
   { "dt-develop-module-remove", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1,
@@ -98,6 +108,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+  { "dt-control-profile-user-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
+      uint_arg, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED
   { "dt-image-import", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
     uint_arg, NULL, FALSE }, // DT_SIGNAL_IMAGE_IMPORT
   { "dt-image-export-tmpfile", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6,
@@ -112,6 +124,12 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_CAMERA_DETECTED,
+
+  { "dt-control-navigation-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_NAVIGATION_REDRAW
+
+  { "dt-control-pickerdata-ready", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
+    pointer_2arg, NULL, FALSE }, // DT_SIGNAL_CONTROL_PICKERDATA_REAEDY
 
 };
 
@@ -135,7 +153,7 @@ dt_control_signal_t *dt_control_signal_init()
   ctlsig->sink = g_object_new(_signal_type, NULL);
 
   /* create the signals */
-  for(int k = 0; k < DT_SIGNAL_COUNT; k++) 
+  for(int k = 0; k < DT_SIGNAL_COUNT; k++)
   {
     g_signal_newv(_signal_description[k].name, _signal_type, G_SIGNAL_RUN_LAST, 0,
         _signal_description[k].accumulator, _signal_description[k].accu_data,
@@ -180,7 +198,7 @@ gboolean _async_com_callback(gpointer data)
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
   return FALSE;
-} 
+}
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal, ...)
 {

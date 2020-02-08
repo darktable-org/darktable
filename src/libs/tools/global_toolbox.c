@@ -27,6 +27,9 @@
 #include "gui/preferences.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 DT_MODULE(1)
 
@@ -43,7 +46,6 @@ static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_dat
 static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for help button */
 static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data);
-static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -77,12 +79,11 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_size_request(d->grouping_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 0);
   if(darktable.gui->grouping)
     gtk_widget_set_tooltip_text(d->grouping_button, _("expand grouped images"));
   else
@@ -93,8 +94,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_size_request(d->overlays_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 0);
   if(darktable.gui->show_overlays)
     gtk_widget_set_tooltip_text(d->overlays_button, _("hide image overlays"));
   else
@@ -103,19 +103,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
 
   /* create the widget help button */
-  d->help_button = dtgtk_togglebutton_new(_paint_help, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_size_request(d->help_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 2);
+  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
+  dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_size_request(d->preferences_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
+  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
@@ -220,7 +219,9 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
           char *base_url = dt_conf_get_string("context_help/url");
-          if(!base_url || !*base_url)
+          // if url is https://www.darktable.org/usermanual/, it is the old deprecated
+          // url and we need to update it
+          if(!base_url || !*base_url || (0 == strcmp(base_url, "https://www.darktable.org/usermanual/")))
           {
             g_free(base_url);
             base_url = NULL;
@@ -228,14 +229,17 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             // ask the user if darktable.org may be accessed
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                        GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                                       _("do you want to access https://www.darktable.org/?"));
+                                                       _("do you want to access https://darktable.gitlab.io/doc/?"));
+#ifdef GDK_WINDOWING_QUARTZ
+            dt_osx_disallow_fullscreen(dialog);
+#endif
 
             gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
             gint res = gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
             if(res == GTK_RESPONSE_YES)
             {
-              base_url = g_strdup("https://www.darktable.org/usermanual/");
+              base_url = g_strdup("https://darktable.gitlab.io/doc/");
               dt_conf_set_string("context_help/url", base_url);
             }
           }
@@ -252,7 +256,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
                 lang = language->code;
               // array of languages the usermanual supports.
               // NULL MUST remain the last element of the array
-              const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
+              const char *supported_languages[] = { "en", "fr", "it", NULL };
               int i = 0;
               while(supported_languages[i])
               {
@@ -267,14 +271,10 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
             // TODO: call the web browser directly so that file:// style base for local installs works
-#if GTK_CHECK_VERSION(3, 22, 0)
             gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), NULL);
-#else
-            gtk_show_uri(gdk_screen_get_default(), url, gtk_get_current_event_time(), NULL);
-#endif
             g_free(base_url);
             g_free(url);
-            dt_control_log(_("help url opened in web brower"));
+            dt_control_log(_("help url opened in web browser"));
           }
         }
         else
@@ -317,28 +317,7 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
   gdk_event_handler_set(_main_do_event, user_data, NULL);
 }
 
-static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  PangoLayout *layout;
-  PangoRectangle ink;
-  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
-  // leading to imprecise positioning
-  static const float grow = 10.0;
-  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-  pango_font_description_set_absolute_size(desc, 2.7 * grow * PANGO_SCALE);
-  layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
-  gint s = (w < h ? w : h);
-  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
-  cairo_scale(cr, s / grow, s / grow);
 
-  pango_layout_set_text(layout, "?", -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
-  pango_cairo_show_layout(cr, layout);
-  pango_font_description_free(desc);
-  g_object_unref(layout);
-}
 
 void init_key_accels(dt_lib_module_t *self)
 {

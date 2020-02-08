@@ -21,7 +21,7 @@
       tethering, print and a slideshow.
     </_p>
     <_p>
-      darktable supports most modern camera's raw formats, and does all
+      darktable supports most modern cameras' raw formats, and does all
       of its processing at very high precision.
     </_p>
   </description>
@@ -47,6 +47,14 @@
       <_caption>Print your images</_caption>
     </screenshot>
   </screenshots>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release date="2019-12-24" version="3.0.0"/>
+    <release date="2019-10-20" version="2.6.3"/>
+    <release date="2019-03-21" version="2.6.2"/>
+    <release date="2019-03-07" version="2.6.1"/>
+    <release date="2018-12-24" version="2.6.0"/>
+  </releases>
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
   <url type="help">https://www.darktable.org/usermanual/</url>

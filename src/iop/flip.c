@@ -40,7 +40,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
@@ -76,9 +75,9 @@ const char *name()
   return _("orientation");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("orientation", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int operation_tags()
@@ -91,11 +90,15 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_orientation,
                                                      dt_image_orientation_t user_orientation)
 {
   dt_image_orientation_t raw_orientation_corrected = raw_orientation;
-
   /*
    * if user-specified orientation has ORIENTATION_SWAP_XY set, then we need
    * to swap ORIENTATION_FLIP_Y and ORIENTATION_FLIP_X bits
@@ -117,7 +120,7 @@ static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_
       raw_orientation_corrected |= ORIENTATION_SWAP_XY;
   }
 
-  // and now we can automagically compute new new flip
+  // and now we can automagically compute new flip
   return raw_orientation_corrected ^ user_orientation;
 }
 
@@ -158,7 +161,7 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
   {
     o[1] = x[0];
     o[0] = x[1];
-    int32_t tmp = iw;
+    const int32_t tmp = iw;
     iw = ih;
     ih = tmp;
   }
@@ -169,11 +172,11 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
   }
   if(orientation & ORIENTATION_FLIP_X)
   {
-    o[1] = ih - o[1] - 1;
+    o[0] = iw - o[0] - 1;
   }
   if(orientation & ORIENTATION_FLIP_Y)
   {
-    o[0] = iw - o[0] - 1;
+    o[1] = ih - o[1] - 1;
   }
 }
 
@@ -188,11 +191,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   {
     x = points[i];
     y = points[i + 1];
-    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - points[i + 1];
-    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - points[i];
+    if(d->orientation & ORIENTATION_FLIP_X) x = piece->buf_in.width - points[i];
+    if(d->orientation & ORIENTATION_FLIP_Y) y = piece->buf_in.height - points[i + 1];
     if(d->orientation & ORIENTATION_SWAP_XY)
     {
-      float yy = y;
+      const float yy = y;
       y = x;
       x = yy;
     }
@@ -222,13 +225,26 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
       x = points[i];
       y = points[i + 1];
     }
-    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - y;
-    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - x;
+    if(d->orientation & ORIENTATION_FLIP_X) x = piece->buf_in.width - x;
+    if(d->orientation & ORIENTATION_FLIP_Y) y = piece->buf_in.height - y;
+
     points[i] = x;
     points[i + 1] = y;
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+
+  const int bpp = sizeof(float);
+  const int stride = bpp * roi_in->width;
+
+  dt_imageio_flip_buffers((char *)out, (const char *)in, bpp, roi_in->width, roi_in->height,
+                          roi_in->width, roi_in->height, stride, d->orientation);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -304,13 +320,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
-  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
+  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->global_data;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const uint32_t orientation = data->orientation;
+  const int orientation = data->orientation;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height), 1 };
 
@@ -318,7 +334,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(uint32_t), (void *)&orientation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_flip, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -444,13 +460,14 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
-  module->priority = 271; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
@@ -460,7 +477,7 @@ static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 
   if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
 
-  if(cw == 1)
+  if(cw == 0)
   {
     if(orientation & ORIENTATION_SWAP_XY)
       orientation ^= ORIENTATION_FLIP_Y;
@@ -505,20 +522,18 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
-  gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);

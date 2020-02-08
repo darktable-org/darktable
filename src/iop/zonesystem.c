@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -124,9 +123,14 @@ int flags()
          | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("zone system", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 /* get the zone index of pixel lightness from zonemap */
@@ -224,7 +228,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
     if(gauss && tmp)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, height, width, ivoid) \
+      shared(tmp) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ivoid)[ch * k];
 
@@ -233,7 +240,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for input */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(height, size, width) \
+      shared(tmp, g) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -243,7 +253,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, height, ovoid, width) \
+      shared(tmp) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ovoid)[ch * k];
 
@@ -253,7 +266,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for output */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(height, size, width) \
+      shared(tmp, g) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -281,7 +297,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, d, in, out, roi_out, size) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -311,7 +330,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int size = d->params.size;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, size) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -340,7 +361,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t *)piece->data;
-  dt_iop_zonesystem_global_data_t *gd = (dt_iop_zonesystem_global_data_t *)self->data;
+  dt_iop_zonesystem_global_data_t *gd = (dt_iop_zonesystem_global_data_t *)self->global_data;
   cl_mem dev_zmo, dev_zms = NULL;
   cl_int err = -999;
 
@@ -458,7 +479,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 671; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){
@@ -472,6 +492,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -500,7 +522,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
 
-  /* load the dt logo as a brackground */
+  /* load the dt logo as a background */
   g->image = dt_util_get_logo(MIN(allocation->width, allocation->height) * 0.75);
   if(g->image)
   {
@@ -582,7 +604,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -738,6 +759,7 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   int cs = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {

@@ -20,6 +20,7 @@
 
 #include "common/image.h"
 #include "common/imageio.h"
+#include "common/iop_order.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -31,6 +32,14 @@
  * will be freed at the end.
  */
 struct dt_iop_module_t;
+struct dt_dev_raster_mask_t;
+struct dt_iop_order_iccprofile_info_t;
+
+typedef struct dt_dev_pixelpipe_raster_mask_t
+{
+  int id; // 0 is reserved for the reusable masks written in blend.c
+  float *mask;
+} dt_dev_pixelpipe_raster_mask_t;
 
 typedef struct dt_dev_pixelpipe_iop_t
 {
@@ -53,11 +62,14 @@ typedef struct dt_dev_pixelpipe_iop_t
   int colors;          // how many colors per pixel
   dt_iop_roi_t buf_in,
       buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
+  dt_iop_roi_t processed_roi_in, processed_roi_out; // the actual roi that was used for processing the piece
   int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
   int process_tiling_ready;   // set this to 0 in commit_params to temporarily disable tiling
 
-  // the following are used  internally for caching:
+  // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in, dsc_out;
+
+  GHashTable *raster_masks; // GList* of dt_dev_pixelpipe_raster_mask_t
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -103,8 +115,14 @@ typedef struct dt_dev_pixelpipe_t
   uint8_t *backbuf;
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
+  float backbuf_scale;
+  float backbuf_zoom_x, backbuf_zoom_y;
   uint64_t backbuf_hash;
   dt_pthread_mutex_t backbuf_mutex, busy_mutex;
+  // output buffer (for display)
+  uint8_t *output_backbuf;
+  int output_backbuf_width, output_backbuf_height;
+  int output_imgid;
   // working?
   int processing;
   // shutting down?
@@ -117,6 +135,8 @@ typedef struct dt_dev_pixelpipe_t
   int tiling;
   // should this pixelpipe display a mask in the end?
   int mask_display;
+  // should this pixelpipe completely suppressed the blendif module?
+  int bypass_blendif;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
@@ -132,8 +152,12 @@ typedef struct dt_dev_pixelpipe_t
   dt_iop_color_intent_t icc_intent;
   // snapshot of modules
   GList *iop;
+  // snapshot of modules iop_order
+  GList *iop_order_list;
   // snapshot of mask list
   GList *forms;
+  // the masks generated in the pipe for later reusal are inside dt_dev_pixelpipe_iop_t
+  gboolean store_all_raster_masks;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
@@ -143,8 +167,10 @@ int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching
 // settings.
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
+int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels);
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
+                                 gboolean store_masks);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits all but the pixel caches, so you can't actually process an image (just get dimensions and
@@ -197,6 +223,11 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
+
+// helper function to pass a raster mask through a (so far) processed pipe
+float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const struct dt_iop_module_t *raster_mask_source,
+                              const int raster_mask_id, const struct dt_iop_module_t *target_module,
+                              gboolean *free_mask);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

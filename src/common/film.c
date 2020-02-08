@@ -43,6 +43,9 @@
 #include "lua/glist.h"
 #include "lua/lua.h"
 #endif
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 void dt_film_init(dt_film_t *film)
 {
@@ -197,7 +200,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, -1, SQLITE_STATIC);
-    dt_pthread_mutex_lock(&darktable.db_insert);
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
@@ -208,7 +210,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    dt_pthread_mutex_unlock(&darktable.db_insert);
   }
 
   if(film->id <= 0) return 0;
@@ -309,6 +310,9 @@ static gboolean ask_and_delete(gpointer user_data)
                                   GTK_BUTTONS_YES_NO,
                                   ngettext("do you want to remove this empty directory?",
                                            "do you want to remove these empty directories?", n_empty_dirs));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
 
   gtk_window_set_title(GTK_WINDOW(dialog),
                        ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));
@@ -317,10 +321,6 @@ static gboolean ask_and_delete(gpointer user_data)
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_widget_set_vexpand(scroll, TRUE);
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(0));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(0));
 
   GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
 
@@ -448,6 +448,12 @@ void dt_film_remove(const int id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid IN "
                                                              "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
@@ -492,8 +498,6 @@ void dt_film_remove(const int id)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
-
-  dt_tag_update_used_tags();
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }

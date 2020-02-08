@@ -43,14 +43,19 @@ const char *name()
   return C_("modulename", "gamma");
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_COLOR;
 }
 
 int flags()
 {
-  return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_FENCE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 static inline float Hue_2_RGB(float v1, float v2, float vH)
@@ -199,7 +204,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, i, mask_display, o, roi_out, yellow) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -213,7 +220,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = colors[c] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -222,7 +229,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, i, mask_display, o, roi_out, yellow) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -234,7 +243,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = in[1] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -243,7 +252,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, i, o, roi_out, yellow) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -256,7 +267,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = gray * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -264,7 +275,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, i, o, roi_out) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -272,7 +285,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
       for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
-        for(int c = 0; c < 3; c++) out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * in[c]), 0x0, 0xff)));
+        for(int c = 0; c < 3; c++) out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * in[c]), 0x0, 0xff)));
       }
     }
   }
@@ -285,7 +298,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
-  module->priority = 1000; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -294,6 +306,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 

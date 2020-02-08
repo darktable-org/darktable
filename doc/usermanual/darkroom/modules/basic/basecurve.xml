@@ -67,7 +67,7 @@
       You can adjust an existing base curve or create a new one. The base curve is defined by
       two or more nodes. You can move any node to modify the curve. You can also create
       additional nodes by <emphasis>clicking</emphasis> on a curve segment between two nodes.
-      With <emphasis>ctrl-click</emphasis> you generate a new node at the x-location of the
+      With <emphasis>Ctrl+click</emphasis> you generate a new node at the x-location of the
       mouse pointer and the corresponding y-location of the current curve&nbsp;&ndash; this adds
       a node without risking to accidentally modify the curve. In order to remove a node move it
       outside of the widget area.

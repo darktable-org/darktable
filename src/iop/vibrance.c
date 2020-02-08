@@ -31,7 +31,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -70,12 +69,16 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("vibrance", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
@@ -88,7 +91,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "vibrance",
                               GTK_WIDGET(g->amount_scale));
 }
-#endif
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -101,7 +103,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount = (d->amount * 0.01);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(amount, ch, roi_out) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -126,7 +131,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_vibrance_data_t *data = (dt_iop_vibrance_data_t *)piece->data;
-  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->data;
+  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->global_data;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
@@ -216,7 +221,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_enabled = 0;
-  module->priority = 442; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vibrance_params_t);
   module->gui_data = NULL;
   dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t){ 25 };
@@ -228,6 +232,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

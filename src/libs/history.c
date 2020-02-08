@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2019-2020 Pascal Obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,19 +24,22 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "common/history.h"
 
 DT_MODULE(1)
 
 
 typedef struct dt_undo_history_t
 {
-  GList *snapshot;
-  int end;
+  GList *before_snapshot, *after_snapshot;
+  int before_end, after_end;
+  GList *before_iop_order_list, *after_iop_order_list;
 } dt_undo_history_t;
 
 typedef struct dt_lib_history_t
@@ -43,20 +47,28 @@ typedef struct dt_lib_history_t
   /* vbox with managed history items */
   GtkWidget *history_box;
   GtkWidget *create_button;
-//   GtkWidget *apply_button;
   GtkWidget *compress_button;
   gboolean record_undo;
+  // previous_* below store values sent by signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
+  GList *previous_snapshot;
+  int previous_history_end;
+  GList *previous_iop_order_list;
 } dt_lib_history_t;
+
+/* 3 widgets in each history line */
+#define HIST_WIDGET_NUMBER 0
+#define HIST_WIDGET_MODULE 1
+#define HIST_WIDGET_STATUS 2
 
 /* compress history stack */
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 /* signal callback for history change */
+static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end,
+                                              GList *iop_order_list, gpointer user_data);
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data);
-
-
 
 const char *name(dt_lib_module_t *self)
 {
@@ -102,22 +114,23 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->record_undo = TRUE;
+  d->previous_snapshot = NULL;
+  d->previous_history_end = 0;
+  d->previous_iop_order_list = NULL;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_name(self->widget, "history-ui");
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   d->compress_button = gtk_button_new_with_label(_("compress history stack"));
-  gtk_label_set_xalign (GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->compress_button))), 0.0f);
   gtk_widget_set_tooltip_text(d->compress_button, _("create a minimal history stack which produces the same image"));
-  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
+  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(d->create_button, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(d->create_button), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
@@ -134,6 +147,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
 
   /* connect to history change signal for updating the history view */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            G_CALLBACK(_lib_history_will_change_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_lib_history_change_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
@@ -149,24 +164,61 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, const char *label,
-                                             gboolean enabled, gboolean selected)
+                                             gboolean enabled, gboolean default_enabled, gboolean always_on, gboolean selected, gboolean deprecated)
 {
   /* create label */
-  GtkWidget *widget = NULL;
-  gchar numlabel[256];
-  if(num == -1)
-    g_snprintf(numlabel, sizeof(numlabel), "%d - %s", num + 1, label);
-  else
-  {
-    if(enabled)
-      g_snprintf(numlabel, sizeof(numlabel), "%d - %s", num + 1, label);
-    else
-      g_snprintf(numlabel, sizeof(numlabel), "%d - %s (%s)", num + 1, label, _("off"));
-  }
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gchar numlab[10];
+
+  g_snprintf(numlab, sizeof(numlab), "%2d", num + 1);
+  GtkWidget *numwidget = gtk_label_new(numlab);
+  gtk_widget_set_name(numwidget, "history-number");
+
+  GtkWidget *onoff = NULL;
 
   /* create toggle button */
-  widget = gtk_toggle_button_new_with_label(numlabel);
+  GtkWidget *widget = gtk_toggle_button_new_with_label(label);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+
+  if(always_on)
+  {
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on,
+                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(onoff, "history-switch-always-enabled");
+    gtk_widget_set_name(widget, "history-button-always-enabled");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
+    gtk_widget_set_tooltip_text(onoff, _("always-on module"));
+  }
+  else if(default_enabled)
+  {
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
+                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(onoff, "history-switch-default-enabled");
+    gtk_widget_set_name(widget, "history-button-default-enabled");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
+    gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
+  }
+  else
+  {
+    if(deprecated)
+    {
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated,
+                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_name(onoff, "history-switch-deprecated");
+      gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
+    }
+    else
+    {
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
+                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
+    }
+    gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
+    dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
+  }
+
+  gtk_widget_set_sensitive (onoff, FALSE);
+
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -177,71 +229,11 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
 
-  return widget;
-}
+  gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), onoff, FALSE, FALSE, 0);
 
-static dt_iop_module_t *get_base_module(GList *iop_list, const char *op)
-{
-  dt_iop_module_t *result = NULL;
-
-  GList *modules = g_list_first(iop_list);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(strcmp(mod->op, op) == 0)
-    {
-      result = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-
-  return result;
-}
-
-static GList *_duplicate_history(GList *hist)
-{
-  GList *result = NULL;
-
-  GList *h = g_list_first(hist);
-  while(h)
-  {
-    const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
-
-    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
-
-    memcpy(new, old, sizeof(dt_dev_history_item_t));
-
-    int32_t params_size = 0;
-    if(old->module)
-    {
-      params_size = old->module->params_size;
-    }
-    else
-    {
-      dt_iop_module_t *base = get_base_module(darktable.develop->iop, old->op_name);
-      if(base)
-      {
-        params_size = base->params_size;
-      }
-      else
-      {
-        // nothing else to do
-        fprintf(stderr, "[_duplicate_history] can't find base module for %s\n", old->op_name);
-      }
-    }
-
-    new->params = malloc(params_size);
-    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-
-    memcpy(new->params, old->params, params_size);
-    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
-
-    result = g_list_append(result, new);
-
-    h = g_list_next(h);
-  }
-  return result;
+  return hbox;
 }
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
@@ -264,18 +256,18 @@ struct _cb_data
   int multi_priority;
 };
 
-static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data)
 {
   struct _cb_data *udata = (struct _cb_data *)user_data;
   dt_undo_history_t *hdata = (dt_undo_history_t *)data;
-  _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
+  _reset_module_instance(hdata->after_snapshot, udata->module, udata->multi_priority);
 }
 
-static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_undo_history_t *hist = (dt_undo_history_t *)item;
-  dt_dev_invalidate_history_module(hist->snapshot, module);
+  dt_dev_invalidate_history_module(hist->after_snapshot, module);
 }
 
 static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
@@ -285,42 +277,11 @@ static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
   // so we do it here
   if(!dt_iop_is_hidden(module) && !module->expander)
   {
-    // since multi_priority is in reverse order, we want the last one
-    // that is grather than this
-    dt_iop_module_t *base = NULL;
-    dt_iop_module_t *base_last = NULL;
-    GList *mods = g_list_last(iop_list);
-    while(mods)
-    {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
-
-      if(mod != module && mod->instance == module->instance)
-      {
-        // we save the last one in case module is the last one
-        base_last = mod;
-        if(mod->multi_priority > module->multi_priority)
-        {
-          base = mod;
-          break;
-        }
-      }
-      mods = g_list_previous(mods);
-    }
-    if(base == NULL)
-    {
-      base = base_last;
-      base_last = NULL;
-    }
-    if(base)
-    {
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
       dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
-    }
-    else
-      fprintf(stderr, "[_add_module_expander] can't find base for module %s\n", module->op);
   }
 }
 
@@ -455,7 +416,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 
     modules = g_list_next(modules);
   }
-  if(deleted_module_found) iop_list = g_list_sort(iop_list, sort_plugins);
+  if(deleted_module_found) iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
 
@@ -493,7 +454,7 @@ static int _rebuild_multi_priority(GList *history_list)
     // we keep the history version
     if(hitem->module && hitem->module->multi_priority != hitem->multi_priority)
     {
-      hitem->module->multi_priority = hitem->multi_priority;
+      dt_iop_update_multi_priority(hitem->module, hitem->multi_priority);
       changed = 1;
     }
 
@@ -519,7 +480,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
     {
       changed = 1;
 
-      const dt_iop_module_t *base_module = get_base_module(iop_list, hitem->op_name);
+      const dt_iop_module_t *base_module = dt_iop_get_module_from_list(iop_list, hitem->op_name);
       if(base_module == NULL)
       {
         fprintf(stderr, "[_create_deleted_modules] can't find base module for %s\n", hitem->op_name);
@@ -543,10 +504,11 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
 
       // adjust the multi_name of the new module
       g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
-      module->multi_priority = hitem->multi_priority;
+      dt_iop_update_multi_priority(module, hitem->multi_priority);
+      module->iop_order = hitem->iop_order;
 
       // we insert this module into dev->iop
-      iop_list = g_list_insert_sorted(iop_list, module, sort_plugins);
+      iop_list = g_list_insert_sorted(iop_list, module, dt_sort_iop_by_order);
 
       // add the expander, dt_dev_reload_history_items() don't work well without one
       _add_module_expander(iop_list, module);
@@ -572,20 +534,34 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   return changed;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_develop_t *dev = darktable.develop;
 
   if(type == DT_UNDO_HISTORY)
   {
     dt_lib_history_t *d = (dt_lib_history_t *)self->data;
     dt_undo_history_t *hist = (dt_undo_history_t *)data;
+    dt_develop_t *dev = darktable.develop;
 
     // we will work on a copy of history and modules
     // when we're done we'll replace dev->history and dev->iop
-    GList *history_temp = _duplicate_history(hist->snapshot);
-    const int hist_end = hist->end;
+    GList *history_temp = NULL;
+    int hist_end = 0;
+
+    if(action == DT_ACTION_UNDO)
+    {
+      history_temp = dt_history_duplicate(hist->before_snapshot);
+      hist_end = hist->before_end;
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->before_iop_order_list);
+    }
+    else
+    {
+      history_temp = dt_history_duplicate(hist->after_snapshot);
+      hist_end = hist->after_end;
+      dev->iop_order_list = dt_ioppr_iop_order_copy_deep(hist->after_iop_order_list);
+    }
+
     GList *iop_temp = g_list_copy(dev->iop);
 
     // topology has changed?
@@ -596,7 +572,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     if(_rebuild_multi_priority(history_temp))
     {
       pipe_remove = 1;
-      iop_temp = g_list_sort(iop_temp, sort_plugins);
+      iop_temp = g_list_sort(iop_temp, dt_sort_iop_by_order);
     }
 
     // check if this undo a delete module and re-create it
@@ -631,8 +607,10 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
       // we refresh the pipe
       dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->pipe->cache_obsolete = 1;
       dev->preview_pipe->cache_obsolete = 1;
+      dev->preview2_pipe->cache_obsolete = 1;
 
       // invalidate buffers and force redraw of darkroom
       dt_dev_invalidate_all(dev);
@@ -646,20 +624,44 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     // write new history and reload
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
+
+    dt_ioppr_resync_modules_order(dev);
+
+    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 }
 
 static void _history_undo_data_free(gpointer data)
 {
   dt_undo_history_t *hist = (dt_undo_history_t *)data;
-  GList *snapshot = hist->snapshot;
-  g_list_free_full(snapshot, dt_dev_free_history_item);
+  g_list_free_full(hist->before_snapshot, dt_dev_free_history_item);
+  g_list_free_full(hist->after_snapshot, dt_dev_free_history_item);
+  g_list_free_full(hist->before_iop_order_list, free);
+  g_list_free_full(hist->after_iop_order_list, free);
   free(data);
 }
 
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
 {
   dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
+}
+
+static void _lib_history_will_change_callback(gpointer instance, GList *history, int history_end, GList *iop_order_list,
+                                              gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
+
+  if(lib->record_undo)
+  {
+    // history is about to change, we want here ot record a snapshot of the history for the undo
+    // record previous history
+    g_list_free_full(lib->previous_snapshot, free);
+    g_list_free_full(lib->previous_iop_order_list, free);
+    lib->previous_snapshot = history;
+    lib->previous_history_end = history_end;
+    lib->previous_iop_order_list = iop_order_list;
+  }
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
@@ -672,19 +674,24 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* add default which always should be */
   int num = -1;
-  gtk_box_pack_start(GTK_BOX(d->history_box),
-                     _lib_history_create_button(self, num, _("original"), FALSE, darktable.develop->history_end == 0),
-                     TRUE, TRUE, 0);
+  GtkWidget *widget =
+    _lib_history_create_button(self, num, _("original"), FALSE, FALSE, TRUE, darktable.develop->history_end == 0, FALSE);
+  gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
   num++;
 
   if (d->record_undo == TRUE)
   {
     /* record undo/redo history snapshot */
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
-    hist->snapshot = _duplicate_history(darktable.develop->history);
-    hist->end = darktable.develop->history_end;
+    hist->before_snapshot = dt_history_duplicate(d->previous_snapshot);
+    hist->before_end = d->previous_history_end;
+    hist->before_iop_order_list = dt_ioppr_iop_order_copy_deep(d->previous_iop_order_list);
 
-    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist,
+    hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
+    hist->after_end = darktable.develop->history_end;
+    hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
+
+    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
   }
   else
@@ -697,16 +704,19 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   GList *history = g_list_first(darktable.develop->history);
   while(history)
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-
+    const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
       label = g_strdup_printf("%s", hitem->module->name());
     else
       label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
-    gboolean selected = (num == darktable.develop->history_end - 1);
-    GtkWidget *widget = _lib_history_create_button(self, num, label, hitem->enabled, selected);
+    const gboolean selected = (num == darktable.develop->history_end - 1);
+    widget =
+      _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)),
+                                 hitem->module->default_enabled, hitem->module->hide_enable_button, selected,
+                                 hitem->module->flags() & IOP_FLAGS_DEPRECATED);
+
     g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
@@ -724,25 +734,25 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data)
 {
-  const int imgid = darktable.develop->image_storage.id;
+  const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
-  // make sure the right history is in there:
-  dt_dev_write_history(darktable.develop);
-  sqlite3_stmt *stmt;
 
-  // compress history
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND num "
-                                                             "NOT IN (SELECT MAX(num) FROM main.history WHERE "
-                                                             "imgid = ?1 AND num < ?2 GROUP BY operation, "
-                                                             "multi_priority)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+
+  // As dt_history_compress_on_image does *not* use the history stack data at all
+  // make sure the current stack is in the database
+  dt_dev_write_history(darktable.develop);
+
+  dt_history_compress_on_image(imgid);
+
+  sqlite3_stmt *stmt;
 
   // load new history and write it back to ensure that all history are properly numbered without a gap
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
+  dt_image_synch_xmp(imgid);
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
@@ -763,6 +773,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   sqlite3_finalize(stmt);
 
   dt_dev_reload_history_items(darktable.develop);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
@@ -776,11 +787,12 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   reset = 1;
 
-  /* inactivate all toggle buttons */
+  /* deactivate all toggle buttons */
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
+    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
@@ -788,9 +800,15 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   reset = 0;
   if(darktable.gui->reset) return;
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+
   /* revert to given history item. */
-  int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
+  const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
+  // set the module list order
+  dt_dev_reorder_gui_module_list(darktable.develop);
   /* signal history changed */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));

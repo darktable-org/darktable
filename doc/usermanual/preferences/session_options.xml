@@ -97,6 +97,22 @@
         </row>
         <row>
           <entry>
+            $(MAX_WIDTH)
+          </entry>
+          <entry>
+            maximum image width to limit within export session
+          </entry>
+        </row>
+        <row>
+          <entry>
+            $(MAX_HEIGHT)
+          </entry>
+          <entry>
+            maximum image height to limit within export session
+          </entry>
+        </row>
+        <row>
+          <entry>
             $(ID)
           </entry>
           <entry>

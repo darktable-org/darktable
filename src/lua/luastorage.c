@@ -79,7 +79,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
                          const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                          const int num, const int total, const gboolean high_quality, const gboolean upscale,
                          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                         dt_iop_color_intent_t icc_intent)
+                         dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
 
   /* construct a temporary file name */
@@ -96,8 +96,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
 
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename,
-                       icc_intent, self, self_data, num, total) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
+                       icc_intent, self, self_data, num, total, metadata) != 0)
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
     g_free(complete_name);
@@ -188,7 +188,7 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt
   if(!lua_isnoneornil(L, -1))
   {
     g_list_free(*images);
-    if(lua_type(L,-1) != LUA_TTABLE) 
+    if(lua_type(L,-1) != LUA_TTABLE)
     {
       dt_print(DT_DEBUG_LUA, "LUA ERROR initialization function of storage did not return nil or table\n");
       dt_lua_unlock();
@@ -311,6 +311,11 @@ static int set_params_wrapper(struct dt_imageio_module_storage_t *self, const vo
   return 0;
 }
 
+static char *ask_user_confirmation_wrapper(struct dt_imageio_module_storage_t *self)
+{
+  return NULL;
+}
+
 static int version_wrapper()
 {
   return 0;
@@ -359,6 +364,7 @@ static dt_imageio_module_storage_t ref_storage = {
   .free_params = free_params_wrapper,
   .set_params = set_params_wrapper,
   .export_dispatched = empty_wrapper,
+  .ask_user_confirmation = ask_user_confirmation_wrapper,
   .parameter_lua_type = LUAA_INVALID_TYPE,
   .version = version_wrapper,
 

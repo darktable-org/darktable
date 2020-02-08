@@ -43,7 +43,11 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
 
   float *const tmp_width_buf = (float *)malloc(width * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a, buf) private(ch) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, l, st, step, tmp_width_buf, wd, width) \
+  shared(weight_a, buf) \
+  private(ch) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -73,7 +77,11 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
 
   float *const tmp_height_buf = (float *)malloc(height * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a, buf) private(ch) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, l, st, step, tmp_height_buf, wd, width) \
+  shared(weight_a, buf) \
+  private(ch) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -110,7 +118,10 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   float *const tmp_height_buf = (float *)malloc(height * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a, buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, l, st, step, tmp_height_buf, wd, width) \
+  shared(weight_a, buf) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -139,7 +150,10 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   float *const tmp_width_buf = (float *)malloc(width * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a, buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, l, st, step, tmp_width_buf, wd, width) \
+  shared(weight_a, buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {

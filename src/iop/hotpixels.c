@@ -31,7 +31,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -72,14 +71,19 @@ const char *name()
   return _("hot pixels");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("hot pixels", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ONE_INSTANCE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -117,7 +121,11 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
   int fixed = 0;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) reduction(+ : fixed) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
+                      roi_out, threshold, width, widthx2) \
+  reduction(+ : fixed) \
+  schedule(static)
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {
@@ -214,7 +222,12 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   int fixed = 0;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
+                      roi_out, threshold, xtrans, width) \
+  shared(offsets) \
+  reduction(+ : fixed) \
+  schedule(static)
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {
@@ -315,11 +328,10 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL;
+  module->global_data = NULL;
   module->params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 85; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
 }
@@ -328,8 +340,10 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
+  free(module->global_data);
+  module->global_data = NULL;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -343,7 +357,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT)
                  && (pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || p->strength == 0.0) piece->enabled = 0;
+  if(!(dt_image_is_raw(&pipe->image)) || p->strength == 0.0) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -427,9 +441,10 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, str);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   g_free(str);
 

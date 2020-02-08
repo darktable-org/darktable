@@ -20,9 +20,11 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/iop_profile.h"
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -34,9 +36,11 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
+#ifdef HAVE_LIBAVIF
+#include "common/imageio_avif.h"
+#endif
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
@@ -46,15 +50,17 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <lcms2.h>
 
 // max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
+// must be in synch with dt_colorspaces_color_profile_t
+#define DT_IOP_COLOR_ICC_LEN 512
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(4, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -74,11 +80,14 @@ typedef struct dt_iop_colorin_params_t
   dt_iop_color_intent_t intent;
   int normalize;
   int blue_mapping;
+  // working color profile
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkWidget *profile_combobox, *clipping_combobox;
+  GtkWidget *profile_combobox, *clipping_combobox, *work_combobox;
   GList *image_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -105,6 +114,8 @@ typedef struct dt_iop_colorin_data_t
   int blue_mapping;
   int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_data_t;
 
 
@@ -113,9 +124,9 @@ const char *name()
   return _("input color profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("input color profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()
@@ -123,20 +134,45 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
+int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                     dt_dev_pixelpipe_iop_t *piece)
+{
+  if(piece)
+  {
+    const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+    if(d->type == DT_COLORSPACE_LAB)
+      return iop_cs_Lab;
+  }
+  return iop_cs_rgb;
+}
+
+int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+#define DT_IOP_COLOR_ICC_LEN_V5 100
+
+  if(old_version == 1 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
     } dt_iop_colorin_params_v1_t;
 
     const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -173,20 +209,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = 0;
     new->blue_mapping = 1;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
       int normalize;
     } dt_iop_colorin_params_v2_t;
 
     const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -223,13 +261,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = 1;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
       int normalize;
       int blue_mapping;
@@ -237,7 +277,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v3_t *old = (dt_iop_colorin_params_v3_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -274,12 +314,67 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
+
+    return 0;
+  }
+  if(old_version == 4 && new_version == 6)
+  {
+    typedef struct dt_iop_colorin_params_v4_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN_V5];
+      dt_iop_color_intent_t intent;
+      int normalize;
+      int blue_mapping;
+    } dt_iop_colorin_params_v4_t;
+
+    const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memset(new, 0, sizeof(*new));
+
+    new->type = old->type;
+    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = old->blue_mapping;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
+
+    return 0;
+  }
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_colorin_params_v5_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN_V5];
+      dt_iop_color_intent_t intent;
+      int normalize;
+      int blue_mapping;
+      // working color profile
+      dt_colorspaces_color_profile_type_t type_work;
+      char filename_work[DT_IOP_COLOR_ICC_LEN_V5];
+    } dt_iop_colorin_params_v5_t;
+
+    const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memset(new, 0, sizeof(*new));
+
+    new->type = old->type;
+    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = old->blue_mapping;
+    new->type_work = old->type_work;
+    g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
 
     return 0;
   }
   return 1;
+#undef DT_IOP_COLOR_ICC_LEN_V5
 }
-
 
 void init_global(dt_iop_module_so_t *module)
 {
@@ -335,12 +430,73 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       memcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
       return;
     }
     prof = g_list_next(prof);
   }
   // should really never happen.
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
+}
+
+static void workicc_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_request_focus(self);
+
+  dt_colorspaces_color_profile_type_t type_work = DT_COLORSPACE_NONE;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
+
+  int pos = dt_bauhaus_combobox_get(widget);
+  GList *prof = darktable.color_profiles->profiles;
+  while(prof)
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
+    if(pp->work_pos == pos)
+    {
+      type_work = pp->type;
+      g_strlcpy(filename_work, pp->filename, sizeof(filename_work));
+      break;
+    }
+    prof = g_list_next(prof);
+  }
+
+  if(type_work != DT_COLORSPACE_NONE)
+  {
+    p->type_work = type_work;
+    g_strlcpy(p->filename_work, filename_work, sizeof(p->filename_work));
+
+    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(self->dev, p->type_work, p->filename_work, DT_INTENT_PERCEPTUAL);
+    if(work_profile == NULL || isnan(work_profile->matrix_in[0]) || isnan(work_profile->matrix_out[0]))
+    {
+      fprintf(stderr, "[colorin] can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!\n", p->filename_work);
+      dt_control_log(_("can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!"), p->filename_work);
+
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
+
+    // we need to rebuild the pipe so the profile take effect
+    self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->pipe->cache_obsolete = 1;
+    self->dev->preview_pipe->cache_obsolete = 1;
+    self->dev->preview2_pipe->cache_obsolete = 1;
+
+    // invalidate buffers and force redraw of darkroom
+    dt_dev_invalidate_all(self->dev);
+  }
+  else
+  {
+    // should really never happen.
+    fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
+  }
 }
 
 
@@ -370,7 +526,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
+  dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->global_data;
   cl_mem dev_m = NULL, dev_l = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   int kernel;
@@ -390,7 +546,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   cl_int err = -999;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -401,6 +557,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t region[] = { roi_in->width, roi_in->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
+
+    dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
     return TRUE;
   }
 
@@ -437,6 +595,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
+
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
   return TRUE;
 
 error:
@@ -483,7 +643,9 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -562,7 +724,9 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -594,7 +758,9 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -659,7 +825,9 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -730,7 +898,7 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
                             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -755,7 +923,9 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -800,7 +970,9 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -834,7 +1006,7 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
                           void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -865,6 +1037,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -884,7 +1058,10 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpi
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, in) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
+  shared(out, in) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -956,7 +1133,9 @@ static void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, d
   const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, cm0, cm1, cm2, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -994,7 +1173,9 @@ static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
   const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, lm0, lm1, lm2, nm0, nm1, nm2, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -1047,7 +1228,10 @@ static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pix
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, in) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
+  shared(out, in) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1106,7 +1290,7 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                  const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   if(!blue_mapping && d->nonlinearlut == 0)
   {
@@ -1131,7 +1315,9 @@ static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -1179,7 +1365,9 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -1216,7 +1404,7 @@ static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   // use general lcms2 fallback
   if(blue_mapping)
@@ -1247,6 +1435,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     process_sse2_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
@@ -1264,13 +1454,15 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
 
   d->type = p->type;
+  d->type_work = p->type_work;
+  g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
+
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // only clean up when it's a type that we created here
@@ -1389,7 +1581,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     if(isnan(cam_xyz[0]))
     {
-      if(dt_image_is_raw(&pipe->image) && !dt_image_is_monochrome(&pipe->image))
+      if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
         fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
@@ -1426,6 +1618,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // should never happen, but catch that case to avoid a crash
   if(!d->input)
   {
+    fprintf(stderr, "[colorin] input profile could not be generated!\n");
     dt_control_log(_("input profile could not be generated!"));
     piece->enabled = 0;
     return;
@@ -1504,6 +1697,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // user selected a non-supported output profile, check that:
   if(!d->xform_cam_Lab && isnan(d->cmatrix[0]))
   {
+    if(p->type == DT_COLORSPACE_FILE)
+      fprintf(stderr, "[colorin] unsupported input profile `%s' has been replaced by linear Rec709 RGB!\n", p->filename);
+    else
+      fprintf(stderr, "[colorin] unsupported input profile has been replaced by linear Rec709 RGB!\n");
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input && d->clear_input) dt_colorspaces_cleanup_profile(d->input);
     d->nrgb = NULL;
@@ -1586,12 +1783,33 @@ void gui_update(struct dt_iop_module_t *self)
 
   update_profile_list(self);
 
-  // TODO: merge this into update_profile_list()
-  GList *prof = g->image_profiles;
+  // working profile
+  int idx = -1;
+  GList *prof = darktable.color_profiles->profiles;
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
-    if(pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || !strcmp(pp->filename, p->filename)))
+    if(pp->work_pos > -1 &&
+       pp->type == p->type_work && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename_work)))
+    {
+      idx = pp->work_pos;
+      break;
+    }
+    prof = g_list_next(prof);
+  }
+  if(idx < 0)
+  {
+    idx = 0;
+    fprintf(stderr, "[colorin] could not find requested working profile `%s'!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
+  }
+  dt_bauhaus_combobox_set(g->work_combobox, idx);
+
+  // TODO: merge this into update_profile_list()
+  prof = g->image_profiles;
+  while(prof)
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
+    if(pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos);
       return;
@@ -1603,7 +1821,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->in_pos > -1 &&
-       pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || !strcmp(pp->filename, p->filename)))
+       pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos + g->n_image_profiles);
       return;
@@ -1623,10 +1841,13 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .filename = "",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
-                                                           .blue_mapping = 0 };
+                                                           .blue_mapping = 0,
+                                                           .type_work = DT_COLORSPACE_LIN_REC2020,
+                                                           .filename_work = "" };
+  dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev || module->dev->image_storage.id <= 0) goto end;
 
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
@@ -1667,15 +1888,35 @@ void reload_defaults(dt_iop_module_t *module)
       img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
     }
+#ifdef HAVE_LIBAVIF
+    else if(!strcmp(ext, "avif"))
+    {
+      struct avif_color_profile cp = {
+          .type = DT_COLORSPACE_NONE,
+      };
+
+      img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
+      if (cp.type != DT_COLORSPACE_NONE) {
+        color_profile = cp.type;
+      } else {
+        img->profile_size = cp.icc_profile_size;
+        img->profile      = cp.icc_profile;
+
+        use_eprofile = (img->profile_size > 0);
+      }
+    }
+#endif
     g_free(ext);
   }
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  if (color_profile != DT_COLORSPACE_NONE) {
+    tmp.type = color_profile;
+  } else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if (img->flags & DT_IMAGE_MONOCHROME)
+    tmp.type = DT_COLORSPACE_LIN_REC709;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
@@ -1684,6 +1925,8 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
+  else if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
@@ -1699,7 +1942,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 371; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -1708,6 +1950,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void update_profile_list(dt_iop_module_t *self)
@@ -1824,6 +2068,15 @@ static void update_profile_list(dt_iop_module_t *self)
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->in_pos > -1) dt_bauhaus_combobox_add(g->profile_combobox, prof->name);
   }
+
+  // working profile
+  dt_bauhaus_combobox_clear(g->work_combobox);
+
+  for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->work_pos > -1) dt_bauhaus_combobox_add(g->work_combobox, prof->name);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1842,23 +2095,40 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->profile_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("input profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
+
+  g->work_combobox = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->work_combobox, NULL, _("working profile"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   // now generate the list of profiles applicable to the current image and update the list
   update_profile_list(self);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
+  {
+    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
+    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
+    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
+    g_free(system_profile_dir);
+    g_free(user_profile_dir);
+    g_free(tooltip);
+  }
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
-  char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
-  g_free(tooltip);
+  dt_bauhaus_combobox_set(g->work_combobox, 0);
+  {
+    char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+    char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
+    g_free(system_profile_dir);
+    g_free(user_profile_dir);
+    g_free(tooltip);
+  }
 
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->work_combobox), "value-changed", G_CALLBACK(workicc_changed), (gpointer)self);
 
   g->clipping_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->clipping_combobox, NULL, _("gamut clipping"));

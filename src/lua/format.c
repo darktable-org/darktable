@@ -162,7 +162,7 @@ static int write_image(lua_State *L)
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
   gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gboolean result = dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, icc_type,
-                                      icc_filename, DT_INTENT_LAST, NULL, NULL, 1, 1);
+                                      icc_filename, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
   g_free(icc_filename);
   dt_lua_lock();
   lua_pushboolean(L, result);

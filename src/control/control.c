@@ -29,6 +29,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -180,6 +181,11 @@ void dt_control_cleanup(dt_control_t *s)
   {
     g_slist_free_full(s->accelerator_list, g_free);
   }
+  if(s->dynamic_accelerator_list)
+  {
+    g_slist_free(s->dynamic_accelerator_valid);
+    g_slist_free_full(s->dynamic_accelerator_list, g_free);
+  }
 }
 
 
@@ -189,10 +195,8 @@ void dt_control_cleanup(dt_control_t *s)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = 2;
-  const int tb = darktable.control->tabborder;
   // re-configure all components:
-  dt_view_manager_configure(darktable.view_manager, event->width - 2 * tb, event->height - 2 * tb);
+  dt_view_manager_configure(darktable.view_manager, event->width, event->height);
   return TRUE;
 }
 
@@ -227,8 +231,6 @@ void *dt_control_expose(void *voidptr)
 
   // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
   //
-  float tb = 2; // fmaxf(10, width/100.0);
-  darktable.control->tabborder = tb;
   darktable.control->width = width;
   darktable.control->height = height;
 
@@ -236,28 +238,14 @@ void *dt_control_expose(void *voidptr)
 
   // look up some colors once
   GdkRGBA bg_color = lookup_color(context, "bg_color");
-  GdkRGBA really_dark_bg_color = lookup_color(context, "really_dark_bg_color");
-  GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
-  GdkRGBA fg_color = lookup_color(context, "fg_color");
 
   gdk_cairo_set_source_rgba(cr, &bg_color);
-
-  cairo_set_line_width(cr, tb);
-  cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
-  cairo_stroke(cr);
-  cairo_set_line_width(cr, 1.5);
-  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
-  cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
-  cairo_stroke(cr);
-
   cairo_save(cr);
-  cairo_translate(cr, tb, tb);
-  cairo_rectangle(cr, 0, 0, width - 2 * tb, height - 2 * tb);
+  cairo_rectangle(cr, 0, 0, width, height);
   cairo_clip(cr);
   cairo_new_path(cr);
   // draw view
-  dt_view_manager_expose(darktable.view_manager, cr, width - 2 * tb, height - 2 * tb, pointerx - tb,
-                         pointery - tb);
+  dt_view_manager_expose(darktable.view_manager, cr, width, height, pointerx, pointery);
   cairo_restore(cr);
 
   // draw log message, if any
@@ -274,31 +262,21 @@ void *dt_control_expose(void *voidptr)
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
+    const float pad = DT_PIXEL_APPLY_DPI(10.0f), xc = width / 2.0;
     const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = MIN(pad + ink.width * .5f, width * .5f - pad);
     float rad = DT_PIXEL_APPLY_DPI(14);
     // ellipsze the text if it does not fit on the screen
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * wd * 2.0f));
-    cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
-    for(int k = 0; k < 5; k++)
-    {
-      cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
-      cairo_line_to(cr, xc + wd, yc - rad);
-      cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
-      cairo_line_to(cr, xc - wd, yc + rad);
-      if(k == 0)
-      {
-        gdk_cairo_set_source_rgba(cr, &selected_bg_color);
-        cairo_fill_preserve(cr);
-      }
-      cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
-      cairo_stroke(cr);
-      rad += .5f;
-    }
-    gdk_cairo_set_source_rgba(cr, &fg_color);
-    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
+    cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
+    cairo_line_to(cr, xc + wd, yc - rad);
+    cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
+    cairo_line_to(cr, xc - wd, yc + rad);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+    cairo_fill(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+    cairo_move_to(cr, xc - wd + pad, yc - ink.height * 0.5);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -314,15 +292,15 @@ void *dt_control_expose(void *voidptr)
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("working.."), -1);
+    pango_layout_set_text(layout, _("working..."), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
     cairo_set_line_width(cr, 2.0);
-    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
     cairo_stroke_preserve(cr);
-    gdk_cairo_set_source_rgba(cr, &fg_color);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
     cairo_fill(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -368,25 +346,15 @@ void dt_control_mouse_enter()
 
 void dt_control_mouse_moved(double x, double y, double pressure, int which)
 {
-  const float tb = darktable.control->tabborder;
-  const float wd = darktable.control->width;
-  const float ht = darktable.control->height;
-
-  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
-    dt_view_manager_mouse_moved(darktable.view_manager, x - tb, y - tb, pressure, which);
+  dt_view_manager_mouse_moved(darktable.view_manager, x, y, pressure, which);
 }
 
 void dt_control_button_released(double x, double y, int which, uint32_t state)
 {
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
-  const float tb = darktable.control->tabborder;
-  // float wd = darktable.control->width;
-  // float ht = darktable.control->height;
 
-  // always do this, to avoid missing some events.
-  // if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-  dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
+  dt_view_manager_button_released(darktable.view_manager, x, y, which, state);
 }
 
 static void _dt_ctl_switch_mode_prepare()
@@ -449,15 +417,14 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  const float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
   darktable.control->button_type = type;
-  darktable.control->button_x = x - tb;
-  darktable.control->button_y = y - tb;
+  darktable.control->button_x = x;
+  darktable.control->button_y = y;
   // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
   // place to do it :)
-  const float wd = darktable.control->width;
+  //const float wd = darktable.control->width;
   const float ht = darktable.control->height;
 
   // ack log message:
@@ -477,11 +444,8 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
     }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
-  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
-  {
-    if(!dt_view_manager_button_pressed(darktable.view_manager, x - tb, y - tb, pressure, which, type, state))
-      if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
-  }
+  if(!dt_view_manager_button_pressed(darktable.view_manager, x, y, pressure, which, type, state))
+    if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
 }
 
 static gboolean _redraw_center(gpointer user_data)
@@ -541,6 +505,11 @@ void dt_control_queue_redraw_center()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
+void dt_control_navigation_redraw()
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+}
+
 static gboolean _gtk_widget_queue_draw(gpointer user_data)
 {
   gtk_widget_queue_draw(GTK_WIDGET(user_data));
@@ -557,6 +526,33 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
+
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_ctl_switch_mode_to("knight");
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
 
   // TODO: if darkroom mode
   // did a : vim-style command start?
@@ -667,6 +663,23 @@ int dt_control_key_pressed_override(guint key, guint state)
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
 
+  // dynamic accels
+  darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
+  if(darktable.view_manager->current_view->dynamic_accel_current)
+  {
+    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
+    if(vals[0] && vals[1] && vals[2] && vals[3])
+    {
+      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s module"), vals[3], vals[2]);
+      dt_control_hinter_message(darktable.control, txt);
+      g_free(txt);
+    }
+    else
+      dt_control_hinter_message(darktable.control, "");
+    g_strfreev(vals);
+    return 1;
+  }
+
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
@@ -679,21 +692,8 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
   else if(key == accels->global_header.accel_key && state == accels->global_header.accel_mods)
   {
-    char param[512];
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-
-    /* do nothing if in collapse panel state
-       TODO: reconsider adding this check to ui api */
-    g_snprintf(param, sizeof(param), "%s/ui/panel_collaps_state", cv->module_name);
-    if(dt_conf_get_int(param)) return 0;
-
-    /* toggle the header visibility state */
-    g_snprintf(param, sizeof(param), "%s/ui/show_header", cv->module_name);
-    const gboolean header = !dt_conf_get_bool(param);
-    dt_conf_set_bool(param, header);
-
-    /* show/hide the actual header panel */
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header, TRUE);
+    /* toggle panel viewstate */
+    dt_ui_toggle_header(darktable.gui->ui);
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     return 1;
   }
@@ -701,6 +701,19 @@ int dt_control_key_pressed_override(guint key, guint state)
   else if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
   {
     darktable.develop->darkroom_skip_mouse_events = TRUE;
+    return 1;
+  }
+  // set focus to the search module text box
+  else if(key == accels->darkroom_search_modules_focus.accel_key
+          && state == accels->darkroom_search_modules_focus.accel_mods)
+  {
+    dt_dev_modulegroups_search_text_focus(darktable.develop);
+    return 1;
+  }
+  // show/hide the accels window
+  else if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_show(darktable.view_manager);
     return 1;
   }
   return 0;
@@ -717,6 +730,17 @@ int dt_control_key_released(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
+
+  const dt_control_accels_t *accels = &darktable.control->accels;
+
+  // be sure to reset dynamic accel
+  if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
+  darktable.view_manager->current_view->dynamic_accel_current = NULL;
+
+  if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_hide(darktable.view_manager);
+  }
 
   int handled = 0;
   switch(key)

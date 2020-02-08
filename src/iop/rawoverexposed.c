@@ -44,7 +44,7 @@ typedef struct dt_iop_rawoverexposed_t
   int dummy;
 } dt_iop_rawoverexposed_t;
 
-static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(16))) = {
+static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(64))) = {
   { 1.0f, 0.0f, 0.0f, 1.0f }, // red
   { 0.0f, 1.0f, 0.0f, 1.0f }, // green
   { 0.0f, 0.0f, 1.0f, 1.0f }, // blue
@@ -68,14 +68,19 @@ const char *name()
   return _("raw overexposed");
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_BASIC;
 }
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK | IOP_FLAGS_FENCE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -152,7 +157,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const dt_image_t *const image = &(dev->image_storage);
 
   const int ch = piece->colors;
-  const int priority = self->priority;
+  const double iop_order = self->iop_order;
 
   const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
   const int colorscheme = dev->rawoverexposed.colorscheme;
@@ -185,14 +190,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // acquire temp memory for distorted pixel coords
   const size_t coordbufsize = (size_t)roi_out->width * 2;
-  void *coordbuf = dt_alloc_align(16, coordbufsize * sizeof(float) * dt_get_num_threads());
+  float *coordbuf = dt_alloc_align(64, coordbufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, color, coordbufsize, d, \
+                      dt_iop_rawoverexposed_colors, filters, iop_order, mode, \
+                      out, raw, roi_in, roi_out, xtrans) \
+  shared(self, coordbuf, buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *bufptr = ((float *)coordbuf) + (size_t)coordbufsize * dt_get_thread_num();
+    float *bufptr = coordbuf + (size_t)coordbufsize * dt_get_thread_num();
 
     // here are all the pixels of this row
     for(int i = 0; i < roi_out->width; i++)
@@ -202,7 +212,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
 
     // where did they come from?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, 0, priority, bufptr, roi_out->width);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
 
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -258,7 +268,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   const dt_iop_rawoverexposed_data_t *const d = piece->data;
   dt_develop_t *dev = self->dev;
-  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->data;
+  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->global_data;
 
   cl_mem dev_raw = NULL;
   float *coordbuf = NULL;
@@ -307,11 +317,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);
 
-  coordbuf = dt_alloc_align(16, coordbufsize);
+  coordbuf = dt_alloc_align(64, coordbufsize);
   if(coordbuf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(height, roi_in, roi_out, width) \
+  shared(self, coordbuf, buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -325,7 +338,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
 
     // where did they come from?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, 0, self->priority, bufptr, roi_out->width);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, bufptr, roi_out->width);
   }
 
   dev_coord = dt_opencl_alloc_device_buffer(devid, coordbufsize);
@@ -499,7 +512,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 942; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawoverexposed_t);
   module->gui_data = NULL;
 }
@@ -508,6 +520,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

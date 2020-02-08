@@ -140,7 +140,6 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
 
       prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
       g_object_ref_sink(prop->osd);
-      gtk_widget_set_size_request(GTK_WIDGET(prop->osd), DT_PIXEL_APPLY_DPI(14), -1);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
       {
@@ -185,15 +184,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   if((citem = g_list_find_custom(lib->gui.properties, name, _compare_property_by_name)) != NULL)
   {
     dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)citem->data;
-    int i = 0;
-    for(const GList *iter = dt_bauhaus_combobox_get_labels(prop->values); iter; iter = g_list_next(iter), i++)
-    {
-      if(!g_strcmp0((gchar*)iter->data, value))
-      {
-        dt_bauhaus_combobox_set(prop->values, i);
-        return;
-      }
-    }
+    dt_bauhaus_combobox_set_from_text(prop->values, value);
   }
 }
 
@@ -355,7 +346,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
-  sprintf(model + strlen(model), "%s", lib->data.camera_model);
+  snprintf(model, strlen(model), "%s", lib->data.camera_model);
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
@@ -408,7 +399,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 {
   // Setup cairo font..
   cairo_set_font_size(cr, 11.5);
-  cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  //cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
   _expose_info_bar(self, cr, width, height, pointerx, pointery);
   _expose_settings_bar(self, cr, width, height, pointerx, pointery);
@@ -466,7 +457,7 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
 
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_timer), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_sequence), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_bracket), TRUE, TRUE, 0);
@@ -535,7 +526,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.plabel), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   label = gtk_label_new(_("property"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *widget = gtk_button_new_with_label("O");
@@ -611,22 +602,19 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   if(options)
   {
     GSList *item = options;
-    if(item)
+    do
     {
-      do
-      {
-        dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
+      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
 
-        /* get the label from key */
-        char *p = entry->key;
-        const char *end = entry->key + strlen(entry->key);
-        while(p++ < end)
-          if(*p == '_') *p = ' ';
+      /* get the label from key */
+      char *p = entry->key;
+      const char *end = entry->key + strlen(entry->key);
+      while(p++ < end)
+        if(*p == '_') *p = ' ';
 
-        if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
-          _lib_property_add_to_gui(prop, lib);
-      } while((item = g_slist_next(item)) != NULL);
-    }
+      if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
+        _lib_property_add_to_gui(prop, lib);
+    } while((item = g_slist_next(item)) != NULL);
     g_slist_free_full(options, dt_conf_string_entry_free);
   }
   /* build the propertymenu  we do it now because it needs an actual camera */

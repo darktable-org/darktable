@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -262,7 +263,7 @@ void gui_init(dt_lib_module_t *self)
   d->vertical = TRUE;
 
   /* initialize ui containers */
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "snapshots.html#snapshots");
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -390,7 +391,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   /* check if snapshot is activated */
   if(gtk_toggle_button_get_active(widget))
   {
-    /* lets inactivate all togglebuttons except for self */
+    /* lets deactivate all togglebuttons except for self */
     for(uint32_t k = 0; k < d->size; k++)
       if(GTK_WIDGET(widget) != d->snapshot[k].button)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
@@ -575,7 +576,7 @@ static int number_member(lua_State *L)
   int index = luaL_checkinteger(L, 2);
   if( index < 1)
   {
-    return luaL_error(L, "Accessing a non-existant snapshot");
+    return luaL_error(L, "Accessing a non-existent snapshot");
   }else if(index > d->num_snapshots ) {
     lua_pushnil(L);
     return 1;
@@ -594,7 +595,7 @@ static int filename_member(lua_State *L)
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
   if(index >= d->num_snapshots || index < 0)
   {
-    return luaL_error(L, "Accessing a non-existant snapshot");
+    return luaL_error(L, "Accessing a non-existent snapshot");
   }
   lua_pushstring(L, d->snapshot[index].filename);
   return 1;
@@ -607,7 +608,7 @@ static int name_member(lua_State *L)
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
   if(index >= d->num_snapshots || index < 0)
   {
-    return luaL_error(L, "Accessing a non-existant snapshot");
+    return luaL_error(L, "Accessing a non-existent snapshot");
   }
   lua_pushstring(L, gtk_button_get_label(GTK_BUTTON(d->snapshot[index].button)));
   return 1;
@@ -621,7 +622,7 @@ static int lua_select(lua_State *L)
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
   if(index >= d->num_snapshots || index < 0)
   {
-    return luaL_error(L, "Accessing a non-existant snapshot");
+    return luaL_error(L, "Accessing a non-existent snapshot");
   }
   dt_lib_snapshot_t *self = &d->snapshot[index];
   gtk_button_clicked(GTK_BUTTON(self->button));

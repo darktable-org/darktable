@@ -30,7 +30,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -424,16 +423,22 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("grain", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones bias"));
+  
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -442,9 +447,8 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->scale3));
 }
-
-#endif
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
 // this is the modified bernstein
@@ -477,7 +481,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float fib1div2 = fib1 / fib2;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, hash)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, filter, filtermul, ivoid, ovoid, roi_out, strength, \
+                      wd, zoom, octaves, fib2, fib1div2) \
+  shared(data, hash)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -593,7 +600,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 785; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp
@@ -606,6 +612,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -620,7 +628,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
-  dt_bauhaus_slider_set_format(g->scale1, "%.0fISO");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.0f ISO"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->scale1, _("the grain size (~ISO of the film)"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(scale_callback), self);

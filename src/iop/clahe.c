@@ -27,7 +27,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
+
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -66,14 +66,19 @@ const char *name()
   return _("local contrast");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("local contrast", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -86,7 +91,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, roi_out) \
+  shared(luminance) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -115,7 +123,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // CLAHE
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, \
+                      roi_out, slope) \
+  shared(luminance) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -294,7 +306,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
-  module->priority = 899; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };
@@ -306,6 +317,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -318,8 +331,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 0);
 
   g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);

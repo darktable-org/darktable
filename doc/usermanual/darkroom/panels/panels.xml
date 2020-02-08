@@ -15,6 +15,8 @@
     This section contains documentation for panels that are specific to the darkroom view.
   </para>
 
+  <xi:include href="infoline.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Left side -->
 
   <xi:include href="navigation.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -22,6 +24,8 @@
   <xi:include href="snapshots.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="duplicate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="colorpicker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 

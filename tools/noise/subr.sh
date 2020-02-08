@@ -190,7 +190,7 @@ pdf_tools_installed() {
 		}
 		missing_tool=0
 	else
-		echo "pdftk or ghoscript are needed if you want one single result pdf."
+		echo "pdftk or ghostscript are needed if you want one single result pdf."
 	fi
 
 	return $missing_tool
@@ -275,7 +275,7 @@ get_image_iso() {
 
 	tool_installed exiv2
 
-	iso=$(get_exif_key "$file" Exif.Photo.ISOSpeedRatings)
+	iso=$(get_exif_key "$file" Exif.Photo.ISOSpeedRatings | grep -o '[[:digit:]]*')
 
 	if [ -z "$iso" -o "$iso" = "65535" ]; then
 		iso=$(get_exif_key "$file" Exif.Photo.RecommendedExposureIndex)

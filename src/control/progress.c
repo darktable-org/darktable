@@ -75,7 +75,7 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
 
   // this should work for unity as well as kde
   // https://wiki.ubuntu.com/Unity/LauncherAPI#Low_level_DBus_API:_com.canonical.Unity.LauncherEntry
-  if(darktable.dbus->dbus_connection)
+  if(darktable.dbus && darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
     g_object_ref(G_OBJECT(darktable.dbus->dbus_connection));
@@ -137,7 +137,7 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
 
 #else
 
-  if(darktable.dbus->dbus_connection)
+  if(darktable.dbus && darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
 
@@ -184,7 +184,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
   {
     // this is called after the current progress got removed from the list!
     dt_progress_t *p = (dt_progress_t *)iter->data;
-    double value = dt_control_progress_get_progress(p);
+    const double value = dt_control_progress_get_progress(p);
     control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
   }
 
@@ -197,7 +197,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
 
 #else
 
-  if(darktable.dbus->dbus_connection)
+  if(darktable.dbus && darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
 

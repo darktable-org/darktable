@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2018 Pascal Obry
+    copyright (c) 2019 tobias ellinghaus
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +20,6 @@
 #include "common/utility.h"
 #include "control/conf.h"
 #include "common/iop_group.h"
-#include "develop/imageop.h"
 
 static int _group_number(int group_id)
 {
@@ -31,14 +31,15 @@ static int _group_number(int group_id)
   else                                    return 0;
 }
 
-int dt_iop_get_group(const char *name, const int default_group)
+int dt_iop_get_group(const dt_iop_module_t *module)
 {
-  gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/group/%s", name);
+  gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/modulegroup", module->op);
   int prefs = dt_conf_get_int(key);
 
   /* if zero, not found, record it */
   if (!prefs)
   {
+    const int default_group = module->default_group();
     dt_conf_set_int(key, _group_number(default_group));
     prefs = default_group;
   }

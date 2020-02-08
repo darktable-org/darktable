@@ -28,6 +28,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <assert.h>
 #include <stdlib.h>
 
@@ -99,7 +102,8 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
           { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+          { 0 }, 0, 0, FALSE };
   dt_gui_presets_add_with_blendop(
       name, op, version, params, params_size,
       &default_blendop_params, enabled);
@@ -176,6 +180,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   GtkWidget *dialog
       = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
@@ -215,6 +222,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         GtkWidget *dlg_changename
             = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_OK, _("please give preset a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_changename);
+#endif
 
         gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed preset"));
 
@@ -242,6 +252,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         GtkWidget *dlg_overwrite = gtk_message_dialog_new(
             GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
             _("preset `%s' already exists.\ndo you want to overwrite?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_overwrite);
+#endif
 
         gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite preset?"));
 
@@ -370,14 +383,13 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   char title[1024];
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
-  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
-                                       GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
+  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       _("_cancel"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 
@@ -665,7 +677,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
-      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, blendop_params);
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params,
@@ -675,7 +687,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     }
     else
     {
-      memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, module->default_blendop_params);
     }
 
     if(!writeprotect) dt_gui_store_last_preset(name);
@@ -686,19 +698,17 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   gtk_widget_queue_draw(module->widget);
 }
 
-static gboolean menuitem_button_pressed_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
 {
   if (event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
     menuitem_pick_preset(menuitem, module);
-    return TRUE;
   }
   else if (event->button == 2)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if (new_module)
       menuitem_pick_preset(menuitem, new_module);
-    return TRUE;
   }
   return FALSE;
 }
@@ -708,8 +718,11 @@ static void menuitem_favourite_toggled(GtkCheckMenuItem *checkmenuitem, gpointer
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   // the module is currently visible, otherwise we wouldn't show the popup. it should also stay visible.
   dt_iop_module_state_t state = module->so->state;
-  if(state == dt_iop_state_FAVORITE) state = dt_iop_state_ACTIVE;
-  else state = dt_iop_state_FAVORITE;
+  if(state == dt_iop_state_FAVORITE)
+    state = dt_iop_state_ACTIVE;
+  else
+    state = dt_iop_state_FAVORITE;
+
   dt_iop_gui_set_state(module, state);
   if(state == dt_iop_state_FAVORITE)
     dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
@@ -896,7 +909,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
       if(module)
       {
-        g_signal_connect(G_OBJECT(mi), "button-press-event", G_CALLBACK(menuitem_button_pressed_preset), module);
+        g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(menuitem_button_released_preset), module);
       }
       else if(pick_callback)
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);

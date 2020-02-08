@@ -70,16 +70,23 @@ nlmeans_dist(read_only image2d_t in, global float *U4, const int width, const in
   const int gidx = mad24(y, width, x);
   const float4 norm2 = (float4)(nL2, nC2, nC2, 1.0f);
 
-  // Reminder: q.x and q.y can be negative
   if(x >= width || y >= height) return;
-  if(x+q.x >= width || y+q.y >= height) return;
-  if(x+q.x < 0 || y+q.y < 0) return;
+
+  int xpq = x + q.x;
+  int ypq = y + q.y;
+  // Convert out of bounds indexes to 0
+  // Reminder: q.x and q.y can be negative
+  xpq *= (x+q.x < width && x+q.x >= 0) ? 1 : 0;
+  ypq *= (y+q.y < height && y+q.y >= 0) ? 1 : 0;
 
   float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
-  float4 p2 = read_imagef(in, sampleri, (int2)(x, y) + q);
+  float4 p2 = read_imagef(in, sampleri, (int2)(xpq, ypq));
   float4 tmp = (p1 - p2)*(p1 - p2)*norm2;
   float dist = tmp.x + tmp.y + tmp.z;
-  
+
+  // make dist equal to 0 in case xpq or ypq is out of bounds
+  dist *= (x+q.x < width && x+q.x >= 0 && y+q.y < height && y+q.y >= 0) ? 1.0f : 0.0f;
+
   U4[gidx] = dist;
 }
 
@@ -198,25 +205,32 @@ nlmeans_accu(read_only image2d_t in, global float4* U2, global float* U4,
   const int y = get_global_id(1);
   const int gidx = mad24(y, width, x);
 
-  if(q.x<0)
-  {
-    if(x-q.x >= width || x<-q.x) return;
-  }
-  else
-  {
-    if(x+q.x >= width || x<q.x) return;
-  }
-  if(q.y<0)
-  {
-    if(y-q.y >= height || y<-q.y) return;
-  }
-  else
-  {
-    if(y+q.y >= height || y<q.y) return;
-  }
+  if(x >= width || y >= height) return;
 
-  float4 u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
-  float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
+  // wpq and wmq are weights for the image read of
+  // indexes (int2)(x, y) + q and (int2)(x, y) - q)
+  // respectively
+  // we want wpq and wmq equal to 1 only if
+  // their associated index is in bounds
+  int wpq = 1;
+  int wmq = 1;
+
+  // handle bounds for x
+  // Reminder: q.x can be negative
+  wpq *= (x+q.x < width) ? 1 : 0;
+  wmq *= (x-q.x < width) ? 1 : 0;
+  wpq *= (x+q.x >= 0) ? 1 : 0;
+  wmq *= (x-q.x >= 0) ? 1 : 0;
+
+  // handle bounds for y
+  // Reminder: q.y can be negative
+  wpq *= (y+q.y >= 0) ? 1 : 0;
+  wmq *= (y-q.y >= 0) ? 1 : 0;
+  wpq *= (y+q.y < height) ? 1 : 0;
+  wmq *= (y-q.y < height) ? 1 : 0;
+
+  float4 u1_pq = wpq ? read_imagef(in, sampleri, (int2)(x, y) + q) : (float4)0.0f;
+  float4 u1_mq = wmq ? read_imagef(in, sampleri, (int2)(x, y) - q) : (float4)0.0f;
 
   float  u4    = U4[gidx];
   float  u4_mq = U4[mad24(clamp(y-q.y, 0, height-1), width, clamp(x-q.x, 0, width-1))];
@@ -224,7 +238,7 @@ nlmeans_accu(read_only image2d_t in, global float4* U2, global float* U4,
   float u4_mq_dd = u4_mq * ddirac(q);
 
   float4 accu = (u4 * u1_pq) + (u4_mq_dd * u1_mq);
-  accu.w = (u4 + u4_mq_dd);
+  accu.w = (wpq * u4 + wmq * u4_mq_dd);
 
   U2[gidx] += accu;
 }

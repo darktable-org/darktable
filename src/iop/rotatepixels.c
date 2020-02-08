@@ -26,12 +26,15 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <math.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
+
+typedef struct dt_iop_rotatepixels_gui_data_t
+{
+} dt_iop_rotatepixels_gui_data_t;
 
 typedef struct dt_iop_rotatepixels_params_t
 {
@@ -44,6 +47,8 @@ typedef struct dt_iop_rotatepixels_data_t
   uint32_t rx, ry; // rotation center
   float m[4];      // rotation matrix
 } dt_iop_rotatepixels_data_t;
+
+dt_iop_rotatepixels_gui_data_t dummy;
 
 static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
@@ -76,14 +81,19 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("rotate pixels", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int operation_tags()
 {
   return IOP_TAG_DISTORT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
@@ -147,6 +157,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // TODO
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -251,7 +269,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(piece, interpolation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ch_width, ivoid, ovoid, roi_in, roi_out, scale) \
+  shared(piece, interpolation) \
+  schedule(static)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -330,11 +351,11 @@ end:
 
 void gui_update(dt_iop_module_t *self)
 {
+  if(!self->widget) return;
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel rotation\nonly works for the sensors that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
 }
 
 void init(dt_iop_module_t *self)
@@ -342,26 +363,27 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = NULL;
-  self->priority = 242; // module order created by iop_dependencies.py, do not edit!
+  self->gui_data = &dummy;
 }
 
 void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 

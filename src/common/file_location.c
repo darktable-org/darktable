@@ -82,7 +82,7 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-static gchar *dt_loc_init_generic(const char *value, const char *default_value)
+gchar *dt_loc_init_generic(const char *value, const char *default_value)
 {
   const gchar *path = value ? value : default_value;
   gchar *result = dt_util_fix_path(path);

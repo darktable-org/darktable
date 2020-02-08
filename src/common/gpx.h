@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glib.h>
+#include "common/image.h"
 
 struct dt_gpx_t;
 
@@ -29,7 +30,7 @@ void dt_gpx_destroy(struct dt_gpx_t *);
 /* fetch the lon,lat coords for time t, if within time range
   of gpx record return TRUE, FALSE is returned if out of time frame
   and closest record of lon,lat is filled */
-gboolean dt_gpx_get_location(struct dt_gpx_t *, GTimeVal *timestamp, gdouble *lon, gdouble *lat, gdouble *ele);
+gboolean dt_gpx_get_location(struct dt_gpx_t *, GTimeVal *timestamp, dt_image_geoloc_t *geoloc);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

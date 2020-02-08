@@ -33,7 +33,6 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -78,7 +77,6 @@ typedef struct dt_iop_profilegamma_gui_data_t
   GtkWidget *shadows_range;
   GtkWidget *security_factor;
   GtkWidget *auto_button;
-  int which_colorpicker;
   dt_iop_color_picker_t color_picker;
 } dt_iop_profilegamma_gui_data_t;
 
@@ -107,9 +105,9 @@ const char *name()
   return _("unbreak input profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("unbreak input profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()
@@ -118,26 +116,33 @@ int flags()
          | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
+//  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "grey point"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows range"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luma"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black relative exposure"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "safety factor"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
+//  dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
   dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
   dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
   dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
-  dt_accel_connect_slider_iop(self, "grey point", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "shadows range", GTK_WIDGET(g->shadows_range));
+  dt_accel_connect_slider_iop(self, "middle grey luma", GTK_WIDGET(g->grey_point));
+  dt_accel_connect_slider_iop(self, "black relative exposure", GTK_WIDGET(g->shadows_range));
+  dt_accel_connect_slider_iop(self, "safety factor", GTK_WIDGET(g->security_factor));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -232,7 +237,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
-  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)self->data;
+  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -333,7 +338,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       const float noise = powf(2.0f, -16.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out, noise) \
+      shared(data) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
@@ -356,7 +364,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     case PROFILEGAMMA_GAMMA:
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
+      shared(data) \
+      schedule(static)
 #endif
       for(int k = 0; k < roi_out->height; k++)
       {
@@ -392,9 +403,10 @@ static void apply_auto_grey(dt_iop_module_t *self)
   float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
   p->grey_point = 100.f * grey;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -414,9 +426,10 @@ static void apply_auto_black(dt_iop_module_t *self)
 
   p->shadows_range = EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -439,9 +452,10 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
 
   p->dynamic_range = EVmax - EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -471,7 +485,7 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   float previous = p->security_factor;
   p->security_factor = dt_bauhaus_slider_get(slider);
@@ -486,10 +500,11 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   p->dynamic_range = EVmax - EVmin;
   p->shadows_range = EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -518,11 +533,12 @@ static void apply_autotune(dt_iop_module_t *self)
   p->shadows_range = EVmin;
   p->dynamic_range = EVmax - EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
   dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
   dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -532,9 +548,8 @@ static void grey_point_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->grey_point = dt_bauhaus_slider_get(slider);
@@ -546,8 +561,7 @@ static void dynamic_range_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->dynamic_range = dt_bauhaus_slider_get(slider);
@@ -559,8 +573,7 @@ static void shadows_range_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->shadows_range = dt_bauhaus_slider_get(slider);
@@ -576,7 +589,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->mode = dt_bauhaus_combobox_get(combo);
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   switch(p->mode)
   {
@@ -600,29 +613,29 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 {
   dt_iop_profilegamma_gui_data_t *g =  (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  const int current_picker = g->which_colorpicker;
+  const int current_picker = g->color_picker.current_picker;
 
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
+  g->color_picker.current_picker = DT_PICKPROFLOG_NONE;
 
   if(button == g->grey_point)
-    g->which_colorpicker = DT_PICKPROFLOG_GREY_POINT;
+    g->color_picker.current_picker = DT_PICKPROFLOG_GREY_POINT;
   else if(button == g->shadows_range)
-    g->which_colorpicker = DT_PICKPROFLOG_SHADOWS_RANGE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_SHADOWS_RANGE;
   else if(button == g->dynamic_range)
-    g->which_colorpicker = DT_PICKPROFLOG_DYNAMIC_RANGE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_DYNAMIC_RANGE;
   else if(button == g->auto_button)
-    g->which_colorpicker = DT_PICKPROFLOG_AUTOTUNE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_AUTOTUNE;
 
-  if (current_picker == g->which_colorpicker)
-    return ALREADY_SELECTED;
+  if (current_picker == g->color_picker.current_picker)
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
-    return g->which_colorpicker;
+    return g->color_picker.current_picker;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self)
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  switch(g->which_colorpicker)
+  switch(g->color_picker.current_picker)
   {
      case DT_PICKPROFLOG_GREY_POINT:
        apply_auto_grey(self);
@@ -644,23 +657,15 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g =  (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->grey_point, g->which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
-  dt_bauhaus_widget_set_quad_active(g->shadows_range, g->which_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE);
-  dt_bauhaus_widget_set_quad_active(g->dynamic_range, g->which_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE);
-  dt_bauhaus_widget_set_quad_active(g->auto_button, g->which_colorpicker == DT_PICKPROFLOG_AUTOTUNE);
-}
-
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
+  dt_bauhaus_widget_set_quad_active(g->grey_point, g->color_picker.current_picker == DT_PICKPROFLOG_GREY_POINT);
+  dt_bauhaus_widget_set_quad_active(g->shadows_range, g->color_picker.current_picker == DT_PICKPROFLOG_SHADOWS_RANGE);
+  dt_bauhaus_widget_set_quad_active(g->dynamic_range, g->color_picker.current_picker == DT_PICKPROFLOG_DYNAMIC_RANGE);
+  dt_bauhaus_widget_set_quad_active(g->auto_button, g->color_picker.current_picker == DT_PICKPROFLOG_AUTOTUNE);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-
-  if(!in) dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  if(!in) dt_iop_color_picker_reset(self, TRUE);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -688,7 +693,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     if(linear == 0.0)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(gamma) \
+      shared(d) \
+      schedule(static)
 #endif
       for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
     }
@@ -707,7 +715,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
         c = 1.0;
       }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d, a, b, c, g) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(linear) \
+      shared(d, a, b, c, g) \
+      schedule(static)
 #endif
       for(int k = 0; k < 0x10000; k++)
       {
@@ -756,8 +767,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -770,7 +780,7 @@ void gui_update(dt_iop_module_t *self)
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   switch(p->mode)
   {
@@ -800,7 +810,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
   module->default_enabled = 0;
-  module->priority = 342; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_profilegamma_params_t);
   module->gui_data = NULL;
   dt_iop_profilegamma_params_t tmp
@@ -824,6 +833,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -920,12 +931,12 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Security factor
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->security_factor, 2);
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is usefull when noise perturbates the measurements"));
+  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   // Auto tune slider
@@ -955,11 +966,11 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
-  init_picker(&g->color_picker,
+  dt_iop_init_picker(&g->color_picker,
               self,
+              DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
-              _iop_color_picker_reset,
               _iop_color_picker_update);
 }
 

@@ -56,7 +56,10 @@
     Images in the lighttable view can be displayed in different sort orders, depending on
     <quote>filename</quote>, <quote>time</quote> (when the photo was taken),
     <quote>rating</quote> (i.e. stars), <quote>id</quote> (an internal ordering number of
-    darktable), or <quote>color labels</quote>. You can sort in reversed order by toggling the
+    darktable), <quote>color labels</quote>, <quote>groups</quote>, <quote>full path</quote>,
+    <quote>title</quote>, <quote>description</quote>, <quote>aspect ratio</quote> or
+    <quote>custom order</quote> (user can drag &amp; drop images, only available in the
+    lighttable's file manager mode). You can sort in reversed order by toggling the
     triangle button to the right of the <quote>sort by</quote> combobox.
   </para>
 

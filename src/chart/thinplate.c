@@ -138,7 +138,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
 }
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wvla"
+#pragma GCC diagnostic ignored "-Wvla"
 
 // returns sparsity <= S
 int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)

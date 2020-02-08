@@ -89,7 +89,7 @@ const char *name()
 }
 
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_CORRECT;
 }
@@ -97,6 +97,11 @@ int groups()
 int flags()
 {
   return IOP_FLAGS_DEPRECATED;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 
@@ -267,7 +272,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 428; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t tmp;
@@ -285,6 +289,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 #if 0
@@ -398,8 +404,8 @@ void gui_init(struct dt_iop_module_t *self)
   //                   G_CALLBACK (dt_iop_equalizer_button_toggled), self);
 
   // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
+  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 0);
 #endif
 }
 

@@ -24,8 +24,8 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
@@ -69,15 +69,20 @@ const char *name()
   return _("defringe");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("defringe", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   // a second instance might help to reduce artifacts when thick fringe needs to be removed
   return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 // try without clipping for now, usually it should be fine
@@ -104,6 +109,20 @@ const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
   return;
 }
 */
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge detection radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "edge detection radius", GTK_WIDGET(g->radius_scale));
+  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->thresh_scale));
+}
 
 // fibonacci lattice to select surrounding pixels for different cases
 static const float fib[] = { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233 };
@@ -144,7 +163,6 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_defringe_data_t *d = (dt_iop_defringe_data_t *)piece->data;
-  assert(dt_iop_module_colorspace(module) == iop_cs_Lab);
 
   const int order = 1; // 0,1,2
   const float sigma = fmax(0.1f, fabs(d->radius)) * roi_in->scale / piece->iscale;
@@ -251,8 +269,11 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(width, height,                                                 \
-                                              d) reduction(+ : avg_edge_chroma) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out) \
+  shared(width, height, d) \
+  reduction(+ : avg_edge_chroma) \
+  schedule(static)
 #endif
   for(int v = 0; v < height; v++)
   {
@@ -288,8 +309,11 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 #ifdef _OPENMP
 // dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code
 // for this hint!)
-#pragma omp parallel for default(none) shared(width, height, d, xy_small, xy_avg, xy_artifact)               \
-    firstprivate(thresh, avg_edge_chroma) schedule(guided, 32)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
+  shared(width, height, d, xy_small, xy_avg, xy_artifact) \
+  firstprivate(thresh, avg_edge_chroma) \
+  schedule(guided, 32)
 #endif
   for(int v = 0; v < height; v++)
   {
@@ -351,7 +375,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
           norm += weight;
         }
         // here we could try using a "balance" between original and changed value, this could be used to
-        // reduce artifcats
+        // reduce artifacts
         // but on first tries, results weren't very convincing, and there are blend settings available anyway
         // in dt
         // float balance = (out[v*width*ch +t*ch +3]-thresh)/out[v*width*ch +t*ch +3];
@@ -397,16 +421,17 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_defringe_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_defringe_params_t));
-  module->priority = 414; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_defringe_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void radius_slider_callback(GtkWidget *w, dt_iop_module_t *module)

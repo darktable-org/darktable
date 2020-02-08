@@ -68,6 +68,7 @@ GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *
   icon->icon = paint;
   icon->icon_flags = paintflags;
   icon->icon_data = paintdata;
+  gtk_widget_set_name(GTK_WIDGET(icon), "dt-icon");
   return (GtkWidget *)icon;
 }
 

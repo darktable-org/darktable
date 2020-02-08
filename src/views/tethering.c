@@ -88,7 +88,7 @@ static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
 static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("tethering");
 }
@@ -104,14 +104,15 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointe
 }
 
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, gpointer data)
+                                     GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
-
 
 void init(dt_view_t *self)
 {
@@ -203,8 +204,16 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   else if(lib->image_id >= 0) // First of all draw image if available
   {
     cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose(&(lib->image_over), lib->image_id, cr, width - (MARGIN * 2.0f),
-                         height - (MARGIN * 2.0f), 1, pointerx, pointery, FALSE, FALSE);
+    dt_view_image_expose_t params = { 0 };
+    params.image_over = &(lib->image_over);
+    params.imgid = lib->image_id;
+    params.cr = cr;
+    params.width = width - (MARGIN * 2.0f);
+    params.height = height - (MARGIN * 2.0f);
+    params.px = pointerx;
+    params.py = pointery;
+    params.zoom = 1;
+    dt_view_image_expose(&params);
   }
 }
 

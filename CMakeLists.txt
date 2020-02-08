@@ -1,25 +1,26 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10.0)
 
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
-cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
+cmake_policy(SET CMP0048 NEW)
 
-#
-# Avoid source tree pollution
-#
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+### Add defaults for cmake
+# These defaults need to be included before the project() call.
+include(DefineCMakeDefaults)
 
 If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
-project(darktable CXX C)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(DEFINED PROJECT_VERSION)
+  project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
+else()
+  # Actual version string will be generated from git later
+  project(darktable VERSION 0 LANGUAGES CXX C)
+endif()
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
@@ -33,15 +34,7 @@ IF(DEFINED DT_FORCE_CXX_COMPILER)
   set(CMAKE_CXX_COMPILER ${DT_FORCE_CXX_COMPILER})
 endif()
 
-include(CheckCCompilerFlag)
-include(TestBigEndian)
-
-# Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-  set(SOURCE_PACKAGE 1)
-else()
-  set(SOURCE_PACKAGE 0)
-endif()
+include(DefineOptions.cmake)
 
 # Include GNUInstallDirs, which sets sensible defaults for install directories.
 # See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
@@ -50,41 +43,47 @@ endif()
 
 include(GNUInstallDirs)
 
-option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
-option(USE_NLS "Build Native Language Support (using gettext)" ON)
-option(USE_COLORD "Enable colord support" ON)
-option(USE_MAP "Build Map View parts" ON)
-option(USE_LUA "Build lua scripting support" ON)
-option(DONT_USE_INTERNAL_LUA "Never fall back to the intree copy of lua" ON)
-option(USE_FLICKR "Enable Flickr support" ON)
-option(USE_KWALLET "Build kwallet password storage back-end" ON)
-option(USE_LIBSECRET "Build libsecret password storage back-end" ON)
-option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
-option(USE_OPENMP "Use openmp threading support." ON)
-option(USE_OPENCL "Use OpenCL support." ON)
-option(USE_GRAPHICSMAGICK "Use GraphicsMagick library for image import." ON)
-option(USE_DARKTABLE_PROFILING OFF)
-option(CUSTOM_CFLAGS "Don't override compiler optimization flags." OFF)
-option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
-option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
-option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
-option(USE_OPENJPEG "Enable JPEG 2000 support" ON)
-option(USE_WEBP "Enable WebP export support" ON)
-option(BUILD_CMSTEST "Build a test program to check your system's color management setup" ON)
-option(USE_OPENEXR "Enable OpenEXR support" ON)
-option(BUILD_PRINT "Build the print module" ON)
-option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
-option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
-option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
-option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
-option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
-option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
-option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
-
-if(USE_OPENCL)
-  option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
+# Whether to use relative paths for the build RPATH
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
 else()
-  set(TESTBUILD_OPENCL_PROGRAMS OFF)
+    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif()
+
+if (USE_OPENMP)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        # Clang has an option to specify the OpenMP standard to use. Specify it.
+        # FIXME: Implement this in FindOpenMP.cmake
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=40")
+
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+    endif()
+
+    find_package(OpenMP 4.0 REQUIRED)
+endif()
+
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+
+# Fail if returned library is not pthread
+if (NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "POSIX threads: not found")
+endif()
+
+include(ConfigureChecks.cmake)
+
+include(CheckCCompilerFlag)
+
+# Check if this is source package build
+if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+  set(SOURCE_PACKAGE 1)
+else()
+  set(SOURCE_PACKAGE 0)
 endif()
 
 if(BUILD_SSE2_CODEPATHS)
@@ -97,51 +96,6 @@ endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 
-test_big_endian(BIGENDIAN)
-if(${BIGENDIAN})
-	# we do not really want those.
-	# besides, no one probably tried darktable on such systems
-	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
-else()
-	MESSAGE(STATUS "Found little endian system. Good.")
-endif(${BIGENDIAN})
-
-set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
-list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
-
-check_c_source_compiles("
-#include <stdio.h>
-int main() {
-#include \"src/is_supported_platform.h\"
-}" IS_SUPPORTED_PLATFORM)
-if(NOT IS_SUPPORTED_PLATFORM)
-  MESSAGE(FATAL_ERROR "The target platform is not supported!")
-endif(NOT IS_SUPPORTED_PLATFORM)
-MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
-
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
-unset(CMAKE_REQUIRED_INCLUDES_OLD)
-
-if(APPLE)
-	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
-else(APPLE)
-	set(USE_MAC_INTEGRATION OFF)
-endif(APPLE)
-
-# When cross compiling, CMAKE_INSTALL_PREFIX will point to something like "/opt/darktable", but that's not useful when using the path to load
-# modules on runtime. Then we need something like "C:\Program Files\darktable". Doesn't need to be set when doing regular compiles.
-if(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-  set(RUNTIME_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-
-# Generate multi arch triplet
-EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(CMAKE_ARCH_TRIPLET)
-	message("-- multiarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
-	LIST(INSERT CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 0 /lib/${CMAKE_ARCH_TRIPLET}
-		/usr/lib/${CMAKE_ARCH_TRIPLET})
-endif()
-
 #
 # Set platform defaults...
 #
@@ -152,9 +106,10 @@ if(APPLE)
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
 	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
-	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	mark_as_advanced(CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
@@ -204,11 +159,11 @@ function(generate_version_gen_c)
   )
 endfunction(generate_version_gen_c)
 
-if(DEFINED PROJECT_VERSION)
+if(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   #project version is defined by -D on the cmake command line
   # only use that value, do not update it at make time
   generate_version_gen_c(${PROJECT_VERSION} "version override")
-else(DEFINED PROJECT_VERSION)
+else(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
@@ -244,7 +199,7 @@ else(DEFINED PROJECT_VERSION)
       )
     endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
   endif(NOT SOURCE_PACKAGE)
-endif(DEFINED PROJECT_VERSION)
+endif(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
 
 # needed to make sure that version string is actually updated.
 add_custom_command(
@@ -273,17 +228,6 @@ endif()
 
 include(compiler-warnings)
 include(windows-macros)
-
-# Setting the runtime path works differently on OSX than on Linux or BSD.
-# Hence use a variable that maps those in the correct way for each OS.
-if(APPLE)
-    # The string "@loader_path" should end up in the executable as-is.
-    set(RPATH_DT "@loader_path")
-else(APPLE)
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
@@ -341,7 +285,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   endmacro()
 
   # 3.9 is the first version with which this works.
-  find_llvm("7;6.0;5.0;4.0;3.9")
+  find_llvm("9;8;7;6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -483,6 +427,12 @@ if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_
   endif()
 endif()
 
+if(BUILD_TESTING)
+  find_package(cmocka 1.1.0 CONFIG REQUIRED)
+  include(AddCMockaTest)
+  include(AddCMockaMockTest)
+endif(BUILD_TESTING)
+
 #
 # Test SSE level
 #
@@ -521,12 +471,11 @@ set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)
-  IF(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=600")
-  elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-  else(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=700")
-  endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+    if(CMAKE_SYSTEM MATCHES "SunOS.*")
+        add_definitions("-D_XOPEN_SOURCE=600")
+    else()
+        add_definitions("-D_XOPEN_SOURCE=700")
+    endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
 # Set default component name - that way external modules like RawSpeed will install their

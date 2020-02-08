@@ -43,6 +43,7 @@
 #include "osx/osx.h"
 #endif
 
+#include <strings.h>
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
 #ifndef RSVG_CAIRO_H
@@ -213,7 +214,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       /* add camera label */
       GtkWidget *label = dt_ui_section_label_new(camera->model);
-      gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(15));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
@@ -230,7 +230,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       /* add camera actions buttons */
       GtkWidget *ib = NULL, *tb = NULL;
-      GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+      GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       if(camera->can_import == TRUE)
       {
         gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("import from camera"))), FALSE,
@@ -247,13 +247,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       if(ib)
       {
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
-        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_START);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, "lighttable_panels.html#import_from_camera");
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
-        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_START);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, "lighttable_panels.html#import_from_camera");
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
@@ -431,14 +431,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
 
   GtkWidget *frame = gtk_frame_new(NULL);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
   gtk_widget_set_hexpand(frame, TRUE);
   GtkWidget *event_box = gtk_event_box_new();
-
-  gtk_widget_set_margin_start(event_box, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(event_box, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(event_box, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(event_box, DT_PIXEL_APPLY_DPI(8));
 
   gtk_container_add(GTK_CONTAINER(frame), event_box);
   gtk_container_add(GTK_CONTAINER(event_box), expander);
@@ -446,11 +440,6 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   GtkWidget *extra;
   extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(expander), extra);
-
-  gtk_widget_set_margin_start(extra, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(extra, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(extra, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(extra, DT_PIXEL_APPLY_DPI(8));
 
   GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
   if(import_folder == TRUE)
@@ -488,15 +477,10 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   };
   g_value_init(&value, G_TYPE_INT);
   gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
-  gint indicator_size = g_value_get_int(&value);
   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
-  gint indicator_spacing = g_value_get_int(&value);
   g_value_unset(&value);
 
   grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_start(grid,  2 * (indicator_spacing + indicator_size));
   gtk_box_pack_start(GTK_BOX(extra), grid, FALSE, FALSE, 0);
 
 #ifdef USE_LUA
@@ -540,7 +524,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = \"metadata\"", -1, &stmt,
+                              "SELECT name, op_params FROM data.presets WHERE operation = 'metadata'", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -744,7 +728,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   // just display the default darktable logo
   if(!have_preview || no_preview_fallback)
   {
-    /* load the dt logo as a brackground */
+    /* load the dt logo as a background */
     cairo_surface_t *surface = dt_util_get_logo(128.0);
     if(surface)
     {
@@ -990,43 +974,45 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "lighttable_panels.html#import");
 
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   /* add import single image buttons */
-  GtkWidget *widget = gtk_button_new_with_label(_("image"));
+  GtkWidget *widget = gtk_button_new_with_label(_("image..."));
   dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
   d->import_file = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
   gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_single_image_callback), self);
 
   /* adding the import folder button */
-  widget = gtk_button_new_with_label(_("folder"));
+  widget = gtk_button_new_with_label(_("folder..."));
   dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
   d->import_directory = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_folder_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2
   /* add the rescan button */
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   dt_gui_add_help_link(GTK_WIDGET(scan), "lighttable_panels.html#import_from_camera");
   d->scan_devices = scan;
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_CENTER);
   gtk_widget_set_tooltip_text(GTK_WIDGET(scan), _("scan for newly attached devices"));
   g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
 
   /* add devices container for cameras */
-  d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
 
   _lib_import_ui_devices_update(self);

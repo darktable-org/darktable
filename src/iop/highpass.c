@@ -32,7 +32,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -82,12 +81,16 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("highpass", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
@@ -102,7 +105,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
 }
-#endif
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -110,7 +112,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
 
-  int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
+  const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
@@ -131,7 +133,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
+  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->global_data;
 
   cl_int err = -999;
   cl_mem dev_tmp = NULL;
@@ -142,7 +144,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
 
-  int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
+  const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
@@ -288,13 +290,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* create inverted image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
 
 
-  int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
+  const int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* horizontal blur out into out */
@@ -341,8 +346,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       size_t index = (size_t)x - hr * roi_out->width;
       for(int y = -hr; y < roi_out->height; y++)
       {
-        int op = y - hr - 1;
-        int np = y + hr;
+        const int op = y - hr - 1;
+        const int np = y + hr;
         if(op >= 0)
         {
           L -= out[(index + opoffs) * ch];
@@ -365,7 +370,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, contrast_scale, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -433,7 +441,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_highpass_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 771; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t){ 50, 50 };
@@ -458,6 +465,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

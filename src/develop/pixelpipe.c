@@ -21,6 +21,21 @@
 
 #include "develop/pixelpipe_hb.c"
 
+const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe)
+{
+  switch(pipe)
+  {
+    case DT_DEV_PIXELPIPE_NONE: return "NONE";
+    case DT_DEV_PIXELPIPE_EXPORT: return "EXPORT";
+    case DT_DEV_PIXELPIPE_FULL: return "FULL";
+    case DT_DEV_PIXELPIPE_PREVIEW: return "PREVIEW";
+    case DT_DEV_PIXELPIPE_PREVIEW2: return "PREVIEW2";
+    case DT_DEV_PIXELPIPE_THUMBNAIL: return "THUMBNAIL";
+    case DT_DEV_PIXELPIPE_ANY: return "ANY";
+    default: return "(unknown)";
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -18,9 +18,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common.h"
-
 #include "colorspace.cl"
+#include "color_conversion.cl"
+#include "rgb_norms.h"
 
 int
 BL(const int row, const int col)
@@ -427,25 +427,7 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
 #undef SQRT12
 
 float
-lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
-{
-  // in case the tone curve is marked as linear, return the fast
-  // path to linear unbounded (does not clip x at 1)
-  if(a[0] >= 0.0f)
-  {
-    if(x < 1.0f)
-    {
-      const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-      const int2 p = (int2)((xi & 0xff), (xi >> 8));
-      return read_imagef(lut, sampleri, p).x;
-    }
-    else return a[1] * native_powr(x*a[0], a[2]);
-  }
-  else return x;
-}
-
-float
-lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const float *a)
+lookup_unbounded_twosided(read_only image2d_t lut, const float x, constant float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -464,7 +446,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const f
     {
       // two-sided extrapolation (with inverted x-axis for left side)
       const float xx = (x >= ar) ? x : 1.0f - x;
-      global const float *aa = (x >= ar) ? a : a + 3;
+      constant float *aa = (x >= ar) ? a : a + 3;
       return aa[1] * native_powr(xx*aa[0], aa[2]);
     }
   }
@@ -472,7 +454,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const f
 }
 
 float
-lerp_lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
+lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -494,14 +476,6 @@ lerp_lookup_unbounded(read_only image2d_t lut, const float x, global const float
   else return x;
 }
 
-float
-lookup(read_only image2d_t lut, const float x)
-{
-  int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
-}
-
 
 /* kernel for the plugin colorin: unbound processing */
 kernel void
@@ -518,9 +492,9 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded(lutb, pixel.z, a[2]);
+  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
 
   if(blue_mapping)
   {
@@ -568,9 +542,9 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], RGB[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded(lutb, pixel.z, a[2]);
+  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
 
   if(blue_mapping)
   {
@@ -618,8 +592,9 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
-           const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
-           const float low_approximation)
+           const int autoscale_ab, const int unbound_ab, constant float *coeffs_L, constant float *coeffs_ab,
+           const float low_approximation, const int preserve_colors,
+           constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -674,9 +649,24 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   else if(autoscale_ab == 3)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-    rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
-    rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
-    rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+
+    if (preserve_colors == DT_RGB_NORM_NONE)
+    {
+      rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
+      rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
+      rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+    }
+    else
+    {
+      float ratio = 1.f;
+      float lum = dt_rgb_norm(rgb, preserve_colors, 1, profile_info, lut);
+      if(lum > 0.f)
+      {
+        const float curve_lum = lookup_unbounded(table_L, lum, coeffs_L);
+        ratio = curve_lum / lum;
+      }
+      rgb.xyz *= ratio;
+    }
     pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
   }
 
@@ -1681,12 +1671,19 @@ flip(read_only image2d_t in, write_only image2d_t out, const int width, const in
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  int nx = (orientation & 4) ? y : x;
-  int ny = (orientation & 4) ? x : y;
-  int wd = (orientation & 4) ? height : width;
-  int ht = (orientation & 4) ? width : height;
-  nx = (orientation & 2) ? wd - nx - 1 : nx;
-  ny = (orientation & 1) ? ht - ny - 1 : ny;
+  // ORIENTATION_FLIP_X = 2
+  int  nx = (orientation & 2) ? width - x - 1 : x;
+
+  // ORIENTATION_FLIP_Y = 1
+  int ny = (orientation & 1) ? height - y - 1 : y;
+
+  // ORIENTATION_SWAP_XY = 4
+  if((orientation & 4) == 4)
+  {
+     const int tmp = nx;
+     nx = ny;
+     ny = tmp;
+   }
 
   write_imagef (out, (int2)(nx, ny), pixel);
 }
@@ -1704,9 +1701,12 @@ fast_expf(const float x)
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
-  const int k = k0 > 0 ? k0 : 0;
-  const float f = *(const float *)&k;
-  return f;
+  union {
+      float f;
+      int k;
+  } u;
+  u.k = k0 > 0 ? k0 : 0;
+  return u.f;
 }
 
 
@@ -1804,9 +1804,9 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
-  pixel.x = lerp_lookup_unbounded(lutr, rgb[0], a[0]);
-  pixel.y = lerp_lookup_unbounded(lutg, rgb[1], a[1]);
-  pixel.z = lerp_lookup_unbounded(lutb, rgb[2], a[2]);
+  pixel.x = lerp_lookup_unbounded0(lutr, rgb[0], a[0]);
+  pixel.y = lerp_lookup_unbounded0(lutg, rgb[1], a[1]);
+  pixel.z = lerp_lookup_unbounded0(lutb, rgb[2], a[2]);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -1854,7 +1854,6 @@ levels (read_only image2d_t in, write_only image2d_t out, const int width, const
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-
 /* kernel for the colorzones plugin */
 enum
 {
@@ -1865,7 +1864,7 @@ enum
 
 
 kernel void
-colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
+colorzones_v3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
             read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b)
 {
   const int x = get_global_id(0);
@@ -1912,6 +1911,47 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+kernel void
+colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
+            read_only image2d_t table_L, read_only image2d_t table_C, read_only image2d_t table_h)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float4 LCh;
+  const float normalize_C = 1.f / (128.0f * sqrt(2.f));
+
+  LCh = Lab_2_LCH(pixel);
+
+  float select = 0.0f;
+  switch(channel)
+  {
+    case DT_IOP_COLORZONES_L:
+      select = LCh.x * 0.01f;
+      break;
+    case DT_IOP_COLORZONES_C:
+      select = LCh.y * normalize_C;
+      break;
+    case DT_IOP_COLORZONES_h:
+    default:
+      select = LCh.z;
+      break;
+  }
+  select = clamp(select, 0.f, 1.f);
+
+  LCh.x *= native_powr(2.0f, 4.0f * (lookup(table_L, select) - .5f));
+  LCh.y *= 2.f * lookup(table_C, select);
+  LCh.z += lookup(table_h, select) - .5f;
+
+  pixel.xyz = LCH_2_Lab(LCh).xyz;
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
 
 /* kernel for the zonesystem plugin */
 kernel void
@@ -1953,7 +1993,7 @@ borders_fill (write_only image2d_t out, const int left, const int top, const int
 
 /* kernel for the overexposed plugin. */
 kernel void
-overexposed (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+overexposed (read_only image2d_t in, write_only image2d_t out, read_only image2d_t tmp, const int width, const int height,
              const float lower, const float upper, const float4 lower_color, const float4 upper_color)
 {
   const int x = get_global_id(0);
@@ -1962,12 +2002,13 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel_tmp = read_imagef(tmp, sampleri, (int2)(x, y));
 
-  if(pixel.x >= upper || pixel.y >= upper || pixel.z >= upper)
+  if(pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
   {
     pixel.xyz = upper_color.xyz;
   }
-  else if(pixel.x <= lower && pixel.y <= lower && pixel.z <= lower)
+  else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
   {
     pixel.xyz = lower_color.xyz;
   }
@@ -2139,7 +2180,7 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
 /* kernel for the contrast lightness saturation module */
 kernel void
 colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
-        read_only image2d_t ctable, global const float *ca, read_only image2d_t ltable, global const float *la)
+        read_only image2d_t ctable, constant float *ca, read_only image2d_t ltable, constant float *la)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -2162,7 +2203,7 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
 
 kernel void
 profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int height,
-        read_only image2d_t table, global const float *ta)
+        read_only image2d_t table, constant float *ta)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);

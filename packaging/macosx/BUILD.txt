@@ -7,26 +7,35 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      cxx_stdlib libc++
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
-     +no_gnome +no_x11 +quartz -x11 -gnome +ld64_xcode
-    You will also need to add patches for python (https://trac.macports.org/ticket/51736) and GraphicsMagick (both fixes are required due to set deployment target),
-    and pango (re-enable font-scaling according to DPI setting, see https://bugzilla.gnome.org/show_bug.cgi?id=787867):
-     $ mkdir -p ~/ports/lang/python36/files ~/ports/graphics/GraphicsMagick/files ~/ports/x11/pango/files
-     $ cp -R "$(port dir python36)" ~/ports/lang
-     $ curl -Lo ~/ports/lang/python36/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+     +no_gnome +no_x11 +quartz -x11 -gnome
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libraw, pugixml, librsvg and gmic
+    (all fixes except for gmic are required due to set deployment target, gmic patch removes extra dependencies):
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/graphics/libraw/files ~/ports/textproc ~/ports/science
+     $ cp -R "$(port dir gnutls)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
+     $ cp -R "$(port dir python37)" ~/ports/lang
+     $ curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+     $ cp -R "$(port dir python38)" ~/ports/lang
+     $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
      $ cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
-     $ cp -R "$(port dir pango)" ~/ports/x11
-     $ curl -Lo ~/ports/x11/pango/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pango-font_scale.diff
-    then add this line:
+     $ cp -R "$(port dir ImageMagick)" ~/ports/graphics
+     $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+     $ cp -R "$(port dir libraw)" ~/ports/graphics
+     $ curl -Lo ~/ports/graphics/libraw/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libraw-stdlib.diff
+     $ cp -R "$(port dir pugixml)" ~/ports/textproc
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
+     $ cp -R "$(port dir librsvg)" ~/ports/graphics
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
+     $ cp -R "$(port dir gmic)" ~/ports/science
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-nogimp.patch | patch -d ~/ports -p0
+    then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied and run
+    to ~/ports/*/*/Portfile files you just copied (except for pugixml, librsvg and gmic) and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes
-    To have working OpenMP (at least partly, only for C source files) you will also need gcc6:
-     $ sudo port install gcc6
-    (llvm port, which gets installed as dependency, won't compile with macosx_deployment_target set, so comment it out when llvm is built)
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
@@ -35,7 +44,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ cd darktable
      $ mkdir build
      $ cd build
-     $ CC=gcc-mp-6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DBINARY_PACKAGE_BUILD=ON
+     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON
      $ make
      $ sudo make install
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
@@ -53,7 +62,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ cd ~/src/darktable/packaging/macosx
      $ ./make-app-bundle
     If you have an Apple Developer ID Application certificate and want to produce signed app then replace the previous command with this one:
-     $ CODECERT="Developer ID Application" ./make-app-bundle
+     $ CODECERT="Developer ID Application" APPLEID="developer@apple.id" APPLEPW="@keychain:DevIDPassword" ./make-app-bundle
     You may have to provide more specific name for a certificate if you have several matching in your keychain.
 
 4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:

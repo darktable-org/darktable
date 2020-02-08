@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -35,10 +36,6 @@ typedef struct dt_lib_navigation_t
 {
   int dragging;
   int zoom_w, zoom_h;
-  unsigned char* buffer;
-  int wd;
-  int ht;
-  int timestamp;
 } dt_lib_navigation_t;
 
 
@@ -93,16 +90,28 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
   dt_control_queue_redraw_widget(self->widget);
 }
 
+
+static gboolean _lib_navigation_collapse_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  // Get the state
+  const gboolean visible = dt_lib_is_visible(self);
+
+  // Inverse the visibility
+  dt_lib_set_visible(self, !visible);
+
+  return TRUE;
+}
+
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc0(sizeof(dt_lib_navigation_t));
   self->data = (void *)d;
-
-  d->buffer = NULL;
-  d->wd = -1;
-  d->ht = -1;
-  d->timestamp = -1;
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
@@ -124,13 +133,13 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_navigation_leave_notify_callback), self);
 
   /* set size of navigation draw area */
-  int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width * .5);
+  gtk_widget_set_size_request(self->widget, -1, 175);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            G_CALLBACK(_lib_navigation_control_redraw_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 }
 
@@ -138,9 +147,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
-
-  dt_lib_navigation_t *d = self->data;
-  g_free(d->buffer);
 
   g_free(self->data);
   self->data = NULL;
@@ -153,35 +159,11 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
-  const int inset = DT_NAVIGATION_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
 
   dt_develop_t *dev = darktable.develop;
-
-  /* double buffering of image data: only take new data if valid */
-  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
-  {
-    /* re-allocate in case of changed image dimensions */
-    if(d->buffer == NULL || dev->preview_pipe->backbuf_width != d->wd || dev->preview_pipe->backbuf_height != d->ht)
-    {
-      g_free(d->buffer);
-      d->wd = dev->preview_pipe->backbuf_width;
-      d->ht = dev->preview_pipe->backbuf_height;
-      d->buffer = g_malloc0((size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
-    }
-
-    /* update buffer if new data is available */
-    if(d->buffer && dev->preview_pipe->input_timestamp > d->timestamp)
-    {
-      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-      dt_pthread_mutex_lock(mutex);
-      memcpy(d->buffer, dev->preview_pipe->backbuf, (size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
-      d->timestamp = dev->preview_pipe->input_timestamp;
-      dt_pthread_mutex_unlock(mutex);
-    }
-  }
 
   /* get the current style */
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -190,40 +172,28 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
-  width -= 2 * inset;
-  height -= 2 * inset;
-  cairo_translate(cr, inset, inset);
-
   /* draw navigation image if available */
-  if(d->buffer)
+  if(dev->preview_pipe->output_backbuf && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
+    dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+    dt_pthread_mutex_lock(mutex);
+
     cairo_save(cr);
-    const int wd = d->wd;
-    const int ht = d->ht;
+    const int wd = dev->preview_pipe->output_backbuf_width;
+    const int ht = dev->preview_pipe->output_backbuf_height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(d->buffer, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
 
-    // draw shadow around
-    float alpha = 1.0f;
-    for(int k = 0; k < 4; k++)
-    {
-      cairo_rectangle(cr, -k / scale, -k / scale, wd + 2 * k / scale, ht + 2 * k / scale);
-      cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-      alpha *= 0.6f;
-      cairo_fill(cr);
-    }
-
-    cairo_rectangle(cr, 0, 0, wd - 2, ht - 1);
+    cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
     cairo_fill(cr);
-    cairo_surface_destroy(surface);
 
     // draw box where we are
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -236,15 +206,29 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     double h, w;
     if(cur_scale > min_scale)
     {
+      // Add a dark overlay on the picture to make it fade
+      cairo_rectangle(cr, 0, 0, wd, ht);
+      cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
+      cairo_fill(cr);
+
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
+
+      // Repaint the original image in the area of interest
+      cairo_set_source_surface(cr, surface, 0, 0);
       cairo_translate(cr, wd * (.5f + zoom_x), ht * (.5f + zoom_y));
-      cairo_set_source_rgb(cr, 0., 0., 0.);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.f / scale));
       boxw *= wd;
       boxh *= ht;
       cairo_rectangle(cr, -boxw / 2 - 1, -boxh / 2 - 1, boxw + 2, boxh + 2);
+      cairo_clip_preserve(cr);
+      cairo_fill_preserve(cr);
+
+      // Paint the external border in black
+      cairo_set_source_rgb(cr, 0., 0., 0.);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
       cairo_stroke(cr);
+
+      // Paint the internal border in white
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_rectangle(cr, -boxw / 2, -boxh / 2, boxw, boxh);
       cairo_stroke(cr);
@@ -256,9 +240,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       PangoLayout *layout;
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
       layout = pango_cairo_create_layout(cr);
-      const float fontsize = DT_PIXEL_APPLY_DPI(11);
+      const float fontsize = DT_PIXEL_APPLY_DPI(14);
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
       cairo_translate(cr, 0, height);
@@ -276,7 +259,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_move_to(cr, width - w - h * 1.1 - ink.x, - fontsize);
 
       cairo_save(cr);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
 
       GdkRGBA *color;
       gtk_style_context_get(context, gtk_widget_get_state_flags(widget), "background-color", &color, NULL);
@@ -284,7 +267,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       gdk_cairo_set_source_rgba(cr, color);
       pango_cairo_layout_path(cr, layout);
       cairo_stroke_preserve(cr);
-      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+      cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
       cairo_fill(cr);
       cairo_restore(cr);
 
@@ -297,7 +280,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     {
       // draw the zoom-to-fit icon
       cairo_translate(cr, 0, height);
-      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+      cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
 
       static int font_height = -1;
       if(font_height == -1)
@@ -307,7 +290,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
         PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
         pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
         layout = pango_cairo_create_layout(cr);
-        pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(11) * PANGO_SCALE);
+        pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(14) * PANGO_SCALE);
         pango_layout_set_font_description(layout, desc);
         pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
         pango_layout_get_pixel_extents(layout, &ink, NULL);
@@ -326,7 +309,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
       cairo_fill(cr);
 
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
 
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_move_to(cr, width - w * 0.8 - h - sp, -1.0 * h);
@@ -351,6 +334,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     cairo_line_to(cr, width - 0.05 * h, -0.9 * h);
     cairo_line_to(cr, width - 0.5 * h, -0.1 * h);
     cairo_fill(cr);
+    cairo_surface_destroy(surface);
+
+    dt_pthread_mutex_unlock(mutex);
   }
 
   /* blit memsurface into widget */
@@ -576,6 +562,18 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 {
   return TRUE;
 }
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "hide navigation thumbnail"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_connect_lib(self, "hide navigation thumbnail",
+                     g_cclosure_new(G_CALLBACK(_lib_navigation_collapse_callback), self, NULL));
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

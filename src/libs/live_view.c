@@ -164,7 +164,7 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_KEY_v, 0);
-  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_z, 0);
+  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_w, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);
@@ -269,11 +269,11 @@ void gui_init(dt_lib_module_t *self)
   lib->splitline_x = lib->splitline_y = 0.5;
 
   // Setup gui
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "live_view.html#live_view");
   GtkWidget *box;
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   lib->live_view_zoom = dtgtk_button_new(
@@ -303,7 +303,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->flip), "clicked", G_CALLBACK(_toggle_flip_clicked), lib);
 
   // focus buttons
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT, NULL);
@@ -388,7 +388,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->overlay), "value-changed", G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
-  lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label = gtk_label_new(_("image id"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);
@@ -524,13 +524,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     // if the user points at this image, we really want it:
     if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-    int zoom = 1;
-    float imgwd = 0.90f;
-    if(zoom == 1)
-    {
-      imgwd = .97f;
-    }
-
+    const float imgwd = 0.97f;
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * w, imgwd * h);
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, 0, 'r');
@@ -542,12 +536,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
       surface = cairo_image_surface_create_for_data(buf.buf, CAIRO_FORMAT_RGB24, buf.width,
                                                     buf.height, stride);
-      if(zoom == 1)
-      {
-        scale = fminf(fminf(w, pw) / (float)buf.width, fminf(h, ph) / (float)buf.height);
-      }
-      else
-        scale = fminf(w * imgwd / (float)buf.width, h * imgwd / (float)buf.height);
+      scale = fminf(fminf(w, pw) / (float)buf.width, fminf(h, ph) / (float)buf.height);
     }
 
     // draw centered and fitted:

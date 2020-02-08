@@ -69,7 +69,8 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_CUSTOM_ORDER,
   DT_COLLECTION_SORT_TITLE,
   DT_COLLECTION_SORT_DESCRIPTION,
-  DT_COLLECTION_SORT_ASPECT_RATIO
+  DT_COLLECTION_SORT_ASPECT_RATIO,
+  DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
 typedef enum dt_collection_properties_t
@@ -127,6 +128,7 @@ typedef struct dt_collection_params_t
 
   /** sorting **/
   dt_collection_sort_t sort; // Has to be changed to a dt_collection_sort struct
+  dt_collection_sort_t sort_second_order;
   gint descending;
 
 } dt_collection_params_t;
@@ -225,11 +227,9 @@ void dt_collection_deserialize(char *buf);
 int dt_collection_serialize(char *buf, int bufsize);
 
 /* splits an input string into a number part and an optional operator part */
-void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **operator);
-void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2,
-                                           char **operator);
-void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2,
-                                           char **operator);
+void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **op);
+void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
+void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
 int64_t dt_collection_get_image_position(const int32_t image_id);
 void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position);

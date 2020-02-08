@@ -27,7 +27,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -82,6 +81,11 @@ const char *name()
   return _("denoise (non-local means)");
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -98,9 +102,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("denoise (non-local means)", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
@@ -110,6 +114,8 @@ int flags()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "chroma"));
 }
@@ -118,15 +124,12 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
 
+  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
   dt_accel_connect_slider_iop(self, "luma", GTK_WIDGET(g->luma));
   dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
 }
 
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
-// *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
-// *roi_out, dt_iop_roi_t *roi_in);
 
 typedef union floatint_t
 {
@@ -170,7 +173,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
+  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->global_data;
 
 
   const int devid = piece->pipe->devid;
@@ -190,15 +193,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
-
-  if(P < 1)
-  {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
 
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f / max_L, nC = 1.0f / max_C;
@@ -381,12 +375,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
-  if(P < 1)
-  {
-    // nothing to do from this distance:
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
-    return;
-  }
 
   // adjust to Lab, make L more important
   // float max_L = 100.0f, max_C = 256.0f;
@@ -410,7 +398,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
+      firstprivate(inited_slide) \
+      shared(kj, ki, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -496,7 +488,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = ((float *const)ovoid);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, in, invert, out, roi_out, weight) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -525,12 +520,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
-  if(P < 1)
-  {
-    // nothing to do from this distance:
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
-    return;
-  }
 
   // adjust to Lab, make L more important
   // float max_L = 100.0f, max_C = 256.0f;
@@ -554,7 +543,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
+  firstprivate(inited_slide) \
+  shared(kj, ki, Sa) \
+  schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -686,7 +679,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
   const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(invert, ivoid, ovoid, roi_out, weight) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -724,16 +720,17 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
-  module->priority = 528; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -826,8 +823,8 @@ void gui_update(dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dt_bauhaus_slider_set(g->radius, p->radius);
-  dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_slider_set_soft(g->radius, p->radius);
+  dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set(g->luma, p->luma * 100.f);
   dt_bauhaus_slider_set(g->chroma, p->chroma * 100.f);
 }
@@ -840,7 +837,9 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->radius = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.0f, 100000.0f);
   g->luma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
   g->chroma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);

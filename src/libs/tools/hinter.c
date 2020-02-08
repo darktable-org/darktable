@@ -80,7 +80,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  //  dt_lib_hinter_t *d = (dt_lib_hinter_t *)self->data;
   darktable.control->proxy.hinter.module = NULL;
   g_free(self->data);
   self->data = NULL;
@@ -91,39 +90,6 @@ void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
 {
   dt_lib_hinter_t *d = (dt_lib_hinter_t *)self->data;
   gtk_label_set_markup(GTK_LABEL(d->label), message);
-#if 0
-
-  int c = 0;
-  char *str = g_strdup(message);
-  /* FIXME: If this code is re-enabled, strtok() should be changed
-   * for g_strsplit() for thread-safeness */
-  char *s = strtok(str," ");
-  gchar *markup=NULL;
-
-  if (!s)
-  {
-    g_free(str);
-    return;
-  }
-
-
-  markup = dt_util_dstrcat(markup, "<span size=\"smaller\">");
-  while (s)
-  {
-    if ((++c)%8 == 0)
-      markup = dt_util_dstrcat(markup, "\n   ");
-
-    markup = dt_util_dstrcat(markup,"%s ", s);
-    s = strtok(NULL," ");
-  }
-
-  markup = dt_util_dstrcat(markup, "</span>");
-
-  gtk_label_set_markup(GTK_LABEL(d->label), markup);
-
-  g_free(markup);
-  g_free(str);
-#endif
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

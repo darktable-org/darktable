@@ -45,8 +45,7 @@ typedef struct dt_print_t
 }
 dt_print_t;
 
-const char
-*name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return C_("view", "print");
 }
@@ -209,7 +208,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   const dt_print_t *prt=(dt_print_t*)self->data;
 
   // clear the current surface
-  cairo_set_source_rgb (cri, 0.1, 0.1, 0.1);
+  dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_PRINT_BG);
   cairo_paint(cri);
 
   if (prt->image_id > 0)
@@ -278,7 +277,7 @@ void enter(dt_view_t *self)
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
   if(selected_images)
   {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
+    const int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
   }
@@ -317,9 +316,11 @@ void leave(dt_view_t *self)
 static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  const gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
+  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
+  // if we show the panel, ensure that filmstrip is visible
+  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
 

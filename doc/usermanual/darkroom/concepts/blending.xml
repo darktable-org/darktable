@@ -17,7 +17,7 @@
 
     <para>
       By default a module takes its input from the preceding module, performs its calculations
-      and handles its output over to the next module in the pixelpipe. On demand you can
+      and hands its output over to the next module in the pixelpipe. On demand you can
       activate an additional step where a module's output is reprocessed with its input before
       giving the result to the next module. This additional processing step is called blending.
       Input and output can be processed with different algorithms, called blending operators or
@@ -124,74 +124,6 @@
 
     </sect4>
 
-    <sect4 id="blending_usage_mask_combination_inversion">
-
-      <title>Mask combination and inversion</title>
-
-      <sect5 id="blending_usage_mask_combination_inversion_invert">
-        <title>invert mask</title>
-        <para>
-          When <quote>drawn mask</quote> is selected there is an additional combobox to invert
-          the mask by switching mask inversion <quote>on</quote> or <quote>off</quote>.
-        </para>
-      </sect5>
-
-      <sect5 id="blending_usage_mask_combination_inversion_combine">
-        <title>combine masks</title>
-        <para>
-          When either <quote>parametric masks</quote>, or <quote>drawn and parametric
-          mask</quote> are selected an additional combobox is shown that controls how the
-          individual masks are combined to form the final mask. Details on the combination of
-          individual masks can be found in <xref linkend="combined_masks"/>.
-        </para>
-      </sect5>
-
-    </sect4>
-
-    <sect4 id="blending_usage_additional_controls">
-
-      <title>Additional controls</title>
-
-      <para>
-        When blending with a mask there are some additional options to deal with the final mask:
-        you may blur the mask, temporarily disable it, or display it as an overlay image.
-      </para>
-
-      <sect5 id="blending_usage_additional_controls_blur">
-        <title>mask blur</title>
-        <para>
-          Blurring the mask creates a softer transition between blended and unblended parts of
-          an image and avoids artifacts. The mask blur slider controls the radius of a gaussian
-          blur applied to the final blend mask. The higher the radius, the stronger the
-          blur&nbsp;&ndash; or set to 0 for an unblurred mask.
-        </para>
-      </sect5>
-
-      <sect5 id="blending_usage_additional_controls_temp_off">
-        <title>temporarily switch off mask</title>
-        <para>
-          Sometimes it is useful to visualize the module's effect without the mask taking
-          action. You can do so by clicking on the
-          <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
-          symbol, which will temporarily deactivate the mask&nbsp;&ndash; the selected blend
-          mode and opacity remain in effect. Switch this button on and off to see if the mask is
-          acting on the image as intended.
-        </para>
-      </sect5>
-
-      <sect5 id="blending_usage_additional_controls_display">
-        <title>display mask</title>
-        <para>
-          Clicking on the
-          <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
-          symbol will display the current mask as a yellow overlay over a black-and-white
-          version of your image. Solid yellow indicates an opacity of 100%; a fully visible gray
-          background image without yellow overlay indicates an opacity of 0%.
-        </para>
-      </sect5>
-
-    </sect4>
-
   </sect3>
 
   <sect3 status="final" id="blending_examples">
@@ -249,7 +181,7 @@
                     This is the original image, pretty heavily processed: first
                     <link linkend="monochrome"> <emphasis>monochrome</emphasis></link>, then
                     some blue <link linkend="splittoning">
-                    <emphasis>splittoning</emphasis></link> but as you see it lacks pop in
+                    <emphasis>split-toning</emphasis></link> but as you see it lacks pop in
                     details and is a bit out of focus...
                   </para>
                 </entry>
@@ -274,5 +206,29 @@
     </sect4>
 
   </sect3>
+
+<!-- Blending operators -->
+
+  <xi:include href="blend_operators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Drawn masks  -->
+
+  <xi:include href="drawn_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Parametric masks  -->
+
+  <xi:include href="parametric_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Raster masks  -->
+
+  <xi:include href="raster_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Combined masks  -->
+
+  <xi:include href="combined_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Mask refinement  -->
+
+  <xi:include href="mask_refinement.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect2>

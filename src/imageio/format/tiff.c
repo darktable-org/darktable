@@ -35,10 +35,7 @@ DT_MODULE(3)
 
 typedef struct dt_imageio_tiff_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   int bpp;
   int compress;
   int compresslevel;
@@ -55,7 +52,7 @@ typedef struct dt_imageio_tiff_gui_t
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
@@ -139,8 +136,8 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
   TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)d->width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)d->global.width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->global.height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
@@ -154,7 +151,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
-  const size_t rowsize = (d->width * 3) * d->bpp / 8;
+  const size_t rowsize = (d->global.width * 3) * d->bpp / 8;
   if((rowdata = malloc(rowsize)) == NULL)
   {
     rc = 1;
@@ -163,12 +160,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(d->bpp == 32)
   {
-    for(int y = 0; y < d->height; y++)
+    for(int y = 0; y < d->global.height; y++)
     {
-      float *in = (float *)in_void + (size_t)4 * y * d->width;
+      float *in = (float *)in_void + (size_t)4 * y * d->global.width;
       float *out = (float *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, out += 3)
+      for(int x = 0; x < d->global.width; x++, in += 4, out += 3)
       {
         memcpy(out, in, 3 * sizeof(float));
       }
@@ -182,12 +179,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
   else if(d->bpp == 16)
   {
-    for(int y = 0; y < d->height; y++)
+    for(int y = 0; y < d->global.height; y++)
     {
-      uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->width;
+      uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->global.width;
       uint16_t *out = (uint16_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, out += 3)
+      for(int x = 0; x < d->global.width; x++, in += 4, out += 3)
       {
         memcpy(out, in, 3 * sizeof(uint16_t));
       }
@@ -201,12 +198,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
   else
   {
-    for(int y = 0; y < d->height; y++)
+    for(int y = 0; y < d->global.height; y++)
     {
-      uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->width;
+      uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->global.width;
       uint8_t *out = (uint8_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, out += 3)
+      for(int x = 0; x < d->global.width; x++, in += 4, out += 3)
       {
         memcpy(out, in, 3 * sizeof(uint8_t));
       }
@@ -286,12 +283,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
     dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = 0;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
     n->bpp = o->bpp;
     n->compress = o->compress;
     n->compresslevel = 9;
@@ -315,12 +312,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
     dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = o->style_append;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = o->style_append;
     n->bpp = o->bpp;
     n->compress = o->compress;
     n->compresslevel = 9;
@@ -430,6 +427,12 @@ static void compress_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int compress = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
+
+  if(compress == 0)
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), FALSE);
+  else
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), TRUE);
+
 }
 
 static void compress_level_changed(GtkWidget *slider, gpointer user_data)
@@ -462,7 +465,7 @@ void gui_init(dt_imageio_module_format_t *self)
   if(dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel"))
     compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
   gui->bpp = dt_bauhaus_combobox_new(NULL);
@@ -488,7 +491,6 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor (float)"));
   dt_bauhaus_combobox_set(gui->compress, compress);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->compress), "value-changed", G_CALLBACK(compress_combobox_changed), NULL);
 
   // Compression level slider
   gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
@@ -496,6 +498,11 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
+
+  g_signal_connect(G_OBJECT(gui->compress), "value-changed", G_CALLBACK(compress_combobox_changed), (gpointer)gui->compresslevel);
+
+  if(compress == 0)
+    gtk_widget_set_sensitive(gui->compresslevel, FALSE);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

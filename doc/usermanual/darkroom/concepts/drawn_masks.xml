@@ -1,9 +1,9 @@
-<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="final" id="drawn_mask">
+<sect3 status="final" id="drawn_mask">
 
   <title>Drawn mask</title>
 
@@ -21,11 +21,11 @@
   </indexterm>
 
   <para>
-    Almost all darktable modules have the option to narrow down their effect by a drawn mask and
-    thus allowing local adjustments.
+    Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific 
+    area in the developed image.
   </para>
 
-  <sect3 status="final" id="drawn_mask_overview">
+  <sect4 status="final" id="drawn_mask_overview">
 
     <title>Overview</title>
 
@@ -43,9 +43,9 @@
       the same image area regardless of warping or other modifications that may be applied.
     </para>
 
-  </sect3>
+  </sect4>
 
-  <sect3 status="final" id="drawn_mask_usage">
+  <sect4 status="final" id="drawn_mask_usage">
 
     <title>Usage</title>
 
@@ -78,7 +78,13 @@
     </para>
 
     <para>
-      If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit
+      Independent of the specific shape you can <emphasis>scroll</emphasis> to change the size
+      of the shape, <emphasis>shift+scroll</emphasis> to change the feather of the shape and
+      <emphasis>Ctrl+scroll</emphasis> to change the opacity of the shape.
+    </para>
+
+    <para>
+      If you <emphasis>Ctrl+click</emphasis> on the edit mode symbol you enter a restricted edit
       mode. Certain actions like dragging a complete shape or changing its size are blocked.
       Only finetuning changes like dragging a node are allowed.
     </para>
@@ -96,43 +102,36 @@
       <see>mask shapes</see>
     </indexterm>
 
-    <sect4 id="brush_shape">
-
+    <sect5 id="brush_shape">
       <title>brush</title>
-
       <indexterm>
         <primary>brush</primary>
       </indexterm>
-
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>brush</secondary>
       </indexterm>
-
       <para>
         Clicking the
         <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/>
         symbol adds a brush stroke.
       </para>
-
       <para>
         Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse
         while keeping the button pressed. The brush stroke is finalized once you release the
         mouse button. Brush size, hardness and opacity can be changed by
         <emphasis>scrolling</emphasis>, <emphasis>shift+scrolling</emphasis>, and
-        <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
+        <emphasis>Ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
         any time during the operation. Likewise you can use keys
         <emphasis>[&nbsp;|&nbsp;]</emphasis> to decrease/increase brush size,
         <emphasis>{&nbsp;|&nbsp;}</emphasis> to decrease/increase hardness, and
         <emphasis>&lt;&nbsp;|&nbsp;&gt;</emphasis> to decrease/increase opacity.
       </para>
-
       <para>
         If you have a graphics tablet with pen pressure sensitivity, darktable can apply the
         recorded pen pressure to certain attributes of the brush stroke. See
         <xref linkend="gui_options"/> for more details.
       </para>
-
       <para>
         On lifting the tablet pen or releasing the left mouse button the drawn figure is
         converted into a number of connected nodes which define the shape. A configuration
@@ -140,17 +139,14 @@
         higher level of smoothing leads to less nodes&nbsp;&ndash; this eases subsequent editing
         at the expense of a lower initial accuracy.
       </para>
-
       <para>
         Nodes and segments of a brush stroke can be modified individually. See the documentation
         on <emphasis>path</emphasis> below for more details.
       </para>
-
       <para>
         Rendering a complex brush shape can consume a significant number of CPU cycles; consider
         to revert to the circle, ellipse or path shape if possible.
       </para>
-
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth="6*"/>
@@ -167,40 +163,33 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="circle_shape">
-
+    <sect5 id="circle_shape">
       <title>circle</title>
-
       <indexterm>
         <primary>circle</primary>
       </indexterm>
-
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>circle</secondary>
       </indexterm>
-
       <para>
         Clicking the
         <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/>
         symbol adds a circle shape.
       </para>
-
       <para>
         <emphasis>Click</emphasis> into the canvas to place the circle.
         <emphasis>Left-click</emphasis> and drag the circle to a different position if needed.
         Use the scroll wheel of your mouse while in the circle to change the diameter;
         <emphasis>scroll</emphasis> within the circle border to adjust the width of the gradual
         decay or <emphasis>shift+scroll</emphasis> anywhere in the shape for the same effect.
-        With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the
+        With <emphasis>Ctrl+scroll</emphasis> you can adjust the opacity of the
         circle&nbsp;&ndash; this is best observed with the mask displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>
-
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth="6*"/>
@@ -217,36 +206,30 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="ellipse_shape">
-
+    <sect5 id="ellipse_shape">
       <title>ellipse</title>
-
       <indexterm>
         <primary>ellipse</primary>
       </indexterm>
-
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>ellipse</secondary>
       </indexterm>
-
       <para>
         Clicking the
         <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/>
         symbol adds an ellipse shape.
       </para>
-
       <para>
         The general principle is the same as for the circle shape. In addition you get four
         nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes to adjust the
-        ellipse's eccentricity. <emphasis>Ctrl-click</emphasis> on them to rotate the ellipse.
-        <emphasis>Shift-click</emphasis> in the shape to toggle the gradual decay between
+        ellipse's eccentricity. <emphasis>Ctrl+click</emphasis> on them to rotate the ellipse
+        or, alternatively, use <emphasis>Shift+Ctrl+scroll</emphasis>.
+        <emphasis>Shift+click</emphasis> in the shape to toggle the gradual decay between
         equidistant and proportional mode.
       </para>
-
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth="6*"/>
@@ -263,64 +246,53 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="path_shape">
-
+    <sect5 id="path_shape">
       <title>path</title>
-
       <indexterm>
         <primary>path</primary>
       </indexterm>
-
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>path</secondary>
       </indexterm>
-
       <para>
         Clicking the
         <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/>
         symbol adds a shape defined by a user defined closed path.
       </para>
-
       <para>
         <emphasis>Left-click</emphasis> into the canvas to define path nodes; terminate the path
         by <emphasis>right-clicking</emphasis> after having set the last point. Per default
         nodes are connected by smooth lines. If you want a node to define a sharp corner, you
-        can do so by creating it with <emphasis>ctrl-click</emphasis>.
+        can do so by creating it with <emphasis>Ctrl+click</emphasis>.
       </para>
-
       <para>
         In the edit mode you can convert existing nodes from smooth to sharp corners and vice
-        versa by <emphasis>ctrl-clicking</emphasis> on them. You can insert additional nodes by
-        <emphasis>ctrl-clicking</emphasis> on one of the line segments. Single nodes can be
+        versa by <emphasis>Ctrl+clicking</emphasis> on them. You can insert additional nodes by
+        <emphasis>Ctrl+clicking</emphasis> on one of the line segments. Single nodes can be
         deleted by <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer
         is over the desired node and the node is highlighted, or else you might accidentally
         remove the whole path.
       </para>
-
       <para>
         The size of the complete shape can be modified by
         <emphasis>scrolling</emphasis>&nbsp;&ndash; analogous to the circle shape. The same
         holds true for the width of the border, i.e. the area with a gradual opacity decay,
-        which can be changed by <emphasis>scrolling</emphasis> when it is highlighted or by
-        <emphasis>shift+scroll</emphasis> from anywhere within the shape. Single nodes as well
-        as path segments can be moved by mouse <emphasis>dragging</emphasis>. If a node is
-        selected by <emphasis>clicking</emphasis> on it, a further control point
+        which can be changed by <emphasis>Shift+scroll</emphasis> from anywhere within the shape.
+        Single nodes as well as path segments can be moved by mouse <emphasis>dragging</emphasis>.
+        If a node is selected by <emphasis>clicking</emphasis> on it, a further control point
         appears&nbsp;&ndash; you can move it around to modify the curvature of the line and
         reset to default by <emphasis>right-clicking</emphasis>. <emphasis>Dragging</emphasis>
         one of the control points on the border adjusts the border width just in that part of
         the shape.
       </para>
-
       <para>
         Consider to finetune a path in the restricted edit mode (see above), which allows you to
         adjust single nodes and segments without the risk of accidentally shifting or resizing
         the whole shape.
       </para>
-
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth="6*"/>
@@ -337,39 +309,31 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="gradient_shape">
-
+    <sect5 id="gradient_shape">
       <title>gradient</title>
-
       <indexterm>
         <primary>gradient</primary>
       </indexterm>
-
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>gradient</secondary>
       </indexterm>
-
       <indexterm>
         <primary>artifact mitigation</primary>
         <secondary>banding</secondary>
       </indexterm>
-
       <para>
         Clicking the
         <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/>
         symbol adds a gradient to the mask. This does not generate a confined shape but produces
         a linear gradient extending the whole image.
       </para>
-
       <para>
         Click into the canvas to define the position of the line where opacity is at 50%. The
         line has two anchor nodes which you can drag to change the rotation of the gradient.
       </para>
-
       <para>
         Scrolling close to the center line changes the steepness of the gradient. Dotted lines
         indicate the distance beyond which the opacity is 100% and 0%, respectively. Between
@@ -378,13 +342,11 @@
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>
-
       <para>
         Depending on the module and the underlying image using a gradient shape might provoke
         banding artifacts. You should consider to activate the <emphasis>dithering</emphasis>
         module (see <xref linkend="dithering"/>)
       </para>
-
       <informaltable frame="none">
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth="6*"/>
@@ -401,13 +363,10 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="drawn_mask_usage_drawn">
-
+    <sect5 id="drawn_mask_usage_drawn">
       <title>drawn mask</title>
-
       <para>
         The number of shapes that are used in the current mask is displayed in the <quote>drawn
         mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
@@ -416,7 +375,6 @@
         mask. The list also contains shapes once generated but no longer in use. This way you
         can even get back a deleted shape.
       </para>
-
       <para>
         A polarity button (
         <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
@@ -427,13 +385,18 @@
         vice versa. You need this feature when combining drawn and parametric masks (see
         <xref linkend="combined_masks"/>).
       </para>
+    </sect5>
 
-    </sect4>
+    <sect5 id="blending_usage_mask_combination_inversion_invert">
+      <title>invert mask</title>
+      <para>
+        When <quote>drawn mask</quote> is selected there is an additional combobox to invert the
+        mask by switching mask inversion <quote>on</quote> or <quote>off</quote>.
+      </para>
+    </sect5>
 
-    <sect4 id="drawn_mask_usage_manager">
-
+    <sect5 id="drawn_mask_usage_manager">
       <title>mask manager</title>
-
       <para>
         More functionality to control the interaction of multiple shapes within a mask can be
         found in the mask manager panel (see <xref linkend="mask_manager"/>). Here you can give
@@ -441,9 +404,9 @@
         can also select individual shapes for editing&nbsp;&ndash; a helpful feature if your
         masks happens to contain several shapes with overlapping control elements.
       </para>
+    </sect5>
 
-    </sect4>
+  </sect4>
 
-  </sect3>
 
-</sect2>
+</sect3>

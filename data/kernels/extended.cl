@@ -30,7 +30,7 @@ graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   const float len = length_base + y*length_inc_y + x*length_inc_x;
 
   const float t = 0.693147181f * (density * clamp(0.5f+len, 0.0f, 1.0f)/8.0f);
@@ -43,8 +43,8 @@ graduatedndp (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
 
   pixel.xyz = fmax((float4)0.0f, pixel / (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-      
-  write_imagef (out, (int2)(x, y), pixel); 
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -58,7 +58,7 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   const float len = length_base + y*length_inc_y + x*length_inc_x;
 
   const float t = 0.693147181f * (-density * clamp(0.5f-len, 0.0f, 1.0f)/8.0f);
@@ -71,8 +71,8 @@ graduatedndm (read_only image2d_t in, write_only image2d_t out, const int width,
   dens *= dens;
 
   pixel.xyz = fmax((float4)0.0f, pixel * (color + ((float4)1.0f - color) * (float4)dens)).xyz;
-      
-  write_imagef (out, (int2)(x, y), pixel); 
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 __kernel void
@@ -90,11 +90,11 @@ colorize (read_only image2d_t in, write_only image2d_t out, const int width, con
   pixel.y = a;
   pixel.z = b;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
-float 
+float
 GAUSS(float center, float wings, float x)
 {
   const float b = -1.0f + center * 2.0f;
@@ -128,7 +128,7 @@ relight (read_only image2d_t in, write_only image2d_t out, const int width, cons
 
   pixel.x = 100.0f * clamp(lightness*relight, 0.0f, 1.0f);
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -177,7 +177,7 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
 
   pixel = gray_mix_mode ? (float4)(graymix, graymix, graymix, pixel.w) : (float4)(rmix, gmix, bmix, pixel.w);
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -193,13 +193,13 @@ velvia (read_only image2d_t in, write_only image2d_t out, const int width, const
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   // calculate vibrance, and apply boost velvia saturation at least saturated pixels
-  float pmax = fmax(pixel.x, fmax(pixel.y, pixel.z));			// max value in RGB set
-  float pmin = fmin(pixel.x, fmin(pixel.y, pixel.z));			// min value in RGB set
-  float plum = (pmax + pmin) / 2.0f;				        // pixel luminocity
+  float pmax = fmax(pixel.x, fmax(pixel.y, pixel.z));     // max value in RGB set
+  float pmin = fmin(pixel.x, fmin(pixel.y, pixel.z));     // min value in RGB set
+  float plum = (pmax + pmin) / 2.0f;                // pixel luminocity
   float psat = (plum <= 0.5f) ? (pmax-pmin)/(1e-5f + pmax+pmin) : (pmax-pmin)/(1e-5f + fmax(0.0f, 2.0f-pmax-pmin));
 
   float pweight = clamp(((1.0f- (1.5f*psat)) + ((1.0f+(fabs(plum-0.5f)*2.0f))*(1.0f-bias))) / (1.0f+(1.0f-bias)), 0.0f, 1.0f); // The weight of pixel
-  float saturation = strength*pweight;			// So lets calculate the final affection of filter on pixel
+  float saturation = strength*pweight;      // So lets calculate the final affection of filter on pixel
 
   float4 opixel;
 
@@ -208,7 +208,7 @@ velvia (read_only image2d_t in, write_only image2d_t out, const int width, const
   opixel.z = clamp(pixel.z + saturation*(pixel.z-0.5f*(pixel.x+pixel.y)), 0.0f, 1.0f);
   opixel.w = pixel.w;
 
-  write_imagef (out, (int2)(x, y), opixel); 
+  write_imagef (out, (int2)(x, y), opixel);
 }
 
 
@@ -227,7 +227,7 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
   pixel.y = unbound ? pixel.y : clamp(pixel.y, -128.0f, 128.0f);
   pixel.z = unbound ? pixel.z : clamp(pixel.z, -128.0f, 128.0f);
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -249,7 +249,7 @@ vibrance (read_only image2d_t in, write_only image2d_t out, const int width, con
   pixel.y *= ss;
   pixel.z *= ss;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -275,7 +275,7 @@ encrypt_tea(unsigned int *arg)
 float
 tpdf(unsigned int urandom)
 {
-  float frandom = (float)urandom / 0xFFFFFFFFu;
+  float frandom = (float)urandom / (float)0xFFFFFFFFu;
 
   return (frandom < 0.5f ? (sqrt(2.0f*frandom) - 1.0f) : (1.0f - sqrt(2.0f*(1.0f - frandom))));
 }
@@ -329,7 +329,7 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
     pixel.xyz = unbound ? pixel.xyz : clamp(pixel, (float4)0.0f, (float4)1.0f).xyz;
   }
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -347,12 +347,12 @@ splittoning (read_only image2d_t in, write_only image2d_t out, const int width, 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float4 hsl = RGB_2_HSL(pixel);
-  
+
   if(hsl.z < balance - compress || hsl.z > balance + compress)
   {
     hsl.x = hsl.z < balance ? shadow_hue : highlight_hue;
     hsl.y = hsl.z < balance ? shadow_saturation : highlight_saturation;
-    float ra = hsl.z < balance ? clamp(2.0f*fabs(-balance + compress + hsl.z), 0.0f, 1.0f) : 
+    float ra = hsl.z < balance ? clamp(2.0f*fabs(-balance + compress + hsl.z), 0.0f, 1.0f) :
                clamp(2.0f*fabs(-balance - compress + hsl.z), 0.0f, 1.0f);
 
     float4 mixrgb = HSL_2_RGB(hsl);
@@ -403,7 +403,7 @@ pixelmax_first (read_only image2d_t in, const int width, const int height, globa
 
 
 
-__kernel void 
+__kernel void
 pixelmax_second(global float* input, global float *result, const int length, local float *buffer)
 {
   int x = get_global_id(0);
@@ -415,7 +415,7 @@ pixelmax_second(global float* input, global float *result, const int length, loc
     accu = (accu > element) ? accu : element;
     x += get_global_size(0);
   }
-  
+
   int lid = get_local_id(0);
   buffer[lid] = accu;
 
@@ -471,7 +471,7 @@ global_tonemap_drago (read_only image2d_t in, write_only image2d_t out, const in
   if(x >= width || y >= height) return;
 
   const float eps = parameters.x;
-  const float ldc = parameters.y; 
+  const float ldc = parameters.y;
   const float bl = parameters.z;
   const float lwmax = parameters.w;
 
@@ -591,9 +591,9 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
   float4 sRGB = XYZ_to_sRGB(Lab_to_XYZ(Lab));
 
   // Lift gamma gain
-  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * pow(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
-  sRGB = pow(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
-  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
+  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * native_powr(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
+  sRGB = native_powr(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
+  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : native_powr((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
   Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
 
   write_imagef (out, (int2)(x, y), Lab);
@@ -601,7 +601,7 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
 
 kernel void
 colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey)
+              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey, const float saturation_out)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -612,8 +612,8 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
   const float4 XYZ = Lab_to_XYZ(Lab);
   float4 RGB = XYZ_to_prophotorgb(XYZ);
 
-  // saturation
-  if (saturation != 1.0f) 
+  // saturation input
+  if (saturation != 1.0f)
   {
     const float4 luma = XYZ.y;
     const float4 saturation4 = saturation;
@@ -621,12 +621,20 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
   }
 
   // Lift gamma gain
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, (float4)1.0f/2.2f);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, (float4)1.0f/2.2f);
   RGB = ((RGB - (float4)1.0f) * lift + (float4)1.0f) * gain;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, gamma_inv * (float4)2.2f);
-  
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv * (float4)2.2f);
+
+  // saturation output
+  if (saturation_out != 1.0f)
+  {
+    const float4 luma = prophotorgb_to_XYZ(RGB).y;
+    const float4 saturation_out4 = saturation_out;
+    RGB = luma + saturation_out4 * (RGB - luma);
+  }
+
   // fulcrum contrast
-  if (contrast != 1.0f) 
+  if (contrast != 1.0f)
   {
     const float4 contrast4 = contrast;
     const float4 grey4 = grey;
@@ -640,7 +648,7 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
 
 kernel void
 colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey)
+              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey, const float saturation_out)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -651,24 +659,32 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
   const float4 XYZ = Lab_to_XYZ(Lab);
   float4 RGB = XYZ_to_prophotorgb(XYZ);
 
-  // saturation
-  if (saturation != 1.0f) 
+  // saturation input
+  if (saturation != 1.0f)
   {
     const float4 luma = XYZ.y;
     const float4 saturation4 = saturation;
     RGB = luma + saturation4 * (RGB - luma);
   }
- 
+
   // lift power slope
   RGB = RGB * gain + lift;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, gamma_inv);
-  
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv);
+
+  // saturation output
+  if (saturation_out != 1.0f)
+  {
+    const float4 luma = prophotorgb_to_XYZ(RGB).y;
+    const float4 saturation_out4 = saturation_out;
+    RGB = luma + saturation_out4 * (RGB - luma);
+  }
+
   // fulcrum contrast
-  if (contrast != 1.0f) 
+  if (contrast != 1.0f)
   {
     const float4 contrast4 = contrast;
     const float4 grey4 = grey;
-    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB / grey4, contrast4) * grey4;
+    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB / grey4, contrast4) * grey4;
   }
 
   Lab.xyz = prophotorgb_to_Lab(RGB).xyz;

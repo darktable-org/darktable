@@ -86,21 +86,17 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   const Imf::Header &header = isTiled ? fileTiled->header() : file->header();
 
   /* check that channels available is any of supported RGB(a) */
-  uint32_t cnt = 0;
+  bool hasR = false, hasG = false, hasB = false;
   for(Imf::ChannelList::ConstIterator i = header.channels().begin(); i != header.channels().end(); ++i)
   {
-    cnt++;
-    if(i.name()[0] != 'R' && i.name()[0] != 'G' && i.name()[0] != 'B' && i.name()[0] != 'A')
-    {
-      fprintf(stderr, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
-      return DT_IMAGEIO_FILE_CORRUPTED;
-    }
+    std::string name(i.name());
+    if(name == "R") hasR = true;
+    if(name == "G") hasG = true;
+    if(name == "B") hasB = true;
   }
-
-  /* we only support 3 and 4 channels */
-  if(cnt < 3 || cnt > 4)
+  if(!(hasR && hasG && hasB))
   {
-    fprintf(stderr, "[exr_read] Warning, only files with 3 or 4 channels are supported.\n");
+    fprintf(stderr, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 

@@ -32,7 +32,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -73,14 +72,19 @@ const char *name()
   return C_("modulename", "sharpen");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("sharpen", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -91,8 +95,9 @@ void init_presets(dt_iop_module_so_t *self)
                              1);
   // restrict to raw images
   dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
-  // make it auto-apply for matching images:
-  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
+  // make it auto-apply if needed for matching images:
+  const gboolean auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), auto_apply);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -116,7 +121,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
-  dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->data;
+  dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->global_data;
   cl_mem dev_m = NULL;
   cl_mem dev_tmp = NULL;
   cl_int err = -999;
@@ -294,7 +299,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  float *const tmp = dt_alloc_align(16, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -305,7 +310,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
   const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(16, mat_size);
+  float *const mat = dt_alloc_align(64, mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
@@ -318,7 +323,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -328,7 +335,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(i = rad; i < roi_out->width - wd4 * 4 + rad; i++)
     {
       const float *inp = in - ch * rad;
-      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * ch)
       {
@@ -358,7 +365,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // gauss blur the image vertically
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
@@ -370,7 +379,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int i = 0; i < roi_out->width; i++)
     {
       const float *inp = in - step * rad;
-      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       for(int k = 0; k < wd4 * 4; k += 4, inp += step * 4)
       {
@@ -385,7 +394,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
@@ -418,7 +429,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_free_align(tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_out) \
+  schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - rad; j++)
   {
@@ -429,7 +442,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j = 0; j < roi_out->height; j++)
@@ -478,7 +493,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     return;
   }
 
-  float *const tmp = dt_alloc_align(16, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -489,7 +504,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
   const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(16, mat_size);
+  float *const mat = dt_alloc_align(64, mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
@@ -502,7 +517,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -512,7 +529,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     for(i = rad; i < roi_out->width - wd4 * 4 + rad; i++)
     {
       const float *inp = in - ch * rad;
-      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
       __m128 msum = _mm_setzero_ps();
 
       for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * ch)
@@ -543,7 +560,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 // gauss blur the image vertically
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
@@ -552,7 +571,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     const int step = roi_in->width;
 
-    __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -571,7 +590,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
@@ -606,7 +627,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_free_align(tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_out) \
+  schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - rad; j++)
   {
@@ -617,7 +640,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
+  shared(data) \
+  schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j = 0; j < roi_out->height; j++)
@@ -713,7 +739,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_sharpen_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_sharpen_params_t));
   module->default_enabled = 0;
-  module->priority = 742; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){ 2.0, 0.5, 0.5 };
@@ -736,6 +761,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

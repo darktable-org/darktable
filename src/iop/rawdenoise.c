@@ -29,7 +29,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -71,6 +70,7 @@ typedef struct dt_iop_rawdenoise_gui_data_t
   dt_iop_rawdenoise_params_t drag_params;
   int dragging;
   int x_move;
+  int timeout_handle;
   dt_iop_rawdenoise_channel_t channel;
   float draw_xs[DT_IOP_RAWDENOISE_RES], draw_ys[DT_IOP_RAWDENOISE_RES];
   float draw_min_xs[DT_IOP_RAWDENOISE_RES], draw_min_ys[DT_IOP_RAWDENOISE_RES];
@@ -129,9 +129,14 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("raw denoise", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -235,7 +240,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     const int halfheight = roi->height / 2 + (roi->height & (~c) & 1);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, fimg, roi, size, halfwidth) \
+    shared(c) \
+    schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
@@ -255,7 +263,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
 // filter horizontally and transpose
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass2) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int col = 0; col < halfwidth; col++)
       {
@@ -264,7 +275,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       }
 // filter vertically and transpose back
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass2, pass3) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int row = 0; row < halfheight; row++)
       {
@@ -274,7 +288,9 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass3, thold) \
+      shared(lev)
 #endif
       for(size_t i = 0; i < (size_t)halfwidth * halfheight; i++)
       {
@@ -286,7 +302,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       lastpass = pass3;
     }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c, lastpass) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(fimg, halfwidth, out, roi) \
+    shared(c, lastpass) \
+    schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
@@ -390,7 +409,10 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     memset(fimg, 0, size * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans) \
+    shared(c) \
+    schedule(static)
 #endif
     for(int row = (c != 1); row < height - 1; row++)
     {
@@ -423,20 +445,28 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
 
 // filter horizontally and transpose
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, height, pass1, pass2, width) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int col = 0; col < width; col++)
         hat_transform(fimg + pass2 + (size_t)col * height, fimg + pass1 + col, width, height, 1 << lev);
 // filter vertically and transpose back
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, height, pass2, pass3, width) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int row = 0; row < height; row++)
         hat_transform(fimg + pass3 + (size_t)row * width, fimg + pass2 + row, height, width, 1 << lev);
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, pass1, pass3, size, thold) \
+      shared(lev)
 #endif
       for(size_t i = 0; i < size; i++)
       {
@@ -449,7 +479,10 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c, lastpass, out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(height, fimg, roi, width, xtrans) \
+    shared(c, lastpass, out) \
+    schedule(static)
 #endif
     for(int row = 0; row < height; row++)
     {
@@ -520,13 +553,12 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL;
+  module->global_data = NULL;
   module->params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 99; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
   dt_iop_rawdenoise_params_t tmp;
@@ -547,8 +579,10 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
+  free(module->global_data);
+  module->global_data = NULL;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -569,7 +603,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_RAWDENOISE_BANDS, NULL, d->force[ch]);
   }
 
-  if (!(pipe->image.flags & DT_IMAGE_RAW))
+  if (!(dt_image_is_raw(&pipe->image)))
     piece->enabled = 0;
 }
 
@@ -600,8 +634,12 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
+  if(g->timeout_handle)
+  {
+    g_source_remove(g->timeout_handle);
+    g->timeout_handle = 0;
+  }
+  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
@@ -774,7 +812,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(desc, (.06 * height) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, (.08 * height) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
@@ -815,6 +853,17 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -833,13 +882,17 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
     {
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else
   {
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(
@@ -915,6 +968,7 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -973,11 +1027,12 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
+  c->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
@@ -993,6 +1048,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
   c->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(c->threshold, 0.0, 1.0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->threshold), TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(c->threshold, NULL, _("noise threshold"));
   g_signal_connect(G_OBJECT(c->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
@@ -1023,6 +1079,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

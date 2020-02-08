@@ -46,7 +46,10 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
   const int st = step / 2;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
+  shared(buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -66,7 +69,10 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
       gbuf(buf, i, j) += _from_uint8(gbuf(buf, i - st, j)) / 2;
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
+  shared(buf) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -184,7 +190,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 #endif
 #undef CHANNEL
 
-#if 0 // simple high pass filter, doesn't work on slighty unsharp/high iso images
+#if 0 // simple high pass filter, doesn't work on slightly unsharp/high iso images
   memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
@@ -216,7 +222,8 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 }
 
 static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int buffer_width,
-                                   int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols)
+                                   int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols,
+                                   float full_zoom, float full_x, float full_y)
 {
   const int fs = frows * fcols;
   cairo_save(cr);
@@ -263,7 +270,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
       dt_dev_pixelpipe_synch_all(&pipe, &dev);
       dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
                                       &pipe.processed_height);
-      dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, fs * 3);
+      dt_dev_distort_transform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, pos, fs * 3);
       dt_dev_pixelpipe_cleanup(&pipe);
       wd = pipe.processed_width;
       ht = pipe.processed_height;
@@ -271,11 +278,23 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
     dt_dev_cleanup(&dev);
   }
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-  const float scale = fminf((width-2*tb) / (float)wd, (height-2*tb) / (float)ht);
+  const int32_t tb = darktable.develop->border_size;
+  const float scale = fminf((width - 2 * tb) / (float)wd, (height - 2 * tb) / (float)ht) * full_zoom;
   cairo_scale(cr, scale, scale);
+  float fx = 0.0f;
+  float fy = 0.0f;
+  if(full_zoom > 1.0f)
+  {
+    // we want to be sure the image stay in the window
+    fx = fminf((wd * scale - width) / 2, fabsf(full_x));
+    if(full_x < 0) fx = -fx;
+    if(wd * scale <= width) fx = 0;
+    fy = fminf((ht * scale - height) / 2, fabsf(full_y));
+    if(full_y < 0) fy = -fy;
+    if(ht * scale <= height) fy = 0;
+  }
 
-  cairo_translate(cr, -wd / 2.0f, -ht / 2.0f);
+  cairo_translate(cr, -wd / 2.0f + fx / scale, -ht / 2.0f + fy / scale);
 
   cairo_rectangle(cr, 0, 0, wd, ht);
   cairo_clip(cr);

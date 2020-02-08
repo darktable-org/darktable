@@ -252,7 +252,7 @@ static int creator_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.creator", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.creator", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -276,7 +276,7 @@ static int publisher_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.publisher", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.publisher", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -300,7 +300,7 @@ static int title_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -324,7 +324,7 @@ static int description_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.description", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.description", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -348,7 +348,7 @@ static int rights_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3), TRUE, TRUE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -514,9 +514,9 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, filename, const char_filename_length);
   luaA_struct_member(L, dt_image_t, width, const int32_t);
   luaA_struct_member(L, dt_image_t, height, const int32_t);
-  luaA_struct_member(L, dt_image_t, longitude, protected_double); // set to NAN if value is not set
-  luaA_struct_member(L, dt_image_t, latitude, protected_double); // set to NAN if value is not set
-  luaA_struct_member(L, dt_image_t, elevation, protected_double); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.longitude, protected_double, longitude); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.latitude, protected_double, latitude); // set to NAN if value is not set
+  luaA_struct_member_name(L, dt_image_t, geoloc.elevation, protected_double, elevation); // set to NAN if value is not set
 
   dt_lua_init_int_type(L, dt_lua_image_t);
 

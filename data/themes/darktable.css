@@ -1,0 +1,1370 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2019 Aurélien Pierre.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* This has been tested with GTK 3.24 on Gnome */
+
+/* Perceptually uniform grey gradient */
+
+/* grey_00 = pure black is forbidden for visual assessment */
+@define-color grey_00 #000000;
+@define-color grey_05 #111111;
+@define-color grey_10 #1b1b1b;
+@define-color grey_15 #262626;
+@define-color grey_20 #303030;
+@define-color grey_25 #3b3b3b;
+@define-color grey_30 #474747;
+@define-color grey_35 #525252;
+@define-color grey_40 #5e5e5e;
+@define-color grey_45 #6a6a6a;
+@define-color grey_50 #777777;
+@define-color grey_55 #848484;
+@define-color grey_60 #919191;
+@define-color grey_65 #9e9e9e;
+@define-color grey_70 #ababab;
+@define-color grey_75 #b9b9b9;
+@define-color grey_80 #c6c6c6;
+@define-color grey_85 #d4d4d4;
+@define-color grey_90 #e2e2e2;
+@define-color grey_95 #f1f1f1;
+@define-color grey_100 #ffffff;
+/* grey_100 = pure white is forbidden for visual assessment */
+
+
+/* General rules :
+
+  * keep just enough contrast in the UI to make text readable, but not
+  too much to avoid distractions from the picture,
+  * avoid sharp and unnecessary details for the same reason (shadows,
+  borders, colors, fancy bits). Use plain shapes and flat design.
+  * keep 50 % distance between background and foreground colors for active controls
+  * keep 30 % distance between background and foreground colors for labels and info
+  * keep 10 % distance between background and foreground colors for insensitive controls
+  * events are ± 20 % from the normal color
+  * borders and accents are ± 5 % from the background
+  * buttons and control follow Google Material Design principles :
+    https://material.io/design/
+  * create optical margins by aligning content properly, not by using borders.
+*/
+
+
+/* General */
+@define-color selected_bg_color @grey_35; /* legacy stuff */
+@define-color border_color @grey_10; /* border, when used */
+@define-color bg_color @grey_15; /* general background */
+@define-color fg_color @grey_70; /* general text */
+@define-color base_color @fg_color; /* legacy stuff */
+@define-color text_color @grey_05; /* same */
+@define-color disabled_fg_color @grey_40; /* disabled controls */
+
+/* Scroll bars (sliders) */
+@define-color scroll_bar_inactive @grey_40;
+@define-color scroll_bar_active @grey_50;
+@define-color scroll_bar_bg @grey_10;
+
+/* Modules box (plugins) */
+@define-color plugin_bg_color @grey_20;
+@define-color plugin_fg_color @grey_70;
+@define-color section_label @grey_60;
+@define-color plugin_label_color @grey_60;
+
+/* Modules controls (sliders and comboboxes) */
+@define-color bauhaus_fg @grey_70;
+@define-color bauhaus_border shade(@plugin_bg_color, 0.5);
+@define-color bauhaus_indicator_border @grey_20;
+@define-color bauhaus_fill @grey_40;
+@define-color bauhaus_bg @grey_15;
+@define-color bauhaus_fg_hover @grey_90;
+@define-color bauhaus_fg_selected @grey_80;
+@define-color bauhaus_fg_disabled @grey_70;
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+
+/* GTK Buttons and tabs */
+@define-color button_border @grey_30;
+@define-color button_bg @grey_25;
+@define-color button_fg @grey_65;
+@define-color button_checked_bg @grey_45;
+@define-color button_checked_fg @grey_85;
+@define-color button_hover_bg @grey_50;
+@define-color button_hover_fg @grey_15;
+
+/* text fields */
+@define-color field_bg @grey_15;
+@define-color field_fg @grey_65;
+@define-color field_active_bg @grey_25;
+@define-color field_active_fg @grey_75;
+@define-color field_selected_bg @grey_35;
+@define-color field_selected_fg @grey_85;
+@define-color field_hover_bg @grey_45;
+@define-color field_hover_fg @grey_95;
+
+/* Tooltips and contextual helpers */
+@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_fg_color @grey_70;
+@define-color really_dark_bg_color @grey_05;
+@define-color log_bg_color @grey_25;
+@define-color log_fg_color @grey_65;
+
+/* Views */
+@define-color darkroom_bg_color @grey_45;
+@define-color darkroom_preview_bg_color @grey_35;
+@define-color lighttable_bg_color @grey_45;
+@define-color lighttable_preview_bg_color @grey_35;
+@define-color lighttable_bg_font_color @grey_75;
+@define-color print_bg_color @grey_45;
+
+/* Brushes */
+@define-color brush_cursor alpha(white, .9);
+@define-color brush_trace alpha(black, .8);
+
+/* Lighttable and film-strip */
+@define-color thumbnail_font_color @grey_50;
+@define-color thumbnail_bg_color @grey_40; /* area between border and outline */
+@define-color thumbnail_outline_color @grey_50; /* square around image+metadata */
+@define-color thumbnail_selected_font_color @grey_50;
+@define-color thumbnail_selected_bg_color @grey_60;
+@define-color thumbnail_selected_outline_color @grey_50;
+@define-color thumbnail_hover_font_color @grey_50;
+@define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_hover_outline_color @grey_50;
+@define-color filmstrip_bg_color @darkroom_bg_color;
+@define-color culling_selected_border_color @grey_10;
+@define-color culling_filmstrip_selected_border_color @grey_10;
+
+/* Graphs : histogram, navigation thumbnail and some items on tone curve */
+@define-color graph_bg @grey_10;
+@define-color graph_border @grey_05;
+@define-color graph_fg @grey_75;
+@define-color graph_fg_active @grey_95;
+@define-color graph_grid @grey_05;
+@define-color inset_histogram alpha(@grey_65, 0.50);
+
+/* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
+
+*
+{
+  background-color: @bg_color;
+  background-image: none;
+  font-family: sans-serif;
+  font-size: 1em;
+  color: @fg_color;
+  text-shadow:none;
+  box-shadow:none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline-style:none;
+  min-width: 0;
+  min-height: 0;
+}
+
+#lib-plugin-ui,
+#iop-plugin-ui,
+#lib-modulelist,
+#modules-tabs,
+#left,
+#right,
+combobox,
+combobox *,
+togglebutton,
+togglebutton *,
+notebook,
+notebook *,
+notebook tab,
+notebook tab *,
+table,
+table *,
+row,
+row *,
+frame,
+frame *,
+filechooser,
+filechooser *,
+filechooserdialog,
+filechooserdialog *,
+alignment,
+entry,
+entry *,
+dialog,
+dialog *,
+colorswatch,
+colorswatch *,
+stack,
+stack *,
+scrollbar,
+scrollbar *,
+eventbox,
+eventbox *,
+scale,
+scale *,
+button,
+button *,
+treeview,
+treeview *,
+menu,
+menu *,
+separator,
+eventbox,
+eventbox *,
+box,
+box *
+{
+  background-color: transparent;
+}
+
+/* General properties */
+
+*:disabled
+{
+  color: @disabled_fg_color;
+}
+
+/* Side panels */
+
+/* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
+*  are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well
+*/
+
+#outer-border
+{
+  background-color: @border_color;
+  min-width: 20px;
+}
+#resize-border
+{
+  background-color: #ff0000;
+}
+#left
+{
+  /* left sidebar */
+}
+
+#right
+{
+  /* right sidebar */
+}
+
+#header-toolbar,
+#footer-toolbar
+{
+  padding: 0.20em 0.40em;
+}
+
+/* Frame around modules boxes */
+/* NOTE : Bauhaus controls inherit their font properties from there */
+
+#lib-plugin-ui,
+#iop-plugin-ui
+{
+  border-radius: 0;
+  color: @plugin_fg_color;
+  background-color: @plugin_bg_color;
+}
+
+#iop-plugin-ui-main,
+#lib-plugin-ui-main,
+#blending-box
+{
+  padding: 0.75em;
+}
+
+#module-header
+{
+  /* module name */
+  padding: 0.5em 0.5em 0.25em 0.5em;
+}
+
+/* GTK Buttons */
+
+button
+{
+  border-radius: 2px;
+  padding: 1px;
+  border: 1px solid @button_border;
+  background-color: @button_bg;
+  color: @button_fg;
+  font-weight: normal;
+  font-family: sans-serif;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+#recent-collection-button,
+#history-button,
+#history-button-enabled,
+#history-button-always-enabled,
+#history-button-default-enabled
+{
+  /* Exception because history and recent collections modules make use of a
+   * list of GTK buttons but we don't want them to look like action buttons */
+  background-color: transparent;
+  border-color: transparent;
+  border: 0;
+  font-weight: normal;
+}
+
+#history-number
+{
+   padding-right: 4px;
+   font-family: monospace;
+}
+
+#dt-button button,
+#dt-toggle-button button,
+#dt-icon
+{
+  border-radius: 2px;
+}
+
+#iop-plugin-ui button,
+#lib-plugin-ui button
+{
+  margin: 2pt;
+  padding: 2pt;
+}
+
+/* Buttons in toolbars in lighttable and darkroom */
+#header-toolbar #dt-toggle-button,
+#header-toolbar #dt-button,
+#footer-toolbar #dt-toggle-button,
+#footer-toolbar #dt-button
+{
+  padding: 0.9em;
+  min-height: 0.9em; /* Align toolbox button height on comboboxe's one */
+  min-width: 0.9em;
+  border: 0;
+  font-size: .7em;
+}
+
+/* Buttons in modules header, near the module name */
+#module-preset-button * button,
+#module-reset-button * button,
+#module-enable-button * button,
+#module-instance-button * button,
+#module-enable-button * button,
+#module-collapse-button * button
+{
+  background-color: transparent;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+#module-always-enabled-button /* Button on always activated module */
+{
+  color: @plugin_label_color;
+}
+
+/* Button to open/close the dropdown section, especially header ones */
+#control-button
+{
+    background-color: transparent;
+    min-height: 1em;
+    min-width: 1em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+}
+
+/* Adjust size of button arrow to open/close dropdown on panels */
+#iop-plugin-ui #control-button,
+#lib-plugin-ui #control-button
+{
+    background-color: transparent;
+    min-height: 1em;
+    min-width: 1em;
+    padding: 0.6em;
+    margin: 0;
+    border: 0;
+}
+
+#right #iop-plugin-ui #control-button /* especially for display arrow option on module filmic and if necessary other modules */
+{
+    background-color: transparent;
+    min-height: 0.9em;
+    min-width: 0.9em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+}
+
+/* Checkbox */
+
+#lib-plugin-ui checkbutton check,
+#iop-plugin-ui checkbutton check,
+checkbutton check
+{
+  background-color: @bauhaus_bg;
+  color: @bauhaus_fg;
+  border: 1pt solid @border_color;
+}
+
+/* Text fields and text boxes */
+
+entry
+{
+  border-radius: 2pt;
+  border: 0.5pt solid @border_color;
+  color: @field_fg;
+  background-color: @field_bg;
+  min-height: 0;
+  min-width: 0;
+  padding-left: 3pt;
+}
+
+entry selection
+{
+  background-color: @field_selected_bg;
+}
+
+/* Labels in views */
+
+#header_label,
+#darktable_label,
+#view_label,
+#view_dropdown
+{
+  background-color: transparent;
+  font-size: 1.5em;
+  margin:0;
+  border:0;
+  padding:0;
+}
+
+/* Labels in modules */
+#iop-panel-label,
+#lib-panel-label
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  border:0;
+  padding: 0 2pt 2pt 0.5em;
+  font-weight: normal;
+  font-family: sans-serif;
+  font-size: 1.1em;
+}
+
+/* Labels of controls sections in modules */
+#section_label
+{
+  margin: 0 0 6pt 0;
+  padding: 0 0 3pt 0;
+  color: @section_label;
+  border-bottom: 0.5pt solid  @section_label;
+  font-weight: 500;
+  font-family: sans-serif;
+}
+
+#iop-plugin-ui #section_label,
+#lib-plugin-ui #section_label
+{
+  margin: 12pt 0 6pt 0;
+}
+
+/* Special modules */
+
+#lib-modulelist
+{
+}
+
+#search-box
+{
+  margin: 0.25em 0.5em;
+}
+
+#search-box label
+{
+  margin-right: 0.5em;
+}
+
+#image-info
+{
+  font-size: 1.2em;
+  padding: 0.25em;
+}
+
+/* Widget for parametric blending options in modules */
+
+#blending-box #section_label
+{
+  margin: 0 0 6pt 0;
+}
+
+/* GTK sliders and scales */
+/* WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) */
+
+#lib-plugin-ui scrollbar slider,
+#iop-plugin-ui scrollbar slider,
+scrollbar slider,
+dialog scrollbar slider
+{
+  background-color: @scroll_bar_inactive;
+  border: 2pt solid transparent;
+  margin: 0;
+  min-width: 4pt;
+  min-height: 4pt;
+}
+
+scale contents trough
+{
+  background-color: @scroll_bar_bg;
+  border-radius: 2pt;
+  min-width: 0.5em;
+  min-height: 0.5em;
+}
+
+scale entry
+{
+  background-color: @field_bg;
+}
+
+scale contents trough highlight
+{
+  min-height: 0;
+  min-width: 0;
+  background-color: @button_bg;
+}
+
+scale contents trough slider
+{
+  border: 0.5pt solid @border_color;
+  font-size: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
+  background-color: @scroll_bar_inactive;
+}
+
+scrollbar,
+dialog scrollbar
+scrollbar,
+#iop-plugin-ui scrollbar,
+#lib-plugin-ui scrollbar,
+dialog scrollbar
+{
+  border-color: @scroll_bar_bg;
+  background: @scroll_bar_bg;
+  border-radius: 4pt;
+  min-height: 4pt;
+  min-width: 4pt;
+  margin: 1pt;
+}
+
+/* Context menu & tooltips & comboboxes */
+/* Basically everything that pops out/over on UI */
+
+combobox,
+combobox button
+{
+  border: 1px solid transparent;
+  padding: 1px;
+  background-color: transparent;
+  border-radius: 2pt;
+  color: @bauhaus_fg;
+  outline-style: none;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+combobox entry
+{
+  margin: 0 0.5em;
+}
+
+combobox *
+{
+  min-height: 1em;
+  min-width: 1em;
+}
+
+context-menu,
+menu,
+menuitem > menu, /* sub-menu */
+menuitem arrow,
+tooltip,
+popover,
+#background_job_eventbox,
+combobox window,
+dialog combobox window
+{
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
+  outline-style:none;
+  border-radius: 2pt;
+  border: 0;
+  outline-style: none;
+  min-height: 0.4em;
+  min-width: 0.4em;
+  padding: 0.4em;
+}
+
+/* Views links in header */
+
+#view_dropdown,
+#view_label
+{
+  background-color: transparent;
+  outline-style:none;
+  border-radius: 2px;
+  padding: 0.4em;
+  color: @section_label;
+}
+
+#view_label {
+  margin: 0.1em 0;
+}
+
+/* Menus options */
+
+menuitem button,
+popover button,
+tooltip button
+{
+  background-color: transparent;
+}
+
+menuitem check
+{
+  border-radius: 2px;
+  border: 1px solid shade(@tooltip_bg_color, 4);
+  min-width: 10px;
+  min-height: 10px;
+  margin-right: 5px;
+}
+
+/* header and footer combobox */
+#header-toolbar combobox,
+#footer-toolbar combobox
+{
+  margin: 0 0.5em;
+}
+
+/* Dialog windows */
+
+dialog,
+filechooserdialog
+{
+  background-color: @plugin_bg_color;
+  color: @plugin_fg_color;
+}
+
+dialog *,
+filechooserdialog *
+{
+  margin: 1px;
+  padding: 0;
+}
+
+dialog headerbar,
+filechooserdialog headerbar
+{
+  background-color: @border_color;
+  margin: 0;
+  padding: 0.1em 0.6em;
+}
+
+dialog headerbar button,
+filechooserdialog headerbar button
+{
+  padding: 1px 5px;
+}
+
+dialog button,
+filechooserdialog button
+{
+  padding: 1px;
+}
+
+dialog scrolledwindow,
+filechooserdialog scrolledwindow
+{
+  padding: 0 1px 0 8px;
+  margin: 0;
+}
+
+.dialog-vbox treeview check
+{
+  border-radius: 2px;
+  border: 1px solid @border_color;
+  background-color: shade(@bg_color, 0.7);
+}
+
+/* Tree view (lists and tables) */
+
+treeview,
+filechooserwidget treeview
+{
+  background-color: @field_bg;
+  color: @field_fg;
+}
+
+treeview header button
+{
+  background-color: @button_bg;
+  color: @button_fg;
+  padding: 1px 5px;
+}
+
+
+/* GTK Notebooks tabs */
+
+notebook tabs,
+#modules-tabs,
+#blending-tabs
+{
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: @button_fg;
+  font-weight: normal;
+  font-family: sans-serif;
+}
+
+#modules-tabs,
+#blending-tabs
+{
+  background-color: @button_bg;
+}
+
+#modules-tabs #dt-toggle-button
+{
+  min-height: 2em;
+  min-width: 2em;
+  margin: 0;
+  padding: 0.1em;
+}
+
+#blending-tabs *
+{
+  font-size: 0.8em;
+  min-height: 1.5em;
+  min-width: 1.5em;
+  padding: 0.2em;
+  margin: 0;
+}
+
+notebook tab
+{
+  border-bottom: 2px solid transparent;
+  padding: 3px;
+  font-weight: normal;
+}
+
+notebook tab label /* disabled tabs */
+{
+  color: shade(@button_checked_fg, 0.75);
+  font-weight: normal;
+}
+
+notebook header /* add space between notebook tabs and options below */ 
+{
+  margin-bottom: 5px;
+}
+
+/* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
+
+#preferences_notebook
+{
+  margin: 0;
+  background-color: @plugin_bg_color;
+}
+
+#preferences_notebook scrolledwindow label,
+#preferences_notebook scrolledwindow entry,
+#preferences_notebook scrolledwindow button
+{
+  padding: 0px;
+  margin: 3px 0;
+}
+
+/* Bauhaus controls (sliders and comboboxes in modules) */
+
+#bauhaus-popup
+{
+  background-color: @really_dark_bg_color;
+  color: @bauhaus_fg;
+}
+
+#bauhaus-popup:selected
+{
+  color: @bauhaus_fg_selected;
+}
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
+/* separator */
+
+separator
+{
+  color: @border_color;
+  border-style: solid;
+  border-width: 1px;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+separator:hover
+{
+  color: @button_border;
+}
+
+/* empty space at top/bottom of sidepanels when scrolled */
+undershoot,
+undershoot.top,
+undershoot.bottom,
+undershoot.left,
+undershoot.right,
+overshoot,
+overshoot.top,
+overshoot.bottom,
+overshoot.left,
+overshoot.right
+{
+  background: transparent;
+  border:none;
+}
+
+
+/* Rating stars in lighttable */
+#lib-rating-stars
+{
+  min-height: 1em;
+  min-width: 9em;
+  margin-right: 1em;
+}
+
+/* Special modules */
+#navigation-module
+{
+  background-color: @graph_bg;
+}
+
+
+/* GTK widget inner margins */
+
+#lib-plugin-ui combobox,
+#iop-plugin-ui combobox
+{
+  margin: 2px 0;
+}
+
+/* entries options */
+entry
+{
+  margin: 2px 0;
+}
+
+#left #lib-plugin-ui entry /* This will avoid have too much height on entry items in filter collections modules */
+{
+  padding: 0px;
+  margin: 8px 0px;
+}
+
+#left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry items in clone manager without touching other parts of the UI */
+{
+  padding: 0px;
+  margin: 45px 3px;
+  min-width: 100px;
+}
+
+#right #lib-plugin-ui entry /* This will adjust entry height on right panel */
+{
+  padding: 1px;
+}
+
+/* checkbutton check state */
+#lib-plugin-ui checkbutton check,
+#iop-plugin-ui checkbutton check,
+checkbutton check
+{
+  margin: 5px 8px 5px 0;
+}
+
+/* arrow size of dropdown button arrow on filter collection */
+#left #lib-plugin-ui #dt-button
+{
+  padding: 0px;
+}
+
+/* arrow size of some buttons on darkroom modules */
+#iop-plugin-ui #dt-button
+{
+  padding: 2px;
+}
+
+/* choose below spacing between history items in darkroom */
+#left #history-button,
+#left #history-button-enabled,
+#left #history-switch,
+#left #history-switch-enabled,
+#left #history-button-enabled,
+#left #history-switch-deprecated,
+#left #history-button-always-enabled,
+#left #history-switch-always-enabled,
+#left #history-button-default-enabled,
+#left #history-switch-default-enabled
+{
+  padding: 1px 2px 2px 2px;
+  margin: 0px 1px 1px 1px;
+}
+
+/* then font size */
+#left #history-switch-always-enabled,
+#left #history-switch-default-enabled,
+#left #history-switch,
+#left #history-switch-enabled
+{
+  font-size: 0.6em;
+}
+
+#left #history-switch-deprecated
+{
+  font-size: 0.5em;
+}
+
+/* other stuff */
+#iop-bottom-bar
+{
+    min-height: 1.2em;
+}
+
+combobox label
+{
+  margin: 0 5px 0 0;
+}
+
+/* STUFF TO MERGE WITH ABOVE RULES */
+
+/* about darktable dialog popup */
+aboutdialog,
+aboutdialog box,
+aboutdialog box *
+{
+  background-color: @bg_color;
+}
+
+aboutdialog headerbar
+{
+  padding: 2px;
+}
+
+/* progress bar on bottom left side when exporting, importing, etc... */
+progressbar *
+{
+  background-color: @text_color;
+}
+
+progressbar
+{
+  background-color: @really_dark_bg_color;
+}
+
+progressbar progress
+{
+  background-color: @fg_color;
+}
+
+/* filechooser sidebar options */
+filechooser sidebar-icon
+{
+  padding: 0px 5px 0px 10px;
+}
+
+filechooser sidebar-row
+{
+  padding-top: 3px;
+}
+
+/* other stuff */
+cell:selected
+{
+  background-color: shade(@selected_bg_color, 1.2);
+}
+
+#show_mask_button
+{
+    color: #ffff00;
+}
+
+/* Preferences dialog window options */
+
+#preferences_notebook scrolledwindow viewport {
+  padding: 5px;
+}
+
+#preferences_notebook scrolledwindow label {
+  min-height: 1.5em;
+}
+
+#preferences_notebook scrolledwindow #pref_section > label
+{
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+#preferences_notebook scrolledwindow #pref_section
+{
+    margin-top: 1.1em;
+}
+
+#preferences_notebook scrolledwindow #pref_section:first-child
+{
+    margin-top: 0;
+}
+
+/* Color picker module in darkroom left panel */
+
+#color-picker-area
+{
+    min-height: 9em;
+    min-width: 9em;
+}
+
+#live-sample
+{
+    padding: 1pt;
+    min-height: 1em;
+    min-width: 3em;
+}
+
+#live-sample-data
+{
+   font-family: monospace;
+}
+
+/* Accels window reminder */
+
+.accels_window_cat_title
+{
+   background-color: transparent;
+   font-weight: bold;
+   font-size: 1.1em;
+   padding: 10px 0px;
+}
+
+.accels_window_list button
+{
+   background-color: @button_bg;
+   border: 0px;
+}
+
+.accels_window_list label
+{
+   font-weight: bold;
+   font-size: 0.9em;
+   padding-top: 1px;
+   padding-right: 10px;
+}
+
+.accels_window_box treeview
+{
+   background-color: transparent;
+}
+
+.accels_window_stick
+{
+  min-width: 1.8em;
+  min-height : 1.8em;
+}
+
+/* Pseudo-classes : need to be defined last to not be overwritten */
+/* All states options are designed below, active, hover, selected, disabled and check states */
+
+/* main states */
+* button:selected,
+* button:active,
+* button:checked,
+button:selected,
+button:active,
+button:checked,
+menuitem:selected,
+combobox window *:selected,
+menuitem:active,
+combobox window *:active,
+#recent-collection-button:selected,
+#history-button:selected,
+#history-button-enabled:selected,
+#history-button-always-enabled:selected,
+#history-button-default-enabled:selected,
+#recent-collection-button:active,
+#history-button:active,
+#history-button-enabled:active,
+#history-button-always-enabled:active,
+#history-button-default-enabled:active,
+#recent-collection-button:checked,
+#history-button:checked,
+#history-button-enabled:checked,
+#history-button-always-enabled:checked,
+#history-button-default-enabled:checked,
+#iop-plugin-ui button:active,
+#lib-plugin-ui button:active,
+#iop-plugin-ui #control-button:active,
+#lib-plugin-ui #control-button:active,
+#right #iop-plugin-ui #control-button:active
+{
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
+}
+
+/* history currently selected button */
+#history-button:selected *,
+#history-button-enabled:selected *,
+#history-button-always-enabled:selected *,
+#history-button-default-enabled:selected *,
+#history-button:active *,
+#history-button-enabled:active *,
+#history-button-always-enabled:active *,
+#history-button-default-enabled:active *,
+#history-button:checked *,
+#history-button-enabled:checked *,
+#history-button-always-enabled:checked *,
+#history-button-default-enabled:checked *
+{
+    color: @button_checked_fg;
+}
+
+/* hover states, some needed background only, other color only and some both */
+* button:hover,
+button:hover,
+menuitem:hover,
+menuitem:hover arrow,
+combobox window *:hover,
+#recent-collection-button:hover,
+#history-button:hover,
+#history-button-enabled:hover,
+#history-button-always-enabled:hover,
+#history-button-default-enabled:hover,
+#iop-plugin-ui button:hover,
+#lib-plugin-ui button:hover,
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover,
+#control-button:hover,
+#view_label:hover,
+#view_dropdown menuitem:hover,
+#view_dropdown:hover
+{
+  background-color: @button_hover_bg;
+}
+
+* button:hover,
+button:hover,
+button:hover label,
+button:hover cellview,
+notebook tab:hover label,
+#header-toolbar menuitem:hover *,
+#footer-toolbar menuitem:hover *,
+#lib-plugin-ui menuitem:hover *,
+#preferences_notebook menuitem:hover *,
+#recent-collection-button:hover,
+#history-button:hover *,
+#history-button-enabled:hover *,
+#history-button-always-enabled:hover *,
+#history-button-default-enabled:hover *,
+#iop-plugin-ui button:hover,
+#lib-plugin-ui button:hover,
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover,
+#control-button:hover,
+#view_label:hover,
+#view_dropdown menuitem:hover,
+#view_dropdown .combo:hover *
+{
+  color: @button_hover_fg;
+}
+
+/* last history needed states */
+#history-button-enabled *
+{
+  color: @plugin_fg_color;
+  background-color: transparent;
+}
+
+#history-button *
+{
+  color: shade(@plugin_fg_color, 0.7);
+  background-color: transparent;
+}
+
+/* disabled buttons */
+button:disabled,
+#recent-collection-button:disabled
+{
+  color: @disabled_fg_color;
+  background-color: transparent;
+}
+
+/* deactivated switch buttons, make them less visible */
+#history-switch:disabled
+{
+    color: shade(@plugin_label_color, .7);
+    background-color: transparent;
+}
+
+/* deprecated/always-on switch are visible */
+#history-switch-deprecated:disabled,
+#history-switch-always-enabled:disabled,
+#history-switch-enabled:disabled,
+#history-switch-default-enabled:disabled
+{
+    color: @plugin_label_color;
+}
+
+/* Treeviews and filechoosers states */
+treeview:not(#lutname) *:hover,
+filechooser *:hover
+{
+    background-color: @field_hover_bg;
+    color: @field_hover_fg;
+}
+
+treeview *:active,
+filechooser *:active
+{
+    background-color: @field_active_bg;
+    color: @field_active_fg;
+}
+
+treeview *:selected,
+treeview *:checked,
+filechooser *:selected,
+filechooser *:checked
+{
+    background-color: @field_selected_bg;
+    color: @field_selected_fg;
+}
+
+filechooser checkbutton:checked
+{
+    background-color: transparent;
+}
+
+/* Views links states in header */
+#view_dropdown *:selected,
+#view_label:selected
+{
+  color: @plugin_fg_color;
+}
+
+#view_label:disabled
+{
+  color: @tooltip_bg_color;
+}
+
+#view_dropdown *:disabled
+{
+  color: @disabled_fg_color;
+}
+
+/* sliders states */
+#bauhaus-popup:hover,
+#bauhaus-combobox:hover,
+#bauhaus-slider:hover
+{
+  color: @bauhaus_fg_hover;
+}
+
+#bauhaus-popup:disabled,
+#bauhaus-combobox:disabled,
+#bauhaus-slider:disabled
+{
+  color: @bauhaus_fg_disabled;
+}
+
+#bauhaus-popup:disabled
+{
+  color: @plugin_bg;
+}
+
+/* notebooks states */
+notebook tab:hover
+{
+  border-bottom: 2px solid @button_hover_fg;
+  color: @button_hover_fg;
+  background-color: @button_hover_bg;
+}
+
+notebook tab:hover labelnotebook
+{
+  color: @button_hover_fg;
+}
+
+notebook tab:checked
+{
+  border-bottom: 2px solid @button_checked_fg;
+  color: @button_checked_fg;
+}
+
+notebook tab:checked label
+{
+  color: @button_checked_fg;
+}
+
+/* entries states */
+entry:hover
+{
+  color: @field_hover_fg;
+  background-color: @field_hover_bg;
+}
+
+entry:checked,
+entry:active
+{
+  color: @field_active_fg;
+  background-color: @field_active_bg;
+}
+
+entry:selected,
+label selection,
+textview text selection
+{
+  color: @field_selected_fg;
+  background-color: @field_selected_bg;
+}
+
+/* scrollbars hover state */
+scrollbar.horizontal slider:hover,
+scrollbar.vertical slider:hover,
+#iop-plugin-ui scrollbar slider:hover,
+#lib-plugin-ui scrollbar slider:hover,
+dialog scrollbar slider:hover,
+scale contents trough slider:hover
+{
+  background-color: @scroll_bar_active;
+}
+
+/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+
+#picker-black
+{
+  color: @grey_00;
+}
+
+#picker-grey
+{
+  color: @grey_50;
+}
+
+#picker-white
+{
+  color: @grey_100;
+}

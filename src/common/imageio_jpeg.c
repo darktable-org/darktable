@@ -82,10 +82,10 @@ static void dt_imageio_jpeg_term_source(j_decompress_ptr cinfo)
  * (64K), we need provisions to split it into multiple markers.  The format
  * defined by the ICC specifies one or more APP2 markers containing the
  * following data:
- *	Identifying string	ASCII "ICC_PROFILE\0"  (12 bytes)
- *	Marker sequence number	1 for first APP2, 2 for next, etc (1 byte)
- *	Number of markers	Total number of APP2's used (1 byte)
- *      Profile data		(remainder of APP2 data)
+ *  Identifying string  ASCII "ICC_PROFILE\0"  (12 bytes)
+ *  Marker sequence number  1 for first APP2, 2 for next, etc (1 byte)
+ *  Number of markers Total number of APP2's used (1 byte)
+ *      Profile data    (remainder of APP2 data)
  * Decoders should use the marker sequence numbers to reassemble the profile,
  * rather than assuming that the APP2 markers appear in the correct sequence.
  */
@@ -174,13 +174,13 @@ static int decompress_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
     {
-      free(row_pointer[0]);
+      dt_free_align(row_pointer[0]);
       return 1;
     }
     for(unsigned int i = 0; i < jpg->dinfo.image_width; i++)
@@ -189,7 +189,7 @@ static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
     }
     tmp += 4 * jpg->width;
   }
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   return 0;
 }
 
@@ -290,7 +290,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -302,7 +302,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
 }
@@ -531,16 +531,16 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = malloc((size_t)len * sizeof(unsigned char));
+      unsigned char *buf = dt_alloc_align(64, (size_t)len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
-      free(buf);
+      dt_free_align(buf);
     }
   }
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -552,7 +552,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   fclose(f);
   return 0;
@@ -615,14 +615,14 @@ static int read_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
     {
       jpeg_destroy_decompress(&(jpg->dinfo));
-      free(row_pointer[0]);
+      dt_free_align(row_pointer[0]);
       fclose(jpg->f);
       return 1;
     }
@@ -630,7 +630,7 @@ static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
       for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
     tmp += 4 * jpg->width;
   }
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   return 0;
 }
 
@@ -739,10 +739,10 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   img->width = jpg.width;
   img->height = jpg.height;
 
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * jpg.width * jpg.height * 4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
-    free(tmp);
+    dt_free_align(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
@@ -751,14 +751,14 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    free(tmp);
+    dt_free_align(tmp);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
   dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width,
                                        jpg.height, 4 * jpg.width, 0);
 
-  free(tmp);
+  dt_free_align(tmp);
 
   return DT_IMAGEIO_OK;
 }

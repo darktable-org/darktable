@@ -48,7 +48,7 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
     cache->size[k] = size;
     if(size)
     { // allow 0 initial buffer size (yet unknown dimensions)
-      cache->data[k] = (void *)dt_alloc_align(16, size);
+      cache->data[k] = (void *)dt_alloc_align(64, size);
       if(!cache->data[k]) goto alloc_memory_fail;
 #ifdef _DEBUG
       memset(cache->data[k], 0x5d, size);
@@ -63,7 +63,17 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   return 1;
 
 alloc_memory_fail:
-  dt_dev_pixelpipe_cache_cleanup(cache);
+  //  dt_dev_pixelpipe_cache_cleanup(cache);
+  // The above code seems to be not correct as failing to allocate the cache->data buffers
+  // should not cleanup the whole pixelpipe cache but only reset the buffers to null.
+  // A warning about low memory will appear but the pipeline still has valid data so dt won't crash
+  // but will only fail to generate thumbnails for example.
+  for(int k = 0; k < cache->entries; k++)
+  {
+    dt_free_align(cache->data[k]);
+    cache->size[k] = 0;
+    cache->data[k] = NULL;
+  }
   return 0;
 }
 
@@ -150,8 +160,6 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     cache->used[k]++; // age all entries
     if(cache->hash[k] == hash)
     {
-      assert(cache->size[k] >= size);
-
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
       sz = cache->size[k];
@@ -170,7 +178,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     if(cache->size[max] < size)
     {
       dt_free_align(cache->data[max]);
-      cache->data[max] = (void *)dt_alloc_align(16, size);
+      cache->data[max] = (void *)dt_alloc_align(64, size);
       cache->size[max] = size;
     }
     *data = cache->data[max];

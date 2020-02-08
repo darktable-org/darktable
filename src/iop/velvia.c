@@ -32,7 +32,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -89,15 +88,19 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("velvia", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones bias"));
 }
 
@@ -105,12 +108,11 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "vibrance",
+  dt_accel_connect_slider_iop(self, "strength",
                               GTK_WIDGET(g->strength_scale));
   dt_accel_connect_slider_iop(self, "mid-tones bias",
                               GTK_WIDGET(g->bias_scale));
 }
-#endif
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -140,7 +142,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_out, strength) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
@@ -186,7 +190,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, roi_out, strength) \
+    shared(in, out, data) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
@@ -240,7 +247,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
-  dt_iop_velvia_global_data_t *gd = (dt_iop_velvia_global_data_t *)self->data;
+  dt_iop_velvia_global_data_t *gd = (dt_iop_velvia_global_data_t *)self->global_data;
 
   cl_int err = -999;
 
@@ -352,7 +359,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_velvia_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_velvia_params_t));
   module->default_enabled = 0;
-  module->priority = 885; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
   dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){ 25, 1.0 };
@@ -364,6 +370,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)

@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+/** get the list of available tags from Exvi2 */
+GList *dt_get_exiv2_taglist();
+
 /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
  * struct. returns 0 on success. */
 int dt_exif_read(dt_image_t *img, const char *path);
@@ -38,6 +41,9 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 int dt_exif_read_blob(uint8_t **blob, const char *path, const int imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode);
 
+/** Reads exif DefaultUserCrop */
+void dt_img_check_usercrop(dt_image_t *img, const char *filename);
+
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
@@ -45,7 +51,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 int dt_exif_xmp_write(const int imgid, const char *filename);
 
 /** write xmp packet inside an image. */
-int dt_exif_xmp_attach(const int imgid, const char *filename);
+int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata);
 
 /** get the xmp blob for imgid. */
 char *dt_exif_xmp_read_string(const int imgid);

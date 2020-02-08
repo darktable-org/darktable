@@ -29,6 +29,11 @@
     length, ISO, camera model and other fields.
   </para>
 
+  <para>
+    As a convenience, a preset can be applied to a new module instance by pressing the
+    middle-click.
+  </para>
+
   <sect3 status="final" id="module_presets_new">
 
     <title>Creating a new preset</title>

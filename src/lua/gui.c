@@ -113,7 +113,67 @@ static int current_view_cb(lua_State *L)
   return 1;
 }
 
+static int panel_visible_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
 
+  if(lua_gettop(L) > 0)
+  {
+    gboolean result;
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    result = dt_ui_panel_visible(darktable.gui->ui, p);
+    lua_pushboolean(L, result);
+    return 1;
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
+static int panel_hide_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  if(lua_gettop(L) > 0)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    dt_ui_panel_show(darktable.gui->ui, p, FALSE, TRUE);
+    return 0;
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
+static int panel_show_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  if(lua_gettop(L) > 0)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    dt_ui_panel_show(darktable.gui->ui, p, TRUE, TRUE);
+    return 0;
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
+static int panel_hide_all_cb(lua_State *L)
+{
+  for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, FALSE, TRUE);
+  // code goes here
+  return 0;
+}
+
+static int panel_show_all_cb(lua_State *L)
+{
+  for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, TRUE, TRUE);
+  // code goes here
+  return 0;
+}
 
 typedef dt_progress_t *dt_lua_backgroundjob_t;
 
@@ -253,6 +313,21 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, current_view_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "current_view");
+    lua_pushcfunction(L, panel_visible_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_visible");
+    lua_pushcfunction(L, panel_hide_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_hide");
+    lua_pushcfunction(L, panel_show_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_show");
+    lua_pushcfunction(L, panel_hide_all_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_hide_all");
+    lua_pushcfunction(L, panel_show_all_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_show_all");
     lua_pushcfunction(L, lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "create_job");
@@ -262,6 +337,15 @@ int dt_lua_init_gui(lua_State *L)
     dt_lua_module_push(L, "view");
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "views");
+
+    luaA_enum(L,dt_ui_panel_t);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_TOP);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_CENTER_TOP);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_CENTER_BOTTOM);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_LEFT);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_RIGHT);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_BOTTOM);
+    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_SIZE);
 
 
 

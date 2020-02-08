@@ -26,7 +26,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -101,14 +100,19 @@ const char *name()
   return _("color transfer");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color transfer", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()
 {
   return IOP_FLAGS_DEPRECATED | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 #if 0
@@ -178,7 +182,7 @@ static void invert_histogram(const int *hist, float *inv_hist)
 }
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wvla"
+#pragma GCC diagnostic ignored "-Wvla"
 
 static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
 {
@@ -260,7 +264,10 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(cnt, mean, n, roi, samples, var) \
+    shared(col, mean_out) \
+    schedule(static)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -358,7 +365,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, hist)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, roi_out) \
+    shared(data, in, out, hist) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -385,7 +395,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, mapio, mean, roi_out, var) \
+    shared(data, in, out) \
+    schedule(static) 
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -561,7 +574,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 485; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
@@ -578,6 +590,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 #if 0
@@ -667,7 +681,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->area), "draw", G_CALLBACK (cluster_preview_draw), self);
 
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
   g->spinbutton = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, MAXN, 1));

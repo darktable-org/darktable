@@ -31,21 +31,20 @@ if(OpenJPEG_FOUND)
 	add_library(j2k MODULE "j2k.c")
 endif(OpenJPEG_FOUND)
 
+if (TARGET avif)
+    list(APPEND MODULES "avif_format")
+    add_library(avif_format MODULE "avif.c")
+    set_target_properties(avif_format PROPERTIES OUTPUT_NAME avif)
+endif()
+
 foreach(module ${MODULES})
     target_link_libraries(${module} lib_darktable)
     if (WIN32)
         _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/imageio/format)
     else()
-        # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-        # The string "$ORIGIN" should end up in the executable as-is.
-        set(RPATH_DT "$ORIGIN")
-        if (APPLE)
-            # The string "@loader_path" should end up in the executable as-is.
-            set(RPATH_DT "@loader_path")
-        endif()
         set_target_properties(${module}
                               PROPERTIES
-                              INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                              INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
     endif(WIN32)
     install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/imageio/format COMPONENT DTApplication)
 endforeach(module)

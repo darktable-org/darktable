@@ -29,10 +29,10 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include "gui/accelerators.h"
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -83,10 +83,6 @@ typedef struct dt_iop_bilat_gui_data_t
   GtkWidget *range;
   GtkWidget *detail;
   GtkWidget *mode;
-
-  local_laplacian_boundary_t ll_boundary;
-  uint64_t hash;
-  dt_pthread_mutex_t lock;
 }
 dt_iop_bilat_gui_data_t;
 
@@ -103,9 +99,36 @@ int flags()
 }
 
 // where does it appear in the gui?
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("local contrast", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtone range"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
+  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->spatial));
+  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->range));
+  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
+  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
+  dt_accel_connect_slider_iop(self, "midtone range", GTK_WIDGET(g->midtone));
 }
 
 int legacy_params(
@@ -268,7 +291,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
-  dt_iop_bilat_gui_data_t *g = self->gui_data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
@@ -285,65 +307,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian_boundary_t b = {0};
-    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      b.mode = 1;
-    }
-    else if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-    {
-      // full pipeline working on ROI needs boundary conditions from preview pipe
-      // only do this if roi covers less than 90% of full width
-      if(MIN(roi_in->width/roi_in->scale / piece->buf_in.width,
-             roi_in->height/roi_in->scale / piece->buf_in.height) < 0.9)
-      {
-        dt_pthread_mutex_lock(&g->lock);
-        const uint64_t hash = g->hash;
-        dt_pthread_mutex_unlock(&g->lock);
-        if(hash == 0)
-        {
-          // Don't try grabbing anything from preview pipe.
-        }
-        else if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
-        {
-          // TODO: remove this debug output at some point:
-          dt_control_log(_("local laplacian: inconsistent output"));
-        }
-        else
-        {
-          dt_pthread_mutex_lock(&g->lock);
-          // grab preview pipe buffers here:
-          b = g->ll_boundary;
-          dt_pthread_mutex_unlock(&g->lock);
-          if(b.wd > 0 && b.ht > 0) b.mode = 2;
-        }
-      }
-    }
-
-    b.roi = roi_in;
-    b.buf = &piece->buf_in;
-    // also lock the ll_boundary in case we're using it.
-    // could get away without this if the preview pipe didn't also free the data below.
-    const int lockit = self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL;
-    if(lockit)
-    {
-      dt_pthread_mutex_lock(&g->lock);
-      local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, &b);
-      dt_pthread_mutex_unlock(&g->lock);
-    }
-    else local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, &b);
-
-    // preview pixelpipe stores values.
-    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
-      dt_pthread_mutex_lock(&g->lock);
-      // store buffer pointers on gui struct. maybe need to swap/free old ones
-      local_laplacian_boundary_free(&g->ll_boundary);
-      g->ll_boundary = b;
-      g->hash = hash;
-      dt_pthread_mutex_unlock(&g->lock);
-    }
+    local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
@@ -387,11 +351,10 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 585; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 1.0, 1.0, 0.2, 0.2 };
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 0.5, 0.5, 0.25, 0.5 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
@@ -401,6 +364,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void spatial_callback(GtkWidget *w, dt_iop_module_t *self)
@@ -457,8 +422,8 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
     gtk_widget_set_visible(g->midtone, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
-    dt_bauhaus_slider_set(g->highlights, 100.0f);
-    dt_bauhaus_slider_set(g->shadows, 100.0f);
+    dt_bauhaus_slider_set(g->highlights, 50.0f);
+    dt_bauhaus_slider_set(g->shadows, 50.0f);
   }
   else
   {
@@ -491,9 +456,6 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->highlights, TRUE);
     gtk_widget_set_visible(g->shadows, TRUE);
     gtk_widget_set_visible(g->midtone, TRUE);
-    dt_pthread_mutex_lock(&g->lock);
-    g->hash = 0;
-    dt_pthread_mutex_unlock(&g->lock);
   }
   else
   {
@@ -512,9 +474,6 @@ void gui_init(dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  memset(&g->ll_boundary, 0, sizeof(local_laplacian_boundary_t));
-  dt_pthread_mutex_init(&g->lock, NULL);
-  g->hash = 0;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
@@ -527,7 +486,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 500.0, 1.0, 120.0, 0);
+  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 500.0, 1.0, 125.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
@@ -543,19 +502,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
 
-  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.2, 3);
+  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.5, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->midtone, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->midtone, NULL, _("midtone range"));
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
@@ -579,9 +538,6 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  local_laplacian_boundary_free(&g->ll_boundary);
-  dt_pthread_mutex_destroy(&g->lock);
   free(self->gui_data);
   self->gui_data = NULL;
 }

@@ -41,12 +41,17 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK | IOP_FLAGS_FENCE;
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_BASIC;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -60,6 +65,14 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
   roi_in->height = (roi_out->height - .5f)/roi_out->scale;
   roi_in->scale = 1.0f;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
+                                   roi_in->width * sizeof(float));
 }
 
 #ifdef HAVE_OPENCL
@@ -117,7 +130,6 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
   self->default_enabled = 1;
   self->hide_enable_button = 1;
-  self->priority = 914; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
 }
@@ -126,6 +138,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

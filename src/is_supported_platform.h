@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Roman Lebedev.
+    copyright (c) 2016-2018 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@
 #error "Unfortunately we only work on litte-endian systems."
 #endif
 
-#if(defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)       \
-    || defined(__i386))
+#if (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64))
 #define DT_SUPPORTED_X86 1
 #else
 #define DT_SUPPORTED_X86 0
@@ -37,26 +36,21 @@
 #define DT_SUPPORTED_ARMv8A 0
 #endif
 
+#if defined(__PPC64__)
+#define DT_SUPPORTED_PPC64 1
+#else
+#define DT_SUPPORTED_PPC64 0
+#endif
+
 #if DT_SUPPORTED_X86 && DT_SUPPORTED_ARMv8A
 #error "Looks like hardware platform detection macros are broken?"
 #endif
 
-#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
-#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
+#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A && !DT_SUPPORTED_PPC64
+#error "Unfortunately we only work on amd64, ARMv8-A and PPC64 (64-bit little-endian only)."
 #endif
 
-#if !DT_SUPPORTED_X86
-#if !defined(__SIZEOF_POINTER__) || __SIZEOF_POINTER__ < 8
-#error "On non-x86, we only support 64-bit."
-#else
-if(sizeof(void *) < 8)
-{
-  fprintf(stderr, "[dt_init] On non-x86, we only support 64-bit.\n");
-  return 1;
-}
-#endif
-#endif
-
+#undef DT_SUPPORTED_PPC64
 #undef DT_SUPPORTED_ARMv8A
 #undef DT_SUPPORTED_X86
 
@@ -65,8 +59,9 @@ if(sizeof(void *) < 8)
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."
 #endif
 
+// double check for 32-bit architecture
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ < 8
-#pragma message "Warning: 32-bit build."
+#error "Unfortunately we only work on the 64-bit architectures amd64, ARMv8-A and PPC64."
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

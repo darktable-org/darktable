@@ -29,8 +29,8 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
+#include <math.h>
 #include <memory.h>
 #include <stdlib.h>
 #if defined(__SSE__)
@@ -47,14 +47,14 @@ DT_MODULE_INTROSPECTION(1, dt_iop_atrous_params_t)
 #define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8
 #define RES 64
 
-#define dt_atrous_show_upper_label(cr, text, layout, ink)                                                     \
+#define dt_atrous_show_upper_label(cr, text, layout, ink)                                                    \
   pango_layout_set_text(layout, text, -1);                                                                   \
   pango_layout_get_pixel_extents(layout, &ink, NULL);                                                        \
   cairo_move_to(cr, .5 * (width - ink.width), (.08 * height) - ink.height);                                  \
   pango_cairo_show_layout(cr, layout);
 
 
-#define dt_atrous_show_lower_label(cr, text, layout, ink)                                                     \
+#define dt_atrous_show_lower_label(cr, text, layout, ink)                                                    \
   pango_layout_set_text(layout, text, -1);                                                                   \
   pango_layout_get_pixel_extents(layout, &ink, NULL);                                                        \
   cairo_move_to(cr, .5 * (width - ink.width), (.98 * height) - ink.height);                                  \
@@ -96,6 +96,7 @@ typedef struct dt_iop_atrous_gui_data_t
   float band_max;
   float sample[MAX_NUM_SCALES];
   int num_samples;
+  int timeout_handle;
 } dt_iop_atrous_gui_data_t;
 
 typedef struct dt_iop_atrous_global_data_t
@@ -114,17 +115,22 @@ typedef struct dt_iop_atrous_data_t
 
 const char *name()
 {
-  return _("equalizer");
+  return _("contrast equalizer");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("equalizer", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -138,16 +144,17 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 
+#if defined(__SSE2__)
+
 #define ALIGNED(a) __attribute__((aligned(a)))
 #define VEC4(a)                                                                                              \
   {                                                                                                          \
     (a), (a), (a), (a)                                                                                       \
   }
 
-#if defined(__SSE2__)
-static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
-static const __m128 ooo1 ALIGNED(16) = { 0.f, 0.f, 0.f, 1.f };
+static const __m128 fone ALIGNED(64) = VEC4(0x3f800000u);
+static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
+static const __m128 ooo1 ALIGNED(64) = { 0.f, 0.f, 0.f, 1.f };
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
 static inline __m128 dt_fast_expf_sse2(const __m128 x)
@@ -158,14 +165,14 @@ static inline __m128 dt_fast_expf_sse2(const __m128 x)
   i = _mm_andnot_si128(mask, i);                    // i(n) = 0 if i(n) < 0
   return _mm_castsi128_ps(i);                       // return *(float*)&i
 }
+
 #endif
 
 static inline void weight(const float *c1, const float *c2, const float sharpen, float *weight)
 {
-  float diff[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  for(int c = 0; c < 4; c++) diff[c] = c1[c] - c2[c];
-  float square[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  for(int c = 0; c < 4; c++) square[c] = diff[c] * diff[c];
+  float square[3];
+  for(int c = 0; c < 3; c++) square[c] = c1[c] - c2[c];
+  for(int c = 0; c < 3; c++) square[c] = square[c] * square[c];
 
   const float wl = dt_fast_expf(-sharpen * square[0]);
   const float wc = dt_fast_expf(-sharpen * (square[1] + square[2]));
@@ -204,7 +211,6 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 #endif
 
 #define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj)                                                                \
-  do                                                                                                         \
   {                                                                                                          \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
     float wp[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                \
@@ -215,11 +221,10 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
     for(int c = 0; c < 4; c++) pd[c] = w[c] * px2[c];                                                        \
     for(int c = 0; c < 4; c++) sum[c] += pd[c];                                                              \
     for(int c = 0; c < 4; c++) wgt[c] += w[c];                                                               \
-  } while(0)
+  }
 
 #if defined(__SSE2__)
 #define SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj)                                                           \
-  do                                                                                                         \
   {                                                                                                          \
     const __m128 f = _mm_set1_ps(filter[(ii)] * filter[(jj)]);                                               \
     const __m128 wp = weight_sse2(px, px2, sharpen);                                                         \
@@ -227,7 +232,7 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
     const __m128 pd = _mm_mul_ps(w, *px2);                                                                   \
     sum = _mm_add_ps(sum, pd);                                                                               \
     wgt = _mm_add_ps(wgt, w);                                                                                \
-  } while(0)
+  }
 #endif
 
 #define SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj)                                                             \
@@ -324,7 +329,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -345,7 +352,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -402,7 +411,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -439,7 +450,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -460,7 +473,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -517,7 +532,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -558,13 +575,16 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, width, threshold) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
   {
     for(size_t c = 0; c < 4; c++)
     {
-      const float absamt = MAX(0.0f, (fabsf(detail[k + c]) - threshold[c]));
+      const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
       const float amount = copysignf(absamt, detail[k + c]);
       out[k + c] = in[k + c] + (boost[c] * amount);
     }
@@ -580,7 +600,9 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -667,7 +689,10 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
     // thrs[i][1], sharp[i]);
     if(t < 0.0f) break;
   }
-  return i;
+  // ensure that return value max_scale is such that
+  // 2 * 2 *(1 << max_scale) <= min(width, height)
+  const int max_scale_roi = (int)floorf(dt_log2f((float)MIN(roi_in->width, roi_in->height))) - 2;
+  return MIN(max_scale_roi, i);
 }
 
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
@@ -681,6 +706,10 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float boost[MAX_NUM_SCALES][4];
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+  const int max_mult = 1u << (max_scale - 1);
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
 
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
@@ -690,13 +719,18 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
+  // corner case of extremely small image. this is not really likely to happen but would
+  // lead to out of bounds memory access
+  if(width < 2 * max_mult || height < 2 * max_mult)
+  {
+    memcpy(o, i, width * height * 4 * sizeof(float));
+    return;
+  }
+
   float *detail[MAX_NUM_SCALES] = { NULL };
   float *tmp = NULL;
   float *buf2 = NULL;
   float *buf1 = NULL;
-
-  const int width = roi_out->width;
-  const int height = roi_out->height;
 
   tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
   if(tmp == NULL)
@@ -784,7 +818,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
+  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
@@ -915,7 +949,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   float boost[MAX_NUM_SCALES][4];
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
-  const int max_filter_radius = (1 << max_scale); // 2 * 2^max_scale
+  const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
   tiling->factor = 3.0f + max_scale; // in + out + tmp + scale buffers
   tiling->maxbuf = 1.0f;
@@ -931,7 +965,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 571; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -961,6 +994,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1018,6 +1053,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   free(piece->data);
   piece->data = NULL;
 }
+
+#define GAUSS(x, sigma) expf( -(1.0f - x) * (1.0f - x) / (sigma * sigma)) / (2.0 * sigma * powf(M_PI, 0.5f))
 
 void init_presets(dt_iop_module_so_t *self)
 {
@@ -1124,6 +1161,156 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
+
+  float sigma = 1 / (BANDS - 1.0);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coarse = GAUSS(x, 2 * sigma);
+    float coeff = 0.5f + (coarse + medium + fine) / 18.0f;
+    float noise = (coarse + medium + fine) / 810;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 4"), self->op, self->version(), &p, sizeof(p), 1);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coarse = GAUSS(x, 2 * sigma);
+    float coeff = 0.5f + (coarse + medium + fine) / 24.0f;
+    float noise = (coarse + medium + fine) / 1080;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coeff = 0.5f + (medium + fine) / 21.0f;
+    float noise = (medium + fine) / 720;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float coeff = 0.5f + fine / 14.25f;
+    float noise = fine / 360;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
+
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coarse = GAUSS(x, 2 * sigma);
+    float coeff = 0.5f + (coarse + medium + fine) / 32.0f;
+    float noise = (coarse + medium + fine) / 1440;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coeff = 0.5f + (medium + fine) / 28.0f;
+    float noise = (medium + fine) / 960;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float coeff = 0.5f + fine / 19.0f;
+    float noise = fine / 480;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
+
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coarse = GAUSS(x, 2 * sigma);
+    float coeff = 0.5f + (coarse + medium + fine) / 48.0f;
+    float noise = (coarse + medium + fine) / 2160;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coeff = 0.5f + (medium + fine) / 42.0f;
+    float noise = (medium + fine) / 1440;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float coeff = 0.5f + fine / 28.5f;
+    float noise = fine / 720;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
@@ -1131,15 +1318,21 @@ static void reset_mix(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   c->drag_params = *(dt_iop_atrous_params_t *)self->params;
-  const int old = self->dt->gui->reset;
-  self->dt->gui->reset = 1;
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set(c->mix, 1.0f);
-  self->dt->gui->reset = old;
+  darktable.gui->reset = reset;
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   reset_mix(self);
+  if(c->timeout_handle)
+  {
+    g_source_remove(c->timeout_handle);
+    c->timeout_handle = 0;
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1417,7 +1610,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    //cairo_select_font_face(cr, "Roboto", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, .06 * height);
     pango_layout_set_text(layout, _("coarse"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
@@ -1463,6 +1656,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   return TRUE;
 }
 
+static gboolean postponed_value_change(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  c->timeout_handle = 0;
+
+  return FALSE;
+}
+
 static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1495,7 +1699,11 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     {
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+
+    if(!c->timeout_handle)
+      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
   }
   else if(event->y > height)
   {
@@ -1511,6 +1719,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
         dist = d2;
       }
     }
+    gtk_widget_queue_draw(widget);
   }
   else
   {
@@ -1531,8 +1740,8 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     }
     // don't move x-positions:
     c->x_move = -1;
+    gtk_widget_queue_draw(widget);
   }
-  gtk_widget_queue_draw(widget);
   gint x, y;
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(event->window,
@@ -1562,8 +1771,8 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       p->x[c->channel2][k] = d->x[c->channel2][k];
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else if(event->button == 1)
   {
@@ -1601,6 +1810,7 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -1633,8 +1843,8 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
       p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
       p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
     }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1651,6 +1861,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
+  c->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1681,6 +1892,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
 
+  dtgtk_justify_notebook_tabs(c->channel_tabs);
+
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
@@ -1709,6 +1922,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
+  if(c->timeout_handle) g_source_remove(c->timeout_handle);
   free(self->gui_data);
   self->gui_data = NULL;
 }

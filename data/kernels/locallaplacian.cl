@@ -195,15 +195,15 @@ laplacian_assemble(
   float4 pixel;
   pixel.x = expand_gaussian(output1, i, j, pw, ph);
 
-  const float num_gamma = 6.0f; // this sucks, have to hardcode for the lack of arrays
+  const int num_gamma = 6; // this sucks, have to hardcode for the lack of arrays
   const float v = read_imagef(input, sampleri, (int2)(x, y)).x;
   int hi = 1;
   // what we mean is this:
   // for(;hi<num_gamma-1 && gamma[hi] <= v;hi++);
-  for(;hi<num_gamma-1 && (hi+.5f)/(float)num_gamma <= v;hi++);
+  for(;hi<num_gamma-1 && ((float)hi+.5f)/(float)num_gamma <= v;hi++);
   int lo = hi-1;
   // const float a = fmin(fmax((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f), 1.0f);
-  const float a = fmin(fmax(v*num_gamma - (lo+.5f), 0.0f), 1.0f);
+  const float a = fmin(fmax(v*num_gamma - ((float)lo+.5f), 0.0f), 1.0f);
   float l0, l1;
   switch(lo)
   { // oh man, this sucks:

@@ -30,7 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
+
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -95,9 +95,14 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color contrast", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -118,7 +123,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green vs magenta"));
@@ -136,13 +140,10 @@ void connect_key_accels(dt_iop_module_t *self)
                               GTK_WIDGET(g->b_scale));
 }
 
-#endif
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
 
   // get our data struct:
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
@@ -156,23 +157,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
+      out[k] = in[k];
       out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
       out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
+      out[k + 4] = in[k + 4];
     }
   }
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
+      out[k] = in[k];
       out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
       out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
+      out[k + 4] = in[k + 4];
     }
   }
 }
@@ -182,7 +191,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
 
   // get our data struct:
   dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
@@ -192,20 +200,24 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int unbound = d->unbound;
 
+  const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
+  const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
+  const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
+  const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
+
 // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, max, min, offset, ovoid, roi_in, roi_out, \
+                      scale, unbound) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
 
     float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
     float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-
-    const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
-    const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
-    const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
-    const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
 
     if(unbound)
     {
@@ -237,7 +249,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
-  dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)self->data;
+  dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)self->global_data;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
@@ -305,7 +317,6 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 799; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -318,6 +329,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */

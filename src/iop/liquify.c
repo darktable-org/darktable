@@ -29,7 +29,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <cairo.h>
 #include <complex.h>
@@ -57,7 +56,8 @@ const float STAMP_RELOCATION = 0.1;     // how many radii to move stamp forward 
 
 // enum of layers. sorted back to front.
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_LAYER_BACKGROUND,
   DT_LIQUIFY_LAYER_RADIUS,
   DT_LIQUIFY_LAYER_HARDNESS1,
@@ -80,7 +80,8 @@ typedef enum {
   DT_LIQUIFY_LAYER_LAST
 } dt_liquify_layer_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_LAYER_FLAG_HIT_TEST      =  1,   ///< include layer in hit testing
   DT_LIQUIFY_LAYER_FLAG_PREV_SELECTED =  2,   ///< show if previous node is selected
   DT_LIQUIFY_LAYER_FLAG_NODE_SELECTED =  4,   ///< show if node is selected
@@ -91,7 +92,8 @@ typedef enum {
   DT_LIQUIFY_LAYER_FLAG_ANY_TOOL      = 8 + 16 + 32 + 64,
 } dt_liquify_layer_flag_enum_t;
 
-typedef struct {
+typedef struct
+{
   float red, green, blue, alpha;
 } dt_liquify_rgba_t;
 
@@ -102,7 +104,8 @@ typedef struct {
 static const dt_liquify_rgba_t DT_LIQUIFY_COLOR_SELECTED = { 1.0, 1.0, 1.0, 1.0 };
 static const dt_liquify_rgba_t DT_LIQUIFY_COLOR_HOVER    = { 1.0, 1.0, 1.0, 0.8 };
 
-typedef struct {
+typedef struct
+{
   dt_liquify_layer_enum_t hover_master;    ///< hover whenever master layer hovers, eg. to
   dt_liquify_rgba_t fg;                    ///< the foreground color for this layer
   dt_liquify_rgba_t bg;                    ///< the background color for this layer
@@ -113,7 +116,8 @@ typedef struct {
   const char *hint;                        ///< hint displayed when hovering
 } dt_liquify_layer_t;
 
-dt_liquify_layer_t dt_liquify_layers[] = {
+dt_liquify_layer_t dt_liquify_layers[] =
+{
   { DT_LIQUIFY_LAYER_BACKGROUND,     COLOR_NULL,  COLOR_NULL, 0.0,  0,                                                                                                      },
   { DT_LIQUIFY_LAYER_RADIUS,         COLOR_DEBUG, COLOR_NULL, 0.25, DT_LIQUIFY_LAYER_FLAG_ANY_TOOL,                                                                         },
   { DT_LIQUIFY_LAYER_HARDNESS1,      COLOR_DEBUG, COLOR_NULL, 1.0,  0,                                                                                                      },
@@ -135,7 +139,8 @@ dt_liquify_layer_t dt_liquify_layers[] = {
   { DT_LIQUIFY_LAYER_STRENGTHPOINT,  GREY,        LGREY,      1.0,  DT_LIQUIFY_LAYER_FLAG_ANY_TOOL  | DT_LIQUIFY_LAYER_FLAG_HIT_TEST,                                       }
 };
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_UI_WIDTH_THINLINE,
   DT_LIQUIFY_UI_WIDTH_THICKLINE,
   DT_LIQUIFY_UI_WIDTH_DOUBLELINE,
@@ -147,7 +152,8 @@ typedef enum {
   DT_LIQUIFY_UI_WIDTH_LAST
 } dt_liquify_ui_width_enum_t;
 
-float dt_liquify_ui_widths [] = {
+float dt_liquify_ui_widths [] =
+{
   // value in 1/96 inch (that is: in pixels on a standard 96 dpi screen)
     2.0, // DT_LIQUIFY_UI_WIDTH_THINLINE
     3.0, // DT_LIQUIFY_UI_WIDTH_THICKLINE
@@ -159,14 +165,16 @@ float dt_liquify_ui_widths [] = {
     4.0  // DT_LIQUIFY_UI_WIDTH_MIN_DRAG
 };
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_WARP_TYPE_LINEAR,         ///< A linear warp originating from one point.
   DT_LIQUIFY_WARP_TYPE_RADIAL_GROW,    ///< A radial warp originating from one point.
   DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK,
   DT_LIQUIFY_WARP_TYPE_LAST
 } dt_liquify_warp_type_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_NODE_TYPE_CUSP,
   DT_LIQUIFY_NODE_TYPE_SMOOTH,
   DT_LIQUIFY_NODE_TYPE_SYMMETRICAL,
@@ -174,7 +182,8 @@ typedef enum {
   DT_LIQUIFY_NODE_TYPE_LAST
 } dt_liquify_node_type_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_STATUS_NONE = 0,
   DT_LIQUIFY_STATUS_NEW = 1,
   DT_LIQUIFY_STATUS_INTERPOLATED = 2,
@@ -184,14 +193,16 @@ typedef enum {
 
 // enumerates the shapes types we use.
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_PATH_INVALIDATED = 0,
   DT_LIQUIFY_PATH_MOVE_TO_V1,
   DT_LIQUIFY_PATH_LINE_TO_V1,
   DT_LIQUIFY_PATH_CURVE_TO_V1,
 } dt_liquify_path_data_enum_t;
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_data_enum_t type;
   dt_liquify_node_type_enum_t node_type;
   dt_liquify_layer_enum_t selected;
@@ -204,7 +215,8 @@ typedef struct {
 // Scalars and vectors are represented here as points because the only
 // thing we can reasonably distort_transform are points.
 
-typedef struct {
+typedef struct
+{
   float complex point;
   float complex strength;   ///< a point (the effective strength vector is: strength - point)
   float complex radius;     ///< a point (the effective radius scalar is: cabs (radius - point))
@@ -214,35 +226,41 @@ typedef struct {
   dt_liquify_status_enum_t status;
 } dt_liquify_warp_t;
 
-typedef struct {
+typedef struct
+{
   float complex ctrl1;
   float complex ctrl2;
 } dt_liquify_node_t;
 
 // set up lots of alternative ways to get at the popular members.
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_header_t header;
   dt_liquify_warp_t        warp;
   dt_liquify_node_t        node; // extended node data
 } dt_liquify_path_data_t;
 
-typedef struct {
+typedef struct
+{
   dt_liquify_layer_enum_t layer;
   dt_liquify_path_data_t *elem;
 } dt_liquify_hit_t;
 
 static const dt_liquify_hit_t NOWHERE = { DT_LIQUIFY_LAYER_BACKGROUND, NULL };
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_data_t nodes[MAX_NODES];
 } dt_iop_liquify_params_t;
 
-typedef struct {
+typedef struct
+{
   int warp_kernel;
 } dt_iop_liquify_global_data_t;
 
-typedef struct {
+typedef struct
+{
   dt_pthread_mutex_t lock;
   dt_iop_liquify_params_t params;
   int node_index; // last node index inserted
@@ -266,17 +284,17 @@ typedef struct {
 
 
 // this returns a translatable name
-const char *name ()
+const char *name()
 {
   return _("liquify");
 }
 
-int groups ()
+int default_group()
 {
-return dt_iop_get_group("liquify", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
-int flags ()
+int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
@@ -286,11 +304,16 @@ int operation_tags()
    return IOP_TAG_DISTORT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 /******************************************************************************/
 /* Code common to op-engine and gui.                                          */
 /******************************************************************************/
 
-static const float get_rot(const dt_liquify_warp_type_enum_t warp_type)
+static float get_rot(const dt_liquify_warp_type_enum_t warp_type)
 {
   if (warp_type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK)
     return M_PI;
@@ -420,6 +443,63 @@ static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
   node_gc (p);
 }
 
+int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                  float *points, size_t points_count)
+{
+  // this is called from the dt_dev_distort_transform_plus(), so the history is already locked
+  GList *modules = g_list_first(pipe->iop);
+  GList *pieces = g_list_first(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) && 
+      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    {
+      module->distort_transform(module, piece, points, points_count);
+    }
+    modules = g_list_next(modules);
+    pieces = g_list_next(pieces);
+  }
+  return 1;
+}
+int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                      float *points, size_t points_count)
+{
+  // this is called from the dt_dev_distort_backtransform_plus(), so the history is already locked
+  GList *modules = g_list_last(pipe->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
+      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    {
+      module->distort_backtransform(module, piece, points, points_count);
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  return 1;
+}
+
 /**
  * The functions in this group help transform between coordinate
  * systems.  (In darktable nomenclature this kind of transform is
@@ -482,13 +562,14 @@ static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
  *
  */
 
-typedef struct {
+typedef struct
+{
   dt_develop_t *develop;
   dt_dev_pixelpipe_t *pipe;
   float from_scale;
   float to_scale;
-  int pmin;
-  int pmax;
+  int transf_direction;
+  gboolean from_distort_transform;
 } distort_params_t;
 
 static void _distort_paths (const struct dt_iop_module_t *module,
@@ -550,15 +631,27 @@ static void _distort_paths (const struct dt_iop_module_t *module,
       break;
     }
   }
-
-  if (params->pmin < module->priority && params->pmax > module->priority)
+  if(params->from_distort_transform)
   {
-    dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, module->priority - 1, buffer, len);
-    dt_dev_distort_transform_plus (params->develop, params->pipe, module->priority + 1, params->pmax, buffer, len);
+    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+    {
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+    }
+    else
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
   }
   else
-    dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
-
+  {
+    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+    {
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+    }
+    else
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
+  }
+  
   // record back the transformed points
 
   b = buffer;
@@ -571,23 +664,23 @@ static void _distort_paths (const struct dt_iop_module_t *module,
 
     switch (data->header.type)
     {
-    case DT_LIQUIFY_PATH_CURVE_TO_V1:
-      data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->node.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      // fall thru
-    case DT_LIQUIFY_PATH_MOVE_TO_V1:
-    case DT_LIQUIFY_PATH_LINE_TO_V1:
-      data->warp.point = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->warp.strength = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->warp.radius = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      break;
-    default:
-      break;
+       case DT_LIQUIFY_PATH_CURVE_TO_V1:
+         data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->node.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         // fall thru
+       case DT_LIQUIFY_PATH_MOVE_TO_V1:
+       case DT_LIQUIFY_PATH_LINE_TO_V1:
+         data->warp.point = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->warp.strength = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->warp.radius = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         break;
+       default:
+         break;
     }
   }
 
@@ -597,9 +690,10 @@ static void _distort_paths (const struct dt_iop_module_t *module,
 static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         dt_dev_pixelpipe_t *pipe,
                                         const float roi_in_scale,
-                                        dt_iop_liquify_params_t *p)
+                                        dt_iop_liquify_params_t *p,
+                                        const gboolean from_distort_transform)
 {
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, 0, module->priority - 1 };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, DT_DEV_TRANSFORM_DIR_BACK_EXCL, from_distort_transform };
   _distort_paths (module, &params, p);
 }
 
@@ -684,7 +778,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p);
   Used to approximate the arc length of a bezier curve.
 */
 
-static const float get_arc_length (const float complex points[], const int n_points)
+static float get_arc_length (const float complex points[], const int n_points)
 {
   float length = 0.0;
   for (int i = 1; i < n_points; i++)
@@ -692,7 +786,8 @@ static const float get_arc_length (const float complex points[], const int n_poi
   return length;
 }
 
-typedef struct {
+typedef struct
+{
   int i;
   double length;
 } restart_cookie_t;
@@ -704,10 +799,8 @@ typedef struct {
   the arc length.
 */
 
-static const float complex point_at_arc_length (const float complex points[],
-                                                const int n_points,
-                                                const float arc_length,
-                                                restart_cookie_t *restart)
+static float complex point_at_arc_length (const float complex points[], const int n_points,
+                                          const float arc_length, restart_cookie_t *restart)
 {
   float length = restart ? restart->length : 0.0;
   int i        = restart ? restart->i      : 1;
@@ -716,7 +809,9 @@ static const float complex point_at_arc_length (const float complex points[],
   {
     const float prev_length = length;
     length += cabsf (points[i-1] - points[i]);
-    if (length >= arc_length) {
+
+    if (length >= arc_length)
+    {
       const float t = (arc_length - prev_length) / (length - prev_length);
       if (restart)
       {
@@ -764,13 +859,13 @@ static const float complex point_at_arc_length (const float complex points[],
 static float *
 build_lookup_table (const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_alloc_align (16, (distance + 2) * sizeof (float complex));
+  float complex *clookup = dt_alloc_align(64, (distance + 2) * sizeof (float complex));
 
   interpolate_cubic_bezier (I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
 
-  float *lookup = dt_alloc_align (16, (distance + 1) * sizeof (float));
+  float *lookup = dt_alloc_align(64, (distance + 2) * sizeof(float));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
@@ -896,32 +991,32 @@ static void build_round_stamp (float complex **pstamp,
 
       switch (warp->type)
       {
-      case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
-        *o1 = abs_lookup * ( x - y * I);
-        *o2 = abs_lookup * ( y - x * I);
-        *o3 = abs_lookup * (-y - x * I);
-        *o4 = abs_lookup * (-x - y * I);
-        *o5 = abs_lookup * (-x + y * I);
-        *o6 = abs_lookup * (-y + x * I);
-        *o7 = abs_lookup * ( y + x * I);
-        *o8 = abs_lookup * ( x + y * I);
-        break;
+         case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
+           *o1 = abs_lookup * ( x - y * I);
+           *o2 = abs_lookup * ( y - x * I);
+           *o3 = abs_lookup * (-y - x * I);
+           *o4 = abs_lookup * (-x - y * I);
+           *o5 = abs_lookup * (-x + y * I);
+           *o6 = abs_lookup * (-y + x * I);
+           *o7 = abs_lookup * ( y + x * I);
+           *o8 = abs_lookup * ( x + y * I);
+           break;
 
-      case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
-        *o1 = -abs_lookup * ( x - y * I);
-        *o2 = -abs_lookup * ( y - x * I);
-        *o3 = -abs_lookup * (-y - x * I);
-        *o4 = -abs_lookup * (-x - y * I);
-        *o5 = -abs_lookup * (-x + y * I);
-        *o6 = -abs_lookup * (-y + x * I);
-        *o7 = -abs_lookup * ( y + x * I);
-        *o8 = -abs_lookup * ( x + y * I);
-        break;
+         case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
+           *o1 = -abs_lookup * ( x - y * I);
+           *o2 = -abs_lookup * ( y - x * I);
+           *o3 = -abs_lookup * (-y - x * I);
+           *o4 = -abs_lookup * (-x - y * I);
+           *o5 = -abs_lookup * (-x + y * I);
+           *o6 = -abs_lookup * (-y + x * I);
+           *o7 = -abs_lookup * ( y + x * I);
+           *o8 = -abs_lookup * ( x + y * I);
+           break;
 
-      default:
-        *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
-          strength * lookup_table[idist];
-        break;
+         default:
+           *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
+             strength * lookup_table[idist];
+           break;
       }
     }
   next_row: ; // ";" makes compiler happy
@@ -1015,15 +1110,26 @@ static void apply_global_distortion_map (struct dt_iop_module_t *module,
           // point actually warped ?
           (*row != 0))
         {
-          dt_interpolation_compute_pixel4c (
-            interpolation,
-            in,
-            out_sample,
-            x + creal (*row) - roi_in->x,
-            y + cimag (*row) - roi_in->y,
-            roi_in->width,
-            roi_in->height,
-            ch_width);
+          if(ch == 1)
+            *out_sample = dt_interpolation_compute_sample(interpolation,
+                                                          in,
+                                                          x + creal (*row) - roi_in->x,
+                                                          y + cimag (*row) - roi_in->y,
+                                                          roi_in->width,
+                                                          roi_in->height,
+                                                          ch,
+                                                          ch_width);
+          else
+            dt_interpolation_compute_pixel4c (
+              interpolation,
+              in,
+              out_sample,
+              x + creal (*row) - roi_in->x,
+              y + cimag (*row) - roi_in->y,
+              roi_in->width,
+              roi_in->height,
+              ch_width);
+
         }
         ++row;
         out_sample += ch;
@@ -1066,7 +1172,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex * map = dt_alloc_align (16, mapsize * sizeof (float complex));
+  float complex * map = dt_alloc_align(64, mapsize * sizeof (float complex));
   memset (map, 0, mapsize * sizeof (float complex));
 
   // build map
@@ -1082,7 +1188,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 
   if (inverted)
   {
-    float complex * const imap = dt_alloc_align (16, mapsize * sizeof (float complex));
+    float complex * const imap = dt_alloc_align (64, mapsize * sizeof (float complex));
     memset (imap, 0, mapsize * sizeof (float complex));
 
     // copy map into imap (inverted map).
@@ -1151,7 +1257,7 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params, FALSE);
 
   GList *interpolated = interpolate_paths (&copy_params);
 
@@ -1190,21 +1296,23 @@ void modify_roi_in (struct dt_iop_module_t *module,
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t*)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params, FALSE);
 
-  cairo_rectangle_int_t pipe_rect = {
-    0,
-    0,
-    lroundf((double)piece->buf_in.width * roi_in->scale),
-    lroundf((double)piece->buf_in.height * roi_in->scale)
-  };
+  cairo_rectangle_int_t pipe_rect =
+    {
+      0,
+      0,
+      lroundf((double)piece->buf_in.width * roi_in->scale),
+      lroundf((double)piece->buf_in.height * roi_in->scale)
+    };
 
-  cairo_rectangle_int_t roi_in_rect = {
-    roi_in->x,
-    roi_in->y,
-    roi_in->width,
-    roi_in->height
-  };
+  cairo_rectangle_int_t roi_in_rect =
+    {
+      roi_in->x,
+      roi_in->y,
+      roi_in->width,
+      roi_in->height
+    };
   cairo_region_t *roi_in_region = cairo_region_create_rectangle (&roi_in_rect);
 
   // get extent of all paths
@@ -1251,9 +1359,15 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if (extent.width != 0 && extent.height != 0)
   {
+    // copy params
+    dt_iop_liquify_params_t copy_params;
+    memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data, sizeof(dt_iop_liquify_params_t));
+
+    distort_paths_raw_to_piece (self, piece->pipe, scale, &copy_params, TRUE);
+
     // create the distortion map for this extent
 
-    GList *interpolated = interpolate_paths ((dt_iop_liquify_params_t *)piece->data);
+    GList *interpolated = interpolate_paths (&copy_params);
 
     // we need to adjust the extent to be the union enclosing all the points (currently in extent) and
     // the warps that are in (possibly partly) in this same region.
@@ -1303,6 +1417,45 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // 1. copy the whole image (we'll change only a small part of it)
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, roi_in, roi_out) \
+  schedule(static)
+#endif
+  for (int i = 0; i < roi_out->height; i++)
+  {
+    float *destrow = out + (size_t) i * roi_out->width;
+    const float *srcrow = in + (size_t) (roi_in->width * (i + roi_out->y - roi_in->y) + roi_out->x - roi_in->x);
+
+    memcpy (destrow, srcrow, sizeof (float) * roi_out->width);
+  }
+
+  // 2. build the distortion map
+
+  cairo_rectangle_int_t map_extent;
+  float complex *map = build_global_distortion_map (self, piece, roi_in, roi_out, &map_extent);
+  if (map == NULL)
+    return;
+
+  // 3. apply the map
+
+  if (map_extent.width != 0 && map_extent.height != 0)
+  {
+    int ch = piece->colors;
+    piece->colors = 1;
+    apply_global_distortion_map (self, piece, in, out, roi_in, roi_out, map, &map_extent);
+    piece->colors = ch;
+  }
+
+  dt_free_align ((void *) map);
+
+}
+
 void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
              void *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1311,16 +1464,21 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   const int ch = piece->colors;
   assert (ch == 4);
 
+  const int height = MIN(roi_in->height, roi_out->height);
+  const int width = MIN(roi_in->width, roi_out->width);
+  
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, height, in, out, roi_in, roi_out, width) \
+  schedule(static)
 #endif
-  for (int i = 0; i < roi_out->height; i++)
+  for (int i = 0; i < height; i++)
   {
     float *destrow = (float *)out + (size_t) ch * i * roi_out->width;
     const float *srcrow = (float *)in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
                                                        roi_out->x - roi_in->x);
 
-    memcpy (destrow, srcrow, sizeof (float) * ch * roi_out->width);
+    memcpy (destrow, srcrow, sizeof (float) * ch * width);
   }
 
   // 2. build the distortion map
@@ -1368,7 +1526,8 @@ static float bicubic(const float a, const float x)
   return 0.0f;
 }
 
-typedef struct {
+typedef struct
+{
   int size;
   int resolution;
 } dt_liquify_kernel_descriptor_t;
@@ -1387,7 +1546,7 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 {
   cl_int_t err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *) module->data;
+  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *) module->global_data;
   const int devid = piece->pipe->devid;
 
   const struct dt_interpolation* interpolation = dt_interpolation_new (DT_INTERPOLATION_USERPREF);
@@ -1396,52 +1555,52 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 
   switch (interpolation->id)
   {
-  case DT_INTERPOLATION_BILINEAR:
-    kdesc.size = 1;
-    kdesc.resolution = 1;
-    k = malloc (2 * sizeof (float));
-    k[0] = 1.0f;
-    k[1] = 0.0f;
-    break;
-  case DT_INTERPOLATION_BICUBIC:
-    kdesc.size = 2;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = bicubic (0.5f, (float) i / kdesc.resolution);
-    break;
-  case DT_INTERPOLATION_LANCZOS2:
-    kdesc.size = 2;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = lanczos (2, (float) i / kdesc.resolution);
-    break;
-  case DT_INTERPOLATION_LANCZOS3:
-    kdesc.size = 3;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = lanczos (3, (float) i / kdesc.resolution);
-    break;
-  default:
-    return FALSE;
+     case DT_INTERPOLATION_BILINEAR:
+       kdesc.size = 1;
+       kdesc.resolution = 1;
+       k = malloc (2 * sizeof (float));
+       k[0] = 1.0f;
+       k[1] = 0.0f;
+       break;
+     case DT_INTERPOLATION_BICUBIC:
+       kdesc.size = 2;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = bicubic (0.5f, (float) i / kdesc.resolution);
+       break;
+     case DT_INTERPOLATION_LANCZOS2:
+       kdesc.size = 2;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = lanczos (2, (float) i / kdesc.resolution);
+       break;
+     case DT_INTERPOLATION_LANCZOS3:
+       kdesc.size = 3;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = lanczos (3, (float) i / kdesc.resolution);
+       break;
+     default:
+       return FALSE;
   }
 
-  cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_iop_roi_t), (void *) roi_in);
+  cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_iop_roi_t), (void *) roi_in);
 
-  cl_mem_t dev_roi_out = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_iop_roi_t), (void *) roi_out);
+  cl_mem_t dev_roi_out = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_iop_roi_t), (void *) roi_out);
 
-  cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant (
-    devid, map_extent->width * map_extent->height * sizeof (float complex), (void *) map);
+  cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant
+    (devid, map_extent->width * map_extent->height * sizeof (float complex), (void *) map);
 
-  cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (cairo_rectangle_int_t), (void *) map_extent);
+  cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (cairo_rectangle_int_t), (void *) map_extent);
 
-  cl_mem_t dev_kdesc = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_liquify_kernel_descriptor_t), (void *) &kdesc);
+  cl_mem_t dev_kdesc = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_liquify_kernel_descriptor_t), (void *) &kdesc);
 
-  cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant (
-    devid, (kdesc.size * kdesc.resolution  + 1) * sizeof (float), (void *) k);
+  cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant
+    (devid, (kdesc.size * kdesc.resolution  + 1) * sizeof (float), (void *) k);
 
   if (dev_roi_in == NULL || dev_roi_out == NULL || dev_map == NULL || dev_map_extent == NULL
       || dev_kdesc == NULL || dev_kernel == NULL)
@@ -1468,7 +1627,7 @@ error:
   dt_opencl_release_mem_object (dev_map);
   dt_opencl_release_mem_object (dev_roi_out);
   dt_opencl_release_mem_object (dev_roi_in);
-  if (k             ) free (k);
+  if (k) free (k);
 
   return err;
 }
@@ -1483,12 +1642,15 @@ int process_cl (struct dt_iop_module_t *module,
   cl_int_t err = -999;
   const int devid = piece->pipe->devid;
 
+  const int height = MIN(roi_in->height, roi_out->height);
+  const int width = MIN(roi_in->width, roi_out->width);
+  
   // 1. copy the whole image (we'll change only a small part of it)
 
   {
     size_t src[]    = { roi_out->x - roi_in->x, roi_out->y - roi_in->y, 0 };
     size_t dest[]   = { 0, 0, 0 };
-    size_t extent[] = { roi_out->width, roi_out->height, 1 };
+    size_t extent[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image (devid, dev_in, dev_out, src, dest, extent);
     if (err != CL_SUCCESS) goto error;
   }
@@ -1539,7 +1701,6 @@ void init (dt_iop_module_t *module)
 {
   // module is disabled by default
   module->default_enabled = 0;
-  module->priority = 228; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_liquify_params_t);
   module->gui_data = NULL;
 
@@ -1548,10 +1709,12 @@ void init (dt_iop_module_t *module)
   module->default_params = calloc (1, module->params_size);
 }
 
-void cleanup (dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *module)
 {
   free (module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void init_pipe (struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1880,7 +2043,8 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           cairo_move_to (cr, creal (prev->warp.point), cimag (prev->warp.point));
           if (data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
             cairo_line_to (cr, creal (point), cimag (point));
-          if (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1) {
+          if (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+          {
             cairo_curve_to (cr, creal (data->node.ctrl1), cimag (data->node.ctrl1),
                             creal (data->node.ctrl2), cimag (data->node.ctrl2),
                             creal (point), cimag (point));
@@ -1902,20 +2066,20 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           const float w = GET_UI_WIDTH (GIZMO);
           switch (data->header.node_type)
           {
-          case DT_LIQUIFY_NODE_TYPE_CUSP:
-            draw_triangle (cr, point - w / 2.0 * I, -M_PI / 2.0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            draw_rectangle (cr, point, M_PI / 4.0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            draw_rectangle (cr, point, 0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH:
-            draw_circle (cr, point, w);
-            break;
-          default:
-            break;
+             case DT_LIQUIFY_NODE_TYPE_CUSP:
+               draw_triangle (cr, point - w / 2.0 * I, -M_PI / 2.0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+               draw_rectangle (cr, point, M_PI / 4.0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+               draw_rectangle (cr, point, 0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH:
+               draw_circle (cr, point, w);
+               break;
+             default:
+               break;
           }
           THINLINE; BG_COLOR;
           FILL_TEST;
@@ -2268,15 +2432,15 @@ static void smooth_path_linsys (size_t n,
     switch (equation[i])
     {
     #define ABCD(A,B,C,D) { { a[i] = A; b[i] = B; c[i] = C; d[i] = D; continue; } }
-    case 1:  ABCD (0, 2, 1,       k[i] + 2 * k[i+1]   ); break;
-    case 2:  ABCD (1, 4, 1,   4 * k[i] + 2 * k[i+1]   ); break;
-    case 3:  ABCD (2, 7, 0,   8 * k[i] +     k[i+1]   ); break;
-    case 4:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 5:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 6:  ABCD (1, 4, 0,   4 * k[i] +     c2[i]    ); break;
-    case 7:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 8:  ABCD (0, 3, 0,   2 * k[i] +     k[i+1]   ); break;
-    case 9:  ABCD (0, 2, 0,       k[i] +     c2[i]    ); break;
+       case 1:  ABCD (0, 2, 1,       k[i] + 2 * k[i+1]   ); break;
+       case 2:  ABCD (1, 4, 1,   4 * k[i] + 2 * k[i+1]   ); break;
+       case 3:  ABCD (2, 7, 0,   8 * k[i] +     k[i+1]   ); break;
+       case 4:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 5:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 6:  ABCD (1, 4, 0,   4 * k[i] +     c2[i]    ); break;
+       case 7:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 8:  ABCD (0, 3, 0,   2 * k[i] +     k[i+1]   ); break;
+       case 9:  ABCD (0, 2, 0,       k[i] +     c2[i]    ); break;
     #undef ABCD
     }
   }
@@ -2301,18 +2465,18 @@ static void smooth_path_linsys (size_t n,
   {
     switch (equation[i])
     {
-    // keep end: c2 does not change
-    case 5:
-    case 6:
-    case 9:  break;
+       // keep end: c2 does not change
+       case 5:
+       case 6:
+       case 9:  break;
 
-    // straight end: put c2[i] halfway between c1[i] and k[i+1]
-    case 3:
-    case 7:
-    case 8:  c2[i] = (c1[i] + k[i+1]) / 2;  break;
+       // straight end: put c2[i] halfway between c1[i] and k[i+1]
+       case 3:
+       case 7:
+       case 8:  c2[i] = (c1[i] + k[i+1]) / 2;  break;
 
-    // smooth end: c2 and c1 are symmetrical around the knot
-    default: c2[i] = 2 * k[i+1] - c1[i+1];
+       // smooth end: c2 and c1 are symmetrical around the knot
+       default: c2[i] = 2 * k[i+1] - c1[i+1];
     }
   }
 
@@ -2322,7 +2486,7 @@ static void smooth_path_linsys (size_t n,
   free (d);
 }
 
-static const int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
+static int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
 {
   int count = 1;
   while (n->header.next != -1)
@@ -2554,7 +2718,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, 0, 9999999 };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, DT_DEV_TRANSFORM_DIR_ALL, FALSE };
   _distort_paths (module, &d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
@@ -2625,9 +2789,9 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    module->priority + 1, 9999999, pts, 1);
+                                    module->iop_order,DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 1);
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    0, module->priority - 1, pts, 1);
+                                    module->iop_order,DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1);
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
@@ -2690,109 +2854,110 @@ int mouse_moved (struct dt_iop_module_t *module,
 
     switch (g->dragging.layer)
     {
-    case DT_LIQUIFY_LAYER_CENTERPOINT:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl2 += pt - d->warp.point;
-        // fall thru
-      case DT_LIQUIFY_PATH_MOVE_TO_V1:
-      case DT_LIQUIFY_PATH_LINE_TO_V1:
-        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          n->node.ctrl1 += pt - d->warp.point;
-        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          p->node.ctrl2 += pt - d->warp.point;
-        d->warp.radius   += pt - d->warp.point;
-        d->warp.strength += pt - d->warp.point;
-        d->warp.point = pt;
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CENTERPOINT:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl2 += pt - d->warp.point;
+              // fall thru
+            case DT_LIQUIFY_PATH_MOVE_TO_V1:
+            case DT_LIQUIFY_PATH_LINE_TO_V1:
+              if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+                n->node.ctrl1 += pt - d->warp.point;
+              if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+                p->node.ctrl2 += pt - d->warp.point;
+              d->warp.radius   += pt - d->warp.point;
+              d->warp.strength += pt - d->warp.point;
+              d->warp.point = pt;
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_CTRLPOINT1:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl1 = pt;
-        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-        {
-          switch (p->header.node_type)
-          {
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            p->node.ctrl2 = p->warp.point +
-              cabs (p->warp.point - p->node.ctrl2) *
-              cexp (carg (p->warp.point - pt) * I);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            p->node.ctrl2 = 2 * p->warp.point - pt;
-            break;
-          default:
-            break;
-          }
-        }
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CTRLPOINT1:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl1 = pt;
+              if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+              {
+                switch (p->header.node_type)
+                {
+                   case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+                     p->node.ctrl2 = p->warp.point +
+                       cabs (p->warp.point - p->node.ctrl2) *
+                       cexp (carg (p->warp.point - pt) * I);
+                     break;
+                case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+                  p->node.ctrl2 = 2 * p->warp.point - pt;
+                  break;
+                default:
+                  break;
+                }
+              }
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_CTRLPOINT2:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl2 = pt;
-        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-        {
-          switch (d->header.node_type)
-          {
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            n->node.ctrl1 = d->warp.point +
-              cabs (d->warp.point - n->node.ctrl1) *
-              cexp (carg (d->warp.point - pt) * I);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            n->node.ctrl1 = 2 * d->warp.point - pt;
-            break;
-          default:
-            break;
-          }
-        }
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CTRLPOINT2:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl2 = pt;
+              if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+              {
+                switch (d->header.node_type)
+                {
+                   case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+                     n->node.ctrl1 = d->warp.point +
+                       cabs (d->warp.point - n->node.ctrl1) *
+                       cexp (carg (d->warp.point - pt) * I);
+                     break;
+                   case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+                     n->node.ctrl1 = 2 * d->warp.point - pt;
+                     break;
+                   default:
+                     break;
+                }
+              }
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_RADIUSPOINT:
-      d->warp.radius = pt;
-      dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->warp.point));
-      break;
+       case DT_LIQUIFY_LAYER_RADIUSPOINT:
+         d->warp.radius = pt;
+         dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->warp.point));
+         break;
 
-    case DT_LIQUIFY_LAYER_STRENGTHPOINT:
-      d->warp.strength = pt;
-      dt_conf_set_float(CONF_STRENGTH, cabs(d->warp.strength - d->warp.point));
-      dt_conf_set_float(CONF_ANGLE, carg(d->warp.strength - d->warp.point));
-      break;
+       case DT_LIQUIFY_LAYER_STRENGTHPOINT:
+         d->warp.strength = pt;
+         dt_conf_set_float(CONF_STRENGTH, cabs(d->warp.strength - d->warp.point));
+         dt_conf_set_float(CONF_ANGLE, carg(d->warp.strength - d->warp.point));
+         break;
 
-    case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
-      d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-      break;
+       case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
+         d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+         break;
 
-    case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
-      d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-      break;
+       case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
+         d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+         break;
 
-    default:
-      break;
+       default:
+         break;
     }
     handled = 1;
   }
 
 done:
   dt_pthread_mutex_unlock (&g->lock);
-  if (handled) {
+  if (handled)
+  {
     sync_pipe (module, handled == 2);
   }
   return handled;
@@ -3113,7 +3278,7 @@ int button_released (struct dt_iop_module_t *module,
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         const int oldsel = !!g->last_hit.elem->header.selected;
-	unselect_all (&g->params);
+  unselect_all (&g->params);
         g->last_hit.elem->header.selected = oldsel ? 0 : g->last_hit.layer;
         handled = 1;
         goto done;
@@ -3146,7 +3311,7 @@ int button_released (struct dt_iop_module_t *module,
         dt_liquify_path_data_t *prev = node_prev (&g->params, e);
         if (prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
-	  // add node to curve
+    // add node to curve
           dt_liquify_path_data_t *curve1 = (dt_liquify_path_data_t *) e;
 
           dt_liquify_path_data_t *curve2 = (dt_liquify_path_data_t *)alloc_curve_to (module, 0);
@@ -3176,7 +3341,7 @@ int button_released (struct dt_iop_module_t *module,
         }
         if (prev && e->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
         {
-	  // add node to line
+    // add node to line
           dt_liquify_warp_t *warp1 = &prev->warp;
           dt_liquify_warp_t *warp3 = &e->warp;
           const float t = find_nearest_on_line_t (warp1->point, warp3->point, pt);
@@ -3236,7 +3401,8 @@ done:
     g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
   dt_pthread_mutex_unlock (&g->lock);
-  if (handled) {
+  if (handled)
+  {
     update_warp_count (g);
     sync_pipe (module, handled == 2);
   }
@@ -3256,27 +3422,63 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
                                            const gint flags, void *data);
 
 
+static float conf_set_get_default(const char *name, float def)
+{
+  float value;
+  if(dt_conf_key_exists(name))
+  {
+    value = dt_conf_get_float(name);
+    // do some sanity check, the value must > 1.0 (these are value in pixels), reset to default if not
+    if((value <= 1.0f || value > 3000.0f) && strcmp(name, CONF_ANGLE))
+    {
+      value = def;
+      dt_conf_set_float(name, value);
+    }
+  }
+  else
+  {
+    value = def;
+    dt_conf_set_float(name, value);
+  }
+  return value;
+}
+
 // we need this only because darktable has no radiobutton support
 static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+
+  // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
+
+  if (is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
+  {
+    g_signal_handlers_block_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+
+    gtk_toggle_button_set_active (btn, !gtk_toggle_button_get_active(btn));
+
+    g_signal_handlers_unblock_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    return;
+  }
+
   dt_control_hinter_message (darktable.control, "");
+
+  // if we are on a preview, it means that a form (point, line, curve) has been started, but no node has yet been placed.
+  // in this case we abort the current preview and let the new tool activated.
 
   if (g->status & DT_LIQUIFY_STATUS_PREVIEW)
   {
     node_delete (&g->params, g->temp);
     g->temp = NULL;
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-    gtk_toggle_button_set_active (g->btn_node_tool, 1);
-    goto done;
   }
 
-  // if currently dragging, does nothing
-  if (is_dragging(g))
-  {
-    gtk_toggle_button_set_active (btn, 0);
-    return;
-  }
+  // now, let's enable and start a new form safely
 
   if (gtk_toggle_button_get_active (btn))
   {
@@ -3284,19 +3486,20 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     gtk_toggle_button_set_active (g->btn_line_tool,  btn == g->btn_line_tool);
     gtk_toggle_button_set_active (g->btn_curve_tool, btn == g->btn_curve_tool);
     gtk_toggle_button_set_active (g->btn_node_tool,  btn == g->btn_node_tool);
+
     if (btn == g->btn_point_tool)
       dt_control_hinter_message
-        (darktable.control, _("click and drag to add point\nscrool to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_line_tool)
+        (darktable.control, _("click and drag to add point\nscroll to change size\n"
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
+    else if (btn == g->btn_line_tool)
       dt_control_hinter_message
-        (darktable.control, _("click to add line\nscrool to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_curve_tool)
+        (darktable.control, _("click to add line\nscroll to change size\n"
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
+    else if (btn == g->btn_curve_tool)
       dt_control_hinter_message
-        (darktable.control, _("click to add curve\nscrool to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_node_tool)
+        (darktable.control, _("click to add curve\nscroll to change size\n"
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
+    else if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
 
     //  start the preview mode to show the shape that will be created
@@ -3314,12 +3517,9 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
 
       //  start with current saved size/strength
 
-      const float radius =
-        dt_conf_key_exists(CONF_RADIUS) ? dt_conf_get_float(CONF_RADIUS) : GET_UI_WIDTH (DEFAULT_RADIUS);
-      const float r =
-        dt_conf_key_exists(CONF_STRENGTH) ? dt_conf_get_float(CONF_STRENGTH) : GET_UI_WIDTH (DEFAULT_STRENGTH);
-      const float phi =
-        dt_conf_key_exists(CONF_ANGLE) ? dt_conf_get_float(CONF_ANGLE) : 0;
+      const float radius = conf_set_get_default(CONF_RADIUS, GET_UI_WIDTH(DEFAULT_RADIUS));
+      const float r = conf_set_get_default(CONF_STRENGTH, GET_UI_WIDTH(DEFAULT_STRENGTH));
+      const float phi = conf_set_get_default(CONF_ANGLE, 0);
 
       g->temp->warp.radius   = pt + radius;
       g->temp->warp.strength = pt + r * cexp (phi * I);
@@ -3332,7 +3532,6 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     }
   }
 
-done:
   sync_pipe (module, FALSE);
   dt_iop_request_focus(module);
 }
@@ -3346,8 +3545,6 @@ void gui_update (dt_iop_module_t *module)
 
 void gui_init (dt_iop_module_t *module)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(14);
-
   module->gui_data = malloc (sizeof (dt_iop_liquify_gui_data_t));
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
@@ -3365,54 +3562,52 @@ void gui_init (dt_iop_module_t *module)
   dt_pthread_mutex_init (&g->lock, NULL);
   g->node_index = 0;
 
-  module->widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+  module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
 
-  GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
+  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new (_("warps|nodes count:")), FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new ("-"));
   gtk_box_pack_start (GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
+
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+  g_signal_connect(G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
+  gtk_toggle_button_set_active(g->btn_point_tool, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
+
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool,
+                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+  g_signal_connect(G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
+  gtk_toggle_button_set_active(g->btn_line_tool, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
+
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+  g_signal_connect(G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
+  gtk_toggle_button_set_active(g->btn_curve_tool, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
+
   g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool,
                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
   g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
-  gtk_toggle_button_set_active (g->btn_node_tool, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(g->btn_node_tool), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(g->btn_node_tool, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
 
-  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool,
-                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
-  g_signal_connect (G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
-  gtk_toggle_button_set_active (g->btn_curve_tool, 0);
-  gtk_widget_set_size_request (GTK_WIDGET(g->btn_curve_tool), bs, bs);
-  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
-
-  g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool,
-                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
-  g_signal_connect (G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
-  gtk_toggle_button_set_active (g->btn_line_tool, 0);
-  gtk_widget_set_size_request (GTK_WIDGET(g->btn_line_tool), bs, bs);
-  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
-
-  g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool,
-                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
-  g_signal_connect (G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
-  gtk_toggle_button_set_active (g->btn_point_tool, 0);
-  gtk_widget_set_size_request (GTK_WIDGET(g->btn_point_tool), bs, bs);
-  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
-
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click: add node - right click: remove path\n"
-                                                              "ctrl-alt-click: toggle line/curve");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
+                                                              "ctrl+alt+click: toggle line/curve");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"
-                                                              "ctrl-click: autosmooth, cusp, smooth, symmetrical"
+                                                              "ctrl+click: autosmooth, cusp, smooth, symmetrical"
                                                               " - right click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
@@ -3420,7 +3615,7 @@ void gui_init (dt_iop_module_t *module)
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl-click: linear, grow, and shrink");
+                                                              "ctrl+click: linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)

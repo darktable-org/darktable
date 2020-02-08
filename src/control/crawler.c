@@ -75,7 +75,7 @@ GList *dt_control_crawler_run()
     const int id = sqlite3_column_int(stmt, 0);
     const time_t timestamp = sqlite3_column_int(stmt, 1);
     const int version = sqlite3_column_int(stmt, 2);
-    gchar *image_path = (gchar *)sqlite3_column_text(stmt, 3);
+    gchar *image_path = g_locale_from_utf8((gchar *)sqlite3_column_text(stmt, 3),-1,NULL,NULL,NULL);
     int flags = sqlite3_column_int(stmt, 4);
 
     // no need to look for xmp files if none get written anyway.
@@ -258,7 +258,7 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
                        DT_CONTROL_CRAWLER_COL_ID, &id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &xmp_path, -1);
     if(selected)
     {
-      dt_history_load_and_apply(id, xmp_path, 0);
+      dt_history_load_and_apply(id, g_locale_to_utf8(xmp_path,-1,NULL,NULL,NULL), 0);
       valid = gtk_list_store_remove(GTK_LIST_STORE(gui->model), &iter);
     }
     else
@@ -326,7 +326,7 @@ void dt_control_crawler_show_image_list(GList *images)
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime(&item->timestamp_xmp));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, 0, DT_CONTROL_CRAWLER_COL_ID, item->id,
-                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path, DT_CONTROL_CRAWLER_COL_XMP_PATH,
+                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, g_locale_to_utf8(item->image_path,-1,NULL,NULL,NULL), DT_CONTROL_CRAWLER_COL_XMP_PATH,
                        item->xmp_path, DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
                        DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db, -1);
     g_free(item->image_path);
@@ -370,23 +370,19 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(content_box, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(content_box, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(content_box, DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(content_box, DT_PIXEL_APPLY_DPI(0));
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(content_area), content_box);
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
   gui->select_all = select_all;
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *reload_button = gtk_button_new_with_label(_("reload selected xmp files"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));
