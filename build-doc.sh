@@ -47,8 +47,6 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
 BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"
 BUILD_DIR="$BUILD_DIR_DEFAULT"
-BUILD_GENERATOR_DEFAULT="Unix Makefiles"
-BUILD_GENERATOR="$BUILD_GENERATOR_DEFAULT"
 MAKE_TASKS=-1
 
 PRINT_HELP=0
@@ -61,10 +59,6 @@ parse_args()
                 case $option in
                 --build-dir)
                         BUILD_DIR="$2"
-                        shift
-                        ;;
-               --build-generator)
-                        BUILD_GENERATOR="$2"
                         shift
                         ;;
                 -j|--jobs)
@@ -90,8 +84,6 @@ $(basename $0) [OPTIONS]
 Options:
    --build-dir      <string>  Building directory
                               (default: $BUILD_DIR_DEFAULT)
-   --build-generator <string> Build tool
-                              (default: Unix Makefiles)
 
 -j --jobs <integer>           Number of tasks
                               (default: number of CPUs)
@@ -198,7 +190,6 @@ cat <<EOF
 Darktable build script
 
 Building directory:  $BUILD_DIR
-Build generator:     $BUILD_GENERATOR
 Build tasks:         $MAKE_TASKS
 
 
