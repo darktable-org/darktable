@@ -17,9 +17,11 @@
 # For Manjaro Linux, this involved installing the following:
 #
 ################
+# sudo pacman -S base-devel cmake intltool lensfun curl exiv2 lcms2 librsvg libxslt sqlite pugixml
+# sudo pacman -S openexr libwebp flickcurl graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
 # sudo pacman -S jdk10-openjdk gnome-doc-utils fop imagemagick extra/docbook-xml extra/docbook-xsl po4a
 # 
-# cd aur
+# cd ~/aur
 # git clone https://aur.archlinux.org/saxon6.git
 # cd saxon6/
 # makepkg -sri
@@ -28,10 +30,15 @@
 # echo '#!/bin/sh
 #
 # exec java -classpath /usr/share/java/saxon.jar com.icl.saxon.StyleSheet "@0"' | sudo tee /usr/local/bin/saxon-xslt
-# cd
+# cd ~/aur
+# git clone https://aur.archlinux.org/saxon-he.git
+# cd saxon-he
+# makepkg -sri
+# cd ~/aur
+# git clone https://aur.archlinux.org/docbook-xsl-saxon.git
+# cd docbook-xsl-saxon
+# makepkg -sri
 ################
-# There may be an additional dependency for saxon adjustColumnWidths() function, not quite sure which package
-# satisfied this dependency. Perhaps it was the docbook-xsl-saxon package from the AUR repositories.
 #
 
 
