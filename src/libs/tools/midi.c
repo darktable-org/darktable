@@ -543,22 +543,26 @@ void aggregate_and_set_slider(MidiDevice *midi,
         }
         else
         {
-          GSList *al = darktable.control->dynamic_accelerator_list;
-          dt_accel_dynamic_t *da = NULL ;
-          while(al)
-          {
-            da = (dt_accel_dynamic_t *)al->data;
-            if (da->widget == mapping_widget)
-              break;
-
-            al = g_slist_next(al);
-          }
-
           if ((velocity != 1) &&
               (channel == midi->mapping_channel) && (key == midi->mapping_key) &&
               ((midi->mapping_velocity == velocity) || (midi->mapping_velocity - velocity == 1)) )
           {
             // store new mapping in table, overriding existing
+
+            GSList *al = darktable.control->dynamic_accelerator_list;
+            dt_accel_dynamic_t *da = NULL ;
+            while(al)
+            {
+              da = (dt_accel_dynamic_t *)al->data;
+              if (da->widget == mapping_widget)
+                break;
+
+              al = g_slist_next(al);
+            }
+
+            dt_control_log(_("mapped to %s/%s"), 
+                              DT_BAUHAUS_WIDGET(mapping_widget)->module->name(),
+                              DT_BAUHAUS_WIDGET(mapping_widget)->label);
 
             dt_midi_knob_t *new_knob = NULL;
 
