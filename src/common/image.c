@@ -1539,11 +1539,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         const int id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
-        if(newname)
-        {
-          strncpy(img->filename, newname, DT_MAX_FILENAME_LEN-1);
-          img->filename[DT_MAX_FILENAME_LEN-1] = '\0';
-        }
+        if(newname) g_strlcpy(img->filename, newname, DT_MAX_FILENAME_LEN);
         // write through to db, but not to xmp
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         dup_list = g_list_delete_link(dup_list, dup_list);
