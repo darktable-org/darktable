@@ -1009,9 +1009,9 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
   float opacity = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   float scaled_opacity = (2.f * opacity / gopacity - 1.f);
   if (1.f - brightness <= 0.f)
-    scaled_opacity = opacity <= FLT_EPSILON ? -1.f : 1.f;
+    scaled_opacity = opacity <= 16 * FLT_EPSILON ? -1.f : 1.f;
   else if (1.f + brightness <= 0.f)
-    scaled_opacity = opacity >= 1.f - FLT_EPSILON ? 1.f : -1.f;
+    scaled_opacity = opacity >= 1.f - 16 * FLT_EPSILON ? 1.f : -1.f;
   else if (brightness > 0.f)
   {
     scaled_opacity = (scaled_opacity + brightness) / (1.f - brightness);
