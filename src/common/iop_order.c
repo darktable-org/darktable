@@ -476,7 +476,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   return DT_IOP_ORDER_CUSTOM;
 }
 
-static gboolean _has_multiple_instances(GList *iop_order_list)
+gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
 {
   GList *l = iop_order_list;
 
@@ -484,8 +484,8 @@ static gboolean _has_multiple_instances(GList *iop_order_list)
   {
     GList *next = g_list_next(l);
     if(next
-       && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
-                 ((dt_iop_order_entry_t *)(next->data))->operation))
+       && (strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                  ((dt_iop_order_entry_t *)(next->data))->operation) == 0))
     {
       return TRUE;
     }
@@ -505,7 +505,7 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_li
   if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
   sqlite3_finalize(stmt);
 
-  if(kind == DT_IOP_ORDER_CUSTOM || _has_multiple_instances(iop_order_list))
+  if(kind == DT_IOP_ORDER_CUSTOM || dt_ioppr_has_multiple_instances(iop_order_list))
   {
     gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
