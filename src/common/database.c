@@ -1596,7 +1596,7 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_LIBRARY)
   {
-    int new_version = _upgrade_library_schema_step(db, version);
+    const int new_version = _upgrade_library_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_library_schema_step
     else
@@ -1611,7 +1611,7 @@ static gboolean _upgrade_data_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_DATA)
   {
-    int new_version = _upgrade_data_schema_step(db, version);
+    const int new_version = _upgrade_data_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_data_schema_step
     else
