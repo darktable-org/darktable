@@ -270,7 +270,7 @@ void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const
 /** get image location lon/lat */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
-int dt_image_altered(const uint32_t imgid);
+gboolean dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid);
 /** set the image raw aspect ratio */
@@ -336,8 +336,6 @@ void dt_image_local_copy_synch(void);
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
-// return the iop-order-version used by imgid (0 if unknown iop-order-version)
-int dt_image_get_iop_order_version(const int32_t imgid);
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);

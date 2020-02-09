@@ -42,16 +42,9 @@ macro (add_iop _lib _src)
   if (WIN32)
     _detach_debuginfo (${_lib} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
   else()
-      # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-      # The string "$ORIGIN" should end up in the executable as-is.
-      set(RPATH_DT "$ORIGIN")
-      if (APPLE)
-          # The string "@loader_path" should end up in the executable as-is.
-          set(RPATH_DT "@loader_path")
-      endif()
       set_target_properties(${_lib}
                             PROPERTIES
-                            INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                            INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
   endif(WIN32)
 
   install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
@@ -65,6 +58,8 @@ macro (add_iop _lib _src)
     list(APPEND _iop_default_visible_list ${_lib})
   endif(${add_iop_DEFAULT_VISIBLE})
 endmacro (add_iop)
+
+# @@_NEW_MODULE: when adding a new module here, please grep @@_NEW_MODULE in the code and adjust accordingly.
 
 # add_iop(useless "useless.c")
 add_iop(rawprepare "rawprepare.c")

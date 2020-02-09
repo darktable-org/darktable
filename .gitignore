@@ -15,3 +15,6 @@ cscope.out
 tags
 cscope.*
 compile_commands.json
+.cproject
+.project
+.settings/

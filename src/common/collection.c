@@ -971,6 +971,15 @@ static char *_dt_collection_compute_datetime(const char *operator, const char *i
     tm1.tm_min = 59;
     tm1.tm_sec = 59;
   }
+  if(strcmp(operator, "<") == 0 || strcmp(operator, ">=") == 0)
+  {
+    // we set all values to their minimum
+    tm1.tm_mon = 1;
+    tm1.tm_mday = 1;
+    tm1.tm_hour = 0;
+    tm1.tm_min = 0;
+    tm1.tm_sec = 0;
+  }
 
   // we read the input date, depending of his length
   if(len < 7)
@@ -1801,21 +1810,18 @@ int64_t dt_collection_get_image_position(const int32_t image_id)
 
 void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   sqlite3_stmt *stmt = NULL;
 
-  // shift image positions to make some space
-  gchar * update_image_pos_query = "UPDATE main.images SET position = position + ?1 WHERE position >= ?2 AND position < ?3";
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_image_pos_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images"
+                              " SET position = position + ?1"
+                              " WHERE position >= ?2 AND position < ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 /* move images with drag and drop
@@ -1866,9 +1872,10 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     // move images to their intended positions
     int64_t new_image_pos = target_image_pos;
 
-    gchar *insert_image_pos_query = "UPDATE main.images SET position = ?1 WHERE id = ?2";
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), insert_image_pos_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.images"
+                                " SET position = ?1"
+                                " WHERE id = ?2", -1, &stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
         selected_images_iter != NULL;
@@ -1893,8 +1900,8 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     // get last position
     int64_t max_position = -1;
 
-    gchar *max_position_query = "SELECT MAX(position) FROM main.images";
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT MAX(position) FROM main.images", -1, &stmt, NULL);
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -1908,8 +1915,10 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
     // move images to last position in custom image order table
-    gchar *update_query = "UPDATE main.images SET position = ?1 WHERE id = ?2";
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_query, -1, &update_stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.images"
+                                " SET position = ?1"
+                                " WHERE id = ?2", -1, &update_stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
         selected_images_iter != NULL;

@@ -59,4 +59,6 @@ if(GMIC_LIBRARY AND GMIC_INCLUDE_DIR)
     endif(GMIC_FOUND)
 
   endif(NOT GMIC_VERSION_OK)
+else()
+  message(STATUS "GMIC not found")
 endif(GMIC_LIBRARY AND GMIC_INCLUDE_DIR)

@@ -329,9 +329,9 @@ void expose(
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     if(closeup)
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
 
     cairo_fill(cr);
 
@@ -390,7 +390,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -799,10 +799,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
     if(module->multi_priority == base_multi_priority) // if the module is the "base" instance, we keep it
     {
-      if(dev->iop_order_list)
-        module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op);
-      else
-        module->iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, module->op);
+      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
       dt_iop_reload_defaults(module);
@@ -1166,7 +1163,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       if(style->description && *style->description)
       {
-        tooltip = g_strconcat("<b>", style->description, "</b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
       }
       else
       {
@@ -2352,14 +2349,10 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
   if(module_src && module_dest && module_src != module_dest)
   {
-    double iop_order = -1.0;
     if(module_src->iop_order < module_dest->iop_order)
-      iop_order = dt_ioppr_get_iop_order_after_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
+      can_moved = dt_ioppr_check_can_move_after_iop(darktable.develop->iop, module_src, module_dest);
     else
-      iop_order = dt_ioppr_get_iop_order_before_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
-
-    if(iop_order > 0.0 && iop_order != module_src->iop_order)
-      can_moved = TRUE;
+      can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
   if(can_moved)
@@ -2400,14 +2393,14 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       /* printf("[_on_drag_data_received] moving %s %s(%f) after %s %s(%f)\n",
           module_src->op, module_src->multi_name, module_src->iop_order,
           module_dest->op, module_dest->multi_name, module_dest->iop_order); */
-      moved = dt_ioppr_move_iop_after(&darktable.develop->iop, module_src, module_dest, 1, 1);
+      moved = dt_ioppr_move_iop_after(darktable.develop, module_src, module_dest);
     }
     else
     {
       /* printf("[_on_drag_data_received] moving %s %s(%f) before %s %s(%f)\n",
           module_src->op, module_src->multi_name, module_src->iop_order,
           module_dest->op, module_dest->multi_name, module_dest->iop_order); */
-      moved = dt_ioppr_move_iop_before(&darktable.develop->iop, module_src, module_dest, 1, 1);
+      moved = dt_ioppr_move_iop_before(darktable.develop, module_src, module_dest);
     }
   }
   else
@@ -2680,6 +2673,16 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // reset color assesment mode
+  if(dev->iso_12646.enabled)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
+    dev->iso_12646.enabled = FALSE;
+    dev->width = dev->orig_width;
+    dev->height = dev->orig_height;
+    dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  }
 
   // commit image ops to db
   dt_dev_write_history(dev);
@@ -3599,7 +3602,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -3638,7 +3641,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);

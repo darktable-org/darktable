@@ -75,7 +75,7 @@ GList *dt_control_crawler_run()
     const int id = sqlite3_column_int(stmt, 0);
     const time_t timestamp = sqlite3_column_int(stmt, 1);
     const int version = sqlite3_column_int(stmt, 2);
-    gchar *image_path = (gchar *)sqlite3_column_text(stmt, 3);
+    gchar *image_path = g_locale_from_utf8((gchar *)sqlite3_column_text(stmt, 3),-1,NULL,NULL,NULL);
     int flags = sqlite3_column_int(stmt, 4);
 
     // no need to look for xmp files if none get written anyway.
@@ -258,7 +258,7 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
                        DT_CONTROL_CRAWLER_COL_ID, &id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &xmp_path, -1);
     if(selected)
     {
-      dt_history_load_and_apply(id, xmp_path, 0);
+      dt_history_load_and_apply(id, g_locale_to_utf8(xmp_path,-1,NULL,NULL,NULL), 0);
       valid = gtk_list_store_remove(GTK_LIST_STORE(gui->model), &iter);
     }
     else
@@ -326,7 +326,7 @@ void dt_control_crawler_show_image_list(GList *images)
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime(&item->timestamp_xmp));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, 0, DT_CONTROL_CRAWLER_COL_ID, item->id,
-                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path, DT_CONTROL_CRAWLER_COL_XMP_PATH,
+                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, g_locale_to_utf8(item->image_path,-1,NULL,NULL,NULL), DT_CONTROL_CRAWLER_COL_XMP_PATH,
                        item->xmp_path, DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
                        DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db, -1);
     g_free(item->image_path);

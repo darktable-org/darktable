@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
@@ -313,6 +314,7 @@ static inline float clamp_simd(const float x)
 static inline float pixel_rgb_norm_power(const float pixel[4])
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
+  // the full norm is (R^3 + G^3 + B^3) / (R^2 + G^2 + B^2) and it should be in ]0; +infinity[
 
   float numerator = 0.0f;
   float denominator = 0.0f;
@@ -329,7 +331,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
     denominator += RGB_square;
   }
 
-  return numerator / fmaxf(denominator, 1e-6f);
+  return numerator / fmaxf(denominator, 1e-12f);  // prevent from division-by-0 (note: (1e-6)^2 = 1e-12
 }
 
 
@@ -519,7 +521,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       // Get the desaturation value based on the log value
       const float desaturation = filmic_desaturate(norm, data->sigma_toe, data->sigma_shoulder, data->saturation);
-       
+
       for(int c = 0; c < 3; c++) ratios[c] *= norm;
 
       const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(ratios,
