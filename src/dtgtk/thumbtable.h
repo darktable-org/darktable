@@ -36,7 +36,9 @@ typedef enum dt_thumbtable_move_t
   DT_THUMBTABLE_MOVE_PAGEUP,
   DT_THUMBTABLE_MOVE_PAGEDOWN,
   DT_THUMBTABLE_MOVE_START,
-  DT_THUMBTABLE_MOVE_END
+  DT_THUMBTABLE_MOVE_END,
+  DT_THUMBTABLE_MOVE_ALIGN,
+  DT_THUMBTABLE_MOVE_RESET_FIRST
 } dt_thumbtable_move_t;
 
 typedef struct dt_thumbtable_t
@@ -98,6 +100,9 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid
 // move by key actions.
 // this key accels are not managed here but inside view
 gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
+
+// ensure the first image in collection as no offset (is positionned on top-left)
+gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
