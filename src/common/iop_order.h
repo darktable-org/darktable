@@ -168,6 +168,8 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority);
 /** likewise, but returns the link in the list instead of the entry */
 GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority);
+/** For a non custom order, returns TRUE if iop_order_list has multiple instances grouped together */
+gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list);
 
 /** returns the iop_order from iop_order_list list with operation = op_name */
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);
