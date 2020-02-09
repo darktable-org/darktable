@@ -971,7 +971,7 @@ GList* dt_image_find_duplicates(const char* filename)
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
 #ifdef _WIN32
   // Windows only accepts generic wildcards for filename
-  static const gchar *glob_patterns[] = { "", "_????", NULL };
+  static const gchar *glob_patterns[] = { "", "_??", "_???", "_????", NULL };
 #else
   static const gchar *glob_patterns[]
       = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
