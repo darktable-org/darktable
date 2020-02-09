@@ -1214,7 +1214,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     {
       const int32_t imgid = sqlite3_column_int(mig_stmt, 0);
       char operation[20] = { 0 };
-      memcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
+      g_strlcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
       const int multi_priority = sqlite3_column_int(mig_stmt, 2);
       const double iop_order = sqlite3_column_double(mig_stmt, 3);
       const int iop_order_version = sqlite3_column_int(mig_stmt, 4);
