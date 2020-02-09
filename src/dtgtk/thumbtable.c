@@ -377,11 +377,11 @@ static gboolean _move(dt_thumbtable_t *table, int x, int y)
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
     // we stop before thumb area completly disappear from screen
-    const int space = table->thumb_size * 0.5;
-    if(table->thumbs_area.y > table->view_height - space) posy = MIN(0, posy);        // we only allow to move up
-    if(table->thumbs_area.y + table->thumbs_area.height < space) posy = MAX(0, posy); // we only allow to move down
-    if(table->thumbs_area.x > table->view_width - space) posx = MIN(0, posx);         // we only allow to move left
-    if(table->thumbs_area.x + table->thumbs_area.width < space) posx = MAX(0, posx); // we only allow to move right
+    const int space = table->thumb_size * 0.5; // we want at least 1/2 thumb to stay visible
+    posy = MIN(table->view_height - space - table->thumbs_area.y, posy);
+    posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
+    posx = MIN(table->view_width - space - table->thumbs_area.x, posx);
+    posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
 
     if(posy == 0 && posx == 0) return FALSE;
   }
@@ -1499,26 +1499,32 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   sqlite3_finalize(stmt);
 
   // classic keys
-  if(move == DT_THUMBTABLE_MOVE_LEFT)
+  if(move == DT_THUMBTABLE_MOVE_LEFT && baserowid > 1)
     newrowid = baserowid - 1;
-  else if(move == DT_THUMBTABLE_MOVE_RIGHT)
+  else if(move == DT_THUMBTABLE_MOVE_RIGHT && baserowid < maxrowid)
     newrowid = baserowid + 1;
-  else if(move == DT_THUMBTABLE_MOVE_UP)
+  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid - table->thumbs_per_row >= 1)
     newrowid = baserowid - table->thumbs_per_row;
-  else if(move == DT_THUMBTABLE_MOVE_DOWN)
+  else if(move == DT_THUMBTABLE_MOVE_DOWN && baserowid + table->thumbs_per_row <= maxrowid)
     newrowid = baserowid + table->thumbs_per_row;
   // page key
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
+  {
     newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
+    while(newrowid < 1) newrowid += table->thumbs_per_row;
+  }
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
+  {
     newrowid = baserowid + table->thumbs_per_row * (table->rows - 1);
+    while(newrowid > maxrowid) newrowid -= table->thumbs_per_row;
+  }
   // direct start/end
   else if(move == DT_THUMBTABLE_MOVE_START)
     newrowid = 1;
   else if(move == DT_THUMBTABLE_MOVE_END)
     newrowid = maxrowid;
 
-  newrowid = CLAMP(newrowid, 1, maxrowid);
+
   if(newrowid == baserowid) return FALSE;
 
   // change image_over
@@ -1552,9 +1558,9 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
     moved = _move(table, 0, -step);
   // page key
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
-    moved = _move(table, 0, table->thumb_size * (table->rows - 1));
+    moved = _move(table, 0, step * (table->rows - 1));
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
-    moved = _move(table, 0, -table->thumb_size * (table->rows - 1));
+    moved = _move(table, 0, -step * (table->rows - 1));
   // direct start/end
   else if(move == DT_THUMBTABLE_MOVE_START)
     moved = _zoomable_ensure_rowid_visibility(table, 1);
