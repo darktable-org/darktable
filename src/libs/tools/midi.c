@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/ratings.h"
 #include "bauhaus/bauhaus.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -125,6 +126,7 @@ typedef struct MidiDevice
   gint            group;
   gint            group_switch_key;
   gint            group_key_light;
+  gint            rating_key_light;
 } MidiDevice;
 
 typedef struct _GMidiSource
@@ -171,6 +173,19 @@ void midi_config_save(MidiDevice *midi)
 void midi_config_load(MidiDevice *midi)
 {
   midi->config_loaded = TRUE;
+
+  if (strstr(midi->model_name, "X-TOUCH MINI"))
+  {
+    midi->group_switch_key = 16;
+    midi->group_key_light = 8;
+    midi->rating_key_light = 0;
+  }
+  else if (strstr(midi->model_name, "Arturia BeatStep"))
+  {
+    midi->group_switch_key = 0;
+    midi->group_key_light = 0;
+    midi->rating_key_light = 8;
+  }
 
   FILE *f = 0;
 
@@ -290,45 +305,81 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
 
 void refresh_sliders_to_device(MidiDevice *midi)
 {
+  if (!midi->config_loaded)
+  {
+    midi_config_load(midi);
+  }
+
   midi->syncing = FALSE;
 
-  GSList *l = midi->mapping_list;
-  while(l)
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
   {
-    dt_midi_knob_t *k = (dt_midi_knob_t *)l->data;
-
-    if (k->encoding == MIDI_ABSOLUTE)
+    GSList *l = midi->mapping_list;
+    while(l)
     {
-      if (k != midi->stored_knob)
+      dt_midi_knob_t *k = (dt_midi_knob_t *)l->data;
+
+      if (k->encoding == MIDI_ABSOLUTE)
       {
-        k->locked = FALSE;
-      }
-
-      GtkWidget *w = k->accelerator->widget;
-      if (k->group == midi->group && w)
-      {
-        float min = dt_bauhaus_slider_get_soft_min(w);
-        float max = dt_bauhaus_slider_get_soft_max(w);
-        float c   = dt_bauhaus_slider_get(w);
-        
-        int velocity = round((c-min)/(max-min)*127);
-
-        midi_write(midi, k->channel, 0xB, k->key, velocity);
-
-        // For X-touch mini; set pattern of rotator lights
-        if (k->key < 9)
+        if (k != midi->stored_knob)
         {
-          if (min == -max)
-            midi_write(midi, 0, 0xB, k->key, 4);
-          else if (min == 0 && (max == 1 || max == 100))
-            midi_write(midi, 0, 0xB, k->key, 2);
-          else
-            midi_write(midi, 0, 0xB, k->key, 1);
+          k->locked = FALSE;
+        }
+
+        GtkWidget *w = k->accelerator->widget;
+        if (k->group == midi->group && w)
+        {
+          float min = dt_bauhaus_slider_get_soft_min(w);
+          float max = dt_bauhaus_slider_get_soft_max(w);
+          float c   = dt_bauhaus_slider_get(w);
+          
+          int velocity = round((c-min)/(max-min)*127);
+
+          midi_write(midi, k->channel, 0xB, k->key, velocity);
+
+          // For X-touch mini; set pattern of rotator lights
+          if (k->key < 9)
+          {
+            if (min == -max)
+              midi_write(midi, 0, 0xB, k->key, 4);
+            else if (min == 0 && (max == 1 || max == 100))
+              midi_write(midi, 0, 0xB, k->key, 2);
+            else
+              midi_write(midi, 0, 0xB, k->key, 1);
+          }
         }
       }
+      l = g_slist_next(l);
     }
-    l = g_slist_next(l);
   }
+
+  int rating, light;
+
+  if (midi->rating_key_light != -1)
+  {
+    int image_id = darktable.develop->image_storage.id;
+    if (midi->group == 1 && image_id != -1)
+    {
+      rating = dt_ratings_get(image_id);
+    }
+    else
+    {
+      rating = 0;
+    }
+    
+    for (light = 0; light < rating; light++)
+    {
+      // if rating=reject, show x0x0x pattern
+      midi_write(midi, 0, 0x9, light + midi->rating_key_light, rating < 6 || !(light & 1)? 1: 0);
+    }
+    for (; light < 5; light++)
+    {
+      midi_write(midi, 0, 0x9, light + midi->rating_key_light, 0);
+    }
+  }
+
+  midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 1);
 }
 
 void refresh_all_devices(gpointer data)
@@ -438,12 +489,8 @@ gint interpret_move(dt_midi_knob_t *k, gint velocity)
 void aggregate_and_set_slider(MidiDevice *midi,
                               gint channel, gint key, gint velocity)
 {
-  if (!midi->config_loaded)
-  {
-    midi_config_load(midi);
-    
-    refresh_sliders_to_device(midi);
-  }
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) != DT_VIEW_DARKROOM) return;
 
   if ((channel == midi->stored_channel) && (key == midi->stored_key))
   {
@@ -695,20 +742,7 @@ void select_page(MidiDevice *midi, gint channel, gint note)
 
   if (midi->group_switch_key == -1 || knob_config_mode == TRUE)
   {
-    if (strstr(midi->model_name, "X-TOUCH MINI"))
-    {
-      midi->group_switch_key = 16;
-      midi->group_key_light = 8;
-    }
-    else if (strstr(midi->model_name, "Arturia BeatStep"))
-    {
-      midi->group_switch_key = 0;
-      midi->group_key_light = 0;
-    }
-    else
-    {
-      midi->group_switch_key = note;
-    }
+    midi->group_switch_key = note;
     
     knob_config_mode = FALSE;
   }
@@ -726,64 +760,68 @@ void select_page(MidiDevice *midi, gint channel, gint note)
       midi_write(midi, channel, 0xB, knob, 0); 
     }
 
-    refresh_sliders_to_device(midi);
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+    {    
+      refresh_sliders_to_device(midi);
 
-    char *help_text = g_strdup_printf("MIDI key group %d:", midi->group);
-    char *tmp;
+      char *help_text = g_strdup_printf("MIDI key group %d:", midi->group);
+      char *tmp;
 
-    char channel_text[30] = "";
-    dt_iop_module_t *previous_module = NULL;
-    gint remaining_line_items = 0;
+      char channel_text[30] = "";
+      dt_iop_module_t *previous_module = NULL;
+      gint remaining_line_items = 0;
 
-    GSList *l = midi->mapping_list;
-    gint current_channel = l? ((dt_midi_knob_t *)g_slist_last(l)->data)->channel: 0;
-    while(l)
-    {
-      dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
-      if (d->group > midi->group)
+      GSList *l = midi->mapping_list;
+      gint current_channel = l? ((dt_midi_knob_t *)g_slist_last(l)->data)->channel: 0;
+      while(l)
       {
-        break;
-      }
-
-      if (d->group == midi->group && d->accelerator->widget != NULL)
-      {
-        dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
-
-        if (d->channel != current_channel)
+        dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
+        if (d->group > midi->group)
         {
-          current_channel = d->channel;
-          snprintf(channel_text, sizeof(channel_text), "(Channel %2d) ", current_channel);
-          remaining_line_items = 0;
+          break;
         }
 
-        if (remaining_line_items-- == 0)
+        if (d->group == midi->group && d->accelerator->widget != NULL)
         {
-          tmp = g_strdup_printf("%s\n%s", help_text, channel_text);
+          if (d->channel != current_channel)
+          {
+            current_channel = d->channel;
+            snprintf(channel_text, sizeof(channel_text), "(Channel %2d) ", current_channel);
+            remaining_line_items = 0;
+          }
+
+          if (remaining_line_items-- == 0)
+          {
+            tmp = g_strdup_printf("%s\n%s", help_text, channel_text);
+            g_free(help_text);
+            help_text = tmp;
+
+            // memset(channel_text, ' ', strlen(channel_text)); // only works with monospaced fonts
+            remaining_line_items = 8 - 1;
+          }
+
+          dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
+
+          if (w->module == previous_module || strstr(w->module->name(), w->label))
+          {
+            tmp = g_strdup_printf("%s%2d: %s  ", help_text, d->key, w->label);
+          }
+          else
+          {
+            tmp = g_strdup_printf("%s%2d: %s/%s  ", help_text, d->key, w->module->name(), w->label);
+            previous_module = w->module;
+          }
           g_free(help_text);
           help_text = tmp;
-
-          // memset(channel_text, ' ', strlen(channel_text)); // only works with monospaced fonts
-          remaining_line_items = 8 - 1;
         }
-
-        if (w->module == previous_module || strstr(w->module->name(), w->label))
-        {
-          tmp = g_strdup_printf("%s%2d: %s  ", help_text, d->key, w->label);
-        }
-        else
-        {
-          tmp = g_strdup_printf("%s%2d: %s/%s  ", help_text, d->key, w->module->name(), w->label);
-          previous_module = w->module;
-        }
-        g_free(help_text);
-        help_text = tmp;
+        l = g_slist_next(l);
       }
-      l = g_slist_next(l);
-    }
 
-    dt_control_hinter_message(darktable.control, help_text);
-    
-    g_free(help_text);
+      dt_control_hinter_message(darktable.control, help_text);
+      
+      g_free(help_text);
+    }
   }
 }
 
@@ -1288,6 +1326,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->group            =  1;
     midi->group_switch_key = -1;
     midi->group_key_light  = -100;
+    midi->rating_key_light = -1;
 
 #ifdef HAVE_ALSA
     if (! g_ascii_strcasecmp (midi->device, "alsa"))
