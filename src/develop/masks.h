@@ -379,8 +379,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 
   if(a != NULL)
   {
-    strncpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
-    a->tag[sizeof(a->tag)-1] = '\0';
+    g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
     const size_t bufsize = dt_round_size(size * sizeof(float), 64);
     a->size = bufsize / sizeof(float);
