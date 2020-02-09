@@ -4194,6 +4194,28 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       move = DT_THUMBTABLE_MOVE_START;
     else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
       move = DT_THUMBTABLE_MOVE_END;
+    else
+    {
+      select = TRUE;
+      if(key == accels->lighttable_sel_left.accel_key && state == accels->lighttable_sel_left.accel_mods)
+        move = DT_THUMBTABLE_MOVE_LEFT;
+      else if(key == accels->lighttable_sel_up.accel_key && state == accels->lighttable_sel_up.accel_mods)
+        move = DT_THUMBTABLE_MOVE_UP;
+      else if(key == accels->lighttable_sel_right.accel_key && state == accels->lighttable_sel_right.accel_mods)
+        move = DT_THUMBTABLE_MOVE_RIGHT;
+      else if(key == accels->lighttable_sel_down.accel_key && state == accels->lighttable_sel_down.accel_mods)
+        move = DT_THUMBTABLE_MOVE_DOWN;
+      else if(key == accels->lighttable_sel_pageup.accel_key && state == accels->lighttable_sel_pageup.accel_mods)
+        move = DT_THUMBTABLE_MOVE_PAGEUP;
+      else if(key == accels->lighttable_sel_pagedown.accel_key
+              && state == accels->lighttable_sel_pagedown.accel_mods)
+        move = DT_THUMBTABLE_MOVE_PAGEDOWN;
+      else if(key == accels->lighttable_sel_start.accel_key && state == accels->lighttable_sel_start.accel_mods)
+        move = DT_THUMBTABLE_MOVE_START;
+      else if(key == accels->lighttable_sel_end.accel_key && state == accels->lighttable_sel_end.accel_mods)
+        move = DT_THUMBTABLE_MOVE_END;
+    }
+
 
     if(move != DT_THUMBTABLE_MOVE_NONE)
     {
@@ -4406,6 +4428,16 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "move right"), GDK_KEY_Right, 0);
   dt_accel_register_view(self, NC_("accel", "move start"), GDK_KEY_Home, 0);
   dt_accel_register_view(self, NC_("accel", "move end"), GDK_KEY_End, 0);
+
+  // movement keys with selection
+  dt_accel_register_view(self, NC_("accel", "move page up and select"), GDK_KEY_Page_Up, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move page down and select"), GDK_KEY_Page_Down, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move up and select"), GDK_KEY_Up, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move down and select"), GDK_KEY_Down, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move left and select"), GDK_KEY_Left, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move right and select"), GDK_KEY_Right, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move start and select"), GDK_KEY_Home, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "move end and select"), GDK_KEY_End, GDK_SHIFT_MASK);
 
   dt_accel_register_view(self, NC_("accel", "scroll center"), GDK_KEY_apostrophe, 0);
   dt_accel_register_view(self, NC_("accel", "realign images to grid"), GDK_KEY_l, 0);

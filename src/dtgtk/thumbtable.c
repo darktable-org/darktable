@@ -1478,6 +1478,9 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 {
   // base point
   int baseid = dt_control_get_mouse_over_id();
+  // let's be sure that the current image is selected
+  if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
+
   int baserowid = 1;
   int newrowid = 1;
   if(baseid <= 0)
@@ -1542,6 +1545,10 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 }
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
 {
+  // let's be sure that the current image is selected
+  int baseid = dt_control_get_mouse_over_id();
+  if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
+
   // first, we move the view by 1 thumb_size
   // move step
   const int step = table->thumb_size;
@@ -1578,6 +1585,8 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
   // and we set mouseover if we can
   dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
   if(thumb) dt_control_set_mouse_over_id(thumb->imgid);
+  // if needed, we set the selection
+  if(thumb && select) dt_selection_select_range(darktable.selection, thumb->imgid);
 
   return moved;
 }
