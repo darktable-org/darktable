@@ -3039,9 +3039,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         float x = mask[k] / opacity;
         x = 2.f * x - 1.f;
         if (1.f - brightness <= 0.f)
-          x = mask[k] <= FLT_EPSILON ? -1.f : 1.f;
+          x = mask[k] <= 16 * FLT_EPSILON ? -1.f : 1.f;
         else if (1.f + brightness <= 0.f)
-          x = mask[k] >= 1.f - FLT_EPSILON ? 1.f : -1.f;
+          x = mask[k] >= 1.f - 16 * FLT_EPSILON ? 1.f : -1.f;
         else if (brightness > 0.f)
         {
           x = (x + brightness) / (1.f - brightness);
