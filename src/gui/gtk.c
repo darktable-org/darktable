@@ -169,6 +169,30 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_view(path, sizeof(path), "lighttable", "move end");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_end);
 
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move up and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_up);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move down and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_down);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move left and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_left);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move right and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_right);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move page up and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_pageup);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move page down and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_pagedown);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move start and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_start);
+
+  dt_accel_path_view(path, sizeof(path), "lighttable", "move end and select");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_end);
+
   dt_accel_path_view(path, sizeof(path), "lighttable", "scroll center");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_center);
 
