@@ -2692,12 +2692,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         iop_order_version = (dt_iop_order_t)pos->toLong();
       }
 
-      if(iop_order_version == DT_IOP_ORDER_CUSTOM)
+      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.iop_order_list"))) != xmpData.end())
       {
-        if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.iop_order_list"))) != xmpData.end())
-        {
-          iop_order_list = dt_ioppr_deserialize_text_iop_order_list(pos->toString().c_str());
-        }
+        iop_order_list = dt_ioppr_deserialize_text_iop_order_list(pos->toString().c_str());
       }
       else
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
@@ -3288,12 +3285,13 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // get iop-order list
   const dt_iop_order_t iop_order_version = dt_ioppr_get_iop_order_version(imgid);
-  if(iop_order_version == DT_IOP_ORDER_CUSTOM)
+  GList *iop_list = dt_ioppr_get_iop_order_list(imgid, TRUE);
+
+  if(iop_order_version == DT_IOP_ORDER_CUSTOM || dt_ioppr_has_multiple_instances(iop_list))
   {
-    GList *iop_list = dt_ioppr_get_iop_order_list(imgid, TRUE);
     iop_order_list = dt_ioppr_serialize_text_iop_order_list(iop_list);
-    g_list_free_full(iop_list, free);
   }
+  g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
   xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
