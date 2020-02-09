@@ -77,10 +77,10 @@ typedef enum dt_lighttable_direction_t
   DIRECTION_CENTER = 10,
 } dt_lighttable_direction_t;
 
-static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+/*static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data);
+                                           GdkModifierType modifier, gpointer data);*/
 /*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data);
 static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -2872,7 +2872,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 }
 
-static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+/*static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = (dt_view_t *)data;
@@ -2970,7 +2970,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
   return TRUE;
-}
+}*/
 
 /*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
@@ -3103,18 +3103,6 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   dt_control_queue_redraw_center();
   return TRUE;
 }*/
-
-static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
-
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER) move_view(lib, DIRECTION_CENTER);
-  dt_control_queue_redraw_center();
-  return TRUE;
-}
 
 static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
@@ -4415,10 +4403,6 @@ static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject 
 
 void init_key_accels(dt_view_t *self)
 {
-  // Navigation keys
-  dt_accel_register_view(self, NC_("accel", "navigate up"), GDK_KEY_g, 0);
-  dt_accel_register_view(self, NC_("accel", "navigate down"), GDK_KEY_g, GDK_SHIFT_MASK);
-
   // movement keys
   dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "move page down"), GDK_KEY_Page_Down, 0);
@@ -4439,8 +4423,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "move start and select"), GDK_KEY_Home, GDK_SHIFT_MASK);
   dt_accel_register_view(self, NC_("accel", "move end and select"), GDK_KEY_End, GDK_SHIFT_MASK);
 
-  dt_accel_register_view(self, NC_("accel", "scroll center"), GDK_KEY_apostrophe, 0);
-  dt_accel_register_view(self, NC_("accel", "realign images to grid"), GDK_KEY_l, 0);
+  dt_accel_register_view(self, NC_("accel", "align images to grid"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "reset first image offset"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "select toggle image"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "select single image"), GDK_KEY_Return, 0);
 
@@ -4511,21 +4495,42 @@ static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject
   return FALSE;
 }
 
+static gboolean _accel_align_to_grid(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    return dt_thumbtable_key_move(dt_ui_thumbtable(darktable.gui->ui), DT_THUMBTABLE_MOVE_ALIGN, FALSE);
+  }
+  return FALSE;
+}
+static gboolean _accel_reset_first_offset(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    return dt_thumbtable_reset_first_offset(dt_ui_thumbtable(darktable.gui->ui));
+  }
+  return FALSE;
+}
+
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
 
   // Navigation keys
-  closure = g_cclosure_new(G_CALLBACK(go_up_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "navigate up", closure);
-  closure = g_cclosure_new(G_CALLBACK(go_down_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "navigate down", closure);
   closure = g_cclosure_new(G_CALLBACK(select_toggle_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "select toggle image", closure);
   closure = g_cclosure_new(G_CALLBACK(select_single_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "select single image", closure);
-  closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "realign images to grid", closure);
+  closure = g_cclosure_new(G_CALLBACK(_accel_align_to_grid), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "align images to grid", closure);
+  closure = g_cclosure_new(G_CALLBACK(_accel_reset_first_offset), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "reset first image offset", closure);
 
   // undo/redo
   closure = g_cclosure_new(G_CALLBACK(_lighttable_undo_callback), (gpointer)self, NULL);

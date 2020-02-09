@@ -1581,6 +1581,14 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
     sqlite3_finalize(stmt);
     moved = _zoomable_ensure_rowid_visibility(table, maxrowid);
   }
+  else if(move == DT_THUMBTABLE_MOVE_ALIGN)
+  {
+    const int newx
+        = (table->thumbs_area.x / table->thumb_size) * table->thumb_size; // this is NOT a noop due to rounding...
+    const int newy
+        = (table->thumbs_area.y / table->thumb_size) * table->thumb_size; // this is NOT a noop due to rounding...
+    moved = _move(table, newx - table->thumbs_area.x, newy - table->thumbs_area.y);
+  }
 
   // and we set mouseover if we can
   dt_thumbnail_t *thumb = _thumb_get_under_mouse(table);
@@ -1601,6 +1609,18 @@ gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t mov
   return FALSE;
 }
 
+gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
+{
+  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER && table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
+  if(offset == 0) return FALSE;
+
+  // we scroll up the list by the number offset
+  dt_thumbtable_set_offset(table, table->offset + offset, TRUE);
+  return TRUE;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
