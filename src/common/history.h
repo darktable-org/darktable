@@ -54,7 +54,7 @@ void dt_history_item_free(gpointer data);
 int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct dt_develop_t *dev_src, struct dt_iop_module_t *mod_src, GList **_modules_used, const int append);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops);
+int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order);
 
 /** delete all history for the given image */
 void dt_history_delete_on_image(int32_t imgid);
@@ -63,7 +63,7 @@ void dt_history_delete_on_image(int32_t imgid);
 void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops);
+int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops, gboolean copy_iop_order);
 
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_selection(gchar *filename);
