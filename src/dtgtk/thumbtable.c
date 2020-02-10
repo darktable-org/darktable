@@ -227,6 +227,57 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
   return ret;
 }
 
+static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
+{
+  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER && table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+
+  table->code_scrolling = TRUE;
+
+  // get the total number of images
+  int nbid = 1;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images", -1,
+                              &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  // the number of line before
+  int lbefore = (table->offset - 1) / table->thumbs_per_row;
+  if((table->offset - 1) % table->thumbs_per_row) lbefore++;
+
+  // the number of line after (including the current one)
+  int lafter = (nbid - table->offset) / table->thumbs_per_row;
+  if((nbid - table->offset) % table->thumbs_per_row) lafter++;
+
+
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
+    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
+                          table->rows - 1);
+    table->code_scrolling = FALSE;
+    return (lbefore + lafter > table->rows - 1);
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    const int total_height
+        = (lbefore + lafter) * table->thumb_size + 2 * (table->view_height - table->thumb_size * 0.5);
+    const int pos_h
+        = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
+
+    const int total_width = ZOOM_MAX * table->thumb_size + 2 * (table->view_width - table->thumb_size * 0.5);
+    const int pos_w = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
+
+    dt_view_set_scrollbar(darktable.view_manager->current_view, pos_w, 0, total_width, table->view_width, pos_h, 0,
+                          total_height, table->view_height);
+
+    table->code_scrolling = FALSE;
+    return TRUE;
+  }
+  table->code_scrolling = FALSE;
+  return FALSE;
+}
+
 static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
 {
   int pos = 0;
@@ -277,14 +328,17 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     _pos_get_previous(table, &posx, &posy);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                               sqlite3_column_int(stmt, 0));
-      thumb->x = posx;
-      thumb->y = posy;
-      table->list = g_list_prepend(table->list, thumb);
-      gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+      if(posy < table->view_height) // we don't load invisible thumbs
+      {
+        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                                                 sqlite3_column_int(stmt, 0));
+        thumb->x = posx;
+        thumb->y = posy;
+        table->list = g_list_prepend(table->list, thumb);
+        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+        changed++;
+      }
       _pos_get_previous(table, &posx, &posy);
-      changed++;
     }
     g_free(query);
     sqlite3_finalize(stmt);
@@ -311,14 +365,17 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     _pos_get_next(table, &posx, &posy);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                               sqlite3_column_int(stmt, 0));
-      thumb->x = posx;
-      thumb->y = posy;
-      table->list = g_list_append(table->list, thumb);
-      gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+      if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
+      {
+        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                                                 sqlite3_column_int(stmt, 0));
+        thumb->x = posx;
+        thumb->y = posy;
+        table->list = g_list_append(table->list, thumb);
+        gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
+        changed++;
+      }
       _pos_get_next(table, &posx, &posy);
-      changed++;
     }
     g_free(query);
     sqlite3_finalize(stmt);
@@ -327,64 +384,67 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
   return changed;
 }
 
-static gboolean _move(dt_thumbtable_t *table, int x, int y)
+static gboolean _move(dt_thumbtable_t *table, int x, int y, gboolean clamp)
 {
-  // we check bounds to allow or not the move
   int posx = x;
   int posy = y;
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  if(clamp)
   {
-    posx = 0; // to be sure, we don't want horizontal move
-    if(posy == 0) return FALSE;
-
-    // we stop when first rowid image is fully shown
-    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-    if(first->rowid == 1 && posy > 0 && first->y >= 0)
+    // we check bounds to allow or not the move
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
-      // for some reasons, in filemanager, first image can not be at x=0
-      // in that case, we count the number of "scroll-top" try and reallign after 2 try
-      if(first->x != 0)
+      posx = 0; // to be sure, we don't want horizontal move
+      if(posy == 0) return FALSE;
+
+      // we stop when first rowid image is fully shown
+      dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+      if(first->rowid == 1 && posy > 0 && first->y >= 0)
       {
-        table->realign_top_try++;
-        if(table->realign_top_try > 2)
+        // for some reasons, in filemanager, first image can not be at x=0
+        // in that case, we count the number of "scroll-top" try and reallign after 2 try
+        if(first->x != 0)
         {
-          table->realign_top_try = 0;
-          dt_thumbtable_full_redraw(table, TRUE);
-          return TRUE;
+          table->realign_top_try++;
+          if(table->realign_top_try > 2)
+          {
+            table->realign_top_try = 0;
+            dt_thumbtable_full_redraw(table, TRUE);
+            return TRUE;
+          }
         }
+        return FALSE;
       }
-      return FALSE;
+      table->realign_top_try = 0;
+
+      // we stop when last image is fully shown (that means empty space at the bottom)
+      dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
     }
-    table->realign_top_try = 0;
+    else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      posy = 0; // to be sure, we don't want vertical move
+      if(posx == 0) return FALSE;
 
-    // we stop when last image is fully shown (that means empty space at the bottom)
-    dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-    if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
+      // we stop when first rowid image is fully shown
+      dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+      if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return FALSE;
+
+      // we stop when last image is fully shown (that means empty space at the bottom)
+      dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      if(last->x < table->view_width / 2 && posx < 0) return FALSE;
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    {
+      // we stop before thumb area completly disappear from screen
+      const int space = table->thumb_size * 0.5; // we want at least 1/2 thumb to stay visible
+      posy = MIN(table->view_height - space - table->thumbs_area.y, posy);
+      posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
+      posx = MIN(table->view_width - space - table->thumbs_area.x, posx);
+      posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
+    }
   }
-  else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-  {
-    posy = 0; // to be sure, we don't want vertical move
-    if(posx == 0) return FALSE;
 
-    // we stop when first rowid image is fully shown
-    dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
-    if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return FALSE;
-
-    // we stop when last image is fully shown (that means empty space at the bottom)
-    dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-    if(last->x < table->view_width / 2 && posx < 0) return FALSE;
-  }
-  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
-  {
-    // we stop before thumb area completly disappear from screen
-    const int space = table->thumb_size * 0.5; // we want at least 1/2 thumb to stay visible
-    posy = MIN(table->view_height - space - table->thumbs_area.y, posy);
-    posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
-    posx = MIN(table->view_width - space - table->thumbs_area.x, posx);
-    posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
-
-    if(posy == 0 && posx == 0) return FALSE;
-  }
+  if(posy == 0 && posx == 0) return FALSE;
 
   // we move all current thumbs
   GList *l = table->list;
@@ -430,6 +490,9 @@ static gboolean _move(dt_thumbtable_t *table, int x, int y)
 
   // and we store it
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+
+  // update scrollbars
+  _thumbtable_update_scrollbars(table);
 
   return TRUE;
 }
@@ -496,13 +559,13 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
     {
       // for filemanger and filmstrip, scrolled = move
       if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, table->thumb_size);
+        _move(table, 0, table->thumb_size, TRUE);
       else if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-        _move(table, table->thumb_size, 0);
+        _move(table, table->thumb_size, 0, TRUE);
       if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, -table->thumb_size);
+        _move(table, 0, -table->thumb_size, TRUE);
       else if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-        _move(table, -table->thumb_size, 0);
+        _move(table, -table->thumb_size, 0, TRUE);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
@@ -565,7 +628,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   {
     int dx = ceil(event->x_root) - table->last_x;
     int dy = ceil(event->y_root) - table->last_y;
-    _move(table, dx, dy);
+    _move(table, dx, dy, TRUE);
     table->drag_dx += dx;
     table->drag_dy += dy;
     if(table->drag_thumb)
@@ -1004,6 +1067,48 @@ static void _thumb_remove(gpointer user_data)
   dt_thumbnail_destroy(thumb);
 }
 
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y)
+{
+  if(g_list_length(table->list) == 0 || table->code_scrolling) return;
+
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    const int first_offset = (table->offset - 1) % table->thumbs_per_row;
+    int new_offset = table->offset;
+    if(first_offset == 0)
+    {
+      // first line is full, so it's counted
+      new_offset = 1 + y * table->thumbs_per_row;
+    }
+    else if(y == 0)
+    {
+      new_offset = 1;
+    }
+    else
+    {
+      new_offset = first_offset + (y - 1) * table->thumbs_per_row;
+    }
+
+    if(new_offset != table->offset)
+    {
+      table->offset = new_offset;
+      dt_thumbtable_full_redraw(table, TRUE);
+    }
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    // we get the actual root position
+    int lbefore = (table->offset - 1) / table->thumbs_per_row;
+    if((table->offset - 1) % table->thumbs_per_row) lbefore++;
+    const int abs_posy
+        = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
+    const int abs_posx = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
+
+    // and we move
+    _move(table, abs_posx - x, abs_posy - y, FALSE);
+  }
+}
+
 // reload all thumbs from scratch.
 // force define if this should occurs in any case or just if thumbtable sizing properties have changed
 void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
@@ -1011,6 +1116,16 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(!table) return;
   if(_compute_sizes(table, force))
   {
+    // we update the scrollbars
+    gboolean bars = (gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
+                     || gtk_widget_get_visible(darktable.gui->scrollbars.hscrollbar));
+    if(bars != _thumbtable_update_scrollbars(table))
+    {
+      // scrollabrs visibility changed, no need to go further, as this function will
+      // be triggered another time by widget resizing
+      return;
+    }
+
     const double start = dt_get_wtime();
     table->dragging = FALSE;
     sqlite3_stmt *stmt;
@@ -1020,7 +1135,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     int posx = 0;
     int posy = 0;
     // in zoomable, we want the first thumb at the same position as the old one
-
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       if(g_list_length(table->list) > 0)
@@ -1387,14 +1501,14 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
 
   if(first->rowid > rowid)
   {
-    if(_move(table, 0, table->thumb_size))
+    if(_move(table, 0, table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
   }
   else if(last->rowid < rowid)
   {
-    if(_move(table, 0, -table->thumb_size))
+    if(_move(table, 0, -table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
@@ -1444,21 +1558,21 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, int ro
   // case where the thumb is inside but not fully visible
   if(inside)
   {
-    return _move(table, x_move, y_move);
+    return _move(table, x_move, y_move, TRUE);
   }
   // case where the thumb is not in the list
   else
   {
     if(rowid < minrowid)
     {
-      if(_move(table, 0, table->thumb_size))
+      if(_move(table, 0, table->thumb_size, TRUE))
         return _zoomable_ensure_rowid_visibility(table, rowid);
       else
         return FALSE;
     }
     else if(rowid > maxrowid)
     {
-      if(_move(table, 0, -table->thumb_size))
+      if(_move(table, 0, -table->thumb_size, TRUE))
         return _zoomable_ensure_rowid_visibility(table, rowid);
       else
         return FALSE;
@@ -1559,18 +1673,18 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
 
   // classic keys
   if(move == DT_THUMBTABLE_MOVE_LEFT)
-    moved = _move(table, step, 0);
+    moved = _move(table, step, 0, TRUE);
   else if(move == DT_THUMBTABLE_MOVE_RIGHT)
-    moved = _move(table, -step, 0);
+    moved = _move(table, -step, 0, TRUE);
   else if(move == DT_THUMBTABLE_MOVE_UP)
-    moved = _move(table, 0, step);
+    moved = _move(table, 0, step, TRUE);
   else if(move == DT_THUMBTABLE_MOVE_DOWN)
-    moved = _move(table, 0, -step);
+    moved = _move(table, 0, -step, TRUE);
   // page key
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
-    moved = _move(table, 0, step * (table->rows - 1));
+    moved = _move(table, 0, step * (table->rows - 1), TRUE);
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
-    moved = _move(table, 0, -step * (table->rows - 1));
+    moved = _move(table, 0, -step * (table->rows - 1), TRUE);
   // direct start/end
   else if(move == DT_THUMBTABLE_MOVE_START)
     moved = _zoomable_ensure_rowid_visibility(table, 1);
@@ -1590,7 +1704,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
         = (table->thumbs_area.x / table->thumb_size) * table->thumb_size; // this is NOT a noop due to rounding...
     const int newy
         = (table->thumbs_area.y / table->thumb_size) * table->thumb_size; // this is NOT a noop due to rounding...
-    moved = _move(table, newx - table->thumbs_area.x, newy - table->thumbs_area.y);
+    moved = _move(table, newx - table->thumbs_area.x, newy - table->thumbs_area.y, TRUE);
   }
 
   // and we set mouseover if we can

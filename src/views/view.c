@@ -678,8 +678,8 @@ void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y
   if(vm->current_view->scrollbar_changed) vm->current_view->scrollbar_changed(vm->current_view, x, y);
 }
 
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize,
-                           float vpos, float vlower, float vsize,float vwinsize)
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize, float vpos,
+                           float vlower, float vsize, float vwinsize)
 {
   if (view->vscroll_pos == vpos && view->vscroll_lower == vlower && view->vscroll_size == vsize &&
       view->vscroll_viewport_size == vwinsize && view->hscroll_pos == hpos && view->hscroll_lower == hlower &&
