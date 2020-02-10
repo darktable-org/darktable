@@ -256,7 +256,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
 }
 
 void dt_styles_update(const char *name, const char *newname, const char *newdescription, GList *filter,
-                      int imgid, GList *update)
+                      const int32_t imgid, GList *update, gboolean copy_iop_order)
 {
   sqlite3_stmt *stmt;
   int id = 0;
@@ -336,7 +336,7 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
 }
 
 void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, int imgid, GList *update)
+                                 GList *filter, const int32_t imgid, GList *update, gboolean copy_iop_order)
 {
   sqlite3_stmt *stmt;
   int id = 0;

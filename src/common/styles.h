@@ -61,11 +61,11 @@ void dt_styles_create_from_selection(void);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
 void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, int imgid, GList *update);
+                                 GList *filter, const int32_t imgid, GList *update, gboolean copy_iop_order);
 
 /** update a style */
 void dt_styles_update(const char *name, const char *newname, const char *description, GList *filter,
-                      int imgid, GList *update);
+                      const int32_t imgid, GList *update, gboolean copy_iop_order);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection(const char *name, gboolean duplicate);
