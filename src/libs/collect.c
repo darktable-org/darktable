@@ -1764,6 +1764,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
+    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
   }
   else
