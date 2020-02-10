@@ -573,6 +573,17 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
   _dt_selection_changed_callback(NULL, thumb);
   if(dt_control_get_mouse_over_id() == thumb->imgid) dt_thumbnail_set_mouseover(thumb, TRUE);
 
+  // set tooltip for altered icon if needed
+  if(thumb->is_altered)
+  {
+    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    if(tooltip)
+    {
+      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
+      g_free(tooltip);
+    }
+  }
+
   return thumb;
 }
 

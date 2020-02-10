@@ -1011,6 +1011,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(!table) return;
   if(_compute_sizes(table, force))
   {
+    const double start = dt_get_wtime();
     table->dragging = FALSE;
     sqlite3_stmt *stmt;
     printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d ...\n", force, table->view_width,
@@ -1072,9 +1073,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     _pos_compute_area(table);
 
-    printf("done\n");
+    printf("done in %0.04f sec\n", dt_get_wtime() - start);
     g_free(query);
     sqlite3_finalize(stmt);
+
+    if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   }
 }
 
