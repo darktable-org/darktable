@@ -1650,15 +1650,37 @@ void gui_update(dt_iop_module_t *self)
     update_filepath_combobox(g, p->filepath, lutfolder);
   }
   g_free(lutfolder);
+  dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
+  dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
+
+  const int imgid = darktable.develop->image_storage.id;
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+  const int order_lut3d = dt_ioppr_get_iop_order(iop_order_list, self->op, self->multi_priority);
+  const int order_colorin = dt_ioppr_get_iop_order(iop_order_list, "colorin", -1);
+  const int order_colorout = dt_ioppr_get_iop_order(iop_order_list, "colorout", -1);
+  printf("imgid %d module %s mprio %d mod %d in %d out %d\n", imgid, self->op, self->multi_priority, order_lut3d, order_colorin, order_colorout);
+  if(order_lut3d < order_colorin || order_lut3d > order_colorout)
+  {
+    gtk_widget_hide(g->colorspace);
+  }
+  else
+  {
+    gtk_widget_show(g->colorspace);
+  }
+
 #ifdef HAVE_GMIC
   if (p->lutname[0])
   {
     get_compressed_clut(self, FALSE);
   }
-  dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
-  dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
   show_hide_controls(self);
 #endif // HAVE_GMIC
+}
+
+void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                        int32_t pointerx, int32_t pointery)
+{
+  gui_update(self);
 }
 
 void gui_init(dt_iop_module_t *self)
