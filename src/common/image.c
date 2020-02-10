@@ -1852,7 +1852,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
-        dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL);
+        dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE);
 
         // write xmp file
         dt_image_write_sidecar_file(newid);

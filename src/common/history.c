@@ -704,7 +704,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   return ret_val;
 }
 
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops)
+int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -723,6 +723,13 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
   hist->imgid = dest_imgid;
   dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
+  if(copy_iop_order)
+  {
+    GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+    dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
+    g_list_free_full(iop_list, g_free);
+  }
 
   int ret_val = 0;
   if(merge)
@@ -850,7 +857,7 @@ char *dt_history_get_items_as_string(int32_t imgid)
   return result;
 }
 
-int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops)
+int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops, gboolean copy_iop_order)
 {
   if(imgid < 0) return 1;
 
@@ -868,7 +875,7 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
       int32_t dest_imgid = sqlite3_column_int(stmt, 0);
 
       /* paste history stack onto image id */
-      dt_history_copy_and_paste_on_image(imgid, dest_imgid, merge, ops);
+      dt_history_copy_and_paste_on_image(imgid, dest_imgid, merge, ops, copy_iop_order);
 
     } while(sqlite3_step(stmt) == SQLITE_ROW);
     dt_undo_end_group(darktable.undo);
