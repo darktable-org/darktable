@@ -80,6 +80,9 @@ typedef struct dt_thumbtable_t
   // when performing a drag, we store the list of items to drag here
   // as this can change during the drag and drop (esp. because of the image_over_id)
   GList *drag_list;
+
+  // to desactivate scrollbars event because we have updated it by hand in the code
+  gboolean code_scrolling;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
@@ -103,6 +106,9 @@ gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t mov
 
 // ensure the first image in collection as no offset (is positionned on top-left)
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
+
+// scrollbar change
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);

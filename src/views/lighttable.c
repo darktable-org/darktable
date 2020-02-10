@@ -355,6 +355,7 @@ static void check_layout(dt_view_t *self)
     // we want to reacquire the thumbtable if needed
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_FILEMANAGER);
+    _scrollbars_restore();
     dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
@@ -2718,17 +2719,9 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   switch(layout)
   {
     case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
-    {
-      const int iir = get_zoom();
-      _set_position(self, round(y/iir)*iir);
-      break;
-    }
     case DT_LIGHTTABLE_LAYOUT_ZOOMABLE:
     {
-      dt_library_t *lib = (dt_library_t *) self->data;
-      lib->zoom_x = x;
-      lib->zoom_y = y;
-      dt_control_queue_redraw_center();
+      dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
       break;
     }
     default:
