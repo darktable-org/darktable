@@ -46,7 +46,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 24
-#define CURRENT_DATABASE_VERSION_DATA     5
+#define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
 {
@@ -1680,6 +1680,24 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     new_version = 5;
   }
+  else if(version == 5)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // make style.id a PRIMARY KEY and add iop_list
+    TRY_EXEC("ALTER TABLE data.styles RENAME TO s",
+             "[init] can't rename styles to s\n");
+    TRY_EXEC("CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
+             "[init] can't create styles table\n");
+    TRY_EXEC("INSERT INTO data.styles SELECT id, name, description, NULL FROM s",
+             "[init] can't populate styles table\n");
+    TRY_EXEC("DROP TABLE s",
+             "[init] can't drop table s\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 6;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1827,7 +1845,7 @@ static void _create_data_schema(dt_database_t *db)
                            "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
-  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER, name VARCHAR, description VARCHAR)",
+  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
                         NULL, NULL, NULL);
   ////////////////////////////// style_items
   sqlite3_exec(
