@@ -187,7 +187,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
     d->dg.copied_imageid = d->imageid;
 
     // launch dialog to select the ops to copy
-    int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
+    const int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
 
     if(res != GTK_RESPONSE_CANCEL && d->dg.selops)
     {
