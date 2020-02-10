@@ -1631,6 +1631,25 @@ void gui_reset(dt_iop_module_t *self)
 {
   memcpy(self->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
 }
+/*
+static void _show_hide_colorspace(dt_iop_module_t *self)
+{
+  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  const int imgid = darktable.develop->image_storage.id;
+  GList *iop_order_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+  const int order_lut3d = dt_ioppr_get_iop_order(iop_order_list, self->op, self->multi_priority);
+  const int order_colorin = dt_ioppr_get_iop_order(iop_order_list, "colorin", -1);
+  const int order_colorout = dt_ioppr_get_iop_order(iop_order_list, "colorout", -1);
+  printf("imgid %d module %s mprio %d mod %d in %d out %d\n", imgid, self->op, self->multi_priority, order_lut3d, order_colorin, order_colorout);
+  if(order_lut3d < order_colorin || order_lut3d > order_colorout)
+  {
+    gtk_widget_hide(g->colorspace);
+  }
+  else
+  {
+    gtk_widget_show(g->colorspace);
+  }
+}*/
 
 void gui_update(dt_iop_module_t *self)
 {
@@ -1653,20 +1672,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
   dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
 
-  const int imgid = darktable.develop->image_storage.id;
-  GList *iop_order_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
-  const int order_lut3d = dt_ioppr_get_iop_order(iop_order_list, self->op, self->multi_priority);
-  const int order_colorin = dt_ioppr_get_iop_order(iop_order_list, "colorin", -1);
-  const int order_colorout = dt_ioppr_get_iop_order(iop_order_list, "colorout", -1);
-  printf("imgid %d module %s mprio %d mod %d in %d out %d\n", imgid, self->op, self->multi_priority, order_lut3d, order_colorin, order_colorout);
-  if(order_lut3d < order_colorin || order_lut3d > order_colorout)
-  {
-    gtk_widget_hide(g->colorspace);
-  }
-  else
-  {
-    gtk_widget_show(g->colorspace);
-  }
+//  _show_hide_colorspace(self);
 
 #ifdef HAVE_GMIC
   if (p->lutname[0])
@@ -1676,12 +1682,12 @@ void gui_update(dt_iop_module_t *self)
   show_hide_controls(self);
 #endif // HAVE_GMIC
 }
-
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                        int32_t pointerx, int32_t pointery)
+/*
+void module_moved_callback(gpointer instance, dt_iop_module_t *self)
 {
-  gui_update(self);
-}
+  printf("moved\n");
+  _show_hide_colorspace(self);
+}*/
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -1776,6 +1782,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
   g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
+
+//  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+//                            G_CALLBACK(module_moved_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -1784,6 +1793,7 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
 #endif // HAVE_GMIC
+//  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(module_moved_callback), self);
   free(self->gui_data);
   self->gui_data = NULL;
 }
