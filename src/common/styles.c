@@ -45,6 +45,7 @@ typedef struct
 {
   GString *name;
   GString *description;
+  GList *iop_list;
 } StyleInfoData;
 
 typedef struct
@@ -180,23 +181,72 @@ static void _dt_style_cleanup_multi_instance(int id)
   g_list_free_full(list, free);
 }
 
-static gboolean dt_styles_create_style_header(const char *name, const char *description)
+gboolean dt_styles_has_module_order(const char *name)
 {
   sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT iop_list"
+                              " FROM data.styles"
+                              " WHERE name=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  const gboolean has_iop_list = (sqlite3_column_type(stmt, 0) != SQLITE_NULL);
+  sqlite3_finalize(stmt);
+  return has_iop_list;
+}
+
+GList *dt_styles_module_order_list(const char *name)
+{
+  GList *iop_list = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT iop_list"
+                              " FROM data.styles"
+                              " WHERE name=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+  {
+    const char *iop_list_txt = (char *)sqlite3_column_text(stmt, 0);
+    iop_list = dt_ioppr_deserialize_text_iop_order_list(iop_list_txt);
+  }
+  sqlite3_finalize(stmt);
+  return iop_list;
+}
+
+static gboolean dt_styles_create_style_header(const char *name, const char *description, GList *iop_list)
+{
+  sqlite3_stmt *stmt;
+
   if(dt_styles_get_id_by_name(name) != 0)
   {
     dt_control_log(_("style with name '%s' already exists"), name);
     return FALSE;
   }
+
+  char *iop_list_txt = NULL;
+
   /* first create the style header */
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "INSERT INTO data.styles (name,description,id)"
-      " VALUES (?1,?2,(SELECT COALESCE(MAX(id),0)+1 FROM data.styles))", -1, &stmt, NULL);
+      "INSERT INTO data.styles (name, description, id, iop_list)"
+      " VALUES (?1, ?2, (SELECT COALESCE(MAX(id),0)+1 FROM data.styles), ?3)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description, -1, SQLITE_STATIC);
+  if(iop_list)
+  {
+    iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_list);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, iop_list_txt, -1, SQLITE_STATIC);
+  }
+  else
+    sqlite3_bind_null(stmt, 3);
+
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  g_free(iop_list_txt);
   return TRUE;
 }
 
@@ -345,8 +395,17 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
   oldid = dt_styles_get_id_by_name(name);
   if(oldid == 0) return;
 
+  GList *iop_list = NULL;
+
+  if(copy_iop_order)
+  {
+    iop_list = dt_styles_module_order_list(name);
+  }
+
   /* create the style header */
-  if(!dt_styles_create_style_header(newname, description)) return;
+  if(!dt_styles_create_style_header(newname, description, iop_list)) return;
+
+  g_list_free_full(iop_list, g_free);
 
   if((id = dt_styles_get_id_by_name(newname)) != 0)
   {
@@ -418,13 +477,22 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
   }
 }
 
-gboolean dt_styles_create_from_image(const char *name, const char *description, int32_t imgid, GList *filter)
+gboolean dt_styles_create_from_image(const char *name, const char *description,
+                                     const int32_t imgid, GList *filter, gboolean copy_iop_order)
 {
   int id = 0;
   sqlite3_stmt *stmt;
 
+  GList *iop_list = NULL;
+  if(copy_iop_order)
+  {
+    iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+  }
+
   /* first create the style header */
-  if(!dt_styles_create_style_header(name, description)) return FALSE;
+  if(!dt_styles_create_style_header(name, description, iop_list)) return FALSE;
+
+  g_list_free_full(iop_list, g_free);
 
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
@@ -664,6 +732,13 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     dt_dev_init(dev_dest, FALSE);
 
     dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
+
+    GList *iop_list = dt_styles_module_order_list(name);
+    if(iop_list)
+    {
+      dt_ioppr_write_iop_order_list(iop_list, newimgid);
+      g_list_free_full(iop_list, g_free);
+    }
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
 
@@ -1040,6 +1115,14 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
   xmlTextWriterStartElement(writer, BAD_CAST "info");
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+  GList *iop_list = dt_styles_module_order_list(style_name);
+  if(iop_list)
+  {
+    char *iop_list_text = dt_ioppr_serialize_text_iop_order_list(iop_list);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "iop_list", "%s", iop_list_text);
+    g_free(iop_list_text);
+    g_list_free_full(iop_list, g_free);
+  }
   xmlTextWriterEndElement(writer);
 
   xmlTextWriterStartElement(writer, BAD_CAST "style");
@@ -1098,6 +1181,7 @@ static void dt_styles_style_data_free(StyleData *style, gboolean free_segments)
 {
   g_string_free(style->info->name, free_segments);
   g_string_free(style->info->description, free_segments);
+  g_list_free_full(style->info->iop_list, g_free);
   g_list_free(style->plugins);
   g_free(style);
 }
@@ -1135,7 +1219,6 @@ static void dt_styles_end_tag_handler(GMarkupParseContext *context, const gchar 
 static void dt_styles_style_text_handler(GMarkupParseContext *context, const gchar *text, gsize text_len,
                                          gpointer user_data, GError **error)
 {
-
   StyleData *style = user_data;
   const gchar *elt = g_markup_parse_context_get_element(context);
 
@@ -1146,6 +1229,10 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context, const gch
   else if(g_ascii_strcasecmp(elt, "description") == 0)
   {
     g_string_append_len(style->info->description, text, text_len);
+  }
+  else if(g_ascii_strcasecmp(elt, "iop_list") == 0)
+  {
+    style->info->iop_list = dt_ioppr_deserialize_text_iop_order_list(text);
   }
   else if(style->in_plugin)
   {
@@ -1207,8 +1294,9 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO data.style_items "
-                              "(styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-                              "version,multi_priority,multi_name) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                              " (styleid, num, module, operation, op_params, enabled, blendop_params,"
+                              "  blendop_version, multi_priority, multi_name)"
+                              " VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
@@ -1245,7 +1333,7 @@ static void dt_style_save(StyleData *style)
   if(style == NULL) return;
 
   /* first create the style header */
-  if(!dt_styles_create_style_header(style->info->name->str, style->info->description->str)) return;
+  if(!dt_styles_create_style_header(style->info->name->str, style->info->description->str, style->info->iop_list)) return;
 
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
