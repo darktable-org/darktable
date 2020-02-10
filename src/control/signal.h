@@ -139,6 +139,9 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_MODULE_REMOVE,
 
+  /** \brief This signal is raised when order of modules in pipeline is changed */
+  DT_SIGNAL_DEVELOP_MODULE_MOVED,
+
   /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
