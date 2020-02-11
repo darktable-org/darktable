@@ -72,7 +72,7 @@ matrix:
     env: CC=gcc-9 CXX=g++-9 TARGET=usermanual ECO="-DTESTBUILD_OPENCL_PROGRAMS=OFF" # EXTRA_TMPFS="--tmpfs /tmp"
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET --env ECO darktable/darktable sh -c "$SRC_DIR/.ci/ci-script.sh"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR:exec --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET --env ECO darktable/darktable sh -c "$SRC_DIR/.ci/ci-script.sh"; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export SRC_DIR="$TRAVIS_BUILD_DIR";
       export BUILD_DIR="$SRC_DIR/build";

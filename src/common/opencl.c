@@ -1622,7 +1622,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   }
 
   char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
-  strncpy(md5sum, source_md5, 33);
+  g_strlcpy(md5sum, source_md5, 33);
   g_free(source_md5);
 
   file[filesize] = '\0';
