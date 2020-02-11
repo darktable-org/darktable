@@ -23,7 +23,11 @@
 *
 {
     font-weight: 200;
-    font-family: "Liberation Serif", "FreeSerif", "DejaVu Serif Condensed", serif;
+    font-family: "Liberation Serif",
+		 "FreeSerif",
+		 "DejaVu Serif Condensed",
+		 "DejaVu Serif Semi Condensed",
+		 serif;
 }
 
 button,
@@ -34,7 +38,11 @@ notebook tabs,
 #modules-tabs,
 #blending-tabs
 {
-    font-family: "Liberation Serif", "FreeSerif", "DejaVu Serif Condensed", serif;
+    font-family: "Liberation Serif",
+		 "FreeSerif",
+		 "DejaVu Serif Condensed",
+		 "DejaVu Serif Semi Condensed",
+		 serif;
 }
 
 #live-sample-data,
