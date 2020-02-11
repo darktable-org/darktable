@@ -2453,7 +2453,6 @@ static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gp
   {
     gtk_drag_unhighlight(w);
     g_object_set_data(G_OBJECT(widget), "highlighted", (gpointer)FALSE);
-
   }
 }
 
