@@ -1694,6 +1694,9 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE s",
              "[init] can't drop table s\n");
 
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS data.styles_name_index ON styles (name)",
+             "[init] can't create styles_nmae_index\n");
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 6;
@@ -1845,12 +1848,13 @@ static void _create_data_schema(dt_database_t *db)
                            "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
-  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
+  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
                         NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX data.styles_name_index ON styles (name)", NULL, NULL, NULL);
   ////////////////////////////// style_items
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
+      "CREATE TABLE data.style_items (styleid INTEGER PRIMARY KEY, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
