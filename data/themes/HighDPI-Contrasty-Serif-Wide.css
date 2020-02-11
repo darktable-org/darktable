@@ -25,7 +25,10 @@
     font-weight: 200;
     font-family: "Noto Serif",
 		 "Roboto Slab Light",
-		 "DejaVu Serif", serif;
+		 "DejaVu Serif",
+		 "Droid Serif",
+		 "Bitstream Vera Serif",
+		 serif;
 }
 
 button,
@@ -38,7 +41,9 @@ notebook tabs,
 {
     font-family: "Noto Serif",
 		 "Roboto Slab Light",
-		 "DejaVu Serif", serif;
+		 "DejaVu Serif",
+		 "Droid Serif",
+		 "Bitstream Vera Serif",
 		 serif;
 }
 
