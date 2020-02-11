@@ -18,6 +18,7 @@
 
 #include "paint.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include <math.h>
 
 #ifndef M_PI
@@ -1428,7 +1429,7 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   PangoRectangle ink;
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
-  static const float grow = 12.0;
+  float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
   layout = pango_cairo_create_layout(cr);
   const gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
@@ -1448,7 +1449,7 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   PangoRectangle ink;
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
-  static const float grow = 12.0;
+  float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
   layout = pango_cairo_create_layout(cr);
   const gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));

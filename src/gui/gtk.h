@@ -120,6 +120,8 @@ typedef struct dt_gui_gtk_t
 
   gint scroll_mask;
   guint sidebar_scroll_mask;
+
+  cairo_filter_t filter_image;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))

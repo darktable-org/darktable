@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
