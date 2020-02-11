@@ -575,8 +575,8 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander, -1);
 
-    gtk_widget_destroy(module->widget);
     dt_iop_gui_cleanup_module(module);
+    gtk_widget_destroy(module->widget);
   }
 
   // we remove all references in the history stack and dev->iop
