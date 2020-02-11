@@ -209,7 +209,7 @@ inline float pixel_rgb_norm_power(const float4 pixel)
   const float4 RGB = fabs(pixel);
   const float4 RGB_square = RGB * RGB;
   const float4 RGB_cubic = RGB_square * RGB;
-  return (RGB_cubic.x + RGB_cubic.y + RGB_cubic.z) / fmax(RGB_square.x + RGB_square.y + RGB_square.z, 1e-6f);
+  return (RGB_cubic.x + RGB_cubic.y + RGB_cubic.z) / fmax(RGB_square.x + RGB_square.y + RGB_square.z, 1e-12f);
 }
 
 

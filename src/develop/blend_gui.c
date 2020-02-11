@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/dtpthread.h"
 #include "common/opencl.h"
+#include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

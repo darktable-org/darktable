@@ -26,6 +26,7 @@
 #include <cairo.h>
 
 #include "common/opencl.h"
+#include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -169,7 +170,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     fprintf(stderr, "[overexposed process] can't alloc temp image\n");
     goto cleanup;
   }
-  
+
   const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
 

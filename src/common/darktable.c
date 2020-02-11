@@ -869,8 +869,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
-  dt_ioppr_check_db_integrity();
-
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -968,8 +966,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
-  // load iop order
-  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL);
+  // load default iop order
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
   darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
