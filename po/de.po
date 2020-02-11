@@ -7991,7 +7991,7 @@ msgstr "Einstellen der Autoset-Parameter"
 
 #: ../src/iop/denoiseprofile.c:4069
 msgid "preserve shadows"
-msgstr "Schatten erhalte"
+msgstr "Schatten erhalten"
 
 #: ../src/iop/denoiseprofile.c:4070
 msgid "bias correction"
