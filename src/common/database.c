@@ -1668,7 +1668,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
              "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
              "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
-             "[init] can't create s table'\n");
+             "[init] can't create style_items table'\n");
     TRY_EXEC("INSERT INTO data.style_items SELECT styleid, num, module, operation, op_params, enabled, "
              " blendop_params, blendop_version, multi_priority, multi_name "
              "FROM s",
