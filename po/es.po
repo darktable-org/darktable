@@ -268,8 +268,8 @@ msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
 msgstr ""
-"No haga que el puntaje de una estrella se comporte como esta documentado en "
-"el manual: una imagen puntuada con una sola estrella dos veces anulará el "
+"Desactiva el comportamiento documentado en el manual de puntuar con una estrella:"
+" una imagen puntuada con una sola estrella dos veces anulará el "
 "puntaje."
 
 #: ../build/src/preferences_gen.h:2334 ../src/views/darkroom.c:111
@@ -475,8 +475,8 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
 msgstr ""
-"procesa la imagen en el modo de cuarto oscuro con un borde mas pequeño. "
-"ajuste a 0 si no quiere ningún borde."
+"Procesa la imagen en el modo de cuarto oscuro con un borde mas pequeño. "
+"Establezca 0 si no quiere ningún borde."
 
 #: ../build/src/preferences_gen.h:2707
 msgid "map / geolocalisation"
@@ -485,7 +485,7 @@ msgstr "mapa y geolocalización"
 #: ../build/src/preferences_gen.h:2716
 msgid "only draw images on map that are currently collected and filtered"
 msgstr ""
-"Dibuje solo imágenes en el mapa que estén filtradas y en la colección actual"
+"Dibujar sólo imágenes en el mapa que estén filtradas y en la colección actual"
 
 #: ../build/src/preferences_gen.h:2728
 msgid ""
@@ -4180,7 +4180,7 @@ msgstr "HDR"
 #. language
 #: ../src/gui/preferences.c:227
 msgid "interface language"
-msgstr "Idioma de interfaz"
+msgstr "Idioma de la interfaz"
 
 #: ../src/gui/preferences.c:242
 msgid "double click to reset to the system language"
