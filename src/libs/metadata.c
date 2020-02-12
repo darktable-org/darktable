@@ -392,8 +392,6 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
   label = gtk_label_new(_("private"));
   gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
-  label = gtk_label_new(_("height"));
-  gtk_grid_attach(GTK_GRID(grid), label, 3, 0, 1, 1);
   gchar *name[DT_METADATA_NUMBER];
   GtkWidget *hidden[DT_METADATA_NUMBER];
   GtkWidget *private[DT_METADATA_NUMBER];
@@ -657,25 +655,27 @@ void gui_init(dt_lib_module_t *self)
   // clear/apply buttons
 
   grid = (GtkGrid *)gtk_grid_new();
-  gtk_grid_set_column_homogeneous(grid, TRUE);
+  gtk_grid_set_column_homogeneous(grid, FALSE);
 
   GtkWidget *button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
-  gtk_grid_attach(grid, button, 0, 0, 5, 1);
+  gtk_grid_attach(grid, button, 0, 0, 1, 1);
+  gtk_widget_set_hexpand(button, TRUE);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), self);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
   gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
-  gtk_grid_attach(grid, button, 5, 0, 5, 1);
+  gtk_grid_attach(grid, button, 1, 0, 1, 1);
+  gtk_widget_set_hexpand(button, TRUE);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
       CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_BG_TRANSPARENT, NULL);
   d->config_button = button;
   gtk_widget_set_tooltip_text(button, _("configure metadata"));
-  gtk_grid_attach(grid, button, 10, 0, 1, 1);
+  gtk_grid_attach(grid, button, 2, 0, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(config_button_clicked), self);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
