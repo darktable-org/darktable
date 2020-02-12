@@ -20,7 +20,7 @@
 # sudo pacman -S base-devel cmake intltool lensfun curl exiv2 lcms2 librsvg libxslt sqlite pugixml
 # sudo pacman -S openexr libwebp flickcurl graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
 # sudo pacman -S jdk10-openjdk gnome-doc-utils fop imagemagick extra/docbook-xml extra/docbook-xsl po4a
-# 
+#
 # cd ~/aur
 # git clone https://aur.archlinux.org/saxon6.git
 # cd saxon6/
@@ -40,7 +40,6 @@
 # makepkg -sri
 ################
 #
-
 
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
@@ -208,7 +207,7 @@ eval "$cmd_build_usermanual_dtorg"
 eval "$cmd_build_usermanual_html"
 # makefile seems to put images in wrong place, this hack cleans it up
 if [ ! -d ${BUILD_DIR}/doc/usermanual/dtorg/images ]; then
-   mkdir -p ${BUILD_DIR}/doc/usermanual/dtorg/images 
+   mkdir -p ${BUILD_DIR}/doc/usermanual/dtorg/images
    mv ${BUILD_DIR}/doc/usermanual/dtorg/*.jpg \
       ${BUILD_DIR}/doc/usermanual/dtorg/darkroom \
       ${BUILD_DIR}/doc/usermanual/dtorg/lighttable \
@@ -217,7 +216,7 @@ if [ ! -d ${BUILD_DIR}/doc/usermanual/dtorg/images ]; then
       ${BUILD_DIR}/doc/usermanual/dtorg/preferences \
       ${BUILD_DIR}/doc/usermanual/dtorg/print \
       ${BUILD_DIR}/doc/usermanual/dtorg/tethering \
-      ${BUILD_DIR}/doc/usermanual/dtorg/images 
+      ${BUILD_DIR}/doc/usermanual/dtorg/images
 fi
 
 eval "$cmd_build_luaapi_pdfs"
