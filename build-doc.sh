@@ -191,7 +191,7 @@ Darktable build script
 Building directory:  $BUILD_DIR
 Build tasks:         $MAKE_TASKS
 
-
+NOTE: dtorg languages are set in usermanual/CMakeLists.txt (dtorg_languages).
 
 EOF
 
