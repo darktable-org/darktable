@@ -664,6 +664,20 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+// this is called each time the list of active images
+static void _dt_active_images_callback(gpointer instance, gpointer user_data)
+{
+  // we only ensure here that the active image is the offset one
+  // everything else (css, etc...) is handled in dt_thumbnail_t
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP) return;
+
+  if(g_slist_length(darktable.view_manager->active_images) == 0) return;
+  int activeid = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+  dt_thumbtable_set_offset_image(table, activeid, TRUE);
+}
+
 // this is called each time mouse_over id change
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
@@ -1056,7 +1070,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                             G_CALLBACK(_dt_collection_changed_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_dt_mouse_over_image_callback), table);
-
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+                            G_CALLBACK(_dt_active_images_callback), table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -1114,6 +1129,18 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y)
     // and we move
     _move(table, abs_posx - x, abs_posy - y, FALSE);
   }
+}
+
+static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
+{
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->imgid == imgid) return th;
+    l = g_list_next(l);
+  }
+  return NULL;
 }
 
 // reload all thumbs from scratch.
@@ -1194,6 +1221,33 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     _pos_compute_area(table);
 
+    if(g_slist_length(darktable.view_manager->active_images) > 0
+       && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER))
+    {
+      // this mean we arrive from filmstrip with some active images
+      // we need to ensure they are visible and to mark them with some css effect
+      const int lastid = GPOINTER_TO_INT(g_slist_last(darktable.view_manager->active_images)->data);
+      dt_thumbtable_ensure_imgid_visibility(table, lastid);
+
+      GSList *l = darktable.view_manager->active_images;
+      while(l)
+      {
+        dt_thumbnail_t *th = _thumbtable_get_thumb(table, GPOINTER_TO_INT(l->data));
+        if(th)
+        {
+          GtkStyleContext *context = gtk_widget_get_style_context(th->w_main);
+          gtk_style_context_add_class(context, "dt_last_active");
+        }
+        l = g_slist_next(l);
+      }
+      g_slist_free(darktable.view_manager->active_images);
+      darktable.view_manager->active_images = NULL;
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    }
+
+    // be sure the focus is in the right widget (needed for accels)
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
     printf("done in %0.04f sec\n", dt_get_wtime() - start);
     g_free(query);
     sqlite3_finalize(stmt);
@@ -1266,6 +1320,11 @@ void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
     gtk_style_context_remove_class(context, "dt_show_overlays");
 }
 
+// get current offset
+int dt_thumbtable_get_offset(dt_thumbtable_t *table)
+{
+  return table->offset;
+}
 // set offset and redraw if needed
 gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw)
 {

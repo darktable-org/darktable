@@ -218,11 +218,10 @@ typedef struct dt_library_t
 
   GtkWidget *profile_floating_window;
 
-  GtkWidget *flow;
-  GListStore *fstore;
-
   int view_height, view_width;
   int first_rowid;
+
+  int thumbtable_offset;
 } dt_library_t;
 
 static inline float absmul(float a, float b) {
@@ -461,59 +460,6 @@ static void _full_preview_destroy(dt_view_t *self)
   {
     _destroy_preview_surface(lib->fp_surf + i);
   }
-}
-
-static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
-{
-  const int iir = get_zoom();
-  const int current_offset = lib->offset;
-
-  switch(dir)
-  {
-    case DIRECTION_UP:
-    {
-      if(lib->offset >= 1) lib->offset = lib->offset - iir;
-    }
-    break;
-    case DIRECTION_DOWN:
-    {
-      lib->offset = lib->offset + iir;
-      while(lib->offset >= lib->collection_count) lib->offset -= iir;
-    }
-    break;
-    case DIRECTION_PGUP:
-    {
-      lib->offset -= (lib->max_rows - 1) * iir;
-      while(lib->offset <= -iir) lib->offset += iir;
-    }
-    break;
-    case DIRECTION_PGDOWN:
-    {
-      lib->offset += (lib->max_rows - 1) * iir;
-      while(lib->offset >= lib->collection_count) lib->offset -= iir;
-    }
-    break;
-    case DIRECTION_TOP:
-    {
-      lib->offset = 0;
-    }
-    break;
-    case DIRECTION_BOTTOM:
-    {
-      lib->offset = lib->collection_count - iir;
-    }
-    break;
-    case DIRECTION_CENTER:
-    {
-      lib->offset -= lib->offset % iir;
-    }
-    break;
-    default:
-      break;
-  }
-
-  lib->first_visible_filemanager = lib->offset;
-  lib->offset_changed = (current_offset != lib->offset);
 }
 
 /* This function allows the file manager view to zoom "around" the image
@@ -2493,20 +2439,14 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   }
   else
   {
+    // record current offset
+    lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
 
-
   lib->full_preview_sticky = sticky;
   lib->full_preview_id = mouse_over_id;
-
-  // set the active image
-  g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(mouse_over_id));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // set corresponding rowid in the collected images
   {
@@ -2546,6 +2486,14 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                      TRUE); // always on, visibility is driven by panel state
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
+
+  // set the active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
@@ -2573,12 +2521,6 @@ static void _preview_quit(dt_view_t *self)
   }
   lib->full_preview_id = -1;
   lib->full_preview_rowid = -1;
-  if(!lib->using_arrows) dt_control_set_mouse_over_id(-1);
-
-  // reset the active image
-  g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   lib->display_focus = 0;
   _full_preview_destroy(self);
@@ -2602,6 +2544,13 @@ static void _preview_quit(dt_view_t *self)
   }
   else
   {
+    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
+    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
+                       TRUE); // always on, visibility is driven by panel state
+
+    // set offset back
+    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
+
     // we need to show thumbtable
     if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -2614,11 +2563,6 @@ static void _preview_quit(dt_view_t *self)
                                DT_THUMBTABLE_MODE_ZOOM);
     }
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
-
-    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
-    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
-                       TRUE); // always on, visibility is driven by panel state
-    g_timeout_add(200, _expose_again_full, self);
   }
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
@@ -2700,14 +2644,14 @@ void mouse_enter(dt_view_t *self)
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  if (lib->using_arrows == 0)
+  if(lib->using_arrows) return;
+  if(lib->full_preview_id == -1 && get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING) return;
+
+  lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
+  if(!lib->pan && get_zoom() != 1)
   {
-    lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
-    if(!lib->pan && get_zoom() != 1)
-    {
-      dt_control_set_mouse_over_id(-1);
-      dt_control_queue_redraw_center();
-    }
+    dt_control_set_mouse_over_id(-1);
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -3311,7 +3255,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   // navigation accels for thumbtable layouts
   // this can't be "normal" key accels because it's usually arrow keys and lot of other widgets
   // will capture them before the usual accel is triggered
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  if(lib->full_preview_id < 0
+     && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
   {
     dt_thumbtable_move_t move = DT_THUMBTABLE_MOVE_NONE;
     gboolean select = FALSE;
@@ -3363,138 +3308,66 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   // key move left
-  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
-     || (key == accels->lighttable_left.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
+  if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
   {
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
       if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    {
-      if (zoom == 1)
-      {
-        move_view(lib, DIRECTION_UP);
-        lib->using_arrows = 0;
-      }
-      else
-      {
-        lib->using_arrows = 1;
-        lib->key_jump_offset = -1;
-        lib->track = -1;
-      }
-    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = -1;
       _culling_scroll(lib, TRUE);
     }
-    else
-      lib->track = -1;
     return 1;
   }
 
   // key move right
-  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-     || (key == accels->lighttable_right.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
+  if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
   {
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
       if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    {
-      if (zoom == 1)
-      {
-        move_view(lib, DIRECTION_DOWN);
-        lib->using_arrows = 0;
-      }
-      else
-      {
-        lib->using_arrows = 1;
-        lib->key_jump_offset = 1;
-        lib->track = -1;
-      }
-    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = 1;
       _culling_scroll(lib, FALSE);
     }
-    else
-      lib->track = 1;
     return 1;
   }
 
   // key move up
-  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
-     || (key == accels->lighttable_up.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
+  if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
   {
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
       if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    {
-      if (zoom == 1)
-      {
-        move_view(lib, DIRECTION_UP);
-        lib->using_arrows = 0;
-      }
-      else {
-        lib->using_arrows = 1;
-        lib->key_jump_offset = zoom*-1;
-      }
-    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
       _culling_scroll(lib, TRUE);
     }
-    else
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
     return 1;
   }
 
   // key move donw
-  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
-     || (key == accels->lighttable_down.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
+  if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
   {
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
       if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    {
-      if (zoom == 1)
-      {
-        move_view(lib, DIRECTION_DOWN);
-        lib->using_arrows = 0;
-      }
-      else
-      {
-        lib->using_arrows = 1;
-        lib->key_jump_offset = zoom;
-      }
-    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = DT_LIBRARY_MAX_ZOOM;
       _culling_scroll(lib, FALSE);
     }
-    else
-      lib->track = DT_LIBRARY_MAX_ZOOM;
-    return 1;
-  }
-
-  if(key == accels->lighttable_center.accel_key && state == accels->lighttable_center.accel_mods)
-  {
-    lib->force_expose_all = TRUE;
-    lib->center = 1;
     return 1;
   }
 
