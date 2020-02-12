@@ -702,10 +702,12 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
-  const unsigned int params_size = strlen(string) + 5;
+  // to be ajusted the nb of metadata items changes
+  const unsigned int metadata_nb = 6;
+  const unsigned int params_size = strlen(string) + metadata_nb;
 
   char *params = calloc(sizeof(char), params_size);
-  memcpy(params + 4, string, params_size - 5);
+  memcpy(params + 4, string, params_size - metadata_nb);
   dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size);
   free(params);
 }
@@ -730,7 +732,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 {
   if(old_version == 1)
   {
-    size_t new_params_size = old_params_size;
+    size_t new_params_size = old_params_size + 1;
     void *new_params = calloc(sizeof(char), new_params_size);
 
     char *buf = (char *)old_params;
