@@ -833,6 +833,13 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     // otherwise we reset the offset to the beginning
     table->offset = 1;
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
+    // and we reset position of first thumb for zooming
+    if(g_list_length(table->list) > 0)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      thumb->x = 0;
+      thumb->y = 0;
+    }
     dt_thumbtable_full_redraw(table, TRUE);
   }
 }
