@@ -944,7 +944,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3785
 msgid "enable disk backend for thumbnail cache"
-msgstr "Festplattencache für Vorschaubilder benutzen"
+msgstr "Festplattencache für Thumbnails benutzen"
 
 #: ../build/src/preferences_gen.h:3797
 msgid ""
@@ -7991,7 +7991,7 @@ msgstr "Einstellen der Autoset-Parameter"
 
 #: ../src/iop/denoiseprofile.c:4069
 msgid "preserve shadows"
-msgstr "Schatten erhalte"
+msgstr "Schatten erhalten"
 
 #: ../src/iop/denoiseprofile.c:4070
 msgid "bias correction"
