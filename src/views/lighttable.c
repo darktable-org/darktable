@@ -3288,43 +3288,21 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky.accel_key
-                                     && state == accels->lighttable_preview_sticky.accel_mods)
-                                    || (key == accels->lighttable_preview_sticky_focus.accel_key
-                                        && state == accels->lighttable_preview_sticky_focus.accel_mods)))
-  {
-    _preview_quit(self);
-    return 1;
-  }
-
   if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
      || (key == accels->lighttable_preview_display_focus.accel_key
-         && state == accels->lighttable_preview_display_focus.accel_mods)
-     || (key == accels->lighttable_preview_sticky.accel_key
-         && state == accels->lighttable_preview_sticky.accel_mods)
-     || (key == accels->lighttable_preview_sticky_focus.accel_key
-         && state == accels->lighttable_preview_sticky_focus.accel_mods))
+         && state == accels->lighttable_preview_display_focus.accel_mods))
   {
     const int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1)
     {
-      gboolean sticky = TRUE;
       gboolean focus = FALSE;
-      if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
-         || (key == accels->lighttable_preview_display_focus.accel_key
-             && state == accels->lighttable_preview_display_focus.accel_mods))
-      {
-        sticky = FALSE;
-      }
       if((key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods)
-         || (key == accels->lighttable_preview_sticky_focus.accel_key
-             && state == accels->lighttable_preview_sticky_focus.accel_mods))
+          && state == accels->lighttable_preview_display_focus.accel_mods))
       {
         focus = TRUE;
       }
 
-      _preview_enter(self, sticky, focus, mouse_over_id);
+      _preview_enter(self, FALSE, focus, mouse_over_id);
       return 1;
     }
     return 0;
@@ -3689,6 +3667,27 @@ static gboolean _accel_reset_first_offset(GtkAccelGroup *accel_group, GObject *a
   return FALSE;
 }
 
+static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // if we are alredy in preview mode, we exit
+  if(lib->full_preview_id > 0)
+  {
+    _preview_quit(self);
+    return TRUE;
+  }
+
+  const int focus = GPOINTER_TO_INT(data);
+  const int mouse_over_id = dt_control_get_mouse_over_id();
+  if(mouse_over_id < 1) return TRUE;
+  _preview_enter(self, TRUE, focus, mouse_over_id);
+
+  return TRUE;
+}
+
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
@@ -3708,6 +3707,12 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
+
+  // sticky preview (non sticky is managed inside key_pressed)
+  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(FALSE), NULL);
+  dt_accel_connect_view(self, "sticky preview", closure);
+  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(TRUE), NULL);
+  dt_accel_connect_view(self, "sticky preview with focus detection", closure);
 
   // full_preview zoom
   closure = g_cclosure_new(G_CALLBACK(_lighttable_preview_zoom_100), (gpointer)self, NULL);
