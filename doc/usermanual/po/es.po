@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-02-10 02:07-0600\n"
-"PO-Revision-Date: 2020-02-10 23:44-0600\n"
+"PO-Revision-Date: 2020-02-11 23:06-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -513,7 +513,7 @@ msgid ""
 "darktable comes with a versatile scripting interface for functionality "
 "enhancement using Lua as a scripting language."
 msgstr ""
-"darktable viene con una versátil interfaz para secuencia de comandos para "
+"darktable integra una interfaz versátil de secuencia de comandos para "
 "mejorar sus funciones, utilizando Lua como lenguaje de programación."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:292(para)
@@ -1843,9 +1843,9 @@ msgid ""
 "of the right panel, by clicking a module until a star is displayed in front "
 "of the icon."
 msgstr ""
-"darktable viene con un número de módulos, organizados en grupos. Estos "
-"grupos de módulos son accesados mediante botones en el panel derecho, justo "
-"debajo del histograma. También hay dos grupos especiales de módulos llamados "
+"darktable contiene un número de módulos, organizados en grupos. Estos grupos "
+"de módulos son accesados mediante botones en el panel derecho, justo debajo "
+"del histograma. También hay dos grupos especiales de módulos llamados "
 "<quote>activos</quote> y <quote>favoritos</quote>, los cuales muestran solo "
 "los módulos activados en el historial de la imagen actual, y los módulos "
 "seleccionados como favoritos, respectivamente. Para marcar un módulo como "
@@ -2172,8 +2172,8 @@ msgid ""
 "density</emphasis></link> filter adds a neutral or colored gradient to your "
 "image for exposure and color correction."
 msgstr ""
-"darktable viene con un variado juego de módulos de efectos artísticos. Para "
-"nombrar unos pocos: con el módulo de <link linkend=\"watermark"
+"darktable posee un variado juego de módulos de efectos artísticos. Por "
+"nombrar unos cuantos: con el módulo de <link linkend=\"watermark"
 "\"><emphasis>marca de agua</emphasis></link> puede agregar marcas de agua "
 "individuales a sus imágenes. El módulo de <link linkend=\"grain"
 "\"><emphasis>grano</emphasis></link> simula el ruido típico de las capturas "
@@ -2227,7 +2227,7 @@ msgid ""
 "JPEG, PNG, TIFF, OpenEXR and more."
 msgstr ""
 "La exportación está modulada en <emphasis>almacenado</emphasis> y "
-"<emphasis>formato</emphasis>. darktable viene con diversos módulos de "
+"<emphasis>formato</emphasis>. darktable contiene diversos módulos de "
 "almacenado como <emphasis>guardar en disco</emphasis>, varios tipos de "
 "álbumes web, una plantilla LaTeX de foto libro y más.  Los módulos de "
 "formato son los formatos de imagen actual, tales como JPEG, PNG, TIFF, "
@@ -7484,7 +7484,7 @@ msgid ""
 "for each of the available modules."
 msgstr ""
 "El elemento básico de la operación de una imagen en darktable se llama "
-"módulo. darktable viene con un amplio conjunto de más de 60 módulos para "
+"módulo. darktable integra con un amplio conjunto de más de 60 módulos para "
 "todo tipo de manipulación de imágenes. En <xref linkend=\"modules\"/> "
 "encontrará una descripción de cada uno de los módulos disponibles."
 
@@ -12681,11 +12681,11 @@ msgid ""
 "defines whether darktable by default should apply the per-camera base curve "
 "or the manufacturer one."
 msgstr ""
-"darktable viene con ajustes preestablecidos de curva base que imitan las "
-"curvas de varios fabricantes. Estos se aplican automáticamente a las "
-"imágenes sin procesar de acuerdo con la ID del fabricante que se encuentra "
-"en los datos Exif. Para varios modelos de cámara, darktable viene con curvas "
-"base adaptadas para ese modelo específico. Una opción de configuración en el "
+"darktable posee ajustes preestablecidos de curva base que imitan las curvas "
+"de varios fabricantes. Estos se aplican automáticamente a las imágenes sin "
+"procesar de acuerdo con la ID del fabricante que se encuentra en los datos "
+"Exif. Para varios modelos de cámara, darktable viene con curvas base "
+"adaptadas para ese modelo específico. Una opción de configuración en el "
 "cuadro de diálogo de preferencias en opciones básicas (ver <xref linkend="
 "\"core_options\"/>) define si darktable debe aplicar la curva base "
 "predefinida para la cámara o la del fabricante."
@@ -15263,9 +15263,9 @@ msgstr ""
 "La exposición relativa del blanco es el número de pasos (EV) entre el blanco "
 "puro y el gris medio. Es el límite correcto del rango dinámico. Debe "
 "ajustarse para evitar el recorte a las luces. La herramienta de selección "
-"del color de exposición blanco lee la luminancia máxima en el espacio RGB "
+"del color de la exposición blanca lee la luminancia máxima en el espacio RGB "
 "sobre el área trazada, asume que es blanco puro y configura el parámetro de "
-"exposición blanco para reasignar la lectura a 100% de luminancia."
+"exposición blanca para reasignar la lectura a 100% de luminancia."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12386(para)
 msgid ""
@@ -15297,17 +15297,17 @@ msgid ""
 "the black exposure at -16EV, it is a sign that the measure failed and you "
 "need to adjust it manually."
 msgstr ""
-"La exposición negra relativa es el número de pasos (EV) entre el negro puro "
-"y el gris medio. Es el límite izquierdo del rango dinámico. La herramienta "
-"de selección de color de la exposición en negro lee la luminancia mínima en "
-"el espacio RGB sobre el área dibujada, asume que es negro puro, y establece "
-"el parámetro de exposición negra para reasignar la lectura mínima a 0% de "
-"luminancia. La medida del selector de color de la exposición negra es muy "
-"sensible al ruido, y no puede identificar si la luminancia mínima es negro "
-"puro (datos reales) o solo ruido. Funciona mejor en imágenes con bajo ISO y "
-"con interpolación cromática de alta calidad. Cuando el selector de color "
-"pone la exposición negra en -16EV, es una señal de que la medición falló y "
-"que será necesario ajustarla manualmente."
+"La exposición relativa del negro es el número de pasos (EV) entre el negro "
+"puro y el gris medio. Es el límite izquierdo del rango dinámico. La "
+"herramienta de selección de color de la exposición negra lee la luminancia "
+"mínima en el espacio RGB sobre el área dibujada, asume que es negro puro, y "
+"establece el parámetro de exposición negra para reasignar la lectura mínima "
+"a 0% de luminancia. La medida del selector de color de la exposición negra "
+"es muy sensible al ruido, y no puede identificar si la luminancia mínima es "
+"negro puro (datos reales) o solo ruido. Funciona mejor en imágenes con bajo "
+"ISO y con interpolación cromática de alta calidad. Cuando el selector de "
+"color pone la exposición negra en -16EV, es una señal de que la medición "
+"falló y que será necesario ajustarla manualmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12406(para)
 msgid ""
@@ -15322,18 +15322,18 @@ msgid ""
 "range of the sensor (10-14EV in most cases). Note that the dynamic range of "
 "the scene can be lower than the camera's one, especially indoors."
 msgstr ""
-"La exposición relativa del negro le permite elegir hasta dónde desea "
-"recuperar las luces bajas. Al contrario de lo que ocurre con la exposición "
-"relativa al blanco, no será posible evitar por completo el recorte de los "
-"negros. Cada sensor de cámara tiene un rango dinámico físico máximo para "
-"cada valor ISO (puede encontrarlos medidos en <ulink url=\"https://www."
-"dxomark.com/\"><emphasis>DXOmark</emphasis></ulink> o <ulink url=\"https://"
-"www.dpreview.com/\"><emphasis>DPreview</emphasis></ulink>), el rango "
-"dinámico del software en película rgb (rango dinámico = exposición de blanco "
-"- exposición de negro) generalmente no debe ser mayor que el rango dinámico "
-"físico del sensor (10 -14 EV en la mayoría de los casos). Tenga en cuenta "
-"que el rango dinámico de la escena puede ser inferior al de la cámara, "
-"especialmente en interiores."
+"La exposición negra relativa le permite elegir hasta dónde desea recuperar "
+"las luces bajas. Al contrario de lo que ocurre con la exposición blanca "
+"relativa, no será posible evitar por completo el recorte de los negros. Cada "
+"sensor de cámara tiene un rango dinámico físico máximo para cada valor ISO "
+"(puede encontrarlos medidos en <ulink url=\"https://www.dxomark.com/"
+"\"><emphasis>DXOmark</emphasis></ulink> o <ulink url=\"https://www.dpreview."
+"com/\"><emphasis>DPreview</emphasis></ulink>), el rango dinámico del "
+"software en película rgb (rango dinámico = exposición de blanco - exposición "
+"de negro) generalmente no debe ser mayor que el rango dinámico físico del "
+"sensor (10 -14 EV en la mayoría de los casos). Tenga en cuenta que el rango "
+"dinámico de la escena puede ser inferior al de la cámara, especialmente en "
+"interiores."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12421(title)
 msgid ""
@@ -17404,13 +17404,13 @@ msgid ""
 "your chosen darktable installation directory and <filename moreinfo=\"none\">"
 "$HOME</filename> your home directory."
 msgstr ""
-"darktable viene con los perfiles predefinidos sRGB, Adobe RGB, XYZ y RGB "
-"lineal, pero usted puede proveer perfiles adicionales al colocarlos en "
-"<filename moreinfo=\"none\">$DARKTABLE/share/darktable/color/out</filename> "
-"y <filename moreinfo=\"none\">$HOME/.config/darktable/color/out</filename>. "
+"darktable integra perfiles predefinidos (sRGB, Adobe RGB, XYZ y RGB lineal), "
+"además de que pueden añadirse más perfiles al colocarlos en <filename "
+"moreinfo=\"none\">$DARKTABLE/share/darktable/color/out</filename> y "
+"<filename moreinfo=\"none\">$HOME/.config/darktable/color/out</filename>. "
 "<filename moreinfo=\"none\">$DARKTABLE</filename> se utiliza para "
-"representar su directorio de instalación de darktable que escogió y "
-"<filename moreinfo=\"none\">$HOME</filename> su directorio raíz."
+"representar el directorio de instalación de darktable y <filename moreinfo="
+"\"none\">$HOME</filename> el directorio raíz."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14212(para)
 msgid ""
@@ -21950,8 +21950,8 @@ msgid ""
 "white conversion."
 msgstr ""
 "La conversión a blanco y negro se puede lograr de varias formas con "
-"darktable. De hecho, darktable viene con varios módulos, especialmente para "
-"la manipulación de color. En este manual, le mostraremos cuatro formas de "
+"darktable. De hecho, darktable posee varios módulos, especialmente para la "
+"manipulación de color. En este manual, le mostraremos cuatro formas de "
 "realizar una conversión a blanco y negro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19212(title)
@@ -23670,10 +23670,10 @@ msgid ""
 "darkroom_preferences.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> at "
 "the top of the screen."
 msgstr ""
-"darktable viene con un número de ajustes que pueden ser configurados por los "
-"usuarios. Podrá llegar al menú de configuraciones al hacer click sobre "
+"darktable posee varios parámetros que pueden ser configurados por el "
+"usuario. Para abrir el menú de configuraciones, pulse sobre el ícono "
 "<inlinegraphic fileref=\"images/darkroom_preferences.png\" scalefit=\"1\" "
-"width=\"2%\" align=\"center\"/> en la parte superior de la pantalla."
+"width=\"2%\" align=\"center\"/> en la parte superior del visor."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20979(screeninfo)
 msgid "The preferences window"
@@ -23681,117 +23681,119 @@ msgstr "La ventana de preferencias"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20997(para)
 msgid "These options control the look and feel of darktable."
-msgstr "Estas opciones controlan el aspecto y comportamiento de darktable."
+msgstr ""
+"Estos parámetros controlan el aspecto y el comportamiento de darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21001(bridgehead)
 msgid "interface language"
-msgstr "idioma de la interfaz"
+msgstr "Idioma de la interfaz"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21003(para)
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
 msgstr ""
-"Configurar el idioma de la interfaz de usuario. El predeterminado está "
-"marcado con un * (necesita reiniciarse)"
+"Configura el idioma de la interfaz de usuario. El predeterminado está "
+"marcado con un * (es necesario el reinicio del programa)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21007(bridgehead)
 msgid "theme"
-msgstr "tema"
+msgstr "Tema"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21009(para)
 msgid "set the theme for the user interface"
-msgstr "establecer el tema de la interfaz de usuario"
+msgstr "Establece el tema de la interfaz de usuario."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21017(bridgehead)
 msgid "ignore JPEG images when importing film rolls"
-msgstr "ignorar imágenes JPEG al importar carretes"
+msgstr "Ignorar imágenes JPEG al importar los carretes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21019(para)
 msgid ""
 "When having RAW+JPEG images together in one directory it makes no sense to "
 "import both. With this flag one can ignore all JPEGs found (default off)."
 msgstr ""
-"Al tener imágenes RAW + JPEG juntas en un directorio, no tiene sentido mucho "
-"importar ambas. Con este indicador, se puede ignorar a todos los archivos "
-"JPEG encontrados (opción predeterminada desactivada)."
+"Cuando existen imágenes RAW + JPEG en un mismo directorio, pierde sentido "
+"importar ambos tipos de imágenes. Con este indicador, se pueden ignorar "
+"todos los archivos JPEG encontrados (opción predeterminada desactivada)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21024(bridgehead)
 msgid "recursive directory traversal when importing film rolls"
-msgstr "importar directorios de carretes de forma recursiva"
+msgstr "Hacer un recorrido recursivo de los directorios al importar carretes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21026(para)
 msgid ""
 "Not only import images from the directory selected but recursively go "
 "through all subdirectories as well (default off)."
 msgstr ""
-"No solo se importan las imágenes del directorio seleccionado, sino que "
-"también se revisan recursivamente todos los sub-directorios (apagado por "
-"defecto)."
+"Además de importar las imágenes del directorio seleccionado, también se "
+"exploran e incluyen todas las subcarpetas (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21031(bridgehead)
 msgid "creator to be applied when importing"
-msgstr "establecer autor al importar"
+msgstr "Establecer autor al importar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21033(para)
 msgid ""
 "If provided, automatically add this string as a creator tag when importing "
 "images (default none)."
 msgstr ""
-"Si se provee, agrega automáticamente la cadena de autor al importar imágenes "
-"(vacío por defecto)."
+"Si se provee, se añade la cadena de autor automáticamente al importar "
+"imágenes (vacío por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21038(bridgehead)
 msgid "publisher to be applied when importing"
-msgstr "establecer editor al importar"
+msgstr "Establecer editor al importar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21040(para)
 msgid ""
 "If provided, automatically add this string as a publisher tag when importing "
 "images (default none)."
 msgstr ""
-"Si se provee, agrega automáticamente la cadena de autor al importar imágenes "
-"(vacío por defecto)."
+"Si se provee, se añade la cadena de editor automáticamente al importar "
+"imágenes (vacío por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21045(bridgehead)
 msgid "rights to be applied when importing"
-msgstr "establecer derechos al importar"
+msgstr "Establecer derechos al importar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21047(para)
 msgid ""
 "If provided, automatically add this string as a copyrights tag when "
 "importing images (default none)."
 msgstr ""
-"Si se provee, agrega automáticamente la cadena de derechos al importar "
+"Si se provee, se añade la cadena de derechos automáticamente al importar "
 "imágenes (vacío por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21052(bridgehead)
 msgid "comma separated tags to be applied when importing"
-msgstr "establecer etiquetas separadas por comas al importar"
+msgstr "Establecer etiquetas separadas por comas al importar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21054(para)
 msgid ""
 "If you want to add further tags when importing images, you can give them as "
 "a comma separated list (default none)."
 msgstr ""
-"Si quiere agregas mas etiquetas al importar imágenes, puede proveerlas en "
-"una lista separada por comas (vacío por defecto)."
+"En caso de querer anexar mas etiquetas al importar imágenes, puede "
+"proveerlas en una lista separada por comas (vacío por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21059(bridgehead)
 msgid "initial import rating"
-msgstr "puntuación inicial"
+msgstr "Puntuación inicial"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21061(para)
 msgid ""
 "Initial star rating (from 0 to 5) for all images when importing a film roll "
 "(default 1)."
 msgstr ""
-"La puntuación inicial (de 0 a 5) de todas las imágenes al importar el "
-"carrete (1 por defecto)."
+"Fija la puntuación inicial de todas las imágenes (de 0 a 5) al importar el "
+"carrete (el valor por defecto es 1)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21071(bridgehead)
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "no utilice la vista previa incrustada JPEG sino un raw de tamaño medio"
+msgstr ""
+"Utilizar un RAW de tamaño medio como vista previa en lugar de una JPEG "
+"incrustada"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21073(para)
 msgid ""
@@ -23804,7 +23806,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21078(bridgehead)
 msgid "high quality thumb processing from size"
-msgstr "procesamiento de alta calidad de las diapositivas desde el tamaño"
+msgstr "Procesamiento de las miniaturas de alta calidad desde el tamaño"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21080(para)
 msgid ""
@@ -23814,11 +23816,11 @@ msgid ""
 msgstr ""
 "Si el tamaño de la miniatura es mayor que este valor, se procesará "
 "utilizando una ruta de procesamiento de alta calidad, lo cual es mejor pero "
-"mas lento (por defecto 720p)."
+"más lento (por defecto 720p)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21085(bridgehead)
 msgid "enable extended thumb overlay"
-msgstr "activar superposición extendida de la miniatura"
+msgstr "Habilitar superposición de miniatura extendida"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21087(para)
 msgid ""
@@ -23826,13 +23828,13 @@ msgid ""
 "cursor: image name, exposure time, aperture, focal length, ISO value "
 "(default off)."
 msgstr ""
-"Si está habilitado, agrega información adicional a la miniatura debajo del "
-"cursor del ratón: nombre de la imagen, tiempo de exposición, apertura, "
-"distancia focal, valor ISO (valor predeterminado desactivado)."
+"Si está habilitado, se añade la información adicional a la miniatura debajo "
+"del cursor del ratón: nombre de la imagen, tiempo de exposición, apertura, "
+"distancia focal, valor ISO (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21092(bridgehead)
 msgid "use single-click in the collect panel"
-msgstr "usar pulsación simple en el panel de colecciones"
+msgstr "Pulse un solo clic en el panel de colecciones"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21094(para)
 msgid ""
@@ -23844,7 +23846,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21098(bridgehead)
 msgid "expand a single lighttable module at a time"
-msgstr "desplegar un solo módulo en la mesa de luz a la vez"
+msgstr "Desplegar solo un módulo a la vez en la mesa de luz"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21100(para)
 msgid ""
@@ -23855,30 +23857,29 @@ msgid ""
 "reverts the meaning of <emphasis>click</emphasis> and <emphasis>Shift+click</"
 "emphasis> (default off)."
 msgstr ""
-"Controla la manera de desplagar los paneles de la mesa de luz. Si esta "
-"opción está habilitada, desplegar un panel al <emphasis>pulsarlo</emphasis> "
-"pliega cualquier otro panel actualmente expandido. Si desea desplegar un "
-"panel sin plegar los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. "
-"Deshabilitar esta opción revierte el sentido de <emphasis>pulsarlo</"
-"emphasis> y <emphasis>Mayús+Clic</emphasis> (desactivado por defecto)."
+"Controla la manera de desplegar los paneles en la mesa de luz. Si esta "
+"opción está habilitada, despliega un panel al <emphasis>pulsarlo</emphasis> "
+"plegando cualquier otro panel expandido. Si desea desplegar un panel sin "
+"plegar los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. Deshabilitar "
+"esta opción revierte el sentido de <emphasis>pulsarlo</emphasis> y "
+"<emphasis>Mayús+Clic</emphasis> (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21108(bridgehead)
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr "desplaza los módulos la mesa de luz cuando están expandidos/contraídos"
+msgstr "Desplazar los módulos al desplegarlos o contraerlos en la mesa de luz"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21110(para)
 msgid ""
 "With this option enabled the lighttable side panels will scroll a module to "
 "the top when it is expanded or collapsed (default off)."
 msgstr ""
-"Con esta opción se activa el desplazamiento en la parte superior del panel "
-"lateral de la mesa de luz, cuando este es expandido o contraído (encendido "
-"por defecto)."
+"Cuando esta opción se activa, el panel lateral de la mesa de luz desplazará "
+"el módulo hacia la parte superior, ya sea que esté expandido o plegado "
+"(activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21115(bridgehead)
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
-"puntuar una imagen con una sola estrella dos veces no anulará el puntaje"
+msgstr "Puntuar una imagen con una estrella dos veces no anulará el puntaje"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21117(para)
 msgid ""
@@ -23886,14 +23887,14 @@ msgid ""
 "that image. When checking this option a second click on a one star rating "
 "will keep that rating (default off)."
 msgstr ""
-"Normalmente, al pulsar dos veces en la puntuación de una estrella cambiará a "
-"una puntuación nula para esa imagen. Al marcar esta opción, un segundo clic "
-"en una puntuación de una estrella mantendrá la misma (por defecto "
+"Normalmente, al pulsar dos veces en la puntuación con una estrella cambiará "
+"a una puntuación nula para esa imagen. Al marcar esta opción, un segundo "
+"clic con una puntuación de una estrella no cambiará (por defecto "
 "desactivada)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21129(bridgehead)
 msgid "pen pressure control for brush masks"
-msgstr "control de presión de lápiz para brochas de mascara"
+msgstr "Control de presión de lápiz para pinceles de máscara"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21131(para)
 msgid ""
@@ -23905,30 +23906,30 @@ msgid ""
 "that the pressure reading adjusts the attribute between zero and the pre-"
 "defined default value (default off)."
 msgstr ""
-"Controla como la lectura de la presión de una tabla gráfica impacta en la "
-"generación de un nuevo brochazo (ver <xref linkend=\"drawn_mask\"/>). Puede "
-"controlar el ancho de la brocha, su dureza y su opacidad. El control "
-"<quote>absoluto</quote> significa que la lectura directa de la presión del "
-"atributo es un valor entre 0% y 100%. <quote>Relativo</quote> significa que "
-"la lectura de presión se ajusta al atributo entre cero y el valor definido "
-"por defecto (apagado por defecto)."
+"Adapta la generación de las pinceladas, al captar la presión ejercida en una "
+"tableta gráfica, (ver <xref linkend=\"drawn_mask\"/>). Puede controlar el "
+"ancho de la brocha, dureza y opacidad. El modo <quote>absoluto</quote> "
+"significa que la lectura de presión define directamente el atributo con un "
+"valor entre 0% y 100%. <quote>Relativo</quote> significa que la lectura de "
+"presión ajusta el atributo entre cero y el valor predefinido (desactivado "
+"por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21140(bridgehead)
 msgid "smoothing of brush strokes"
-msgstr "suavizado de pinceladas"
+msgstr "Suavizado de pinceladas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21142(para)
 msgid ""
 "Sets the level for smoothing of brush strokes. Stronger smoothing leads to "
 "less nodes and easier editing at the expense of lower accuracy."
 msgstr ""
-"Ajusta el nivel del suavizado de las pinceladas. Un suavizado mas fuerte "
-"conlleva a menos nodos y es más fácil de editar, a costas de una precisión "
-"menos."
+"Ajusta el nivel de suavizado de las pinceladas. Un suavizado más intenso "
+"conlleva a menos nodos y es más fácil de editar, a costa de una menor "
+"precisión."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21147(bridgehead)
 msgid "display of individual color channels"
-msgstr "mostrar canales individuales de color"
+msgstr "Mostrar canales individuales de color"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21149(para)
 msgid ""
@@ -23936,22 +23937,24 @@ msgid ""
 "parametric masks feature. You can choose between <quote>false color</quote> "
 "and <quote>grey scale</quote> (default false color)."
 msgstr ""
-"Controla cómo se muestran los canales individuales de color cuando se "
-"activan en la función de máscaras paramétricas. Puede elegir entre "
-"<quote>color falso</quote> y <quote>escala de grises</quote> (el "
-"predeterminado es color falso)."
+"Define cómo se muestran los canales individuales de color cuando se activan "
+"en la función de máscaras paramétricas. Puede elegir entre <quote>color "
+"falso</quote> y <quote>escala de grises</quote> (el valor predeterminado es "
+"color falso)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21155(bridgehead)
 msgid "pattern for the image infos line"
-msgstr "patrón para el texto informativo de la imagen"
+msgstr "Modelo para la línea informativa de la imagen"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21157(para)
 msgid "See for available values."
-msgstr "Consulte las opciones disponibles."
+msgstr ""
+"Consulte las opciones disponibles con respecto a las etiquetas que pueden "
+"usarse."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21161(bridgehead)
 msgid "position of the image info line"
-msgstr "posición del texto informativo de la imagen"
+msgstr "Posición de la línea informativa de la imagen"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21163(para)
 msgid ""
@@ -23959,14 +23962,14 @@ msgid ""
 "between <quote>top left</quote><quote>top right</quote><quote>top center</"
 "quote><quote>bottom</quote> and <quote>hidden</quote> (default bottom)."
 msgstr ""
-"Controla en qué panel se muestra la línea de información de la imagen. Se "
-"puede elegir entre <quote>arriba a la izquierda</quote><quote>arriba a la "
-"derecha</quote><quote>arriba al centro</quote><quote>abajo</quote> y "
-"<quote>oculto</quote> (abajo por defecto)."
+"Define el panel en el que se muestra la línea de información de la imagen. "
+"Puede elegirse entre <quote>Parte superior izquierda</quote><quote>Parte "
+"superior derecha</quote><quote>Parte superior central</quote><quote>Parte "
+"inferior</quote> y <quote>Oculto</quote> (Parte inferior por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21169(bridgehead)
 msgid "show search module text entry"
-msgstr "mostrar la entrada de texto del módulo de búsqueda"
+msgstr "Mostrar la entrada de texto del módulo de búsqueda"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21171(para)
 msgid ""
@@ -23974,14 +23977,14 @@ msgid ""
 "right panel. You can choose between <quote>groups icons</quote><quote>search "
 "entry</quote><quote>both</quote> (default both). (need a restart)"
 msgstr ""
-"Controla la manera de decidir qué módulos se muestran al mismo tiempo en el "
-"panel derecho. Puede elegir entre <quote>grupos de iconos</quote>, "
-"<quote>entrada de búsqueda</quote> y <quote>ambos</quote> (\"ambos\" "
-"activado por defecto). Necesita reiniciar."
+"Define los módulos que se muestran al mismo tiempo en el panel derecho. "
+"Puede elegir entre <quote>Mostrar búsqueda de texto</quote>, <quote>Mostrar "
+"grupos</quote> y <quote>Mostrar ambos</quote> (Mostrar ambos por defecto). "
+"Necesita reiniciarse el programa."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21177(bridgehead)
 msgid "expand a single darkroom module at a time"
-msgstr "desplegar un solo módulo en el cuarto oscuro a la vez"
+msgstr "Desplegar solo un módulo a la vez en el cuarto oscuro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21179(para)
 msgid ""
@@ -23992,44 +23995,42 @@ msgid ""
 "option reverts the meaning of <emphasis>click</emphasis> and <emphasis>Shift"
 "+click</emphasis> (default on)."
 msgstr ""
-"Controla la manera de desplegar los paneles del cuarto oscuro. Si esta "
-"opción está habilitada, desplegar un panel al <emphasis>pulsarlo</emphasis> "
-"pliega cualquier otro panel actualmente expandido. Si desea desplegar un "
-"panel sin plegar los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. "
-"Deshabilitar esta opción revierte el sentido de <emphasis>pulsarlo</"
-"emphasis> y <emphasis>Mayús+Clic</emphasis> (desactivado por defecto)."
+"Determina el modo de desplegar los paneles del cuarto oscuro. Si esta opción "
+"está habilitada, desplegar un panel al <emphasis>pulsarlo</emphasis> pliega "
+"cualquier otro panel expandido. Si se desea desplegar un panel sin plegar "
+"los demás, hágalo con <emphasis>Mayús+Clic</emphasis>. Deshabilitar esta "
+"opción revierte el sentido de <emphasis>pulsarlo</emphasis> y <emphasis>Mayús"
+"+Clic</emphasis> (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21187(bridgehead)
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
-"desplegar el módulo cuando está activado, y contraerlo cuando está "
-"desactivado"
+"Expandir el módulo cuando está activado y contraer cuando está desactivado"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21189(para)
 msgid ""
 "This option allows to expand or collapse automatically modules when they are "
 "enabled or disabled. (default off)"
 msgstr ""
-"Esta opción permite desplegar o contraer automáticamente los módulos cuando "
-"se activan o desactivan. (desactivado por defecto)"
+"Esta opción permite desplegar o plegar automáticamente los módulos cuando se "
+"activan o desactivan. (desactivado por defecto)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21194(bridgehead)
 msgid "scroll to darkroom modules when expanded/collapsed"
-msgstr ""
-"desplaza los módulos del cuarto oscuro cuando están expandidos/contraídos"
+msgstr "Desplazar los módulos al desplegarlos o plegarlos en el cuarto oscuro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21196(para)
 msgid ""
 "With this option enabled the darkroom side panel will scroll a module to the "
 "top when it is expanded or collapsed (default on)."
 msgstr ""
-"Con esta opción se activa el desplazamiento en la parte superior del panel "
-"lateral del cuarto oscuro , cuando este es expandido o contraído (encendido "
-"por defecto)."
+"Cuando esta opción se activa, el panel lateral del cuarto oscuro desplazará "
+"el módulo hacia la parte superior, ya sea que esté expandido o plegado "
+"(activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21201(bridgehead)
 msgid "border around image in darkroom mode"
-msgstr "borde al rededor de la imagen en el modo de cuarto oscuro"
+msgstr "Ancho del borde alrededor de la imagen en el modo de cuarto oscuro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21203(para)
 msgid ""
@@ -24046,8 +24047,7 @@ msgstr "Mapa/Geolocalización"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21214(bridgehead)
 msgid "only draw images on map that are currently collected and filtered"
 msgstr ""
-"solo dibuje imágenes en el mapa que estén en la colección actual y estén "
-"filtradas"
+"Dibujar sólo imágenes en el mapa que estén filtradas y en la colección actual"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21216(para)
 msgid ""
@@ -24055,14 +24055,14 @@ msgid ""
 "map view. This limits the images drawn to those currently shown in the "
 "filmstrip and thus reduces the time needed (default off)."
 msgstr ""
-"Utiliza los ajustes de filtrado actual para seleccionar las imágenes geo-"
-"ubicadas dibujadas en la vista de mapa. Esto limita el dibujo de la imagen a "
-"aquellos mostrados actualmente en la tira de imágenes y por ende, reduce el "
-"tiempo necesitado (activado por defecto)."
+"Utiliza la configuración de filtro para seleccionar las imágenes "
+"geocodificadas que se dibujan en la vista del mapa. Esto limita las imágenes "
+"dibujadas a las que se muestran en la tira de película y, por lo tanto, "
+"reduce el tiempo necesitado (desactivado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21222(bridgehead)
 msgid "maximum number of images drawn on map"
-msgstr "número máximo de imágenes mostradas en el mapa"
+msgstr "Cantidad máxima de imágenes mostradas en el mapa"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21224(para)
 msgid ""
@@ -24076,14 +24076,14 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21229(bridgehead)
 msgid "pretty print the image location"
-msgstr "imprimir la ubicación de la imagen"
+msgstr "Imprimir la ubicación de la imagen"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21231(para)
 msgid ""
 "Show a more readable representation of the geo location in the image "
 "information module (default on)."
 msgstr ""
-"Muestra una representación más legible de la geo ubicación en el módulo de "
+"Muestra una representación más legible de la geolocalización en el módulo de "
 "información de la imagen (activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21240(title)
@@ -24092,29 +24092,31 @@ msgstr "Seguridad"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21242(bridgehead)
 msgid "ask before removing images from database"
-msgstr "preguntar antes de eliminar imágenes"
+msgstr "Preguntar antes de eliminar imágenes de la base de datos"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21244(para)
 msgid ""
 "Always ask the user before any image is removed from the database (default "
 "on)."
 msgstr ""
-"Siempre pregunta al usuario antes de que eliminar cualquier imagen de la "
-"base de datos (activado por defecto)."
+"Siempre pregunta al usuario antes de eliminar cualquier imagen de la base de "
+"datos (activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21248(bridgehead)
 msgid "ask before erasing images from disk"
-msgstr "preguntar antes de eliminar imágenes del disco"
+msgstr ""
+"Preguntar antes de eliminar imágenes del disco o descartar el historial de "
+"acciones"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21250(para)
 msgid "Always ask the user before any image file is deleted (default on)."
 msgstr ""
-"Siempre pregunta antes de que cualquier imagen sea eliminada (activado por "
-"defecto)."
+"Siempre pregunta antes de que cualquier imagen sea eliminada o se quiera "
+"descartar el historial de acciones (activado por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21254(bridgehead)
 msgid "send files to trash when erasing images"
-msgstr "envía archivos a la papelera al borrar imágenes"
+msgstr "Enviar los archivos a la papelera al eliminar las imágenes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21256(para)
 msgid ""
@@ -24126,7 +24128,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21261(bridgehead)
 msgid "ask before moving images from film roll folder"
-msgstr "preguntar antes de mover imágenes desde la carpeta del carrete"
+msgstr "Preguntar antes de mover imágenes desde la carpeta del carrete"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21263(para)
 msgid "Always ask the user before any image file is moved (default on)."
@@ -24136,7 +24138,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21267(bridgehead)
 msgid "ask before copying images to new film roll folder"
-msgstr "preguntar antes de copiar imágenes a una nueva carpeta del carrete"
+msgstr "Preguntar antes de copiar imágenes a una nueva carpeta del carrete"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21269(para)
 msgid "Always ask the user before any image file is copied (default on)."
@@ -24146,7 +24148,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21273(bridgehead)
 msgid "ask before removing empty folders"
-msgstr "preguntar antes de eliminar carpetas vacías"
+msgstr "Preguntar antes de eliminar carpetas vacías"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21275(para)
 msgid ""
@@ -24158,7 +24160,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21279(bridgehead)
 msgid "ask before deleting a tag"
-msgstr "preguntar antes de borrar una etiqueta"
+msgstr "Preguntar antes de borrar una etiqueta"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21281(para)
 msgid "Always ask user before deleting a tag from an image (default on)."
@@ -24168,7 +24170,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21285(bridgehead)
 msgid "ask before deleting a style"
-msgstr "preguntar antes de borrar un estilo"
+msgstr "Preguntar antes de borrar un estilo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21287(para)
 msgid "Always ask user before deleting a style (default on)."
@@ -24179,20 +24181,19 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21295(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21586(title)
 msgid "Miscellaneous"
-msgstr "Misceláneo"
+msgstr "Miscelánea"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21297(bridgehead)
 msgid "width of the side panels in pixels"
-msgstr "ancho de los paneles laterales en pixeles"
+msgstr "Tamaño de los paneles laterales en pixeles"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21299(para)
 msgid ""
 "This controls the size of side panels in pixels. Side panels are found left "
 "and right to the center view (default 350)."
 msgstr ""
-"Esto controla el tamaño de los paneles laterales en pixeles. Los paneles "
-"laterales se encuentran a la izquierda y derecha de la vista central (por "
-"defecto de 350)."
+"Fija el tamaño de los paneles laterales en pixeles. Los paneles laterales se "
+"encuentran a la izquierda y derecha de la vista central (por defecto de 350)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21304(bridgehead)
 msgid "waiting time before each picture in slideshow"
@@ -24201,7 +24202,7 @@ msgstr "Tiempo de espera entre cada imagen en la presentación de diapositivas"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21306(para)
 msgid "The number of seconds before displaying the next image (default 5)."
 msgstr ""
-"El número de segundos antes de mostrar la siguiente imagen (por defecto 5)."
+"La cantidad de segundos antes de mostrar la siguiente imagen (por defecto 5)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21310(bridgehead)
 msgid "do not show april 1st game"
@@ -24209,23 +24210,23 @@ msgstr "Deshabilitar el juego del 1° de abril"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21312(para)
 msgid "(default on)."
-msgstr "(por defecto)."
+msgstr "Activado por defecto."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21316(bridgehead)
 msgid "number of folder levels to show in lists"
-msgstr "número de niveles de carpetas a mostrar en listas"
+msgstr "Número de niveles de carpetas que se muestran en listas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21318(para)
 msgid ""
 "The number of folder levels to show in film roll names, starting from the "
 "right (default 1)."
 msgstr ""
-"El número de niveles de carpetas a mostrar en los nombres de carretes, "
+"El número de niveles de carpetas para mostrar en los nombres de carretes, "
 "comenzando desde la derecha (1 por defecto)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21322(bridgehead)
 msgid "enable filmstrip"
-msgstr "activar la tira de imágenes"
+msgstr "Activar tira de imágenes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21324(para)
 msgid ""
@@ -24237,7 +24238,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21328(bridgehead)
 msgid "enable timeline"
-msgstr "habilitar la línea de tiempo"
+msgstr "Activar línea de tiempo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21330(para)
 msgid "Enable the timeline lighttable mode (default on)."
@@ -24247,7 +24248,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21334(bridgehead)
 msgid "overlay txt sidecar over zoomed images"
-msgstr "solapar txt asociado sobre las imágenes aumentadas"
+msgstr "Solapar el txt asociado sobre las imágenes aumentadas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21336(para)
 msgid ""
@@ -24263,7 +24264,7 @@ msgstr ""
 "de texto tiene el mismo nombre base de la imagen con la extensión <quote>."
 "txt</quote>. Tiene que estar en el momento de importar la imagen o el "
 "rastreador debe estar habilitado. Vea la opción <quote>buscar archivos xmp "
-"actualizados al iniciar</quote> en las <xref linkend=\"core_options\"/> (por "
+"actualizados al iniciar</quote> en la <xref linkend=\"core_options\"/> (por "
 "defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21344(bridgehead)
@@ -24302,12 +24303,12 @@ msgid ""
 "only depending on the content (default on). (need a restart)"
 msgstr ""
 "Define si las barras de desplazamiento del panel deben estar siempre "
-"visibles o activadas sólo en función del contenido (por defecto activado). "
+"visibles o activadas en función del contenido (por defecto activado). "
 "(necesita reiniciarse)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21364(bridgehead)
 msgid "method to use for getting the display profile"
-msgstr "método a utilizar para obtener el perfil del monitor"
+msgstr "Método para obtener el perfil del monitor"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21366(para)
 msgid ""
@@ -24318,13 +24319,13 @@ msgid ""
 "You can set this option to <quote>xatom</quote> or <quote>colord</quote> to "
 "enforce a specific method if the alternative gives wrong results."
 msgstr ""
-"Esta opción le permite forzar una forma específica de obtener el perfil de "
-"manejo de color actual de su monitor (ver <xref linkend=\"rendering_method\"/"
-">). En los ajustes por defecto <quote>todas</quote>, darktable buscará el el "
-"servidor xatom X de su monitor en el servicio <emphasis>colord</emphasis> de "
-"su sistema. Puede ajustar esta opción a <quote>xatom</quote> o "
-"<quote>colord</quote> para forzar un método específico si el otro le da "
-"resultados erróneos."
+"Esta opción le permite forzar una manera específica para obtener el perfil "
+"de manejo de color actual del monitor (ver <xref linkend=\"rendering_method"
+"\"/>). En la configuración por defecto <quote>Todas</quote>, darktable "
+"consultará XAtom del servidor de la pantalla X o el <emphasis>colord</"
+"emphasis> del servicio del sistema. Puede ajustar esta opción a "
+"<quote>XAtom</quote> o <quote>colord</quote> para forzar un método "
+"específico si el otro le da resultados erróneos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21383(title)
 msgid "Core options"
