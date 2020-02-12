@@ -1436,6 +1436,12 @@ Details :
 }
 
 /* background */
+@keyframes lastactive
+{
+  0% {background-color: @thumbnail_bg_color;}
+  50% {background-color: @thumbnail_hover_bg_color;}
+  100% {background-color: @thumbnail_bg_color;}
+}
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
@@ -1470,6 +1476,14 @@ Details :
 .dt_thumbtable_reorder #thumb_main:hover #thumb_back
 {
   border-left : 4px solid rgb(255, 187, 0);
+}
+
+.dt_last_active #thumb_back
+{
+  animation-name: lastactive;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: 3;
 }
 
 /* extension */
