@@ -505,6 +505,28 @@ static gboolean find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, gint
   return FALSE;
 }
 
+// check if the tag has any child
+static gboolean find_child_tagname(GtkTreeModel *model, GtkTreeIter *iter, const gchar *tagname)
+{
+  gchar *path;
+  do
+  {
+    gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_PATH, &path, -1);
+    if (g_str_has_prefix(path, tagname))
+    {
+      return TRUE;
+    }
+    GtkTreeIter child, parent = *iter;
+    if (gtk_tree_model_iter_children(model, &child, &parent))
+      if (find_child_tagname(model, &child, tagname))
+      {
+        *iter = child;
+        return TRUE;
+      }
+  } while (gtk_tree_model_iter_next(model, iter));
+  return FALSE;
+}
+
 // calculate the indeterminated state (1) where needed on the tree
 static void calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean root)
 {
@@ -1191,7 +1213,7 @@ static void pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t 
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-    text = g_strdup_printf(ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
+    text = g_markup_printf_escaped(ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
              "do you really want to delete the tag `%s'?\n%d images are assigned this tag!", img_count), tagname, img_count);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), text);
@@ -1474,26 +1496,36 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
       }
       else
       {
-        if (root)
+        GtkTreeIter iter2;
+        gtk_tree_model_get_iter_first(store, &iter2);
+        if(!find_child_tagname(store, &iter2, new_tagname))
         {
-          gtk_tree_model_get_iter_first(model, &iter);
-          gtk_tree_store_insert(GTK_TREE_STORE(store), &store_iter, NULL, -1);
+          if (root)
+          {
+            gtk_tree_model_get_iter_first(model, &iter);
+            gtk_tree_store_insert(GTK_TREE_STORE(store), &store_iter, NULL, -1);
+          }
+          else
+          {
+            gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
+                                      &store_parent, &iter);
+            gtk_tree_store_insert(GTK_TREE_STORE(store), &store_iter, &store_parent, -1);
+          }
+          gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter,
+              DT_LIB_TAGGING_COL_ID, new_tagid,
+              DT_LIB_TAGGING_COL_TAG, newtag,
+              DT_LIB_TAGGING_COL_PATH, new_tagname,
+              DT_LIB_TAGGING_COL_COUNT, 0,
+              DT_LIB_TAGGING_COL_SEL, 0,
+              DT_LIB_TAGGING_COL_FLAGS, new_flags,
+              DT_LIB_TAGGING_COL_SYNONYM, new_synonyms_list,
+              DT_LIB_TAGGING_COL_VISIBLE, TRUE, -1);
         }
         else
         {
-          gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
-                                    &store_parent, &iter);
-          gtk_tree_store_insert(GTK_TREE_STORE(store), &store_iter, &store_parent, -1);
+          // hierarchy display must be updated
+          init_treeview(self, 1);
         }
-        gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter,
-            DT_LIB_TAGGING_COL_ID, new_tagid,
-            DT_LIB_TAGGING_COL_TAG, newtag,
-            DT_LIB_TAGGING_COL_PATH, new_tagname,
-            DT_LIB_TAGGING_COL_COUNT, 0,
-            DT_LIB_TAGGING_COL_SEL, 0,
-            DT_LIB_TAGGING_COL_FLAGS, new_flags,
-            DT_LIB_TAGGING_COL_SYNONYM, new_synonyms_list,
-            DT_LIB_TAGGING_COL_VISIBLE, TRUE, -1);
       }
       g_free(new_synonyms_list);
     }
