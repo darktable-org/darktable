@@ -94,8 +94,6 @@ static void _update_collected_images(dt_view_t *self);
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_custom_image_order_actif(const dt_view_t *self);
 
-static gboolean _expose_again_full(gpointer user_data);
-
 static void _force_expose_all(dt_view_t *self);
 
 static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_first_image);
@@ -265,19 +263,6 @@ static int _get_collection_count(dt_view_t *self)
   }
   return lib->collection_count;
 }
-static void _scrollbars_restore()
-{
-  char *scrollbars_conf = dt_conf_get_string("scrollbars");
-
-  gboolean scrollbars_visible = FALSE;
-  if(scrollbars_conf)
-  {
-    if(strcmp(scrollbars_conf, "no scrollbars")) scrollbars_visible = TRUE;
-    g_free(scrollbars_conf);
-  }
-
-  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
-}
 
 static void _force_expose_all(dt_view_t *self)
 {
@@ -340,72 +325,32 @@ static void check_layout(dt_view_t *self)
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
-    // ensure we have no active image remaining
-    if(darktable.view_manager->active_images)
-    {
-      g_slist_free(darktable.view_manager->active_images);
-      darktable.view_manager->active_images = NULL;
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
-    }
-  }
-
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-  {
-    // we want to reacquire the thumbtable if needed
-    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                             DT_THUMBTABLE_MODE_FILEMANAGER);
-    _scrollbars_restore();
-    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
-    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
-
-    if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-    {
-      lib->first_visible_filemanager = lib->offset = lib->first_visible_zoomable;
-    }
-    lib->first_visible_zoomable = 0;
-
-    if(lib->center) lib->offset = 0;
-    lib->center = 0;
-
-    lib->offset_changed = TRUE;
-    lib->offset_x = 0;
-    lib->offset_y = 0;
-
-    // if we arrive from culling, ensure selected images are visible
+    // if we arrive from culling, we just need to ensure the offset is right
     if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
     {
-      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d",
-                                     lib->slots[0].imgid);
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(stmt != NULL)
-      {
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          if(!_ensure_image_visibility(self, sqlite3_column_int(stmt, 0)))
-          {
-            // this happens on first filemanager display
-            lib->offset = lib->first_visible_filemanager = sqlite3_column_int(stmt, 0) / get_zoom() * get_zoom();
-          }
-        }
-        sqlite3_finalize(stmt);
-      }
-      g_free(query);
+      dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
+    // we want to reacquire the thumbtable if needed
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_FILEMANAGER);
+    }
+    else
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_ZOOM);
+    }
+    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // record thumbtable offset
+    lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
     _culling_check_scrolling_mode(self);
-  }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-  {
-    // we want to reacquire the thumbtable if needed
-    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                             DT_THUMBTABLE_MODE_ZOOM);
-    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
-    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
 
   // make sure we reset culling layout
@@ -423,8 +368,6 @@ static void check_layout(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
                        TRUE); // always on, visibility is driven by panel state
-    g_timeout_add(200, _expose_again_full, self);
-    _scrollbars_restore();
   }
 }
 
@@ -1891,19 +1834,6 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE; // don't call again
 }
 
-static gboolean _expose_again_full(gpointer user_data)
-{
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-  // unfortunately there might have been images without thumbnails during expose.
-  // this can have multiple reasons: not loaded yet (we'll receive a signal when done)
-  // or still locked for writing.. we won't be notified when this changes.
-  // so we just track whether there were missing images and expose again.
-  lib->force_expose_all = TRUE;
-  dt_control_queue_redraw_center();
-  return FALSE; // don't call again
-}
-
 void begin_pan(dt_library_t *lib, double x, double y)
 {
   lib->select_offset_x = lib->zoom_x + x;
@@ -2391,9 +2321,6 @@ void enter(dt_view_t *self)
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
-
-  // we show (or not the scrollbars)
-  _scrollbars_restore();
 }
 
 static gboolean _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
@@ -2497,9 +2424,6 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
-  // we don't need the scrollbars
-  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
-
   // preview with focus detection
   lib->display_focus = focus;
 
@@ -2566,9 +2490,6 @@ static void _preview_quit(dt_view_t *self)
   }
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
-
-  // restore scrollbars
-  _scrollbars_restore();
 
   lib->slots_changed = TRUE;
   lib->force_expose_all = TRUE;
