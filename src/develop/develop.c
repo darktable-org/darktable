@@ -2312,10 +2312,19 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+  int result = dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+  for(size_t idx=0; idx<points_count; idx++) {
+    points[idx*2] *= dev->preview_downsampling;
+    points[idx*2+1] *= dev->preview_downsampling;
+  }
+  return result;
 }
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
+  for(size_t idx=0; idx<points_count; idx++) {
+    points[idx*2] /= dev->preview_downsampling;
+    points[idx*2+1] /= dev->preview_downsampling;
+  }
   return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
