@@ -37,12 +37,12 @@
               </para>
               <para>
                 Unlike child tags, parent tags do not add information to the image, but rather represent categories.
-                For example, in the <quote>color|white</quote> tag <quote>color</quote> is a category 
+                For example, in the <quote>color|white</quote> tag <quote>color</quote> is a category
                 for the <quote>white</quote> tag.
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/images/panel_tagging-default.png" scalefit="1" width="90%" align="center" />
+              <graphic fileref="lighttable/images/panel_tagging-default.png" scalefit="1" width="100%" align="center" />
             </entry>
           </row>
         </tbody>
@@ -57,7 +57,7 @@
           The upper <quote>attached tags</quote> view displays tag(s) that are currently attached to the image
           under the cursor or the selected image(s), if the cursor is outside the center area of the lighttable view.
         </para></listitem>
-                  
+
         <listitem><para>
           The lower <quote>tag dictonary</quote> view displays all tags that are available in the database.
           </para></listitem>
@@ -108,42 +108,42 @@
 
       <para>
         The attached tags and tag dictionary views display additional information on the sides of the tag:
-        
+
         <itemizedlist>
-          
+
           <listitem><para>
             On the left, an indicator gives the status of the tag in relation to the selected images:
-            
+
             <itemizedlist>
-              
+
               <listitem><para>
                 A <quote>check-mark</quote> means that the tag is attached to all selected images.
               </para></listitem>
-              
+
               <listitem><para>
                 A <quote>minus</quote> means that the tag is attached to at least one selected image.
                 In tree view, for a parent tag it also means that at least one child tag is attached to
                 at least one of the selected images.
               </para></listitem>
-              
+
               <listitem><para>
-                Absence of any marking in the tag dictionary view means that the tag exists in the database, 
+                Absence of any marking in the tag dictionary view means that the tag exists in the database,
                 but is not attached to any of the selected images. In tree view, for a parent tag it also means
                 that none of its child tags is attached to any of the selected images.
               </para></listitem>
-              
+
             </itemizedlist>
           </para></listitem>
 
           <listitem><para>
-            On the right, the number in parentheses gives the attached image count. In the attached tags 
+            On the right, the number in parentheses gives the attached image count. In the attached tags
             view, this count refers to the selected images, while in the tag dictionary view it refers to the whole database.
           </para></listitem>
-        
-        </itemizedlist>  
-            
+
+        </itemizedlist>
+
       </para>
-      
+
       <para>
         An <emphasis>italic</emphasis> tag is considered as a category. A category is a tag which helps
         to organize the tags but doesn't bring information to the image. A category is not exported.
@@ -205,7 +205,7 @@
       </para>
 
       <para>
-        You can adjust height of the attached tags and tag dictionary list views using Ctrl+wheel. 
+        You can adjust height of the attached tags and tag dictionary list views using Ctrl+wheel.
         The updated list view height is kept for new darktable sessions.
       </para>
 
@@ -237,7 +237,7 @@
                 </para>
               </entry>
               <entry>
-                <graphic fileref="lighttable/images/panel_tagging-treebutton.png" scalefit="1" width="90%" align="center" />
+                <graphic fileref="lighttable/images/panel_tagging-treebutton.png" scalefit="1" width="100%" align="center" />
               </entry>
             </row>
             <row>
@@ -250,7 +250,7 @@
                 </para>
               </entry>
               <entry>
-                <graphic fileref="lighttable/images/panel_tagging-suggbutton.png" scalefit="1" width="90%" align="center" />
+                <graphic fileref="lighttable/images/panel_tagging-suggbutton.png" scalefit="1" width="100%" align="center" />
               </entry>
             </row>
           </tbody>
@@ -370,7 +370,7 @@
       </para>
 
       <para>
-        <graphic fileref="lighttable/images/panel_tagging-edit.png" scalefit="1" width="70%" align="center" />
+        <graphic fileref="lighttable/images/panel_tagging-edit.png" scalefit="1" width="75%" align="center" />
       </para>
 
       <para>
