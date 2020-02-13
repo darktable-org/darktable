@@ -230,6 +230,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 {
   if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER && table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
+  if(!table->scrollbars) return FALSE;
 
   table->code_scrolling = TRUE;
 
@@ -664,6 +665,32 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+// set scrollbars visibility
+static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
+{
+  table->scrollbars = FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
+  {
+    char *scrollbars_conf = dt_conf_get_string("scrollbars");
+
+    if(scrollbars_conf)
+    {
+      if(strcmp(scrollbars_conf, "no scrollbars")) table->scrollbars = TRUE;
+      g_free(scrollbars_conf);
+    }
+  }
+  dt_ui_scrollbars_show(darktable.gui->ui, table->scrollbars);
+}
+
+// called each time the preference change, to update specific parts
+static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  _thumbtable_restore_scrollbars(table);
+}
+
 // this is called each time the list of active images
 static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 {
@@ -1072,6 +1099,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                             G_CALLBACK(_dt_mouse_over_image_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                             G_CALLBACK(_dt_active_images_callback), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
+                            table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -1091,7 +1120,7 @@ static void _thumb_remove(gpointer user_data)
 
 void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y)
 {
-  if(g_list_length(table->list) == 0 || table->code_scrolling) return;
+  if(g_list_length(table->list) == 0 || table->code_scrolling || !table->scrollbars) return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -1300,6 +1329,10 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     table->mode = mode;
   }
 
+  // do we show scrollbars ?
+  table->code_scrolling = TRUE;
+  _thumbtable_restore_scrollbars(table);
+
   // we reparent the table
   if(!parent || parent != new_parent)
   {
@@ -1308,6 +1341,7 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     else
       gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
   }
+  table->code_scrolling = FALSE;
 }
 
 // define if overlays should always be shown or just on mouse-over

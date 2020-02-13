@@ -83,6 +83,9 @@ typedef struct dt_thumbtable_t
 
   // to desactivate scrollbars event because we have updated it by hand in the code
   gboolean code_scrolling;
+
+  // are scrollbars shown ?
+  gboolean scrollbars;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
