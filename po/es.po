@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-11 17:02-0600\n"
-"PO-Revision-Date: 2020-02-11 19:36-0600\n"
+"POT-Creation-Date: 2020-02-13 12:05-0600\n"
+"PO-Revision-Date: 2020-02-13 11:54-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -32,7 +32,7 @@ msgstr "gráficos;fotografía;raw;"
 msgid "GUI options"
 msgstr "Opciones de interfaz de usuario"
 
-#: ../build/src/preferences_gen.h:1959 ../src/libs/import.c:107
+#: ../build/src/preferences_gen.h:1959 ../src/libs/import.c:106
 msgid "import"
 msgstr "importar"
 
@@ -268,8 +268,8 @@ msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
 msgstr ""
-"Desactiva el comportamiento documentado en el manual de puntuar con una estrella:"
-" una imagen puntuada con una sola estrella dos veces anulará el "
+"Desactiva el comportamiento documentado en el manual de puntuar con una "
+"estrella: una imagen puntuada con una sola estrella dos veces anulará el "
 "puntaje."
 
 #: ../build/src/preferences_gen.h:2334 ../src/views/darkroom.c:111
@@ -1248,11 +1248,11 @@ msgstr "%s: %s"
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:283 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1439 ../src/libs/collect.c:242
+#: ../src/iop/lut3d.c:1574 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
-#: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2145
-#: ../src/libs/tagging.c:2186
+#: ../src/libs/import.c:747 ../src/libs/import.c:854 ../src/libs/lib.c:228
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2218
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -1499,7 +1499,7 @@ msgid "BRG (for testing)"
 msgstr "BRG (para pruebas)"
 
 #: ../src/common/colorspaces.c:1602 ../src/iop/colorin.c:2137
-#: ../src/iop/lut3d.c:1602
+#: ../src/iop/lut3d.c:1765
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -1595,7 +1595,7 @@ msgstr "Error al cargar el directorio '%s'"
 msgid "file `%s' has unknown format!"
 msgstr "El archivo `%s' tiene un formato desconocido"
 
-#: ../src/common/darktable.c:290 ../src/libs/import.c:825
+#: ../src/common/darktable.c:290 ../src/libs/import.c:813
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Error al cargar el archivo '%s'"
@@ -1623,14 +1623,14 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2097 ../src/iop/filmicrgb.c:1576
 #: ../src/iop/toneequal.c:3330 ../src/libs/export.c:628
-#: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
+#: ../src/libs/export.c:634 ../src/libs/metadata_view.c:281
 msgid "no"
 msgstr "no"
 
 #: ../src/common/darktable.c:816 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2098 ../src/libs/export.c:629 ../src/libs/export.c:635
-#: ../src/libs/metadata_view.c:279
+#: ../src/libs/metadata_view.c:281
 msgid "yes"
 msgstr "sí"
 
@@ -1768,7 +1768,7 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:809 ../src/common/history.c:812
 #: ../src/common/history.c:828 ../src/common/styles.c:919
 #: ../src/common/styles.c:923 ../src/develop/blend_gui.c:2769
-#: ../src/develop/develop.c:1919 ../src/iop/ashift.c:4864
+#: ../src/develop/develop.c:1920 ../src/iop/ashift.c:4864
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activo"
@@ -1776,7 +1776,7 @@ msgstr "activo"
 #: ../src/common/history.c:809 ../src/common/history.c:812
 #: ../src/common/history.c:828 ../src/common/styles.c:919
 #: ../src/common/styles.c:923 ../src/develop/blend_gui.c:2516
-#: ../src/develop/blend_gui.c:2766 ../src/develop/develop.c:1919
+#: ../src/develop/blend_gui.c:2766 ../src/develop/develop.c:1920
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4863 ../src/iop/ashift.c:4869 ../src/iop/colorin.c:2136
 #: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
@@ -2047,7 +2047,7 @@ msgid "below sea level"
 msgstr "bajo el nivel del mar"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:823
-#: ../src/libs/metadata_view.c:579
+#: ../src/libs/metadata_view.c:580
 msgid "m"
 msgstr "m"
 
@@ -2469,7 +2469,7 @@ msgstr[1] "Importando %d imágenes"
 msgid "importing image %s"
 msgstr "Importando imagen %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:759
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:747
 msgid "import image"
 msgstr "importar imagen"
 
@@ -3026,82 +3026,82 @@ msgstr ""
 msgid "mask refinement"
 msgstr "afinar máscara"
 
-#: ../src/develop/develop.c:1713
+#: ../src/develop/develop.c:1714
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo '%s' versión incoincidente: %d != %d"
 
-#: ../src/develop/imageop.c:1007
+#: ../src/develop/imageop.c:1011
 msgid "new instance"
 msgstr "módulo nuevo"
 
-#: ../src/develop/imageop.c:1013
+#: ../src/develop/imageop.c:1017
 msgid "duplicate instance"
 msgstr "duplicar módulo"
 
-#: ../src/develop/imageop.c:1019 ../src/libs/masks.c:1170
+#: ../src/develop/imageop.c:1023 ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "subir"
 
-#: ../src/develop/imageop.c:1025 ../src/libs/masks.c:1173
+#: ../src/develop/imageop.c:1029 ../src/libs/masks.c:1173
 msgid "move down"
 msgstr "bajar"
 
-#: ../src/develop/imageop.c:1031 ../src/libs/image.c:166
-#: ../src/libs/tagging.c:1181 ../src/libs/tagging.c:1278
+#: ../src/develop/imageop.c:1035 ../src/libs/image.c:166
+#: ../src/libs/tagging.c:1203 ../src/libs/tagging.c:1300
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:1038 ../src/libs/tagging.c:1754
+#: ../src/develop/imageop.c:1042 ../src/libs/tagging.c:1786
 msgid "rename"
 msgstr "renombrar"
 
-#: ../src/develop/imageop.c:1081 ../src/develop/imageop.c:1995
+#: ../src/develop/imageop.c:1085 ../src/develop/imageop.c:1999
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está activado"
 
-#: ../src/develop/imageop.c:1081 ../src/develop/imageop.c:1995
+#: ../src/develop/imageop.c:1085 ../src/develop/imageop.c:1999
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desactivado"
 
-#: ../src/develop/imageop.c:1409 ../src/gui/accelerators.c:706
+#: ../src/develop/imageop.c:1413 ../src/gui/accelerators.c:706
 #: ../src/gui/accelerators.c:791 ../src/gui/accelerators.c:973
 #: ../src/gui/accelerators.c:999 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1461 ../src/libs/import.c:560 ../src/libs/lib.c:320
+#: ../src/iop/temperature.c:1461 ../src/libs/import.c:549 ../src/libs/lib.c:320
 #: ../src/libs/lib.c:348 ../src/libs/lib.c:1143
 msgid "preset"
 msgstr "predefinido"
 
-#: ../src/develop/imageop.c:1429
+#: ../src/develop/imageop.c:1433
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusión"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1434
+#: ../src/develop/imageop.c:1438
 msgctxt "accel"
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/develop/imageop.c:1435
+#: ../src/develop/imageop.c:1439
 msgctxt "accel"
 msgid "enable module"
 msgstr "activar módulo"
 
-#: ../src/develop/imageop.c:1437 ../src/libs/lib.c:614
+#: ../src/develop/imageop.c:1441 ../src/libs/lib.c:614
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reiniciar parámetros"
 
-#: ../src/develop/imageop.c:1438 ../src/libs/lib.c:618
+#: ../src/develop/imageop.c:1442 ../src/libs/lib.c:618
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menú de preajustes"
 
-#: ../src/develop/imageop.c:1958
+#: ../src/develop/imageop.c:1962
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3109,17 +3109,17 @@ msgstr ""
 "Gestión de acciones para el módulo\n"
 "Pulse el botón central para crear un módulo nuevo"
 
-#: ../src/develop/imageop.c:1969 ../src/libs/lib.c:984
+#: ../src/develop/imageop.c:1973 ../src/libs/lib.c:984
 msgid "reset parameters"
 msgstr "reiniciar parámetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1977 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1981 ../src/gui/preferences.c:484
 #: ../src/libs/lib.c:993
 msgid "presets"
 msgstr "Preajustes"
 
-#: ../src/develop/imageop.c:1979
+#: ../src/develop/imageop.c:1983
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3141,7 +3141,7 @@ msgstr "`%s' no es una mesa de luz XMP"
 #. tags
 #: ../src/develop/lightroom.c:1508 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:310 ../src/libs/image.c:477
-#: ../src/libs/import.c:580 ../src/libs/metadata_view.c:137
+#: ../src/libs/import.c:562 ../src/libs/metadata_view.c:138
 msgid "tags"
 msgstr "etiquetas"
 
@@ -3682,9 +3682,10 @@ msgid "reset value to default"
 msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:269
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1181
-#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1366
-#: ../src/libs/tagging.c:1534 ../src/libs/tagging.c:1754
+#: ../src/libs/geotagging.c:419 ../src/libs/metadata.c:384
+#: ../src/libs/tagging.c:1203 ../src/libs/tagging.c:1300
+#: ../src/libs/tagging.c:1388 ../src/libs/tagging.c:1566
+#: ../src/libs/tagging.c:1786
 msgid "cancel"
 msgstr "cancelar"
 
@@ -3717,11 +3718,11 @@ msgid "general"
 msgstr "general"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
+#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:440
 msgid "ignore JPEG files"
 msgstr "Ignorar archivos JPEG"
 
-#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
+#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:441
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -3730,31 +3731,27 @@ msgstr ""
 "directorio existen RAW+JPEG."
 
 #. default metadata
-#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
+#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:453
 msgid "apply metadata on import"
 msgstr "establecer los metadatos al importar"
 
-#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:469
+#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:454
 msgid "apply some metadata to all newly imported images."
 msgstr "establecer ciertos metadatos a todas las imágenes importadas."
 
-#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:510
+#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:493
 msgid "comma separated list of tags"
 msgstr "lista de etiquetas separadas por coma"
 
 #: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
-#: ../src/libs/import.c:565 ../src/libs/metadata.c:355
-#: ../src/libs/metadata_view.c:128
 msgid "creator"
 msgstr "autor"
 
 #: ../src/gui/camera_import_dialog.c:455 ../src/libs/collect.h:35
-#: ../src/libs/import.c:570 ../src/libs/metadata.c:356
 msgid "publisher"
 msgstr "editor"
 
 #: ../src/gui/camera_import_dialog.c:460 ../src/libs/collect.h:36
-#: ../src/libs/import.c:575 ../src/libs/metadata.c:357
 msgid "rights"
 msgstr "derechos"
 
@@ -4169,7 +4166,7 @@ msgid "normal images"
 msgstr "imagenes normales"
 
 #: ../src/gui/preferences.c:82 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:295
+#: ../src/libs/metadata_view.c:297
 msgid "raw"
 msgstr "RAW"
 
@@ -4216,25 +4213,25 @@ msgstr "módulo"
 
 #. exif
 #: ../src/gui/preferences.c:507 ../src/gui/preferences.c:1431
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:111
+#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:109
 msgid "model"
 msgstr "modelo"
 
 #: ../src/gui/preferences.c:511 ../src/gui/preferences.c:1439
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:112
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:110
 msgid "maker"
 msgstr "fabricante"
 
 #: ../src/gui/preferences.c:515 ../src/gui/preferences.c:1447
 #: ../src/gui/presets.c:445 ../src/libs/collect.h:36
-#: ../src/libs/metadata_view.c:113
+#: ../src/libs/metadata_view.c:111
 msgid "lens"
 msgstr "lente"
 
 #. iso
 #: ../src/gui/preferences.c:519 ../src/gui/preferences.c:1453
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:118
+#: ../src/libs/metadata_view.c:116
 msgid "ISO"
 msgstr "ISO"
 
@@ -4242,21 +4239,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:523 ../src/gui/preferences.c:1466
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:731 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:888 ../src/iop/relight.c:360 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:115
+#: ../src/libs/metadata_view.c:113
 msgid "exposure"
 msgstr "exposición"
 
 #. aperture
 #: ../src/gui/preferences.c:527 ../src/gui/preferences.c:1481
 #: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
-#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:114
+#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:112
 msgid "aperture"
 msgstr "apertura"
 
 #. focal length
 #: ../src/gui/preferences.c:531 ../src/gui/preferences.c:1496
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4881 ../src/libs/camera.c:580
-#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:116
+#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:114
 msgid "focal length"
 msgstr "longitud focal"
 
@@ -4331,8 +4328,8 @@ msgstr "Seleccionar el archivo a importar"
 
 #: ../src/gui/preferences.c:1183 ../src/gui/preferences.c:1267
 #: ../src/libs/collect.c:243 ../src/libs/copy_history.c:79
-#: ../src/libs/geotagging.c:474 ../src/libs/import.c:760
-#: ../src/libs/import.c:867 ../src/libs/styles.c:324
+#: ../src/libs/geotagging.c:474 ../src/libs/import.c:748
+#: ../src/libs/import.c:855 ../src/libs/styles.c:324
 msgid "_open"
 msgstr "_abrir"
 
@@ -4530,7 +4527,7 @@ msgstr "introduzca un nombre para el nuevo estilo"
 
 #. DT_COLLECTION_SORT_TITLE
 #: ../src/gui/styles_dialog.c:313 ../src/libs/collect.h:35
-#: ../src/libs/metadata.c:354 ../src/libs/tools/filter.c:156
+#: ../src/libs/tools/filter.c:156
 msgid "description"
 msgstr "descripción"
 
@@ -4662,13 +4659,10 @@ msgid "PDF"
 msgstr "PDF"
 
 #. title
-#. clang-format off
-#. xmp
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
 #: ../src/imageio/format/pdf.c:583 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/latex.c:185 ../src/imageio/storage/piwigo.c:857
-#: ../src/libs/collect.h:34 ../src/libs/metadata.c:353
-#: ../src/libs/metadata_view.c:127 ../src/libs/tools/filter.c:155
+#: ../src/libs/collect.h:34 ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "título"
 
@@ -7467,7 +7461,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "adquirir"
 
-#: ../src/iop/colortransfer.c:122 ../src/libs/metadata.c:316
+#: ../src/iop/colortransfer.c:122 ../src/libs/metadata.c:449
 msgctxt "accel"
 msgid "apply"
 msgstr "establecer"
@@ -7494,7 +7488,7 @@ msgstr "adquirir"
 msgid "analyze this image"
 msgstr "Analizar esta imagen"
 
-#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:399
+#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:667
 msgid "apply"
 msgstr "establecer"
 
@@ -8468,7 +8462,7 @@ msgstr ""
 
 #. geotagging
 #: ../src/iop/filmic.c:1763 ../src/iop/filmicrgb.c:1540
-#: ../src/libs/metadata_view.c:132
+#: ../src/libs/metadata_view.c:133
 msgid "latitude"
 msgstr "latitud"
 
@@ -9812,7 +9806,7 @@ msgstr ""
 "Esta compilación de darktable no es compatible con la tabla de búsqueda de "
 "color comprimida"
 
-#: ../src/iop/lut3d.c:525 ../src/iop/lut3d.c:762
+#: ../src/iop/lut3d.c:525 ../src/iop/lut3d.c:769 ../src/iop/lut3d.c:856
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
 msgstr "Error: el tamaño de LUT 3D %d excede el límite establecido"
@@ -9830,83 +9824,100 @@ msgstr "Error: no se pudo leer la imagen png %s"
 msgid "error - allocating buffer for png lut"
 msgstr "Error: asignar búfer para png lut"
 
-#: ../src/iop/lut3d.c:717
+#: ../src/iop/lut3d.c:724
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "Error: archivo CUBE no válido %s"
 
-#: ../src/iop/lut3d.c:731
+#: ../src/iop/lut3d.c:738
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMINIO MÍN <> 0.0 no es compatible"
 
-#: ../src/iop/lut3d.c:742
+#: ../src/iop/lut3d.c:749
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMINIO MÁX <> 0.0 no es compatible"
 
-#: ../src/iop/lut3d.c:751
+#: ../src/iop/lut3d.c:758
 msgid "[1D cube lut is not supported"
 msgstr "El cubo LUT 1D no es compatible"
 
-#: ../src/iop/lut3d.c:773
+#: ../src/iop/lut3d.c:780 ../src/iop/lut3d.c:875
 msgid "error - allocating buffer for cube lut"
 msgstr "Error: asignación de búfer para el cubo lut"
 
-#: ../src/iop/lut3d.c:784
+#: ../src/iop/lut3d.c:791 ../src/iop/lut3d.c:888
 msgid "error - cube lut size is not defined"
 msgstr "Error: el tamaño del cubo LUT no está definido"
 
-#: ../src/iop/lut3d.c:800
+#: ../src/iop/lut3d.c:807 ../src/iop/lut3d.c:914
 msgid "error - cube lut lines number is not correct"
 msgstr "Error: el número de líneas del cubo LUT no es correcto"
 
-#: ../src/iop/lut3d.c:1433
+#: ../src/iop/lut3d.c:835
+#, c-format
+msgid "error - invalid 3dl file: %s"
+msgstr "Error: el archivo 3DL %s no es válido"
+
+#: ../src/iop/lut3d.c:864
+#, c-format
+msgid "error - the maximum shaper lut value %d is too low"
+msgstr "Error: el valor del modelador máximo LUT %d es demasiado bajo"
+
+#: ../src/iop/lut3d.c:930
+msgid "error - the maximum lut value does not match any valid bit depth"
+msgstr ""
+"Error: el valor máximo LUT no coincide con ninguna profundidad de bit válida"
+
+#: ../src/iop/lut3d.c:1568
 msgid "Lut root folder not defined"
 msgstr "Carpeta raíz de LUT no está definida"
 
-#: ../src/iop/lut3d.c:1439
+#: ../src/iop/lut3d.c:1574
 msgid "select lut file"
 msgstr "seleccionar archivo LUT"
 
-#: ../src/iop/lut3d.c:1440
+#: ../src/iop/lut3d.c:1575
 msgid "_select"
 msgstr "seleccionar"
 
-#: ../src/iop/lut3d.c:1458
-msgid "hald cluts (png), 3D lut (cube) or gmic compressed lut (gmz)"
+#: ../src/iop/lut3d.c:1595
+msgid "hald cluts (png), 3D lut (cube or 3dl) or gmic compressed lut (gmz)"
 msgstr "Hald CLUT (png), LUT 3D (cube) o LUT comprimida de gmic (gmz)"
 
-#: ../src/iop/lut3d.c:1460
-msgid "hald cluts (png) or 3D lut (cube)"
+#: ../src/iop/lut3d.c:1597
+msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "Hald CLUT (png) o LUT 3D (cube)"
 
-#: ../src/iop/lut3d.c:1469 ../src/libs/copy_history.c:93
-#: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
+#: ../src/iop/lut3d.c:1606 ../src/libs/copy_history.c:93
+#: ../src/libs/geotagging.c:495 ../src/libs/import.c:778
 #: ../src/libs/styles.c:341
 msgid "all files"
 msgstr "todos los archivos"
 
-#: ../src/iop/lut3d.c:1484
+#: ../src/iop/lut3d.c:1621
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "No es posible seleccionar el archivo fuera de la carpeta raíz de LUT"
 
-#: ../src/iop/lut3d.c:1539
+#: ../src/iop/lut3d.c:1701
 msgid ""
-"select a png (haldclut), a cube or a gmz (compressed lut) file CAUTION: 3D "
+"select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
+"CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
+"before choosing the lut file"
+msgstr ""
+"ADVERTENCIA: antes de elegir un tipo de archivo LUT png (Hald CLUT), CUBE, "
+"3DL o gmz (LUT comprimida), la carpeta LUT 3D se debe indicar en "
+"preferencias->Opciones básicas->miscelánea"
+
+#: ../src/iop/lut3d.c:1705
+msgid ""
+"select a png (haldclut), a cube or a 3dl file  or a cube file CAUTION: 3D "
 "lut folder must be set in preferences/core options/miscellaneous before "
 "choosing the lut file"
 msgstr ""
-"La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
-"no los datos LUT en sí mismos)"
+"ADVERTENCIA: antes de elegir un archivo png (Hald CLUT), CUBE o 3DL, la "
+"carpeta LUT 3D se debe señalar en preferencias->Opciones básicas->miscelánea"
 
-#: ../src/iop/lut3d.c:1543
-msgid ""
-"select a png (haldclut) or a cube file CAUTION: 3D lut folder must be set in "
-"preferences/core options/miscellaneous before choosing the lut file"
-msgstr ""
-"La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
-"no los datos LUT en sí mismos)"
-
-#: ../src/iop/lut3d.c:1554
+#: ../src/iop/lut3d.c:1717
 msgid ""
 "the file path (relative to lut folder) is saved with image along with the "
 "lut data if it's a compressed lut (gmz)"
@@ -9914,7 +9925,7 @@ msgstr ""
 "La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
 "no los datos LUT en sí mismos)"
 
-#: ../src/iop/lut3d.c:1557
+#: ../src/iop/lut3d.c:1720
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
@@ -9922,55 +9933,55 @@ msgstr ""
 "La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
 "no los datos LUT en sí mismos)"
 
-#: ../src/iop/lut3d.c:1566
+#: ../src/iop/lut3d.c:1729
 msgid "enter lut name"
 msgstr "Introducir el nombre del LUT"
 
-#: ../src/iop/lut3d.c:1588
+#: ../src/iop/lut3d.c:1751
 msgid "select the LUT"
 msgstr "Seleccionar la Tabla de Búsqueda de Color"
 
-#: ../src/iop/lut3d.c:1601
+#: ../src/iop/lut3d.c:1764
 msgid "application color space"
 msgstr "espacio de color de la aplicación"
 
-#: ../src/iop/lut3d.c:1603
+#: ../src/iop/lut3d.c:1766
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/lut3d.c:1604
+#: ../src/iop/lut3d.c:1767
 msgid "gamma rec709 RGB"
 msgstr "RGB gamma Rec709"
 
-#: ../src/iop/lut3d.c:1605
+#: ../src/iop/lut3d.c:1768
 msgid "linear rec709 RGB"
 msgstr "RGB lineal Rec709"
 
-#: ../src/iop/lut3d.c:1606
+#: ../src/iop/lut3d.c:1769
 msgid "linear rec2020 RGB"
 msgstr "RGB lineal Rec2020"
 
-#: ../src/iop/lut3d.c:1608
+#: ../src/iop/lut3d.c:1771
 msgid "select the color space in which the LUT has to be applied"
 msgstr "Seleccionar el espacio de color en el que se debe aplicar el LUT"
 
-#: ../src/iop/lut3d.c:1612
+#: ../src/iop/lut3d.c:1775
 msgid "interpolation"
 msgstr "interpolación"
 
-#: ../src/iop/lut3d.c:1613
+#: ../src/iop/lut3d.c:1776
 msgid "tetrahedral"
 msgstr "tetraedro"
 
-#: ../src/iop/lut3d.c:1614
+#: ../src/iop/lut3d.c:1777
 msgid "trilinear"
 msgstr "trilineal"
 
-#: ../src/iop/lut3d.c:1615
+#: ../src/iop/lut3d.c:1778
 msgid "pyramid"
 msgstr "piramidal"
 
-#: ../src/iop/lut3d.c:1617
+#: ../src/iop/lut3d.c:1780
 msgid "select the interpolation method"
 msgstr "Eligir el método de interpolación"
 
@@ -10249,7 +10260,7 @@ msgstr "ancho"
 msgid "the fill-light in EV"
 msgstr "La luz de relleno en EV"
 
-#: ../src/iop/relight.c:366 ../src/libs/metadata_view.c:120
+#: ../src/iop/relight.c:366 ../src/libs/metadata_view.c:118
 #: ../src/libs/print_settings.c:1304
 msgid "width"
 msgstr "amplitud"
@@ -12016,7 +12027,7 @@ msgstr "tiempo"
 msgid "history"
 msgstr "historial"
 
-#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:102
+#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:100
 #: ../src/libs/tools/filter.c:147
 msgid "filename"
 msgstr "nombre"
@@ -12025,8 +12036,8 @@ msgstr "nombre"
 msgid "grouping"
 msgstr "agrupadas"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:105
-#: ../src/libs/metadata_view.c:300
+#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:103
+#: ../src/libs/metadata_view.c:302
 msgid "local copy"
 msgstr "copia local"
 
@@ -12396,7 +12407,7 @@ msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3322
+#: ../src/views/darkroom.c:3324
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -12429,8 +12440,8 @@ msgstr "tipo"
 msgid "edit metadata exportation"
 msgstr "Editar la exportación de metadatos"
 
-#: ../src/libs/export_metadata.c:269 ../src/libs/tagging.c:1366
-#: ../src/libs/tagging.c:1534
+#: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:384
+#: ../src/libs/tagging.c:1388 ../src/libs/tagging.c:1566
 msgid "save"
 msgstr "guardar"
 
@@ -12447,7 +12458,8 @@ msgid "export exif metadata"
 msgstr "Exportar metadatos Exif"
 
 #: ../src/libs/export_metadata.c:289 ../src/libs/image.c:355
-#: ../src/libs/image.c:491
+#: ../src/libs/image.c:491 ../src/libs/metadata.c:389
+#: ../src/libs/metadata.c:550
 msgid "metadata"
 msgstr "metadatos"
 
@@ -12883,7 +12895,7 @@ msgstr "pegar"
 msgid "paste selected metadata on selected images"
 msgstr "Pegar los metadatos elegidos en las imágenes seleccionadas"
 
-#: ../src/libs/image.c:514 ../src/libs/metadata.c:393
+#: ../src/libs/image.c:514 ../src/libs/metadata.c:660
 msgid "clear"
 msgstr "eliminar"
 
@@ -12996,101 +13008,101 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "desagrupar"
 
-#: ../src/libs/import.c:129
+#: ../src/libs/import.c:128
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "buscar dispositivos"
 
-#: ../src/libs/import.c:130
+#: ../src/libs/import.c:129
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importar desde la cámara"
 
-#: ../src/libs/import.c:131
+#: ../src/libs/import.c:130
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "captura"
 
-#: ../src/libs/import.c:132
+#: ../src/libs/import.c:131
 msgctxt "accel"
 msgid "import image"
 msgstr "importar imagen"
 
-#: ../src/libs/import.c:133
+#: ../src/libs/import.c:132
 msgctxt "accel"
 msgid "import folder"
 msgstr "importar carpeta"
 
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:225
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Dispositivo \"%s\" conectado en el puerto \"%s\"."
 
-#: ../src/libs/import.c:236
+#: ../src/libs/import.c:235
 msgid "import from camera"
 msgstr "importar desde la cámara"
 
-#: ../src/libs/import.c:242
+#: ../src/libs/import.c:241
 msgid "tethered shoot"
 msgstr "captura"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:266
+#: ../src/libs/import.c:265
 msgid "no supported devices found"
 msgstr "no se encontraron dispositivos compatibles"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:430
+#: ../src/libs/import.c:415
 msgid "import options"
 msgstr "opciones al importar"
 
 #. recursive opening.
-#: ../src/libs/import.c:448
+#: ../src/libs/import.c:433
 msgid "import directories recursively"
 msgstr "importar directorios recursivamente"
 
-#: ../src/libs/import.c:450
+#: ../src/libs/import.c:435
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "importar directorios recursivamente. cada directorio crea un nuevo carrete."
 
-#: ../src/libs/import.c:785
+#: ../src/libs/import.c:773
 msgid "supported images"
 msgstr "imágenes admitidas"
 
-#: ../src/libs/import.c:841
+#: ../src/libs/import.c:829
 msgid "file has unknown format!"
 msgstr "El archivo tiene un formato desconocido"
 
-#: ../src/libs/import.c:866
+#: ../src/libs/import.c:854
 msgid "import film"
 msgstr "importar sesión"
 
 #. add import single image buttons
-#: ../src/libs/import.c:982
+#: ../src/libs/import.c:970
 msgid "image..."
 msgstr "imagen..."
 
-#: ../src/libs/import.c:986
+#: ../src/libs/import.c:974
 msgid "select one or more images to import"
 msgstr "Seleccionar una o más imágenes para importar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:993
+#: ../src/libs/import.c:981
 msgid "folder..."
 msgstr "carpeta..."
 
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:985
 msgid "select a folder to import as film roll"
 msgstr "Seleccionar una carpeta para importar como carrete"
 
 #. add the rescan button
-#: ../src/libs/import.c:1006
+#: ../src/libs/import.c:994
 msgid "scan for devices"
 msgstr "buscar dispositivos"
 
-#: ../src/libs/import.c:1010
+#: ../src/libs/import.c:998
 msgid "scan for newly attached devices"
 msgstr "Buscar nuevos dispositivos conectados"
 
@@ -13195,7 +13207,7 @@ msgstr "id."
 msgid "overlay another image over the live view"
 msgstr "Superponer otra imagen sobre la visualización en vivo"
 
-#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:100
+#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:98
 msgid "image id"
 msgstr "imagen"
 
@@ -13352,148 +13364,179 @@ msgstr "remover figuras no usadas"
 msgid "created shapes"
 msgstr "figuras creadas"
 
-#: ../src/libs/metadata.c:56
+#: ../src/libs/metadata.c:52
 msgid "metadata editor"
 msgstr "editor de metadatos"
 
-#: ../src/libs/metadata.c:84
+#: ../src/libs/metadata.c:68
 msgid "<leave unchanged>"
 msgstr "<dejar sin cambios>"
 
-#: ../src/libs/metadata.c:315
+#: ../src/libs/metadata.c:383
+msgid "metadata settings"
+msgstr "Configuración de metadatos"
+
+#: ../src/libs/metadata.c:391
+msgid "hidden"
+msgstr "oculto"
+
+#: ../src/libs/metadata.c:393 ../src/libs/tagging.c:1419
+#: ../src/libs/tagging.c:1610
+msgid "private"
+msgstr "privado"
+
+#: ../src/libs/metadata.c:448
 msgctxt "accel"
 msgid "clear"
 msgstr "eliminar"
 
-#: ../src/libs/metadata.c:395
+#: ../src/libs/metadata.c:512
+msgid "metadata list"
+msgstr "lista de metadatos"
+
+#: ../src/libs/metadata.c:614
+msgid ""
+"metadata text. ctrl-wheel scroll to resize the text box\n"
+"if <leave unchanged> selected images have different metadata.\n"
+"in that case, right-click gives the possibility to choose one of them.\n"
+"press escape to exit the popup window"
+msgstr ""
+"Texto de los metadatos. \n"
+"Si <leave unchanged> las imágenes seleccionadas tienen diferentes "
+"metadatos,\n"
+"use Ctrl+Rueda del Ratón para cambia el tamaño del cuadro de texto.\n"
+"En dado caso, con clic secundario se puede de elegir una de ellas.\n"
+"Pulse Esc para salir de la ventana emergente."
+
+#: ../src/libs/metadata.c:662
 msgid "remove metadata from selected images"
 msgstr "Eliminar los metadatos de todas las imágenes seleccionadas"
 
-#: ../src/libs/metadata.c:401
+#: ../src/libs/metadata.c:669
 msgid "write metadata for selected images"
 msgstr "Establecer los metadatos en las imágenes seleccionadas"
 
+#: ../src/libs/metadata.c:677
+msgid "configure metadata"
+msgstr "configurar metadatos"
+
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:439
+#: ../src/libs/metadata.c:719
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:439
+#: ../src/libs/metadata.c:719
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Atribución (CC BY)"
 
-#: ../src/libs/metadata.c:440
+#: ../src/libs/metadata.c:720
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:440
+#: ../src/libs/metadata.c:720
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Atribución-Compartir Igual (CC BY-SA)"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:721
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:721
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Atribución-Sin Derivadas (CC BY-ND)"
 
-#: ../src/libs/metadata.c:442
+#: ../src/libs/metadata.c:722
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:442
+#: ../src/libs/metadata.c:722
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Atribución-No Comercial  (CC BY-NC)"
 
-#: ../src/libs/metadata.c:443
+#: ../src/libs/metadata.c:723
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:444
+#: ../src/libs/metadata.c:724
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Atribución-No Comercial-Compartir Igual (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:445
+#: ../src/libs/metadata.c:725
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:446
+#: ../src/libs/metadata.c:726
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Atribución-No Comercial-Sin Derivadas (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:447
+#: ../src/libs/metadata.c:727
 msgid "all rights reserved"
 msgstr "todos los derechos reservados"
 
-#: ../src/libs/metadata.c:447
+#: ../src/libs/metadata.c:727
 msgid "all rights reserved."
 msgstr "todos los derechos reservados."
 
 #. internal
-#: ../src/libs/metadata_view.c:99
+#: ../src/libs/metadata_view.c:97
 msgid "filmroll"
 msgstr "sesión"
 
 # Cámbio el orden de las palagras "grupo id" por la siguiente "id. grupo", ya que la primera proviene de "group id", en Español se pondría en el segundo caso, también le pongo "." a la abreviatura "id" para no confundirla con la acción de ir a un lugar
-#: ../src/libs/metadata_view.c:101
+#: ../src/libs/metadata_view.c:99
 msgid "group id"
 msgstr "id. grupo"
 
-#: ../src/libs/metadata_view.c:103
+#: ../src/libs/metadata_view.c:101
 msgid "version"
 msgstr "versión"
 
 #. DT_COLLECTION_SORT_GROUP
-#: ../src/libs/metadata_view.c:104 ../src/libs/tools/filter.c:153
+#: ../src/libs/metadata_view.c:102 ../src/libs/tools/filter.c:153
 msgid "full path"
 msgstr "ruta completa"
 
-#: ../src/libs/metadata_view.c:107
+#: ../src/libs/metadata_view.c:105
 msgid "flags"
 msgstr "banderas"
 
-#: ../src/libs/metadata_view.c:117
+#: ../src/libs/metadata_view.c:115
 msgid "focus distance"
 msgstr "distancia focal"
 
-#: ../src/libs/metadata_view.c:119
+#: ../src/libs/metadata_view.c:117
 msgid "datetime"
 msgstr "fecha/hora"
 
-#: ../src/libs/metadata_view.c:121 ../src/libs/print_settings.c:1308
+#: ../src/libs/metadata_view.c:119 ../src/libs/print_settings.c:1308
 msgid "height"
 msgstr "alto"
 
-#: ../src/libs/metadata_view.c:123
+#: ../src/libs/metadata_view.c:121
 msgid "export width"
 msgstr "ancho de exportación"
 
-#: ../src/libs/metadata_view.c:124
+#: ../src/libs/metadata_view.c:122
 msgid "export height"
 msgstr "altura de exportación"
 
-#: ../src/libs/metadata_view.c:129
-msgid "copyright"
-msgstr "derechos"
-
-#: ../src/libs/metadata_view.c:133
+#: ../src/libs/metadata_view.c:134
 msgid "longitude"
 msgstr "longitud"
 
-#: ../src/libs/metadata_view.c:134
+#: ../src/libs/metadata_view.c:135
 msgid "elevation"
 msgstr "elevación"
 
-#: ../src/libs/metadata_view.c:138
+#: ../src/libs/metadata_view.c:139
 msgid "categories"
 msgstr "categorías"
 
-#: ../src/libs/metadata_view.c:149
+#: ../src/libs/metadata_view.c:151
 msgid "image information"
 msgstr "información de la imagen"
 
-#: ../src/libs/metadata_view.c:261
+#: ../src/libs/metadata_view.c:263
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -13502,107 +13545,107 @@ msgstr ""
 "doble clic para saltar al carrete\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:292
+#: ../src/libs/metadata_view.c:294
 msgid "unused"
 msgstr "sin usar"
 
-#: ../src/libs/metadata_view.c:293
+#: ../src/libs/metadata_view.c:295
 msgid "unused/deprecated"
 msgstr "sin usar/sin soporte"
 
-#: ../src/libs/metadata_view.c:294
+#: ../src/libs/metadata_view.c:296
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:296
+#: ../src/libs/metadata_view.c:298
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:297
+#: ../src/libs/metadata_view.c:299
 msgid "marked for deletion"
 msgstr "marcado para ser eliminado"
 
-#: ../src/libs/metadata_view.c:298
+#: ../src/libs/metadata_view.c:300
 msgid "auto-applying presets applied"
 msgstr "ajustes automáticos establecidos"
 
-#: ../src/libs/metadata_view.c:299
+#: ../src/libs/metadata_view.c:301
 msgid "legacy flag. set for all new images"
 msgstr "Banderas (antiguo). Asignadas a todas las imágenes nuevas"
 
-#: ../src/libs/metadata_view.c:301
+#: ../src/libs/metadata_view.c:303
 msgid "has .txt"
 msgstr "tiene .txt"
 
-#: ../src/libs/metadata_view.c:302
+#: ../src/libs/metadata_view.c:304
 msgid "has .wav"
 msgstr "tiene .wav"
 
-#: ../src/libs/metadata_view.c:314
+#: ../src/libs/metadata_view.c:316
 msgid "image rejected"
 msgstr "imagen rechazada"
 
-#: ../src/libs/metadata_view.c:319
+#: ../src/libs/metadata_view.c:321
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "la imagen tiene %d estrella"
 msgstr[1] "la imagen tiene %d estrellas"
 
-#: ../src/libs/metadata_view.c:399 ../src/libs/snapshots.c:354
+#: ../src/libs/metadata_view.c:401 ../src/libs/snapshots.c:354
 msgid "unknown"
 msgstr "desconocido"
 
-#: ../src/libs/metadata_view.c:400
+#: ../src/libs/metadata_view.c:402
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:401
+#: ../src/libs/metadata_view.c:403
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:402
+#: ../src/libs/metadata_view.c:404
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:403
+#: ../src/libs/metadata_view.c:405
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:404
+#: ../src/libs/metadata_view.c:406
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:405
+#: ../src/libs/metadata_view.c:407
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:406
+#: ../src/libs/metadata_view.c:408
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:407
+#: ../src/libs/metadata_view.c:409
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:408
+#: ../src/libs/metadata_view.c:410
 msgid "rawspeed"
 msgstr "velocidad de disparo"
 
-#: ../src/libs/metadata_view.c:409
+#: ../src/libs/metadata_view.c:411
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:410
+#: ../src/libs/metadata_view.c:412
 msgid "avif"
 msgstr "avif"
 
-#: ../src/libs/metadata_view.c:415
+#: ../src/libs/metadata_view.c:417
 #, c-format
 msgid "loader: %s"
 msgstr "cargando: %s"
 
-#: ../src/libs/metadata_view.c:704
+#: ../src/libs/metadata_view.c:705
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "saltar al carrete"
@@ -14171,7 +14214,7 @@ msgid "deletes the selected style in list above"
 msgstr "Remover el estilo seleccionado de la lista anterior"
 
 #. import button
-#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2712
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2744
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
@@ -14213,25 +14256,25 @@ msgctxt "accel"
 msgid "redo last tag"
 msgstr "deshacer el último etiquetado"
 
-#: ../src/libs/tagging.c:1052
+#: ../src/libs/tagging.c:1074
 msgid "attach tag to all"
 msgstr "Añadir etiqueta a todas las imágenes"
 
-#: ../src/libs/tagging.c:1060 ../src/libs/tagging.c:1932
+#: ../src/libs/tagging.c:1082 ../src/libs/tagging.c:1964
 msgid "detach tag"
 msgstr "disociar etiqueta"
 
-#: ../src/libs/tagging.c:1180
+#: ../src/libs/tagging.c:1202
 msgid "delete tag?"
 msgstr "¿Borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1187 ../src/libs/tagging.c:1284
-#: ../src/libs/tagging.c:1540
+#: ../src/libs/tagging.c:1209 ../src/libs/tagging.c:1306
+#: ../src/libs/tagging.c:1572
 #, c-format
 msgid "tag: %s "
 msgstr "etiqueta: %s "
 
-#: ../src/libs/tagging.c:1194
+#: ../src/libs/tagging.c:1216
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -14246,85 +14289,81 @@ msgstr[1] ""
 "¿Desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:1230
+#: ../src/libs/tagging.c:1252
 #, c-format
 msgid "tag %s removed"
 msgstr "Etiqueta %s eliminada"
 
-#: ../src/libs/tagging.c:1277 ../src/libs/tagging.c:1944
+#: ../src/libs/tagging.c:1299 ../src/libs/tagging.c:1976
 msgid "delete branch"
 msgstr "borrar rama"
 
-#: ../src/libs/tagging.c:1291
+#: ../src/libs/tagging.c:1313
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> etiqueta se eliminará."
 msgstr[1] "<u>%d</u> etiqueta se eliminarán."
 
-#: ../src/libs/tagging.c:1296 ../src/libs/tagging.c:1552
-#: ../src/libs/tagging.c:1772
+#: ../src/libs/tagging.c:1318 ../src/libs/tagging.c:1584
+#: ../src/libs/tagging.c:1804
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> imagen se actualizará."
 msgstr[1] "<u>%d</u> imágenes se actualizarán."
 
-#: ../src/libs/tagging.c:1322
+#: ../src/libs/tagging.c:1344
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas eliminadas"
 
-#: ../src/libs/tagging.c:1365
+#: ../src/libs/tagging.c:1387
 msgid "create tag"
 msgstr "Crear etiqueta"
 
-#: ../src/libs/tagging.c:1375 ../src/libs/tagging.c:1560
+#: ../src/libs/tagging.c:1397 ../src/libs/tagging.c:1592
 msgid "name: "
 msgstr "nombre:"
 
-#: ../src/libs/tagging.c:1388
+#: ../src/libs/tagging.c:1410
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "añadir a: \"%s\" "
 
-#: ../src/libs/tagging.c:1394 ../src/libs/tagging.c:1575
+#: ../src/libs/tagging.c:1416 ../src/libs/tagging.c:1607
 msgid "category"
 msgstr "categoría"
 
-#: ../src/libs/tagging.c:1397 ../src/libs/tagging.c:1578
-msgid "private"
-msgstr "privado"
-
-#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1584
+#: ../src/libs/tagging.c:1425 ../src/libs/tagging.c:1616
 msgid "synonyms: "
 msgstr "sinónimos:"
 
-#: ../src/libs/tagging.c:1420 ../src/libs/tagging.c:1605
-#: ../src/libs/tagging.c:1794
+#: ../src/libs/tagging.c:1442 ../src/libs/tagging.c:1637
+#: ../src/libs/tagging.c:1826
 msgid "empty tag is not allowed, aborting"
 msgstr "No se permite una etiqueta en blanco. Abortando."
 
-#: ../src/libs/tagging.c:1422
+#: ../src/libs/tagging.c:1444
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr "El caracter '|' no se puede usar para crear una etiqueta. Abortando."
 
-#: ../src/libs/tagging.c:1437
+#: ../src/libs/tagging.c:1459
 msgid "tag name already exists. aborting."
 msgstr "El nombre de la etiqueta ya existe. Abortando."
 
-#: ../src/libs/tagging.c:1533
+#: ../src/libs/tagging.c:1565
 msgid "edit tag"
 msgstr "editar etiqueta"
 
-#: ../src/libs/tagging.c:1547 ../src/libs/tagging.c:1767
+#: ../src/libs/tagging.c:1579 ../src/libs/tagging.c:1799
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> etiqueta se actualizará."
 msgstr[1] "<u>%d</u> etiquetas se actualizarán."
 
-#: ../src/libs/tagging.c:1607
+#: ../src/libs/tagging.c:1639
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -14332,105 +14371,105 @@ msgstr ""
 "El caracter '|' no se puede usar para renombrar una etiqueta.\n"
 "Use cambiar ruta para modificar la jerarquía. Abortando."
 
-#: ../src/libs/tagging.c:1645
+#: ../src/libs/tagging.c:1677
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1753
+#: ../src/libs/tagging.c:1785
 msgid "rename path?"
 msgstr "¿confirma cambiar la ruta?"
 
-#: ../src/libs/tagging.c:1760
+#: ../src/libs/tagging.c:1792
 #, c-format
 msgid "selected path: %s "
 msgstr "Ruta seleccionada: %s "
 
-#: ../src/libs/tagging.c:1796
+#: ../src/libs/tagging.c:1828
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando."
 
-#: ../src/libs/tagging.c:1822
+#: ../src/libs/tagging.c:1854
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "Al menos un nombre de etiqueta nuevo (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1928
+#: ../src/libs/tagging.c:1960
 msgid "attach tag"
 msgstr "añadir etiqueta"
 
-#: ../src/libs/tagging.c:1940
+#: ../src/libs/tagging.c:1972
 msgid "delete tag"
 msgstr "borrar etiqueta"
 
-#: ../src/libs/tagging.c:1950
+#: ../src/libs/tagging.c:1982
 msgid "create tag..."
 msgstr "crear etiqueta..."
 
-#: ../src/libs/tagging.c:1954
+#: ../src/libs/tagging.c:1986
 msgid "edit tag..."
 msgstr "editar etiqueta..."
 
-#: ../src/libs/tagging.c:1963
+#: ../src/libs/tagging.c:1995
 msgid "rename path..."
 msgstr "cambiar la ruta..."
 
-#: ../src/libs/tagging.c:1970
+#: ../src/libs/tagging.c:2002
 msgid "copy to entry"
 msgstr "copiar al campo de texto"
 
-#: ../src/libs/tagging.c:1994
+#: ../src/libs/tagging.c:2026
 msgid "go to tag collection"
 msgstr "ir a la colección de etiquetas"
 
-#: ../src/libs/tagging.c:2000
+#: ../src/libs/tagging.c:2032
 msgid "go back to work"
 msgstr "regresar al trabajo"
 
-#: ../src/libs/tagging.c:2116
+#: ../src/libs/tagging.c:2148
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2117
+#: ../src/libs/tagging.c:2149
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2143
+#: ../src/libs/tagging.c:2175
 msgid "Select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
-#: ../src/libs/tagging.c:2146
+#: ../src/libs/tagging.c:2178
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/libs/tagging.c:2160
+#: ../src/libs/tagging.c:2192
 msgid "error importing tags"
 msgstr "Error al importar etiquetas"
 
-#: ../src/libs/tagging.c:2162
+#: ../src/libs/tagging.c:2194
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2184
+#: ../src/libs/tagging.c:2216
 msgid "Select file to export to"
 msgstr "Seleccione el archivo para exportar"
 
-#: ../src/libs/tagging.c:2187
+#: ../src/libs/tagging.c:2219
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/libs/tagging.c:2202
+#: ../src/libs/tagging.c:2234
 msgid "error exporting tags"
 msgstr "Error al exportar etiquetas"
 
-#: ../src/libs/tagging.c:2204
+#: ../src/libs/tagging.c:2236
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2564
+#: ../src/libs/tagging.c:2596
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -14442,43 +14481,43 @@ msgstr ""
 "Pulse clic secundario para mostrar más opciones\n"
 "Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana"
 
-#: ../src/libs/tagging.c:2575
+#: ../src/libs/tagging.c:2607
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:2578
+#: ../src/libs/tagging.c:2610
 msgid "attach tag to all selected images"
 msgstr "Añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2583
+#: ../src/libs/tagging.c:2615
 msgid "detach"
 msgstr "disociar"
 
-#: ../src/libs/tagging.c:2586
+#: ../src/libs/tagging.c:2618
 msgid "detach tag from all selected images"
 msgstr "Disociar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2593
+#: ../src/libs/tagging.c:2625
 msgid "toggle list with / without hierarchy"
 msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
-#: ../src/libs/tagging.c:2601
+#: ../src/libs/tagging.c:2633
 msgid "toggle sort by name or by count"
 msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
-#: ../src/libs/tagging.c:2611
+#: ../src/libs/tagging.c:2643
 msgid "toggle show or not darktable tags"
 msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
-#: ../src/libs/tagging.c:2627
+#: ../src/libs/tagging.c:2659
 msgid "enter tag name"
 msgstr "Introducir el nombre de la etiqueta"
 
-#: ../src/libs/tagging.c:2637
+#: ../src/libs/tagging.c:2669
 msgid "clear entry"
 msgstr "Borrar texto"
 
-#: ../src/libs/tagging.c:2689
+#: ../src/libs/tagging.c:2721
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -14490,11 +14529,11 @@ msgstr ""
 "para más opciones con clic secundario en la etiqueta seleccionada,\n"
 "Ctrl+Rueda del Ratón para redimensionar la ventana"
 
-#: ../src/libs/tagging.c:2704
+#: ../src/libs/tagging.c:2736
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:2707
+#: ../src/libs/tagging.c:2739
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -14502,28 +14541,28 @@ msgstr ""
 "Crear una nueva etiqueta con el\n"
 "nombre designado"
 
-#: ../src/libs/tagging.c:2715
+#: ../src/libs/tagging.c:2747
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importar etiquetas desde el archivo Lightroom"
 
-#: ../src/libs/tagging.c:2720
+#: ../src/libs/tagging.c:2752
 msgctxt "verb"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/libs/tagging.c:2723
+#: ../src/libs/tagging.c:2755
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exportar todas las etiquetas al archivo Lightroom"
 
-#: ../src/libs/tagging.c:2730
+#: ../src/libs/tagging.c:2762
 msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
-#: ../src/libs/tagging.c:2738
+#: ../src/libs/tagging.c:2770
 msgid "toggle list with / without suggestion"
 msgstr "Cambiar entre lista con o sin sugerencia"
 
-#: ../src/libs/tagging.c:2867
+#: ../src/libs/tagging.c:2899
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -15116,159 +15155,159 @@ msgstr "histograma y selector de color de perfiles ICC en %s o %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3314 ../src/views/map.c:892 ../src/views/print.c:330
+#: ../src/views/darkroom.c:3316 ../src/views/map.c:892 ../src/views/print.c:330
 #: ../src/views/tethering.c:397
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activar o desactivar la tira de imágenes"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3317
+#: ../src/views/darkroom.c:3319
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ampliar imagen"
 
-#: ../src/views/darkroom.c:3318
+#: ../src/views/darkroom.c:3320
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ampliar imagen hasta rellenar"
 
-#: ../src/views/darkroom.c:3319
+#: ../src/views/darkroom.c:3321
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ampliar imagen a ventana"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3325
+#: ../src/views/darkroom.c:3327
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagen siguiente"
 
-#: ../src/views/darkroom.c:3326
+#: ../src/views/darkroom.c:3328
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3329
+#: ../src/views/darkroom.c:3331
 msgctxt "accel"
 msgid "color assessment"
 msgstr "evaluación del color"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3332
+#: ../src/views/darkroom.c:3334
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "imagen virgen sobreexpuesta"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3335
+#: ../src/views/darkroom.c:3337
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexpuesto"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3338
+#: ../src/views/darkroom.c:3340
 msgctxt "accel"
 msgid "softproof"
 msgstr "prueba en pantalla"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3341
+#: ../src/views/darkroom.c:3343
 msgctxt "accel"
 msgid "gamut check"
 msgstr "revisión de gama"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3344
+#: ../src/views/darkroom.c:3346
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamaño del pincel"
 
-#: ../src/views/darkroom.c:3345
+#: ../src/views/darkroom.c:3347
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "reducir tamaño del pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3348
+#: ../src/views/darkroom.c:3350
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "incrementar dureza del pincel"
 
-#: ../src/views/darkroom.c:3349
+#: ../src/views/darkroom.c:3351
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "reducir dureza del pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3352
+#: ../src/views/darkroom.c:3354
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "incrementar opacidad del pincel"
 
-#: ../src/views/darkroom.c:3353
+#: ../src/views/darkroom.c:3355
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "reducir opacidad del pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3356
+#: ../src/views/darkroom.c:3358
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3359 ../src/views/lighttable.c:4448
+#: ../src/views/darkroom.c:3361 ../src/views/lighttable.c:4448
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3360 ../src/views/lighttable.c:4449
+#: ../src/views/darkroom.c:3362 ../src/views/lighttable.c:4449
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3363
+#: ../src/views/darkroom.c:3365
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "habilitar ampliación y desplazamiento mientras se editan las máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3366
+#: ../src/views/darkroom.c:3368
 msgctxt "accel"
 msgid "search modules"
 msgstr "buscar módulos"
 
-#: ../src/views/darkroom.c:3469
+#: ../src/views/darkroom.c:3471
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3474 ../src/views/lighttable.c:4595
+#: ../src/views/darkroom.c:3476 ../src/views/lighttable.c:4595
 msgid "zoom in the image"
 msgstr "ampliar la imagen"
 
-#: ../src/views/darkroom.c:3480
+#: ../src/views/darkroom.c:3482
 msgid "unbounded zoom in the image"
 msgstr "ampliar y reducir la vista de la imagen"
 
-#: ../src/views/darkroom.c:3485
+#: ../src/views/darkroom.c:3487
 msgid "zoom to 100% 200% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/darkroom.c:3491
+#: ../src/views/darkroom.c:3493
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] desplegar el módulo sin cerrar los otros"
 
-#: ../src/views/darkroom.c:3497
+#: ../src/views/darkroom.c:3499
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] reordenar módulos"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4211 ../src/views/darkroom.c:4229
+#: ../src/views/darkroom.c:4213 ../src/views/darkroom.c:4231
 msgid "darktable - darkroom preview"
 msgstr "darktable: vista previa del cuarto oscuro"
 
@@ -15605,6 +15644,9 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:2430
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid "copyright"
+#~ msgstr "derechos"
 
 #~ msgid "chroma (use on 1st instance)"
 #~ msgstr "crominancia (usar en un 1er módulo)"
