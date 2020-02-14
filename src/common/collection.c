@@ -1507,7 +1507,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         dt_iop_set_module_name_table();
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history AS h "
                                        "JOIN memory.module_names AS m ON m.operation = h.operation "
-                                       "WHERE m.name LIKE '%%%s%%'))", escaped_text);
+                                       "WHERE m.name LIKE '%s'))", escaped_text);
       }
       break;
 
