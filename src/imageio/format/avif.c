@@ -403,7 +403,8 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   switch (d->compression_type) {
   case AVIF_COMP_LOSSLESS:
-    encoder->speed = AVIF_SPEED_SLOWEST;
+    /* It isn't recommend to use the extremities */
+    encoder->speed = AVIF_SPEED_SLOWEST + 1;
 
     encoder->minQuantizer = AVIF_QUANTIZER_LOSSLESS;
     encoder->maxQuantizer = AVIF_QUANTIZER_LOSSLESS;
