@@ -2635,14 +2635,6 @@ void leave(dt_view_t *self)
 {
   _unregister_modules_drag_n_drop(self);
 
-  // ensure we have no active image remaining
-  if(darktable.view_manager->active_images)
-  {
-    g_slist_free(darktable.view_manager->active_images);
-    darktable.view_manager->active_images = NULL;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
-  }
-
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
                                (gpointer)self);

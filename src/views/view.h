@@ -362,8 +362,6 @@ typedef struct dt_view_manager_t
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
-      void (*set_position)(struct dt_view_t *view, uint32_t pos);
-      uint32_t (*get_position)(struct dt_view_t *view);
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
       void (*force_expose_all)(struct dt_view_t *view);
@@ -494,10 +492,6 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** gets the culling zoom mode */
 dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
-/** set first visible image offset */
-void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
-/** read first visible image offset */
-uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 /** force a full redraw of the lighttable */
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
 /** is the image visible in culling layout */
