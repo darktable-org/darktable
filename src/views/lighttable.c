@@ -64,30 +64,6 @@ DT_MODULE(1)
 //       fix so this value is shared.. DT_CTL_SET maybe ?
 #define DT_LIBRARY_MAX_ZOOM 13
 
-typedef enum dt_lighttable_direction_t
-{
-  DIRECTION_NONE = -1,
-  DIRECTION_UP = 0,
-  DIRECTION_DOWN = 1,
-  DIRECTION_LEFT = 2,
-  DIRECTION_RIGHT = 3,
-  DIRECTION_ZOOM_IN = 4,
-  DIRECTION_ZOOM_OUT = 5,
-  DIRECTION_TOP = 6,
-  DIRECTION_BOTTOM = 7,
-  DIRECTION_PGUP = 8,
-  DIRECTION_PGDOWN = 9,
-  DIRECTION_CENTER = 10,
-} dt_lighttable_direction_t;
-
-/*static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                         GdkModifierType modifier, gpointer data);
-static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data);*/
-/*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data);
-static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data);*/
 
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_custom_image_order_actif(const dt_view_t *self);
@@ -1625,34 +1601,114 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 }
 
-/*static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                         GdkModifierType modifier, gpointer data)
+static void _culling_move_start(dt_view_t *self)
 {
-  dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    move_view(lib, DIRECTION_TOP);
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  // reset culling layout
+  _culling_destroy_slots(self);
+  // go to the last image on the collection / selection
+  int imgid = -1;
+  gchar *query = NULL;
+  if(lib->culling_use_selection)
   {
-    // reset culling layout
-    _culling_destroy_slots(self);
-    // go to the last image on the collection / selection
+    query = dt_util_dstrcat(NULL, "SELECT s.imgid "
+                                  "FROM main.selected_images AS s, memory.collected_images AS m "
+                                  "WHERE s.imgid = m.imgid "
+                                  "ORDER BY m.rowid ASC LIMIT 1");
+  }
+  else
+  {
+    query = dt_util_dstrcat(NULL, "SELECT imgid "
+                                  "FROM memory.collected_images "
+                                  "ORDER BY rowid ASC LIMIT 1");
+  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(stmt != NULL)
+  {
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+  }
+  g_free(query);
+
+  // select this image
+  if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
+}
+
+static void _culling_move_end(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // reset culling layout
+  _culling_destroy_slots(self);
+  // go to the last image on the collection / selection
+  int imgid = -1;
+  gchar *query = NULL;
+  if(lib->culling_use_selection)
+  {
+    query = dt_util_dstrcat(NULL, "SELECT s.imgid "
+                                  "FROM main.selected_images AS s, memory.collected_images AS m "
+                                  "WHERE s.imgid = m.imgid "
+                                  "ORDER BY m.rowid DESC LIMIT 1");
+  }
+  else
+  {
+    query = dt_util_dstrcat(NULL, "SELECT imgid "
+                                  "FROM memory.collected_images "
+                                  "ORDER BY rowid DESC LIMIT 1");
+  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(stmt != NULL)
+  {
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+  }
+  g_free(query);
+
+  // select this image
+  if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
+}
+
+static void _culling_move_pageup(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+     || !lib->culling_use_selection)
+  {
+    // jump to the previous page
     int imgid = -1;
     gchar *query = NULL;
     if(lib->culling_use_selection)
     {
-      query = dt_util_dstrcat(NULL, "SELECT s.imgid "
-                                    "FROM main.selected_images AS s, memory.collected_images AS m "
-                                    "WHERE s.imgid = m.imgid "
-                                    "ORDER BY m.rowid ASC LIMIT 1");
+      query = dt_util_dstrcat(NULL,
+                              "SELECT nid FROM"
+                              " (SELECT s.imgid AS nid, m.rowid AS nrowid"
+                              " FROM main.selected_images AS s, memory.collected_images AS m"
+                              " WHERE s.imgid = m.imgid AND m.rowid <"
+                              " (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
+                              " ORDER BY m.rowid DESC LIMIT %d) "
+                              "ORDER BY nrowid ASC LIMIT 1",
+                              lib->slots[0].imgid, lib->slots_count);
     }
     else
     {
-      query = dt_util_dstrcat(NULL, "SELECT imgid "
-                                    "FROM memory.collected_images "
-                                    "ORDER BY rowid ASC LIMIT 1");
+      query = dt_util_dstrcat(NULL,
+                              "SELECT imgid FROM"
+                              " (SELECT imgid, rowid"
+                              " FROM memory.collected_images"
+                              " WHERE rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
+                              " ORDER BY rowid DESC LIMIT %d) "
+                              "ORDER BY rowid LIMIT 1",
+                              lib->slots[0].imgid, lib->slots_count);
     }
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1669,40 +1725,36 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     // select this image
     if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
   }
-  else
-    lib->offset = 0;
-  dt_control_queue_redraw_center();
-  return TRUE;
 }
 
-static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
+static void _culling_move_pagedown(dt_view_t *self)
 {
-  dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    move_view(lib, DIRECTION_BOTTOM);
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+     || !lib->culling_use_selection)
   {
-    // reset culling layout
-    _culling_destroy_slots(self);
-    // go to the last image on the collection / selection
+    // jump to the first "not visible" image
     int imgid = -1;
     gchar *query = NULL;
     if(lib->culling_use_selection)
     {
-      query = dt_util_dstrcat(NULL, "SELECT s.imgid "
-                                    "FROM main.selected_images AS s, memory.collected_images AS m "
-                                    "WHERE s.imgid = m.imgid "
-                                    "ORDER BY m.rowid DESC LIMIT 1");
+      query = dt_util_dstrcat(NULL,
+                              "SELECT s.imgid "
+                              "FROM main.selected_images AS s, memory.collected_images AS m "
+                              "WHERE s.imgid = m.imgid AND m.rowid >"
+                              " (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                              "ORDER BY m.rowid LIMIT 1",
+                              lib->slots[lib->slots_count - 1].imgid);
     }
     else
     {
-      query = dt_util_dstrcat(NULL, "SELECT imgid "
-                                    "FROM memory.collected_images "
-                                    "ORDER BY rowid DESC LIMIT 1");
+      query = dt_util_dstrcat(NULL,
+                              "SELECT imgid "
+                              "FROM memory.collected_images "
+                              "WHERE rowid > (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                              "ORDER BY rowid LIMIT 1",
+                              lib->slots[lib->slots_count - 1].imgid);
     }
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1719,143 +1771,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     // select this image
     if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
   }
-  else
-    lib->offset = 0x1fffffff;
-  dt_control_queue_redraw_center();
-  return TRUE;
-}*/
-
-/*static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
-
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    move_view(lib, DIRECTION_PGUP);
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
-       || !lib->culling_use_selection)
-    {
-      // jump to the previous page
-      int imgid = -1;
-      gchar *query = NULL;
-      if(lib->culling_use_selection)
-      {
-        query = dt_util_dstrcat(NULL,
-                                "SELECT nid FROM"
-                                " (SELECT s.imgid AS nid, m.rowid AS nrowid"
-                                " FROM main.selected_images AS s, memory.collected_images AS m"
-                                " WHERE s.imgid = m.imgid AND m.rowid <"
-                                " (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
-                                " ORDER BY m.rowid DESC LIMIT %d) "
-                                "ORDER BY nrowid ASC LIMIT 1",
-                                lib->slots[0].imgid, lib->slots_count);
-      }
-      else
-      {
-        query = dt_util_dstrcat(NULL,
-                                "SELECT imgid FROM"
-                                " (SELECT imgid, rowid"
-                                " FROM memory.collected_images"
-                                " WHERE rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
-                                " ORDER BY rowid DESC LIMIT %d) "
-                                "ORDER BY rowid LIMIT 1",
-                                lib->slots[0].imgid, lib->slots_count);
-      }
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(stmt != NULL)
-      {
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          imgid = sqlite3_column_int(stmt, 0);
-        }
-        sqlite3_finalize(stmt);
-      }
-      g_free(query);
-
-      // select this image
-      if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
-    }
-  }
-  else
-  {
-    const int iir = get_zoom();
-    const int scroll_by_rows = 4; // This should be the number of visible rows.
-    const int offset_delta = scroll_by_rows * iir;
-    lib->offset = MAX(lib->offset - offset_delta, 0);
-  }
-  dt_control_queue_redraw_center();
-  return TRUE;
 }
-
-static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
-
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-  {
-    move_view(lib, DIRECTION_PGDOWN);
-  }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
-       || !lib->culling_use_selection)
-    {
-      // jump to the first "not visible" image
-      int imgid = -1;
-      gchar *query = NULL;
-      if(lib->culling_use_selection)
-      {
-        query = dt_util_dstrcat(NULL,
-                                "SELECT s.imgid "
-                                "FROM main.selected_images AS s, memory.collected_images AS m "
-                                "WHERE s.imgid = m.imgid AND m.rowid >"
-                                " (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
-                                "ORDER BY m.rowid LIMIT 1",
-                                lib->slots[lib->slots_count - 1].imgid);
-      }
-      else
-      {
-        query = dt_util_dstrcat(NULL,
-                                "SELECT imgid "
-                                "FROM memory.collected_images "
-                                "WHERE rowid > (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
-                                "ORDER BY rowid LIMIT 1",
-                                lib->slots[lib->slots_count - 1].imgid);
-      }
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(stmt != NULL)
-      {
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          imgid = sqlite3_column_int(stmt, 0);
-        }
-        sqlite3_finalize(stmt);
-      }
-      g_free(query);
-
-      // select this image
-      if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
-    }
-  }
-  else
-  {
-    const int iir = get_zoom();
-    const int scroll_by_rows = 4; // This should be the number of visible rows.
-    const int offset_delta = scroll_by_rows * iir;
-    lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
-  }
-  dt_control_queue_redraw_center();
-  return TRUE;
-}*/
 
 static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
@@ -2793,7 +2709,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         move = DT_THUMBTABLE_MOVE_END;
     }
 
-
     if(move != DT_THUMBTABLE_MOVE_NONE)
     {
       // for this layout navigation keys are managed directly by thumbtable
@@ -2802,68 +2717,72 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
   }
 
-  // key move left
-  if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+  else if(lib->full_preview_id > 0)
   {
-    if(lib->full_preview_id > -1)
+    if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+       || (key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+       || (key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods))
     {
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
+      lib->track = -1;
       if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
+      return TRUE;
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+            || (key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+            || (key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods))
+    {
+      lib->track = +1;
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
+      return TRUE;
+    }
+    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
+    {
+      // TODO
+      return TRUE;
+    }
+    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
+    {
+      // TODO
+      return TRUE;
+    }
+  }
+
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+       || (key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods))
     {
       lib->track = -1;
       _culling_scroll(lib, TRUE);
+      return TRUE;
     }
-    return 1;
-  }
-
-  // key move right
-  if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-  {
-    if(lib->full_preview_id > -1)
-    {
-      lib->track = +DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
-    }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+            || (key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods))
     {
       lib->track = 1;
       _culling_scroll(lib, FALSE);
+      return TRUE;
     }
-    return 1;
-  }
-
-  // key move up
-  if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
-  {
-    if(lib->full_preview_id > -1)
+    else if(key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods)
     {
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
+      _culling_move_pageup(self);
+      return TRUE;
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if(key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods)
     {
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
-      _culling_scroll(lib, TRUE);
+      _culling_move_pagedown(self);
+      return TRUE;
     }
-    return 1;
-  }
-
-  // key move donw
-  if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
-  {
-    if(lib->full_preview_id > -1)
+    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
     {
-      lib->track = +DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
+      _culling_move_start(self);
+      return TRUE;
     }
-    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
     {
-      lib->track = DT_LIBRARY_MAX_ZOOM;
-      _culling_scroll(lib, FALSE);
+      _culling_move_end(self);
+      return TRUE;
     }
-    return 1;
   }
 
   // zoom out key
