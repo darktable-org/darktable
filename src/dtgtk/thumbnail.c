@@ -358,6 +358,17 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   }
 }
 
+static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb || thumb->imgid != imgid) return;
+
+  // reset surface
+  if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+  thumb->img_surf = NULL;
+}
+
 static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -422,6 +433,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
                               G_CALLBACK(_dt_active_images_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                              G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();

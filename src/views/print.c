@@ -56,7 +56,7 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_PRINT;
 }
 
-static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _print_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }

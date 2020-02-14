@@ -261,7 +261,7 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
-static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
