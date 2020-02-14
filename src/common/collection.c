@@ -1518,8 +1518,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
         }
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.module_order WHERE version "
-                                       "= %d))", i);
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.module_order "
+                                       "WHERE version = %d))", i);
       }
       break;
 
