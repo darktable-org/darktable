@@ -80,7 +80,7 @@ include(ConfigureChecks.cmake)
 include(CheckCCompilerFlag)
 
 # Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
   set(SOURCE_PACKAGE 1)
 else()
   set(SOURCE_PACKAGE 0)
