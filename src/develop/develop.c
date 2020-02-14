@@ -2312,19 +2312,10 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  int result = dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
-  for(size_t idx=0; idx<points_count; idx++) {
-    points[idx*2] *= dev->preview_downsampling;
-    points[idx*2+1] *= dev->preview_downsampling;
-  }
-  return result;
+  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  for(size_t idx=0; idx<points_count; idx++) {
-    points[idx*2] /= dev->preview_downsampling;
-    points[idx*2+1] /= dev->preview_downsampling;
-  }
   return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
@@ -2356,11 +2347,29 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
     pieces = g_list_next(pieces);
   }
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  if (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+      || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+      || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL) {
+    for(size_t idx=0; idx<points_count; idx++) {
+      points[idx*2] *= dev->preview_downsampling;
+      points[idx*2+1] *= dev->preview_downsampling;
+    }
+  }
+
   return 1;
 }
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count)
 {
+  if (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+      || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+      || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL) {
+    for(size_t idx=0; idx<points_count; idx++) {
+      points[idx*2] /= dev->preview_downsampling;
+      points[idx*2+1] /= dev->preview_downsampling;
+    }
+  }
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
