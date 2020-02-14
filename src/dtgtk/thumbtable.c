@@ -1192,8 +1192,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     const double start = dt_get_wtime();
     table->dragging = FALSE;
     sqlite3_stmt *stmt;
-    printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d ...\n", force, table->view_width,
-           table->view_height, table->thumbs_per_row, table->rows, table->thumb_size);
+    printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d offset=%d ...\n", force,
+           table->view_width, table->view_height, table->thumbs_per_row, table->rows, table->thumb_size,
+           table->offset);
 
     int posx = 0;
     int posy = 0;
