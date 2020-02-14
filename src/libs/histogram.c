@@ -78,7 +78,7 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
 {
-  float border = MIN(width * .05, height * .05);
+  const float border = MIN(width * .05, height * .05);
   cairo_rectangle(cr, x + border, y + border, width - 2.0 * border, height - 2.0 * border);
   cairo_fill_preserve(cr);
   if(state)
@@ -333,7 +333,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   dt_develop_t *dev = darktable.develop;
 
   /* check if exposure hooks are available */
-  gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
+  const gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
 
   if(!hooks_available) return TRUE;
 
@@ -435,7 +435,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   /* check if exposure hooks are available */
-  gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
+  const gboolean hooks_available = dt_dev_exposure_hooks_available(darktable.develop);
 
   if(!hooks_available) return TRUE;
 
@@ -495,8 +495,8 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  float ce = dt_dev_exposure_get_exposure(darktable.develop);
-  float cb = dt_dev_exposure_get_black(darktable.develop);
+  const float ce = dt_dev_exposure_get_exposure(darktable.develop);
+  const float cb = dt_dev_exposure_get_black(darktable.develop);
 
   int delta_y;
   // note are using unit rather than smooth scroll events, as
@@ -548,7 +548,7 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
   dt_lib_module_t *self = (dt_lib_module_t *)data;
 
   // Get the state
-  gint visible = dt_lib_is_visible(self);
+  const gint visible = dt_lib_is_visible(self);
 
   // Inverse the visibility
   dt_lib_set_visible(self, !visible);
