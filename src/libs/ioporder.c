@@ -104,18 +104,18 @@ void update(dt_lib_module_t *self)
     if(!found)
     {
       d->current_mode = DT_IOP_ORDER_CUSTOM;
-      gtk_label_set_text(GTK_LABEL(d->widget), _("custom"));
+      gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_CUSTOM)));
     }
   }
   else if(kind == DT_IOP_ORDER_LEGACY)
   {
     d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _("legacy"));
+    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_LEGACY)));
   }
   else if(kind == DT_IOP_ORDER_V30)
   {
     d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _("v3.0"));
+    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_V30)));
   }
 }
 

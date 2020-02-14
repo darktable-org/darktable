@@ -1502,6 +1502,23 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, "(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
       break;
 
+    case DT_COLLECTION_PROP_MODULE: // dev module
+      query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history WHERE operation "
+                                     "LIKE '%%%s%%'))", escaped_text);
+      break;
+
+    case DT_COLLECTION_PROP_ORDER: // iop order
+      {
+        int i = 0;
+        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+        {
+          if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+        }
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.module_order WHERE version "
+                                       "= %d))", i);
+      }
+      break;
+
     default:
       // we shouldn't be here
       break;
