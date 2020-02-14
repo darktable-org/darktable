@@ -1508,6 +1508,40 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    _("group leaders"),  _("group followers"), where_ext);
         break;
 
+      case DT_COLLECTION_PROP_MODULE: // module
+        snprintf(query, sizeof(query),
+                 "SELECT operation, 1, COUNT(*) AS count"
+                 " FROM main.images AS mi"
+                 " JOIN "
+                 "   (SELECT imgid, operation FROM main.history) h"
+                 "  ON h.imgid = mi.id"
+                 " WHERE %s"
+                 " GROUP BY operation"
+                 " ORDER BY operation",
+                 where_ext);
+        break;
+
+      case DT_COLLECTION_PROP_ORDER: // modules order
+        {
+          char *orders = NULL;
+          for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ", i, _(dt_iop_order_string(i)));
+          }
+          snprintf(query, sizeof(query),
+                   "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " JOIN "
+                   "   (SELECT imgid, version FROM main.module_order) mo"
+                   "  ON mo.imgid = mi.id"
+                   " WHERE %s"
+                   " GROUP BY ver"
+                   " ORDER BY ver",
+                   orders, where_ext);
+          g_free(orders);
+        }
+        break;
+
       default: // filmroll
         g_snprintf(query, sizeof(query),
                    "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1588,7 +1622,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
                     || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
                     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-                    || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO))
+                    || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO
+                    || property == DT_COLLECTION_PROP_MODULE || property == DT_COLLECTION_PROP_ORDER))
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
@@ -2178,7 +2213,10 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
-    for(int k = 0; k < dt_lib_collect_string_cnt; k++)
+    // skip module and order if not configured
+    const int count = dt_conf_get_bool("plugins/lighttable/collect/module")
+                      ? dt_lib_collect_string_cnt : dt_lib_collect_string_cnt - 2;
+    for(int k = 0; k < count; k++)
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
@@ -2451,6 +2489,8 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GROUPING);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_MODULE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ORDER);
 
 }
 #endif

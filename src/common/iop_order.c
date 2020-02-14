@@ -53,6 +53,18 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
                       "tree-vectorize")
 #endif
 
+const char *iop_order_string[] =
+{
+  N_("custom"),
+  N_("legacy"),
+  N_("v3.0")
+};
+
+const char *dt_iop_order_string(const int i)
+{
+  return iop_order_string[i];
+}
+
 // note legacy_order & v30_order have the original iop-order double that is
 // used only for the initial database migration.
 //
