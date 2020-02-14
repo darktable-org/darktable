@@ -462,7 +462,7 @@ static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_c
   _lib_duplicate_init_callback(instance, self);
 }
 
-static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
+static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   // we reset the final size of the current image
