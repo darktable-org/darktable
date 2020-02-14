@@ -2204,15 +2204,11 @@ void dt_iop_set_module_name_table()
     {
       dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
       module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module->name());
-//      char *module_name = g_markup_escape_text(module->name(), -1);
-//      module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module_name);
-//      g_free(module_name);
       iop = g_list_next(iop);
     }
     if(module_list)
     {
       module_list[strlen(module_list) - 1] = '\0';
-
       char *query = dt_util_dstrcat(NULL, "INSERT INTO memory.module_names (operation, name) VALUES %s", module_list);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       sqlite3_step(stmt);

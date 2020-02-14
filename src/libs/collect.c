@@ -1514,7 +1514,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
           snprintf(query, sizeof(query),
                  "SELECT m.name AS module_name, 1, COUNT(*) AS count"
                  " FROM main.images AS mi"
-                 " JOIN (SELECT imgid, operation FROM main.history) AS h"
+                 " JOIN (SELECT DISTINCT imgid, operation FROM main.history) AS h"
                  "  ON h.imgid = mi.id"
                  " JOIN memory.module_names AS m"
                  "  ON m.operation = h.operation"
@@ -1535,8 +1535,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
           snprintf(query, sizeof(query),
                    "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
-                   " JOIN "
-                   "   (SELECT imgid, version FROM main.module_order) mo"
+                   " JOIN (SELECT imgid, version FROM main.module_order) mo"
                    "  ON mo.imgid = mi.id"
                    " WHERE %s"
                    " GROUP BY ver"
