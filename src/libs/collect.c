@@ -1509,16 +1509,20 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       case DT_COLLECTION_PROP_MODULE: // module
-        snprintf(query, sizeof(query),
-                 "SELECT operation, 1, COUNT(*) AS count"
+        {
+          dt_iop_set_module_name_table();
+          snprintf(query, sizeof(query),
+                 "SELECT m.name AS module_name, 1, COUNT(*) AS count"
                  " FROM main.images AS mi"
-                 " JOIN "
-                 "   (SELECT imgid, operation FROM main.history) h"
+                 " JOIN (SELECT imgid, operation FROM main.history) AS h"
                  "  ON h.imgid = mi.id"
+                 " JOIN memory.module_names AS m"
+                 "  ON m.operation = h.operation"
                  " WHERE %s"
-                 " GROUP BY operation"
-                 " ORDER BY operation",
+                 " GROUP BY module_name"
+                 " ORDER BY module_name",
                  where_ext);
+        }
         break;
 
       case DT_COLLECTION_PROP_ORDER: // modules order
