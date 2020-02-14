@@ -644,6 +644,9 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
 /** returns module with op + multi_priority or NULL if not found on the list, if multi_priority == -1 do not checl for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 
+// to be called before issuing any query based on memory.module_names
+void dt_iop_set_module_name_table();
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -2184,6 +2184,44 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   sqlite3_finalize(stmt);
 }
 
+// to be called before issuing any query based on memory.module_names
+void dt_iop_set_module_name_table()
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM memory.module_names",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  const guint count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if (!count)
+  {
+    gchar *module_list = NULL;
+    GList *iop = g_list_first(darktable.iop);
+    while(iop != NULL)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+      char *module_name = g_markup_escape_text(module->name(), -1);
+      module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module_name);
+      g_free(module_name);
+      iop = g_list_next(iop);
+    }
+    if(module_list)
+    {
+      module_list[strlen(module_list) - 1] = '\0';
+
+      char *query = dt_util_dstrcat(NULL, "INSERT INTO memory.module_names (operation, name) VALUES %s", module_list);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      g_free(query);
+      g_free(module_list);
+    }
+  }
+}
+
 gchar *dt_iop_get_localized_name(const gchar *op)
 {
   // Prepare mapping op -> localized name
