@@ -399,9 +399,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         }
         else
         {
-          int is_match = (g_strstr_len(g_utf8_casefold(dt_iop_get_localized_name(module->op), -1), -1,
-                                       g_utf8_casefold(text_entered, -1))
-                          != NULL);
+          const int is_match = (g_strstr_len(g_utf8_casefold(dt_iop_get_localized_name(module->op), -1), -1,
+                                             g_utf8_casefold(text_entered, -1))
+                                != NULL);
 
           if(is_match)
             gtk_widget_show(w);
