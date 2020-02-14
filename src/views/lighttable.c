@@ -143,7 +143,8 @@ typedef struct dt_library_t
   int full_preview_sticky;
   int32_t full_preview_id;
   int32_t full_preview_rowid;
-  gboolean full_preview_follow_sel;
+  gboolean full_preview_follow_sel; // should the selection follow the active image ?
+  gboolean full_preview_inside_sel; // do we navigate only in side the selection ?
   int display_focus;
   int images_in_row;
   dt_lighttable_layout_t current_layout;
@@ -391,6 +392,17 @@ static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self
       if(lib->full_preview_id != imgid)
       {
         lib->full_preview_id = imgid;
+        lib->full_preview_follow_sel = FALSE;
+        lib->full_preview_inside_sel = FALSE;
+        dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
+        lib->full_preview_rowid = dt_ui_thumbtable(darktable.gui->ui)->offset;
+        dt_control_set_mouse_over_id(lib->full_preview_id);
+        // set the active image
+        g_slist_free(darktable.view_manager->active_images);
+        darktable.view_manager->active_images = NULL;
+        darktable.view_manager->active_images
+            = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
+        dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
         dt_control_queue_redraw_center();
       }
       g_list_free(first_selected);
@@ -1374,31 +1386,21 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   // only look for images to preload or update the one shown when we moved to another image
   if(offset != 0)
   {
-    /* If more than one image is selected, iterate over these. */
-    /* If only one image is selected, scroll through all known images. */
-    sqlite3_stmt *stmt;
-    int sel_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT count(*) FROM memory.collected_images AS col, main.selected_images as sel "
-                                "WHERE col.imgid=sel.imgid",
-                                -1, &stmt, NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
     /* How many images to preload in advance. */
     int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
     gboolean preload = preload_num > 0;
     preload_num = CLAMPS(preload_num, 1, 99999);
 
+    sqlite3_stmt *stmt;
     gchar *stmt_string
         = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
                           "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                          (sel_count <= 1) ?
-                                           /* We want to operate on the currently collected images,
-                                            * so there's no need to match against the selection */
+                          (!lib->full_preview_inside_sel) ?
+                                                          /* We want to operate on the currently collected images,
+                                                           * so there's no need to match against the selection */
                               ""
-                                           :
-                                           /* Limit the matches to the current selection */
+                                                          :
+                                                          /* Limit the matches to the current selection */
                               "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
                           (offset >= 0) ? ">" : "<", lib->full_preview_rowid,
                           /* Direction of our navigation -- when showing for the first time,
@@ -1429,6 +1431,13 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
         darktable.view_manager->active_images
             = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
         dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+        // selection_follow
+        if(lib->full_preview_follow_sel)
+        {
+          lib->select_deactivate = TRUE;
+          dt_selection_select_single(darktable.selection, lib->full_preview_id);
+          lib->select_deactivate = FALSE;
+        }
       }
       /* Store the image details for preloading, see below. */
       preload_stack[count] = sqlite3_column_int(stmt, 0);
@@ -1457,6 +1466,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   lib->image_over = DT_VIEW_DESERT;
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG);
   cairo_paint(cr);
+
+  lib->last_mouse_over_id = lib->full_preview_id;
 
   const int frows = 5, fcols = 5;
   if(lib->display_focus)
@@ -2042,6 +2053,8 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   sqlite3_stmt *stmt;
   int nb_sel = 0;
   uint32_t imgid_sel = -1;
+  lib->full_preview_follow_sel = FALSE;
+  lib->full_preview_inside_sel = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
                               "WHERE col.imgid=sel.imgid",
@@ -2049,14 +2062,16 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     nb_sel++;
-    if(nb_sel > 1) break;
     imgid_sel = sqlite3_column_int(stmt, 0);
+    if(nb_sel > 1 && imgid_sel == lib->full_preview_id)
+    {
+      lib->full_preview_inside_sel = TRUE;
+      break;
+    }
   }
   sqlite3_finalize(stmt);
   if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
     lib->full_preview_follow_sel = TRUE;
-  else
-    lib->full_preview_follow_sel = FALSE;
 
   // show/hide filmstrip & timeline when entering the view
   dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
@@ -2120,7 +2135,7 @@ static void _preview_quit(dt_view_t *self)
                        TRUE); // always on, visibility is driven by panel state
 
     // set offset back
-    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
+    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, TRUE);
 
     // we need to show thumbtable
     if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
