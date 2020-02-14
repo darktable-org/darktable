@@ -25,6 +25,7 @@
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -444,7 +445,7 @@ void enter(dt_view_t *self)
 
   g_list_free(selected);
 
-  d->buf[S_CURRENT].rank = selrank == -1 ? dt_view_lighttable_get_position(darktable.view_manager) : selrank;
+  d->buf[S_CURRENT].rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
   d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
 
@@ -475,7 +476,7 @@ void leave(dt_view_t *self)
   // otherwise we will crash releasing lock and memory.
   while(d->exporting > 0) sleep(1);
 
-  dt_view_lighttable_set_position(darktable.view_manager, d->buf[S_CURRENT].rank);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), d->buf[S_CURRENT].rank, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
