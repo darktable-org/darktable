@@ -1503,8 +1503,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
-      query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history WHERE operation "
-                                     "LIKE '%%%s%%'))", escaped_text);
+      {
+        dt_iop_set_module_name_table();
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history AS h "
+                                       "JOIN memory.module_names AS m ON m.operation = h.operation "
+                                       "WHERE m.name LIKE '%%%s%%'))", escaped_text);
+      }
       break;
 
     case DT_COLLECTION_PROP_ORDER: // iop order
