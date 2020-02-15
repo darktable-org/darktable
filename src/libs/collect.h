@@ -37,7 +37,7 @@ const char *dt_lib_collect_string[] = { N_("film roll"),    N_("folders"),     N
                                         N_("ISO"),          N_("aperture"),    N_("exposure"),
                                         N_("aspect ratio"), N_("filename"),    N_("geotagging"),
                                         N_("grouping"),     N_("local copy"),
-                                        // last two ones - skipped if not configured in darktablerc
+                                        // last two ones - skipped if set hidden in darktablerc
                                         N_("module"),       N_("order")};
 const int dt_lib_collect_string_cnt = sizeof(dt_lib_collect_string) / sizeof(dt_lib_collect_string[0]);
 
