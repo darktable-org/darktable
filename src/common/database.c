@@ -1290,8 +1290,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             GList *next = g_list_next(l);
             if(next
-               && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
-                         ((dt_iop_order_entry_t *)(next->data))->operation))
+               && (strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                          ((dt_iop_order_entry_t *)(next->data))->operation) == 0))
             {
               has_multiple_instances = TRUE;
               break;
