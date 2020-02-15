@@ -515,7 +515,7 @@ void gui_init(dt_lib_module_t *self)
 
   // user specified properties
   label = dt_ui_section_label_new(_("additional properties"));
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
   dt_gui_add_help_link(self->widget, "camera_settings.html#camera_settings");
 
   label = gtk_label_new(_("label"));
@@ -544,8 +544,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
-
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
