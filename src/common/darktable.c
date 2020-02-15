@@ -979,6 +979,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  // set up memory.darktable_iop_names table
+  dt_iop_set_darktable_iop_table();
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
