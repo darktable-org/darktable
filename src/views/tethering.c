@@ -180,11 +180,11 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
     if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
     {
-      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      const gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      const gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
 
-      float w = width - (MARGIN * 2.0f);
-      float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+      const float w = width - (MARGIN * 2.0f);
+      const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
 
       float scale;
       if(cam->live_view_rotation % 2 == 0)
