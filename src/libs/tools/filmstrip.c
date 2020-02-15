@@ -354,10 +354,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, TRUE, TRUE, 0);
 
   /* initialize view manager proxy */
-  darktable.view_manager->proxy.filmstrip.module = self;
+  darktable.view_manager->proxy.filmstrip.module          = self;
   darktable.view_manager->proxy.filmstrip.scroll_to_image = _lib_filmstrip_scroll_to_image;
   darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
-  darktable.view_manager->proxy.filmstrip.widget = _lib_filmstrip_get_widget;
+  darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
 
   /* connect signal handler */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,

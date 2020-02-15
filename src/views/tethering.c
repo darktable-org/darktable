@@ -122,9 +122,9 @@ void init(dt_view_t *self)
   dt_view_filmstrip_prefetch();
 
   /* setup the tethering view proxy */
-  darktable.view_manager->proxy.tethering.view = self;
-  darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
-  darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
+  darktable.view_manager->proxy.tethering.view               = self;
+  darktable.view_manager->proxy.tethering.get_job_code       = _capture_view_get_jobcode;
+  darktable.view_manager->proxy.tethering.set_job_code       = _capture_view_set_jobcode;
   darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
 }
 
@@ -164,8 +164,9 @@ void configure(dt_view_t *self, int wd, int ht)
 
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
+
 static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                           int32_t pointery)
+                                  int32_t pointery)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
