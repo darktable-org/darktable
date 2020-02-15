@@ -169,6 +169,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+  if(!cam) return;
+
   lib->image_over = DT_VIEW_DESERT;
   lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
