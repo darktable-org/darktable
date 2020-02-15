@@ -1772,7 +1772,7 @@ static void _create_memory_schema(dt_database_t *db)
       "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle,
-      "CREATE TABLE memory.module_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))", NULL, NULL, NULL);
+      "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))", NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
