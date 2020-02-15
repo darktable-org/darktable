@@ -2204,6 +2204,8 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *box;
   GtkWidget *w;
 
+  const gboolean show_module = dt_conf_get_bool("plugins/lighttable/collect/module");
+
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
@@ -2214,8 +2216,7 @@ void gui_init(dt_lib_module_t *self)
     w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
     // skip module and order if not configured
-    const int count = dt_conf_get_bool("plugins/lighttable/collect/module")
-                      ? dt_lib_collect_string_cnt : dt_lib_collect_string_cnt - 2;
+    const int count = show_module ? dt_lib_collect_string_cnt : dt_lib_collect_string_cnt - 2;
     for(int k = 0; k < count; k++)
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
@@ -2293,6 +2294,13 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
 
   _lib_collect_gui_update(self);
+
+  if(show_module)
+  {
+    // force redraw collection images because of late update of the table memory.darktable_iop_names
+    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
+  }
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);
