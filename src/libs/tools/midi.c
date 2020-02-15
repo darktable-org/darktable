@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/ratings.h"
+#include "common/colorlabels.h"
 #include "bauhaus/bauhaus.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -352,34 +353,43 @@ void refresh_sliders_to_device(MidiDevice *midi)
       }
       l = g_slist_next(l);
     }
-  }
 
-  int rating, light;
-
-  if (midi->rating_key_light != -1)
-  {
     int image_id = darktable.develop->image_storage.id;
-    if (midi->group == 1 && image_id != -1)
-    {
-      rating = dt_ratings_get(image_id);
-    }
-    else
-    {
-      rating = 0;
-    }
-    
-    for (light = 0; light < rating; light++)
-    {
-      // if rating=reject, show x0x0x pattern
-      midi_write(midi, 0, 0x9, light + midi->rating_key_light, rating < 6 || !(light & 1)? 1: 0);
-    }
-    for (; light < 5; light++)
-    {
-      midi_write(midi, 0, 0x9, light + midi->rating_key_light, 0);
-    }
-  }
 
-  midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 1);
+    if (midi->rating_key_light != -1)
+    {
+      int on_lights = 0;
+
+      if (image_id != -1)
+      {
+        if (midi->group == 1)
+        {
+          int rating = dt_ratings_get(image_id);
+          if (rating == 6) // if rating=reject, show x0x0x pattern
+          {
+            on_lights = 1+4+16;
+          }
+          else
+          {
+            on_lights = 31 >> (5-rating);
+          }
+
+        }
+        else if (midi->group == 2)
+        {
+          on_lights = dt_colorlabels_get_labels(image_id);
+        }
+      }
+
+      for (int light = 0; light < 8; light++)
+      {
+        midi_write(midi, 0, 0x9, light + midi->rating_key_light, on_lights & 1);
+        on_lights >>= 1;
+      }
+    }
+
+    midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 1);
+  }
 }
 
 void refresh_all_devices(gpointer data)
@@ -827,7 +837,7 @@ void select_page(MidiDevice *midi, gint channel, gint note)
 
 void select_page_off(MidiDevice *midi)
 {
-  midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 1);
+  refresh_sliders_to_device(midi);
 
   dt_control_hinter_message(darktable.control, _(""));
 }
