@@ -1529,10 +1529,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
           {
             orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ", i, _(dt_iop_order_string(i)));
           }
+          orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
           snprintf(query, sizeof(query),
                    "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
-                   " JOIN (SELECT imgid, version FROM main.module_order) mo"
+                   " LEFT JOIN (SELECT imgid, version FROM main.module_order) mo"
                    "  ON mo.imgid = mi.id"
                    " WHERE %s"
                    " GROUP BY ver"
