@@ -50,6 +50,7 @@ rm "$TMPFILE"
 if [ $DRYRUN = no ]; then
     # delete now-empty filmrolls
     sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
+    sqlite3 "$DBFILE" "VACUUM; ANALYZE"
 else
     echo
     echo Remove following now-empty filmrolls:
