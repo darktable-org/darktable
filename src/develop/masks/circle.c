@@ -253,6 +253,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
+    circle->radius /= darktable.develop->preview_downsampling;
     form->points = g_list_append(form->points, circle);
     dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
