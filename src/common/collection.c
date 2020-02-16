@@ -1263,8 +1263,25 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT DISTINCT(imgid) FROM main.history)) ",
-                              (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
+      {
+        int i = 0;
+        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+        {
+          char *hist_text = dt_util_dstrcat(NULL, "%s - %s", _("altered"),
+                                            _(dt_iop_order_string(i)));
+          if(strcmp(escaped_text, hist_text) == 0)
+          {
+            g_free(hist_text);
+            break;
+          }
+          g_free(hist_text);
+        }
+        if(i < DT_IOP_ORDER_LAST)
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.module_order "
+                                         "WHERE version = %d))", i);
+        else
+          query = dt_util_dstrcat(query, "(id NOT IN (SELECT imgid FROM main.module_order))");
+      }
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
@@ -1507,21 +1524,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history AS h "
                                        "JOIN memory.darktable_iop_names AS m ON m.operation = h.operation "
                                        "WHERE h.enabled = 1 AND m.name LIKE '%s'))", escaped_text);
-      }
-      break;
-
-    case DT_COLLECTION_PROP_ORDER: // iop order
-      {
-        int i = 0;
-        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
-        {
-          if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
-        }
-        if(i < DT_IOP_ORDER_LAST)
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.module_order "
-                                         "WHERE version = %d))", i);
-        else
-          query = dt_util_dstrcat(query, "(id NOT IN (SELECT imgid FROM main.module_order))");
       }
       break;
 
