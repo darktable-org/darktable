@@ -1391,8 +1391,8 @@ Hierachy :
       #thumb_back                                                    (GtkEventBox -- thumbnail background)
       #thumb_ext                                                     (GtkLabel -- thumbnail extension)
       #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
-      #thumb_bottom / #thumb_bottom_ext                              (GtkEventBox -- background of the bottom infos area)
-        #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext)
+      #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
+        #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
       #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
       #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
@@ -1407,6 +1407,7 @@ Details :
     class = .dt_thumbtable           present for all thumbtable types
     class = .dt_show_overlays       if user has choosed to always show overlay
     class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
+    class = .dt_extended_overlay    for extended overlay mode (filename + exif)
   #thumb_main
     state = :selected  if the thumb is in current selection
     state = :active    if the thumb correspond to one of the images worked on (filmstrip)
@@ -1516,6 +1517,12 @@ Details :
 {
   border : 1px solid transparent; /* to not overlay thumb borders */
 }
+#thumb_bottom_label
+{
+  border : 5px solid transparent; /* act as text margins */
+  color: transparent;
+  font-weight: bold;
+}
 #thumb_main:hover #thumb_bottom,
 .dt_show_overlays #thumb_bottom
 {
@@ -1524,6 +1531,16 @@ Details :
 #thumb_main:hover #thumb_bottom:hover
 {
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
+}
+.dt_extended_overlay#thumb_main:hover #thumb_bottom,
+.dt_extended_overlay.dt_show_overlays #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
+}
+.dt_extended_overlay#thumb_main:hover #thumb_bottom_label,
+.dt_extended_overlay.dt_show_overlays #thumb_bottom_label
+{
+  color: @thumbnail_hover_font_color;
 }
 .dt_group_left #thumb_bottom
 {
