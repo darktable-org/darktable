@@ -1512,7 +1512,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         snprintf(query, sizeof(query),
                  "SELECT m.name AS module_name, 1, COUNT(*) AS count"
                  " FROM main.images AS mi"
-                 " JOIN (SELECT DISTINCT imgid, operation FROM main.history) AS h"
+                 " JOIN (SELECT DISTINCT imgid, operation FROM main.history WHERE enabled = 1) AS h"
                  "  ON h.imgid = mi.id"
                  " JOIN memory.darktable_iop_names AS m"
                  "  ON m.operation = h.operation"
