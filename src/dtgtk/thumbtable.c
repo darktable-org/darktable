@@ -688,7 +688,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  _thumbtable_restore_scrollbars(table);
+  dt_thumbtable_full_redraw(table, TRUE);
 }
 
 // this is called each time the list of active images

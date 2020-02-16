@@ -487,6 +487,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     thumb->w_bottom = gtk_label_new("");
     gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
     gtk_widget_show(thumb->w_bottom);
+    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
+    gtk_label_set_ellipsize(GTK_LABEL(thumb->w_bottom), PANGO_ELLIPSIZE_MIDDLE);
     gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom_eb);
 
@@ -601,6 +603,16 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
     }
   }
 
+  // configure bottom area if extended overlay
+  if(dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay"))
+  {
+    gchar *ext = dt_util_dstrcat(NULL, "%s\n%s", thumb->filename, thumb->info_line);
+    gtk_label_set_text(GTK_LABEL(thumb->w_bottom), ext);
+    g_free(ext);
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
+    gtk_style_context_add_class(context, "dt_extended_overlay");
+  }
+
   return thumb;
 }
 
@@ -638,8 +650,18 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
   pango_attr_list_unref(attrlist);
   // bottom background
-  // TODO Why this hardcoded ratio ?  prefer something dependent of fontsize ?
-  gtk_widget_set_size_request(thumb->w_bottom, width, 0.147125 * height);
+  if(dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay"))
+  {
+    const int fsize2 = MIN(DT_PIXEL_APPLY_DPI(16.0), 0.67 * 0.91 * width / 10.0);
+    attrlist = pango_attr_list_new();
+    attr = pango_attr_size_new_absolute(fsize2 * PANGO_SCALE);
+    pango_attr_list_insert(attrlist, attr);
+    gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
+    pango_attr_list_unref(attrlist);
+    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 3.0 * r1 + 1.5 * fsize2);
+  }
+  else
+    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 3.0 * r1);
   // reject icon
   gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
   gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
