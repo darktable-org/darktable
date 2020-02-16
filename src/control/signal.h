@@ -57,7 +57,7 @@ typedef enum dt_signal_t
 
   /** \bief This signal is raised when a thumb is doubleclicked in
     thumbtable (filemananger, filmstrip)
-    1 : int the imageid of the thubnail
+    1 : int the imageid of the thumbnail
     no returned value
    */
   DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,

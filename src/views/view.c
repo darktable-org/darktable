@@ -1145,7 +1145,10 @@ dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int
 
 int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface)
 {
-  // get mipmap cahe imahe
+  // if surface not null, clean it up
+  if(*surface) cairo_surface_destroy(*surface);
+
+  // get mipmap cahe image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width, height);
 
@@ -2293,6 +2296,11 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return (vm->proxy.lighttable.get_full_preview_id(vm->proxy.lighttable.view) != -1);
   else
     return FALSE;
+}
+
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.change_offset(vm->proxy.lighttable.view, reset, imgid);
 }
 
 void dt_view_collection_update(const dt_view_manager_t *vm)
