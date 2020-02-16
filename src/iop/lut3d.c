@@ -1387,7 +1387,7 @@ static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
-  snprintf(filepath, sizeof(filepath), "%s", dt_bauhaus_combobox_get_text(widget));
+  g_strlcpy(filepath, dt_bauhaus_combobox_get_text(widget), sizeof(filepath));
   if (!g_str_has_prefix(filepath, invalid_filepath_prefix))
   {
     filepath_set_unix_separator(filepath);

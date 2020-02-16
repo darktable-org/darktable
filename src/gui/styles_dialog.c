@@ -275,7 +275,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   }
   else
   {
-    snprintf(title, sizeof(title), "%s", _("create new style"));
+    g_strlcpy(title, _("create new style"), sizeof(title));
     sd->duplicate = NULL;
   }
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -449,7 +449,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
         }
 
         gchar iname[256] = { 0 };
-        g_snprintf(iname, sizeof(iname), "%s", item->name);
+        g_strlcpy(iname, item->name, sizeof(iname));
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_STYLE_ITEMS_COL_ENABLED, enabled,

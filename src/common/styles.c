@@ -563,7 +563,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
       module->iop_order = style_item->iop_order;
 
       module->enabled = style_item->enabled;
-      snprintf(module->multi_name, sizeof(module->multi_name), "%s", style_item->multi_name);
+      g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
 
       // TODO: this is copied from dt_dev_read_history_ext(), maybe do a helper with this?
       if(style_item->blendop_params && (style_item->blendop_version == dt_develop_blend_version())

@@ -2120,15 +2120,15 @@ start:
     if(!dbname)
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/library.db", datadir);
     else if(!strcmp(dbname, ":memory:"))
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/%s", datadir, dbname);
     else
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
   else
   {
-    snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", alternative);
+    g_strlcpy(dbfilename_library, alternative, sizeof(dbfilename_library));
 
     GFile *galternative = g_file_new_for_path(alternative);
     dbname = g_file_get_basename(galternative);

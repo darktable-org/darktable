@@ -115,17 +115,17 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, "%s", _(" and "));
+            c = g_strlcpy(out, _(" and "), outsize);
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, "%s", _(" or "));
+            c = g_strlcpy(out, _(" or "), outsize);
             out += c;
             outsize -= c;
             break;
           default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, "%s", _(" but not "));
+            c = g_strlcpy(out, _(" but not "), outsize);
             out += c;
             outsize -= c;
             break;
