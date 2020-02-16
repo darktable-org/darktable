@@ -1506,7 +1506,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       {
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history AS h "
                                        "JOIN memory.darktable_iop_names AS m ON m.operation = h.operation "
-                                       "WHERE m.name LIKE '%s'))", escaped_text);
+                                       "WHERE h.enabled = 1 AND m.name LIKE '%s'))", escaped_text);
       }
       break;
 
