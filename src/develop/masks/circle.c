@@ -253,7 +253,6 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
-    circle->radius /= darktable.develop->preview_downsampling;
     form->points = g_list_append(form->points, circle);
     dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
@@ -496,8 +495,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
+    float wd = darktable.develop->preview_pipe->iwidth * darktable.develop->preview_downsampling;
+    float ht = darktable.develop->preview_pipe->iheight * darktable.develop->preview_downsampling;
 
     if(gui->guipoints_count == 0)
     {
