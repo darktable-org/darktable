@@ -382,7 +382,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     }
 
     module->enabled = mod_src->enabled;
-    snprintf(module->multi_name, sizeof(module->multi_name), "%s", mod_src->multi_name);
+    g_strlcpy(module->multi_name, mod_src->multi_name, sizeof(module->multi_name));
 
     memcpy(module->params, mod_src->params, module->params_size);
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)

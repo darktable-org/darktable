@@ -278,7 +278,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
 
-    snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"));
+    g_strlcpy(value, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(value));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
@@ -498,7 +498,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       const gchar *key = dt_metadata_get_key(keyid);
       if((res = dt_metadata_get(img->id, key, NULL)) != NULL)
       {
-        snprintf(value, sizeof(value), "%s", (char *)res->data);
+        g_strlcpy(value, (char *)res->data, sizeof(value));
         _filter_non_printable(value, sizeof(value));
         g_list_free_full(res, &g_free);
       }

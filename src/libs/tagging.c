@@ -762,7 +762,7 @@ static void set_keyword(dt_lib_module_t *self)
     if(*beg == ',') beg++;
     if(*beg == ' ') beg++;
   }
-  snprintf(d->keyword, sizeof(d->keyword), "%s", beg);
+  g_strlcpy(d->keyword, beg, sizeof(d->keyword));
 }
 
 static gboolean update_tag_name_per_id(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, dt_tag_op_t *to)

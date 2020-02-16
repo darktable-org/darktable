@@ -1610,14 +1610,14 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
 
-  len = snprintf(start, end - start, "%s", cl->dev[dev].options);
+  len = g_strlcpy(start, cl->dev[dev].options, end - start);
   start += len;
 
   /* make sure that the md5sums of all the includes are applied as well */
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
   {
     if(!includemd5[n]) continue;
-    len = snprintf(start, end - start, "%s", includemd5[n]);
+    len = g_strlcpy(start, includemd5[n], end - start);
     start += len;
   }
 

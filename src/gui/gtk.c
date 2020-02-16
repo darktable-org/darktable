@@ -1060,7 +1060,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gchar *css_theme = dt_conf_get_string("ui_last/theme");
   if(css_theme)
   {
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
+    g_strlcpy(gui->gtkrc, css_theme, sizeof(gui->gtkrc));
     g_free(css_theme);
   }
   else
