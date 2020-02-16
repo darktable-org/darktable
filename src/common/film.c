@@ -98,7 +98,7 @@ int dt_film_open2(dt_film_t *film)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* fill out the film dirname */
-    snprintf(film->dirname, sizeof(film->dirname), "%s", (gchar *)sqlite3_column_text(stmt, 1));
+    g_strlcpy(film->dirname, (gchar *)sqlite3_column_text(stmt, 1), sizeof(film->dirname));
     sqlite3_finalize(stmt);
     char datetime[20];
     dt_gettime(datetime, sizeof(datetime));

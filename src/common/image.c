@@ -163,7 +163,7 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, size_t 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *f = (char *)sqlite3_column_text(stmt, 0);
-    snprintf(pathname, pathname_len, "%s", f);
+    g_strlcpy(pathname, f, pathname_len);
   }
   sqlite3_finalize(stmt);
   pathname[pathname_len - 1] = '\0';
@@ -180,11 +180,11 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
   {
     char *f = (char *)sqlite3_column_text(stmt, 0);
     const char *c = dt_image_film_roll_name(f);
-    snprintf(pathname, pathname_len, "%s", c);
+    g_strlcpy(pathname, c, pathname_len);
   }
   else
   {
-    snprintf(pathname, pathname_len, "%s", _("orphaned image"));
+    g_strlcpy(pathname, _("orphaned image"), pathname_len);
   }
   sqlite3_finalize(stmt);
   pathname[pathname_len - 1] = '\0';
@@ -291,7 +291,7 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
     c = pathname + strlen(pathname);
     char *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
-    snprintf(c, pathname + pathname_len - c, "%s", c2);
+    g_strlcpy(c, c2, pathname + pathname_len - c);
     g_free(filename);
   }
 }
@@ -983,10 +983,10 @@ GList* dt_image_find_duplicates(const char* filename)
   files = NULL;
   while(*glob_pattern)
   {
-    snprintf(pattern, sizeof(pattern), "%s", filename);
+    g_strlcpy(pattern, filename, sizeof(pattern));
     gchar *c1 = pattern + strlen(pattern);
     while(*c1 != '.' && c1 > pattern) c1--;
-    snprintf(c1, pattern + sizeof(pattern) - c1, "%s", *glob_pattern);
+    g_strlcpy(c1, *glob_pattern, pattern + sizeof(pattern) - c1);
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
