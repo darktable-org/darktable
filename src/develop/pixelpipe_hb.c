@@ -527,6 +527,11 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
                                      : DT_DEV_TRANSFORM_DIR_FORW_EXCL),
                                     fbox, 2);
 
+  // correct coordinates if preview is downsampled
+  if(!darktable.lib->proxy.colorpicker.size) {
+    for(int idx=0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
+  }
+
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
   fbox[2] -= roi->x;
