@@ -366,6 +366,7 @@ typedef struct dt_view_manager_t
       int (*get_full_preview_id)(struct dt_view_t *view);
       void (*force_expose_all)(struct dt_view_t *view);
       gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
+      void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -496,6 +497,8 @@ dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_vi
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
 /** is the image visible in culling layout */
 gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
+/** sets the offset image (for culling and full preview) */
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 
 /** prefetch the next few images in film strip, from selected on.
     TODO: move to control ?

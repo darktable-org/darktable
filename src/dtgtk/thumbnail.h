@@ -56,6 +56,7 @@ typedef struct
 
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
+  gboolean img_surf_dirty;   // if TRUE, we need to recreate the surface on next drawing code
 
   GtkWidget *w_bottom_eb; // GtkEventBox -- background of the bottom infos area (contains w_bottom)
   GtkWidget *w_bottom;    // GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext

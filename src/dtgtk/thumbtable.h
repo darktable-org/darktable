@@ -86,6 +86,9 @@ typedef struct dt_thumbtable_t
 
   // are scrollbars shown ?
   gboolean scrollbars;
+
+  // in lighttable preview or culling, we can navigate inside selection or inside full collection
+  gboolean navigate_inside_selection;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();

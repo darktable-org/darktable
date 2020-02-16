@@ -828,15 +828,15 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
-    /**
-     * here's how it works
+    /** Here's how it works
      *
-     * No list of change => keep same imgid as offset
-     * offset img is not in changed imgs list => keep same imgid as offset
-     * offset img is in changed list => rowid of offset img as changed => next imgid is valid => use next imgid as
-     *offset next imgid is invalid => keep same imgid as offset rowid of offset img is the same => keep same imgid
-     *as offset
-     *
+     *          list of change|   | x | x | x | x |
+     *  offset inside the list| ? |   | x | x | x |
+     * offset rowid as changed| ? | ? |   | x | x |
+     *     next imgid is valid| ? | ? | ? |   | x |
+     *                        |   |   |   |   |   |
+     *                        | S | S | S | S | N |
+     * S = same imgid as offset ; N = next imgid as offset
      **/
     int newid = table->offset_imgid;
 
@@ -858,7 +858,42 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
       if(next > 0 && _thumb_get_rowid(table->offset_imgid) != table->offset)
       {
         // if offset has changed, that means the offset img has moved. So we use the next untouched image as offset
+        // but we have to ensure next is in the selection if we navigate inside sel.
         newid = next;
+        if(table->navigate_inside_selection)
+        {
+          sqlite3_stmt *stmt;
+          gchar *query = dt_util_dstrcat(
+              NULL,
+              "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+              "WHERE m.imgid=s.imgid AND m.rowid>=(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
+              "ORDER BY m.rowid LIMIT 1",
+              next);
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+          if(sqlite3_step(stmt) == SQLITE_ROW)
+          {
+            newid = sqlite3_column_int(stmt, 0);
+          }
+          else
+          {
+            // no select image after, search before
+            g_free(query);
+            sqlite3_finalize(stmt);
+            query = dt_util_dstrcat(
+                NULL,
+                "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                "WHERE m.imgid=s.imgid AND m.rowid<(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
+                "ORDER BY m.rowid DESC LIMIT 1",
+                next);
+            DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+            if(sqlite3_step(stmt) == SQLITE_ROW)
+            {
+              newid = sqlite3_column_int(stmt, 0);
+            }
+          }
+          g_free(query);
+          sqlite3_finalize(stmt);
+        }
       }
     }
 
@@ -868,6 +903,8 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
+
+    dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
   }
   else
   {
@@ -882,6 +919,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
       thumb->y = 0;
     }
     dt_thumbtable_full_redraw(table, TRUE);
+    dt_view_lighttable_change_offset(darktable.view_manager, TRUE, table->offset_imgid);
   }
 }
 

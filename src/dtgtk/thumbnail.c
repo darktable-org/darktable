@@ -118,7 +118,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   }
 
   // if we don't have it in memory, we want the image surface
-  if(!thumb->img_surf)
+  if(!thumb->img_surf || thumb->img_surf_dirty)
   {
     const gboolean res
         = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.91, thumb->height * 0.91, &thumb->img_surf);
@@ -129,6 +129,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       return TRUE;
     }
 
+    thumb->img_surf_dirty = FALSE;
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
@@ -365,8 +366,11 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
   if(!thumb || thumb->imgid != imgid) return;
 
   // reset surface
+  thumb->img_surf_dirty = TRUE;
+  gtk_widget_queue_draw(thumb->w_main);
+  /*if(thumb->img_surf) printf(" count %d\n", cairo_surface_get_reference_count(thumb->img_surf));
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
-  thumb->img_surf = NULL;
+  thumb->img_surf = NULL;*/
 }
 
 static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
