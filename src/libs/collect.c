@@ -1304,25 +1304,19 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
-        {
-          char *orders = NULL;
-          for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
-          {
-            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s - %s' ",
-                                     i, _("altered"), _(dt_iop_order_string(i)));
-          }
-          orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("not altered"));
-          snprintf(query, sizeof(query),
-                   "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
+        g_snprintf(query, sizeof(query),
+                   "SELECT CASE altered"
+                   "         WHEN 1 THEN '%s'"
+                   "         ELSE '%s'"
+                   "       END as altered, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
-                   " LEFT JOIN (SELECT imgid, version FROM main.module_order) mo"
-                   "  ON mo.imgid = mi.id"
+                   " LEFT JOIN (SELECT DISTINCT imgid AS history_id, 1 AS altered"
+                   "            FROM main.history)"
+                   "   ON id = history_id"
                    " WHERE %s"
-                   " GROUP BY ver"
-                   " ORDER BY ver",
-                   orders, where_ext);
-          g_free(orders);
-        }
+                   " GROUP BY altered"
+                   " ORDER BY altered ASC",
+                   _("altered"),  _("not altered"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
@@ -1528,6 +1522,28 @@ static void list_view(dt_lib_collect_rule_t *dr)
                  where_ext);
         break;
 
+      case DT_COLLECTION_PROP_ORDER: // modules order
+        {
+          char *orders = NULL;
+          for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ",
+                                     i, _(dt_iop_order_string(i)));
+          }
+          orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
+          snprintf(query, sizeof(query),
+                   "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " LEFT JOIN (SELECT imgid, version FROM main.module_order) mo"
+                   "  ON mo.imgid = mi.id"
+                   " WHERE %s"
+                   " GROUP BY ver"
+                   " ORDER BY ver",
+                   orders, where_ext);
+          g_free(orders);
+        }
+        break;
+
       default: // filmroll
         g_snprintf(query, sizeof(query),
                    "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1609,7 +1625,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
                     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
                     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO
-                    || property == DT_COLLECTION_PROP_MODULE))
+                    || property == DT_COLLECTION_PROP_MODULE || property == DT_COLLECTION_PROP_ORDER))
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
@@ -2478,6 +2494,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GROUPING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_MODULE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ORDER);
 
 }
 #endif
