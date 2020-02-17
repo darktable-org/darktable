@@ -462,11 +462,11 @@ static const uint8_t _imageio_ldr_magic[] = {
 
 gboolean dt_imageio_is_ldr(const char *filename)
 {
-  size_t offset = 0;
-  uint8_t block[32] = { 0 }; // keep this big enough for whatever magic size we want to compare to!
   FILE *fin = g_fopen(filename, "rb");
   if(fin)
   {
+    size_t offset = 0;
+    uint8_t block[32] = { 0 }; // keep this big enough for whatever magic size we want to compare to!
     /* read block from file */
     size_t s = fread(block, sizeof(block), 1, fin);
     fclose(fin);

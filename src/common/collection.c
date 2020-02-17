@@ -1242,11 +1242,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
-      int color = 0;
       if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
       else
       {
+        int color = 0;
         if(strcmp(escaped_text, _("red")) == 0)
           color = 0;
         else if(strcmp(escaped_text, _("yellow")) == 0)
@@ -1573,7 +1573,6 @@ int dt_collection_serialize(char *buf, int bufsize)
 void dt_collection_deserialize(char *buf)
 {
   int num_rules = 0;
-  char str[400], confname[200];
   int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
   if(num_rules == 0)
@@ -1588,6 +1587,7 @@ void dt_collection_deserialize(char *buf)
     dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
     if(buf[0] == ':') buf++;
+    char str[400], confname[200];
     for(int k = 0; k < num_rules; k++)
     {
       int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);

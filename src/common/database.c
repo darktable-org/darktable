@@ -1932,7 +1932,7 @@ static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename,
 {
   gboolean lock_acquired = FALSE;
   mode_t old_mode;
-  int fd = 0, lock_tries = 0;
+  int lock_tries = 0;
   gchar *pid = g_strdup_printf("%d", getpid());
 
   if(!strcmp(dbfilename, ":memory:"))
@@ -1945,7 +1945,7 @@ static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename,
 lock_again:
     lock_tries++;
     old_mode = umask(0);
-    fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    int fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
     if(fd != -1) // the lockfile was successfully created - write our PID into it
