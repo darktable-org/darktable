@@ -41,7 +41,8 @@ if [ "$1" = "-p" ]; then
     echo "$Q1C" | sqlite3
     echo "$Q1" | sqlite3
 
-# since sqlite3 up untill version 3.15 didn't support vacuuming attached databases we'll do them separatelly
+# since sqlite3 up until version 3.15 didn't support vacuuming
+# attached databases we'll do them separately.
 
    sqlite3 "$LIBDB" "VACUUM; ANALYZE;"
    sqlite3 "$DATADB" "VACUUM; ANALYZE"
