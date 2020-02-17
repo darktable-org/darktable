@@ -1527,7 +1527,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
           char *orders = NULL;
           for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
           {
-            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ", i, _(dt_iop_order_string(i)));
+            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ",
+                                     i, _(dt_iop_order_string(i)));
           }
           orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
           snprintf(query, sizeof(query),
@@ -2205,8 +2206,6 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *box;
   GtkWidget *w;
 
-  const gboolean hide_module = dt_conf_get_bool("plugins/lighttable/collect/hidemodule");
-
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
@@ -2216,9 +2215,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
-    // skip module and order if hidden
-    const int count = hide_module ? dt_lib_collect_string_cnt - 2 : dt_lib_collect_string_cnt;
-    for(int k = 0; k < count; k++)
+
+    for(int k = 0; k < dt_lib_collect_string_cnt; k++)
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
@@ -2296,12 +2294,9 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_collect_gui_update(self);
 
-  if(!hide_module)
-  {
-    // force redraw collection images because of late update of the table memory.darktable_iop_names
-    dt_collection_update_query(darktable.collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
-  }
+  // force redraw collection images because of late update of the table memory.darktable_iop_names
+  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);
