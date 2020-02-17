@@ -1267,7 +1267,9 @@ static inline void compute_log_histogram(const float *const restrict luminance,
   {
     // the histogram shows bins between [-14; +2] EV remapped between [0 ; UI_SAMPLES[
     const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
+#ifdef _OPENMP
     #pragma omp atomic
+#endif
     histogram[index] += 1;
   }
 
