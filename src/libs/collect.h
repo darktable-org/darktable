@@ -36,9 +36,8 @@ const char *dt_lib_collect_string[] = { N_("film roll"),    N_("folders"),     N
                                         N_("rights"),       N_("lens"),        N_("focal length"),
                                         N_("ISO"),          N_("aperture"),    N_("exposure"),
                                         N_("aspect ratio"), N_("filename"),    N_("geotagging"),
-                                        N_("grouping"),     N_("local copy"),
-                                        // last two ones - skipped if set hidden in darktablerc
-                                        N_("module"),       N_("order")};
+                                        N_("grouping"),     N_("local copy"),  N_("module"),
+                                        N_("module order")};
 const int dt_lib_collect_string_cnt = sizeof(dt_lib_collect_string) / sizeof(dt_lib_collect_string[0]);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
