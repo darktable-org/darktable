@@ -1254,35 +1254,32 @@ static inline void compute_log_histogram(const float *const restrict luminance,
                                           const size_t num_elem,
                                           int *max_histogram)
 {
-  // Compute an histogram of exposures, in log
-  int temp_max_histogram = 0;
-
   // (Re)init the histogram
-#ifdef _OPENMP
-#pragma omp for simd schedule(simd:static) aligned(histogram:64)
-#endif
-  for(int k = 0; k < UI_SAMPLES; k++)
-    histogram[k] = 0;
+  memset(histogram, 0, sizeof(int) * UI_SAMPLES);
 
   // Split exposure in bins
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(simd:static) \
   dt_omp_firstprivate(luminance, num_elem) \
-  shared(temp_max_histogram, histogram)
+  shared(histogram)
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
     // the histogram shows bins between [-14; +2] EV remapped between [0 ; UI_SAMPLES[
     const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
+    #pragma omp atomic
     histogram[index] += 1;
-
-    // store the max numbers of elements in bins for later normalization
-    temp_max_histogram = (histogram[index] > temp_max_histogram) ? histogram[index] : temp_max_histogram;
   }
 
-  *max_histogram = temp_max_histogram;
-}
+  *max_histogram = 0;
 
+  for(int k = 0; k < UI_SAMPLES; k++)
+  {
+    // store the max numbers of elements in bins for later normalization
+    if(histogram[k] > *max_histogram)
+      *max_histogram = histogram[k];
+  }
+}
 
 
 static inline void histogram_deciles(const int histogram[UI_SAMPLES], size_t hist_bins, size_t num_elem,
