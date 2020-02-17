@@ -125,9 +125,12 @@ typedef struct MidiDevice
   gboolean        syncing;
 
   gint            group;
+  gint            num_columns;
   gint            group_switch_key;
   gint            group_key_light;
   gint            rating_key_light;
+  gint            reset_knob_key;
+  gint            first_knob_key;
 } MidiDevice;
 
 typedef struct _GMidiSource
@@ -180,6 +183,8 @@ void midi_config_load(MidiDevice *midi)
     midi->group_switch_key = 16;
     midi->group_key_light = 8;
     midi->rating_key_light = 0;
+    midi->reset_knob_key = 0;
+    midi->first_knob_key = 1;
   }
   else if (strstr(midi->model_name, "Arturia BeatStep"))
   {
@@ -381,7 +386,7 @@ void refresh_sliders_to_device(MidiDevice *midi)
         }
       }
 
-      for (int light = 0; light < 8; light++)
+      for (int light = 0; light < midi->num_columns; light++)
       {
         midi_write(midi, 0, 0x9, light + midi->rating_key_light, on_lights & 1);
         on_lights >>= 1;
@@ -746,7 +751,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
   }
 }
 
-void select_page(MidiDevice *midi, gint channel, gint note)
+void note_on(MidiDevice *midi, gint channel, gint note)
 {
   aggregate_and_set_slider(midi, -1, -1, 0);
 
@@ -757,20 +762,21 @@ void select_page(MidiDevice *midi, gint channel, gint note)
     knob_config_mode = FALSE;
   }
 
-  if (note >= midi->group_switch_key && note < midi->group_switch_key + 8)
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if (note >= midi->group_switch_key && note < midi->group_switch_key + midi->num_columns)
   {
     midi_write(midi, 0, 0x9, midi->group + midi->group_key_light - 1, 0); // try to switch off button light
 
     midi->group = note - midi->group_switch_key + 1;
 
     // try to initialise rotator lights off
-    for (gint knob = 1; knob <= 8; knob++)
+    for (gint knob = 1; knob <= midi->num_columns; knob++)
     {
       midi_write(midi,       0, 0xB, knob, 0); // set single pattern on x-touch mini
       midi_write(midi, channel, 0xB, knob, 0); 
     }
 
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
     if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
     {    
       refresh_sliders_to_device(midi);
@@ -808,7 +814,7 @@ void select_page(MidiDevice *midi, gint channel, gint note)
             help_text = tmp;
 
             // memset(channel_text, ' ', strlen(channel_text)); // only works with monospaced fonts
-            remaining_line_items = 8 - 1;
+            remaining_line_items = midi->num_columns - 1;
           }
 
           dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
@@ -833,9 +839,34 @@ void select_page(MidiDevice *midi, gint channel, gint note)
       g_free(help_text);
     }
   }
+  else if (cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM &&
+           midi->reset_knob_key != -1 && 
+           note >= midi->reset_knob_key && note < midi->reset_knob_key + midi->num_columns)
+  {
+    GSList *l = midi->mapping_list;
+    while(l)
+    {
+      dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
+      if ((d->group > midi->group) |
+          ((d->group == midi->group) && 
+            ((d->channel > channel) |
+            ((d->channel == channel) && (d->key >= note - midi->reset_knob_key + midi->first_knob_key)))))
+      {
+        if ((d->group == midi->group) &&
+            (d->channel == channel) && 
+            (d->key == note - midi->reset_knob_key + midi->first_knob_key))
+        {
+          dt_bauhaus_slider_reset(d->accelerator->widget);
+        }
+        break;
+      }
+      l = g_slist_next(l);
+    }
+  }
+
 }
 
-void select_page_off(MidiDevice *midi)
+void note_off(MidiDevice *midi)
 {
   refresh_sliders_to_device(midi);
 
@@ -887,11 +918,11 @@ static gboolean midi_alsa_dispatch (GSource     *source,
     switch (event->type)
     {
       case SND_SEQ_EVENT_NOTEON:
-        select_page(midi, event->data.note.channel, event->data.note.note);
+        note_on(midi, event->data.note.channel, event->data.note.note);
         break;
 
       case SND_SEQ_EVENT_NOTEOFF:
-        select_page_off(midi);
+        note_off(midi);
         break;
 
       case SND_SEQ_EVENT_CONTROLLER:
@@ -990,11 +1021,11 @@ static gboolean midi_port_dispatch (GSource     *source,
     switch (eventType)
     {
       case 0x9:  // note on
-        select_page(midi, eventChannel, eventData1);
+        note_on(midi, eventChannel, eventData1);
         break;
 
       case 0x8:  // note off
-        select_page_off(midi);
+        note_off(midi);
         break;
 
       case 0xb:  // controllers, sustain
@@ -1208,14 +1239,14 @@ gboolean midi_read_event (GIOChannel   *io,
           D (g_print ("MIDI (ch %02d): note on  (%02x vel %02x)\n",
                       midi->channel, midi->key, midi->velocity));
 
-          select_page(midi, midi->channel, midi->key);
+          note_on(midi, midi->channel, midi->key);
         }
         else if (midi->command == 0x8)
         {
           D (g_print ("MIDI (ch %02d): note off (%02x vel %02x)\n",
                       midi->channel, midi->key, midi->velocity));
 
-          select_page_off(midi);
+          note_off(midi);
         }
         else
         {
@@ -1334,9 +1365,12 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->stored_knob    = NULL;
 
     midi->group            =  1;
+    midi->num_columns      =  8;
     midi->group_switch_key = -1;
     midi->group_key_light  = -100;
     midi->rating_key_light = -1;
+    midi->reset_knob_key   = -1;
+    midi->first_knob_key   = -1;
 
 #ifdef HAVE_ALSA
     if (! g_ascii_strcasecmp (midi->device, "alsa"))
