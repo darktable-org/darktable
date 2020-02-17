@@ -1001,7 +1001,7 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
 			const int width, const int height,
 			const float e, const float brightness, const float gopacity)
 {
-  const float mask_epsilon = 16 * CL_FLT_EPSILON;  // empirical mask threshold for fully transparent masks
+  const float mask_epsilon = 16 * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
