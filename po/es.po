@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-13 12:05-0600\n"
-"PO-Revision-Date: 2020-02-13 11:54-0600\n"
+"POT-Creation-Date: 2020-02-16 14:33-0600\n"
+"PO-Revision-Date: 2020-02-16 21:30-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -719,7 +719,7 @@ msgstr "Opciones básicas"
 
 #: ../build/src/preferences_gen.h:3210 ../src/imageio/format/j2k.c:652
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:333
-#: ../src/libs/camera.c:594
+#: ../src/libs/camera.c:592
 msgid "quality"
 msgstr "calidad"
 
@@ -920,10 +920,9 @@ msgstr ""
 "Controla cuanta memoria será usada para las miniaturas y otros búferes "
 "(necesita reiniciarse)."
 
-# backend - traducción
 #: ../build/src/preferences_gen.h:3571
 msgid "enable disk backend for thumbnail cache"
-msgstr "Activar el segundo plano del disco para la caché de las miniaturas"
+msgstr "Almacenar en disco una 2ª caché de miniaturas"
 
 #: ../build/src/preferences_gen.h:3583
 msgid ""
@@ -944,7 +943,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3591
 msgid "enable disk backend for full preview cache"
-msgstr "Habilita el uso del disco para una vista previa completa"
+msgstr "Almacenar en disco una caché de las vistas previas completas"
 
 #: ../build/src/preferences_gen.h:3603
 msgid ""
@@ -1043,7 +1042,7 @@ msgstr "por defecto"
 #: ../build/src/preferences_gen.h:3738
 msgctxt "preferences"
 msgid "multiple GPUs"
-msgstr "Múltiples GPUs"
+msgstr "Múltiples GPU"
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
 #: ../build/src/preferences_gen.h:3743
@@ -1402,12 +1401,12 @@ msgstr "sin copia local"
 msgid "group leaders"
 msgstr "líderes de grupo"
 
-#: ../src/common/collection.c:1700
+#: ../src/common/collection.c:1723
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d imagen seleccionada de %d (#%d) de la colección actual"
 
-#: ../src/common/collection.c:1706
+#: ../src/common/collection.c:1729
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1440,7 +1439,7 @@ msgstr "sRGB (p. ej. JPG)"
 
 #: ../src/common/colorspaces.c:1406 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
-msgstr "sRGB (fiable para Internet)"
+msgstr "sRGB (fiable para internet)"
 
 #: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1604
 #: ../src/iop/colorin.c:2138 ../src/libs/print_settings.c:1034
@@ -1634,7 +1633,7 @@ msgstr "no"
 msgid "yes"
 msgstr "sí"
 
-#: ../src/common/database.c:1863
+#: ../src/common/database.c:1865
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1649,16 +1648,16 @@ msgstr ""
 "\n"
 "%s\n"
 
-#: ../src/common/database.c:1870
+#: ../src/common/database.c:1872
 msgid "darktable - error locking database"
 msgstr "Error en darktable al bloquear la base de datos"
 
-#: ../src/common/database.c:1870 ../src/common/database.c:2041
-#: ../src/common/database.c:2281 ../src/common/database.c:2359
+#: ../src/common/database.c:1872 ../src/common/database.c:2043
+#: ../src/common/database.c:2283 ../src/common/database.c:2361
 msgid "close darktable"
 msgstr "cerrar darktable"
 
-#: ../src/common/database.c:1981
+#: ../src/common/database.c:1983
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1667,19 +1666,19 @@ msgstr ""
 "El archivo de bloqueo de la base de datos contiene un pid que parece estar "
 "aun activo en su sistema: %d"
 
-#: ../src/common/database.c:1987
+#: ../src/common/database.c:1989
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "El archivo de bloqueo de la base de datos parece estar vacío"
 
-#: ../src/common/database.c:1995
+#: ../src/common/database.c:1997
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Error al abrir el archivo de bloqueo de la base de datos para su lectura: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2032
+#: ../src/common/database.c:2034
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1694,17 +1693,17 @@ msgstr ""
 "\n"
 "¿Desea continuar o salir ahora para hacer una copia de seguridad?\n"
 
-#: ../src/common/database.c:2040
+#: ../src/common/database.c:2042
 msgid "darktable - schema migration"
 msgstr "migración de esquemas de darktable"
 
-#: ../src/common/database.c:2041
+#: ../src/common/database.c:2043
 msgid "upgrade database"
 msgstr "actualizar la base de datos"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2270 ../src/common/database.c:2348
+#: ../src/common/database.c:2272 ../src/common/database.c:2350
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1723,11 +1722,11 @@ msgstr ""
 "¿Desea cerrar manualmente darktable para reiniciar\n"
 "desde el respaldo la base de datos o comenzar con una nueva?"
 
-#: ../src/common/database.c:2280 ../src/common/database.c:2358
+#: ../src/common/database.c:2282 ../src/common/database.c:2360
 msgid "darktable - error opening database"
 msgstr "Error en darktable al abrir la base de datos"
 
-#: ../src/common/database.c:2281 ../src/common/database.c:2359
+#: ../src/common/database.c:2283 ../src/common/database.c:2361
 msgid "delete database"
 msgstr "borrar base de datos"
 
@@ -1895,6 +1894,18 @@ msgid ""
 msgstr ""
 "no se pudo expandir a un nombre único de archivo. revise la configuración de "
 "importación."
+
+#: ../src/common/iop_order.c:58
+msgid "custom"
+msgstr "personalizado"
+
+#: ../src/common/iop_order.c:59
+msgid "legacy"
+msgstr "heredado"
+
+#: ../src/common/iop_order.c:60
+msgid "v3.0"
+msgstr "v3.0"
 
 #: ../src/common/iop_profile.c:83
 #, c-format
@@ -3582,12 +3593,12 @@ msgstr "no se puede crear directorio cache '%s'!\n"
 #: ../src/generate-cache/main.c:82
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
-msgstr "advertencia: ninguna imagen concuerda con la búsqueda de id.\n"
+msgstr "Advertencia: ninguna imagen concuerda con la búsqueda de id.\n"
 
 #: ../src/generate-cache/main.c:85
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
-msgstr "advertencia: ¿desea cambiar los límites?\n"
+msgstr "Advertencia: ¿desea cambiar los límites?\n"
 
 #: ../src/generate-cache/main.c:218
 #, c-format
@@ -3597,11 +3608,11 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done."
 msgstr ""
-"advertencia: backend de disco para cache de miniaturas desactivado "
-"(cache_disk_backend)\n"
-"si quiere miniaturas previas y que darktable las utilice, necesita activar "
-"el soporte de disco para la caché de miniaturas\n"
-"ni hay miniaturas para generar, hecho."
+"Advertencia: la función de almacenar la caché de miniaturas en el disco está "
+"desactivado (cache_disk_backend)\n"
+"Si quiere una generación previa de miniaturas para que las disponga "
+"darktable, necesita habilitar esta función\n"
+"No hay miniaturas que generar, terminado."
 
 #: ../src/generate-cache/main.c:228
 #, c-format
@@ -3611,7 +3622,7 @@ msgstr "Error: asegúrese de que min_mip <= max_mip\n"
 #: ../src/generate-cache/main.c:233
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr "creando toda la cache de miniaturas de la mesa de luz\n"
+msgstr "Creando toda la caché de miniaturas de la mesa de luz\n"
 
 #: ../src/gui/accelerators.c:33 ../src/gui/accelerators.c:72
 msgctxt "accel"
@@ -3737,11 +3748,11 @@ msgstr "establecer los metadatos al importar"
 
 #: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:454
 msgid "apply some metadata to all newly imported images."
-msgstr "establecer ciertos metadatos a todas las imágenes importadas."
+msgstr "Establecer ciertos metadatos a todas las imágenes importadas."
 
 #: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:493
 msgid "comma separated list of tags"
-msgstr "lista de etiquetas separadas por coma"
+msgstr "Lista de etiquetas separadas por coma"
 
 #: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
 msgid "creator"
@@ -4158,7 +4169,7 @@ msgstr "ítem"
 
 #: ../src/gui/hist_dialog.c:233
 msgid "can't copy history out of unaltered image"
-msgstr "no se puede copiar el historial de una imagen no modificada"
+msgstr "No se puede copiar el historial de una imagen no modificada"
 
 #. format string and corresponding flag stored into the database
 #: ../src/gui/preferences.c:81 ../src/gui/presets.c:56
@@ -4207,7 +4218,8 @@ msgstr "preferencias de darktable"
 msgid "close"
 msgstr "cerrar"
 
-#: ../src/gui/preferences.c:495
+#. last two ones - skipped if set hidden in darktablerc
+#: ../src/gui/preferences.c:495 ../src/libs/collect.h:41
 msgid "module"
 msgstr "módulo"
 
@@ -4230,7 +4242,7 @@ msgstr "lente"
 
 #. iso
 #: ../src/gui/preferences.c:519 ../src/gui/preferences.c:1453
-#: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
+#: ../src/gui/presets.c:451 ../src/libs/camera.c:586 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:116
 msgid "ISO"
 msgstr "ISO"
@@ -4245,14 +4257,14 @@ msgstr "exposición"
 
 #. aperture
 #: ../src/gui/preferences.c:527 ../src/gui/preferences.c:1481
-#: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
+#: ../src/gui/presets.c:479 ../src/libs/camera.c:573 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:112
 msgid "aperture"
 msgstr "apertura"
 
 #. focal length
 #: ../src/gui/preferences.c:531 ../src/gui/preferences.c:1496
-#: ../src/gui/presets.c:494 ../src/iop/ashift.c:4881 ../src/libs/camera.c:580
+#: ../src/gui/presets.c:494 ../src/iop/ashift.c:4881 ../src/libs/camera.c:578
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:114
 msgid "focal length"
 msgstr "longitud focal"
@@ -5682,9 +5694,9 @@ msgstr "preservar los colores"
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2300
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1597
 #: ../src/iop/rgblevels.c:1123 ../src/iop/tonecurve.c:1431
-#: ../src/libs/export.c:520 ../src/libs/live_view.c:350
-#: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
-#: ../src/libs/print_settings.c:1469
+#: ../src/libs/collect.c:1532 ../src/libs/export.c:520
+#: ../src/libs/live_view.c:350 ../src/libs/live_view.c:375
+#: ../src/libs/live_view.c:384 ../src/libs/print_settings.c:1469
 msgid "none"
 msgstr "ninguna"
 
@@ -6112,13 +6124,13 @@ msgctxt "accel"
 msgid "strength"
 msgstr "fuerza"
 
-#: ../src/iop/bloom.c:532 ../src/iop/soften.c:736 ../src/libs/camera.c:597
+#: ../src/iop/bloom.c:532 ../src/iop/soften.c:736 ../src/libs/camera.c:595
 msgid "size"
 msgstr "tamaño"
 
 #: ../src/iop/bloom.c:533
 msgid "the size of bloom"
-msgstr "el tamaño del resplandor"
+msgstr "Tamaño del resplandor"
 
 #: ../src/iop/bloom.c:538 ../src/iop/colorreconstruction.c:1373
 #: ../src/iop/defringe.c:489 ../src/iop/hotpixels.c:470
@@ -6128,17 +6140,17 @@ msgstr "umbral"
 
 #: ../src/iop/bloom.c:539
 msgid "the threshold of light"
-msgstr "el umbral de luz"
+msgstr "Umbral de luz"
 
 #: ../src/iop/bloom.c:544 ../src/iop/denoiseprofile.c:4476
 #: ../src/iop/grain.c:638 ../src/iop/hazeremoval.c:249
 #: ../src/iop/hotpixels.c:478 ../src/iop/nlmeans.c:851 ../src/iop/velvia.c:389
 msgid "strength"
-msgstr "fuerza"
+msgstr "intensidad"
 
 #: ../src/iop/bloom.c:545
 msgid "the strength of bloom"
-msgstr "fuerza del resplandor"
+msgstr "Intensidad del resplandor"
 
 #: ../src/iop/borders.c:174
 msgid "framing"
@@ -9061,7 +9073,7 @@ msgstr "Tamaño del grano (~ISO de la pelicula)"
 
 #: ../src/iop/grain.c:641
 msgid "the strength of applied grain"
-msgstr "Fuerza del ruido aplicado"
+msgstr "Intensidad del ruido aplicado"
 
 #: ../src/iop/grain.c:646
 msgid "midtones bias"
@@ -10738,15 +10750,15 @@ msgstr "cantidad"
 
 #: ../src/iop/sharpen.c:788
 msgid "spatial extent of the unblurring"
-msgstr "extensión espacial del enfoque"
+msgstr "Extensión espacial del enfoque"
 
 #: ../src/iop/sharpen.c:792
 msgid "strength of the sharpen"
-msgstr "fuerza del enfoque"
+msgstr "Fuerza del enfoque"
 
 #: ../src/iop/sharpen.c:795
 msgid "threshold to activate sharpen"
-msgstr "umbral para activar el enfoque"
+msgstr "Umbral para activar el enfoque"
 
 #: ../src/iop/soften.c:85
 msgid "soften"
@@ -10754,19 +10766,19 @@ msgstr "suavizar"
 
 #: ../src/iop/soften.c:737
 msgid "the size of blur"
-msgstr "el tamaño del difuminado"
+msgstr "Extensión del difuminado"
 
 #: ../src/iop/soften.c:744
 msgid "the saturation of blur"
-msgstr "saturación del difuminado"
+msgstr "Saturación del difuminado"
 
 #: ../src/iop/soften.c:751
 msgid "the brightness of blur"
-msgstr "brillo del difuminado"
+msgstr "Brillo del difuminado"
 
 #: ../src/iop/soften.c:759
 msgid "the mix of effect"
-msgstr "mezcla del efecto"
+msgstr "La combinación del efecto"
 
 #: ../src/iop/splittoning.c:90
 msgid "split-toning"
@@ -11553,11 +11565,11 @@ msgstr "Dimensión del radio donde termina el difuminado del efecto viñeta"
 
 #: ../src/iop/vignette.c:1187
 msgid "strength of effect on brightness"
-msgstr "Fuerza del efecto en el brillo"
+msgstr "Intensidad del efecto en el brillo"
 
 #: ../src/iop/vignette.c:1188
 msgid "strength of effect on saturation"
-msgstr "Fuerza del efecto sobre la saturación"
+msgstr "Intensidad del efecto sobre la saturación"
 
 #: ../src/iop/vignette.c:1189
 msgid "horizontal offset of center of the effect"
@@ -11881,23 +11893,23 @@ msgstr "propiedades"
 msgid "add user property"
 msgstr "añadir propiedades del usuario"
 
-#: ../src/libs/camera.c:567
+#: ../src/libs/camera.c:565
 msgid "program"
 msgstr "programa"
 
-#: ../src/libs/camera.c:570 ../src/libs/camera.c:572
+#: ../src/libs/camera.c:568 ../src/libs/camera.c:570
 msgid "focus mode"
 msgstr "modo de enfoque"
 
-#: ../src/libs/camera.c:583
+#: ../src/libs/camera.c:581
 msgid "shutterspeed2"
 msgstr "velocidad de disparo 2"
 
-#: ../src/libs/camera.c:585
+#: ../src/libs/camera.c:583
 msgid "shutterspeed"
 msgstr "velocidad de disparo"
 
-#: ../src/libs/camera.c:591
+#: ../src/libs/camera.c:589
 msgid "WB"
 msgstr "Balance de blancos"
 
@@ -11942,20 +11954,20 @@ msgstr "copiar localmente"
 msgid "group followers"
 msgstr "seguidores de grupo"
 
-#: ../src/libs/collect.c:1696 ../src/libs/collect.c:1711
-#: ../src/libs/collect.c:2099
+#: ../src/libs/collect.c:1732 ../src/libs/collect.c:1747
+#: ../src/libs/collect.c:2135
 msgid "clear this rule"
 msgstr "eliminar esta regla"
 
-#: ../src/libs/collect.c:1700
+#: ../src/libs/collect.c:1736
 msgid "clear this rule or add new rules"
 msgstr "eliminar esta regla o añadir nuevas reglas"
 
-#: ../src/libs/collect.c:1757
+#: ../src/libs/collect.c:1793
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Escriba su búsqueda, utilice <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:1762
+#: ../src/libs/collect.c:1798
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -11963,38 +11975,38 @@ msgstr ""
 "Escriba la búsqueda, utilice <, <=, >, >=, <>, =, [;] como operadores, tipos "
 "de datos en forma de : YYYY:MM:DD HH:MM:SS (solo el año es obligatorio)"
 
-#: ../src/libs/collect.c:1768
+#: ../src/libs/collect.c:1804
 #, no-c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr ""
 "Escriba el término, use '%' como comodín y ',' para separar los valores"
 
-#: ../src/libs/collect.c:1773 ../src/libs/collect.c:2193
+#: ../src/libs/collect.c:1809 ../src/libs/collect.c:2233
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Escriba la ruta, use '%' como comodín"
 
-#: ../src/libs/collect.c:2105
+#: ../src/libs/collect.c:2141
 msgid "narrow down search"
 msgstr "reducir la búsqueda"
 
-#: ../src/libs/collect.c:2110
+#: ../src/libs/collect.c:2146
 msgid "add more images"
 msgstr "añadir más imágenes"
 
-#: ../src/libs/collect.c:2115
+#: ../src/libs/collect.c:2151
 msgid "exclude images"
 msgstr "excluir imágenes"
 
-#: ../src/libs/collect.c:2122
+#: ../src/libs/collect.c:2158
 msgid "change to: and"
 msgstr "cambiar a: y"
 
-#: ../src/libs/collect.c:2127
+#: ../src/libs/collect.c:2163
 msgid "change to: or"
 msgstr "cambiar a: o"
 
-#: ../src/libs/collect.c:2132
+#: ../src/libs/collect.c:2168
 msgid "change to: except"
 msgstr "cambiar a: excepto"
 
@@ -12040,6 +12052,10 @@ msgstr "agrupadas"
 #: ../src/libs/metadata_view.c:302
 msgid "local copy"
 msgstr "copia local"
+
+#: ../src/libs/collect.h:41
+msgid "order"
+msgstr "orden"
 
 #: ../src/libs/colorpicker.c:53
 msgid "color picker"
@@ -15156,7 +15172,7 @@ msgstr "histograma y selector de color de perfiles ICC en %s o %s"
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
 #: ../src/views/darkroom.c:3316 ../src/views/map.c:892 ../src/views/print.c:330
-#: ../src/views/tethering.c:397
+#: ../src/views/tethering.c:400
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activar o desactivar la tira de imágenes"
@@ -15579,7 +15595,7 @@ msgstr "captura"
 msgid "new session initiated '%s'"
 msgstr "Nueva sesión iniciada '%s'"
 
-#: ../src/views/tethering.c:252
+#: ../src/views/tethering.c:255
 msgid "no camera with tethering support available for use..."
 msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
 
