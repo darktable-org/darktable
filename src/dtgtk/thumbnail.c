@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/focus_peaking.h"
 #include "common/grouping.h"
 #include "common/image_cache.h"
 #include "common/ratings.h"
@@ -117,17 +118,88 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     return TRUE;
   }
 
+  // if we have a rgbbuf but the thumb is not anymore the darkroom main one
+  dt_develop_t *dev = darktable.develop;
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  if(thumb->img_surf_preview
+     && (v->view(v) != DT_VIEW_DARKROOM || !dev->preview_pipe->output_backbuf
+         || dev->preview_pipe->output_imgid != thumb->imgid))
+  {
+    if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+    thumb->img_surf_dirty = TRUE;
+  }
+
   // if we don't have it in memory, we want the image surface
   if(!thumb->img_surf || thumb->img_surf_dirty)
   {
-    const gboolean res
-        = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.91, thumb->height * 0.91, &thumb->img_surf);
-    if(res)
+    if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
+       && dev->preview_pipe->output_backbuf)
     {
-      // if the image is missing, we reload it again
-      g_timeout_add(250, _thumb_expose_again, widget);
-      return TRUE;
+      // the current thumb is the one currently developped in darkroom
+      // better use the preview buffer for surface, in order to stay in sync
+      if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+      thumb->img_surf = NULL;
+
+      // get new surface with preview image
+      const int buf_width = dev->preview_pipe->output_backbuf_width;
+      const int buf_height = dev->preview_pipe->output_backbuf_height;
+      uint8_t *rgbbuf = g_malloc0((size_t)buf_width * buf_height * 4 * sizeof(unsigned char));
+
+      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+      dt_pthread_mutex_lock(mutex);
+      memcpy(rgbbuf, dev->preview_pipe->output_backbuf, (size_t)buf_width * buf_height * 4 * sizeof(unsigned char));
+      dt_pthread_mutex_unlock(mutex);
+
+      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);
+      cairo_surface_t *tmp_surface
+          = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_width, buf_height, stride);
+
+      // copy preview image into final surface
+      if(tmp_surface)
+      {
+        const float scale
+            = fminf(thumb->width * 0.91 / (float)buf_width, thumb->height * 0.91 / (float)buf_height);
+        const int img_width = buf_width * scale;
+        const int img_height = buf_height * scale;
+        thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+        cairo_t *cr2 = cairo_create(thumb->img_surf);
+        cairo_scale(cr2, scale, scale);
+
+        cairo_set_source_surface(cr2, tmp_surface, 0, 0);
+        // set filter no nearest:
+        // in skull mode, we want to see big pixels.
+        // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+        // in between, filtering just makes stuff go unsharp.
+        if((buf_width <= 8 && buf_height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+          cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
+        else
+          cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_GOOD);
+
+        cairo_paint(cr2);
+
+        if(darktable.gui->show_focus_peaking)
+          dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf),
+                          cairo_image_surface_get_width(thumb->img_surf),
+                          cairo_image_surface_get_height(thumb->img_surf));
+
+        cairo_surface_destroy(tmp_surface);
+        cairo_destroy(cr2);
+      }
+      if(rgbbuf) g_free(rgbbuf);
     }
+    else
+    {
+      const gboolean res
+          = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.91, thumb->height * 0.91, &thumb->img_surf);
+      if(res)
+      {
+        // if the image is missing, we reload it again
+        g_timeout_add(250, _thumb_expose_again, widget);
+        return TRUE;
+      }
+    }
+
+
 
     thumb->img_surf_dirty = FALSE;
     // let save thumbnail image size
@@ -359,6 +431,22 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   }
 }
 
+static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb) return;
+
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  if(v->view(v) == DT_VIEW_DARKROOM && darktable.develop->preview_pipe->output_imgid == thumb->imgid
+     && darktable.develop->preview_pipe->output_backbuf)
+  {
+    // reset surface
+    thumb->img_surf_dirty = TRUE;
+    gtk_widget_queue_draw(thumb->w_main);
+  }
+}
+
 static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer user_data)
 {
   if(!user_data) return;
@@ -368,9 +456,6 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
   // reset surface
   thumb->img_surf_dirty = TRUE;
   gtk_widget_queue_draw(thumb->w_main);
-  /*if(thumb->img_surf) printf(" count %d\n", cairo_surface_get_reference_count(thumb->img_surf));
-  if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
-  thumb->img_surf = NULL;*/
 }
 
 static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
@@ -439,6 +524,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                               G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                              G_CALLBACK(_dt_preview_updated_callback), thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
@@ -620,6 +707,8 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
   if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
