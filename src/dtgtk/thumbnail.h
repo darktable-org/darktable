@@ -28,6 +28,13 @@ typedef enum dt_thumbnail_border_t
   DT_THUMBNAIL_BORDER_BOTTOM = 1 << 3,
 } dt_thumbnail_border_t;
 
+typedef enum dt_thumbnail_selection_mode_t
+{
+  DT_THUMBNAIL_SEL_MODE_NORMAL = 0, // user can change selection with normal mouse click (+CTRL or +SHIFT)
+  DT_THUMBNAIL_SEL_MODE_DISABLED,   // user can't change selection with mouse
+  DT_THUMBNAIL_SEL_MODE_MOD_ONLY    // user can only change selection with mouse AND CTRL or SHIFT
+} dt_thumbnail_selection_mode_t;
+
 typedef struct
 {
   int imgid, rowid;
@@ -74,6 +81,8 @@ typedef struct
 
   dt_thumbnail_border_t group_borders; // which group borders should be drawn
 
+  dt_thumbnail_selection_mode_t sel_mode; // do we allow to change selection with mouse ?
+  gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);

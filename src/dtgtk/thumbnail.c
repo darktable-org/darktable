@@ -242,7 +242,7 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
+  if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
   return FALSE;
 }
 
@@ -260,9 +260,10 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->button == 1 && !thumb->moved)
+  if(event->button == 1 && !thumb->moved && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_DISABLED)
   {
-    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
+    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0
+       && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
       dt_selection_select_single(darktable.selection, thumb->imgid);
     else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
       dt_selection_toggle(darktable.selection, thumb->imgid);
@@ -461,7 +462,8 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
 static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY) dt_control_set_mouse_over_id(thumb->imgid);
+  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+    dt_control_set_mouse_over_id(thumb->imgid);
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
   return FALSE;
 }
@@ -469,7 +471,7 @@ static gboolean _event_bottom_enter_leave(GtkWidget *widget, GdkEventCrossing *e
 static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb->mouse_over) dt_control_set_mouse_over_id(thumb->imgid);
+  if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
 
   // we prelight all stars before the current one
