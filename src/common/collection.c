@@ -1510,7 +1510,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
 
-    case DT_COLLECTION_PROP_ORDER: // iop order
+    case DT_COLLECTION_PROP_ORDER: // module order
       {
         int i = 0;
         for(i = 0; i < DT_IOP_ORDER_LAST; i++)
