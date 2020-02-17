@@ -109,9 +109,7 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
 
 void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on, const gboolean group_on)
 {
-  GList *undo = NULL;
   GList *imgs = NULL;
-  guint count = 0;
   int new_rating = rating;
 
   if(imgid == -1)
@@ -135,7 +133,7 @@ void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_o
     }
 
     if(group_on) dt_grouping_add_grouped_images(&imgs);
-    count = g_list_length(imgs);
+    const guint count = g_list_length(imgs);
     if(count > 1)
     {
       if(new_rating == DT_VIEW_REJECT)
@@ -146,6 +144,7 @@ void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_o
     }
     
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+    GList *undo = NULL;
     _ratings_apply(imgs, new_rating, &undo, undo_on);
 
     g_list_free(imgs);

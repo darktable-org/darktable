@@ -181,7 +181,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
 {
   // Try open filmroll for folder if exists
   film->id = -1;
-  int rc;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.film_rolls WHERE folder = ?1",
                               -1, &stmt, NULL);
@@ -200,7 +199,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, -1, SQLITE_STATIC);
-    rc = sqlite3_step(stmt);
+    const int rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));
@@ -220,7 +219,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
 
 int dt_film_import(const char *dirname)
 {
-  int rc;
   sqlite3_stmt *stmt;
   GError *error = NULL;
 
@@ -249,7 +247,7 @@ int dt_film_import(const char *dirname)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, -1, SQLITE_STATIC);
 
-    rc = sqlite3_step(stmt);
+    const int rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_import] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));

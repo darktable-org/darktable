@@ -641,10 +641,10 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 {
   int id = 0;
   sqlite3_stmt *stmt;
-  int32_t newimgid;
 
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
+    int32_t newimgid;
     /* check if we should make a duplicate before applying style */
     if(duplicate)
     {
@@ -1260,7 +1260,6 @@ void dt_styles_import_from_file(const char *style_path)
   StyleData *style;
   GMarkupParseContext *parser;
   gchar buf[1024];
-  size_t num_read;
 
   style = dt_styles_style_data_new();
   parser = g_markup_parse_context_new(&dt_style_parser, 0, style, NULL);
@@ -1270,7 +1269,7 @@ void dt_styles_import_from_file(const char *style_path)
 
     while(!feof(style_file))
     {
-      num_read = fread(buf, sizeof(gchar), sizeof(buf), style_file);
+      const size_t num_read = fread(buf, sizeof(gchar), sizeof(buf), style_file);
 
       if(num_read == 0)
       {

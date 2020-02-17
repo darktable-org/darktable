@@ -554,7 +554,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid, const gboolean und
           e--;
         }
         e = *entry;
-        while(*e == ' ' && *e != '\0') e++;
+        while(*e == ' ') e++;
         if(*e)
         {
           guint tagid = 0;
@@ -836,7 +836,6 @@ GList *dt_tag_get_list(gint imgid)
     dt_tag_t *t = (dt_tag_t *)taglist->data;
     gchar *value = t->tag;
 
-    size_t j = 0;
     gchar **pch = g_strsplit(value, "|", -1);
 
     if(pch != NULL)
@@ -849,6 +848,7 @@ GList *dt_tag_get_list(gint imgid)
       }
       else
       {
+        size_t j = 0;
         while(pch[j] != NULL)
         {
           tags = g_list_prepend(tags, g_strdup(pch[j]));
@@ -1323,7 +1323,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
         e--;
       }
       e = *entry;
-      while(*e == ' ' && *e != '\0') e++;
+      while(*e == ' ') e++;
       if(*e)
       {
         synonyms = dt_util_dstrcat(synonyms, "%s, ", e);

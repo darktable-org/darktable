@@ -118,7 +118,6 @@ static gboolean check_error(GError *error)
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s\n",
              error->message);
     g_error_free(error);
-    error = NULL;
     return TRUE;
   }
   return FALSE;

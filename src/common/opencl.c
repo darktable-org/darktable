@@ -126,7 +126,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 error:
   free(*param_value);
   *param_value = NULL;
-  param_value_size = 0;
+  *param_value_size = 0;
   return err;
 }
 

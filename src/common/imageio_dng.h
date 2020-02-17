@@ -183,11 +183,10 @@ static inline void dt_imageio_write_dng(
     const float whitelevel)
 {
   FILE *f = g_fopen(filename, "wb");
-  int k = 0;
   if(f)
   {
     dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel);
-    k = fwrite(pixel, sizeof(float), wd * ht, f);
+    const int k = fwrite(pixel, sizeof(float), wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
     if(exif) dt_exif_write_blob(exif, exif_len, filename, 0);

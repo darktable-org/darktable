@@ -34,7 +34,6 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   dt_image_init(img);
   entry->data = img;
   // load stuff from db and store in cache:
-  char *str;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -54,6 +53,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0]
         = img->exif_datetime_taken[0] = '\0';
+    char *str;
     str = (char *)sqlite3_column_text(stmt, 5);
     if(str) g_strlcpy(img->filename, str, sizeof(img->filename));
     str = (char *)sqlite3_column_text(stmt, 6);

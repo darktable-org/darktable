@@ -782,15 +782,14 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   {
     if(strcmp((const char*)sqlite3_column_text(stmt, 1), "mask_manager") == 0) continue;
 
-    char name[512] = { 0 };
     const int is_active = sqlite3_column_int(stmt, 2);
 
     if(enabled == FALSE || is_active)
     {
+      char name[512] = { 0 };
       dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
       item->num = sqlite3_column_int(stmt, 0);
-      char *mname = NULL;
-      mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
+      char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if(enabled)
       {
         if(strcmp(mname, "0") == 0)
