@@ -2574,7 +2574,7 @@ post_process_collect_info:
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
       // FIXME: is above comment true now that waveform is scaled via Cairo?
-      if(input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      if(input && dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }
