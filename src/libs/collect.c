@@ -2298,7 +2298,7 @@ void gui_init(dt_lib_module_t *self)
   _lib_collect_gui_update(self);
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);

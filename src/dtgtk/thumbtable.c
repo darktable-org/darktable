@@ -865,6 +865,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
      * S = same imgid as offset ; N = next imgid as offset
      **/
     int newid = table->offset_imgid;
+    if(newid <= 0 && table->offset > 0) newid = _thumb_get_imgid(table->offset);
 
     // is the current offset imgid in the changed list
     gboolean in_list = FALSE;
