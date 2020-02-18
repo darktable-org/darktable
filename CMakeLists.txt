@@ -57,13 +57,13 @@ if (USE_OPENMP)
 
         # Clang has an option to specify the OpenMP standard to use. Specify it.
         # FIXME: Implement this in FindOpenMP.cmake
-        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=40")
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=45")
 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
     endif()
 
-    find_package(OpenMP 4.0 REQUIRED)
+    find_package(OpenMP 4.5 REQUIRED)
 endif()
 
 # Check for base threading library
