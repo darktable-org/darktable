@@ -104,7 +104,7 @@ static void fill_text_view(const uint32_t i, const uint32_t count, dt_lib_module
   }
   else if(count == 1) // images with different metadata values
   {
-    gtk_text_buffer_set_text(buffer, "<leave unchanged>", -1);
+    gtk_text_buffer_set_text(buffer, _("<leave unchanged>"), -1);
     multi = TRUE;
   }
   else // one or several images with the same metadata value
