@@ -1261,15 +1261,12 @@ static inline void compute_log_histogram(const float *const restrict luminance,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(simd:static) \
   dt_omp_firstprivate(luminance, num_elem) \
-  shared(histogram)
+  reduction(+:histogram[:UI_SAMPLES])
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
     // the histogram shows bins between [-14; +2] EV remapped between [0 ; UI_SAMPLES[
     const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
-#ifdef _OPENMP
-    #pragma omp atomic
-#endif
     histogram[index] += 1;
   }
 
