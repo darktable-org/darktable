@@ -720,6 +720,12 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
 {
+  // first, we verify that there's something to change
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_main, &w, &h);
+  if(w == width && h == height) return;
+
   // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
   // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
   // colorlabels => 3 * r1 + space r1
@@ -727,6 +733,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
   const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
 
   // widget resizing
+  thumb->width = width;
+  thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
