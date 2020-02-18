@@ -47,7 +47,9 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
+const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
+const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_dev_waveform_type_names[DT_DEV_WAVEFORM_N] = { "overlaid", "parade" };
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
@@ -83,13 +85,35 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
   gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  if(g_strcmp0(mode, "histogram") == 0)
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
   else if(g_strcmp0(mode, "waveform") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
+    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+  else if(g_strcmp0(mode, "linear") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
+  }
+  else if(g_strcmp0(mode, "logarithmic") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
+  }
   g_free(mode);
+  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  if(g_strcmp0(histogram_type, "linear") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  g_free(histogram_type);
+  gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
+  if(g_strcmp0(waveform_type, "overlaid") == 0)
+    dev->waveform_type = DT_DEV_WAVEFORM_OVERLAID;
+  else if(g_strcmp0(waveform_type, "parade") == 0)
+    dev->waveform_type = DT_DEV_WAVEFORM_PARADE;
+  g_free(waveform_type);
 
   dev->forms = NULL;
   dev->form_visible = NULL;
