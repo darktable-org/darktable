@@ -628,6 +628,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_tag_names], tagstring ? tagstring : NODATA_STRING);
     _metadata_update_value(d->metadata[md_categories], categoriesstring ? categoriesstring : NODATA_STRING);
 
+    g_free(tagstring);
+    g_free(categoriesstring);
     dt_tag_free_result(&tags);
 
     /* release img */
