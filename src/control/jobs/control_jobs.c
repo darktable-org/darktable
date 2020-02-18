@@ -1006,14 +1006,13 @@ delete_next_file:
 #ifdef _WIN32
     g_free(dirname);
 #endif
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
   }
-  while (t)
-    t = g_list_delete_link(t, t);
+
   params->index = NULL;
   sqlite3_finalize(stmt);
 
@@ -1026,6 +1025,7 @@ delete_next_file:
   g_list_free(list);
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
   dt_control_queue_redraw_center();
   return 0;
 }

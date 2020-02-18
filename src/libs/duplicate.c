@@ -109,11 +109,6 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
-static void _lib_duplicate_filmrolls_updated(gpointer instance, gpointer self)
-{
-  _lib_duplicate_init_callback(NULL, self);
-}
-
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
@@ -143,6 +138,8 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 
   // and we remove the image
   dt_control_delete_image(imgid);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                             g_list_append(NULL, GINT_TO_POINTER(imgid)));
 }
 
 static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -449,7 +446,6 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_duplicate_collection_changed), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(_lib_duplicate_filmrolls_updated), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_duplicate_preview_updated_callback), self);
 }
