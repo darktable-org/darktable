@@ -505,13 +505,6 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
-
-    // correct coordinates if preview is downsampled:
-    // this actually un-corrects coordinates, and somehow the following
-    // code re-applies the downsampling.
-    points[i] /= darktable.develop->preview_downsampling;
-    points[i+1] /= darktable.develop->preview_downsampling;
-
     pi[0] = -(d->enlarge_x - d->cix) / factor + points[i];
     pi[1] = -(d->enlarge_y - d->ciy) / factor + points[i + 1];
 
