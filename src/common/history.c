@@ -121,6 +121,9 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_tag_detach_by_string("darktable|style%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
 
+  /* unset change timestamp */
+  dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
+
   // signal that the mipmap need to be updated
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
@@ -756,6 +759,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_attach(tagid, dest_imgid, FALSE, FALSE);
+  /* set change_timestamp */
+  dt_image_cache_set_change_timestamp(darktable.image_cache, dest_imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))

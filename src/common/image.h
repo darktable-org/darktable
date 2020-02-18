@@ -184,6 +184,10 @@ typedef struct dt_image_t
 
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
+
+  //timestamps
+  time_t import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+
   dt_image_loader_t loader;
 
   dt_iop_buffer_dsc_t buf_dsc;
