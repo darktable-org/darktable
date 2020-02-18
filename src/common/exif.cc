@@ -260,6 +260,7 @@ public:
 }
 
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
+static gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
@@ -274,7 +275,9 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
         "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
-        "Xmp.acdsee.notes","Xmp.darktable.version_name",
+        "Xmp.darktable.import_timestamp", "Xmp.darktable.change_timestamp",
+        "Xmp.darktable.export_timestamp", "Xmp.darktable.print_timestamp",
+        "Xmp.acdsee.notes", "Xmp.darktable.version_name",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
 
@@ -3019,7 +3022,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       goto end;
     }
 
-end:
+  end:
+
+    all_ok = read_xmp_timestamps(xmpData, img->id);
+
     sqlite3_finalize(stmt);
 
     // set or clear bit in image struct. ONLY set if the Xmp.darktable.auto_presets_applied was 1
@@ -3232,6 +3238,76 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   xmpData["Xmp.darktable.history_end"] = history_end;
 }
 
+// add timestamps to XmpData.
+static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT id, import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+      " FROM main.images"
+      " WHERE id = ?1",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    xmpData["Xmp.darktable.import_timestamp"] = sqlite3_column_int(stmt, 1);
+    xmpData["Xmp.darktable.change_timestamp"] = sqlite3_column_int(stmt, 2);
+    xmpData["Xmp.darktable.export_timestamp"] = sqlite3_column_int(stmt, 3);
+    xmpData["Xmp.darktable.print_timestamp"] = sqlite3_column_int(stmt, 4);
+  }
+  else
+  {
+    xmpData["Xmp.darktable.import_timestamp"] = -1;
+    xmpData["Xmp.darktable.change_timestamp"] = -1;
+    xmpData["Xmp.darktable.export_timestamp"] = -1;
+    xmpData["Xmp.darktable.print_timestamp"] = -1;
+  }
+  sqlite3_finalize(stmt);
+}
+
+// read timestamps from XmpData
+gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
+{
+  gboolean all_ok = TRUE;
+  sqlite3_stmt *stmt;
+  Exiv2::XmpData::iterator pos;
+
+  const char *timestamps[] = { "change_timestamp", "export_timestamp", "print_timestamp" };
+  // Do not read for import_ts. It must be updated at each import.
+
+  const int nb_timestamps = sizeof(timestamps) / sizeof(char *);
+  int i;
+  char xmpkey[1024];
+  char query[1024];
+  char values[1024];
+  char tmp[64];
+
+  for (i = 0 ; i < nb_timestamps ; i++)
+  {
+    snprintf(xmpkey, sizeof(xmpkey), "Xmp.darktable.%s", timestamps[i]);
+    if((pos = xmpData.findKey(Exiv2::XmpKey(xmpkey))) != xmpData.end())
+    {
+      snprintf(tmp, sizeof(tmp), " %s = %ld,", timestamps[i], pos->toLong());
+      g_strlcat(values, tmp, sizeof(values));
+    }
+	}
+  values[strlen(values) - 1] = '\0'; /* remove last comma */
+  snprintf(query, sizeof(query), "UPDATE main.images SET %s WHERE id = %d", values, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) != SQLITE_DONE)
+    {
+      fprintf(stderr, "[exif] error writing timestamps entry for image %d\n", imgid);
+      fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+      all_ok = FALSE;
+    }
+  sqlite3_finalize(stmt);
+
+  return all_ok;
+}
+
 static void dt_remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
 {
   static const char *keys[] =
@@ -3382,6 +3458,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // The original file name
   if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
+
+  // timestamps
+  set_xmp_timestamps(xmpData, imgid);
 
   // GPS data
   dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);

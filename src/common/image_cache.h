@@ -66,6 +66,12 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache, const uint32_t imgid);
 
+// register timestamps in cache
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const uint32_t imgid);
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const uint32_t imgid);
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const uint32_t imgid);
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const uint32_t imgid);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
