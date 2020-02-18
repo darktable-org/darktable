@@ -961,6 +961,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
 
+  /* register export timestamp in cache */
+  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);

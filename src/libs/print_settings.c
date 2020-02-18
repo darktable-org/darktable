@@ -362,6 +362,9 @@ static int _print_job_run(dt_job_t *job)
   dt_tag_new(tag, &tagid);
   dt_tag_attach_from_gui(tagid, params->imgid, FALSE, FALSE);
 
+  /* register print timestamp in cache */
+  dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgid);
+
   return 0;
 }
 

@@ -778,14 +778,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
      "   raw_auto_bright_threshold, raw_black, raw_maximum,"
      "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
      "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end,"
-     "   position, aspect_ratio, exposure_bias)"
+     "   position, aspect_ratio, exposure_bias, import_timestamp)"
      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
      "       caption, description, license, sha1sum, orientation, histogram, lightmap,"
      "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
-     "       aspect_ratio, exposure_bias"
+     "       aspect_ratio, exposure_bias, import_timestamp"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
@@ -860,6 +860,9 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     // make sure that the duplicate doesn't have some magic darktable| tags
     dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE);
     dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE);
+
+    /* unset change timestamp */
+    dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
 
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
     const int32_t version = (newversion != -1) ? newversion : max_version + 1;
@@ -1174,14 +1177,15 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
-     "                         max_version, history_end, position)"
-     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+     "                         max_version, history_end, position, import_timestamp)"
+     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32), ?4 "
      " FROM images",
      -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flags);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, time(0));
 
   rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
@@ -1371,6 +1375,9 @@ void dt_image_init(dt_image_t *img)
   img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
+
+  img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = -1;
+
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;
 
