@@ -32,6 +32,7 @@ void dt_control_time_offset(const long int offset, int imgid);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
+void dt_control_delete_image(int imgid);
 void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
 gboolean dt_control_remove_images();

@@ -205,6 +205,32 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
   return job;
 }
 
+static dt_job_t *dt_control_generic_image_job_create(dt_job_execute_callback execute, const char *message,
+                                                     int flag, gpointer data, progress_type_t progress_type,
+                                                     int imgid)
+{
+  dt_job_t *job = dt_control_job_create(execute, "%s", message);
+  if(!job) return NULL;
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  if(progress_type != PROGRESS_NONE)
+    dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
+
+  g_list_free(params->index);
+  params->index = NULL;
+  params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
+
+  dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
+
+  params->flag = flag;
+  params->data = data;
+  return job;
+}
+
 static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
@@ -1469,6 +1495,44 @@ void dt_control_delete_images()
         : ngettext("do you really want to physically delete %d selected image from disk?",
           "do you really want to physically delete %d selected images from disk?", number),
         number);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), send_to_trash ? _("trash images?") : _("delete images?"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    if(res != GTK_RESPONSE_YES)
+    {
+      dt_control_job_dispose(job);
+      return;
+    }
+  }
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+}
+
+void dt_control_delete_image(int imgid)
+{
+  // first get all selected images, to avoid the set changing during ui interaction
+  dt_job_t *job = dt_control_generic_image_job_create(&dt_control_delete_images_job_run, N_("delete images"), 0,
+                                                      NULL, PROGRESS_SIMPLE, imgid);
+  int send_to_trash = dt_conf_get_bool("send_to_trash");
+  if(dt_conf_get_bool("ask_before_delete"))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    // Do not show the dialog if no valid image
+    if(imgid < 1)
+    {
+      dt_control_job_dispose(job);
+      return;
+    }
+
+    dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        send_to_trash ? _("do you really want to send selected image to trash?")
+                      : _("do you really want to physically delete selected image from disk?"));
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif

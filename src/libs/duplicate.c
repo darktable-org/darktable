@@ -37,13 +37,6 @@
 
 DT_MODULE(1)
 
-typedef enum _lib_duplicate_select_t
-{
-  DT_DUPLICATE_SELECT_NONE = 0,
-  DT_DUPLICATE_SELECT_FIRST = 1,
-  DT_DUPLICATE_SELECT_CURRENT = 2
-} dt_lib_duplicate_select_t;
-
 typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
@@ -53,8 +46,6 @@ typedef struct dt_lib_duplicate_t
   int cur_final_height;
   gboolean allow_zoom;
 
-  dt_lib_duplicate_select_t select;
-
   int32_t buf_width;
   int32_t buf_height;
   cairo_surface_t *surface;
@@ -62,7 +53,7 @@ typedef struct dt_lib_duplicate_t
   int buf_mip;
   int buf_timestamp;
 
-  GSList *thumbs;
+  GList *thumbs;
 } dt_lib_duplicate_t;
 
 const char *name(dt_lib_module_t *self)
@@ -99,15 +90,8 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   return FALSE;
 }
 
-static void _do_select(int imgid)
-{
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
-}
-
 static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  d->select = DT_DUPLICATE_SELECT_NONE;
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
@@ -117,8 +101,6 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  d->select = DT_DUPLICATE_SELECT_NONE;
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
@@ -130,8 +112,6 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
 static void _lib_duplicate_filmrolls_updated(gpointer instance, gpointer self)
 {
   _lib_duplicate_init_callback(NULL, self);
-  // TODO WHY DO WE HAVE THAT ? dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-  // DT_COLLECTION_CHANGE_RELOAD, NULL);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -139,11 +119,30 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
 
-  d->select = (imgid == darktable.develop->image_storage.id) ? DT_DUPLICATE_SELECT_FIRST : DT_DUPLICATE_SELECT_CURRENT;
+  if(imgid == darktable.develop->image_storage.id)
+  {
+    // we find the duplicate image to show now
+    GList *l = d->thumbs;
+    while(l)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      if(thumb->imgid == imgid)
+      {
+        GList *l2 = g_list_next(l);
+        if(!l2) l2 = g_list_previous(l);
+        if(l2)
+        {
+          dt_thumbnail_t *th2 = (dt_thumbnail_t *)l2->data;
+          dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, th2->imgid);
+          break;
+        }
+      }
+      l = g_list_next(l);
+    }
+  }
 
-  dt_selection_select_single(darktable.selection, imgid);
-  dt_control_set_mouse_over_id(imgid);
-  dt_control_delete_images();
+  // and we remove the image
+  dt_control_delete_image(imgid);
 }
 
 static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -178,8 +177,8 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     }
     else if(event->type == GDK_2BUTTON_PRESS)
     {
-      // to select the duplicate, we reuse the filmstrip proxy
-      _do_select(imgid);
+      // let's switch to the new image
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     }
   }
 }
@@ -291,7 +290,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   d->imgid = 0;
   // we drop all the thumbs
-  g_slist_free_full(d->thumbs, _thumb_remove);
+  g_list_free_full(d->thumbs, _thumb_remove);
   d->thumbs = NULL;
   // and the other widgets too
   gtk_container_foreach(GTK_CONTAINER(d->duplicate_box), (GtkCallback)gtk_widget_destroy, 0);
@@ -299,7 +298,6 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   sqlite3_stmt *stmt;
   dt_develop_t *dev = darktable.develop;
 
-  int first_imgid = -1;
   int count = 0;
 
   // we get a summarize of all versions of the image
@@ -325,9 +323,6 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
     thumb->disable_mouseover = TRUE;
     dt_thumbnail_set_mouseover(thumb, imgid == dev->image_storage.id);
-
-    // select original picture
-    if (first_imgid == -1) first_imgid = imgid;
 
     if (imgid != dev->image_storage.id)
     {
@@ -363,24 +358,10 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_show(hb);
 
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
-    d->thumbs = g_slist_append(d->thumbs, thumb);
+    d->thumbs = g_list_append(d->thumbs, thumb);
     count++;
   }
   sqlite3_finalize (stmt);
-
-  switch(d->select)
-  {
-     case DT_DUPLICATE_SELECT_FIRST:
-       _do_select(first_imgid);
-       break;
-     case DT_DUPLICATE_SELECT_CURRENT:
-         _do_select(darktable.develop->image_storage.id);
-       break;
-     case DT_DUPLICATE_SELECT_NONE:
-     default:
-       break;
-  }
-  d->select = DT_DUPLICATE_SELECT_NONE;
 
   gtk_widget_show(d->duplicate_box);
 
