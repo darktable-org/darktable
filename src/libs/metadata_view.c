@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -84,6 +85,9 @@ enum
   md_tag_names,
   md_categories,
 
+  /* hash */
+  md_hash,
+
   /* entries, do not touch! */
   md_size
 };
@@ -137,6 +141,9 @@ static void _lib_metatdata_view_init_labels()
   /* tags */
   _md_labels[md_tag_names] = _("tags");
   _md_labels[md_categories] = _("categories");
+
+  /* hash */
+  _md_labels[md_hash] = _("hash");
 }
 
 
@@ -631,6 +638,18 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     g_free(tagstring);
     g_free(categoriesstring);
     dt_tag_free_result(&tags);
+
+    /* hash */
+    double start = dt_get_wtime();
+    GList *history = dt_dev_history_get_items(mouse_over_id);
+    if(history)
+    {
+      const gchar *hash = dt_history_compute_hash(history);
+      _metadata_update_value(d->metadata[md_hash], hash ? hash : NODATA_STRING);
+      g_list_free_full(history, dt_dev_free_history_item);
+    }
+    double end = dt_get_wtime();
+    printf("get history plus hash time %f\n", end - start);
 
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);
