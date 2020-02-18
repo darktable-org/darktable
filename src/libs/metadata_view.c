@@ -23,6 +23,7 @@
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/history.h"
+#include "develop/develop.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -641,15 +642,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* hash */
     double start = dt_get_wtime();
-    GList *history = dt_dev_history_get_items(mouse_over_id);
-    if(history)
-    {
-      const gchar *hash = dt_history_compute_hash(history);
-      _metadata_update_value(d->metadata[md_hash], hash ? hash : NODATA_STRING);
-      g_list_free_full(history, dt_dev_free_history_item);
-    }
+    const gchar *hash = dt_hash_history_compute_from_db(mouse_over_id);
     double end = dt_get_wtime();
-    printf("get history plus hash time %f\n", end - start);
+    printf("get db hash img %d time %f\n", mouse_over_id, end - start);
+    _metadata_update_value(d->metadata[md_hash], hash ? hash : NODATA_STRING);
 
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);

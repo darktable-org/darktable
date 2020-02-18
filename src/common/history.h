@@ -76,11 +76,8 @@ char *dt_history_get_items_as_string(int32_t imgid);
 /* check if a module exists in the history of corresponding image */
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
-/** calculate the hash for that history */
-const char *dt_history_compute_hash(GList *history);
-
-/** get list of dev history items for image */
-GList *dt_dev_history_get_items(int32_t imgid);
+/** calculate the hash for that history from db*/
+const char *dt_hash_history_compute_from_db(int32_t imgid);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
