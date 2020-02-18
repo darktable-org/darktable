@@ -726,7 +726,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
-    uint8_t nb_token = parse_cube_line(line, &token[0][0]);
+    const uint8_t nb_token = parse_cube_line(line, &token[0][0]);
     if (nb_token)
     {
       if (token[0][0] == 'T') continue;
@@ -837,7 +837,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
   }
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
-    uint8_t nb_token = parse_cube_line(line, &token[0][0]);
+    const uint8_t nb_token = parse_cube_line(line, &token[0][0]);
     if (nb_token)
     {
       if (!level)
