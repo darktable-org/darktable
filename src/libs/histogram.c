@@ -384,24 +384,47 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
     {
       uint8_t *hist_wav = buf;
-      // make the color channel selector work:
-      // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
       uint8_t mask[3] = { d->blue, d->green, d->red };
-      for(int k = 0; k < 3; k++)
-        if(!mask[k])
+
+      if(dev->waveform_type == DT_DEV_WAVEFORM_OVERLAID)
+      {
+        // make the color channel selector work:
+        // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
+        for(int k = 0; k < 3; k++)
+          if(!mask[k])
+            for(int y = 0; y < waveform_height; y++)
+              for(int x = 0; x < waveform_width; x++)
+                hist_wav[y * waveform_stride + x * 4 + k] = 0;
+
+        cairo_surface_t *source
+            = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
+                                                     waveform_width, waveform_height, waveform_stride);
+
+        cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
+        cairo_set_source_surface(cr, source, 0.0, 0.0);
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+        cairo_paint(cr);
+        cairo_surface_destroy(source);
+      }
+      else
+      { // RGB parade
+        int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, waveform_width * 3);
+        uint8_t *parade = calloc(waveform_height * parade_stride, sizeof(uint8_t));
+        for(int k = 0; k < 3; k++)
           for(int y = 0; y < waveform_height; y++)
             for(int x = 0; x < waveform_width; x++)
-              hist_wav[y * waveform_stride + x * 4 + k] = 0;
+              parade[y * parade_stride + ((2-k) * waveform_width + x) * 4 + k] = hist_wav[y * waveform_stride + x * 4 + k];
 
-      cairo_surface_t *source
-          = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
-                                                   waveform_width, waveform_height, waveform_stride);
-
-      cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
-      cairo_set_source_surface(cr, source, 0.0, 0.0);
-      cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_paint(cr);
-      cairo_surface_destroy(source);
+        cairo_surface_t *source
+            = dt_cairo_image_surface_create_for_data(parade, CAIRO_FORMAT_ARGB32,
+                                                     waveform_width * 3, waveform_height, parade_stride);
+        cairo_scale(cr, darktable.gui->ppd*width/(waveform_width*3), darktable.gui->ppd*height/waveform_height);
+        cairo_set_source_surface(cr, source, 0.0, 0.0);
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+        cairo_paint(cr);
+        cairo_surface_destroy(source);
+        free(parade);
+      }
     }
     else if(dev->histogram_max)
     {
