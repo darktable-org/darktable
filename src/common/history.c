@@ -1158,6 +1158,29 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   return result;
 }
 
+static const int32_t _get_module_param_size(const dt_dev_history_item_t *item, const char *name)
+{
+  int32_t params_size = 0;
+  if(item->module)
+  {
+    params_size = item->module->params_size;
+  }
+  else
+  {
+    dt_iop_module_t *base = dt_iop_get_module(item->op_name);
+    if(base)
+    {
+      params_size = base->params_size;
+    }
+    else
+    {
+      // nothing else to do
+      fprintf(stderr, "[%s] can't find base module for %s\n", name, item->op_name);
+    }
+  }
+  return params_size;
+}
+
 GList *dt_history_duplicate(GList *hist)
 {
   GList *result = NULL;
@@ -1171,24 +1194,7 @@ GList *dt_history_duplicate(GList *hist)
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
-    int32_t params_size = 0;
-    if(old->module)
-    {
-      params_size = old->module->params_size;
-    }
-    else
-    {
-      dt_iop_module_t *base = dt_iop_get_module(old->op_name);
-      if(base)
-      {
-        params_size = base->params_size;
-      }
-      else
-      {
-        // nothing else to do
-        fprintf(stderr, "[_duplicate_history] can't find base module for %s\n", old->op_name);
-      }
-    }
+    const int32_t params_size = _get_module_param_size(old, "_duplicate_history");
 
     new->params = malloc(params_size);
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
@@ -1203,6 +1209,52 @@ GList *dt_history_duplicate(GList *hist)
     h = g_list_next(h);
   }
   return result;
+}
+
+const char *dt_history_compute_hash(GList *history)
+{
+  double start = dt_get_wtime();
+  GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+  GList *h = g_list_first(history);
+  while(h)
+  {
+    const dt_dev_history_item_t *item = (dt_dev_history_item_t *)(h->data);
+    if(item->enabled)
+    {
+      g_checksum_update(checksum, (const guchar *)&item->op_name, -1);
+      g_checksum_update(checksum, (const guchar *)&item->iop_order, sizeof(item->iop_order));
+      g_checksum_update(checksum, (const guchar *)&item->multi_priority, sizeof(item->multi_priority));
+      const int32_t params_size = _get_module_param_size(item, "_history_compute_hash");
+      if(params_size) g_checksum_update(checksum, (const guchar *)item->params, params_size);
+      g_checksum_update(checksum, (const guchar *)item->blend_params, sizeof(dt_develop_blend_params_t));
+    }
+    h = g_list_next(h);
+  }
+
+//  int64_t hash;
+//  gsize hash_size = sizeof(hash);
+//  g_checksum_get_digest(checksum, (guint8 *)&hash, &hash_size);
+  const gchar *hash = g_checksum_get_string(checksum);
+  double end = dt_get_wtime();
+  printf("hash time %f\n", end - start);
+  return hash;
+}
+
+GList *dt_dev_history_get_items(int32_t imgid)
+{
+  if(imgid == -1) return NULL;
+  dt_develop_t _dev = { 0 };
+  dt_develop_t *dev = &_dev;
+  dt_dev_init(dev, FALSE);
+  dev->iop = dt_iop_load_modules_ext(dev, TRUE);
+  dt_dev_read_history_ext(dev, imgid, TRUE);
+  dt_ioppr_check_iop_order(dev, imgid, "dt_dev_history_get_items ");
+  dt_dev_pop_history_items_ext(dev, dev->history_end);
+  dt_ioppr_check_iop_order(dev, imgid, "dt_dev_history_get_items 1");
+  GList *history = dev->history;
+  dev->history = NULL;
+  dt_dev_cleanup(dev);
+  return history;
 }
 
 #undef DT_IOP_ORDER_INFO
