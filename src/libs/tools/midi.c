@@ -538,7 +538,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             move -= location;
 
             // attempt to limit number of steps if acceleration too high to avoid flipping back and forth between ends of range
-            int direct_steps = abs((v - (wmin + midi->accum * (wmax-wmin)/127))/(s * midi->stored_knob->acceleration))+1;
+            int direct_steps = fabsf((v - (wmin + midi->accum * (wmax-wmin)/127))/(s * midi->stored_knob->acceleration))+1;
             move = MIN(direct_steps,MAX(-direct_steps,move));
 
             if (midi->stored_knob->locked ||
@@ -557,57 +557,53 @@ void aggregate_and_set_slider(MidiDevice *midi,
             }
             else
             {
-              if (!midi->syncing)
-              {
-                // if one knob is out of sync, all on same device may need syncing
-                refresh_sliders_to_device(midi);
+              gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
+              gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
+              
+              dt_control_log(("%s %s/%s %s"), 
+                              left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
+                              DT_BAUHAUS_WIDGET(w)->label, right_text);
+              
+              g_free(left_text);
+              g_free(right_text);
 
-                midi->syncing = TRUE;
-              }
-              else
-              {
-                gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
-                gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
-                
-                dt_control_log(("%s %s/%s %s"), 
-                                left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
-                                DT_BAUHAUS_WIDGET(w)->label, right_text);
-                
-                g_free(left_text);
-                g_free(right_text);
-              }
-
+              midi->syncing = TRUE;
               move = 0;
             }
           }
-          if (knob_config_mode)
+          if (move != 0)
           {
-            // configure acceleration setting
-            if (move > 0)
+            if (knob_config_mode)
             {
-              midi->stored_knob->acceleration *= 2;
+              // configure acceleration setting
+              if (move > 0)
+              {
+                midi->stored_knob->acceleration *= 2;
+              }
+              else
+              {
+                midi->stored_knob->acceleration /= 2;
+              }
+
+              dt_control_log(_("knob acceleration %.2f"), midi->stored_knob->acceleration);
+
+              midi_config_save(midi);
+
+              knob_config_mode = FALSE;
+
+              channel = -1;
+              key = -1;
             }
             else
             {
-              midi->stored_knob->acceleration /= 2;
+              dt_bauhaus_slider_set(w, v + s * midi->stored_knob->acceleration * move);
             }
-
-            dt_control_log(_("knob acceleration %.2f"), midi->stored_knob->acceleration);
-
-            midi_config_save(midi);
-
-            knob_config_mode = FALSE;
-
-            channel = -1;
-            key = -1;
-          }
-          else
-          {
-            dt_bauhaus_slider_set(w, v + s * midi->stored_knob->acceleration * move);
           }
         }
       }
     }
+
+    midi->stored_knob = NULL;
 
     if (channel != -1)
     {
@@ -706,8 +702,6 @@ void aggregate_and_set_slider(MidiDevice *midi,
       }
       else
       {
-        midi->stored_knob = NULL;
-
         GSList *l = midi->mapping_list;
         while(l)
         {
