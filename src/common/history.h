@@ -83,7 +83,7 @@ char *dt_history_get_items_as_string(int32_t imgid);
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
 /** calculate the hash for that history from db*/
-char *dt_hash_history_compute_from_db(int32_t imgid);
+gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash);
 
 /** save hash history for that image to database*/
 void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type);
