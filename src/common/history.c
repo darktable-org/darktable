@@ -1205,9 +1205,22 @@ GList *dt_history_duplicate(GList *hist)
   return result;
 }
 
-char *dt_hash_history_compute_from_db(const int32_t imgid)
+gchar *_hash_history_to_string(guint8 *hash, const gsize checksum_len)
 {
-  if(imgid == -1) return NULL;
+  char *hash_text = NULL;
+  guint8 *p = hash;
+  for(int i=0; i<checksum_len; i++)
+  {
+    uint8_t byte = p[0];
+    hash_text = dt_util_dstrcat(hash_text, "%02x", byte);
+    p++;
+  }
+  return hash_text;
+}
+
+gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash)
+{
+  if(imgid == -1) return 0;
   double start = dt_get_wtime();
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
@@ -1257,12 +1270,16 @@ char *dt_hash_history_compute_from_db(const int32_t imgid)
     }
   }
 
-  gchar *hash = g_strdup(g_checksum_get_string(checksum));
+  const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
+  *hash = g_malloc(checksum_len);
+  gsize hash_len = checksum_len;
+  g_checksum_get_digest(checksum, *hash, &hash_len);
+//  gchar *hash_control = g_strdup(g_checksum_get_string(checksum));
   g_checksum_free(checksum);
 
   double end = dt_get_wtime();
-  printf("hash_history_compute img %d time %f hash %s\n", imgid, end-start, hash);
-  return hash;
+  printf("hash_history_compute img %d time %f\n", imgid, end-start);
+  return hash_len;
 }
 
 void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
@@ -1270,7 +1287,8 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
   if(imgid == -1) return;
   double start = dt_get_wtime();
 
-  char *hash = dt_hash_history_compute_from_db(imgid);
+  guint8 *hash = NULL;
+  gsize hash_len = dt_hash_history_compute_from_db(imgid, &hash);
   if(hash)
   {
     char *fields = NULL;
@@ -1279,14 +1297,14 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
     if(type & DT_HH_INITIAL)
     {
       fields = dt_util_dstrcat(fields, "%s,", "initial");
-      values = dt_util_dstrcat(values, "'%s',", hash);
-      conflict = dt_util_dstrcat(conflict, "initial='%s',", hash);
+      values = g_strdup("?2,");
+      conflict = g_strdup("initial=?2,");
     }
     if(type & DT_HH_CURRENT)
     {
       fields = dt_util_dstrcat(fields, "%s,", "current");
-      values = dt_util_dstrcat(values, "'%s',", hash);
-      conflict = dt_util_dstrcat(conflict, "current='%s',", hash);
+      values = dt_util_dstrcat(values, "?2,");
+      conflict = dt_util_dstrcat(conflict, "current=?2,");
     }
     if(fields) fields[strlen(fields) - 1] = '\0';
     if(values) values[strlen(values) - 1] = '\0';
@@ -1296,11 +1314,14 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
     {
       sqlite3_stmt *stmt;
       char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
-                                          " (imgid, %s) VALUES (%d, %s)"
+                                          " (imgid, %s) VALUES (?1, %s)"
                                           " ON CONFLICT (imgid)"
                                           " DO UPDATE SET %s",
-                                          fields, imgid, values, conflict);
+                                          fields, values, conflict);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash, hash_len, SQLITE_TRANSIENT);
+
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
       g_free(query);
@@ -1309,7 +1330,9 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
       g_free(conflict);
     }
     double end = dt_get_wtime();
-    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash);
+    char *hash_text = _hash_history_to_string(hash, hash_len);
+    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
+    g_free(hash_text);
     g_free(hash);
   }
 }
