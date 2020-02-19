@@ -557,16 +557,21 @@ void aggregate_and_set_slider(MidiDevice *midi,
             }
             else
             {
-              gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
-              gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
-              
-              dt_control_log(("%s %s/%s %s"), 
-                              left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
-                              DT_BAUHAUS_WIDGET(w)->label, right_text);
-              
-              g_free(left_text);
-              g_free(right_text);
+              if (midi->syncing)
+              {
+                gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
+                gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
+                
+                dt_control_log(("%s %s/%s %s"), 
+                                left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
+                                DT_BAUHAUS_WIDGET(w)->label, right_text);
+                
+                g_free(left_text);
+                g_free(right_text);
+              }
 
+              // if one knob is out of sync, all on same device may need syncing
+              refresh_sliders_to_device(midi);
               midi->syncing = TRUE;
               move = 0;
             }
@@ -1566,6 +1571,9 @@ void midi_open_devices(dt_lib_module_t *self)
                               G_CALLBACK(callback_view_changed), self);
 
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                              G_CALLBACK(callback_image_changed), self);
+
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                               G_CALLBACK(callback_image_changed), self);
   }
 }
