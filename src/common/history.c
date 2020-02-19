@@ -1205,9 +1205,10 @@ GList *dt_history_duplicate(GList *hist)
   return result;
 }
 
-const char *dt_hash_history_compute_from_db(int32_t imgid)
+char *dt_hash_history_compute_from_db(const int32_t imgid)
 {
   if(imgid == -1) return NULL;
+  double start = dt_get_wtime();
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
 
@@ -1223,13 +1224,15 @@ const char *dt_hash_history_compute_from_db(int32_t imgid)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    // operation
     char *buf = (char *)sqlite3_column_text(stmt, 0);
-    int32_t params_len = sqlite3_column_bytes(stmt, 0);
+    if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+    // op_params
+    buf = (char *)sqlite3_column_blob(stmt, 1);
+    int params_len = sqlite3_column_bytes(stmt, 1);
     if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    buf = (char *)sqlite3_column_text(stmt, 1);
-    params_len = sqlite3_column_bytes(stmt, 1);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    buf = (char *)sqlite3_column_text(stmt, 2);
+    // blendop_params
+    buf = (char *)sqlite3_column_blob(stmt, 2);
     params_len = sqlite3_column_bytes(stmt, 2);
     if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
   }
@@ -1248,13 +1251,67 @@ const char *dt_hash_history_compute_from_db(int32_t imgid)
     g_checksum_update(checksum, (const guchar *)&version, sizeof(version));
     if(version == DT_IOP_ORDER_CUSTOM)
     {
+      // iop_list
       const char *buf = (char *)sqlite3_column_text(stmt, 1);
-      const int32_t params_len = sqlite3_column_bytes(stmt, 1);
-      if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
     }
   }
-  const gchar *hash = g_checksum_get_string(checksum);
+
+  gchar *hash = g_strdup(g_checksum_get_string(checksum));
+  g_checksum_free(checksum);
+
+  double end = dt_get_wtime();
+  printf("hash_history_compute img %d time %f hash %s\n", imgid, end-start, hash);
   return hash;
+}
+
+void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
+{
+  if(imgid == -1) return;
+  double start = dt_get_wtime();
+
+  char *hash = dt_hash_history_compute_from_db(imgid);
+  if(hash)
+  {
+    char *fields = NULL;
+    char *values = NULL;
+    char *conflict = NULL;
+    if(type & DT_HH_INITIAL)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "initial");
+      values = dt_util_dstrcat(values, "'%s',", hash);
+      conflict = dt_util_dstrcat(conflict, "initial='%s',", hash);
+    }
+    if(type & DT_HH_CURRENT)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "current");
+      values = dt_util_dstrcat(values, "'%s',", hash);
+      conflict = dt_util_dstrcat(conflict, "current='%s',", hash);
+    }
+    if(fields) fields[strlen(fields) - 1] = '\0';
+    if(values) values[strlen(values) - 1] = '\0';
+    if(conflict) conflict[strlen(conflict) - 1] = '\0';
+
+    if(fields)
+    {
+      sqlite3_stmt *stmt;
+      char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
+                                          " (imgid, %s) VALUES (%d, %s)"
+                                          " ON CONFLICT (imgid)"
+                                          " DO UPDATE SET %s",
+                                          fields, imgid, values, conflict);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      g_free(query);
+      g_free(fields);
+      g_free(values);
+      g_free(conflict);
+    }
+    double end = dt_get_wtime();
+    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash);
+    g_free(hash);
+  }
 }
 
 #undef DT_IOP_ORDER_INFO
