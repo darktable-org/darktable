@@ -2093,8 +2093,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // in creation mode
   if(gui->creation)
   {
-    const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;
+    const float wd = darktable.develop->preview_pipe->iwidth * darktable.develop->preview_downsampling;
+    const float ht = darktable.develop->preview_pipe->iheight * darktable.develop->preview_downsampling;
 
     if(gui->guipoints_count == 0)
     {
