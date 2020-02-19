@@ -1573,8 +1573,8 @@ void midi_open_devices(dt_lib_module_t *self)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                               G_CALLBACK(callback_image_changed), self);
 
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-                              G_CALLBACK(callback_image_changed), self);
+//    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+//                              G_CALLBACK(callback_image_changed), self);
   }
 }
 
