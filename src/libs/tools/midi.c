@@ -426,6 +426,11 @@ static void callback_slider_changed(GtkWidget *w, gpointer data)
   return;
 }
 
+static void callback_image_changed(gpointer instance, gpointer data)
+{
+  refresh_all_devices(data);
+}
+
 static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer data)
 {
   if (new_view->view(new_view) == DT_VIEW_DARKROOM)
@@ -441,14 +446,20 @@ static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_vie
       }
 
       l = g_slist_next(l);
-    }  
+    }
+    
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                              G_CALLBACK(callback_image_changed), data);
+
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+                              G_CALLBACK(callback_image_changed), data);
+  }
+  else
+  {
+    dt_control_signal_disconnect(darktable.signals, 
+                                G_CALLBACK(callback_image_changed), data);
   }
 
-  refresh_all_devices(data);
-}
-
-static void callback_image_changed(gpointer instance, gpointer data)
-{
   refresh_all_devices(data);
 }
 
@@ -1569,12 +1580,6 @@ void midi_open_devices(dt_lib_module_t *self)
   {
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                               G_CALLBACK(callback_view_changed), self);
-
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                              G_CALLBACK(callback_image_changed), self);
-
-//    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-//                              G_CALLBACK(callback_image_changed), self);
   }
 }
 
@@ -1582,10 +1587,6 @@ void midi_close_devices(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, 
                                G_CALLBACK(callback_view_changed), self);
-
-  dt_control_signal_disconnect(darktable.signals, 
-                               G_CALLBACK(callback_image_changed), self);
-
 
   g_slist_free_full (self->data, (void (*)(void *))midi_device_free);
   self->data = NULL;
