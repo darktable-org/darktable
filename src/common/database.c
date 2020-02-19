@@ -1214,7 +1214,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     {
       const int32_t imgid = sqlite3_column_int(mig_stmt, 0);
       char operation[20] = { 0 };
-      memcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
+      g_strlcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
       const int multi_priority = sqlite3_column_int(mig_stmt, 2);
       const double iop_order = sqlite3_column_double(mig_stmt, 3);
       const int iop_order_version = sqlite3_column_int(mig_stmt, 4);
@@ -1290,8 +1290,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             GList *next = g_list_next(l);
             if(next
-               && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
-                         ((dt_iop_order_entry_t *)(next->data))->operation))
+               && (strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                          ((dt_iop_order_entry_t *)(next->data))->operation) == 0))
             {
               has_multiple_instances = TRUE;
               break;
@@ -1596,7 +1596,7 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_LIBRARY)
   {
-    int new_version = _upgrade_library_schema_step(db, version);
+    const int new_version = _upgrade_library_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_library_schema_step
     else
@@ -1611,7 +1611,7 @@ static gboolean _upgrade_data_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_DATA)
   {
-    int new_version = _upgrade_data_schema_step(db, version);
+    const int new_version = _upgrade_data_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_data_schema_step
     else
@@ -1771,6 +1771,8 @@ static void _create_memory_schema(dt_database_t *db)
       "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
       "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
       NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+      "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))", NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
@@ -2118,15 +2120,15 @@ start:
     if(!dbname)
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/library.db", datadir);
     else if(!strcmp(dbname, ":memory:"))
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/%s", datadir, dbname);
     else
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
   else
   {
-    snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", alternative);
+    g_strlcpy(dbfilename_library, alternative, sizeof(dbfilename_library));
 
     GFile *galternative = g_file_new_for_path(alternative);
     dbname = g_file_get_basename(galternative);

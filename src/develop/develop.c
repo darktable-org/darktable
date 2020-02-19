@@ -846,14 +846,14 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
         }
       }
     }
-    snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
+    g_strlcpy(hist->op_name, module->op, sizeof(hist->op_name));
     hist->focus_hash = dev->focus_hash;
     hist->enabled = module->enabled;
     hist->module = module;
     hist->params = malloc(module->params_size);
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
-    snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", module->multi_name);
+    g_strlcpy(hist->multi_name, module->multi_name, sizeof(hist->multi_name));
     /* allocate and set hist blend_params */
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(hist->params, module->params, module->params_size);
@@ -1048,6 +1048,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   dt_lock_image(dev->image_storage.id);
 
+  dt_ioppr_set_default_iop_order(dev, dev->image_storage.id);
   dt_dev_pop_history_items(dev, 0);
 
   // remove unused history items:
@@ -1152,7 +1153,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 
     hist->module->iop_order = hist->iop_order;
     hist->module->enabled = hist->enabled;
-    snprintf(hist->module->multi_name, sizeof(hist->module->multi_name), "%s", hist->multi_name);
+    g_strlcpy(hist->module->multi_name, hist->multi_name, sizeof(hist->module->multi_name));
     if(hist->forms) forms = hist->forms;
 
     history = g_list_next(history);
@@ -1620,7 +1621,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         {
           hist->module = module;
           if(multi_name)
-            snprintf(module->multi_name, sizeof(module->multi_name), "%s", multi_name);
+            g_strlcpy(module->multi_name, multi_name, sizeof(module->multi_name));
           else
             memset(module->multi_name, 0, sizeof(module->multi_name));
           break;
@@ -1641,7 +1642,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         dt_iop_update_multi_priority(new_module, multi_priority);
         new_module->iop_order = iop_order;
 
-        snprintf(new_module->multi_name, sizeof(new_module->multi_name), "%s", multi_name);
+        g_strlcpy(new_module->multi_name, multi_name, sizeof(new_module->multi_name));
 
         dev->iop = g_list_append(dev->iop, new_module);
 
@@ -1671,8 +1672,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    snprintf(hist->op_name, sizeof(hist->op_name), "%s", hist->module->op);
-    snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", multi_name);
+    g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
+    g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->iop_order = iop_order;
     hist->multi_priority = multi_priority;
     // update module iop_order only on active history entries

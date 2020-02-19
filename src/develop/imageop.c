@@ -575,8 +575,8 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander, -1);
 
-    gtk_widget_destroy(module->widget);
     dt_iop_gui_cleanup_module(module);
+    gtk_widget_destroy(module->widget);
   }
 
   // we remove all references in the history stack and dev->iop
@@ -737,6 +737,8 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   prev->dev->preview_pipe->cache_obsolete = 1;
   prev->dev->preview2_pipe->cache_obsolete = 1;
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(prev->dev);
 }
@@ -776,6 +778,8 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   next->dev->pipe->cache_obsolete = 1;
   next->dev->preview_pipe->cache_obsolete = 1;
   next->dev->preview2_pipe->cache_obsolete = 1;
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(next->dev);
@@ -2178,6 +2182,31 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
     dt_accel_connect_preset_iop(module, (char *)sqlite3_column_text(stmt, 0));
   }
   sqlite3_finalize(stmt);
+}
+
+// to be called before issuing any query based on memory.darktable_iop_names
+void dt_iop_set_darktable_iop_table()
+{
+  sqlite3_stmt *stmt;
+  gchar *module_list = NULL;
+  GList *iop = g_list_first(darktable.iop);
+  while(iop != NULL)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+    module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module->name());
+    iop = g_list_next(iop);
+  }
+
+  if(module_list)
+  {
+    module_list[strlen(module_list) - 1] = '\0';
+    char *query = dt_util_dstrcat(NULL, "INSERT INTO memory.darktable_iop_names (operation, name) VALUES %s", module_list);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    g_free(query);
+    g_free(module_list);
+  }
 }
 
 gchar *dt_iop_get_localized_name(const gchar *op)

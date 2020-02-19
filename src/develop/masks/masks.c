@@ -1329,7 +1329,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     dt_masks_form_t *form = dt_masks_create(type);
     form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
-    snprintf(form->name, sizeof(form->name), "%s", name);
+    g_strlcpy(form->name, name, sizeof(form->name));
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);

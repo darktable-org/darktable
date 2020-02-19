@@ -17,7 +17,6 @@ endif(CURL_FOUND)
 
 foreach(module ${MODULES})
 	add_library(${module} MODULE "${module}.c")
-	add_dependencies(${module} generate_metadata)
 endforeach(module)
 
 foreach(module ${MODULES})

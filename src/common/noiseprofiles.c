@@ -41,7 +41,7 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
     snprintf(filename, sizeof(filename), "%s/%s", datadir, "noiseprofiles.json");
   }
   else
-    snprintf(filename, sizeof(filename), "%s", alternative);
+    g_strlcpy(filename, alternative, sizeof(filename));
 
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] loading noiseprofiles from `%s'\n", filename);
   if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return NULL;

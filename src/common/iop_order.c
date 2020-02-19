@@ -53,6 +53,18 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
                       "tree-vectorize")
 #endif
 
+const char *iop_order_string[] =
+{
+  N_("custom"),
+  N_("legacy"),
+  N_("v3.0")
+};
+
+const char *dt_iop_order_string(const int i)
+{
+  return iop_order_string[i];
+}
+
 // note legacy_order & v30_order have the original iop-order double that is
 // used only for the initial database migration.
 //
@@ -274,7 +286,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
       {
         dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-        strncpy(new_entry->operation, new_module, sizeof(new_entry->operation) - 1);
+        g_strlcpy(new_entry->operation, new_module, sizeof(new_entry->operation));
         new_entry->instance = 0;
         new_entry->o.iop_order = 0;
 
@@ -547,7 +559,7 @@ GList *_table_to_list(const dt_iop_order_entry_t entries[])
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-    strncpy(entry->operation, entries[k].operation, sizeof(entry->operation) - 1);
+    g_strlcpy(entry->operation, entries[k].operation, sizeof(entry->operation));
     entry->instance = 0;
     entry->o.iop_order_f = entries[k].o.iop_order_f;
     iop_order_list = g_list_append(iop_order_list, entry);
@@ -1023,7 +1035,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
         for(int k = 0; k<add_count; k++)
         {
           dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-          strncpy(n->operation, ep->operation, sizeof(n->operation));
+          g_strlcpy(n->operation, ep->operation, sizeof(n->operation));
           n->instance = multi_priority++;
           n->o.iop_order = 0;
           dev->iop_order_list = g_list_insert_before(dev->iop_order_list, l, n);
@@ -1093,7 +1105,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, gboolean app
     const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)m_list->data;
 
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-    strncpy(n->operation, mod->op, sizeof(n->operation));
+    g_strlcpy(n->operation, mod->op, sizeof(n->operation));
     n->instance = mod->multi_priority;
     n->o.iop_order = 0;
     e_list = g_list_append(e_list, n);
@@ -1760,7 +1772,7 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *
 
   dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-  strncpy(entry->operation, operation, sizeof(entry->operation));
+  g_strlcpy(entry->operation, operation, sizeof(entry->operation));
   entry->instance = instance;
   entry->o.iop_order = 0;
 
@@ -1978,7 +1990,7 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 
     // first operation name
 
-    strncpy(entry->operation, (char *)l->data, sizeof(entry->operation) - 1);
+    g_strlcpy(entry->operation, (char *)l->data, sizeof(entry->operation));
 
     // then operation instance
 

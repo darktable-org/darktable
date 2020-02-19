@@ -276,7 +276,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   }
 
   // store away dir.
-  snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
+  g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
   c = filename + strlen(filename);
   for(; c > filename && *c != '.' && *c != '/'; c--)
@@ -312,8 +312,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     ;
   if(*c == '/') c++;
   if(c <= filename) c = filename;
-  snprintf(relfilename, sizeof(relfilename), "%s", c);
-  snprintf(relthumbfilename, sizeof(relthumbfilename), "%s", relfilename);
+  g_strlcpy(relfilename, c, sizeof(relfilename));
+  g_strlcpy(relthumbfilename, relfilename, sizeof(relthumbfilename));
   c = relthumbfilename + strlen(relthumbfilename);
   for(; c > relthumbfilename && *c != '.'; c--)
     ;
@@ -321,7 +321,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   sprintf(c, "-thumb.%s", ext);
 
   char subfilename[PATH_MAX] = { 0 }, relsubfilename[PATH_MAX] = { 0 };
-  snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
+  g_strlcpy(subfilename, d->cached_dirname, sizeof(subfilename));
   char *sc = subfilename + strlen(subfilename);
   sprintf(sc, "/img_%d.html", num);
   snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
@@ -432,7 +432,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
   char filename[PATH_MAX] = { 0 };
-  snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
+  g_strlcpy(filename, d->cached_dirname, sizeof(filename));
   char *c = filename + strlen(filename);
 
   // also create style/ subdir:

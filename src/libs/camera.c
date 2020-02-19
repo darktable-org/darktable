@@ -346,7 +346,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
-  snprintf(model, strlen(model), "%s", lib->data.camera_model);
+  g_strlcpy(model, lib->data.camera_model, strlen(model));
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
@@ -515,7 +515,7 @@ void gui_init(dt_lib_module_t *self)
 
   // user specified properties
   label = dt_ui_section_label_new(_("additional properties"));
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
   dt_gui_add_help_link(self->widget, "camera_settings.html#camera_settings");
 
   label = gtk_label_new(_("label"));
@@ -544,8 +544,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
-
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
