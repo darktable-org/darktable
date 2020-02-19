@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 23
+#define CURRENT_DATABASE_VERSION_LIBRARY 24
 #define CURRENT_DATABASE_VERSION_DATA     5
 
 typedef struct dt_database_t
@@ -1415,6 +1415,15 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 23;
   }
+  else if(version == 23)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial CHAR(40), current CHAR(40))",
+             "[init] can't create table history_hash\n");
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 24;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1695,6 +1704,8 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial CHAR(40), current CHAR(40))",
                NULL, NULL, NULL);
 }
 
