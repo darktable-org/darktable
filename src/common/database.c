@@ -1418,7 +1418,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   else if(version == 23)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
-    TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial CHAR(40), current CHAR(40))",
+    TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial BLOB, current BLOB)",
              "[init] can't create table history_hash\n");
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
@@ -1705,7 +1705,7 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial CHAR(40), current CHAR(40))",
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, initial BLOB, current BLOB)",
                NULL, NULL, NULL);
 }
 
