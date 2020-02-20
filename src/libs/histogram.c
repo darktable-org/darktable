@@ -408,21 +408,37 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       }
       else
       { // RGB parade
-        int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, waveform_width * 3);
-        uint8_t *parade = calloc(waveform_height * parade_stride, sizeof(uint8_t));
+        int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, waveform_width);
+        uint8_t *parade = calloc(waveform_height * parade_stride * 3, sizeof(uint8_t));
+        // FIXME: if hide a channel, make the other two fill half the area? is it any use to hide channels in RGB parade?
+        // FIXME: format histogram data in this order, so don't have to reformat, then use conditional per channel on where to draw it
         for(int k = 0; k < 3; k++)
-          for(int y = 0; y < waveform_height; y++)
-            for(int x = 0; x < waveform_width; x++)
-              parade[y * parade_stride + ((2-k) * waveform_width + x) * 4 + k] = hist_wav[y * waveform_stride + x * 4 + k];
+          if(mask[k])
+          {
+            uint8_t *p = parade + parade_stride * waveform_height * (2-k);
+            for(int y = 0; y < waveform_height; y++)
+              for(int x = 0; x < waveform_width; x++)
+                p[y * parade_stride + x] = hist_wav[y * waveform_stride + x * 4 + k];
+          }
 
-        cairo_surface_t *source
-            = dt_cairo_image_surface_create_for_data(parade, CAIRO_FORMAT_ARGB32,
-                                                     waveform_width * 3, waveform_height, parade_stride);
         cairo_scale(cr, darktable.gui->ppd*width/(waveform_width*3), darktable.gui->ppd*height/waveform_height);
-        cairo_set_source_surface(cr, source, 0.0, 0.0);
-        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-        cairo_paint(cr);
-        cairo_surface_destroy(source);
+        cairo_scale(cr, 0.5, 0.5);  // why?
+        // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+        for(int k = 0; k < 3; k++)
+        {
+          cairo_save(cr);
+          cairo_set_source_rgb(cr, k==0, k==1, k==2);
+          // FIXME: useful to clip?
+          cairo_rectangle(cr, 0, 0, waveform_width, waveform_height);
+          cairo_clip(cr);
+          cairo_surface_t *alpha = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k, CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
+          cairo_mask_surface(cr, alpha, 0, 0);
+          cairo_surface_destroy(alpha);
+          cairo_restore(cr);
+          cairo_translate(cr, waveform_width, 0);
+        }
         free(parade);
       }
     }
@@ -556,7 +572,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
               gtk_widget_set_tooltip_text(widget, _("set mode to linear"));
               break;
             case DT_DEV_HISTOGRAM_LINEAR:
-              gtk_widget_set_tooltip_text(widget, _("set mode to waveform"));
+              gtk_widget_set_tooltip_text(widget, _("set mode to logarithmic"));
               break;
             default:
               g_assert_not_reached();
