@@ -1142,7 +1142,7 @@ dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int
 int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface)
 {
   // if surface not null, clean it up
-  if(*surface) cairo_surface_destroy(*surface);
+  if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
 
   // get mipmap cahe image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
