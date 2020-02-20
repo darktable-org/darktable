@@ -756,9 +756,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_image_synch_xmp(dev->image_storage.id);
   }
 
-  // update history hash
-  dt_hash_history_write(dev->image_storage.id, DT_HH_CURRENT);
-
   // cleanup visible masks
   if(!dev->form_gui)
   {

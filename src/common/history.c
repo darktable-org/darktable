@@ -1285,7 +1285,7 @@ gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash)
 void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
 {
   if(imgid == -1) return;
-  double start = dt_get_wtime();
+//  double start = dt_get_wtime();
 
   guint8 *hash = NULL;
   gsize hash_len = dt_hash_history_compute_from_db(imgid, &hash);
@@ -1296,15 +1296,21 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
     char *conflict = NULL;
     if(type & DT_HH_INITIAL)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "initial");
+      fields = dt_util_dstrcat(fields, "%s,", "initial_hash");
       values = g_strdup("?2,");
-      conflict = g_strdup("initial=?2,");
+      conflict = g_strdup("initial_hash=?2,");
+    }
+    if(type & DT_HH_DEFAULT)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "default_hash");
+      values = dt_util_dstrcat(values, "?2,");
+      conflict = dt_util_dstrcat(conflict, "default_hash=?2,");
     }
     if(type & DT_HH_CURRENT)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "current");
+      fields = dt_util_dstrcat(fields, "%s,", "current_hash");
       values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "current=?2,");
+      conflict = dt_util_dstrcat(conflict, "current_hash=?2,");
     }
     if(fields) fields[strlen(fields) - 1] = '\0';
     if(values) values[strlen(values) - 1] = '\0';
@@ -1321,7 +1327,6 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash, hash_len, SQLITE_TRANSIENT);
-
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
       g_free(query);
@@ -1329,10 +1334,10 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
       g_free(values);
       g_free(conflict);
     }
-    double end = dt_get_wtime();
-    char *hash_text = _hash_history_to_string(hash, hash_len);
-    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
-    g_free(hash_text);
+//    double end = dt_get_wtime();
+//    char *hash_text = _hash_history_to_string(hash, hash_len);
+//    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
+//    g_free(hash_text);
     g_free(hash);
   }
 }

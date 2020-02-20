@@ -28,7 +28,8 @@ struct dt_iop_module_t;
 typedef enum dt_hash_history_t
 {
   DT_HH_INITIAL = 1 << 0,
-  DT_HH_CURRENT = 1 << 1
+  DT_HH_DEFAULT = 1 << 1,
+  DT_HH_CURRENT = 1 << 2
 } dt_hash_history_t;
 
 /** helper function to free a GList of dt_history_item_t */

@@ -831,11 +831,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     {
       // make sure the current iop-order list is written as this will be duplicated from the db
       dt_ioppr_write_iop_order_list(darktable.develop->iop_order_list, imgid);
+      dt_hash_history_write(imgid, DT_HH_CURRENT);
     }
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.module_order (imgid, iop_list, version)"
-                                "  SELECT ?1, iop_list, version FROM main.module_order WHERE imgid = ?2",
+                                "INSERT INTO main.module_order (imgid, iop_list, version,"
+                                " initial_hash, default_hash, current_hash)"
+                                "  SELECT ?1, iop_list, version, initial_hash, default_hash, current_hash"
+                                "    FROM main.module_order WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -933,6 +936,11 @@ void dt_image_remove(const int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.module_order WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history_hash WHERE imgid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);

@@ -1301,6 +1301,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write the current iop-order-list for this image
 
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+  dt_hash_history_write(imgid, DT_HH_CURRENT);
 
   dt_unlock_image(imgid);
 }
@@ -1308,6 +1309,18 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 void dt_dev_write_history(dt_develop_t *dev)
 {
   dt_dev_write_history_ext(dev, dev->image_storage.id);
+}
+
+static int _dev_get_module_nb_records()
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT count (*) FROM  memory.history",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  const int cnt = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return cnt;
 }
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
@@ -1558,18 +1571,28 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
     // prepend all default modules to memory.history
     _dev_add_default_modules(dev, imgid);
+    const int default_modules = _dev_get_module_nb_records();
 
-    // maybe add auto-presets to memory.history and commit everything into main.history
+    // maybe add auto-presets to memory.history
     const gboolean first_run = _dev_auto_apply_presets(dev);
+    const int auto_apply_modules = _dev_get_module_nb_records() - default_modules;
 
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
+
+    if(first_run)
+    {
+      dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+      dt_hash_history_t flags = DT_HH_CURRENT | (auto_apply_modules ? DT_HH_DEFAULT : DT_HH_INITIAL);
+      dt_hash_history_write(imgid, flags);
+    }
 
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
 
     // make sure module_dev is in sync with history
     dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+    dt_hash_history_write(imgid, DT_HH_CURRENT);
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
