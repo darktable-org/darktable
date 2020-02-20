@@ -64,6 +64,8 @@ static const char WhiteFluorescent[] = N_("white fluorescent");
 static const char SodiumVaporFluorescent[] = N_("sodium-vapor fluorescent");
 static const char DayWhiteFluorescent[] = N_("day white fluorescent");
 static const char HighTempMercuryVaporFluorescent[] = N_("high temp. mercury-vapor fluorescent");
+// Found in Nikon P1000
+static const char HTMercury[] = N_("high temp. mercury-vapor");
 // On Some Panasonic
 static const char D55[] = N_("D55");
 static const char ISO_Studio_Tungsten[] = N_("ISO Studio Tungsten");
