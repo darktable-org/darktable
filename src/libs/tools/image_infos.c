@@ -110,13 +110,7 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   dt_variables_params_destroy(vp);
 
   // we change the label
-  GtkTextIter i1;
-  GtkTextIter i2;
-  GtkTextBuffer *tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(d->tview));
-  gtk_text_buffer_get_start_iter(tbuf, &i1);
-  gtk_text_buffer_get_end_iter(tbuf, &i2);
-  gtk_text_buffer_delete(tbuf, &i1, &i2);
-  gtk_text_buffer_insert_markup(tbuf, &i1, msg, -1);
+  gtk_label_set_markup(GTK_LABEL(d->tview), msg);
 
   g_free(msg);
 }
@@ -128,9 +122,9 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_event_box_new();
-  d->tview = gtk_text_view_new();
-  gtk_text_view_set_justification(GTK_TEXT_VIEW(d->tview), GTK_JUSTIFY_CENTER);
-  gtk_text_view_set_editable(GTK_TEXT_VIEW(d->tview), FALSE);
+  d->tview = gtk_label_new("");
+  gtk_label_set_ellipsize(GTK_LABEL(d->tview), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_justify(GTK_LABEL(d->tview), GTK_JUSTIFY_CENTER);
   gtk_container_add(GTK_CONTAINER(self->widget), d->tview);
   gtk_widget_set_name(GTK_WIDGET(d->tview), "image-info");
 
