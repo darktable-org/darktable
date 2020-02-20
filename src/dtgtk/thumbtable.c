@@ -349,6 +349,11 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
                                                  sqlite3_column_int(stmt, 0));
+        if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+        {
+          thumb->single_click = TRUE;
+          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
+        }
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_prepend(table->list, thumb);
@@ -386,6 +391,11 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
                                                  sqlite3_column_int(stmt, 0));
+        if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+        {
+          thumb->single_click = TRUE;
+          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
+        }
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_append(table->list, thumb);
@@ -1317,6 +1327,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       {
         // we create a completly new thumb
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow);
+        if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+        {
+          thumb->single_click = TRUE;
+          thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
+        }
         thumb->x = posx;
         thumb->y = posy;
         newlist = g_list_append(newlist, thumb);
@@ -1408,6 +1423,23 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
+    }
+
+    // we set selection/activation properties of all thumbs
+    dt_thumbnail_selection_mode_t sel_mode = DT_THUMBNAIL_SEL_MODE_NORMAL;
+    gboolean single_click = FALSE;
+    if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
+      single_click = TRUE;
+    }
+    GList *l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      th->sel_mode = sel_mode;
+      th->single_click = single_click;
+      l = g_list_next(l);
     }
 
     table->mode = mode;

@@ -82,6 +82,7 @@ typedef struct
   dt_thumbnail_border_t group_borders; // which group borders should be drawn
 
   dt_thumbnail_selection_mode_t sel_mode; // do we allow to change selection with mouse ?
+  gboolean single_click;                  // do we activate on single or double click ?
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
 } dt_thumbnail_t;
 
