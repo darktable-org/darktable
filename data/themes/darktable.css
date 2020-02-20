@@ -1439,9 +1439,9 @@ Details :
 /* background */
 @keyframes lastactive
 {
-  0% {background-color: @thumbnail_bg_color;}
-  50% {background-color: @thumbnail_hover_bg_color;}
-  100% {background-color: @thumbnail_bg_color;}
+  0% {border-color: @lighttable_bg_color; border-width : 2px;}
+  50% {border-color: @grey_100; border-width : 6px;}
+  100% {border-color: @lighttable_bg_color; border-width : 2px;}
 }
 #thumb_back
 {
