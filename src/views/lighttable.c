@@ -74,7 +74,6 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 static void _preview_quit(dt_view_t *self);
 
 static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_first_image);
-static gboolean _culling_recreate_slots(dt_view_t *self);
 
 typedef struct dt_preview_surface_t
 {
@@ -155,6 +154,7 @@ typedef struct dt_library_t
   gboolean slots_changed;
   dt_layout_image_t culling_previous, culling_next;
   gboolean culling_use_selection;
+  gboolean culling_follow_selection;
   gboolean already_started;
   gboolean select_deactivate;
   int last_num_images, last_width, last_height;
@@ -256,13 +256,115 @@ static int _culling_get_selection_count()
 
   return nb;
 }
-static gboolean _culling_check_scrolling_mode(dt_view_t *self)
+
+// init navigate in selection and follow selection and return first image to display
+static int _culling_preview_init_values(dt_view_t *self, gboolean culling, gboolean preview)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  // we set the scrolling mode
-  const int sel_count = _culling_get_selection_count();
-  lib->culling_use_selection = (sel_count > 1);
-  return lib->culling_use_selection;
+  /** HOW it works :
+   *
+   * For the first image :
+   *  image_over OR first selected OR first OR -1
+   *
+   * For the navigation in selection :
+   *  culling dynamic mode                       => OFF
+   *  first image in selection AND selection > 1 => ON
+   *  otherwise                                  => OFF
+   *
+   * For the selection following :
+   *  culling dynamic mode         => OFF
+   *  first image(s) == selection  => ON
+   */
+
+  // init values
+  if(preview)
+  {
+    lib->full_preview_follow_sel = FALSE;
+    lib->full_preview_inside_sel = FALSE;
+  }
+  else if(culling)
+  {
+    lib->full_preview_follow_sel = FALSE;
+    lib->full_preview_inside_sel = FALSE;
+  }
+
+  // get first id
+  sqlite3_stmt *stmt;
+  int first_id = dt_control_get_mouse_over_id();
+  if(first_id < 1)
+  {
+    // search the first selected image
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
+        "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+        -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+  if(first_id < 1)
+  {
+    // search the first image shown in view (this is the offset of thumbtable)
+    first_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+  }
+  if(first_id < 1 || (!culling && !preview))
+  {
+    // no need to go further
+    return first_id;
+  }
+
+  // special culling dynamic mode
+  if(!preview && culling
+     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+  {
+    lib->culling_use_selection = TRUE;
+    return first_id;
+  }
+
+  // selection count
+  int sel_count = 0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT count(*) FROM memory.collected_images AS col, main.selected_images as sel "
+                              "WHERE col.imgid=sel.imgid",
+                              -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  // is first_id inside selection ?
+  gboolean inside = FALSE;
+  gchar *query
+      = dt_util_dstrcat(NULL,
+                        "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images AS sel "
+                        "WHERE col.imgid=sel.imgid AND col.imgid=%d",
+                        first_id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  if(preview)
+  {
+    lib->full_preview_inside_sel = (sel_count > 1 && inside);
+    lib->full_preview_follow_sel = (sel_count == 1 && inside);
+  }
+  else if(culling)
+  {
+    const int zoom = get_zoom();
+    lib->culling_use_selection = (sel_count > zoom && inside);
+    if(sel_count <= zoom && inside)
+    {
+      lib->culling_follow_selection = TRUE;
+      // ensure that first_id is the first selected
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
+          "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+          -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+    }
+  }
+
+  return first_id;
 }
 
 static void check_layout(dt_view_t *self)
@@ -277,13 +379,17 @@ static void check_layout(dt_view_t *self)
   // layout has changed, let restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
+  // make sure we reset culling layout
+  _culling_destroy_slots(self);
+
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
 
     // if we arrive from culling, we just need to ensure the offset is right
-    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
+    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
+      printf("lib->thumbtable_offset %d\n", lib->thumbtable_offset);
       dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
     // we want to reacquire the thumbtable if needed
@@ -306,12 +412,9 @@ static void check_layout(dt_view_t *self)
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
-    _culling_check_scrolling_mode(self);
+    _culling_recreate_slots_at(self, _culling_preview_init_values(self, TRUE, FALSE));
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling_use_selection;
   }
-
-  // make sure we reset culling layout
-  _culling_destroy_slots(self);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
   {
@@ -362,36 +465,6 @@ static void _full_preview_destroy(dt_view_t *self)
   }
 }
 
-static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self, dt_library_t *lib)
-{
-  if(lib->full_preview_id != -1)
-  {
-    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-    // we have a selected image
-    if(first_selected)
-    {
-      const int imgid = GPOINTER_TO_INT(first_selected->data);
-      if(lib->full_preview_id != imgid)
-      {
-        lib->full_preview_id = imgid;
-        lib->full_preview_follow_sel = FALSE;
-        lib->full_preview_inside_sel = FALSE;
-        dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
-        lib->full_preview_rowid = dt_ui_thumbtable(darktable.gui->ui)->offset;
-        dt_control_set_mouse_over_id(lib->full_preview_id);
-        // set the active image
-        g_slist_free(darktable.view_manager->active_images);
-        darktable.view_manager->active_images = NULL;
-        darktable.view_manager->active_images
-            = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
-        dt_control_queue_redraw_center();
-      }
-      g_list_free(first_selected);
-    }
-  }
-}
-
 static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgid)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -435,6 +508,75 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   }
 }
 
+static gint _list_compare_id(gconstpointer a, gconstpointer b)
+{
+  const int ida = GPOINTER_TO_INT(a);
+  const int idb = GPOINTER_TO_INT(b);
+  return (ida != idb);
+}
+
+// find the first valid image after (or before) imgid
+// this take care of special modes (dynamic, follow_selection, use_selection)
+// and ensure that we have enought images to display after this one
+static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  sqlite3_stmt *stmt;
+  int newid = -1;
+
+  if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+  {
+    // on dynamic mode, nb of image follow selection size
+    // so we return first image in selection
+    newid = imgid;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
+        "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+        -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    if(lib->culling_use_selection)
+    {
+      // we search the first still selected (this can be the current one)
+      gchar *query
+          = dt_util_dstrcat(NULL,
+                            "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images AS sel "
+                            "WHERE col.imgid=sel.imgid AND col.rowid>="
+                            "(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
+                            "ORDER BY col.rowid LIMIT 1",
+                            imgid);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+      g_free(query);
+
+      // if not found, revert to selection beginning
+      if(newid < 0)
+      {
+        DT_DEBUG_SQLITE3_PREPARE_V2(
+            dt_database_get(darktable.db),
+            "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
+            "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+            -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+      }
+
+      // if still not found, that means that the selection is empty, so we just exit the mode and return imgid
+      if(newid < 0)
+      {
+        lib->culling_use_selection = FALSE;
+        newid = imgid;
+      }
+    }
+  }
+  return newid;
+}
+
 static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
@@ -445,8 +587,6 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // we reset the culling layout
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    int idover = dt_control_get_mouse_over_id();
-
     // on dynamic mode, nb of image follow selection size
     int nbsel = _culling_get_selection_count();
     if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
@@ -454,54 +594,59 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
       const int nz = (nbsel <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : nbsel;
       dt_view_lighttable_set_zoom(darktable.view_manager, nz);
     }
-    else if(nbsel < 1)
-    {
-      // in fixed mode, we want to be sure that we have at least one image selected,
-      // as the first selected image define the start
-      lib->select_deactivate = TRUE;
-      dt_selection_select(darktable.selection, idover);
-      lib->select_deactivate = FALSE;
-    }
-    // be carrefull, all shown images should be selected (except if the click was on one of them)
-    if(nbsel != 1 && !lib->culling_use_selection)
-    {
-      for(int i = 0; i < lib->slots_count; i++)
-      {
-        sqlite3_stmt *stmt;
-        gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d",
-                                       lib->slots[i].imgid);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-        if(sqlite3_step(stmt) != SQLITE_ROW)
-        {
-          // we need to add it to the selection
-          lib->select_deactivate = TRUE;
-          dt_selection_select(darktable.selection, lib->slots[i].imgid);
-          lib->select_deactivate = FALSE;
-        }
-        else if(lib->slots[i].imgid == idover)
-        {
-          lib->select_deactivate = TRUE;
-          dt_selection_deselect(darktable.selection, lib->slots[i].imgid);
-          lib->select_deactivate = FALSE;
-        }
-        sqlite3_finalize(stmt);
-        g_free(query);
-      }
-      _culling_check_scrolling_mode(self);
-      _culling_recreate_slots_at(self, idover);
-    }
     else
     {
-      _culling_check_scrolling_mode(self);
-      _culling_destroy_slots(self);
-      _culling_recreate_slots(self);
+      int newid = _culling_find_first_valid_imgid(self, lib->slots[0].imgid);
+      if(lib->culling_follow_selection)
+      {
+        // the selection should follow active image !
+        // if there's now some differences, quit this mode.
+        if(nbsel != g_slist_length(darktable.view_manager->active_images))
+          lib->culling_follow_selection = FALSE;
+        else
+        {
+          sqlite3_stmt *stmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(
+              dt_database_get(darktable.db),
+              "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
+              "WHERE col.imgid=sel.imgid",
+              -1, &stmt, NULL);
+          while(sqlite3_step(stmt) == SQLITE_ROW)
+          {
+            const int id = sqlite3_column_int(stmt, 0);
+            if(!g_slist_find_custom(darktable.view_manager->active_images, GINT_TO_POINTER(id), _list_compare_id))
+            {
+              lib->culling_follow_selection = FALSE;
+              break;
+            }
+          }
+          sqlite3_finalize(stmt);
+        }
+      }
+      // we recreate the slots at the right position
+      // if it's the same, _culling_recreate will take care to only reload changed images
+      _culling_recreate_slots_at(self, newid);
+      dt_control_queue_redraw_center();
     }
-
-    dt_control_queue_redraw_center();
   }
   else if(lib->full_preview_id != -1)
   {
-    _view_lighttable_selection_listener_internal_preview(self, lib);
+    // if we navigate inside selection and the current image is outside, reset this param
+    // same for follow sel
+    if(lib->full_preview_inside_sel || lib->full_preview_follow_sel)
+    {
+      sqlite3_stmt *stmt;
+      gchar *query
+          = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d", lib->full_preview_id);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) != SQLITE_ROW)
+      {
+        lib->full_preview_inside_sel = FALSE;
+        lib->full_preview_follow_sel = FALSE;
+      }
+      sqlite3_finalize(stmt);
+      g_free(query);
+    }
   }
 }
 
@@ -805,7 +950,6 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
       // if an error occurs, let's use 1:1 value
       if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
     }
-
     lib->slots[i].imgid = id;
     lib->slots[i].aspect_ratio = aspect_ratio;
     i++;
@@ -856,70 +1000,9 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   }
 
   g_free(rowid_txt);
+  lib->last_num_images = img_count;
   lib->slots_changed = TRUE;
   return TRUE;
-}
-
-static gboolean _culling_recreate_slots(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  int display_first_image = -1;
-  // special if we start dt in culling + fixed + selection
-  if(!lib->already_started && lib->culling_use_selection
-     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED)
-  {
-    const int lastid = dt_conf_get_int("plugins/lighttable/culling_last_id");
-    // we want to be sure it's inside the selection
-    sqlite3_stmt *stmt;
-    gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", lastid);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      display_first_image = lastid;
-      sqlite3_finalize(stmt);
-    }
-    g_free(query);
-  }
-
-  // is there some old config ?
-  if(display_first_image < 0 && lib->slots_count > 0)
-  {
-    // we search the first still valid id
-    gchar *imgs = dt_util_dstrcat(NULL, "%d", lib->slots[0].imgid);
-    for(int j = 1; j < lib->slots_count; j++)
-    {
-      imgs = dt_util_dstrcat(imgs, ", %d", lib->slots[j].imgid);
-    }
-    sqlite3_stmt *stmt2;
-    gchar *query = dt_util_dstrcat(
-        NULL, "SELECT imgid FROM memory.collected_images WHERE imgid IN (%s) ORDER BY rowid", imgs);
-    g_free(imgs);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-    if(stmt2 != NULL)
-    {
-      while(sqlite3_step(stmt2) == SQLITE_ROW)
-      {
-        display_first_image = sqlite3_column_int(stmt2, 0);
-        break;
-      }
-      sqlite3_finalize(stmt2);
-    }
-    g_free(query);
-  }
-
-  // starting with the first selected image
-  if(display_first_image < 0)
-  {
-    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-    if(first_selected)
-    {
-      display_first_image = GPOINTER_TO_INT(first_selected->data);
-      g_list_free(first_selected);
-    }
-  }
-
-  return _culling_recreate_slots_at(self, display_first_image);
 }
 
 static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t height,
@@ -1132,12 +1215,18 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   // we want to be sure the filmstrip stay in synch
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
   {
-    if(!lib->culling_use_selection)
+    // if the selection should follow active images
+    if(lib->culling_follow_selection)
     {
       // deactivate selection_change event
       lib->select_deactivate = TRUE;
-      // select current first image
-      dt_selection_select_single(darktable.selection, lib->slots[0].imgid);
+      // deselect all
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+      // select all active images
+      GList *l = NULL;
+      for(int i = 0; i < lib->slots_count; i++) l = g_list_append(l, GINT_TO_POINTER(lib->slots[i].imgid));
+      dt_selection_select_list(darktable.selection, l);
+      g_list_free(l);
       // reactivate selection_change event
       lib->select_deactivate = FALSE;
     }
@@ -1238,11 +1327,12 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
 
   // we recompute images sizes and positions if needed
   gboolean prefetch = FALSE;
-  if(lib->last_width != width || lib->last_height != height || !lib->slots || lib->last_num_images != get_zoom())
+  if(!lib->slots || lib->slots_count < 1) return 0;
+  if(lib->last_num_images != get_zoom())
   {
-    if(!_culling_recreate_slots(self)) return 0;
+    if(!_culling_recreate_slots_at(self, _culling_find_first_valid_imgid(self, lib->slots[0].imgid))) return 0;
   }
-  if(lib->slots_changed)
+  if(lib->last_width != width || lib->last_height != height || lib->slots_changed)
   {
     if(!_culling_compute_slots(self, width, height, layout)) return 0;
     lib->slots_changed = FALSE;
@@ -1863,9 +1953,69 @@ static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, i
   dt_library_t *lib = (dt_library_t *)self->data;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id > 0 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(lib->full_preview_id > 0)
   {
-    // nothing to do, the case is handled before by the selection change signal
+    if(lib->full_preview_id != imgid)
+    {
+      lib->full_preview_id = imgid;
+      // if we navigate inside selection and the current image is outside, reset this param
+      // same for follow sel
+      if(lib->full_preview_inside_sel || lib->full_preview_follow_sel)
+      {
+        sqlite3_stmt *stmt;
+        gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid=%d", imgid);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lib->full_preview_inside_sel = FALSE;
+          lib->full_preview_follow_sel = FALSE;
+        }
+        sqlite3_finalize(stmt);
+        g_free(query);
+      }
+
+      // if we selection should follow
+      if(lib->full_preview_follow_sel) dt_selection_select_single(darktable.selection, imgid);
+
+      dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
+      lib->full_preview_rowid = dt_ui_thumbtable(darktable.gui->ui)->offset;
+      dt_control_set_mouse_over_id(lib->full_preview_id);
+      // set the active image
+      g_slist_free(darktable.view_manager->active_images);
+      darktable.view_manager->active_images = NULL;
+      darktable.view_manager->active_images
+          = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->full_preview_id));
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+      dt_control_queue_redraw_center();
+    }
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    if(lib->slots_count > 0 && lib->slots[0].imgid != imgid)
+    {
+      if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+      {
+        // in dymamic mode, it's only selection that change displayed images. No way to do it by hand !
+        return;
+      }
+      if(lib->culling_use_selection)
+      {
+        // if we navigate inside selection, we need to be sure that we stay inside selection...
+        gboolean inside = FALSE;
+        sqlite3_stmt *stmt;
+        gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid=%d", imgid);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          inside = TRUE;
+        }
+        sqlite3_finalize(stmt);
+        g_free(query);
+        if(!inside) return;
+      }
+      _culling_recreate_slots_at(self, imgid);
+      dt_control_queue_redraw_center();
+    }
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
@@ -1947,7 +2097,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   }
 
   lib->full_preview_sticky = sticky;
-  lib->full_preview_id = mouse_over_id;
+  lib->full_preview_id = _culling_preview_init_values(self, FALSE, TRUE);
 
   // set corresponding rowid in the collected images
   {
@@ -1961,30 +2111,6 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
     }
     sqlite3_finalize(stmt);
   }
-
-  // if there's only 1 image selected, and it's the one display
-  sqlite3_stmt *stmt;
-  int nb_sel = 0;
-  uint32_t imgid_sel = -1;
-  lib->full_preview_follow_sel = FALSE;
-  lib->full_preview_inside_sel = FALSE;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
-                              "WHERE col.imgid=sel.imgid",
-                              -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    nb_sel++;
-    imgid_sel = sqlite3_column_int(stmt, 0);
-    if(nb_sel > 1 && imgid_sel == lib->full_preview_id)
-    {
-      lib->full_preview_inside_sel = TRUE;
-      break;
-    }
-  }
-  sqlite3_finalize(stmt);
-  if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
-    lib->full_preview_follow_sel = TRUE;
 
   // update thumbtable, to indicate if we navigate inside selection or not
   // this is needed as collection change is handle there
