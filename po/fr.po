@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-18 10:29+0100\n"
-"PO-Revision-Date: 2020-02-18 10:29+0100\n"
+"POT-Creation-Date: 2020-02-20 22:50+0100\n"
+"PO-Revision-Date: 2020-02-20 22:53+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1721,24 +1721,24 @@ msgstr ""
 "le filtre guidé n'a pas assez de mémoire, vérifier la configuration de votre "
 "RAM"
 
-#: ../src/common/film.c:311
+#: ../src/common/film.c:309
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer ce répertoire vide ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer ces répertoires vides ?"
 
-#: ../src/common/film.c:318
+#: ../src/common/film.c:316
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:337 ../src/gui/preferences.c:503
+#: ../src/common/film.c:335 ../src/gui/preferences.c:503
 #: ../src/gui/styles_dialog.c:309
 msgid "name"
 msgstr "nom"
 
-#: ../src/common/film.c:435
+#: ../src/common/film.c:433
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1751,18 +1751,18 @@ msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:809 ../src/common/history.c:812
-#: ../src/common/history.c:828 ../src/common/styles.c:919
+#: ../src/common/history.c:808 ../src/common/history.c:811
+#: ../src/common/history.c:827 ../src/common/styles.c:919
 #: ../src/common/styles.c:923 ../src/develop/blend_gui.c:2769
-#: ../src/develop/develop.c:1920 ../src/iop/ashift.c:4864
+#: ../src/develop/develop.c:1923 ../src/iop/ashift.c:4864
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:809 ../src/common/history.c:812
-#: ../src/common/history.c:828 ../src/common/styles.c:919
+#: ../src/common/history.c:808 ../src/common/history.c:811
+#: ../src/common/history.c:827 ../src/common/styles.c:919
 #: ../src/common/styles.c:923 ../src/develop/blend_gui.c:2516
-#: ../src/develop/blend_gui.c:2766 ../src/develop/develop.c:1920
+#: ../src/develop/blend_gui.c:2766 ../src/develop/develop.c:1923
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4863 ../src/iop/ashift.c:4869 ../src/iop/colorin.c:2136
 #: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
@@ -1792,59 +1792,59 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1569
+#: ../src/common/image.c:1589
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1575
+#: ../src/common/image.c:1596
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1582
+#: ../src/common/image.c:1603
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1598
+#: ../src/common/image.c:1619
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s », le fichier n'existe pas"
 
-#: ../src/common/image.c:1608
+#: ../src/common/image.c:1629
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s », le fichier existe"
 
-#: ../src/common/image.c:1612
+#: ../src/common/image.c:1633
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1883
+#: ../src/common/image.c:1909
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1897
+#: ../src/common/image.c:1923
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1969 ../src/control/jobs/control_jobs.c:659
+#: ../src/common/image.c:1995 ../src/control/jobs/control_jobs.c:659
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:2138
+#: ../src/common/image.c:2169
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:654 ../src/common/mipmap_cache.c:1060
+#: ../src/common/imageio.c:654 ../src/common/mipmap_cache.c:1063
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
@@ -1968,21 +1968,21 @@ msgstr "legal"
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
-#: ../src/common/ratings.c:142
+#: ../src/common/ratings.c:140
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "rejet de %d image"
 msgstr[1] "rejet de %d images"
 
-#: ../src/common/ratings.c:144
+#: ../src/common/ratings.c:142
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "application de %d étoile(s) à %d image"
 msgstr[1] "application de %d étoile(s) à %d images"
 
-#: ../src/common/ratings.c:160
+#: ../src/common/ratings.c:159
 msgid "no images selected to apply rating"
 msgstr "aucune image sélectionnée pour appliquer les étoiles"
 
@@ -1994,8 +1994,8 @@ msgstr "le style « %s » existe déjà"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:321 ../src/common/styles.c:325
 #: ../src/common/styles.c:410 ../src/common/styles.c:485
-#: ../src/common/styles.c:803 ../src/common/styles.c:1363
-#: ../src/common/styles.c:1382
+#: ../src/common/styles.c:803 ../src/common/styles.c:1362
+#: ../src/common/styles.c:1381
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -2032,15 +2032,15 @@ msgstr "le fichier du style « %s » existe"
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
 
-#: ../src/common/utility.c:456
+#: ../src/common/utility.c:454
 msgid "above sea level"
 msgstr "au dessus du niveau de la mer"
 
-#: ../src/common/utility.c:457
+#: ../src/common/utility.c:455
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:508 ../src/iop/watermark.c:823
+#: ../src/common/utility.c:506 ../src/iop/watermark.c:823
 #: ../src/libs/metadata_view.c:580
 msgid "m"
 msgstr "m"
@@ -3033,7 +3033,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1714
+#: ../src/develop/develop.c:1717
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -3524,49 +3524,54 @@ msgstr "fluorescent (blanc/jour)"
 msgid "high temp. mercury-vapor fluorescent"
 msgstr "fluorescent (mercure, haute T)"
 
-#. On Some Panasonic
+#. Found in Nikon P1000
 #: ../src/external/wb_presets.c:68
+msgid "high temp. mercury-vapor"
+msgstr "mercure, haute-température"
+
+#. On Some Panasonic
+#: ../src/external/wb_presets.c:70
 msgid "D55"
 msgstr "D55"
 
-#: ../src/external/wb_presets.c:69
+#: ../src/external/wb_presets.c:71
 msgid "ISO Studio Tungsten"
 msgstr "ISO tungstène studio"
 
-#: ../src/external/wb_presets.c:71
+#: ../src/external/wb_presets.c:73
 msgid "flash"
 msgstr "flash"
 
 #. For Olympus with no real "Flash" preset:
-#: ../src/external/wb_presets.c:73
+#: ../src/external/wb_presets.c:75
 msgid "flash (auto mode)"
 msgstr "flash (mode auto)"
 
-#: ../src/external/wb_presets.c:74
+#: ../src/external/wb_presets.c:76
 msgid "evening sun"
 msgstr "lumière du soir"
 
-#: ../src/external/wb_presets.c:75
+#: ../src/external/wb_presets.c:77
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:76 ../src/views/darkroom.c:2033
+#: ../src/external/wb_presets.c:78 ../src/views/darkroom.c:2033
 msgid "black & white"
 msgstr "noir et blanc"
 
-#: ../src/external/wb_presets.c:78
+#: ../src/external/wb_presets.c:80
 msgid "spot WB"
 msgstr "BdB spot"
 
-#: ../src/external/wb_presets.c:79
+#: ../src/external/wb_presets.c:81
 msgid "manual WB"
 msgstr "BdB manuelle"
 
-#: ../src/external/wb_presets.c:80
+#: ../src/external/wb_presets.c:82
 msgid "camera WB"
 msgstr "BdB du boîtier"
 
-#: ../src/external/wb_presets.c:81
+#: ../src/external/wb_presets.c:83
 msgid "auto WB"
 msgstr "BdB automatique"
 
@@ -13700,7 +13705,7 @@ msgstr "avif"
 msgid "loader: %s"
 msgstr "chargement: %s"
 
-#: ../src/libs/metadata_view.c:705
+#: ../src/libs/metadata_view.c:707
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
