@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 
 #include <sqlite3.h>
+#include <inttypes.h>
 
 void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 {
@@ -139,7 +140,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   else
   {
     img->id = -1;
-    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n", entry->key,
+    fprintf(stderr, "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n", entry->key,
             sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
