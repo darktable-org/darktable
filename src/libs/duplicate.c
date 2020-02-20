@@ -368,6 +368,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_sensitive(bt, FALSE);
     gtk_widget_set_visible(bt, FALSE);
   }
+
   // and reset the final size of the current image
   if(dev->image_storage.id >= 0)
   {
@@ -385,6 +386,19 @@ static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_c
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid, dt_lib_module_t *self)
+{
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  // we reset the final size of the current image
+  if(imgid > 0 && darktable.develop->image_storage.id == imgid)
+  {
+    d->cur_final_width = 0;
+    d->cur_final_height = 0;
+  }
+
+  gtk_widget_queue_draw(d->duplicate_box);
+  dt_control_queue_redraw_center();
+}
+static void _lib_duplicate_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   // we reset the final size of the current image
