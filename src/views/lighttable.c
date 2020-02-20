@@ -134,8 +134,6 @@ typedef struct dt_library_t
   dt_image_orientation_t full_res_thumb_orientation;
   dt_focus_cluster_t full_res_focus[49];
 
-  int32_t last_mouse_over_id;
-
   int32_t collection_count;
 
   // stuff for the audio player
@@ -761,7 +759,6 @@ void init(dt_view_t *self)
   lib->activate_on_release = DT_VIEW_ERR;
   lib->full_preview_id = -1;
   lib->display_focus = 0;
-  lib->last_mouse_over_id = -1;
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
   lib->audio_player_id = -1;
@@ -1529,8 +1526,6 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG);
   cairo_paint(cr);
 
-  lib->last_mouse_over_id = lib->full_preview_id;
-
   const int frows = 5, fcols = 5;
   if(lib->display_focus)
   {
@@ -2250,25 +2245,11 @@ void reset(dt_view_t *self)
   dt_control_set_mouse_over_id(-1);
 }
 
-
-void mouse_enter(dt_view_t *self)
-{
-  // TODO: In gtk.c the function center_leave return true. It is not needed when using arrows. the same for mouse_leave, mouse_move
-  dt_library_t *lib = (dt_library_t *)self->data;
-  uint32_t id = dt_control_get_mouse_over_id();
-  if(id == -1)
-  {
-    // this seems to be needed to fix the strange events fluxbox emits
-    dt_control_set_mouse_over_id(lib->last_mouse_over_id);
-  }
-}
-
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   if(lib->full_preview_id == -1 && get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING) return;
 
-  lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
   if(!lib->pan && get_zoom() != 1)
   {
     dt_control_set_mouse_over_id(-1);
