@@ -66,6 +66,7 @@ extern "C" {
 #include "common/iop_order.h"
 #include "common/variables.h"
 #include "common/utility.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -2931,6 +2932,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       all_ok = FALSE;
       goto end;
     }
+    dt_hash_history_write(img->id, DT_HH_CURRENT);
 
 end:
     sqlite3_finalize(stmt);
