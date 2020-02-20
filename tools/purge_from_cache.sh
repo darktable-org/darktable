@@ -25,9 +25,11 @@
 . "$(dirname "$0")/common.sh"
 
 # default values
-library="${HOME}/.config/darktable/library.db"
+configdir="$HOME/.config/darktable"
 cache_base="${HOME}/.cache/darktable"
+library="$configdir/library.db"
 dryrun=1
+LIBDB=""
 
 # remember the command line to show it in the end when not purging
 commandline="$0 $*"
@@ -41,19 +43,25 @@ while [ "$#" -ge 1 ] ; do
     echo "Usage:   $0 [options]"
     echo ""
     echo "Options:"
-    echo "  -c|--cache_base <path>   path to the place where darktable's thumbnail caches are stored"
+    echo "  -c|--cachedir <path>   path to the place where darktable's thumbnail caches are stored"
     echo "                           (default: '${cache_base}')"
+    echo "  -d|--configdir <path>    path to the darktable config directory"
+    echo "                           (default: '${configdir}')"
     echo "  -l|--library <path>      path to the library.db"
     echo "                           (default: '${library}')"
     echo "  -p|--purge               actually delete the files instead of just finding them"
     exit 0
     ;;
   -l|--library)
-    library="$2"
+    LIBDB="$2"
     shift
     ;;
-  -c|--cache_base)
+  -c|--cachedir|--cache_base)
     cache_base="$2"
+    shift
+    ;;
+  -d|--configdir)
+    configdir="$2"
     shift
     ;;
   -p|--purge)
@@ -65,6 +73,12 @@ while [ "$#" -ge 1 ] ; do
   esac
     shift
 done
+
+library="$configdir/library.db"
+
+if [ "$LIBDB" != "" ]; then
+    library="$LIBDB"
+fi
 
 # set the command to run for each stale file
 action="echo found stale mipmap in "
