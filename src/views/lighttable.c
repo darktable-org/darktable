@@ -489,6 +489,12 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
     else
     {
       lib->full_preview_id = imgid;
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+      g_free(query);
       dt_control_queue_redraw_center();
     }
   }
@@ -1951,6 +1957,7 @@ static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, i
   {
     if(lib->full_preview_id != imgid)
     {
+      printf("coucou %d\n", imgid);
       lib->full_preview_id = imgid;
       // if we navigate inside selection and the current image is outside, reset this param
       // same for follow sel
@@ -1968,7 +1975,7 @@ static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, i
         g_free(query);
       }
 
-      // if we selection should follow
+      // follow selection if needed
       if(lib->full_preview_follow_sel) dt_selection_select_single(darktable.selection, imgid);
 
       dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->full_preview_id, TRUE);
@@ -2023,17 +2030,20 @@ void enter(dt_view_t *self)
   // we add the flowbox and hide the main drawingarea
   dt_library_t *lib = (dt_library_t *)self->data;
   // we want to reacquire the thumbtable if needed
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+  if(lib->full_preview_id < 1)
   {
-    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                             DT_THUMBTABLE_MODE_FILEMANAGER);
-    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
-  }
-  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-  {
-    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                             DT_THUMBTABLE_MODE_ZOOM);
-    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_FILEMANAGER);
+      gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    }
+    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_ZOOM);
+      gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    }
   }
 
   // clean the undo list
@@ -2092,6 +2102,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 
   lib->full_preview_sticky = sticky;
   lib->full_preview_id = _culling_preview_init_values(self, FALSE, TRUE);
+  dt_control_set_mouse_over_id(lib->full_preview_id);
 
   // set corresponding rowid in the collected images
   {
@@ -2247,6 +2258,12 @@ void reset(dt_view_t *self)
   lib->track = lib->pan = 0;
   lib->activate_on_release = DT_VIEW_ERR;
   dt_control_set_mouse_over_id(-1);
+}
+
+void mouse_enter(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(lib->full_preview_id > 0) dt_control_set_mouse_over_id(lib->full_preview_id);
 }
 
 void mouse_leave(dt_view_t *self)
