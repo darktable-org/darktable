@@ -535,7 +535,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
   // we determine the zoom ratio
   const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
   int new = old;
-  if(delta < 0)
+  if(delta > 0)
     new = MIN(ZOOM_MAX, new + 1);
   else
     new = MAX(1, new - 1);
