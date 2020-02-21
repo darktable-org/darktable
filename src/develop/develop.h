@@ -90,13 +90,6 @@ typedef enum dt_dev_histogram_type_t
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
 
-typedef enum dt_dev_waveform_type_t
-{
-  DT_DEV_WAVEFORM_OVERLAID = 0,
-  DT_DEV_WAVEFORM_PARADE,
-  DT_DEV_WAVEFORM_N // needs to be the last one
-} dt_dev_waveform_type_t;
-
 typedef enum dt_dev_transform_direction_t
 {
   DT_DEV_TRANSFORM_DIR_ALL = 0,
@@ -137,8 +130,6 @@ typedef enum dt_dev_pixelpipe_display_mask_t
 } dt_dev_pixelpipe_display_mask_t;
 
 extern const gchar *dt_dev_scope_type_names[];
-extern const gchar *dt_dev_histogram_type_names[];
-extern const gchar *dt_dev_waveform_type_names[];
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -209,7 +200,6 @@ typedef struct dt_develop_t
   uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   dt_dev_scope_type_t scope_type;
   dt_dev_histogram_type_t histogram_type;
-  dt_dev_waveform_type_t waveform_type;
 
   // list of forms iop can use for masks or whatever
   GList *forms;
