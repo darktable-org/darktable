@@ -907,9 +907,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
-
   // release pixel pipe mutices
   dt_pthread_mutex_BAD_unlock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
@@ -2597,9 +2594,6 @@ void enter(dt_view_t *self)
   /* connect signal for filmstrip image activate */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_darkroom_filmstrip_activate_callback), self);
-
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
 

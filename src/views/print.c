@@ -98,9 +98,6 @@ init(dt_view_t *self)
   /* initialize CB to get the print settings from corresponding lib module */
   darktable.view_manager->proxy.print.view = self;
   darktable.view_manager->proxy.print.print_settings = _view_print_settings;
-
-  /* prefetch next few from first selected image on. */
-  dt_view_filmstrip_prefetch();
 }
 
 void cleanup(dt_view_t *self)
@@ -292,9 +289,6 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_view_print_filmstrip_activate_callback), self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 
   darktable.control->mouse_over_id = -1;
   dt_control_set_mouse_over_id(prt->image_id);

@@ -500,11 +500,6 @@ gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint
 /** sets the offset image (for culling and full preview) */
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 
-/** prefetch the next few images in film strip, from selected on.
-    TODO: move to control ?
-*/
-void dt_view_filmstrip_prefetch();
-
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
