@@ -387,7 +387,6 @@ static void check_layout(dt_view_t *self)
     // if we arrive from culling, we just need to ensure the offset is right
     if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
-      printf("lib->thumbtable_offset %d\n", lib->thumbtable_offset);
       dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
     // we want to reacquire the thumbtable if needed
@@ -2127,6 +2126,9 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
+  // we don't need the scrollbars
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+
   // preview with focus detection
   lib->display_focus = focus;
 
@@ -2151,6 +2153,9 @@ static void _preview_quit(dt_view_t *self)
   lib->full_zoom = 1.0f;
   lib->full_x = 0.0f;
   lib->full_y = 0.0f;
+
+  // restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
 
   // show/hide filmstrip & timeline when entering the view
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
@@ -2192,9 +2197,8 @@ static void _preview_quit(dt_view_t *self)
                                DT_THUMBTABLE_MODE_ZOOM);
     }
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
   }
-  // restore panels
-  dt_ui_restore_panels(darktable.gui->ui);
 
   lib->slots_changed = TRUE;
 }
