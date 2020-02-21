@@ -628,7 +628,6 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   module->accel_closures = NULL;
   // don't delete the module, a pipe may still need it
   dev->alliop = g_list_append(dev->alliop, module);
-  module = NULL;
 
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
@@ -1583,7 +1582,6 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
-  uint64_t hash = 5381;
   piece->hash = 0;
 
   if(piece->enabled)
@@ -1617,6 +1615,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
 
     module->commit_params(module, params, pipe, piece);
+    uint64_t hash = 5381;
     for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
 

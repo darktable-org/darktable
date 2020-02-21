@@ -2333,7 +2333,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     dt_iop_module_t *m = (dt_iop_module_t *)iops->data;
     if(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      int ok = 0;
       // is the form the base group of the iop ?
       if(id == m->blend_params->mask_id)
       {
@@ -2346,6 +2345,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
         dt_masks_form_t *iopgrp = dt_masks_get_from_id(darktable.develop, m->blend_params->mask_id);
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
+          int ok = 0;
           GList *forms = g_list_first(iopgrp->points);
           while(forms)
           {

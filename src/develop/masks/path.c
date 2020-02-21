@@ -2229,12 +2229,11 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   // we write all the point around the path into the buffer
   int nbp = border_count;
-  int lastx, lasty, lasty2;
   if(nbp > 2)
   {
-    lastx = (int)points[(nbp - 1) * 2];
-    lasty = (int)points[(nbp - 1) * 2 + 1];
-    lasty2 = (int)points[(nbp - 2) * 2 + 1];
+    int lastx = (int)points[(nbp - 1) * 2];
+    int lasty = (int)points[(nbp - 1) * 2 + 1];
+    int lasty2 = (int)points[(nbp - 2) * 2 + 1];
 
     int just_change_dir = 0;
     for(int ii = nb_corner * 3; ii < 2 * nbp - nb_corner * 3; ii++)

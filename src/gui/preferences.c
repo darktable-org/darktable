@@ -676,7 +676,6 @@ static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gchar *accel_path,
                             const gchar *translated_path, guint accel_key, GdkModifierType accel_mods)
 {
-  int i;
   gboolean found = FALSE;
   gchar *val_str;
   GtkTreeIter iter;
@@ -713,7 +712,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
 
     /* search the tree if we already have a sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
-    for(i = 0; i < siblings; i++)
+    for(int i = 0; i < siblings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, A_ACCEL_COLUMN, &val_str, -1);
@@ -795,8 +794,6 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gc
   GtkAccelKey key;
   GtkTreeIter iter;
   gchar *str_data;
-  gchar *end;
-  gint i;
 
   // First concatenating this part of the key
   g_strlcat(path, "/", path_len);
@@ -807,9 +804,9 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gc
   if(gtk_tree_model_iter_has_child(model, parent))
   {
     // Branch node, carry on with recursion
-    end = path + strlen(path);
+    gchar *end = path + strlen(path);
 
-    for(i = 0; i < gtk_tree_model_iter_n_children(model, parent); i++)
+    for(gint i = 0; i < gtk_tree_model_iter_n_children(model, parent); i++)
     {
       gtk_tree_model_iter_nth_child(model, &iter, parent, i);
       update_accels_model_rec(model, &iter, path, path_len);
@@ -957,7 +954,6 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
   GtkTreePath *path;
-  GSList *remapped;
   dt_accel_t query;
 
   gchar accel[256];
@@ -975,7 +971,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   {
     // First locate the accel list entry
     g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
-    remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
+    GSList *remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
     const dt_accel_t *accel_current = (dt_accel_t *)remapped->data;
 
     // let's search for conflicts
@@ -1215,8 +1211,6 @@ static void import_export(GtkButton *button, gpointer data)
 
 static void restore_defaults(GtkButton *button, gpointer data)
 {
-  GList *ops;
-  dt_iop_module_so_t *op;
   gchar accelpath[256];
   gchar dir[PATH_MAX] = { 0 };
   gchar path[PATH_MAX] = { 0 };
@@ -1236,10 +1230,10 @@ static void restore_defaults(GtkButton *button, gpointer data)
     gtk_accel_map_load(path);
 
     // Now deleting any iop show shortcuts
-    ops = darktable.iop;
+    GList *ops = darktable.iop;
     while(ops)
     {
-      op = (dt_iop_module_so_t *)ops->data;
+      dt_iop_module_so_t *op = (dt_iop_module_so_t *)ops->data;
       snprintf(accelpath, sizeof(accelpath), "<Darktable>/darkroom/modules/%s/show", op->op);
       gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
       ops = g_list_next(ops);
