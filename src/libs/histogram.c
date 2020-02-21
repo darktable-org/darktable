@@ -132,9 +132,11 @@ static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float 
   switch(type)
   {
     case DT_DEV_SCOPE_HISTOGRAM:
-      // FIXME: draw a wavey histogram arc
-      cairo_line_to(cr, width - 2.0 * border, 2.0 * border);
-      cairo_stroke(cr);
+      cairo_curve_to(cr, 0.3 * width, height - 2.0 * border, 0.3 * width, 2.0 * border,
+                     0.5 * width, 2.0 * border);
+      cairo_curve_to(cr, 0.7 * width, 2.0 * border, 0.7 * width, height - 2.0 * border, 
+                     width - 2.0 * border, height - 2.0 * border);
+      cairo_fill(cr);
       break;
     case DT_DEV_SCOPE_WAVEFORM:
     {
@@ -211,84 +213,35 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
 
   // border
   const float border = MIN(width * .05, height * .05);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
-  cairo_fill_preserve(cr);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_set_line_width(cr, border);
-  cairo_stroke(cr);
-
-  // icon
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(mode)
   {
     case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
     {
-      cairo_pattern_t *pattern;
-      pattern = cairo_pattern_create_linear(0.0, 1.5 * border, 0.0, height - 3.0 * border);
-
-      cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0.0, 0.0, 0.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.2, 0.2, 0.2, 0.2, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.5, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.6, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0.2, 0.2, 0.2, 0.5);
-
-      cairo_rectangle(cr, 1.5 * border, 1.5 * border, (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-
-      cairo_save(cr);
-      cairo_scale(cr, 1, -1);
-      cairo_translate(cr, 0, -height);
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.2, 1.5 * border,
-                      (width - 3.0 * border) * 0.6, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-      cairo_restore(cr);
-
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.7, 1.5 * border,
-                      (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-
-      cairo_pattern_destroy(pattern);
+      cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.33);
+      cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
+      cairo_fill_preserve(cr);
       break;
     }
     case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
     {
-      // FIXME: make parade pattern
-      cairo_pattern_t *pattern;
-      pattern = cairo_pattern_create_linear(0.0, 1.5 * border, 0.0, height - 3.0 * border);
-
-      cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0.0, 0.0, 0.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.2, 0.2, 0.2, 0.2, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.5, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.6, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0.2, 0.2, 0.2, 0.5);
-
-      cairo_rectangle(cr, 1.5 * border, 1.5 * border, (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
+      cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
+      cairo_rectangle(cr, border, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-
-      cairo_save(cr);
-      cairo_scale(cr, 1, -1);
-      cairo_translate(cr, 0, -height);
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.2, 1.5 * border,
-                      (width - 3.0 * border) * 0.6, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
+      cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
+      cairo_rectangle(cr, width / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-      cairo_restore(cr);
-
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.7, 1.5 * border,
-                      (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
+      cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
+      cairo_rectangle(cr, width * 2.0 / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-
-      cairo_pattern_destroy(pattern);
+      cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
       break;
     }
   }
+
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
+  cairo_set_line_width(cr, border);
+  cairo_stroke(cr);
+
   cairo_restore(cr);
 }
 
