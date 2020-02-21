@@ -64,6 +64,8 @@ typedef struct dt_thumbtable_t
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
+  int center_offset; // in filemanager, we can have a gap, esp. for zoom==1, we need to center everything
+
   gboolean dragging;
   int last_x, last_y;         // last position of cursor during move
   int drag_dx, drag_dy;       // distance of move of the current dragging session

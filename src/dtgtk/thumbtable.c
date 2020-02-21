@@ -129,7 +129,7 @@ static void _pos_get_next(dt_thumbtable_t *table, int *x, int *y)
     *x += table->thumb_size;
     if(*x + table->thumb_size > table->view_width)
     {
-      *x = 0;
+      *x = table->center_offset;
       *y += table->thumb_size;
     }
   }
@@ -155,7 +155,7 @@ static void _pos_get_previous(dt_thumbtable_t *table, int *x, int *y)
     *x -= table->thumb_size;
     if(*x < 0)
     {
-      *x = (table->thumbs_per_row - 1) * table->thumb_size;
+      *x = (table->thumbs_per_row - 1) * table->thumb_size + table->center_offset;
       *y -= table->thumb_size;
     }
   }
@@ -199,8 +199,9 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       table->thumbs_per_row = npr;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
-      table->thumb_size = table->view_width / table->thumbs_per_row;
+      table->thumb_size = MIN(table->view_width / table->thumbs_per_row, table->view_height);
       table->rows = table->view_height / table->thumb_size + 1;
+      table->center_offset = (table->view_width - table->thumbs_per_row * table->thumb_size) / 2;
       ret = TRUE;
     }
   }
@@ -213,6 +214,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       table->view_height = allocation.height;
       table->thumb_size = table->view_height;
       table->rows = table->view_width / table->thumb_size;
+      table->center_offset = 0;
       if(table->rows % 2)
         table->rows += 2;
       else
@@ -231,6 +233,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       table->view_height = allocation.height;
       table->thumb_size = table->view_width / npr;
       table->rows = table->view_height / table->thumb_size + 1;
+      table->center_offset = 0;
       ret = TRUE;
     }
   }
@@ -1259,15 +1262,19 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     const double start = dt_get_wtime();
     table->dragging = FALSE;
     sqlite3_stmt *stmt;
-    printf("reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d offset=%d ...\n", force,
-           table->view_width, table->view_height, table->thumbs_per_row, table->rows, table->thumb_size,
-           table->offset);
+    dt_print(DT_DEBUG_LIGHTTABLE,
+             "reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d offset=%d centering=%d...\n",
+             force, table->view_width, table->view_height, table->thumbs_per_row, table->rows, table->thumb_size,
+             table->offset, table->center_offset);
 
     int posx = 0;
     int posy = 0;
-    // in zoomable, we want the first thumb at the same position as the old one
+    int offset = table->offset;
+    int empty_start = 0;
+
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
+      // in zoomable, we want the first thumb at the same position as the old one
       if(g_list_length(table->list) > 0)
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
@@ -1283,11 +1290,14 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         table->thumbs_area.y = posy;
       }
     }
-
-    int offset = table->offset;
-    int empty_start = 0;
-    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
+      // in filemanager, we need to take care of the center offset
+      posx = table->center_offset;
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
+      // in filmstrip, the offset is the centered image, so we need to find the first image to load
       offset = MAX(1, table->offset - table->rows / 2);
       empty_start = -MIN(0, table->offset - table->rows / 2 - 1);
       posx = (table->view_width - table->rows * table->thumb_size) / 2;
@@ -1376,7 +1386,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     // be sure the focus is in the right widget (needed for accels)
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
-    printf("done in %0.04f sec %d thumbs reloaded\n", dt_get_wtime() - start, nbnew);
+    dt_print(DT_DEBUG_LIGHTTABLE, "done in %0.04f sec %d thumbs reloaded\n", dt_get_wtime() - start, nbnew);
     g_free(query);
     sqlite3_finalize(stmt);
 
