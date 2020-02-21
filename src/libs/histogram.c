@@ -350,40 +350,37 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       uint8_t *hist_wav = buf;
       uint8_t mask[3] = { d->blue, d->green, d->red };
 
+      int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, waveform_width);
+      uint8_t *parade = calloc(waveform_height * parade_stride * 3, sizeof(uint8_t));
+      // FIXME: format histogram data in this order, so don't have to reformat, then use conditional per channel on where to draw it
+      for(int k = 0; k < 3; k++)
+      {
+        uint8_t *p = parade + parade_stride * waveform_height * (2-k);
+        for(int y = 0; y < waveform_height; y++)
+          for(int x = 0; x < waveform_width; x++)
+            p[y * parade_stride + x] = hist_wav[y * waveform_stride + x * 4 + k];
+      }
+
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
-        // make the color channel selector work:
-        // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
-        for(int k = 0; k < 3; k++)
-          if(!mask[k])
-            for(int y = 0; y < waveform_height; y++)
-              for(int x = 0; x < waveform_width; x++)
-                hist_wav[y * waveform_stride + x * 4 + k] = 0;
-
-        cairo_surface_t *source
-            = dt_cairo_image_surface_create_for_data(hist_wav, CAIRO_FORMAT_ARGB32,
-                                                     waveform_width, waveform_height, waveform_stride);
-
-        cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
-        cairo_set_source_surface(cr, source, 0.0, 0.0);
+        cairo_scale(cr, (double)width/waveform_width, (double)height/waveform_height);
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-        cairo_paint(cr);
-        cairo_surface_destroy(source);
+
+        for(int k = 0; k < 3; k++)
+        {
+          if(mask[2-k])
+          {
+            cairo_set_source_rgb(cr, k==0, k==1, k==2);
+            cairo_surface_t *alpha
+                = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k,
+                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
+            cairo_mask_surface(cr, alpha, 0, 0);
+            cairo_surface_destroy(alpha);
+          }
+        }
       }
       else
       { // RGB parade
-        int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, waveform_width);
-        uint8_t *parade = calloc(waveform_height * parade_stride * 3, sizeof(uint8_t));
-        // FIXME: if hide a channel, make the other two fill half the area? is it any use to hide channels in RGB parade?
-        // FIXME: format histogram data in this order, so don't have to reformat, then use conditional per channel on where to draw it
-        for(int k = 0; k < 3; k++)
-          {
-            uint8_t *p = parade + parade_stride * waveform_height * (2-k);
-            for(int y = 0; y < waveform_height; y++)
-              for(int x = 0; x < waveform_width; x++)
-                p[y * parade_stride + x] = hist_wav[y * waveform_stride + x * 4 + k];
-          }
-
         // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
         cairo_scale(cr, (double)width/(waveform_width*3), (double)height/waveform_height);
         // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
@@ -407,8 +404,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           }
           cairo_translate(cr, waveform_width, 0);
         }
-        free(parade);
       }
+      free(parade);
     }
     else if(dev->histogram_max)
     {
