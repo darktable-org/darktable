@@ -2193,38 +2193,6 @@ GSList *dt_view_active_images_get()
   return darktable.view_manager->active_images;
 }
 
-void dt_view_filmstrip_prefetch()
-{
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  if(!qin) return;
-
-  int offset = 0;
-  if(qin)
-  {
-    int imgid = -1;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    offset = dt_collection_image_offset(imgid);
-  }
-
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-  // only get one more image:
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + 1);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offset + 2);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const uint32_t prefetchid = sqlite3_column_int(stmt, 0);
-    // dt_control_log("prefetching image %u", prefetchid);
-    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH, 'r');
-  }
-  sqlite3_finalize(stmt);
-}
-
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t views)
 {
   if(vm->proxy.view_toolbox.module) vm->proxy.view_toolbox.add(vm->proxy.view_toolbox.module, tool, views);

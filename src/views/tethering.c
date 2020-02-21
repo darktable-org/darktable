@@ -119,9 +119,6 @@ void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_capture_t));
 
-  /* prefetch next few from first selected image on. */
-  dt_view_filmstrip_prefetch();
-
   /* setup the tethering view proxy */
   darktable.view_manager->proxy.tethering.view               = self;
   darktable.view_manager->proxy.tethering.get_job_code       = _capture_view_get_jobcode;
