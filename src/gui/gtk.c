@@ -296,6 +296,9 @@ static gboolean _focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_gro
   visible = !visible;
   dt_conf_set_bool("ui/show_focus_peaking", visible);
   darktable.gui->show_focus_peaking = visible;
+
+  // we inform that all thumbnails need to be redraw
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
   return TRUE;
 }
 
