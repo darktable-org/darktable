@@ -999,7 +999,6 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
     for(int i = 0; i < gp_list_count(files); i++)
     {
       gp_list_get_name(files, i, &filename);
-      char *file = g_build_filename(path, filename, NULL);
 
       // Lets check the type of file...
       CameraFileInfo cfi;
@@ -1007,13 +1006,15 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
       {
         CameraFile *preview = NULL;
         CameraFile *exif = NULL;
-
+        char *file = g_build_filename(path, filename, NULL);
+        gboolean freefile = FALSE; // is TRUE for generated thumbs
         /*
          * Fetch image preview if flagged...
          */
         if(flags & CAMCTL_IMAGE_PREVIEW_DATA)
         {
           gp_file_new(&preview);
+
           if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW, preview,
                                 c->gpcontext) < GP_OK)
           {
@@ -1024,6 +1025,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
               if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL, preview,
                                     c->gpcontext) < GP_OK)
               {
+                gp_file_free(preview);
                 preview = NULL;
                 dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve preview of file %s\n",
                          filename);
@@ -1038,9 +1040,21 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
               char *mime_type = NULL;
 
               if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
+              {
                 gp_file_set_data_and_size(preview, (char *)buf, bufsize);
-
+                freefile = TRUE;
+              }
+              else
+              {
+                gp_file_free(preview);
+                preview = NULL;
+              }
               free(mime_type);
+            }
+            else
+            {
+              gp_file_free(preview);
+              preview = NULL;
             }
           }
         }
@@ -1051,6 +1065,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
           if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF, exif,
                                 c->gpcontext) < GP_OK)
           {
+            gp_file_free(exif);
             exif = NULL;
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve exif of file %s\n", filename);
           }
@@ -1058,18 +1073,19 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
 
         // let's dispatch to host app.. return if we should stop...
         int res = _dispatch_camera_storage_image_filename(c, c->active_camera, file, preview, exif);
-        gp_file_free(preview);
-        if(!res)
-        {
-          g_free(file);
-          return 0;
-        }
+
+        g_free(file);
+        // we can only gp_file_free the CameraFile safely if the data buffers has been allocated
+        // by dt_exif_get_thumbnail
+        if (freefile && preview) gp_file_free(preview);
+        // gp_file_free(exif); 
+
+        if(!res) return 0;
       }
       else
         dt_print(DT_DEBUG_CAMCTL,
                  "[camera_control] failed to get file information of %s in folder %s on device\n", filename,
                  path);
-      g_free(file);
     }
   }
 
