@@ -3527,12 +3527,12 @@ msgstr "fluorescente blanco de día"
 
 #: ../src/external/wb_presets.c:66
 msgid "high temp. mercury-vapor fluorescent"
-msgstr "fluorescente vapor de mercurio de alta temp."
+msgstr "fluorescente vapor de mercurio a alta temp."
 
 #. Found in Nikon P1000
 #: ../src/external/wb_presets.c:68
 msgid "high temp. mercury-vapor"
-msgstr "vapor de mercurio de alta temperatura"
+msgstr "vapor de mercurio a alta temperatura"
 
 #. On Some Panasonic
 #: ../src/external/wb_presets.c:70
