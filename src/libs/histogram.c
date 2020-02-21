@@ -44,12 +44,23 @@ typedef enum dt_lib_histogram_highlight_t
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE,
 } dt_lib_histogram_highlight_t;
 
+typedef enum dt_lib_histogram_waveform_type_t
+{
+  DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID = 0,
+  DT_LIB_HISTOGRAM_WAVEFORM_PARADE,
+  DT_LIB_HISTOGRAM_WAVEFORM_N // needs to be the last one
+} dt_lib_histogram_waveform_type_t;
+
+const gchar *dt_lib_histogram_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
+
 typedef struct dt_lib_histogram_t
 {
   float exposure, black;
   int32_t dragging;
   int32_t button_down_x, button_down_y;
   dt_lib_histogram_highlight_t highlight;
+  dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
   float type_x, mode_x, red_x, green_x, blue_x;
   float button_w, button_h, button_y, button_spacing;
@@ -212,7 +223,7 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
   cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(mode)
   {
-    case DT_DEV_WAVEFORM_OVERLAID:
+    case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
     {
       cairo_pattern_t *pattern;
       pattern = cairo_pattern_create_linear(0.0, 1.5 * border, 0.0, height - 3.0 * border);
@@ -244,7 +255,7 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
       cairo_pattern_destroy(pattern);
       break;
     }
-    case DT_DEV_WAVEFORM_PARADE:
+    case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
     {
       // FIXME: make parade pattern
       cairo_pattern_t *pattern;
@@ -386,7 +397,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       uint8_t *hist_wav = buf;
       uint8_t mask[3] = { d->blue, d->green, d->red };
 
-      if(dev->waveform_type == DT_DEV_WAVEFORM_OVERLAID)
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
         // make the color channel selector work:
         // FIXME: prior code had no conditional and just multiplied by mask[k] -- test to see if that is faster
@@ -413,7 +424,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         // FIXME: if hide a channel, make the other two fill half the area? is it any use to hide channels in RGB parade?
         // FIXME: format histogram data in this order, so don't have to reformat, then use conditional per channel on where to draw it
         for(int k = 0; k < 3; k++)
-          if(mask[k])
           {
             uint8_t *p = parade + parade_stride * waveform_height * (2-k);
             for(int y = 0; y < waveform_height; y++)
@@ -421,22 +431,27 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
                 p[y * parade_stride + x] = hist_wav[y * waveform_stride + x * 4 + k];
           }
 
-        cairo_scale(cr, darktable.gui->ppd*width/(waveform_width*3), darktable.gui->ppd*height/waveform_height);
-        cairo_scale(cr, 0.5, 0.5);  // why?
+        // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
+        cairo_scale(cr, (double)width/(waveform_width*3), (double)height/waveform_height);
         // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
         cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
         for(int k = 0; k < 3; k++)
         {
-          cairo_save(cr);
-          cairo_set_source_rgb(cr, k==0, k==1, k==2);
-          // FIXME: useful to clip?
-          cairo_rectangle(cr, 0, 0, waveform_width, waveform_height);
-          cairo_clip(cr);
-          cairo_surface_t *alpha = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k, CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
-          cairo_mask_surface(cr, alpha, 0, 0);
-          cairo_surface_destroy(alpha);
-          cairo_restore(cr);
+          if(mask[2-k])
+          {
+            cairo_save(cr);
+            cairo_set_source_rgb(cr, k==0, k==1, k==2);
+            // FIXME: useful to clip?
+            cairo_rectangle(cr, 0, 0, waveform_width, waveform_height);
+            cairo_clip(cr);
+            cairo_surface_t *alpha
+                = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k,
+                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
+            cairo_mask_surface(cr, alpha, 0, 0);
+            cairo_surface_destroy(alpha);
+            cairo_restore(cr);
+          }
           cairo_translate(cr, waveform_width, 0);
         }
         free(parade);
@@ -481,7 +496,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         _draw_histogram_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->histogram_type);
         break;
       case DT_DEV_SCOPE_WAVEFORM:
-        _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->waveform_type);
+        _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
         break;
       case DT_DEV_SCOPE_N:
         g_assert_not_reached();
@@ -579,12 +594,12 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
           }
           break;
         case DT_DEV_SCOPE_WAVEFORM:
-          switch(dev->waveform_type)
+          switch(d->waveform_type)
           {
-            case DT_DEV_WAVEFORM_OVERLAID:
+            case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
               gtk_widget_set_tooltip_text(widget, _("set mode to RGB parade"));
               break;
-            case DT_DEV_WAVEFORM_PARADE:
+            case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
               gtk_widget_set_tooltip_text(widget, _("set mode to waveform"));
               break;
             default:
@@ -678,12 +693,12 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
         case DT_DEV_SCOPE_HISTOGRAM:
           dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
           dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                             dt_dev_histogram_type_names[dev->histogram_type]);
+                             dt_lib_histogram_histogram_type_names[dev->histogram_type]);
           break;
         case DT_DEV_SCOPE_WAVEFORM:
-          dev->waveform_type = (dev->waveform_type + 1) % DT_DEV_WAVEFORM_N;
+          d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
           dt_conf_set_string("plugins/darkroom/histogram/waveform",
-                             dt_dev_waveform_type_names[dev->waveform_type]);
+                             dt_lib_histogram_waveform_type_names[d->waveform_type]);
           break;
         case DT_DEV_SCOPE_N:
           g_assert_not_reached();
@@ -803,6 +818,13 @@ void gui_init(dt_lib_module_t *self)
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
+
+  gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
+  if(g_strcmp0(waveform_type, "overlaid") == 0)
+    d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
+  else if(g_strcmp0(waveform_type, "parade") == 0)
+    d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_PARADE;
+  g_free(waveform_type);
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();

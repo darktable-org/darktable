@@ -48,8 +48,6 @@
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
-const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear" };
-const gchar *dt_dev_waveform_type_names[DT_DEV_WAVEFORM_N] = { "overlaid", "parade" };
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
@@ -108,12 +106,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   else if(g_strcmp0(histogram_type, "logarithmic") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
   g_free(histogram_type);
-  gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
-  if(g_strcmp0(waveform_type, "overlaid") == 0)
-    dev->waveform_type = DT_DEV_WAVEFORM_OVERLAID;
-  else if(g_strcmp0(waveform_type, "parade") == 0)
-    dev->waveform_type = DT_DEV_WAVEFORM_PARADE;
-  g_free(waveform_type);
 
   dev->forms = NULL;
   dev->form_visible = NULL;
