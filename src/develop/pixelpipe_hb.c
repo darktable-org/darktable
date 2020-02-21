@@ -1004,7 +1004,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // Note that histogram_waveform_stride is pre-initialized/hardcoded,
   // but histogram_waveform_width varies, depending on preview image
   // width and # of bins.
-  const int bin_width = ceilf((float)(roi_in->width) / (float)(waveform_stride/4));
+  const int bin_width = ceilf(roi_in->width / (float)waveform_stride);
   const int waveform_width = ceilf(roi_in->width / (float)bin_width);
   dev->histogram_waveform_width = waveform_width;
 
@@ -1013,7 +1013,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // waveform buffer is 128 (about smallest possible), bin_width is
   // 12, making max count of 10,800, still much smaller than uint16_t
   uint16_t *buf = (uint16_t *)calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
-  memset(dev->histogram_waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride);
+  memset(dev->histogram_waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride * 3);
 
   // 1.0 is at 8/9 of the height!
   const double _height = (double)(waveform_height - 1);
@@ -1067,14 +1067,14 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
   schedule(static)
 #endif
-  for(int out_y = 0; out_y < waveform_height; out_y++)
+  for(int k = 0; k < 3; k++)
   {
-    for(int out_x = 0; out_x < waveform_width; out_x++)
+    for(int out_y = 0; out_y < waveform_height; out_y++)
     {
-      const uint16_t *const in = buf + (waveform_width * out_y + out_x) * 3;
-      uint8_t *const out = waveform + (out_y * waveform_stride) + (out_x * 4);
-      for(int k = 0; k < 3; k++)
+      uint8_t *const out = waveform + (waveform_stride * (waveform_height * k + out_y));
+      for(int out_x = 0; out_x < waveform_width; out_x++)
       {
+        const uint16_t *const in = buf + (waveform_width * out_y + out_x) * 3;
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
         const uint16_t v = in[k];
@@ -1085,7 +1085,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
           // they're writing the same value, don't declare omp atomic
           cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
         }
-        out[k] = cache[v] ^ 1;
+        out[out_x] = cache[v] ^ 1;
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
