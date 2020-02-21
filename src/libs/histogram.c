@@ -283,7 +283,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   const int waveform_height = dev->histogram_waveform_height;
   const gint waveform_stride = dev->histogram_waveform_stride;
   const size_t histsize = dev->scope_type == DT_DEV_SCOPE_WAVEFORM
-                            ? sizeof(uint8_t) * waveform_height * waveform_stride
+                            ? sizeof(uint8_t) * waveform_height * waveform_stride * 3
                             : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   void *buf = malloc(histsize);
 
@@ -350,17 +350,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       uint8_t *hist_wav = buf;
       uint8_t mask[3] = { d->blue, d->green, d->red };
 
-      int parade_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, waveform_width);
-      uint8_t *parade = calloc(waveform_height * parade_stride * 3, sizeof(uint8_t));
-      // FIXME: format histogram data in this order, so don't have to reformat, then use conditional per channel on where to draw it
-      for(int k = 0; k < 3; k++)
-      {
-        uint8_t *p = parade + parade_stride * waveform_height * (2-k);
-        for(int y = 0; y < waveform_height; y++)
-          for(int x = 0; x < waveform_width; x++)
-            p[y * parade_stride + x] = hist_wav[y * waveform_stride + x * 4 + k];
-      }
-
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
         cairo_scale(cr, (double)width/waveform_width, (double)height/waveform_height);
@@ -372,8 +361,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           {
             cairo_set_source_rgb(cr, k==0, k==1, k==2);
             cairo_surface_t *alpha
-                = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k,
-                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
+                = cairo_image_surface_create_for_data(hist_wav + waveform_stride * waveform_height * (2-k),
+                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, waveform_stride);
             cairo_mask_surface(cr, alpha, 0, 0);
             cairo_surface_destroy(alpha);
           }
@@ -396,8 +385,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
             cairo_rectangle(cr, 0, 0, waveform_width, waveform_height);
             cairo_clip(cr);
             cairo_surface_t *alpha
-                = cairo_image_surface_create_for_data(parade + parade_stride * waveform_height * k,
-                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, parade_stride);
+                = cairo_image_surface_create_for_data(hist_wav + waveform_stride * waveform_height * (2-k),
+                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, waveform_stride);
             cairo_mask_surface(cr, alpha, 0, 0);
             cairo_surface_destroy(alpha);
             cairo_restore(cr);
@@ -405,7 +394,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           cairo_translate(cr, waveform_width, 0);
         }
       }
-      free(parade);
     }
     else if(dev->histogram_max)
     {
@@ -729,6 +717,7 @@ static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEvent
                                                      gpointer user_data)
 {
   dt_control_change_cursor(GDK_HAND1);
+  // FIXME: change the cursor to pointer when over the buttons
   return TRUE;
 }
 
