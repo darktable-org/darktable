@@ -182,9 +182,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   }
 
   WebPPictureFree(&pic);
-  pic_init = 0;
   fclose(out);
-  out = NULL;
 
   dt_exif_write_blob(exif, exif_len, filename, 1);
 
