@@ -57,8 +57,10 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
 static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, gboolean no_group);
 /* signal handlers to update the cached count when something interesting might have happened.
  * we need 2 different since there are different kinds of signals we need to listen to. */
-static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
+static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data);
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data);
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                            int next, gpointer user_data);
 
 /* determine image offset of specified imgid for the given collection */
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
@@ -98,6 +100,10 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
                             G_CALLBACK(_dt_collection_recount_callback_2), collection);
 
+  // connect to the collection change signal, to be sure that the list of changed images is freed
+  if(!clone)
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                              G_CALLBACK(_dt_collection_changed_callback), collection);
   return collection;
 }
 
@@ -1907,7 +1913,24 @@ int dt_collection_image_offset(int imgid)
   return dt_collection_image_offset_with_collection(darktable.collection, imgid);
 }
 
-static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
+static gboolean _dt_collection_free_list(gpointer user_data)
+{
+  if(!user_data) return FALSE;
+  GList *l = user_data;
+  g_list_free(l);
+  return FALSE; // dont call again
+}
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                            int next, gpointer user_data)
+{
+  // Hack to avoid memory leak on GList imgs : we need to free it at one point.
+  // we do that here, with a arbitrary timeout of 15s.
+  // Hoping that any function connected to DT_COLLECTION_CHANGED signal wouldn't required the list for more than
+  // 15s...
+  if(imgs) g_timeout_add(15000, _dt_collection_free_list, imgs);
+}
+
+static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
