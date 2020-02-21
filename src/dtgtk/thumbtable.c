@@ -1463,7 +1463,15 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
   if(!parent || parent != new_parent)
   {
     if(GTK_IS_OVERLAY(new_parent))
+    {
       gtk_overlay_add_overlay(GTK_OVERLAY(new_parent), table->widget);
+      // be sure that log msg is always placed on top
+      if(new_parent == dt_ui_center_base(darktable.gui->ui))
+      {
+        gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                                    gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+      }
+    }
     else
       gtk_container_add(GTK_CONTAINER(new_parent), table->widget);
   }

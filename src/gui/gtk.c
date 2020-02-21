@@ -94,6 +94,9 @@ typedef struct dt_ui_t
 
   /* thumb table */
   dt_thumbtable_t *thumbtable;
+
+  /* log msg label */
+  GtkWidget *log_msg;
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -116,6 +119,8 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
+/* callback for redraw log signals */
+static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget);
 
 /* Set the HiDPI stuff */
 static void configure_ppd_dpi(dt_gui_gtk_t *gui);
@@ -1456,6 +1461,13 @@ static gboolean _focus_in_out_event(GtkWidget *widget, GdkEvent *event, gpointer
   return FALSE;
 }
 
+
+static gboolean _ui_log_button_press_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_widget_hide(GTK_WIDGET(user_data));
+  return TRUE;
+}
+
 static void init_widgets(dt_gui_gtk_t *gui)
 {
 
@@ -1523,6 +1535,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
 
+  gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
 
@@ -1615,9 +1628,25 @@ static void init_main_table(GtkWidget *container)
   /* initiialize the thumb panel */
   darktable.gui->ui->thumbtable = dt_thumbtable_new();
 
+  /* the log message */
+  GtkWidget *eb = gtk_event_box_new();
+  darktable.gui->ui->log_msg = gtk_label_new("");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_ui_log_button_press_event),
+                   darktable.gui->ui->log_msg);
+  gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->log_msg), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_name(darktable.gui->ui->log_msg, "log-msg");
+  gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->log_msg);
+  gtk_widget_set_valign(eb, GTK_ALIGN_END);
+  gtk_widget_set_halign(eb, GTK_ALIGN_CENTER);
+  gtk_overlay_add_overlay(GTK_OVERLAY(ocda), eb);
+
   /* center should redraw when signal redraw center is raised*/
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER,
                             G_CALLBACK(_ui_widget_redraw_callback), darktable.gui->ui->center);
+
+  /* update log message label */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW, G_CALLBACK(_ui_log_redraw_callback),
+                            darktable.gui->ui->log_msg);
 
   // Adding the scrollbars
   GtkWidget *vscrollBar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);
@@ -1956,6 +1985,10 @@ GtkWidget *dt_ui_center_base(dt_ui_t *ui)
 dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui)
 {
   return ui->thumbtable;
+}
+GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui)
+{
+  return ui->log_msg;
 }
 
 GtkWidget *dt_ui_main_window(dt_ui_t *ui)
@@ -2370,6 +2403,28 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
    gtk_widget_queue_draw(widget);
+}
+
+static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget)
+{
+  // draw log message, if any
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
+  if(darktable.control->log_ack != darktable.control->log_pos)
+  {
+    if(strcmp(darktable.control->log_message[darktable.control->log_ack], gtk_label_get_text(GTK_LABEL(widget))))
+      gtk_label_set_text(GTK_LABEL(widget), darktable.control->log_message[darktable.control->log_ack]);
+    if(!gtk_widget_get_visible(widget))
+    {
+      const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
+      gtk_widget_set_margin_bottom(gtk_widget_get_parent(widget), 0.15 * h - DT_PIXEL_APPLY_DPI(10));
+      gtk_widget_show(widget);
+    }
+  }
+  else
+  {
+    if(gtk_widget_get_visible(widget)) gtk_widget_hide(widget);
+  }
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
