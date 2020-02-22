@@ -1421,7 +1421,24 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
              "initial_hash BLOB, default_hash BLOB, current_hash BLOB)",
              "[init] can't create table history_hash\n");
+
+    const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
+    guint8 *checksum = calloc(1, checksum_len);
+    sqlite3_stmt *ins_stmt = NULL;
+    char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash "
+                                        "SELECT DISTINCT id, "
+                                        "CASE WHEN imgid IS NULL THEN ?1 ELSE NULL END, "
+                                        "NULL, ?1"
+                                        "FROM main.images LEFT JOIN main.history ON imgid = id"
+                                        );
+    sqlite3_prepare_v2(db->handle, query,-1, &ins_stmt, NULL);
+    sqlite3_bind_blob(ins_stmt, 1, &checksum, checksum_len, NULL);
+    TRY_STEP(ins_stmt, SQLITE_DONE, "[init] can't initialize main.history_hash\n");
+    sqlite3_finalize(ins_stmt);
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    g_free(query);
+    g_free(checksum);
 
     new_version = 24;
   }
@@ -1706,8 +1723,8 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "initial_hash BLOB, default_hash BLOB, current BLOB)",
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, status INTEGER, "
+               "initial_hash BLOB, default_hash BLOB, current_hash BLOB)",
                NULL, NULL, NULL);
 }
 

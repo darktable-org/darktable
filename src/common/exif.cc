@@ -2932,7 +2932,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       all_ok = FALSE;
       goto end;
     }
-    dt_hash_history_write(img->id, DT_HH_CURRENT);
+    dt_history_hash_write(img->id, DT_HH_CURRENT);
 
 end:
     sqlite3_finalize(stmt);

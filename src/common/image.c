@@ -831,13 +831,12 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     {
       // make sure the current iop-order list is written as this will be duplicated from the db
       dt_ioppr_write_iop_order_list(darktable.develop->iop_order_list, imgid);
-      dt_hash_history_write(imgid, DT_HH_CURRENT);
+      dt_history_hash_write(imgid, DT_HH_CURRENT);
     }
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.module_order (imgid, iop_list, version,"
-                                " initial_hash, default_hash, current_hash)"
-                                "  SELECT ?1, iop_list, version, initial_hash, default_hash, current_hash"
+                                "INSERT INTO main.module_order (imgid, iop_list, version)"
+                                "  SELECT ?1, iop_list, version"
                                 "    FROM main.module_order WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
@@ -951,29 +950,9 @@ void dt_image_remove(const int32_t imgid)
 
 gboolean dt_image_altered(const uint32_t imgid)
 {
-  sqlite3_stmt *stmt;
-
-  const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
-  const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-
-  char query[1024] = { 0 };
-
-  snprintf(query, sizeof(query),
-           "SELECT 1"
-           " FROM main.history, main.images"
-           " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
-           "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
-           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
-           basecurve_auto_apply ? ", 'basecurve'" : "",
-           sharpen_auto_apply ? ", 'sharpen'" : "");
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  const gboolean altered = (sqlite3_step(stmt) == SQLITE_ROW);
-  sqlite3_finalize(stmt);
-
-  return altered;
+  printf("dt_image_altered %d\n", imgid);
+  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  return status & DT_HH_CURRENT;
 }
 
 

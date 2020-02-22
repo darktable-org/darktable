@@ -1301,7 +1301,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write the current iop-order-list for this image
 
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
-  dt_hash_history_write(imgid, DT_HH_CURRENT);
+  dt_history_hash_write(imgid, DT_HH_CURRENT);
 
   dt_unlock_image(imgid);
 }
@@ -1546,6 +1546,18 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
   }
 }
 
+void _dev_write_history(dt_develop_t *dev, const int imgid)
+{
+  // write history entries
+  GList *history = dev->history;
+  for(int i = 0; history; i++)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    (void)dt_dev_write_history_item(imgid, hist, i);
+    history = g_list_next(history);
+  }
+}
+
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
 {
   if(imgid <= 0) return;
@@ -1559,11 +1571,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   int history_end_current = 0;
-
+printf("dt_dev_read_history_ext imgid %d no_image %s\n", imgid, no_image ? "yes" : "no");
   sqlite3_stmt *stmt;
 
   dt_ioppr_set_default_iop_order(dev, imgid);
 
+  int auto_apply_modules = 0;
+  gboolean first_run = FALSE;
   if(!no_image)
   {
     // cleanup
@@ -1574,27 +1588,17 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     const int default_modules = _dev_get_module_nb_records();
 
     // maybe add auto-presets to memory.history
-    const gboolean first_run = _dev_auto_apply_presets(dev);
-    const int auto_apply_modules = _dev_get_module_nb_records() - default_modules;
-
+    first_run = _dev_auto_apply_presets(dev);
+    auto_apply_modules = _dev_get_module_nb_records() - default_modules;
+printf("dt_dev_read_history_ext imgid %d defmod %d apply %d\n", imgid, default_modules, auto_apply_modules);
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
-    if(first_run)
-    {
-      dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
-      dt_hash_history_t flags = DT_HH_CURRENT | (auto_apply_modules ? DT_HH_DEFAULT : DT_HH_INITIAL);
-      dt_hash_history_write(imgid, flags);
-    }
-
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
-
-    // make sure module_dev is in sync with history
-    dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
-    dt_hash_history_write(imgid, DT_HH_CURRENT);
   }
 
+  gboolean legacy_params = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1604,6 +1608,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       history_end_current = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
+
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid, num, module, operation,"
@@ -1718,7 +1723,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
             && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version,
                                               hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
     {
-      // do nothing
+      legacy_params = TRUE;
     }
     else
     {
@@ -1750,6 +1755,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
           memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
           dt_iop_commit_blend_params(hist->module, hist->module->default_blendop_params);
         }
+        legacy_params = TRUE;
       }
 
       /*
@@ -1807,6 +1813,26 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
+
+  // make sure module_dev is in sync with history
+  _dev_write_history(dev, imgid);
+  dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+  dt_history_hash_t flags = DT_HH_CURRENT;
+  if(first_run)
+  {
+    flags = flags | (auto_apply_modules ? DT_HH_DEFAULT : DT_HH_INITIAL);
+  }
+  else if(legacy_params)
+  {
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
+    if(hash_status & (DT_HH_INITIAL | DT_HH_DEFAULT))
+    {
+      // if image not altered keep the current status
+      flags = flags | hash_status;
+    }
+  }
+  dt_history_hash_write(imgid, flags);
+
   dt_unlock_image(imgid);
 }
 
