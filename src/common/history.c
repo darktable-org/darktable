@@ -1218,10 +1218,10 @@ gchar *_hash_history_to_string(guint8 *hash, const gsize checksum_len)
   return hash_text;
 }
 
-gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash)
+gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 {
   if(imgid == -1) return 0;
-  double start = dt_get_wtime();
+//  double start = dt_get_wtime();
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
 
@@ -1277,18 +1277,18 @@ gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash)
 //  gchar *hash_control = g_strdup(g_checksum_get_string(checksum));
   g_checksum_free(checksum);
 
-  double end = dt_get_wtime();
-  printf("hash_history_compute img %d time %f\n", imgid, end-start);
+//  double end = dt_get_wtime();
+//  printf("hash_history_compute img %d time %f\n", imgid, end-start);
   return hash_len;
 }
 
-void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type)
 {
   if(imgid == -1) return;
-//  double start = dt_get_wtime();
+  double start = dt_get_wtime();
 
   guint8 *hash = NULL;
-  gsize hash_len = dt_hash_history_compute_from_db(imgid, &hash);
+  gsize hash_len = _history_hash_compute_from_db(imgid, &hash);
   if(hash)
   {
     char *fields = NULL;
@@ -1312,6 +1312,7 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
       values = dt_util_dstrcat(values, "?2,");
       conflict = dt_util_dstrcat(conflict, "current_hash=?2,");
     }
+    // remove the useless last comma
     if(fields) fields[strlen(fields) - 1] = '\0';
     if(values) values[strlen(values) - 1] = '\0';
     if(conflict) conflict[strlen(conflict) - 1] = '\0';
@@ -1334,12 +1335,44 @@ void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type)
       g_free(values);
       g_free(conflict);
     }
-//    double end = dt_get_wtime();
-//    char *hash_text = _hash_history_to_string(hash, hash_len);
-//    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
-//    g_free(hash_text);
+    double end = dt_get_wtime();
+    char *hash_text = _hash_history_to_string(hash, hash_len);
+    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
+    g_free(hash_text);
     g_free(hash);
   }
+}
+
+const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
+{
+//  double start = dt_get_wtime();
+  dt_history_hash_t status = 0;
+  if(imgid == -1) return status;
+  sqlite3_stmt *stmt;
+  char *query = dt_util_dstrcat(NULL,
+                                "SELECT CASE"
+                                "  WHEN initial_hash == current_hash THEN %d"
+                                "  WHEN default_hash == current_hash THEN %d"
+                                "  WHEN (initial_hash IS NULL OR current_hash != initial_hash) AND"
+                                "       (default_hash IS NULL OR current_hash != default_hash) THEN %d"
+                                "  ELSE %d END AS status"
+                                " FROM main.history_hash"
+                                " WHERE imgid = %d",
+                                DT_HH_INITIAL, DT_HH_DEFAULT, DT_HH_CURRENT, DT_HH_UNKNOWN, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    status = sqlite3_column_int(stmt, 0);
+  }
+  else status = DT_HH_UNKNOWN;
+  if(status == DT_HH_UNKNOWN)
+    fprintf(stderr, "[hash_history] error - unknown history status imgid %d\n", imgid);
+  sqlite3_finalize(stmt);
+  g_free(query);
+//  double end = dt_get_wtime();
+//  printf("hash_history_read img %d time %f status %d\n", imgid, end-start, status);
+  return status;
 }
 
 #undef DT_IOP_ORDER_INFO

@@ -30,7 +30,6 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
-#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
