@@ -2748,7 +2748,8 @@ int key_released(dt_view_t *self, guint key, guint state)
 
   if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
       || (key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
+          && state == accels->lighttable_preview_display_focus.accel_mods))
+     && lib->full_preview_id != -1 && !lib->full_preview_sticky)
   {
     _preview_quit(self);
   }
@@ -2771,6 +2772,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_preview_display_focus.accel_key
          && state == accels->lighttable_preview_display_focus.accel_mods))
   {
+    if(lib->full_preview_id > 0 && lib->full_preview_sticky)
+    {
+      _preview_quit(self);
+      return TRUE;
+    }
     const int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1)
     {
