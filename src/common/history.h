@@ -25,12 +25,13 @@
 struct dt_develop_t;
 struct dt_iop_module_t;
 
-typedef enum dt_hash_history_t
+typedef enum dt_history_hash_t
 {
   DT_HH_INITIAL = 1 << 0,
   DT_HH_DEFAULT = 1 << 1,
-  DT_HH_CURRENT = 1 << 2
-} dt_hash_history_t;
+  DT_HH_CURRENT = 1 << 2,
+  DT_HH_UNKNOWN = 1 << 3
+} dt_history_hash_t;
 
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
@@ -83,11 +84,11 @@ char *dt_history_get_items_as_string(int32_t imgid);
 /* check if a module exists in the history of corresponding image */
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
-/** calculate the hash for that history from db*/
-gsize dt_hash_history_compute_from_db(const int32_t imgid, guint8 **hash);
-
 /** save hash history for that image to database*/
-void dt_hash_history_write(const int32_t imgid, const dt_hash_history_t type);
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type);
+
+/** return the hash history status */
+const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
