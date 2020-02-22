@@ -614,6 +614,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
+    gtk_widget_set_no_show_all(thumb->w_color, TRUE);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_color);
 
     // the local copy indicator
@@ -621,6 +622,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
+    gtk_widget_set_no_show_all(thumb->w_local_copy, TRUE);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_local_copy);
 
     // the altered icon
@@ -628,6 +630,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_name(thumb->w_altered, "thumb_altered");
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
+    gtk_widget_set_no_show_all(thumb->w_altered, TRUE);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_altered);
 
     // the group bouton
@@ -636,6 +639,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
+    gtk_widget_set_no_show_all(thumb->w_group, TRUE);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_group);
 
     // the sound icon
@@ -644,6 +648,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
+    gtk_widget_set_no_show_all(thumb->w_audio, TRUE);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_audio);
 
     dt_thumbnail_resize(thumb, thumb->width, thumb->height);
