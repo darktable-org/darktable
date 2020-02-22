@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #    This file is part of darktable.
 #    copyright (c) 2016 Roman Lebedev.

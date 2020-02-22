@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script is a quick hack to make it easier to build the darktable documetation
 # in PDF, html-multi and html-single formats, for the user manual and LUA API.
@@ -127,7 +127,7 @@ num_cpu()
                         ncpu=$(grep -c "^processor" /proc/cpuinfo)
                 elif [ -x /sbin/sysctl ]; then
                         ncpu=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
-                        if [ $? -neq 0 ]; then
+                        if [ $? -ne 0 ]; then
                                 ncpu=-1
                         fi
                 fi
