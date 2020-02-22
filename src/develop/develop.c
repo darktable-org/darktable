@@ -1301,7 +1301,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write the current iop-order-list for this image
 
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
-  dt_history_hash_write(imgid, DT_HH_CURRENT);
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_unlock_image(imgid);
 }
@@ -1571,7 +1571,6 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   int history_end_current = 0;
-printf("dt_dev_read_history_ext imgid %d no_image %s\n", imgid, no_image ? "yes" : "no");
   sqlite3_stmt *stmt;
 
   dt_ioppr_set_default_iop_order(dev, imgid);
@@ -1590,7 +1589,6 @@ printf("dt_dev_read_history_ext imgid %d no_image %s\n", imgid, no_image ? "yes"
     // maybe add auto-presets to memory.history
     first_run = _dev_auto_apply_presets(dev);
     auto_apply_modules = _dev_get_module_nb_records() - default_modules;
-printf("dt_dev_read_history_ext imgid %d defmod %d apply %d\n", imgid, default_modules, auto_apply_modules);
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
@@ -1817,21 +1815,21 @@ printf("dt_dev_read_history_ext imgid %d defmod %d apply %d\n", imgid, default_m
   // make sure module_dev is in sync with history
   _dev_write_history(dev, imgid);
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
-  dt_history_hash_t flags = DT_HH_CURRENT;
+  dt_history_hash_t flags = DT_HISTORY_HASH_CURRENT;
   if(first_run)
   {
-    flags = flags | (auto_apply_modules ? DT_HH_DEFAULT : DT_HH_INITIAL);
+    flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_INITIAL);
   }
   else if(legacy_params)
   {
     const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
-    if(hash_status & (DT_HH_INITIAL | DT_HH_DEFAULT))
+    if(hash_status & (DT_HISTORY_HASH_INITIAL | DT_HISTORY_HASH_AUTO))
     {
       // if image not altered keep the current status
       flags = flags | hash_status;
     }
   }
-  dt_history_hash_write(imgid, flags);
+  dt_history_hash_write_from_history(imgid, flags);
 
   dt_unlock_image(imgid);
 }

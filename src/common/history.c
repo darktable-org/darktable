@@ -1282,10 +1282,10 @@ gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
   return hash_len;
 }
 
-void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type)
+void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type)
 {
   if(imgid == -1) return;
-  double start = dt_get_wtime();
+//  double start = dt_get_wtime();
 
   guint8 *hash = NULL;
   gsize hash_len = _history_hash_compute_from_db(imgid, &hash);
@@ -1294,19 +1294,19 @@ void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type)
     char *fields = NULL;
     char *values = NULL;
     char *conflict = NULL;
-    if(type & DT_HH_INITIAL)
+    if(type & DT_HISTORY_HASH_INITIAL)
     {
       fields = dt_util_dstrcat(fields, "%s,", "initial_hash");
       values = g_strdup("?2,");
       conflict = g_strdup("initial_hash=?2,");
     }
-    if(type & DT_HH_DEFAULT)
+    if(type & DT_HISTORY_HASH_AUTO)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "default_hash");
+      fields = dt_util_dstrcat(fields, "%s,", "auto_hash");
       values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "default_hash=?2,");
+      conflict = dt_util_dstrcat(conflict, "auto_hash=?2,");
     }
-    if(type & DT_HH_CURRENT)
+    if(type & DT_HISTORY_HASH_CURRENT)
     {
       fields = dt_util_dstrcat(fields, "%s,", "current_hash");
       values = dt_util_dstrcat(values, "?2,");
@@ -1335,12 +1335,75 @@ void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type)
       g_free(values);
       g_free(conflict);
     }
-    double end = dt_get_wtime();
-    char *hash_text = _hash_history_to_string(hash, hash_len);
-    printf("hash_history_write img %d time %f hash %s\n", imgid, end-start, hash_text);
-    g_free(hash_text);
+//    double end = dt_get_wtime();
+//    char *hash_text = _hash_history_to_string(hash, hash_len);
+//    printf("dt_history_hash_write_from_history img %d time %f hash %s\n", imgid, end-start, hash_text);
+//    g_free(hash_text);
     g_free(hash);
   }
+}
+
+void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash)
+{
+  if(hash->initial || hash->auto_apply || hash->current)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "INSERT INTO main.history_hash"
+                                " (imgid, initial_hash, auto_hash, current_hash)"
+                                " VALUES (?1, ?2, ?3, ?4)"
+                                " ON CONFLICT (imgid)"
+                                " DO UPDATE SET"
+                                "   initial_hash = ?2, auto_hash = ?3, current_hash = ?4",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash->initial, hash->initial_len, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, hash->auto_apply, hash->auto_apply_len, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, hash->current, hash->current_len, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    g_free(hash->initial);
+    g_free(hash->auto_apply);
+    g_free(hash->current);
+  }
+}
+
+void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
+{
+  hash->initial = hash->auto_apply = hash->current = NULL;
+  hash->initial_len = hash->auto_apply_len = hash->current_len = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT initial_hash, auto_hash, current_hash"
+                              " FROM main.history_hash"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    void *buf = (void *)sqlite3_column_blob(stmt, 0);
+    hash->initial_len = sqlite3_column_bytes(stmt, 0);
+    if(buf)
+    {
+      hash->initial = malloc(hash->auto_apply_len);
+      memcpy(hash->initial, buf, hash->initial_len);
+    }
+    buf = (void *)sqlite3_column_blob(stmt, 1);
+    hash->auto_apply_len = sqlite3_column_bytes(stmt, 1);
+    if(buf)
+    {
+      hash->auto_apply = malloc(hash->auto_apply_len);
+      memcpy(hash->auto_apply, buf, hash->auto_apply_len);
+    }
+    buf = (void *)sqlite3_column_blob(stmt, 2);
+    hash->current_len = sqlite3_column_bytes(stmt, 2);
+    if(buf)
+    {
+      hash->current = malloc(hash->current_len);
+      memcpy(hash->current, buf, hash->current_len);
+    }
+  }
+  sqlite3_finalize(stmt);
 }
 
 const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
@@ -1352,22 +1415,21 @@ const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
   char *query = dt_util_dstrcat(NULL,
                                 "SELECT CASE"
                                 "  WHEN initial_hash == current_hash THEN %d"
-                                "  WHEN default_hash == current_hash THEN %d"
+                                "  WHEN auto_hash == current_hash THEN %d"
                                 "  WHEN (initial_hash IS NULL OR current_hash != initial_hash) AND"
-                                "       (default_hash IS NULL OR current_hash != default_hash) THEN %d"
+                                "       (auto_hash IS NULL OR current_hash != auto_hash) THEN %d"
                                 "  ELSE %d END AS status"
                                 " FROM main.history_hash"
                                 " WHERE imgid = %d",
-                                DT_HH_INITIAL, DT_HH_DEFAULT, DT_HH_CURRENT, DT_HH_UNKNOWN, imgid);
+                                DT_HISTORY_HASH_INITIAL, DT_HISTORY_HASH_AUTO,
+                                DT_HISTORY_HASH_CURRENT, DT_HISTORY_HASH_UNKNOWN, imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     status = sqlite3_column_int(stmt, 0);
   }
-  else status = DT_HH_UNKNOWN;
-  if(status == DT_HH_UNKNOWN)
-    fprintf(stderr, "[hash_history] error - unknown history status imgid %d\n", imgid);
+  else status = DT_HISTORY_HASH_UNKNOWN;
   sqlite3_finalize(stmt);
   g_free(query);
 //  double end = dt_get_wtime();
