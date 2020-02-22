@@ -25,13 +25,27 @@
 struct dt_develop_t;
 struct dt_iop_module_t;
 
+// history hash is designed to detect any change made on the image
+// if current = initial the image has only the mandatory modules with their original settings
+// if current = auto the image has the mandatory and auto applied modules with their original settings
+// else the image has been changed in some way
 typedef enum dt_history_hash_t
 {
-  DT_HH_INITIAL = 1 << 0,
-  DT_HH_DEFAULT = 1 << 1,
-  DT_HH_CURRENT = 1 << 2,
-  DT_HH_UNKNOWN = 1 << 3
+  DT_HISTORY_HASH_INITIAL = 1 << 0,   // only mandatory modules
+  DT_HISTORY_HASH_AUTO = 1 << 1,      // mandatory modules plus the auto applied ones
+  DT_HISTORY_HASH_CURRENT = 1 << 2,   // current state, with or without change
+  DT_HISTORY_HASH_UNKNOWN = 1 << 3
 } dt_history_hash_t;
+
+typedef struct dt_history_hash_values_t
+{
+  guint8 *initial;
+  int initial_len;
+  guint8 *auto_apply;
+  int auto_apply_len;
+  guint8 *current;
+  int current_len;
+} dt_history_hash_values_t;
 
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
@@ -84,11 +98,17 @@ char *dt_history_get_items_as_string(int32_t imgid);
 /* check if a module exists in the history of corresponding image */
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
-/** save hash history for that image to database*/
-void dt_history_hash_write(const int32_t imgid, const dt_history_hash_t type);
+/** calculate history hash and save it to database*/
+void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
 
 /** return the hash history status */
 const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
+
+/** write hash values to db */
+void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
+
+/** read hash values from db */
+void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

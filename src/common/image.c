@@ -831,13 +831,12 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     {
       // make sure the current iop-order list is written as this will be duplicated from the db
       dt_ioppr_write_iop_order_list(darktable.develop->iop_order_list, imgid);
-      dt_history_hash_write(imgid, DT_HH_CURRENT);
+      dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
     }
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.module_order (imgid, iop_list, version)"
-                                "  SELECT ?1, iop_list, version"
-                                "    FROM main.module_order WHERE imgid = ?2",
+                                "  SELECT ?1, iop_list, version FROM main.module_order WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -950,9 +949,8 @@ void dt_image_remove(const int32_t imgid)
 
 gboolean dt_image_altered(const uint32_t imgid)
 {
-  printf("dt_image_altered %d\n", imgid);
   dt_history_hash_t status = dt_history_hash_get_status(imgid);
-  return status & DT_HH_CURRENT;
+  return status & DT_HISTORY_HASH_CURRENT;
 }
 
 
