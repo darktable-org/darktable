@@ -1419,9 +1419,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
     TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-             "initial_hash BLOB, default_hash BLOB, current_hash BLOB)",
+             "initial_hash BLOB, auto_hash BLOB, current_hash BLOB)",
              "[init] can't create table history_hash\n");
 
+    // use the former dt_image_altered() to initialise the history_hash table
+    // insert an history_hash entry for all images (including non edited images)
+    const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
     guint8 *checksum = calloc(1, checksum_len);
     sqlite3_stmt *ins_stmt = NULL;
@@ -1430,7 +1434,11 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                                         "CASE WHEN imgid IS NULL THEN ?1 ELSE NULL END, "
                                         "NULL, ?1"
                                         "FROM main.images LEFT JOIN main.history ON imgid = id"
-                                        );
+                                        " AND num < history_end AND enabled = 1"
+                                        " AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
+                                        "     'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
+                                        basecurve_auto_apply ? ", 'basecurve'" : "",
+                                        sharpen_auto_apply ? ", 'sharpen'" : "");
     sqlite3_prepare_v2(db->handle, query,-1, &ins_stmt, NULL);
     sqlite3_bind_blob(ins_stmt, 1, &checksum, checksum_len, NULL);
     TRY_STEP(ins_stmt, SQLITE_DONE, "[init] can't initialize main.history_hash\n");
@@ -1723,8 +1731,8 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, status INTEGER, "
-               "initial_hash BLOB, default_hash BLOB, current_hash BLOB)",
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+               "initial_hash BLOB, auto_hash BLOB, current_hash BLOB)",
                NULL, NULL, NULL);
 }
 
