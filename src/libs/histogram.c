@@ -352,21 +352,31 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
-        cairo_scale(cr, (double)width/waveform_width, (double)height/waveform_height);
-        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-
+        uint8_t *w = calloc(waveform_stride * waveform_height * 4, sizeof(uint8_t));
         for(int k = 0; k < 3; k++)
-        {
-          if(mask[2-k])
+          if(mask[k])
           {
-            cairo_set_source_rgb(cr, k==0, k==1, k==2);
-            cairo_surface_t *alpha
-                = cairo_image_surface_create_for_data(hist_wav + waveform_stride * waveform_height * (2-k),
-                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, waveform_stride);
-            cairo_mask_surface(cr, alpha, 0, 0);
-            cairo_surface_destroy(alpha);
+            uint8_t *in = hist_wav + waveform_stride * waveform_height * k;
+            for(int y = 0; y < waveform_height; ++y)
+              for(int x = 0; x < waveform_width; ++x)
+              {
+                w[(y * waveform_stride + x) * 4 + k] = in[y * waveform_stride + x];
+                // setting the alpha helps especially to make the blue channel visible
+                w[(y * waveform_stride + x) * 4 + 3] = MAX(w[(y * waveform_stride + x) * 4 + 3],in[y * waveform_stride + x]);
+              }
           }
-        }
+
+        cairo_surface_t *source
+                = cairo_image_surface_create_for_data(w, CAIRO_FORMAT_ARGB32,
+                                                      waveform_width, waveform_height, waveform_stride*4);
+        // FIXME: why don't need to think about ppd?
+        //cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
+        cairo_scale(cr, (double)width/waveform_width, (double)height/waveform_height);
+        cairo_set_source_surface(cr, source, 0.0, 0.0);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+        cairo_paint(cr);
+        cairo_surface_destroy(source);
+        free(w);
       }
       else
       { // RGB parade
@@ -495,9 +505,11 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     const float posx = x / (float)(allocation.width);
     const float posy = y / (float)(allocation.height);
 
+    // FIXME: rather than roll button code from scratch, take advantage of bauhaus/gtk button code?
     if(posx < 0.0f || posx > 1.0f || posy < 0.0f || posy > 1.0f)
       ;
     // FIXME: simplify this, check for y position, and if it's in range, check for x, and set highlight, and depending on that draw tooltip
+    // FIXME: or alternately use copy_path_flat(), append_path(p), in_fill() and keep around the rectangles for each button
     else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE;
