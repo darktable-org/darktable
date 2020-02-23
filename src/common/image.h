@@ -206,6 +206,9 @@ typedef struct dt_image_t
 
   /* DefaultUserCrop */
   float usercrop[4];
+
+  /* Keep the number of cpp for dualpixel images */
+  uint32_t planes; 
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;

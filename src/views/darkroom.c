@@ -2537,7 +2537,9 @@ void enter(dt_view_t *self)
 
   dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
-
+  // print a warning as we only support first of dual pixels
+  if (dev->image_storage.planes > 1)
+    dt_control_log(_("Using first part of dual pixel image '%s'"),dev->image_storage.filename);
   /*
    * add IOP modules to plugin list
    */
