@@ -6,68 +6,12 @@
 #
 
 if ! which sqlite3 > /dev/null; then
-    echo "error: please install sqlite3 binary".
+    echo error: please install sqlite3 binary.
     exit 1
 fi
 
-configdir="$HOME/.config/darktable"
-LIBDB="$configdir/library.db"
-dryrun=1
-library=""
-
-# remember the command line to show it in the end when not purging
-commandline="$0 $*"
-
-# handle command line arguments
-while [ "$#" -ge 1 ] ; do
-  option="$1"
-  case ${option} in
-  -h|--help)
-    echo "Delete unused tags from darktable's database"
-    echo "Usage:   $0 [options]"
-    echo ""
-    echo "Options:"
-    echo "  -c|--configdir <path>    path to the darktable config directory"
-    echo "                           (default: '${configdir}')"
-    echo "  -l|--library <path>      path to the library.db"
-    echo "                           (default: '${LIBDB}')"
-    echo "  -p|--purge               actually delete the tags instead of just finding them"
-    exit 0
-    ;;
-  -l|--library)
-    library="$2"
-    shift
-    ;;
-  -c|--configdir)
-    configdir="$2"
-    shift
-    ;;
-  -p|--purge)
-    dryrun=0
-    ;;
-  *)
-    echo "warning: ignoring unknown option $option"
-    ;;
-  esac
-    shift
-done
-
-LIBDB="$configdir/library.db"
-DATADB="$configdir/data.db"
-
-if [ "$library" != "" ]; then
-    LIBDB="$library"
-fi
-
-if [ ! -f "$LIBDB" ]; then
-    echo missing \""$LIBDB"\" file
-    exit 1
-fi
-
-if [ ! -f "$DATADB" ]; then
-    echo missing \""$DATADB"\" file
-    exit 1
-fi
+LIBDB=$HOME/.config/darktable/library.db
+DATADB=$HOME/.config/darktable/data.db
 
 # tags not used
 Q1C="
@@ -82,7 +26,17 @@ ATTACH DATABASE \"$DATADB\" as data;
 DELETE FROM data.tags WHERE id NOT IN (SELECT tagid FROM tagged_images);
 "
 
-if [ ${dryrun} -eq 0 ]; then
+if [ ! -f "$LIBDB" ]; then
+    echo missing \""$LIBDB"\" file
+    exit 1
+fi
+
+if [ ! -f "$DATADB" ]; then
+    echo missing \""$DATADB"\" file
+    exit 1
+fi
+
+if [ "$1" = "-p" ]; then
     echo Purging tags...
     echo "$Q1C" | sqlite3
     echo "$Q1" | sqlite3
@@ -98,5 +52,5 @@ else
     echo "$Q1C" | sqlite3
     echo
     echo to really purge from the database call:
-    echo "${commandline} --purge"
+    echo "$0" -p
 fi
