@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Partly stolen from http://imagejdocu.tudor.lu/doku.php?id=diverse:commandline:imagej
 # Detect readlink or realpath version

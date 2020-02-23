@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # do not touch the following 5 definitions
 
