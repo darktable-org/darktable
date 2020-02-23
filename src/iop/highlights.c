@@ -1049,14 +1049,9 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  // only on for raw images:
-  if(dt_image_is_raw(&(module->dev->image_storage)))
-    module->default_enabled = 1;
-  else
-    {
-    module->default_enabled = 0;
-      module->hide_enable_button = 1;
-    }
+  // enable this per default if raw or sraw, 
+  module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
+
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
