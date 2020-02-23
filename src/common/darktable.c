@@ -1160,6 +1160,7 @@ void dt_cleanup()
 
   dt_guides_cleanup(darktable.guides);
 
+  dt_database_optimize(darktable.db);
   dt_database_destroy(darktable.db);
 
   if(init_gui)

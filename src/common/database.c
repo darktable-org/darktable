@@ -2252,6 +2252,11 @@ start:
           db = NULL;
           goto error;
         }
+        
+        // upgrade was successfull, time for some housekeeping
+        sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+        sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
+      
       }
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
@@ -2330,6 +2335,10 @@ start:
         db = NULL;
         goto error;
       }
+      
+      // upgrade was successfull, time for some housekeeping
+      sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+      sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
@@ -2523,6 +2532,17 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
 {
   return db->lock_acquired;
 }
+
+void dt_database_optimize(const struct dt_database_t *db)
+{
+  // TODO: We should do auto vacuuming on darktable exit in pre-deremined cases
+  // possible heuristics suggestions in https://blogs.gnome.org/jnelson/2015/01/06/sqlite-vacuum-and-auto_vacuum/
+  
+  // optimize should in most cases be no-op and have no noticeable downsides
+  // see: https://www.sqlite.org/pragma.html#pragma_optimize
+  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
