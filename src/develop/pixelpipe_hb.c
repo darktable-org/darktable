@@ -522,9 +522,9 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   }
 
   // correct coordinates if preview is downsampled
-  if(module->iop_order > 16) { // apply only *after* Crop and Rotate (module 16)
-    for(int idx=0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
-  }
+  //if(module->iop_order > 16) { // apply only *after* Crop and Rotate (module 16)
+  for(int idx=0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
+  //}
 
   // transform back to current module coordinates
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
