@@ -16,6 +16,27 @@
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>database/maintenance_check</name>
+    <type>
+      <enum>
+        <option>never</option>
+        <option>on startup</option>
+        <option>on close</option>
+        <option>on both</option>
+      </enum>
+    </type>
+    <default>on close</default>
+    <shortdescription>when to check for database maintenance</shortdescription>
+    <longdescription>this will set when db size is checked for possible maintenance condition and ask user to confirm</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>database/maintenance_freepage_ratio</name>
+    <type>int</type>
+    <default>25</default>
+    <shortdescription>freepage for database maintenance in percentage</shortdescription>
+    <longdescription>once this ratio is reached (for either dbs) user is asked to confirm database maintenance</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>min_panel_width</name>
     <type>int</type>
     <default>150</default>
