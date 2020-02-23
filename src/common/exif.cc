@@ -369,7 +369,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2 read_xmp_tag] " << s << std::endl;
     return false;
   }
 }
@@ -521,7 +521,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read_xmp_data] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -535,7 +535,7 @@ static bool dt_exif_read_iptc_tag(Exiv2::IptcData &iptcData, Exiv2::IptcData::co
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2 read_iptc_tag] " << s << std::endl;
     return false;
   }
 }
@@ -592,7 +592,7 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read_iptc_data] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -630,7 +630,7 @@ void dt_img_check_usercrop(dt_image_t *img, const char *filename)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] reading DefaultUserCrop" << filename << ": " << s << std::endl;
+    std::cerr << "[exiv2 reading DefaultUserCrop] " << filename << ": " << s << std::endl;
     return;
   }
 }
@@ -644,7 +644,7 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
     return false;
   }
 }
@@ -1214,7 +1214,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read_exif_data] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -1254,7 +1254,7 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read_from_blob] " << img->filename << ": " << s << std::endl;
     return 1;
   }
 }
@@ -1276,7 +1276,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
     if(list.empty())
     {
-      dt_print(DT_DEBUG_LIGHTTABLE, "[exiv2] couldn't find thumbnail for %s", path);
+      dt_print(DT_DEBUG_LIGHTTABLE, "[exiv2 dt_exif_get_thumbnail] couldn't find thumbnail for %s", path);
       return 1;
     }
 
@@ -1294,7 +1294,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     *mime_type = strdup(preview.mimeType().c_str());
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
-      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for " << path << std::endl;
+      std::cerr << "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for " << path << std::endl;
       return 1;
     }
     //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
@@ -1305,7 +1305,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_get_thumbnail] " << path << ": " << s << std::endl;
     return 1;
   }
 }
@@ -1361,7 +1361,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read] " << path << ": " << s << std::endl;
     return 1;
   }
 }
@@ -1418,7 +1418,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_write_blob] " << path << ": " << s << std::endl;
     return 0;
   }
   return 1;
@@ -1747,7 +1747,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
   {
     // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
-    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_read_blob] " << path << ": " << s << std::endl;
     free(*buf);
     *buf = NULL;
     return 0;
@@ -3628,7 +3628,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[xmp_attach] " << filename << ": caught exiv2 exception '" << e << "'\n";
+    std::cerr << "[dt_exif_xmp_attach] " << filename << ": caught exiv2 exception '" << e << "'\n";
     return -1;
   }
 }
@@ -3720,7 +3720,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[xmp_write] " << filename << ": caught exiv2 exception '" << e << "'\n";
+    std::cerr << "[dt_exif_xmp_write] " << filename << ": caught exiv2 exception '" << e << "'\n";
     return -1;
   }
 }
@@ -3764,7 +3764,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_get_color_space] " << s << std::endl;
     return DT_COLORSPACE_DISPLAY;
   }
 }
@@ -3804,7 +3804,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
     return FALSE;
   }
 }
