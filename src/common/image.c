@@ -30,6 +30,7 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -546,6 +547,8 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   dt_image_reset_final_size(imgid);

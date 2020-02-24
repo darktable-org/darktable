@@ -1818,17 +1818,18 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   dt_history_hash_t flags = DT_HISTORY_HASH_CURRENT;
   if(first_run)
   {
-    flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_INITIAL);
+    flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
   }
   else if(legacy_params)
   {
     const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
-    if(hash_status & (DT_HISTORY_HASH_INITIAL | DT_HISTORY_HASH_AUTO))
+    if(hash_status & (DT_HISTORY_HASH_BASIC | DT_HISTORY_HASH_AUTO))
     {
       // if image not altered keep the current status
       flags = flags | hash_status;
     }
   }
+  // write history_hash when the image has an history
   dt_history_hash_write_from_history(imgid, flags);
 
   dt_unlock_image(imgid);
