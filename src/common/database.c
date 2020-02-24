@@ -2533,7 +2533,7 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
-void _dt_database_vacuum(const struct dt_database_t *db)
+void _dt_database_maintenance(const struct dt_database_t *db)
 {
   sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
@@ -2541,7 +2541,7 @@ void _dt_database_vacuum(const struct dt_database_t *db)
   sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
 }
 
-gboolean _ask_for_vacuum(const gboolean has_gui, guint64 size)
+gboolean _ask_for_maintenance(const gboolean has_gui, guint64 size)
 {
   if(!has_gui)
   {
@@ -2583,28 +2583,26 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
   return val;
 }
 
-void dt_database_maybe_vacuum(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
 {
-  gboolean check_for_vacuum = FALSE;
+  gboolean check_for_maintenance = FALSE;
 
   char *config = dt_conf_get_string("database/maintenance_check");
 
   if(config)
   {
-    if(
-        (!g_strcmp0(config, "on both"))
+    if((!g_strcmp0(config, "on both"))
         || (closing_time && !g_strcmp0(config, "on close"))
-        || (!closing_time && !g_strcmp0(config, "on startup"))
-        )
+        || (!closing_time && !g_strcmp0(config, "on startup")))
     {
       // we have "on both/on close/on startup" setting, so - checking!
-      check_for_vacuum = TRUE;
+      check_for_maintenance = TRUE;
     }
     // if the config was "never", check_for_vacuum is false.
     g_free(config);
   }
 
-  if(!check_for_vacuum)
+  if(!check_for_maintenance)
   {
     return;
   }
@@ -2618,6 +2616,11 @@ void dt_database_maybe_vacuum(const struct dt_database_t *db, const gboolean has
   const int data_page_count = _get_pragma_val(db, "data.page_count");
   const int data_page_size = _get_pragma_val(db, "data.page_size");
 
+  if(main_page_count <= 0 || data_page_count <= 0){
+    //something's wrong with PRAGMA page_size returns. early bail.
+    return;
+  }
+
   // we don't need fine-grained percentages, so let's do ints
   const int main_free_percentage = (main_free_count * 100 ) / main_page_count;
   const int data_free_percentage = (data_free_count * 100 ) / data_page_count;
@@ -2625,19 +2628,15 @@ void dt_database_maybe_vacuum(const struct dt_database_t *db, const gboolean has
   const int freepage_ratio = dt_conf_get_int("database/maintenance_freepage_ratio");
 
   if((main_free_percentage >= freepage_ratio)
-      || (data_free_percentage >= freepage_ratio)
-      )
+      || (data_free_percentage >= freepage_ratio))
   {
-
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
 
-    if(_ask_for_vacuum(has_gui, calc_size))
+    if(_ask_for_maintenance(has_gui, calc_size))
     {
-      _dt_database_vacuum(db);
+      _dt_database_maintenance(db);
     }
   }
-
-
 }
 
 void dt_database_optimize(const struct dt_database_t *db)

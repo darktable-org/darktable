@@ -869,8 +869,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
-  //early vacuum on startup (if configured to do so
-  dt_database_maybe_vacuum(darktable.db, init_gui, FALSE);
+  //db maintenance on startup (if configured to do so)
+  dt_database_maybe_maintenance(darktable.db, init_gui, FALSE);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -1102,7 +1102,7 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
-  dt_database_maybe_vacuum(darktable.db, init_gui, TRUE);
+  dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
