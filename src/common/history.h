@@ -26,21 +26,21 @@ struct dt_develop_t;
 struct dt_iop_module_t;
 
 // history hash is designed to detect any change made on the image
-// if current = initial the image has only the mandatory modules with their original settings
+// if current = basic the image has only the mandatory modules with their original settings
 // if current = auto the image has the mandatory and auto applied modules with their original settings
 // else the image has been changed in some way
+// note that if an image has no history (and no history hash) it is considered as basic
 typedef enum dt_history_hash_t
 {
-  DT_HISTORY_HASH_INITIAL = 1 << 0,   // only mandatory modules
+  DT_HISTORY_HASH_BASIC = 1 << 0,     // only mandatory modules
   DT_HISTORY_HASH_AUTO = 1 << 1,      // mandatory modules plus the auto applied ones
   DT_HISTORY_HASH_CURRENT = 1 << 2,   // current state, with or without change
-  DT_HISTORY_HASH_UNKNOWN = 1 << 3
 } dt_history_hash_t;
 
 typedef struct dt_history_hash_values_t
 {
-  guint8 *initial;
-  int initial_len;
+  guint8 *basic;
+  int basic_len;
   guint8 *auto_apply;
   int auto_apply_len;
   guint8 *current;

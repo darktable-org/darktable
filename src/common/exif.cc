@@ -274,7 +274,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
         "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
-        "Xmp.darktable.history_initial_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
+        "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
         "Xmp.acdsee.notes",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
@@ -2975,10 +2975,10 @@ end:
 
       // history_hash
       dt_history_hash_values_t hash = {NULL, 0, NULL, 0, NULL, 0};
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_initial_hash"))) != xmpData.end())
+      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_basic_hash"))) != xmpData.end())
       {
-        hash.initial = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
-                                          &hash.initial_len);
+        hash.basic = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
+                                          &hash.basic_len);
       }
       if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_auto_hash"))) != xmpData.end())
       {
@@ -2990,7 +2990,7 @@ end:
         hash.current = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
                                           &hash.current_len);
       }
-      if(hash.initial || hash.auto_apply || hash.current)
+      if(hash.basic || hash.auto_apply || hash.current)
       {
         dt_history_hash_write(img->id, &hash);
       }
@@ -2999,7 +2999,8 @@ end:
         // no choice, use the history itelf applying the former rules
         dt_history_hash_t hash_flag = DT_HISTORY_HASH_CURRENT;
         if(!_image_altered_deprecated(img->id))
-          hash_flag = (dt_history_hash_t)(hash_flag | DT_HISTORY_HASH_INITIAL);
+          // we assume the image has an history
+          hash_flag = (dt_history_hash_t)(hash_flag | DT_HISTORY_HASH_BASIC);
         dt_history_hash_write_from_history(img->id, hash_flag);
       }
     }
@@ -3353,11 +3354,11 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // store history hash
   dt_history_hash_values_t hash;
   dt_history_hash_read(imgid, &hash);
-  if(hash.initial)
+  if(hash.basic)
   {
-    xmpData["Xmp.darktable.history_initial_hash"]
-            = dt_exif_xmp_encode(hash.initial, hash.initial_len, NULL);
-    g_free(hash.initial);
+    xmpData["Xmp.darktable.history_basic_hash"]
+            = dt_exif_xmp_encode(hash.basic, hash.basic_len, NULL);
+    g_free(hash.basic);
   }
   if(hash.auto_apply)
   {
