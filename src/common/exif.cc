@@ -3300,7 +3300,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   double longitude = NAN, latitude = NAN, altitude = NAN;
   gchar *filename = NULL;
   gchar *datetime_taken = NULL;
-  gchar *iop_order_list;
+  gchar *iop_order_list = NULL;
 
   // get stars and raw params from db
   sqlite3_stmt *stmt;
@@ -3324,9 +3324,14 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   }
 
   // get iop-order list
-  GList *list = dt_ioppr_get_iop_order_list(imgid, TRUE);
-  iop_order_list = dt_ioppr_serialize_text_iop_order_list(list);
-  g_list_free_full(list, free);
+  const dt_iop_order_t iop_order_version = dt_ioppr_get_iop_order_version(imgid);
+  GList *iop_list = dt_ioppr_get_iop_order_list(imgid, TRUE);
+
+  if(iop_order_version == DT_IOP_ORDER_CUSTOM || dt_ioppr_has_multiple_instances(iop_list))
+  {
+    iop_order_list = dt_ioppr_serialize_text_iop_order_list(iop_list);
+  }
+  g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
   if (!(metadata->flags & DT_META_EXIF))
@@ -3390,7 +3395,10 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
     else
       xmpData["Xmp.darktable.auto_presets_applied"] = 0;
     dt_set_xmp_dt_history(xmpData, imgid, history_end);
-    xmpData["Xmp.darktable.iop_order_list"] = iop_order_list;
+
+    // we need to read the iop-order list
+    xmpData["Xmp.darktable.iop_order_version"] = iop_order_version;
+    if(iop_order_list) xmpData["Xmp.darktable.iop_order_list"] = iop_order_list;
   }
 
   sqlite3_finalize(stmt);
