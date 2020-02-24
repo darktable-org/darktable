@@ -21,7 +21,6 @@
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_MASK_FLAG = 0x80,
   DEVELOP_BLEND_DISABLED = 0x00,
   DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,

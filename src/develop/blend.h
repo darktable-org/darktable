@@ -30,7 +30,6 @@
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_MASK_FLAG = 0x80,
   DEVELOP_BLEND_DISABLED = 0x00,
   DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
@@ -447,8 +446,6 @@ typedef struct dt_iop_gui_blend_data_t
 } dt_iop_gui_blend_data_t;
 
 
-
-//#define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
 
 /** global init of blendops */
 dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void);
