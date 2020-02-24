@@ -15,7 +15,7 @@
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="core">
     <name>database/maintenance_check</name>
     <type>
       <enum>
@@ -29,7 +29,7 @@
     <shortdescription>when to check for database maintenance</shortdescription>
     <longdescription>this will set when db size is checked for possible maintenance condition and ask user to confirm</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="core">
     <name>database/maintenance_freepage_ratio</name>
     <type>int</type>
     <default>25</default>
