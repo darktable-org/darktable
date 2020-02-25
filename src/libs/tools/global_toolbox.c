@@ -256,7 +256,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
                 lang = language->code;
               // array of languages the usermanual supports.
               // NULL MUST remain the last element of the array
-              const char *supported_languages[] = { "en", "fr", "it", NULL };
+              const char *supported_languages[] = { "en", "fr", "it", "es", "de", "pl", NULL };
               int i = 0;
               while(supported_languages[i])
               {
