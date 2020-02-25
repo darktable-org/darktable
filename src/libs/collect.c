@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "libs/collect.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -2216,8 +2217,8 @@ void gui_init(dt_lib_module_t *self)
     w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
 
-    for(int k = 0; k < dt_lib_collect_string_cnt; k++)
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
+    for(int k = 0; k < DT_COLLECTION_PROP_LAST; k++)
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), dt_collection_name(k));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
 

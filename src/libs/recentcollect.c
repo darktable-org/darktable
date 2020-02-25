@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -134,7 +135,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", item < dt_lib_collect_string_cnt ? _(dt_lib_collect_string[item]) : "???",
+      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
                    item == 0 ? dt_image_film_roll_name(str) : str);
       out += c;
       outsize -= c;
