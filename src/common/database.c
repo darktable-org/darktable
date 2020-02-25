@@ -2252,6 +2252,11 @@ start:
           db = NULL;
           goto error;
         }
+
+        // upgrade was successfull, time for some housekeeping
+        sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+        sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
+
       }
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
@@ -2330,6 +2335,10 @@ start:
         db = NULL;
         goto error;
       }
+
+      // upgrade was successfull, time for some housekeeping
+      sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+      sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
@@ -2523,6 +2532,121 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
 {
   return db->lock_acquired;
 }
+
+void _dt_database_maintenance(const struct dt_database_t *db)
+{
+  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+}
+
+gboolean _ask_for_maintenance(const gboolean has_gui, guint64 size)
+{
+  if(!has_gui)
+  {
+    return 0;
+  }
+
+  char *size_info = g_format_size(size);
+
+  char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
+                                                 "\n"
+                                                 "there's <span style=\"italic\">%s</span> to be freed"
+                                                 "\n"
+                                                 "do you want to proceed now\n"),
+                                                 size_info);
+
+    gboolean shall_perform_maintenance =
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - schema maintenance"), label_text,
+                                           _("later"), _("yes"));
+
+    g_free(label_text);
+    g_free(size_info);
+
+    return shall_perform_maintenance;
+}
+
+int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+{
+  gboolean check_for_maintenance = FALSE;
+
+  char *config = dt_conf_get_string("database/maintenance_check");
+
+  if(config)
+  {
+    if((!g_strcmp0(config, "on both"))
+        || (closing_time && !g_strcmp0(config, "on close"))
+        || (!closing_time && !g_strcmp0(config, "on startup")))
+    {
+      // we have "on both/on close/on startup" setting, so - checking!
+      check_for_maintenance = TRUE;
+    }
+    // if the config was "never", check_for_vacuum is false.
+    g_free(config);
+  }
+
+  if(!check_for_maintenance)
+  {
+    return;
+  }
+
+  // checking free pages
+  const int main_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int main_page_count = _get_pragma_val(db, "main.page_count");
+  const int main_page_size = _get_pragma_val(db, "main.page_size");
+
+  const int data_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int data_page_count = _get_pragma_val(db, "data.page_count");
+  const int data_page_size = _get_pragma_val(db, "data.page_size");
+
+  if(main_page_count <= 0 || data_page_count <= 0){
+    //something's wrong with PRAGMA page_size returns. early bail.
+    return;
+  }
+
+  // we don't need fine-grained percentages, so let's do ints
+  const int main_free_percentage = (main_free_count * 100 ) / main_page_count;
+  const int data_free_percentage = (data_free_count * 100 ) / data_page_count;
+
+  const int freepage_ratio = dt_conf_get_int("database/maintenance_freepage_ratio");
+
+  if((main_free_percentage >= freepage_ratio)
+      || (data_free_percentage >= freepage_ratio))
+  {
+    const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
+
+    if(_ask_for_maintenance(has_gui, calc_size))
+    {
+      _dt_database_maintenance(db);
+    }
+  }
+}
+
+void dt_database_optimize(const struct dt_database_t *db)
+{
+  // optimize should in most cases be no-op and have no noticeable downsides
+  // this should be ran on every exit
+  // see: https://www.sqlite.org/pragma.html#pragma_optimize
+  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
