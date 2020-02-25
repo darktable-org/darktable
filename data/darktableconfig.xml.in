@@ -2347,7 +2347,7 @@
   <dtconfig prefs="gui" section="darkroom">
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>use colored sliders for visual indication</shortdescription>
     <longdescription>enable visual indication of temperature adjustments.</longdescription>
   </dtconfig>
