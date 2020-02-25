@@ -1624,6 +1624,8 @@ void gui_init(dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 
