@@ -1370,13 +1370,13 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   if(FILTERS_ARE_CYGM(img->buf_dsc.filters))
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
-    gtk_widget_set_tooltip_text(g->scale_r, _("green channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_r, _("green channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
-    gtk_widget_set_tooltip_text(g->scale_g, _("magenta channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_g, _("magenta channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_b, NULL, _("cyan"));
-    gtk_widget_set_tooltip_text(g->scale_b, _("cyan channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_b, _("cyan channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("yellow"));
-    gtk_widget_set_tooltip_text(g->scale_g2, _("yellow channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_g2, _("yellow channel coefficient"));
 
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 0);
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g2, 1);
@@ -1386,13 +1386,13 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   else
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
-    gtk_widget_set_tooltip_text(g->scale_r, _("red channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_r, _("red channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
-    gtk_widget_set_tooltip_text(g->scale_g, _("green channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_g, _("green channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
-    gtk_widget_set_tooltip_text(g->scale_b, _("blue channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_b, _("blue channel coefficient"));
     dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
-    gtk_widget_set_tooltip_text(g->scale_g2, _("emerald channel value on a scale from 0 to 8"));
+    gtk_widget_set_tooltip_text(g->scale_g2, _("emerald channel coefficient"));
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 0);
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g, 1);
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 2);
