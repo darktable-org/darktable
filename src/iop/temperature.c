@@ -1435,7 +1435,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
   
     const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
-    const int blackbody_is_confusing = dt_conf_get_int("plugins/darkroom/temperature/blackbody_is_confusing");
+    const int blackbody_is_confusing = dt_conf_get_bool("plugins/darkroom/temperature/blackbody_is_confusing");
     // reflect actual black body colors for the temperature slider (or not)
     for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
     {
