@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <inttypes.h>
 
 typedef enum dt_collection_query_t
@@ -75,7 +76,7 @@ typedef enum dt_collection_sort_t
 
 typedef enum dt_collection_properties_t
 {
-  DT_COLLECTION_PROP_FILMROLL,
+  DT_COLLECTION_PROP_FILMROLL = 0,
   DT_COLLECTION_PROP_FOLDERS,
   DT_COLLECTION_PROP_CAMERA,
   DT_COLLECTION_PROP_TAG,
@@ -99,7 +100,8 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_GROUPING,
   DT_COLLECTION_PROP_LOCAL_COPY,
   DT_COLLECTION_PROP_MODULE,
-  DT_COLLECTION_PROP_ORDER
+  DT_COLLECTION_PROP_ORDER,
+  DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
@@ -145,6 +147,8 @@ typedef struct dt_collection_t
   dt_collection_params_t store;
 } dt_collection_t;
 
+/* returns the name for the given collection property */
+const char *dt_collection_name(dt_collection_properties_t prop);
 
 /** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
