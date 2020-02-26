@@ -864,7 +864,6 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
     /** Here's how it works
@@ -1498,6 +1497,7 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean r
 {
   if(offset < 1 || offset == table->offset) return FALSE;
   table->offset = offset;
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
   if(redraw) dt_thumbtable_full_redraw(table, TRUE);
   return TRUE;
 }
