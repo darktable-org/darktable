@@ -551,6 +551,42 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
   return collection->params.descending;
 }
 
+const char *dt_collection_name(dt_collection_properties_t prop)
+{
+  switch(prop)
+  {
+    case DT_COLLECTION_PROP_FILMROLL:     return _("film roll");
+    case DT_COLLECTION_PROP_FOLDERS:      return _("folders");
+    case DT_COLLECTION_PROP_CAMERA:       return _("camera");
+    case DT_COLLECTION_PROP_TAG:          return _("tag");
+    case DT_COLLECTION_PROP_DAY:          return _("date");
+    case DT_COLLECTION_PROP_TIME:         return _("time");
+    case DT_COLLECTION_PROP_HISTORY:      return _("history");
+    case DT_COLLECTION_PROP_COLORLABEL:   return _("color label");
+    case DT_COLLECTION_PROP_TITLE:        return _("title");
+    case DT_COLLECTION_PROP_DESCRIPTION:  return _("description");
+    case DT_COLLECTION_PROP_CREATOR:      return _("creator");
+    case DT_COLLECTION_PROP_PUBLISHER:    return _("publisher");
+    case DT_COLLECTION_PROP_RIGHTS:       return _("rights");
+    case DT_COLLECTION_PROP_LENS:         return _("lens");
+    case DT_COLLECTION_PROP_FOCAL_LENGTH: return _("focal length");
+    case DT_COLLECTION_PROP_ISO:          return _("ISO");
+    case DT_COLLECTION_PROP_APERTURE:     return _("aperture");
+    case DT_COLLECTION_PROP_EXPOSURE:     return _("exposure");
+    case DT_COLLECTION_PROP_ASPECT_RATIO: return _("aspect ratio");
+    case DT_COLLECTION_PROP_FILENAME:     return _("filename");
+    case DT_COLLECTION_PROP_GEOTAGGING:   return _("geotagging");
+    case DT_COLLECTION_PROP_GROUPING:     return _("grouping");
+    case DT_COLLECTION_PROP_LOCAL_COPY:   return _("local copy");
+    case DT_COLLECTION_PROP_MODULE:       return _("module");
+    case DT_COLLECTION_PROP_ORDER:        return _("module order");
+    case DT_COLLECTION_PROP_LAST:         return _("???");
+  };
+
+  // should never happen
+  return _("???");
+};
+
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 {
   gchar *sq = NULL;

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <inttypes.h>
 
 typedef enum dt_collection_query_t
@@ -75,31 +76,38 @@ typedef enum dt_collection_sort_t
 
 typedef enum dt_collection_properties_t
 {
-  DT_COLLECTION_PROP_FILMROLL,
+  DT_COLLECTION_PROP_FILMROLL = 0,
   DT_COLLECTION_PROP_FOLDERS,
+  DT_COLLECTION_PROP_FILENAME,
+
   DT_COLLECTION_PROP_CAMERA,
-  DT_COLLECTION_PROP_TAG,
+  DT_COLLECTION_PROP_LENS,
+
+  DT_COLLECTION_PROP_APERTURE,
+  DT_COLLECTION_PROP_EXPOSURE,
+  DT_COLLECTION_PROP_FOCAL_LENGTH,
+  DT_COLLECTION_PROP_ISO,
+
   DT_COLLECTION_PROP_DAY,
   DT_COLLECTION_PROP_TIME,
-  DT_COLLECTION_PROP_HISTORY,
+  DT_COLLECTION_PROP_GEOTAGGING,
+  DT_COLLECTION_PROP_ASPECT_RATIO,
+
+  DT_COLLECTION_PROP_TAG,
   DT_COLLECTION_PROP_COLORLABEL,
   DT_COLLECTION_PROP_TITLE,
   DT_COLLECTION_PROP_DESCRIPTION,
   DT_COLLECTION_PROP_CREATOR,
   DT_COLLECTION_PROP_PUBLISHER,
   DT_COLLECTION_PROP_RIGHTS,
-  DT_COLLECTION_PROP_LENS,
-  DT_COLLECTION_PROP_FOCAL_LENGTH,
-  DT_COLLECTION_PROP_ISO,
-  DT_COLLECTION_PROP_APERTURE,
-  DT_COLLECTION_PROP_EXPOSURE,
-  DT_COLLECTION_PROP_ASPECT_RATIO,
-  DT_COLLECTION_PROP_FILENAME,
-  DT_COLLECTION_PROP_GEOTAGGING,
+
   DT_COLLECTION_PROP_GROUPING,
   DT_COLLECTION_PROP_LOCAL_COPY,
+
+  DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
-  DT_COLLECTION_PROP_ORDER
+  DT_COLLECTION_PROP_ORDER,
+  DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
@@ -145,6 +153,8 @@ typedef struct dt_collection_t
   dt_collection_params_t store;
 } dt_collection_t;
 
+/* returns the name for the given collection property */
+const char *dt_collection_name(dt_collection_properties_t prop);
 
 /** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
