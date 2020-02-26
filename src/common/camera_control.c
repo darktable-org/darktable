@@ -1021,6 +1021,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
         {
           gp_file_new(&preview);
 
+
           if (cfi.preview.size > 0)   // we have valid preview data for this file
           {
             long unsigned int chunksize = cfi.preview.size;
@@ -1066,6 +1067,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
               gp_file_set_data_and_size(preview, (char *)buf, bufsize);
               gotit = TRUE;
             }
+            free(mime_type);
           }
 
           // If we couldn't get preview data we clean up
