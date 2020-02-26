@@ -22,7 +22,8 @@
  * Please see ../README.md for more detailed documentation.
  */
 
-typedef struct Testimg {
+typedef struct Testimg
+{
   int width;
   int height;
   float *pixels;  // [0]=red, [1]=green, [2]=blue, [3]=misc/mask
