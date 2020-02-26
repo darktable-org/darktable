@@ -1569,7 +1569,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
   if(GPOINTER_TO_INT(data))
     dt_history_delete_on_image(newimgid);
   else
-    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL);
+    dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   return TRUE;
