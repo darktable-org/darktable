@@ -2536,8 +2536,8 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
 void _dt_database_maintenance(const struct dt_database_t *db)
 {
   sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
 }
 
