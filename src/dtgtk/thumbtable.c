@@ -529,6 +529,18 @@ static gboolean _move(dt_thumbtable_t *table, int x, int y, gboolean clamp)
   return TRUE;
 }
 
+static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
+{
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->imgid == imgid) return th;
+    l = g_list_next(l);
+  }
+  return NULL;
+}
+
 // change zoom value for the zoomable tumbtable
 static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
 {
@@ -580,6 +592,33 @@ static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
   gtk_widget_queue_draw(table->widget);
 }
 
+// change zoom value for the classic thumbtable
+static void _filemanager_zoom(dt_thumbtable_t *table, double delta, int x, int y)
+{
+  // we determine the zoom ratio
+  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
+  int new = old;
+  if(delta > 0)
+    new = MIN(ZOOM_MAX, new + 1);
+  else
+    new = MAX(1, new - 1);
+
+  if(old == new) return;
+
+  // we find the image to zoom around
+  const int mouseover = dt_control_get_mouse_over_id();
+  dt_thumbnail_t *thumb = _thumbtable_get_thumb(table, mouseover);
+
+  // how many images will be displayed before the current thumbnail center ?
+  const int new_size = table->view_width / new;
+  const int new_pos = y / new_size * new + x / new_size;
+
+  dt_thumbtable_set_offset(table, thumb->rowid - new_pos, FALSE);
+
+  dt_view_lighttable_set_zoom(darktable.view_manager, new);
+  gtk_widget_queue_draw(table->widget);
+}
+
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
@@ -588,7 +627,11 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 
   if(dt_gui_get_scroll_delta(e, &delta))
   {
-    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && (e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    {
+      _filemanager_zoom(table, delta, e->x, e->y);
+    }
+    else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       // for filemanger and filmstrip, scrolled = move
       if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -1228,18 +1271,6 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y)
     // and we move
     _move(table, abs_posx - x, abs_posy - y, FALSE);
   }
-}
-
-static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
-{
-  GList *l = table->list;
-  while(l)
-  {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->imgid == imgid) return th;
-    l = g_list_next(l);
-  }
-  return NULL;
 }
 
 // reload all thumbs from scratch.
