@@ -66,6 +66,7 @@ extern "C" {
 #include "common/iop_order.h"
 #include "common/variables.h"
 #include "common/utility.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -273,6 +274,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
         "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
+        "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
         "Xmp.acdsee.notes",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
@@ -2567,6 +2569,33 @@ int _get_max_multi_priority(GList *history, const char *operation)
   return max_prio;
 }
 
+static gboolean _image_altered_deprecated(const uint32_t imgid)
+{
+  sqlite3_stmt *stmt;
+
+  const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+  const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+
+  char query[1024] = { 0 };
+
+  snprintf(query, sizeof(query),
+           "SELECT 1"
+           " FROM main.history, main.images"
+           " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
+           "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
+           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
+           basecurve_auto_apply ? ", 'basecurve'" : "",
+           sharpen_auto_apply ? ", 'sharpen'" : "");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  const gboolean altered = (sqlite3_step(stmt) == SQLITE_ROW);
+  sqlite3_finalize(stmt);
+
+  return altered;
+}
+
 // need a write lock on *img (non-const) to write stars (and soon color labels).
 int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only)
 {
@@ -2943,6 +2972,37 @@ end:
     if(all_ok)
     {
       sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+
+      // history_hash
+      dt_history_hash_values_t hash = {NULL, 0, NULL, 0, NULL, 0};
+      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_basic_hash"))) != xmpData.end())
+      {
+        hash.basic = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
+                                          &hash.basic_len);
+      }
+      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_auto_hash"))) != xmpData.end())
+      {
+        hash.auto_apply = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
+                                       &hash.auto_apply_len);
+      }
+      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_current_hash"))) != xmpData.end())
+      {
+        hash.current = dt_exif_xmp_decode(pos->toString().c_str(), strlen(pos->toString().c_str()),
+                                          &hash.current_len);
+      }
+      if(hash.basic || hash.auto_apply || hash.current)
+      {
+        dt_history_hash_write(img->id, &hash);
+      }
+      else
+      {
+        // no choice, use the history itelf applying the former rules
+        dt_history_hash_t hash_flag = DT_HISTORY_HASH_CURRENT;
+        if(!_image_altered_deprecated(img->id))
+          // we assume the image has an history
+          hash_flag = (dt_history_hash_t)(hash_flag | DT_HISTORY_HASH_BASIC);
+        dt_history_hash_write_from_history(img->id, hash_flag);
+      }
     }
     else
     {
@@ -3290,6 +3350,28 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   sqlite3_finalize(stmt);
   g_free(iop_order_list);
+
+  // store history hash
+  dt_history_hash_values_t hash;
+  dt_history_hash_read(imgid, &hash);
+  if(hash.basic)
+  {
+    xmpData["Xmp.darktable.history_basic_hash"]
+            = dt_exif_xmp_encode(hash.basic, hash.basic_len, NULL);
+    g_free(hash.basic);
+  }
+  if(hash.auto_apply)
+  {
+    xmpData["Xmp.darktable.history_auto_hash"]
+            = dt_exif_xmp_encode(hash.auto_apply, hash.auto_apply_len, NULL);
+    g_free(hash.auto_apply);
+  }
+  if(hash.current)
+  {
+    xmpData["Xmp.darktable.history_current_hash"]
+            = dt_exif_xmp_encode(hash.current, hash.current_len, NULL);
+    g_free(hash.current);
+  }
 }
 
 // helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
