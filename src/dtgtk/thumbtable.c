@@ -949,6 +949,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   {
     // otherwise we reset the offset to the beginning
     table->offset = 1;
+    table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
     // and we reset position of first thumb for zooming
     if(g_list_length(table->list) > 0)
