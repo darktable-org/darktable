@@ -32,9 +32,9 @@ struct dt_iop_module_t;
 // note that if an image has no history (and no history hash) it is considered as basic
 typedef enum dt_history_hash_t
 {
-  DT_HISTORY_HASH_BASIC = 1 << 0,     // only mandatory modules
-  DT_HISTORY_HASH_AUTO = 1 << 1,      // mandatory modules plus the auto applied ones
-  DT_HISTORY_HASH_CURRENT = 1 << 2,   // current state, with or without change
+  DT_HISTORY_HASH_BASIC   = 1 << 0,  // only mandatory modules
+  DT_HISTORY_HASH_AUTO    = 1 << 1,  // mandatory modules plus the auto applied ones
+  DT_HISTORY_HASH_CURRENT = 1 << 2,  // current state, with or without change
 } dt_history_hash_t;
 
 typedef struct dt_history_hash_values_t

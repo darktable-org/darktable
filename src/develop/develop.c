@@ -1607,7 +1607,6 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   }
   sqlite3_finalize(stmt);
 
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid, num, module, operation,"
                               "       op_params, enabled, blendop_params,"
