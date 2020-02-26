@@ -168,6 +168,8 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       int fw, fh;
       fw = fh = 0;
       dt_image_get_final_size(imgid, &fw, &fh);
+      if(d->cur_final_width <= 0)
+        dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
       d->allow_zoom
           = (d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
              && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
@@ -446,10 +448,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_sensitive(bt, FALSE);
     gtk_widget_set_visible(bt, FALSE);
   }
-
-  // and we store the final size of the current image
+  // and reset the final size of the current image
   if(dev->image_storage.id >= 0)
-    dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
+  {
+    d->cur_final_width = 0;
+    d->cur_final_height = 0;
+  }
 
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self); //unblock signals
 }
@@ -457,9 +461,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  // we store the final size of the current image
+  // we reset the final size of the current image
   if(darktable.develop->image_storage.id >= 0)
-    dt_image_get_final_size(darktable.develop->image_storage.id, &d->cur_final_width, &d->cur_final_height);
+  {
+    d->cur_final_width = 0;
+    d->cur_final_height = 0;
+  }
 
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();
