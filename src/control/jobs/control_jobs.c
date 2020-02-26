@@ -531,7 +531,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     const int newimgid = dt_image_duplicate(imgid);
     if(newimgid != -1)
     {
-      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
       dt_collection_update_query(darktable.collection);
     }
     t = g_list_delete_link(t, t);
