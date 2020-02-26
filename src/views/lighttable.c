@@ -288,7 +288,25 @@ static int _culling_preview_init_values(dt_view_t *self, gboolean culling, gbool
 
   // get first id
   sqlite3_stmt *stmt;
-  int first_id = dt_control_get_mouse_over_id();
+  int first_id = -1;
+
+  if(!lib->already_started)
+  {
+    // first start, we retrieve the registered offset
+    const int offset = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
+    gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", offset);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      first_id = sqlite3_column_int(stmt, 0);
+    }
+    g_free(query);
+    sqlite3_finalize(stmt);
+    lib->already_started = TRUE;
+  }
+  else
+    first_id = dt_control_get_mouse_over_id();
+
   if(first_id < 1)
   {
     // search the first selected image
@@ -2027,8 +2045,8 @@ static void _lighttable_thumbtable_activate_signal_callback(gpointer instance, i
 
 void enter(dt_view_t *self)
 {
-  // we add the flowbox and hide the main drawingarea
   dt_library_t *lib = (dt_library_t *)self->data;
+
   // we want to reacquire the thumbtable if needed
   if(lib->full_preview_id < 1)
   {
