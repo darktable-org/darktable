@@ -1263,8 +1263,23 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT DISTINCT(imgid) FROM main.history)) ",
-                              (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
+      {
+        // three groups
+        // - images without history and basic together
+        // - auto applied
+        // - altered
+        const char *condition =
+            (strcmp(escaped_text, _("basic")) == 0) ?
+              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) ":
+            (strcmp(escaped_text, _("auto applied")) == 0) ? "WHERE current_hash == auto_hash " :
+            (strcmp(escaped_text, _("altered")) == 0) ?
+              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
+              "AND (auto_hash IS NULL OR current_hash != auto_hash) " :
+            "";
+        const char *condition2 = (strcmp(escaped_text, _("basic")) == 0) ? "not" : "";
+        query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
+                                condition2, condition);
+      }
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
