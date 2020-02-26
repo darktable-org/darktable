@@ -23,6 +23,7 @@
 #include "common/film.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -1303,20 +1304,22 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_free(makermodel_query);
         break;
 
-      case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
+      case DT_COLLECTION_PROP_HISTORY: // History
+        // images without history are counted as if they were basic
         g_snprintf(query, sizeof(query),
-                   "SELECT CASE altered"
-                   "         WHEN 1 THEN '%s'"
-                   "         ELSE '%s'"
-                   "       END as altered, 1, COUNT(*) AS count"
+                   "SELECT CASE"
+                   "       WHEN basic_hash == current_hash THEN '%s'"
+                   "       WHEN auto_hash == current_hash THEN '%s'"
+                   "       WHEN current_hash IS NOT NULL THEN '%s'"
+                   "       ELSE '%s'"
+                   "     END as altered, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
-                   " LEFT JOIN (SELECT DISTINCT imgid AS history_id, 1 AS altered"
-                   "            FROM main.history)"
-                   "   ON id = history_id"
+                   " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
+                   "            FROM main.history_hash) ON id = imgid"
                    " WHERE %s"
                    " GROUP BY altered"
                    " ORDER BY altered ASC",
-                   _("altered"),  _("not altered"), where_ext);
+                   _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives

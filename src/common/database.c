@@ -27,6 +27,7 @@
 #include "common/file_location.h"
 #include "common/iop_order.h"
 #include "common/styles.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/legacy_presets.h"
@@ -44,7 +45,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 23
+#define CURRENT_DATABASE_VERSION_LIBRARY 24
 #define CURRENT_DATABASE_VERSION_DATA     5
 
 typedef struct dt_database_t
@@ -1415,6 +1416,114 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 23;
   }
+  else if(version == 23)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+             "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
+             "[init] can't create table history_hash\n");
+
+    // use the former dt_image_altered() to initialise the history_hash table
+    // insert an history_hash entry for all images which have an history
+    // note that images without history don't get hash and are considered as basic
+    sqlite3_stmt *h_stmt;
+    const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+    char *query = NULL;
+    query = dt_util_dstrcat(query,
+                            "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
+                            // first, images which are both in images and history (avoids history orphans)
+                            "FROM (SELECT DISTINCT id FROM main.images JOIN main.history ON imgid = id) "
+                            "LEFT JOIN (SELECT DISTINCT imgid FROM main.images JOIN main.history ON imgid = id "
+                            "           WHERE num < history_end AND enabled = 1"
+                            "             AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare', "
+                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)) "
+                            "ON imgid = id",
+                             basecurve_auto_apply ? ", 'basecurve'" : "",
+                             sharpen_auto_apply ? ", 'sharpen'" : "");
+    TRY_PREPARE(h_stmt, query,
+                "[init] can't prepare selecting history for history_hash migration\n");
+    while(sqlite3_step(h_stmt) == SQLITE_ROW)
+    {
+      const int32_t imgid= sqlite3_column_int(h_stmt, 0);
+      const int32_t altered = sqlite3_column_int(h_stmt, 1);
+
+      guint8 *hash = NULL;
+      GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+      gsize hash_len = 0;
+
+      // get history
+      sqlite3_stmt *h2_stmt;
+      sqlite3_prepare_v2(db->handle,
+                         "SELECT operation, op_params, blendop_params"
+                         " FROM main.history"
+                         " WHERE imgid = ?1 AND enabled = 1"
+                         " ORDER BY num",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      while(sqlite3_step(h2_stmt) == SQLITE_ROW)
+      {
+        // operation
+        char *buf = (char *)sqlite3_column_text(h2_stmt, 0);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+        // op_params
+        buf = (char *)sqlite3_column_blob(h2_stmt, 1);
+        int params_len = sqlite3_column_bytes(h2_stmt, 1);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+        // blendop_params
+        buf = (char *)sqlite3_column_blob(h2_stmt, 2);
+        params_len = sqlite3_column_bytes(h2_stmt, 2);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      }
+      sqlite3_finalize(h2_stmt);
+
+      // get module order
+      h2_stmt = NULL;
+      sqlite3_prepare_v2(db->handle,
+                         "SELECT version, iop_list"
+                         " FROM main.module_order"
+                         " WHERE imgid = ?1",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      if(sqlite3_step(h2_stmt) == SQLITE_ROW)
+      {
+        const int version_h = sqlite3_column_int(h2_stmt, 0);
+        g_checksum_update(checksum, (const guchar *)&version_h, sizeof(version_h));
+        if(version_h == DT_IOP_ORDER_CUSTOM)
+        {
+          // iop_list
+          const char *buf = (char *)sqlite3_column_text(h2_stmt, 1);
+          if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+        }
+      }
+      sqlite3_finalize(h2_stmt);
+
+      const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
+      hash = g_malloc(checksum_len);
+      hash_len = checksum_len;
+      g_checksum_get_digest(checksum, hash, &hash_len);
+
+      g_checksum_free(checksum);
+      // insert the hash for that image
+      h2_stmt = NULL;
+      sqlite3_prepare_v2(db->handle,
+                         "INSERT INTO main.history_hash"
+                         " VALUES (?1, ?2, NULL, ?3)",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      sqlite3_bind_blob(h2_stmt, 2, altered ? NULL : hash, altered ? 0 : hash_len, SQLITE_TRANSIENT);
+      sqlite3_bind_blob(h2_stmt, 3, hash, hash_len, SQLITE_TRANSIENT);
+      TRY_STEP(h2_stmt, SQLITE_DONE, "[init] can't insert into history_hash\n");
+      sqlite3_finalize(h2_stmt);
+      g_free(hash);
+    }
+    sqlite3_finalize(h_stmt);
+    g_free(query);
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 24;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1695,6 +1804,9 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
                NULL, NULL, NULL);
 }
 
