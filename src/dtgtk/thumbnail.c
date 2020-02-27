@@ -721,7 +721,8 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
-  if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+    cairo_surface_destroy(thumb->img_surf);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
 
