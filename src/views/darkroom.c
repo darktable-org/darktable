@@ -618,7 +618,7 @@ void reset(dt_view_t *self)
 int try_enter(dt_view_t *self)
 {
   int selected = dt_control_get_mouse_over_id();
-  printf("entre %d\n", selected);
+
   if(selected < 0)
   {
     // try last selected

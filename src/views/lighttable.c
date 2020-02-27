@@ -544,13 +544,12 @@ static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   sqlite3_stmt *stmt;
-  int newid = -1;
+  int newid = imgid;
 
   if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
   {
     // on dynamic mode, nb of image follow selection size
     // so we return first image in selection
-    newid = imgid;
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
         "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
@@ -564,6 +563,7 @@ static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
     if(lib->culling_use_selection)
     {
       // we search the first still selected (this can be the current one)
+      newid = -1;
       gchar *query
           = dt_util_dstrcat(NULL,
                             "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images AS sel "
@@ -616,7 +616,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
       const int nz = (nbsel <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : nbsel;
       dt_view_lighttable_set_zoom(darktable.view_manager, nz);
     }
-    else
+    else if(lib->slots_count > 0)
     {
       int newid = _culling_find_first_valid_imgid(self, lib->slots[0].imgid);
       if(lib->culling_follow_selection)
