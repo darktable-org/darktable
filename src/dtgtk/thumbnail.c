@@ -251,8 +251,8 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(event->button == 1
      && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0
-             && thumb->single_click)))
+         || (event->type == GDK_BUTTON_PRESS
+             && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 && thumb->single_click)))
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, thumb->imgid);
     return TRUE;
@@ -265,8 +265,10 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 
   if(event->button == 1 && !thumb->moved && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_DISABLED)
   {
-    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0
+    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0
        && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
+      dt_selection_select_single(darktable.selection, thumb->imgid);
+    else if((event->state & (GDK_MOD1_MASK)) == GDK_MOD1_MASK)
       dt_selection_select_single(darktable.selection, thumb->imgid);
     else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
       dt_selection_toggle(darktable.selection, thumb->imgid);
