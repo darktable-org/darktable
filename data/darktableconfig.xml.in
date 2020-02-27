@@ -25,7 +25,7 @@
         <option>on both</option>
       </enum>
     </type>
-    <default>on close</default>
+    <default>on startup</default>
     <shortdescription>when to check for database maintenance</shortdescription>
     <longdescription>this will set when db size is checked for possible maintenance condition and ask user to confirm</longdescription>
   </dtconfig>
