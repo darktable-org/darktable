@@ -530,7 +530,7 @@ static gboolean _camera_storage_image_filename_gui_thread(gpointer user_data)
   gtk_list_store_set(params->store, &iter, 0, params->thumb, 1, params->file_info, -1);
 
   if(params->thumb) g_object_ref(params->thumb);
-  free(params->file_info);
+  g_free(params->file_info);
   free(params);
   return FALSE;
 }

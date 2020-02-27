@@ -999,14 +999,20 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
     for(int i = 0; i < gp_list_count(files); i++)
     {
       gp_list_get_name(files, i, &filename);
-      char *file = g_build_filename(path, filename, NULL);
 
       // Lets check the type of file...
       CameraFileInfo cfi;
-      if(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK)
+      if(!(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK))
+      {
+        dt_print(DT_DEBUG_CAMCTL,
+          "[camera_control] failed to get file information of %s in folder %s on device\n", filename, path);
+      }
+      else
       {
         CameraFile *preview = NULL;
         CameraFile *exif = NULL;
+        char *file = g_build_filename(path, filename, NULL);
+        gboolean gotit = FALSE;
 
         /*
          * Fetch image preview if flagged...
@@ -1014,62 +1020,101 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
         if(flags & CAMCTL_IMAGE_PREVIEW_DATA)
         {
           gp_file_new(&preview);
-          if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW, preview,
-                                c->gpcontext) < GP_OK)
+
+
+          if (cfi.preview.size > 0)   // we have valid preview data for this file
           {
-            // No preview for file lets check image size to see if we should download full image for
-            // preview...
-            if(cfi.file.size > 0 && cfi.file.size < 512000)
+            long unsigned int chunksize = cfi.preview.size;
+            char *chunk = malloc(chunksize);
+            if (chunk)
             {
-              if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL, preview,
-                                    c->gpcontext) < GP_OK)
+              if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW, 0, chunk,
+                    &chunksize, c->gpcontext) == GP_OK)
               {
-                preview = NULL;
-                dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve preview of file %s\n",
-                         filename);
+                gp_file_set_data_and_size(preview, (char *)chunk, chunksize);
+                gotit = TRUE;
               }
             }
-            else if(!strncmp(c->active_camera->port, "disk:", 5))
+          }
+
+          // If there has been no preview we try to take a small file
+          if (!gotit && (cfi.file.size > 0 && cfi.file.size < 512000))
+          {
+            long unsigned int chunksize = cfi.file.size;
+            char *chunk = malloc(chunksize);
+            if (chunk)
             {
-              char fullpath[PATH_MAX] = { 0 };
-              snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
-              uint8_t *buf = NULL; // gphoto takes care of freeing it eventually
-              size_t bufsize;
-              char *mime_type = NULL;
-
-              if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
-                gp_file_set_data_and_size(preview, (char *)buf, bufsize);
-
-              free(mime_type);
+              if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL, 0, chunk,
+                    &chunksize, c->gpcontext) == GP_OK)
+              {
+                gp_file_set_data_and_size(preview, (char *)chunk, chunksize);
+                gotit = TRUE;
+              }
             }
+          }
+
+          // Still no preview? get it via the thumbnail generator
+          if (!gotit && (!strncmp(c->active_camera->port, "disk:", 5)))
+          {
+            char fullpath[PATH_MAX] = { 0 };
+            snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
+            uint8_t *buf = NULL; // gphoto takes care of freeing it eventually
+            size_t bufsize;
+            char *mime_type = NULL;
+
+            if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
+            {
+              gp_file_set_data_and_size(preview, (char *)buf, bufsize);
+              gotit = TRUE;
+            }
+            free(mime_type);
+          }
+
+          // If we couldn't get preview data we clean up
+          if(!gotit)
+          {
+            gp_file_free(preview);
+            preview = NULL;
+            dt_print(DT_DEBUG_CAMCTL,
+              "[camera_control] failed to get a preview of %s in folder %s on device\n", filename, path);
           }
         }
 
         if(flags & CAMCTL_IMAGE_EXIF_DATA)
         {
           gp_file_new(&exif);
-          if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF, exif,
-                                c->gpcontext) < GP_OK)
+
+          long unsigned int chunksize = 0x200000;
+          char *chunk = calloc(chunksize,sizeof(char));
+          if (chunk)
           {
-            exif = NULL;
+            if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF, 0, chunk,
+                  &chunksize, c->gpcontext) == GP_OK)
+            {
+              gp_file_set_data_and_size(exif, (char *)chunk, chunksize);
+            }
+            else
+            {
+              free(chunk);
+              gp_file_free(exif);
+              exif = NULL;
+            }
+          }
+          if (!exif)
+          {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve exif of file %s\n", filename);
           }
         }
 
         // let's dispatch to host app.. return if we should stop...
         int res = _dispatch_camera_storage_image_filename(c, c->active_camera, file, preview, exif);
-        gp_file_free(preview);
-        if(!res)
-        {
-          g_free(file);
-          return 0;
-        }
+
+        g_free(file);
+        if (preview) gp_file_free(preview);
+        if (exif) gp_file_free(exif); 
+
+        if(!res) return 0;
       }
-      else
-        dt_print(DT_DEBUG_CAMCTL,
-                 "[camera_control] failed to get file information of %s in folder %s on device\n", filename,
-                 path);
-      g_free(file);
     }
   }
 
