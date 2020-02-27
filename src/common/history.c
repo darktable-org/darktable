@@ -719,6 +719,9 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
     dt_image_reset_aspect_ratio(dest_imgid, FALSE);
 
+  // signal that the mipmap need to be updated
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
+
   dt_unlock_image_pair(imgid,dest_imgid);
 
   return ret_val;
