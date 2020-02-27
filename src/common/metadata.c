@@ -162,7 +162,9 @@ static gchar *_get_tb_added_metadata_string_values(const int img, GList *before,
     }
     if((!same_key || different_value) && value[0])
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,\"%s\"),", GPOINTER_TO_INT(img), atoi(a->data), (char *)a2->data);
+      char *escaped_text = sqlite3_mprintf("%q", value);
+      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,'%s'),", GPOINTER_TO_INT(img), atoi(a->data), escaped_text);
+      sqlite3_free(escaped_text);
     }
     a = g_list_next(a);
     a = g_list_next(a);
