@@ -374,7 +374,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
   // if there's space under the last image, we have rows to load
   // if the last line is not full, we have already reached the end of the collection
   if((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && last->y + table->thumb_size < table->view_height
-      && last->x == table->thumb_size * (table->thumbs_per_row - 1))
+      && last->x >= table->thumb_size * (table->thumbs_per_row - 1))
      || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && last->x + table->thumb_size < table->view_width)
      || (table->mode == DT_THUMBTABLE_MODE_ZOOM && last->y + table->thumb_size < table->view_height))
   {
