@@ -155,10 +155,11 @@ typedef struct dt_iop_order_rule_t
 } dt_iop_order_rule_t;
 
 /** return the name string for that dy_iop_order */
-const char *dt_iop_order_string(const int i);
+const char *dt_iop_order_string(const dt_iop_order_t order);
 
 /** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
+
 /** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
     or a customr order  */
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);

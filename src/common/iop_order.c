@@ -60,9 +60,12 @@ const char *iop_order_string[] =
   N_("v3.0")
 };
 
-const char *dt_iop_order_string(const int i)
+const char *dt_iop_order_string(const dt_iop_order_t order)
 {
-  return iop_order_string[i];
+  if(order >= DT_IOP_ORDER_LAST)
+    return "???";
+  else
+    return iop_order_string[order];
 }
 
 // note legacy_order & v30_order have the original iop-order double that is
