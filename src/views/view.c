@@ -891,7 +891,7 @@ int dt_view_get_image_to_act_on2()
   int ret = -1;
   const int mouseover = dt_control_get_mouse_over_id();
 
-  if(mouseover)
+  if(mouseover > 0)
   {
     ret = mouseover;
   }
@@ -906,7 +906,7 @@ int dt_view_get_image_to_act_on2()
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT s.imgid FROM main.selected_images as s, memory.collected_images as c "
-                                  "WHERE c.imgid=s.imgid ORDER BY c.rowid LIMIT 1",
+                                  "WHERE s.imgid=c.imgid ORDER BY c.rowid LIMIT 1",
                                   -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
