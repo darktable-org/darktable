@@ -104,6 +104,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
+  { {27.5f }, "negadoctor", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
   { {29.0f }, "colorchecker", 0},
@@ -185,6 +186,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
   { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
@@ -255,7 +257,7 @@ const dt_iop_order_entry_t v30_order[] = {
 static void *_dup_iop_order_entry(const void *src, gpointer data);
 static int _count_entries_operation(GList *e_list, const char *operation);
 
-#if 0
+
 static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
 {
   gboolean exists = FALSE;
@@ -303,7 +305,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
   return iop_order_list;
 }
-#endif
+
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
@@ -627,9 +629,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         {
           // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
-#if 0
-          _insert_before(iop_order_list, "<CURRENT_MODULE>", "<NEW_MODULE>");
-#endif
+          _insert_before(iop_order_list, "nlmeans", "negadocton");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
