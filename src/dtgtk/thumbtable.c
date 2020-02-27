@@ -45,17 +45,9 @@ static void _list_remove_thumb(gpointer user_data)
   dt_thumbnail_destroy(thumb);
 }
 
-// get the thumb which is currently under mouse cursor
-static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
+// get the thumb at specific position
+static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table, int x, int y)
 {
-  if(!table->mouse_inside || table->mode != DT_THUMBTABLE_MODE_ZOOM) return NULL;
-
-  int x = -1;
-  int y = -1;
-  gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
-  x = table->last_x - x;
-  y = table->last_y - y;
-
   GList *l = table->list;
   while(l)
   {
@@ -65,6 +57,20 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
   }
 
   return NULL;
+}
+
+// get the thumb which is currently under mouse cursor
+static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
+{
+  if(!table->mouse_inside) return NULL;
+
+  int x = -1;
+  int y = -1;
+  gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
+  x = table->last_x - x;
+  y = table->last_y - y;
+
+  return _thumb_get_at_pos(table, x, y);
 }
 
 // get imgid from rowid
@@ -542,18 +548,27 @@ static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
 }
 
 // change zoom value for the zoomable tumbtable
-static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
+static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 {
-  // we determine the zoom ratio
-  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-  int new = old;
-  if(delta > 0)
-    new = MIN(ZOOM_MAX, new + 1);
+  // determine the center of the zoom
+  int x = 0;
+  int y = 0;
+  if(table->mouse_inside)
+  {
+    // if the mouse is inside the table, let's use his position
+    gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
+    x = table->last_x - x;
+    y = table->last_y - y;
+  }
   else
-    new = MAX(1, new - 1);
+  {
+    // otherwise we use the center of the view
+    x = table->view_width / 2;
+    y = table->view_height / 2;
+  }
 
-  if(old == new) return;
-  const int new_size = table->view_width / new;
+
+  const int new_size = table->view_width / newzoom;
   const double ratio = (double)new_size / (double)table->thumb_size;
 
   // we get row/collumn numbers of the image under cursor
@@ -588,35 +603,75 @@ static void _zoomable_zoom(dt_thumbtable_t *table, double delta, int x, int y)
   changed += _thumbs_remove_unneeded(table);
   if(changed > 0) _pos_compute_area(table);
 
-  dt_view_lighttable_set_zoom(darktable.view_manager, new);
+  dt_view_lighttable_set_zoom(darktable.view_manager, newzoom);
   gtk_widget_queue_draw(table->widget);
 }
 
 // change zoom value for the classic thumbtable
-static void _filemanager_zoom(dt_thumbtable_t *table, double delta, int x, int y)
+static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 {
-  // we determine the zoom ratio
-  const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
-  int new = old;
-  if(delta > 0)
-    new = MIN(ZOOM_MAX, new + 1);
-  else
-    new = MAX(1, new - 1);
-
-  if(old == new) return;
-
   // we find the image to zoom around
-  const int mouseover = dt_control_get_mouse_over_id();
-  dt_thumbnail_t *thumb = _thumbtable_get_thumb(table, mouseover);
+  int x = 0;
+  int y = 0;
+  dt_thumbnail_t *thumb = NULL;
+  if(table->mouse_inside)
+  {
+    // if the mouse is inside the table, let's use his position
+    gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
+    x = table->last_x - x;
+    y = table->last_y - y;
+    thumb = _thumb_get_at_pos(table, x, y);
+  }
 
-  // how many images will be displayed before the current thumbnail center ?
-  const int new_size = table->view_width / new;
-  const int new_pos = y / new_size * new + x / new_size;
+  if(!thumb)
+  {
+    // otherwise we use the classic retrieving method
+    const int id = dt_view_get_image_to_act_on2();
+    thumb = _thumbtable_get_thumb(table, id);
+    if(thumb)
+    {
+      // and we take the center of the thumb
+      x = thumb->x + thumb->width / 2;
+      y = thumb->y + thumb->height / 2;
+    }
+    else
+    {
+      // still no thumb, try to use the one at screen center
+      x = table->view_width / 2;
+      y = table->view_height / 2;
+      thumb = _thumb_get_at_pos(table, x, y);
+      if(!thumb)
+      {
+        // and last, take the first at screen
+        thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+        x = thumb->x + thumb->width / 2;
+        y = thumb->y + thumb->height / 2;
+      }
+    }
+  }
+
+  // how many images will be displayed before the current position ?
+  const int new_size = table->view_width / newzoom;
+  const int new_pos = y / new_size * newzoom + x / new_size;
 
   dt_thumbtable_set_offset(table, thumb->rowid - new_pos, FALSE);
 
-  dt_view_lighttable_set_zoom(darktable.view_manager, new);
+  dt_view_lighttable_set_zoom(darktable.view_manager, newzoom);
   gtk_widget_queue_draw(table->widget);
+}
+
+void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom)
+{
+  if(oldzoom == newzoom) return;
+
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    _filemanager_zoom(table, oldzoom, newzoom);
+  }
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    _zoomable_zoom(table, oldzoom, newzoom);
+  }
 }
 
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -629,7 +684,14 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
   {
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && (e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
-      _filemanager_zoom(table, delta, e->x, e->y);
+      const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
+      int new = old;
+      if(delta > 0)
+        new = MIN(ZOOM_MAX, new + 1);
+      else
+        new = MAX(1, new - 1);
+
+      if(old != new) _filemanager_zoom(table, old, new);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
@@ -646,7 +708,14 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       // for zoomable, scroll = zoom
-      _zoomable_zoom(table, delta, e->x, e->y);
+      const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
+      int new = old;
+      if(delta > 0)
+        new = MIN(ZOOM_MAX, new + 1);
+      else
+        new = MAX(1, new - 1);
+
+      if(old != new) _zoomable_zoom(table, old, new);
     }
   }
   // we stop here to avoid scrolledwindow to move
@@ -704,9 +773,8 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->mouse_inside = TRUE;
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
-  if(table->dragging)
+  if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
     int dx = ceil(event->x_root) - table->last_x;
     int dy = ceil(event->y_root) - table->last_y;

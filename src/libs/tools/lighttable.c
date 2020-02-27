@@ -261,7 +261,7 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
 
   if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
-    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), FALSE);
+    dt_thumbtable_zoom_changed(dt_ui_thumbtable(darktable.gui->ui), d->current_zoom, zoom);
   }
 }
 
