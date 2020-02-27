@@ -496,12 +496,15 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   }
   else
   {
+    const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
+    char *label = g_strdup_printf("%s (%s)", _("modules order"), dt_iop_order_string(order));
     gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
     gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                        DT_STYLE_ITEMS_COL_ENABLED, TRUE,
-                       DT_STYLE_ITEMS_COL_NAME, _("modules order"),
+                       DT_STYLE_ITEMS_COL_NAME, label,
                        DT_STYLE_ITEMS_COL_NUM, -1,
                        -1);
+    g_free(label);
 
     GList *items = dt_history_get_items(imgid, FALSE);
     if(items)

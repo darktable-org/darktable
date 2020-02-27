@@ -236,12 +236,15 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
     /* first item is for copying the module order, or if paste and was selected */
     if(iscopy || d->copy_iop_order)
     {
+      const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
+      char *label = g_strdup_printf("%s (%s)", _("modules order"), dt_iop_order_string(order));
       gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
       gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                          DT_HIST_ITEMS_COL_ENABLED, TRUE,
-                         DT_HIST_ITEMS_COL_NAME, _("modules order"),
+                         DT_HIST_ITEMS_COL_NAME, label,
                          DT_HIST_ITEMS_COL_NUM, -1,
                          -1);
+      g_free(label);
     }
 
     do
