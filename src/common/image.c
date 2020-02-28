@@ -1180,7 +1180,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     (dt_database_get(darktable.db),
      "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
      "                         max_version, history_end, position)"
-     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, -1, -1, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
      " FROM images",
      -1, &stmt, NULL);
 
@@ -1328,6 +1328,48 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
   // read all sidecar files
   dt_image_read_duplicates(id, normalized_filename);
+
+  //check if any sidecar files were loaded (version number <> -1)
+  uint32_t inserted_id = 0;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT MAX(id) FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    inserted_id = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  if(inserted_id == -1)
+  {
+    //There is only one image (no xmp files were imported)
+    //Update the version
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE main.images SET version = 0, max_version = 0 WHERE film_id = ?1 AND filename = ?2 AND version = -1",
+       -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    //xmp files were inserted
+    //delete the dummy record
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+                                "DELETE FROM main.images WHERE film_id = ?1 AND filename = ?2 AND version = -1",
+                                -1, &stmt,
+                                NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+
+  //synch database entries to xmp
   dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
