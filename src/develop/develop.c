@@ -1252,11 +1252,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_control_queue_redraw_center();
 }
 
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
+static void _cleanup_history(const int imgid)
 {
   sqlite3_stmt *stmt;
-  dt_lock_image(imgid);
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1268,6 +1266,14 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+}
+
+void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
+{
+  sqlite3_stmt *stmt;
+  dt_lock_image(imgid);
+
+  _cleanup_history(imgid);
 
   // write history entries
 
@@ -1548,6 +1554,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
 
 void _dev_write_history(dt_develop_t *dev, const int imgid)
 {
+  _cleanup_history(imgid);
   // write history entries
   GList *history = dev->history;
   for(int i = 0; history; i++)
