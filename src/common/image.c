@@ -1333,7 +1333,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   int32_t inserted_id = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "SELECT MAX(id) FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
+     "SELECT MAX(version) FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
