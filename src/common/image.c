@@ -1330,7 +1330,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   dt_image_read_duplicates(id, normalized_filename);
 
   //check if any sidecar files were loaded (version number <> -1)
-  int32_t inserted_id = 0;
+  int32_t inserted_ver = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "SELECT MAX(version) FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
@@ -1338,11 +1338,11 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    inserted_id = sqlite3_column_int(stmt, 0);
+    inserted_ver = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
 
-  if(inserted_id == -1)
+  if(inserted_ver == -1)
   {
     //There is only one image (no xmp files were imported)
     //Update the version
