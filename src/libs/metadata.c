@@ -736,23 +736,27 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   if(old_version == 1)
   {
     size_t new_params_size = old_params_size + 1;
-    void *new_params = calloc(sizeof(char), new_params_size);
+    char *new_params = calloc(sizeof(char), new_params_size);
 
-    char *buf = (char *)old_params;
+    const char *buf = (const char *)old_params;
 
     // <title>\0<description>\0<rights>\0<creator>\0<publisher>
-    char *metadata[DT_METADATA_NUMBER];
-    int32_t metadata_len[DT_METADATA_NUMBER];
+    const char *metadata[DT_METADATA_NUMBER];
+    size_t metadata_len[DT_METADATA_NUMBER];
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
       metadata[i] = buf;
-      if(!metadata[i]) return NULL;
+      if(!metadata[i])
+      {
+        free(new_params);
+        return NULL;
+      }
       metadata_len[i] = strlen(metadata[i]) + 1;
       buf += metadata_len[i];
     }
 
     // <creator>\0<publisher>\0<title>\0<description>\0<rights>
-    int pos = 0;
+    size_t pos = 0;
     memcpy(new_params + pos, metadata[3], metadata_len[3]);
     pos += metadata_len[3];
     memcpy(new_params + pos, metadata[4], metadata_len[4]);
