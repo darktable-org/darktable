@@ -1330,7 +1330,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   dt_image_read_duplicates(id, normalized_filename);
 
   //check if any sidecar files were loaded (version number <> -1)
-  uint32_t inserted_id = 0;
+  int32_t inserted_id = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "SELECT MAX(id) FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
