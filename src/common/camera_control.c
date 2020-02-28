@@ -1024,7 +1024,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
 
           if (cfi.preview.size > 0)   // we have valid preview data for this file
           {
-            long unsigned int chunksize = cfi.preview.size;
+            size_t chunksize = cfi.preview.size;
             char *chunk = malloc(chunksize);
             if (chunk)
             {
@@ -1040,7 +1040,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
           // If there has been no preview we try to take a small file
           if (!gotit && (cfi.file.size > 0 && cfi.file.size < 512000))
           {
-            long unsigned int chunksize = cfi.file.size;
+            size_t chunksize = cfi.file.size;
             char *chunk = malloc(chunksize);
             if (chunk)
             {
@@ -1084,7 +1084,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
         {
           gp_file_new(&exif);
 
-          long unsigned int chunksize = 0x200000;
+          size_t chunksize = 0x200000;
           char *chunk = calloc(chunksize,sizeof(char));
           if (chunk)
           {
