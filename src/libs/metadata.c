@@ -238,24 +238,39 @@ static gboolean key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_modu
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  switch(event->keyval)
+  if(event->state & GDK_CONTROL_MASK)
   {
-    case GDK_KEY_Return:
-    case GDK_KEY_KP_Enter:
-      write_metadata(self);
-      // TODO give focus to next widget - should mimic the TAB key.
-//      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-      return TRUE; // we don't want to insert new line into the text
-    case GDK_KEY_Escape:
-      update(self, FALSE);
-      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-      d->editing = FALSE;
-      break;
-    case GDK_KEY_Tab:
-      write_metadata(self);
-      break;
-    default:
-      d->editing = TRUE;
+    switch(event->keyval)
+    {
+      case GDK_KEY_Return:
+      case GDK_KEY_KP_Enter:
+        // insert new line
+        event->state &= ~GDK_CONTROL_MASK;
+      default:
+        d->editing = TRUE;
+    }
+  }
+  else
+  {
+    switch(event->keyval)
+    {
+      case GDK_KEY_Return:
+      case GDK_KEY_KP_Enter:
+        write_metadata(self);
+        // go to next field
+        event->keyval = GDK_KEY_Tab;
+        break;
+      case GDK_KEY_Escape:
+        update(self, FALSE);
+        gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+        d->editing = FALSE;
+        break;
+      case GDK_KEY_Tab:
+        write_metadata(self);
+        break;
+      default:
+        d->editing = TRUE;
+    }
   }
 
   return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event);
@@ -615,6 +630,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
+              "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
               "\nif <leave unchanged> selected images have different metadata."
               "\nin that case, right-click gives the possibility to choose one of them."
               "\npress escape to exit the popup window"));
