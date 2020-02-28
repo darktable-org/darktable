@@ -869,7 +869,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
-  dt_ioppr_check_db_integrity();
+  //db maintenance on startup (if configured to do so)
+  dt_database_maybe_maintenance(darktable.db, init_gui, FALSE);
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -968,8 +969,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
-  // load iop order
-  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL);
+  // load default iop order
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
   darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
@@ -980,6 +981,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     fprintf(stderr, "ERROR: iop order looks bad, aborting.\n");
     return 1;
   }
+
+  // set up memory.darktable_iop_names table
+  dt_iop_set_darktable_iop_table();
 
   if(init_gui)
   {
@@ -1098,6 +1102,8 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+  dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
+
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
 #endif
@@ -1159,6 +1165,7 @@ void dt_cleanup()
 
   dt_guides_cleanup(darktable.guides);
 
+  dt_database_optimize(darktable.db);
   dt_database_destroy(darktable.db);
 
   if(init_gui)

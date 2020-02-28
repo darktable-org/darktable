@@ -23,6 +23,7 @@ typedef struct dt_gui_hist_dialog_t
   GList *selops;
   GtkTreeView *items;
   int copied_imageid;
+  gboolean copy_iop_order;
 } dt_gui_hist_dialog_t;
 
 /** shows a dialog for creating a new style, w if not null is a widget to

@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/splines.cpp"
   "common/curl_tools.c"
   "common/cpuid.c"
   "common/darktable.c"
@@ -77,6 +78,7 @@ FILE(GLOB SOURCE_FILES
   "common/usermanual_url.c"
   "common/iop_group.c"
   "common/iop_order.c"
+  "common/iop_profile.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -669,7 +671,7 @@ if(NOT SOURCE_PACKAGE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # do not error out on "loop not vectorized" clang OpenMP warnings 
+  # do not error out on "loop not vectorized" clang OpenMP warnings
   add_definitions("-Wno-error=pass-failed")
 endif()
 
@@ -785,24 +787,9 @@ if(USE_XMLLINT)
 endif(USE_XMLLINT)
 
 #
-# Generate mapping of key strings to internal metadata id
-#
-add_custom_command(
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating metadata .c/.h"
-)
-add_custom_target(
-  generate_metadata ALL
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
-#
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
@@ -810,7 +797,6 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GEN
 
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
-add_dependencies(lib_darktable generate_metadata)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
@@ -876,9 +862,9 @@ endif(BUILD_CMSTEST)
 add_subdirectory(chart)
 
 # have some test programs for unit testing, ...
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
-endif(BUILD_TESTS)
+endif(BUILD_TESTING)
 
 #
 # build darktable executable
@@ -895,16 +881,9 @@ if (WIN32)
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 else()
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-    if (APPLE)
-        # The string "@loader_path" should end up in the executable as-is.
-        set(RPATH_DT "@loader_path")
-    endif()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

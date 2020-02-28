@@ -25,13 +25,13 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/mipmap_cache.h"
+#include "common/metadata.h"
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
 #include "lua/styles.h"
 #include "lua/tags.h"
 #include "lua/types.h"
-#include "metadata_gen.h"
 
 /***********************************************************************
   handling of dt_image_t

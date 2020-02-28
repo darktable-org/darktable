@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "libs/collect.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -23,6 +24,7 @@
 #include "common/film.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -146,7 +148,7 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
     gchar *string = dt_conf_get_string(confname);
     if(string != NULL)
     {
-      snprintf(p->rule[i].string, PARAM_STRING_SIZE, "%s", string);
+      g_strlcpy(p->rule[i].string, string, PARAM_STRING_SIZE);
       g_free(string);
     }
 
@@ -283,12 +285,12 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
 
         if(g_strcmp0(old, tree_path))
         {
-          g_snprintf(trailing, sizeof(trailing), "%s", old + strlen(tree_path) + 1);
+          g_strlcpy(trailing, old + strlen(tree_path) + 1, sizeof(trailing));
           g_snprintf(final, sizeof(final), "%s/%s", new_path, trailing);
         }
         else
         {
-          g_snprintf(final, sizeof(final), "%s", new_path);
+          g_strlcpy(final, new_path, sizeof(final));
         }
 
         sqlite3_stmt *stmt2;
@@ -1303,20 +1305,22 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_free(makermodel_query);
         break;
 
-      case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
+      case DT_COLLECTION_PROP_HISTORY: // History
+        // images without history are counted as if they were basic
         g_snprintf(query, sizeof(query),
-                   "SELECT CASE altered"
-                   "         WHEN 1 THEN '%s'"
-                   "         ELSE '%s'"
-                   "       END as altered, 1, COUNT(*) AS count"
+                   "SELECT CASE"
+                   "       WHEN basic_hash == current_hash THEN '%s'"
+                   "       WHEN auto_hash == current_hash THEN '%s'"
+                   "       WHEN current_hash IS NOT NULL THEN '%s'"
+                   "       ELSE '%s'"
+                   "     END as altered, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
-                   " LEFT JOIN (SELECT DISTINCT imgid AS history_id, 1 AS altered"
-                   "            FROM main.history)"
-                   "   ON id = history_id"
+                   " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
+                   "            FROM main.history_hash) ON id = imgid"
                    " WHERE %s"
                    " GROUP BY altered"
                    " ORDER BY altered ASC",
-                   _("altered"),  _("not altered"), where_ext);
+                   _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
@@ -1508,6 +1512,42 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    _("group leaders"),  _("group followers"), where_ext);
         break;
 
+      case DT_COLLECTION_PROP_MODULE: // module
+        snprintf(query, sizeof(query),
+                 "SELECT m.name AS module_name, 1, COUNT(*) AS count"
+                 " FROM main.images AS mi"
+                 " JOIN (SELECT DISTINCT imgid, operation FROM main.history WHERE enabled = 1) AS h"
+                 "  ON h.imgid = mi.id"
+                 " JOIN memory.darktable_iop_names AS m"
+                 "  ON m.operation = h.operation"
+                 " WHERE %s"
+                 " GROUP BY module_name"
+                 " ORDER BY module_name",
+                 where_ext);
+        break;
+
+      case DT_COLLECTION_PROP_ORDER: // modules order
+        {
+          char *orders = NULL;
+          for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ",
+                                     i, _(dt_iop_order_string(i)));
+          }
+          orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
+          snprintf(query, sizeof(query),
+                   "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " LEFT JOIN (SELECT imgid, version FROM main.module_order) mo"
+                   "  ON mo.imgid = mi.id"
+                   " WHERE %s"
+                   " GROUP BY ver"
+                   " ORDER BY ver",
+                   orders, where_ext);
+          g_free(orders);
+        }
+        break;
+
       default: // filmroll
         g_snprintf(query, sizeof(query),
                    "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1588,7 +1628,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
                     || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
                     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-                    || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO))
+                    || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO
+                    || property == DT_COLLECTION_PROP_MODULE || property == DT_COLLECTION_PROP_ORDER))
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
@@ -1764,6 +1805,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
+    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
   }
   else
@@ -2177,8 +2219,9 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
-    for(int k = 0; k < dt_lib_collect_string_cnt; k++)
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
+
+    for(int k = 0; k < DT_COLLECTION_PROP_LAST; k++)
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), dt_collection_name(k));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
 
@@ -2254,6 +2297,10 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
 
   _lib_collect_gui_update(self);
+
+  // force redraw collection images because of late update of the table memory.darktable_iop_names
+  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);
@@ -2450,6 +2497,8 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GROUPING);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_MODULE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ORDER);
 
 }
 #endif

@@ -1,6 +1,0 @@
-# do not change the order of these, just append!
-Xmp.dc.creator
-Xmp.dc.publisher
-Xmp.dc.title
-Xmp.dc.description
-Xmp.dc.rights

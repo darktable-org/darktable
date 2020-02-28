@@ -187,7 +187,7 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     // TODO: read default darktablerc into ->defaults and other into ->table!
     if(!i)
     {
-      snprintf(darktable.conf->filename, sizeof(darktable.conf->filename), "%s", filename);
+      g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
       f = g_fopen(filename, "rb");
       if(!f)
       {

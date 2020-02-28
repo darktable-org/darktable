@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # remove whitespace and braces,
 # filter out panasonic and powershot etc because they usually blow up the plot ranges

@@ -666,7 +666,7 @@ static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, floa
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
-    grpt->opacity = CLAMP(opacity, 0.0f, 1.0f);
+    grpt->opacity = CLAMP(opacity, 0.05f, 1.0f);
     dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
 
     dt_dev_add_masks_history_item(darktable.develop, self, TRUE);

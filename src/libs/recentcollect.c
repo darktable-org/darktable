@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -115,17 +116,17 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, "%s", _(" and "));
+            c = g_strlcpy(out, _(" and "), outsize);
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, "%s", _(" or "));
+            c = g_strlcpy(out, _(" or "), outsize);
             out += c;
             outsize -= c;
             break;
           default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, "%s", _(" but not "));
+            c = g_strlcpy(out, _(" but not "), outsize);
             out += c;
             outsize -= c;
             break;
@@ -134,7 +135,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", item < dt_lib_collect_string_cnt ? _(dt_lib_collect_string[item]) : "???",
+      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
                    item == 0 ? dt_image_film_roll_name(str) : str);
       out += c;
       outsize -= c;

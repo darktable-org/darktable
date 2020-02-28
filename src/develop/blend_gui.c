@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/dtpthread.h"
 #include "common/opencl.h"
+#include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -2012,7 +2013,7 @@ static void _raster_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
   raster_combo_entry_t *entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
   entry->module = NULL;
   entry->id = 0;
-  dt_bauhaus_combobox_add_full(w, _("no mask used"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);
+  dt_bauhaus_combobox_add_full(w, _("no mask used"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free, TRUE);
 
   int i = 1;
 
@@ -2033,7 +2034,7 @@ static void _raster_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
       entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
       entry->module = iop;
       entry->id = id;
-      dt_bauhaus_combobox_add_full(w, modulename, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);
+      dt_bauhaus_combobox_add_full(w, modulename, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free, TRUE);
       if(iop == module->raster_mask.sink.source && module->raster_mask.sink.id == id)
         dt_bauhaus_combobox_set(w, i);
       i++;
@@ -2426,6 +2427,13 @@ static void _add_blendmode_combo(GList **list, GtkWidget *combobox, GList *compl
 }
 
 
+static void _add_section_combo(GList **list, GtkWidget *combobox, const char *const name)
+{
+  *list = g_list_append(*list, GUINT_TO_POINTER(DEVELOP_BLEND_DISABLED));
+  dt_bauhaus_combobox_add_section(combobox, name);
+}
+
+
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 {
   /* create and add blend mode if module supports it */
@@ -2575,26 +2583,30 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     switch(bd->csp)
     {
       case iop_cs_Lab:
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_NORMAL2);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_BOUNDED);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_AVERAGE);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DIFFERENCE2);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_LIGHTEN);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_ADD);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_SCREEN);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DARKEN);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_SUBSTRACT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
+                             DEVELOP_BLEND_MULTIPLY);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_OVERLAY);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2607,6 +2619,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                              DEVELOP_BLEND_LINEARLIGHT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_PINLIGHT);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("color channel modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LAB_LIGHTNESS);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2628,26 +2641,30 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         break;
 
       case iop_cs_rgb:
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_NORMAL2);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_BOUNDED);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_AVERAGE);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DIFFERENCE2);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_LIGHTEN);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_ADD);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_SCREEN);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DARKEN);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_SUBSTRACT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
+                             DEVELOP_BLEND_MULTIPLY);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_OVERLAY);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2660,10 +2677,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                              DEVELOP_BLEND_LINEARLIGHT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_PINLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HSV_LIGHTNESS);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HSV_COLOR);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("color channel modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_RGB_R);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2673,7 +2687,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LIGHTNESS);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_HSV_LIGHTNESS);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_CHROMA);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_HSV_COLOR);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_HUE);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2683,26 +2701,30 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         break;
 
       case iop_cs_RAW:
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_NORMAL2);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_BOUNDED);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_AVERAGE);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DIFFERENCE2);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_LIGHTEN);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_ADD);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_SCREEN);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_DARKEN);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_SUBSTRACT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
+                             DEVELOP_BLEND_MULTIPLY);
+        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_OVERLAY);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
@@ -2716,6 +2738,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_PINLIGHT);
         break;
+
       case iop_cs_LCh:
       case iop_cs_HSL:
       case iop_cs_NONE:

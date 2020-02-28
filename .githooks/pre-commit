@@ -14,7 +14,7 @@ declare -a errors
 
 for file in $(git diff --staged --name-only --diff-filter=ACM --no-color); do
     for elem in ${!PATTERNS[*]} ; do
-        if [ ! -z "${PATTERNS[${file}]}" ]; then
+        if [ -n "${PATTERNS[${file}]}" ]; then
             errors+=("${PATTERNS[${file}]}")
         fi
     done
@@ -26,6 +26,6 @@ for error in "${errors[@]}"; do
 done
 
 # If there is any error, then stop commit creation
-if ! [ ${#errors[@]} -eq 0 ]; then
+if [ ${#errors[@]} -ne 0 ]; then
   exit 1
 fi

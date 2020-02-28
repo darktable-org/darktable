@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
@@ -520,7 +521,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       // Get the desaturation value based on the log value
       const float desaturation = filmic_desaturate(norm, data->sigma_toe, data->sigma_shoulder, data->saturation);
-       
+
       for(int c = 0; c < 3; c++) ratios[c] *= norm;
 
       const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(ratios,
@@ -1623,6 +1624,8 @@ void gui_init(dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 

@@ -274,10 +274,10 @@
         Ctrl+click on the center. There are four modes which correspond to different ways of
         handling the steepness of the bezier curve by control handles:
         <informaltable frame="none" width="80%">
-          <tgroup cols="3" colsep="0" rowsep="0">
+          <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='4*'/>
             <colspec colwidth='6*'/>
-            <tbody>
+               <tbody>
               <row>
                 <entry>
                   <emphasis>autosmooth</emphasis>
@@ -304,7 +304,6 @@
                   Control handles are always giving a smooth curve. This mode is depicted by a
                   diamond symbol in the node center.
                 </entry>
-                <entry></entry>
               </row>
               <row>
                 <entry>

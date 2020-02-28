@@ -247,6 +247,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           {
             gboolean is_language_supported = FALSE;
             char *lang = "en";
+            GError *error = NULL;
             if(darktable.l10n!=NULL)
             {
               dt_l10n_language_t *language = NULL;
@@ -256,7 +257,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
                 lang = language->code;
               // array of languages the usermanual supports.
               // NULL MUST remain the last element of the array
-              const char *supported_languages[] = { "en", "fr", "it", NULL };
+              const char *supported_languages[] = { "en", "fr", "it", "es", "de", "pl", NULL };
               int i = 0;
               while(supported_languages[i])
               {
@@ -271,10 +272,22 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
             // TODO: call the web browser directly so that file:// style base for local installs works
-            gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), NULL);
+            const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error);
             g_free(base_url);
             g_free(url);
-            dt_control_log(_("help url opened in web browser"));
+            if(uri_success)
+            {
+              dt_control_log(_("help url opened in web browser"));
+            }
+            else
+            {
+              dt_control_log(_("error while opening help url in web browser"));
+              if (error != NULL) // uri_success being FALSE should guarantee that
+              {
+                fprintf (stderr, "Unable to read file: %s\n", error->message);
+                g_error_free (error);
+              }
+            }
           }
         }
         else

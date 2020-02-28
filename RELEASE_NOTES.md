@@ -99,6 +99,26 @@ making a backup is strongly advised.
 - Use a more natural folder order in the collect module, the latest
   folder are now listed first.
 
+- A full rewrite of the pipe ordering has been done. It is now
+  possible to change the order of the pipe using a new module giving
+  access to the legacy order (order used up to 2.6 releases) and the
+  v3.0 order introduced with darktable 3.0 on Dec 2019. It is also
+  possible to create order presets which can be freely applied.
+
+  Note that the copy / paste of multi-instances when they have been
+  reordered in a way that some other modules are separating them will
+  not keep the same order. This was buggy in previous implementation
+  when the target image had also been reordered in a non compatible
+  manner or using a different pipe order. In this new versions all the
+  multi-instances will be grouped together keeping their relative
+  order.
+
+  Note that this work has mainly been done to make the implementation
+  simpler, safer and that will require less maintenance. Also as this
+  implementation records the full pipe order for history and styles it
+  will be the ground for proposing different strategies when applying
+  styles.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.

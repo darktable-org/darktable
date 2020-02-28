@@ -462,11 +462,11 @@ static const uint8_t _imageio_ldr_magic[] = {
 
 gboolean dt_imageio_is_ldr(const char *filename)
 {
-  size_t offset = 0;
-  uint8_t block[32] = { 0 }; // keep this big enough for whatever magic size we want to compare to!
   FILE *fin = g_fopen(filename, "rb");
   if(fin)
   {
+    size_t offset = 0;
+    uint8_t block[32] = { 0 }; // keep this big enough for whatever magic size we want to compare to!
     /* read block from file */
     size_t s = fread(block, sizeof(block), 1, fin);
     fclose(fin);
@@ -686,30 +686,24 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    int imgid_iop_order_version = dt_image_get_iop_order_version(imgid);
-    GList *current_iop_list = dt_ioppr_get_iop_order_list(&imgid_iop_order_version);
-
     dt_dev_pop_history_items_ext(&dev, dev.history_end);
 
-    GList *st_items = g_list_last(style_items);
+    dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
+
+    GList *st_items = g_list_first(style_items);
     while(st_items)
     {
-      dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
-
-      // we need to adjust the iop-order for each item
-
-      st_item->iop_order =
-        dt_ioppr_get_iop_order(current_iop_list, st_item->operation) + (double)st_item->multi_priority / 100.0f;
-
+      dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
 
-      st_items = g_list_previous(st_items);
+      st_items = g_list_next(st_items);
     }
 
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
-    g_list_free_full(current_iop_list, free);
   }
+
+  dt_ioppr_resync_modules_order(&dev);
 
   dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);

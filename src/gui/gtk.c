@@ -166,7 +166,7 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
 
-  dt_accel_path_view(path, sizeof(path), "lighttable", "toggle filmstrip/timeline");
+  dt_accel_path_view(path, sizeof(path), "lighttable", "toggle filmstrip or timeline");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
 
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
@@ -1060,7 +1060,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gchar *css_theme = dt_conf_get_string("ui_last/theme");
   if(css_theme)
   {
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
+    g_strlcpy(gui->gtkrc, css_theme, sizeof(gui->gtkrc));
     g_free(css_theme);
   }
   else

@@ -126,7 +126,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 error:
   free(*param_value);
   *param_value = NULL;
-  param_value_size = 0;
+  *param_value_size = 0;
   return err;
 }
 
@@ -1610,19 +1610,19 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
 
-  len = snprintf(start, end - start, "%s", cl->dev[dev].options);
+  len = g_strlcpy(start, cl->dev[dev].options, end - start);
   start += len;
 
   /* make sure that the md5sums of all the includes are applied as well */
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
   {
     if(!includemd5[n]) continue;
-    len = snprintf(start, end - start, "%s", includemd5[n]);
+    len = g_strlcpy(start, includemd5[n], end - start);
     start += len;
   }
 
   char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
-  strncpy(md5sum, source_md5, 33);
+  g_strlcpy(md5sum, source_md5, 33);
   g_free(source_md5);
 
   file[filesize] = '\0';

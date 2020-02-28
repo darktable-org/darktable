@@ -1329,7 +1329,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     dt_masks_form_t *form = dt_masks_create(type);
     form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
-    snprintf(form->name, sizeof(form->name), "%s", name);
+    g_strlcpy(form->name, name, sizeof(form->name));
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
@@ -1725,7 +1725,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
       float amount = 0.05f;
       if(!up) amount = -amount;
 
-      opacity = CLAMP(opacity + amount, 0.0f, 1.0f);
+      opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
     }
 
@@ -2333,7 +2333,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     dt_iop_module_t *m = (dt_iop_module_t *)iops->data;
     if(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      int ok = 0;
       // is the form the base group of the iop ?
       if(id == m->blend_params->mask_id)
       {
@@ -2346,6 +2345,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
         dt_masks_form_t *iopgrp = dt_masks_get_from_id(darktable.develop, m->blend_params->mask_id);
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
+          int ok = 0;
           GList *forms = g_list_first(iopgrp->points);
           while(forms)
           {
@@ -2407,7 +2407,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     if(fpt->formid == id)
     {
-      const float opacity = CLAMP(fpt->opacity + amount, 0.0f, 1.0f);
+      const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
       fpt->opacity = opacity;
       dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
       dt_masks_update_image(darktable.develop);
