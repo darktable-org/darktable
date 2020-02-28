@@ -934,7 +934,7 @@ static gboolean _event_loop_animation(dt_knight_t *d)
 static gboolean _event_loop(gpointer user_data)
 {
   dt_knight_t *d = (dt_knight_t *)user_data;
-  gboolean res;
+  gboolean res = FALSE;  // silence warning about unitialized res
   switch(d->game_state)
   {
     case INTRO:
