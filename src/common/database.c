@@ -2684,11 +2684,11 @@ void _dt_database_maintenance(const struct dt_database_t *db)
   sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
 }
 
-gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, guint64 size)
+gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
 {
   if(!has_gui)
   {
-    return 0;
+    return FALSE;
   }
 
   char *later_info = NULL;
@@ -2717,7 +2717,7 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
                                                  "you can always change maintenance preferences in core options"),
                                                  size_info, later_info);
 
-    gboolean shall_perform_maintenance =
+    const gboolean shall_perform_maintenance =
       dt_gui_show_standalone_yes_no_dialog(_("darktable - schema maintenance"), label_text,
                                            _("later"), _("yes"));
 
@@ -2732,7 +2732,7 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   int val = -1;
   sqlite3_stmt *stmt;
-  int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     val = sqlite3_column_int(stmt, 0);
@@ -2747,14 +2747,15 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 {
   char *config = dt_conf_get_string("database/maintenance_check");
 
-  if(!g_strcmp0(config, "never")){
+  if(!g_strcmp0(config, "never"))
+  {
     // early bail out on "never"
-    fprintf(stderr, "[db maintenance] please consider enabling database maintenance.\n");
+    dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
     return;
   }
 
   gboolean check_for_maintenance = FALSE;
-  gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
+  const gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
 
   if(config)
   {
@@ -2763,7 +2764,7 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
         || (!closing_time && (strstr(config, "on startup"))))
     {
       // we have "on both/on close/on startup" setting, so - checking!
-      fprintf(stderr, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
+      dt_print(DT_DEBUG_SQL, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
       check_for_maintenance = TRUE;
     }
     // if the config was "never", check_for_vacuum is false.
@@ -2784,12 +2785,16 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
   const int data_page_count = _get_pragma_val(db, "data.page_count");
   const int data_page_size = _get_pragma_val(db, "data.page_size");
 
-  fprintf(stderr,
+  dt_print(DT_DEBUG_SQL,
       "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
       main_free_count, main_page_count, data_free_count, data_page_count);
 
-  if(main_page_count <= 0 || data_page_count <= 0){
+  if(main_page_count <= 0 || data_page_count <= 0)
+  {
     //something's wrong with PRAGMA page_size returns. early bail.
+    dt_print(DT_DEBUG_SQL,
+        "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
+        main_page_count, data_page_count);
     return;
   }
 
@@ -2803,12 +2808,12 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
       || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
-    fprintf(stderr, "[db maintenance] maintenance suggested, %" PRId64 " bytes to free.\n", calc_size);
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" PRId64 " bytes to free.\n", calc_size);
 
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
-      fprintf(stderr, "[db maintenance] maintenance done, %" PRId64 " bytes freed.\n", calc_size);
+      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" PRId64 " bytes freed.\n", calc_size);
     }
   }
 }
