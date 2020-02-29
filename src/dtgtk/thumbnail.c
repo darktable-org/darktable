@@ -729,6 +729,13 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   free(thumb);
 }
 
+void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
+{
+  if(!thumb) return;
+  _image_get_infos(thumb);
+  _thumb_update_icons(thumb);
+}
+
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
 {
   // first, we verify that there's something to change
