@@ -2758,9 +2758,9 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
   if(config)
   {
-    if((g_strstr_len(config, -1, "on both")) // should cover "(don't ask) suffix
-        || (closing_time && (g_strstr_len(config, -1, "on close")))
-        || (!closing_time && (g_strstr_len(config, -1, "on startup"))))
+    if((strstr(config, "on both")) // should cover "(don't ask) suffix
+        || (closing_time && (strstr(config, "on close")))
+        || (!closing_time && (strstr(config, "on startup"))))
     {
       // we have "on both/on close/on startup" setting, so - checking!
       fprintf(stderr, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
