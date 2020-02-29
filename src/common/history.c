@@ -1470,6 +1470,8 @@ gboolean dt_history_delete_on_list(GList *list, gboolean undo)
        recalculated when the mimpap will be recreated */
     if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_image_set_aspect_ratio(imgid, FALSE);
+
+    l = g_list_next(l);
   }
 
   if(undo) dt_undo_end_group(darktable.undo);
