@@ -1143,6 +1143,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 {
   // if surface not null, clean it up
   if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
+  *surface = NULL;
 
   // get mipmap cahe image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;

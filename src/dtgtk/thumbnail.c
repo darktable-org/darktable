@@ -125,9 +125,14 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
      && (v->view(v) != DT_VIEW_DARKROOM || !dev->preview_pipe->output_backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
-    if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+    if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+      cairo_surface_destroy(thumb->img_surf);
+    thumb->img_surf = NULL;
     thumb->img_surf_dirty = TRUE;
   }
+
+  // if image surface has no more ref. let's samitize it's value to NULL
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) < 1) thumb->img_surf = NULL;
 
   // if we don't have it in memory, we want the image surface
   if(!thumb->img_surf || thumb->img_surf_dirty)
@@ -137,7 +142,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     {
       // the current thumb is the one currently developped in darkroom
       // better use the preview buffer for surface, in order to stay in sync
-      if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+      if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+        cairo_surface_destroy(thumb->img_surf);
       thumb->img_surf = NULL;
 
       // get new surface with preview image
@@ -199,8 +205,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       }
     }
 
-
-
     thumb->img_surf_dirty = FALSE;
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
@@ -226,6 +230,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
     return TRUE;
   }
+
+  // Safety check to avoid possible error
+  if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return TRUE;
 
   // we draw the image
   cairo_set_source_surface(cr, thumb->img_surf, 0, 0);
@@ -723,9 +730,9 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
     cairo_surface_destroy(thumb->img_surf);
+  thumb->img_surf = NULL;
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
-
   free(thumb);
 }
 
@@ -814,7 +821,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
   thumb->height = height;
 
   // reset surface
-  if(thumb->img_surf) cairo_surface_destroy(thumb->img_surf);
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
+    cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
 }
 
