@@ -111,6 +111,9 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_tag_detach_by_string("darktable|style%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
 
+  // signal that the mipmap need to be updated
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+
   dt_unlock_image(imgid);
 
   if(undo)
