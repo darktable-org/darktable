@@ -2745,25 +2745,26 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
 
 void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
 {
-  gboolean check_for_maintenance = FALSE;
-  gboolean force_maintenance = FALSE;
-
   char *config = dt_conf_get_string("database/maintenance_check");
+
+  if(!g_strcmp0(config, "never")){
+    // early bail out on "never"
+    fprintf(stderr, "[db maintenance] please consider enabling database maintenance.\n");
+    return;
+  }
+
+  gboolean check_for_maintenance = FALSE;
+  gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
 
   if(config)
   {
-    if((!g_strcmp0(config, "on both"))
-        || (!g_strcmp0(config, "on both (don't ask)"))
-        || (closing_time
-            && (!g_strcmp0(config, "on close")
-                || !g_strcmp0(config, "on close (don't ask)")))
-        || (!closing_time
-            && (!g_strcmp0(config, "on startup")
-                || !g_strcmp0(config, "on startup (don't ask)"))))
+    if((g_strstr_len(config, -1, "on both")) // should cover "(don't ask) suffix
+        || (closing_time && (g_strstr_len(config, -1, "on close")))
+        || (!closing_time && (g_strstr_len(config, -1, "on startup"))))
     {
       // we have "on both/on close/on startup" setting, so - checking!
+      fprintf(stderr, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
       check_for_maintenance = TRUE;
-      force_maintenance = g_str_has_suffix (config, "(don't ask)");
     }
     // if the config was "never", check_for_vacuum is false.
     g_free(config);
@@ -2783,6 +2784,10 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
   const int data_page_count = _get_pragma_val(db, "data.page_count");
   const int data_page_size = _get_pragma_val(db, "data.page_size");
 
+  fprintf(stderr,
+      "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
+      main_free_count, main_page_count, data_free_count, data_page_count);
+
   if(main_page_count <= 0 || data_page_count <= 0){
     //something's wrong with PRAGMA page_size returns. early bail.
     return;
@@ -2798,10 +2803,12 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
       || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
+    fprintf(stderr, "[db maintenance] maintenance suggested, %" PRId64 " bytes to free.\n", calc_size);
 
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
+      fprintf(stderr, "[db maintenance] maintenance done, %" PRId64 " bytes freed.\n", calc_size);
     }
   }
 }
