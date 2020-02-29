@@ -1055,6 +1055,18 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     dt_thumbtable_full_redraw(table, TRUE);
 
     dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+
+    // and for images that have changed but are still in the view, we update datas
+    l = imgs;
+    while(l)
+    {
+      dt_thumbnail_t *th = _thumbtable_get_thumb(table, GPOINTER_TO_INT(l->data));
+      if(th)
+      {
+        dt_thumbnail_update_infos(th);
+      }
+      l = g_list_next(l);
+    }
   }
   else
   {
