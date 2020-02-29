@@ -750,17 +750,35 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   return TRUE;
 }
 
+static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  // we only handle the case where we enter thumbtable from an inferior (a thumbnail)
+  // this is when the mouse enter an "empty" area of thumbtable
+  if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
+
+  dt_control_set_mouse_over_id(-1);
+  return TRUE;
+}
+
 static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  const int id = dt_control_get_mouse_over_id();
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM && id < 1 && event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    // we click in an empty area, let's deselect all images
+    dt_selection_clear(darktable.selection);
+    return TRUE;
+  }
+
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
-    GList *tl
-        = g_list_find_custom(table->list, GINT_TO_POINTER(dt_control_get_mouse_over_id()), _list_compare_by_imgid);
+    GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(id), _list_compare_by_imgid);
     if(tl)
       table->drag_thumb = (dt_thumbnail_t *)tl->data;
     else
@@ -799,6 +817,12 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
   table->dragging = FALSE;
+
+  if((abs(table->drag_dx) + abs(table->drag_dy)) <= DT_PIXEL_APPLY_DPI(8) && dt_control_get_mouse_over_id() < 1)
+  {
+    // if we are on empty area and have detect no real movement, we deselect
+    dt_selection_clear(darktable.selection);
+  }
 
   // we ensure that all thumbnails moved property is reset
   GList *l = table->list;
@@ -1288,6 +1312,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
   g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event", G_CALLBACK(_event_enter_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
