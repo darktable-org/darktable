@@ -23,11 +23,14 @@
         <option>on startup</option>
         <option>on close</option>
         <option>on both</option>
+        <option>on startup (don't ask)</option>
+        <option>on close (don't ask)</option>
+        <option>on both (don't ask)</option>
       </enum>
     </type>
     <default>on startup</default>
-    <shortdescription>when to check for database maintenance</shortdescription>
-    <longdescription>this will set when db size is checked for possible maintenance condition and ask user to confirm</longdescription>
+    <shortdescription>check for database maintenance</shortdescription>
+    <longdescription>this will set when db size is checked for possible maintenance condition and whether to ask user to confirm</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>database/maintenance_freepage_ratio</name>
