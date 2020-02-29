@@ -51,6 +51,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colortransfer_params_t)
 #define HISTN (1 << 11)
 #define MAXN 5
 
+typedef float float2[2];
+
 typedef enum dt_iop_colortransfer_flag_t
 {
   ACQUIRE = 0,
@@ -67,8 +69,8 @@ typedef struct dt_iop_colortransfer_params_t
   // hist matching table
   float hist[HISTN];
   // n-means (max 5?) with mean/variance
-  float mean[MAXN][2];
-  float var[MAXN][2];
+  float2 mean[MAXN];
+  float2 var[MAXN];
   // number of gaussians used.
   int n;
 } dt_iop_colortransfer_params_t;
@@ -89,8 +91,8 @@ typedef struct dt_iop_colortransfer_data_t
   // same as params. (need duplicate because database table preset contains params_t)
   dt_iop_colortransfer_flag_t flag;
   float hist[HISTN];
-  float mean[MAXN][2];
-  float var[MAXN][2];
+  float2 mean[MAXN];
+  float2 var[MAXN];
   int n;
 } dt_iop_colortransfer_data_t;
 
@@ -181,10 +183,7 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-
-static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
+static void get_cluster_mapping(const int n, float2 *mi, float2 *mo, int *mapio)
 {
   for(int ki = 0; ki < n; ki++)
   {
@@ -204,7 +203,7 @@ static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int
   }
 }
 
-static void get_clusters(const float *col, const int n, float mean[n][2], float *weight)
+static void get_clusters(const float *col, const int n, float2 *mean, float *weight)
 {
   float Mdist = 0.0f, mdist = FLT_MAX;
   for(int k = 0; k < n; k++)
@@ -223,7 +222,7 @@ static void get_clusters(const float *col, const int n, float mean[n][2], float 
     for(int k = 0; k < n; k++) weight[k] /= sum;
 }
 
-static int get_cluster(const float *col, const int n, float mean[n][2])
+static int get_cluster(const float *col, const int n, float2 *mean)
 {
   float mdist = FLT_MAX;
   int cluster = 0;
@@ -240,15 +239,15 @@ static int get_cluster(const float *col, const int n, float mean[n][2])
   return cluster;
 }
 
-static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n, float mean_out[n][2],
-                   float var_out[n][2])
+static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n, float2 *mean_out,
+                   float2 *var_out)
 {
   // TODO: check params here:
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float(*const mean)[2] = malloc(2 * n * sizeof(float));
-  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  float2 *const mean = malloc(n * sizeof(float2));
+  float2 *const var = malloc(n * sizeof(float2));
   int *const cnt = malloc(n * sizeof(int));
 
   // init n clusters for a, b channels at random
@@ -271,7 +270,8 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
 #endif
     for(int s = 0; s < samples; s++)
     {
-      const int j = dt_points_get() * roi->height, i = dt_points_get() * roi->width;
+      const int j = dt_points_get() * roi->height;
+      const int i = dt_points_get() * roi->width;
       // for each sample: determine cluster, update new mean, update var
       for(int k = 0; k < n; k++)
       {
@@ -327,8 +327,6 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   }
 }
 
-#pragma GCC diagnostic pop
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -357,7 +355,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
   }
   else if(data->flag == APPLY)
   {
@@ -383,8 +381,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float(*const mean)[2] = malloc(2 * data->n * sizeof(float));
-    float(*const var)[2] = malloc(2 * data->n * sizeof(float));
+    float2 *const mean = malloc(data->n * sizeof(float2));
+    float2 *const var = malloc(data->n * sizeof(float2));
 
     kmeans(in, roi_in, data->n, mean, var);
 
@@ -435,7 +433,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
   }
 }
 
