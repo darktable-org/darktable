@@ -775,7 +775,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
     pango_attr_list_unref(attrlist);
-    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 3.0 * r1 + 1.5 * fsize2);
+    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 4.0 * r1 + 1.5 * fsize2);
   }
   else
     gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 3.0 * r1);
