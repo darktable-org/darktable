@@ -430,9 +430,9 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   if(import_folder == TRUE)
   {
     // recursive opening.
-    recursive = gtk_check_button_new_with_label(_("import directories recursively"));
+    recursive = gtk_check_button_new_with_label(_("import folders recursively"));
     gtk_widget_set_tooltip_text(recursive,
-                                _("recursively import subdirectories. each directory goes into a new film roll."));
+                                _("recursively import subfolders. Each folder goes into a new film roll."));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recursive), dt_conf_get_bool("ui_last/import_recursive"));
     gtk_box_pack_start(GTK_BOX(extra), recursive, FALSE, FALSE, 0);
 
@@ -851,7 +851,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t* self= (dt_lib_module_t*) user_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("import film"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      _("import folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
