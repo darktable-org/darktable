@@ -30,7 +30,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "iop/gaussian_elimination.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>

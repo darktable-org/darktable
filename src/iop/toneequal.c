@@ -99,7 +99,6 @@
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 #include "iop/choleski.h"
-#include "libs/colorpicker.h"
 #include "common/iop_group.h"
 
 #ifdef _OPENMP

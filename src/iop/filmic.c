@@ -38,7 +38,6 @@
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>
