@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 johannes hanika.
-    copyright (c) 2015-2016 Roman Lebedev.
+    Copyright (C) 2015-2020 darktable project.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

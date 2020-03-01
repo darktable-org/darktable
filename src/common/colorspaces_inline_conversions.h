@@ -1,8 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2009--2017 johannes hanika.
- *    copyright (c) 2011--2017 tobias ellinghaus.
- *    copyright (c) 2015 Bruce Guenter
+ *    Copyright (C) 2017-2020 darktable project.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
