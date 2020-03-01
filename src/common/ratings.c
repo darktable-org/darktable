@@ -157,10 +157,6 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
                        new_rating, count);
     }
 
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    GList *undo = NULL;
-    _ratings_apply(imgs, new_rating, &undo, undo_on);
-
     dt_ratings_apply_on_list(imgs, new_rating, undo_on);
     g_list_free(imgs);
   }
