@@ -64,7 +64,7 @@ if [ ! -f "$DBFILE" ]; then
 fi
 
 TMPFILE=$(mktemp -t tmp.XXXXXXXXXX)
-QUERY="select A.id,B.folder,A.filename from images as A join film_rolls as B on A.film_id = B.id"
+QUERY="SELECT A.id,B.folder,A.filename FROM images AS A JOIN film_rolls AS B ON A.film_id = B.id"
 
 sqlite3 $DBFILE "$QUERY" > "$TMPFILE"
 
@@ -81,11 +81,11 @@ do
 
     if [ $dryrun -eq 0 ]; then
         for table in images meta_data; do
-            sqlite3 "$DBFILE" "delete from $table where id=$ID"
+            sqlite3 "$DBFILE" "DELETE FROM $table WHERE id=$ID"
         done
 
         for table in color_labels history masks_history selected_images tagged_images; do
-            sqlite3 "$DBFILE" "delete from $table where imgid=$ID"
+            sqlite3 "$DBFILE" "DELETE FROM $table WHERE imgid=$ID"
         done
     fi
   fi
@@ -101,7 +101,7 @@ else
     echo
     echo Remove following now-empty filmrolls:
     sqlite3 "$DBFILE" "SELECT folder FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
-    
+
     echo
     echo to really remove non existing images from the database call:
     echo "${commandline} --purge"
