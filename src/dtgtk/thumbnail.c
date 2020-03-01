@@ -719,6 +719,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid)
     gtk_style_context_add_class(context, "dt_extended_overlay");
   }
 
+  // ensure all icons are up to date
+  _thumb_update_icons(thumb);
+
   return thumb;
 }
 
