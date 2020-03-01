@@ -84,7 +84,7 @@ do
             sqlite3 "$DBFILE" "DELETE FROM $table WHERE id=$ID"
         done
 
-        for table in color_labels history masks_history selected_images tagged_images; do
+        for table in color_labels history masks_history selected_images tagged_images history_hash module_order; do
             sqlite3 "$DBFILE" "DELETE FROM $table WHERE imgid=$ID"
         done
     fi
