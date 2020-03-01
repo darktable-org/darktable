@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Chih-Mao Chen
-    copyright (c) 2019 Philippe Weyland
+    Copyright (C) 2019-2020 darktable project.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
