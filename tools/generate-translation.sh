@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # generate translation for RELEASE_NOTES.md
 # flag translations to be removed from release
