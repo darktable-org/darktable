@@ -2353,10 +2353,12 @@ static gint sort_tree_count_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
 
 static gint sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
-  char *tag_a = 0;
-  char *tag_b = 0;
+  char *tag_a = NULL;
+  char *tag_b = NULL;
   gtk_tree_model_get(model, a, DT_LIB_TAGGING_COL_TAG, &tag_a, -1);
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_TAG, &tag_b, -1);
+  if(tag_a == NULL) tag_a = g_strdup("");
+  if(tag_b == NULL) tag_b = g_strdup("");
   const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
@@ -2365,14 +2367,26 @@ static gint sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter 
 
 static gint sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
 {
-  char *tag_a = 0;
-  char *tag_b = 0;
+  char *tag_a = NULL;
+  char *tag_b = NULL;
   gtk_tree_model_get(model, a, DT_LIB_TAGGING_COL_PATH, &tag_a, -1);
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_PATH, &tag_b, -1);
-  for(char *letter = tag_a; *letter; letter++)
-    if(*letter == '|') *letter = '\1';
-  for(char *letter = tag_b; *letter; letter++)
-    if(*letter == '|') *letter = '\1';
+  if(tag_a)
+  {
+    for(char *letter = tag_a; *letter; letter++)
+      if(*letter == '|') *letter = '\1';
+  }
+  else
+    tag_a = g_strdup("");
+
+  if(tag_b)
+  {
+    for(char *letter = tag_b; *letter; letter++)
+      if(*letter == '|') *letter = '\1';
+  }
+  else
+    tag_b = g_strdup("");
+
   const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
