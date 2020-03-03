@@ -1899,7 +1899,7 @@ static void pop_menu_dictionary_goto_tag_collection(GtkWidget *menuitem, dt_lib_
     {
       if (!d->collection[0]) dt_collection_serialize(d->collection, 4096);
       char *tag_collection = NULL;
-      tag_collection = dt_util_dstrcat(tag_collection, "1:0:3:%s$", path);
+      tag_collection = dt_util_dstrcat(tag_collection, "1:0:%d:%s$", DT_COLLECTION_PROP_TAG, path);
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
       dt_collection_deserialize(tag_collection);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
