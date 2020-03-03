@@ -1420,10 +1420,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
+
+  //Match UI order: temp first, then tint (like every other app ever)
+  g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
+                                                  10., 5000.0, 0, feedback);
   g->scale_tint
       = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3, feedback);
-  g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
-                                                10., 5000.0, 0, feedback);
+
 
   g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->scale_r = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[0], 3, feedback);
@@ -1475,8 +1478,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
+
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
@@ -1515,12 +1519,14 @@ void gui_init(struct dt_iop_module_t *self)
   
   self->gui_update(self);
 
-  g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);
   g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_callback), self);
+  g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);
+
   g_signal_connect(G_OBJECT(g->scale_r), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_g), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_g2), "value-changed", G_CALLBACK(rgb_callback), self);
+
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
 }
