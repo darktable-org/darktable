@@ -904,6 +904,9 @@ void gui_update(struct dt_iop_module_t *self)
     if (!found)
       dt_bauhaus_combobox_set(g->presets, 3);
   }
+
+  gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
+
 }
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
@@ -1331,6 +1334,7 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   gtk_widget_set_sensitive(g->finetune, pos >= DT_IOP_NUM_OF_STD_TEMP_PRESETS);
+  gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
@@ -1400,6 +1404,8 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   }
 
   gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
+
+  //TODO: hide finetuning if presets are not available
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1469,6 +1475,8 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
     dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
     dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
+
+    // TODO: color the finetune slider
   }
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
@@ -1498,6 +1506,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
   gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
+  //TODO: hide finetune if there are no finetuning
   g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
