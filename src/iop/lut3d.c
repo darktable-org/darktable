@@ -782,7 +782,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           return 0;
         }
       }
-      else
+      else if (nb_token == 3 && g_ascii_isdigit(token[0][0]))
       {
         if (!level)
         {
