@@ -629,7 +629,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         {
           // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
-          _insert_before(iop_order_list, "nlmeans", "negadocton");
+          _insert_before(iop_order_list, "nlmeans", "negadoctor");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
