@@ -1357,12 +1357,9 @@ void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash)
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.history_hash"
+                                "INSERT OR REPLACE INTO main.history_hash"
                                 " (imgid, basic_hash, auto_hash, current_hash)"
-                                " VALUES (?1, ?2, ?3, ?4)"
-                                " ON CONFLICT (imgid)"
-                                " DO UPDATE SET"
-                                "   basic_hash = ?2, auto_hash = ?3, current_hash = ?4",
+                                " VALUES (?1, ?2, ?3, ?4)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash->basic, hash->basic_len, SQLITE_TRANSIENT);
@@ -1393,7 +1390,7 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
     hash->basic_len = sqlite3_column_bytes(stmt, 0);
     if(buf)
     {
-      hash->basic = malloc(hash->auto_apply_len);
+      hash->basic = malloc(hash->basic_len);
       memcpy(hash->basic, buf, hash->basic_len);
     }
     buf = (void *)sqlite3_column_blob(stmt, 1);
