@@ -1332,11 +1332,35 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
     if(fields)
     {
       sqlite3_stmt *stmt;
+#ifdef HAVE_SQLITE_324_OR_NEWER
       char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
                                           " (imgid, %s) VALUES (?1, %s)"
                                           " ON CONFLICT (imgid)"
                                           " DO UPDATE SET %s",
                                           fields, values, conflict);
+#else
+      char *query = NULL;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT imgid FROM main.history_hash"
+                                  " WHERE imgid = ?1",
+                                   -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        sqlite3_finalize(stmt);
+        query = dt_util_dstrcat(NULL, "UPDATE main.history_hash"
+                                      " SET %s"
+                                      " WHERE imgid = ?1",
+                                      conflict);
+      }
+      else
+      {
+        sqlite3_finalize(stmt);
+        query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
+                                      " (imgid, %s) VALUES (?1, %s)",
+                                      fields, values);
+      }
+#endif
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash, hash_len, SQLITE_TRANSIENT);
