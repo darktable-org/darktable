@@ -153,6 +153,24 @@ making a backup is strongly advised.
 
 - Fix some duplicate pipe recomputation.
 
+### White Balance Presets
+
+- Canon EOS 77D
+- Canon EOS 9000D
+- Nikon COOLPIX P1000
+- Panasonic DC-GH5
+
+### Noise Profiles
+
+- Canon EOS-1Ds
+- Fujifilm X-H1
+- Fujifilm X-T30
+- Olympus E-510
+- Panasonic DC-GH5
+- Sony ILCE-6600
+- Sony ILCE-7RM4
+- Sony ILCE-9
+
 # Changes since 2.6
 
 - Almost 3 thousand commits to darktable+rawspeed since 2.6
