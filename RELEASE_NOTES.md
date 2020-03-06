@@ -90,6 +90,8 @@ making a backup is strongly advised.
 - Use a more natural folder order in the collect module, the latest
   folder are now listed first.
 
+- Module search in darkroom is now case-insensitive.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
@@ -135,7 +137,7 @@ making a backup is strongly advised.
 - Some HiDPI fixes in icons.
 
 - The Facebook, Google Photo and Flickr export storage have been
-  removed as not supported anymore due to deep change in the provider
+  removed as not supported anymore due to deep changes in the provider
   making it very hard to fix.
 
 - Fix brush OSD when in zoom mode. The brushes are now keeping thin
@@ -146,6 +148,10 @@ making a backup is strongly advised.
 - Fix using apostrophe in meta-data.
 
 - Fix time-line display reporting 61 minutes per hour.
+
+- Remove wrong presets in RGB-curve module.
+
+- Fix some duplicate pipe recomputation.
 
 # Changes since 2.6
 
