@@ -166,7 +166,7 @@ making a backup is strongly advised.
 - Some HiDPI fixes in icons.
 
 - The Facebook, Google Photo and Flickr export storage have been
-  removed as not supported anymore due to deep change in the provider
+  removed as not supported anymore due to deep changes in the provider
   making it very hard to fix.
 
 - Fix brush OSD when in zoom mode. The brushes are now keeping thin
