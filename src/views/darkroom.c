@@ -524,6 +524,13 @@ void expose(
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
+    // The colorpicker bounding rectangle should only be displayed inside the visible image
+    const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
+    const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+    cairo_save(cri);
+    cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+    cairo_clip(cri);
+
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
@@ -568,12 +575,24 @@ void expose(
       cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
       cairo_stroke(cri);
     }
+    cairo_restore(cri);
   }
   else
   {
     // masks
     if(dev->form_visible)
+    {
+      // The masks paths should only be displayed inside the visible image
+      const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
+      const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+      cairo_save(cri);
+      cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+      cairo_clip(cri);
+
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+
+      cairo_restore(cri);
+    }
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
