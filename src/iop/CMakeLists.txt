@@ -141,6 +141,7 @@ else(GMIC_FOUND)
 endif(GMIC_FOUND)
 add_iop(toneequal "toneequal.c" DEFAULT_VISIBLE)
 add_iop(filmicrgb "filmicrgb.c")
+add_iop(negadoctor "negadoctor.c")
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")
