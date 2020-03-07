@@ -1415,10 +1415,15 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_fill(cr);
 
       if(darktable.gui->show_focus_peaking)
+      {
+        cairo_save(cr);
+        cairo_rectangle(cr, rectx, recty, rectw, recth);
+        cairo_clip(cr);
         dt_focuspeaking(cr, width, height, cairo_image_surface_get_data(surface),
                                            cairo_image_surface_get_width(surface),
                                            cairo_image_surface_get_height(surface));
-
+        cairo_restore(cr);
+      }
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
     }
 
