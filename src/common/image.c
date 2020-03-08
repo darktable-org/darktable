@@ -1510,7 +1510,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         (dt_database_get(darktable.db),
          "SELECT id"
          " FROM main.images"
-         " WHERE filename IN (SELECT filename FROM main.imagesWHERE id = ?1)"
+         " WHERE filename IN (SELECT filename FROM main.images WHERE id = ?1)"
          "   AND film_id IN (SELECT film_id FROM main.images WHERE id = ?1)",
          -1, &duplicates_stmt, NULL);
 
