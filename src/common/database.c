@@ -2807,12 +2807,12 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
       || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
-    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" PRId64 " bytes to free.\n", calc_size);
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
 
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
-      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" PRId64 " bytes freed.\n", calc_size);
+      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GUINT64_FORMAT " bytes freed.\n", calc_size);
     }
   }
 }
