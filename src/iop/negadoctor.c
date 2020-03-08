@@ -69,7 +69,7 @@
 
 
 /* Declare external functions for vectorization. Doing so, OpenMP is supposed to inline them in loops. */
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(_WIN32)
 
 #pragma omp declare simd
 extern float fmaxf(const float x, const float y);
