@@ -1017,7 +1017,7 @@ cell:selected
     color: #ffff00;
 }
 
-spinbutton {
+#export-max-size spinbutton {
     padding: 0px 5px;
 }
 
@@ -1045,10 +1045,6 @@ spinbutton {
 #preferences_notebook scrolledwindow #pref_section:first-child
 {
     margin-top: 0;
-}
-
-#preferences_notebook scrolledwindow spinbutton {
-    padding: 0px;
 }
 
 /* Color picker module in darkroom left panel */
