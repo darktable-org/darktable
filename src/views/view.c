@@ -2198,9 +2198,6 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
 
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(GTK_WIDGET(win));
-#endif
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
   gtk_style_context_add_class(context, "accels_window");
   gtk_window_set_title(win, _("darktable - accels window"));
@@ -2282,6 +2279,9 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
                                GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
+  // needed on macOS to avoid fullscreening the popup with newer GTK
+  gtk_window_set_type_hint(GTK_WINDOW(vm->accels_window.window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+
   gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(vm->accels_window.window);
