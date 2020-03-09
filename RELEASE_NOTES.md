@@ -10,8 +10,8 @@ $ sha256sum darktable-3.0.1.tar.xz
 ??? darktable-3.0.1.tar.xz
 $ sha256sum darktable-3.0.1.dmg
 ??? darktable-3.0.1.dmg
-$ sha256sum darktable-3.0.1.exe
-??? darktable-3.0.1.exe
+$ sha256sum darktable-3.0.1-win64.exe
+??? darktable-3.0.1-win64.exe
 ```
 
 When updating from the currently stable 2.6.x series, please bear in
@@ -47,12 +47,12 @@ making a backup is strongly advised.
 - Make modules labels a bit smaller for better UI consistency.
 
 - Add small rectangle around the angle display when using the
-  straightening tool for better lisibility.
+  straightening tool for better visibility.
 
 - Ensure the different views layout are recorded. Many views (and mode
   like lighttable's culling or darkroom's color assessment), can have
   the filmstrip or timeline bottom widgets, we record the exact layout
-  for each layout.
+  for each view and mode.
 
 - Add tool tips on module in history.
 
@@ -67,7 +67,7 @@ making a backup is strongly advised.
 
 - Allow the same short-cuts to be defined by different modules. This
   makes it possible to have the filmstrip using the same short-cuts to
-  set stars than the lighttable.
+  set stars as the lighttable.
 
 - Add log editing support for the L, R, G, B, C, g blending modes.
   This gives more control on the dark pixels.
@@ -75,7 +75,7 @@ making a backup is strongly advised.
 - Define many new accels for most of the sliders to allow more control
   using the keyboard.
 
-- The images operations modules has been extended to support coping,
+- The images operations modules has been extended to support copying,
   replacing and merging metadata.
 
 - Better visibility for the zoomed image part in the navigation widget.
@@ -85,7 +85,7 @@ making a backup is strongly advised.
 - It is now possible to resize the collect module windows with
   <kbd>Ctrl+Scroll</kbd>.
 
-- Add support for compressed Lut (.gmz) in the 3D Lut module.
+- Add support for compressed LUT (.gmz) in the 3D LUT module.
 
 - Use a more natural folder order in the collect module, the latest
   folder are now listed first.
@@ -94,7 +94,7 @@ making a backup is strongly advised.
 
 ## Bug fixes
 
-- All valid Lut files are displayed in file selector.
+- All valid LUT files are displayed in file selector.
 
 - Fix straightening in crop and rotate module when flip is applied.
 
