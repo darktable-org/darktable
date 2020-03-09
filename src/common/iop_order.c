@@ -961,7 +961,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   return INT_MAX;
 }
 
- void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
+void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
   GList *e_list = entry_list;
 
@@ -969,6 +969,15 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   while(e_list)
   {
     const dt_iop_order_entry_t *const restrict ep = (dt_iop_order_entry_t *)e_list->data;
+
+    gboolean force_append = FALSE;
+
+    // we also need to force append (even if overwrite mode is
+    // selected - append = FALSE) when a module has a specific name
+    // and this name is not present into the current iop list.
+
+    if(*ep->name && !dt_iop_get_module_by_instance_name(dev->iop, ep->operation, ep->name))
+      force_append = TRUE;
 
     int max_multi_priority = 0, count = 0;
     int max_multi_priority_enabled = 0, count_enabled = 0;
@@ -993,7 +1002,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
         int start_multi_priority = 0;
         int nb_replace = 0;
 
-        if(append)
+        if(append || force_append)
         {
           nb_replace = count - count_enabled;
           add_count = MAX(0, new_active_instances - nb_replace);
@@ -1070,6 +1079,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolea
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     memcpy(n->operation, si->operation, sizeof(n->operation));
     n->instance = si->multi_priority;
+    g_strlcpy(n->name, si->multi_name, sizeof(n->name));
     n->o.iop_order = 0;
     e_list = g_list_append(e_list, n);
 
@@ -1110,6 +1120,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, gboolean app
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     g_strlcpy(n->operation, mod->op, sizeof(n->operation));
     n->instance = mod->multi_priority;
+    g_strlcpy(n->name, mod->multi_name, sizeof(n->name));
     n->o.iop_order = 0;
     e_list = g_list_append(e_list, n);
 
