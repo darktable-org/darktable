@@ -1047,6 +1047,10 @@ spinbutton {
     margin-top: 0;
 }
 
+#preferences_notebook scrolledwindow spinbutton {
+    padding: 0px;
+}
+
 /* Color picker module in darkroom left panel */
 
 #color-picker-area
