@@ -1525,10 +1525,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 24)
   {
-    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
     TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN mipmap_hash BLOB",
              "[init] can't add `mipmap_hash' column to history_hash table in database\n");
-    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 25;
   }
