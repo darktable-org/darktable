@@ -1017,7 +1017,7 @@ cell:selected
     color: #ffff00;
 }
 
-spinbutton {
+#export-max-size spinbutton {
     padding: 0px 5px;
 }
 
