@@ -90,6 +90,30 @@ typedef struct dt_iop_basicadj_global_data_t
   int kernel_basicadj;
 } dt_iop_basicadj_global_data_t;
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    const dt_iop_basicadj_params_t *old = old_params;
+    dt_iop_basicadj_params_t *new = new_params;
+
+    new->black_point = old->black_point;
+    new->exposure = old->exposure;
+    new->hlcompr = old->hlcompr;
+    new->hlcomprthresh = old->hlcomprthresh;
+    new->contrast = old->contrast;
+    new->preserve_colors = old->preserve_colors;
+    new->middle_grey = old->middle_grey;
+    new->brightness = old->brightness;
+    new->saturation = old->saturation;
+    new->clip = old->clip;
+    new->vibrance = 0;
+    return 0;
+  }
+  return 1;
+}
+
 const char *name()
 {
   return _("basic adjustments");
