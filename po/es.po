@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-10 15:55-0600\n"
-"PO-Revision-Date: 2020-03-10 18:54-0600\n"
+"PO-Revision-Date: 2020-03-10 22:07-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6908,7 +6908,7 @@ msgstr "Mostrar lineas guía para ayudar a componer su fotografía"
 #: ../src/iop/clipping.c:2252 ../src/iop/clipping.c:2257
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
-msgstr "invertir guías"
+msgstr "Invertir guías"
 
 #: ../src/iop/clipping.c:2254 ../src/libs/live_view.c:374
 msgid "horizontally"
@@ -11985,7 +11985,7 @@ msgstr "configuración de cámara"
 #: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr "capturar imagen(es)"
+msgstr "capturar imagen"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
@@ -12030,7 +12030,7 @@ msgstr "incrementos"
 
 #: ../src/libs/camera.c:475
 msgid "capture image(s)"
-msgstr "capturar imagen(es)"
+msgstr "capturar imagen"
 
 #: ../src/libs/camera.c:478
 msgid "toggle delayed capture mode"
@@ -13279,17 +13279,17 @@ msgstr "nada que guardar"
 
 #: ../src/libs/live_view.c:138
 msgid "live view"
-msgstr "visualización en vivo"
+msgstr "visión en directo"
 
 #: ../src/libs/live_view.c:164
 msgctxt "accel"
 msgid "toggle live view"
-msgstr "activar visualización en vivo"
+msgstr "activar visión en directo"
 
 #: ../src/libs/live_view.c:165
 msgctxt "accel"
 msgid "zoom live view"
-msgstr "ampliación en la visualización en vivo"
+msgstr "ampliación en la visión en directo"
 
 #: ../src/libs/live_view.c:168
 msgctxt "accel"
@@ -13299,30 +13299,30 @@ msgstr "voltear horizontalmente"
 #: ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "move focus point in (big steps)"
-msgstr "acercar el foco (pasos grandes)"
+msgstr "acercar punto de enfoque (gradual largo)"
 
 #: ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "move focus point in (small steps)"
-msgstr "acercar el foco (pasos pequeños)"
+msgstr "acercar punto de enfoque (gradual corto)"
 
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "move focus point out (small steps)"
-msgstr "alejar el foco (pasos pequeños)"
+msgstr "alejar punto de enfoque (gradual corto)"
 
 #: ../src/libs/live_view.c:172
 msgctxt "accel"
 msgid "move focus point out (big steps)"
-msgstr "alejar el foco (pasos grandes)"
+msgstr "alejar punto de enfoque (gradual largo)"
 
 #: ../src/libs/live_view.c:291
 msgid "toggle live view"
-msgstr "Activar la visualización en vivo"
+msgstr "Activar visión en directo"
 
 #: ../src/libs/live_view.c:292
 msgid "zoom live view"
-msgstr "Zoom en la visualización en vivo"
+msgstr "Zoom con la visión en directo"
 
 #: ../src/libs/live_view.c:293
 msgid "rotate 90 degrees ccw"
@@ -13334,23 +13334,23 @@ msgstr "Rotar 90 grados en sentido horario"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr "Voltear horizontalmente en la visualización en vivo"
+msgstr "Espejar horizontalmente la visión en directo"
 
 #: ../src/libs/live_view.c:321
 msgid "move focus point in (big steps)"
-msgstr "acercar el foco (pasos grandes)"
+msgstr "Acercar punto de enfoque (gradual largo)"
 
 #: ../src/libs/live_view.c:322
 msgid "move focus point in (small steps)"
-msgstr "acercar el foco (pasos pequeños)"
+msgstr "Acercar punto de enfoque (gradual corto)"
 
 #: ../src/libs/live_view.c:323
 msgid "move focus point out (small steps)"
-msgstr "alejar el foco (pasos pequeños)"
+msgstr "Alejar punto de enfoque (gradual corto)"
 
 #: ../src/libs/live_view.c:324
 msgid "move focus point out (big steps)"
-msgstr "alejar el foco (pasos grandes)"
+msgstr "Alejar punto de enfoque (gradual largo)"
 
 #: ../src/libs/live_view.c:381
 msgid "overlay"
@@ -13367,7 +13367,7 @@ msgstr "id."
 
 #: ../src/libs/live_view.c:385
 msgid "overlay another image over the live view"
-msgstr "Superponer otra imagen sobre la visualización en vivo"
+msgstr "Superponer otra imagen en la visión en directo"
 
 #: ../src/libs/live_view.c:390 ../src/libs/metadata_view.c:98
 msgid "image id"
