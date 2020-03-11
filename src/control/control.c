@@ -526,6 +526,7 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
 
+#ifdef HAVE_GAME
   // ↑ ↑ ↓ ↓ ← → ← → b a
   static int konami_state = 0;
   static guint konami_sequence[] = {
@@ -551,7 +552,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
   else
     konami_state = 0;
-
+#endif
 
   // TODO: if darkroom mode
   // did a : vim-style command start?
