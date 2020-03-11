@@ -757,6 +757,13 @@ else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
 
+if(USE_GAME)
+  add_definitions("-DHAVE_GAME")
+  message(STATUS "Game: the good knight")
+else(USE_GAME)
+  message(STATUS "Game: no")
+endif(USE_GAME)
+
 #
 # set development flags for our code
 #
