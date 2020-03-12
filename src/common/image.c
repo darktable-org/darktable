@@ -1400,6 +1400,7 @@ void dt_image_init(dt_image_t *img)
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
   img->exif_exposure = 0;
+  img->exif_exposure_bias = 0.0;
   img->exif_aperture = 0;
   img->exif_iso = 0;
   img->exif_focal_length = 0;

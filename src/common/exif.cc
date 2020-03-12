@@ -505,11 +505,11 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       char *c ;
       while ( ( c = strchr(datetime,'T') ) != NULL )
       {
-	*c = ' ';
+  *c = ' ';
       }
       // replace '-' by ':'
       while ( ( c = strchr(datetime,'-')) != NULL ) {
-	*c = ':';
+  *c = ':';
       }
 
       g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
@@ -734,6 +734,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0 / pos->toFloat();
     }
+
+    // Read exposure bias
+    if(FIND_EXIF_TAG("Exif.Photo.ExposureBiasValue"))
+    {
+      img->exif_exposure_bias = pos->toFloat();
+    }
+
     /* Read aperture */
     if(FIND_EXIF_TAG("Exif.Photo.FNumber"))
     {

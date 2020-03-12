@@ -151,6 +151,7 @@ typedef struct dt_image_t
   int32_t exif_inited;
   dt_image_orientation_t orientation;
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
