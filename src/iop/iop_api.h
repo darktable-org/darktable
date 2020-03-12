@@ -22,6 +22,7 @@
 extern "C" {
 #endif
 
+#include "common/darktable.h"
 #include "common/introspection.h"
 
 #include <cairo/cairo.h>
@@ -86,7 +87,7 @@ void output_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe
 
 /** what default colorspace this iop use? */
 int default_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                     struct dt_dev_pixelpipe_iop_t *piece);
+                       struct dt_dev_pixelpipe_iop_t *piece);
 /** what input colorspace it expects? */
 int input_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                      struct dt_dev_pixelpipe_iop_t *piece);
@@ -94,8 +95,8 @@ int input_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pi
 int output_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece);
 /** what colorspace the blend module operates with? */
-int blend_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                      struct dt_dev_pixelpipe_iop_t *piece);
+int blend_colorspace(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_t *pipe,
+                     const struct dt_dev_pixelpipe_iop_t *piece);
 
 /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -147,8 +148,8 @@ void init_pipe(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
 /** this resets the params to factory defaults. used at the beginning of each history synch. */
 /** this commits (a mutex will be locked to synch pipe/gui) the given history params to the pixelpipe piece.
  */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe,
-                   struct dt_dev_pixelpipe_iop_t *piece);
+void commit_params(struct dt_iop_module_t *self, const dt_iop_params_t *params,
+                   const struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** this is the chance to update default parameters, after the full raw is loaded. */
 void reload_defaults(struct dt_iop_module_t *self);
 /** called after the image has changed in darkroom */
@@ -172,31 +173,32 @@ void masks_selection_changed(struct dt_iop_module_t *self, const int form_select
   * formats may be filled by this callback, if the pipeline can handle it. */
 /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
 /** must be provided by each IOP. */
-void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-             void *const o, const struct dt_iop_roi_t *const roi_in,
+void process(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *const piece,
+             const void *i, void *o,
+             const struct dt_iop_roi_t *const roi_in,
              const struct dt_iop_roi_t *const roi_out);
 /** a tiling variant of process(). */
-void process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                    void *const o, const struct dt_iop_roi_t *const roi_in,
-                    const struct dt_iop_roi_t *const roi_out, const int bpp);
+void process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                    const void *i, void *o,
+                    const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const int bpp);
 
 #if defined(__SSE__)
 /** a variant process(), that can contain SSE2 intrinsics. */
 /** can be provided by each IOP. */
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const struct dt_iop_roi_t *const roi_in,
-                  const struct dt_iop_roi_t *const roi_out);
+void process_sse2(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *piece,
+                  const void *i, void *o,
+                  const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out);
 #endif
 
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process(). */
-int process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-               cl_mem dev_out, const struct dt_iop_roi_t *const roi_in,
-               const struct dt_iop_roi_t *const roi_out);
+int process_cl(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *iece,
+               cl_mem dev_in, cl_mem dev_out,
+               const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out);
 /** a tiling variant of process_cl(). */
-int process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                      void *const o, const struct dt_iop_roi_t *const roi_in,
-                      const struct dt_iop_roi_t *const roi_out, const int bpp);
+int process_tiling_cl(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_iop_t *const piece,
+                      const void *i, void *o,
+                      const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const int bpp);
 #endif
 
 /** this functions are used for distort iop

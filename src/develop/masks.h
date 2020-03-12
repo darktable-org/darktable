@@ -251,22 +251,22 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 
 /** get points in real space with respect of distortion dx and dy are used to eventually move the center of
  * the circle */
-int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
+int dt_masks_get_points_border(dt_develop_t *dev, const dt_masks_form_t *form, float **points, int *points_count,
                                float **border, int *border_count, int source);
 
 /** get the rectangle which include the form and his border */
-int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_get_area(const dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                       int *width, int *height, int *posx, int *posy);
-int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_get_source_area(const dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                              int *width, int *height, int *posx, int *posy);
 /** get the transparency mask of the form and his border */
-int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_get_mask(const dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                       float **buffer, int *width, int *height, int *posx, int *posy);
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_get_mask_roi(const dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                           const dt_iop_roi_t *roi, float *buffer);
-int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_group_render(dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                           float **buffer, int *roi, float scale);
-int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+int dt_masks_group_render_roi(const dt_iop_module_t *module, const dt_dev_pixelpipe_iop_t *piece, const dt_masks_form_t *form,
                               const dt_iop_roi_t *roi, float *buffer);
 
 // returns current masks version

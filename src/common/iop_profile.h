@@ -96,7 +96,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_typ
 void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
+void dt_ioppr_transform_image_colorspace(const struct dt_iop_module_t *self, const float *const image_in,
                                          float *const image_out, const int width, const int height,
                                          const int cst_from, const int cst_to, int *converted_cst,
                                          const dt_iop_order_iccprofile_info_t *const profile_info);

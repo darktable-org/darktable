@@ -839,7 +839,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 }
 
 
-static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rotation, float curvature,
+static inline int dt_gradient_get_points(dt_develop_t *const dev, float x, float y, float rotation, float curvature,
                                   float **points, int *points_count)
 {
   *points = NULL;
@@ -919,7 +919,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   return 0;
 }
 
-static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, float rotation, float distance,
+static inline int dt_gradient_get_points_border(dt_develop_t *const dev, float x, float y, float rotation, float distance,
                                          float curvature, float **points, int *points_count)
 {
   *points = NULL;
@@ -1010,8 +1010,8 @@ end:
   return res;
 }
 
-static int dt_gradient_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                                int *width, int *height, int *posx, int *posy)
+static inline int dt_gradient_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                                int *const width, int *const height, int *const posx, int *const posy)
 {
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
@@ -1059,8 +1059,8 @@ static inline float dt_gradient_lookup(const float *lut, const float i)
   return lut[bin1] * f + lut[bin0] * (1.0f - f);
 }
 
-static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                                float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_gradient_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                                float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   double start2 = dt_get_wtime();
 
@@ -1237,8 +1237,8 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 }
 
 
-static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                    dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_gradient_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const dt_masks_form_t *const form, const dt_iop_roi_t *const roi, float *const buffer)
 {
   double start2 = dt_get_wtime();
 

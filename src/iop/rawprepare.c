@@ -188,7 +188,7 @@ static int round_smart(float val, int ref)
   return round;
 }
 
-static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
+static int compute_proper_crop(const dt_dev_pixelpipe_iop_t *const piece, const dt_iop_roi_t *const roi_in, int value)
 {
   const float scale = roi_in->scale / piece->iscale;
 
@@ -290,15 +290,18 @@ static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
   }
 }
 
-static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
-              const int col)
+static inline int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
+                     const int col)
 {
   return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void *restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
@@ -394,9 +397,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE2__)
-void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
@@ -550,8 +556,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
 #endif
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
   dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->global_data;
@@ -641,8 +648,8 @@ static int image_is_normalized(const dt_image_t *const image)
   return image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT;
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;

@@ -256,9 +256,12 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
 
@@ -297,8 +300,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)p1;
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;

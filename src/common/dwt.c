@@ -57,7 +57,7 @@ void dt_dwt_free(dwt_params_t *p)
   free(p);
 }
 
-static int _get_max_scale(const int width, const int height, const float preview_scale)
+static inline int _get_max_scale(const int width, const int height, const float preview_scale)
 {
   int maxscale = 0;
 
@@ -110,8 +110,8 @@ int dt_dwt_first_scale_visible(dwt_params_t *p)
 
 /* code copied from UFRaw (which originates from dcraw) */
 #if defined(__SSE__)
-static void dwt_hat_transform_sse(float *temp, const float *const base, const int st, const int size, int sc,
-                                  const dwt_params_t *const p)
+static inline void dwt_hat_transform_sse(float *temp, const float *const base, const int st, const int size, int sc,
+                                         const dwt_params_t *const p)
 {
   int i;
   const __m128 hat_mult = _mm_set1_ps(2.f);
@@ -146,8 +146,8 @@ static void dwt_hat_transform_sse(float *temp, const float *const base, const in
 }
 #endif
 
-static void dwt_hat_transform(float *temp, const float *const base, const int st, const int size, int sc,
-                              dwt_params_t *const p)
+static inline void dwt_hat_transform(float *temp, const float *const base, const int st, const int size, int sc,
+                                     dwt_params_t *const p)
 {
 #if defined(__SSE__)
   if(p->ch == 4 && p->use_sse)
@@ -189,7 +189,7 @@ static void dwt_hat_transform(float *temp, const float *const base, const int st
 }
 
 #if defined(__SSE__)
-static void dwt_add_layer_sse(float *const img, float *layers, dwt_params_t *const p, const int n_scale)
+static inline void dwt_add_layer_sse(float *const img, float *const layers, dwt_params_t *const p, const int n_scale)
 {
   const int i_size = p->width * p->height * 4;
 
@@ -206,7 +206,7 @@ static void dwt_add_layer_sse(float *const img, float *layers, dwt_params_t *con
 }
 #endif
 
-static void dwt_add_layer(float *const img, float *layers, dwt_params_t *const p, const int n_scale)
+static inline void dwt_add_layer(float *const img, float *const layers, dwt_params_t *const p, const int n_scale)
 {
 #if defined(__SSE__)
   if(p->ch == 4 && p->use_sse)
@@ -233,7 +233,7 @@ static void dwt_get_image_layer(float *const layer, dwt_params_t *const p)
 }
 
 #if defined(__SSE__)
-static void dwt_subtract_layer_sse(float *bl, float *bh, dwt_params_t *const p)
+static inline void dwt_subtract_layer_sse(float *const bl, float *const bh, dwt_params_t *const p)
 {
   const __m128 v4_lpass_mult = _mm_set1_ps((1.f / 16.f));
   const int size = p->width * p->height * 4;
@@ -253,7 +253,7 @@ static void dwt_subtract_layer_sse(float *bl, float *bh, dwt_params_t *const p)
 }
 #endif
 
-static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
+static inline void dwt_subtract_layer(float *const bl, float *const bh, dwt_params_t *const p)
 {
 #if defined(__SSE__)
   if(p->ch == 4 && p->use_sse)
@@ -281,7 +281,7 @@ static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
 }
 
 /* actual decomposing algorithm */
-static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_func layer_func)
+static inline void dwt_wavelet_decompose(float *const img, dwt_params_t *const p, _dwt_layer_func layer_func)
 {
   float *temp = NULL;
   float *layers = NULL;
@@ -445,7 +445,7 @@ cleanup:
 #undef INDEX_WT_IMAGE_SSE
 
 /* this function prepares for decomposing, which is done in the function dwt_wavelet_decompose() */
-void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func)
+inline void dwt_decompose(dwt_params_t *const p, _dwt_layer_func layer_func)
 {
   // this is a zoom scale, not a wavelet scale
   if(p->preview_scale <= 0.f) p->preview_scale = 1.f;

@@ -603,8 +603,8 @@ static inline float get_lut_contrast(const float x, const float contrast, const 
                    : lut[CLAMP((int)(x * 0x10000ul), 0, 0xffff)];
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)params;
@@ -1383,7 +1383,7 @@ static void _auto_exposure(const float *const img, const int width, const int he
   if(histogram) dt_free_align(histogram);
 }
 
-static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void _get_selected_area(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
                                dt_iop_basicadj_gui_data_t *g, const dt_iop_roi_t *const roi_in, int *box_out)
 {
   box_out[0] = box_out[1] = box_out[2] = box_out[3] = 0;
@@ -1440,8 +1440,9 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
@@ -1615,9 +1616,12 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict  ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = piece->colors;

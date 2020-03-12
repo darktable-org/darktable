@@ -365,7 +365,7 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
   return result;
 }
 
-static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
+static gchar *_watermark_get_svgdoc(const dt_iop_module_t *const self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image)
 {
   gsize length;
@@ -877,9 +877,12 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   return svgdoc;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -1360,8 +1363,8 @@ static void sizeto_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
   dt_iop_watermark_data_t *d = (dt_iop_watermark_data_t *)piece->data;

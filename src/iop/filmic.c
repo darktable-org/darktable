@@ -410,9 +410,12 @@ static inline float gaussian(float x, float std)
   return expf(- (x * x) / (2.0f * std * std)) / (std * powf(2.0f * M_PI, 0.5f));
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
 
   const int ch = piece->colors;
@@ -531,9 +534,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
 
   const int ch = piece->colors;
@@ -657,8 +663,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
   dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)self->global_data;
@@ -1368,8 +1375,8 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)p1;
   dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;

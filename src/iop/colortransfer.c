@@ -327,9 +327,12 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // FIXME: this returns nan!!
   dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -396,7 +399,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, mapio, mean, roi_out, var) \
     shared(data, in, out) \
-    schedule(static) 
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -503,7 +506,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   return FALSE;
 }
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)p1;
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;

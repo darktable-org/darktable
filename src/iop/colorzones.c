@@ -373,7 +373,7 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p, dt_iop_c
   }
 }
 
-static float lookup(const float *lut, const float i)
+static inline float lookup(const float *lut, const float i)
 {
   const int bin0 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i)));
   const int bin1 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i) + 1));
@@ -386,9 +386,12 @@ static inline float strength(float value, float strength)
   return value + (value - 0.5f) * (strength / 100.0f);
 }
 
-void process_v3(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_v3(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                              const void * restrict i, void * restrict o,
+                              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 #ifdef _OPENMP
@@ -430,9 +433,12 @@ void process_v3(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
@@ -453,8 +459,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      float *in = (float *)ivoid + ch * k;
-      float *out = (float *)ovoid + ch * k;
+      const float *const restrict in = (float *)ivoid + ch * k;
+      float *const restrict out = (float *)ovoid + ch * k;
 
       float LCh[3];
 
@@ -532,8 +538,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
   dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->global_data;
@@ -2595,8 +2602,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   // pull in new params to pipe
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);

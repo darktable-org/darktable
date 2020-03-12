@@ -151,7 +151,7 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 // transposes image, it is faster to read columns than to write them.
-static void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
+static inline void hat_transform(float *const restrict temp, const float *const restrict base, int stride, int size, int scale)
 {
   int i;
   const float *basep0;
@@ -178,7 +178,7 @@ static void hat_transform(float *temp, const float *const base, int stride, int 
 
 #define BIT16 65536.0
 
-static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi,
+static void wavelet_denoise(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
                             dt_iop_rawdenoise_data_t *data, uint32_t filters)
 {
   float threshold = data->threshold;
@@ -196,8 +196,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
 #if 0
-  float maximum = 1.0;		/* FIXME */
-  float black = 0.0;		/* FIXME */
+  float maximum = 1.0;    /* FIXME */
+  float black = 0.0;    /* FIXME */
   maximum *= BIT16;
   black *= BIT16;
   for (c=0; c<4; c++)
@@ -320,7 +320,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   }
 #if 0
   /* FIXME: Haven't ported this part yet */
-  if (filters && colors == 3)	/* pull G1 and G3 closer together */
+  if (filters && colors == 3) /* pull G1 and G3 closer together */
   {
     float *window[4];
     int wlast, blk[2];
@@ -360,7 +360,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   free(fimg);
 }
 
-static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
+static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
                                    dt_iop_rawdenoise_data_t *data, const uint8_t (*const xtrans)[6])
 {
   float threshold = data->threshold;
@@ -499,9 +499,12 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   free(fimg);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
 
   const int width = roi_in->width;
@@ -584,8 +587,8 @@ void cleanup(dt_iop_module_t *module)
   module->global_data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;

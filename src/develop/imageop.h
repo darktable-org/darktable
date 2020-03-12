@@ -183,19 +183,18 @@ typedef struct dt_iop_module_so_t
   /** what will it output? */
   void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                         struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-
   /** what default colorspace this iop use? */
   int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
+                            struct dt_dev_pixelpipe_iop_t *piece);
   /** what input colorspace it expects? */
   int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
+                          struct dt_dev_pixelpipe_iop_t *piece);
   /** what will it output? */
   int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
+                           struct dt_dev_pixelpipe_iop_t *piece);
   /** what colorspace the blend module operates with? */
   int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
+                          struct dt_dev_pixelpipe_iop_t *piece);
 
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
@@ -205,8 +204,8 @@ typedef struct dt_iop_module_so_t
   void (*gui_update)(struct dt_iop_module_t *self);
   void (*gui_init)(struct dt_iop_module_t *self);
   void (*gui_cleanup)(struct dt_iop_module_t *self);
-  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                          int32_t pointerx, int32_t pointery);
+  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, const int32_t width, const int32_t height,
+                          const int32_t pointerx, const int32_t pointery);
   void (*gui_focus)(struct dt_iop_module_t *self, gboolean in);
   /** Optional callback for keyboard accelerators */
   void (*init_key_accels)(struct dt_iop_module_so_t *so);
@@ -217,58 +216,67 @@ typedef struct dt_iop_module_so_t
   GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   int (*mouse_leave)(struct dt_iop_module_t *self);
-  int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
-  int (*button_released)(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int (*button_pressed)(struct dt_iop_module_t *self, double x, double y, double pressure, int which,
-                        int type, uint32_t state);
-  int (*scrolled)(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
-  void (*configure)(struct dt_iop_module_t *self, int width, int height);
+  int (*mouse_moved)(struct dt_iop_module_t *self, const double x, const double y, const double pressure, const int which);
+  int (*button_released)(struct dt_iop_module_t *self, const double x, const double y, const int which, const uint32_t state);
+  int (*button_pressed)(struct dt_iop_module_t *self, const double x, const double y, const double pressure, const int which,
+                        const int type, const uint32_t state);
+  int (*key_pressed)(struct dt_iop_module_t *self, const uint16_t which);
+  int (*scrolled)(struct dt_iop_module_t *self, const double x, const double y, const int up, const uint32_t state);
+  void (*configure)(struct dt_iop_module_t *self, const int width, const int height);
 
   void (*init)(struct dt_iop_module_t *self); // this MUST set params_size!
   void (*original_init)(struct dt_iop_module_t *self);
   void (*cleanup)(struct dt_iop_module_t *self);
   void (*init_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                     struct dt_dev_pixelpipe_iop_t *piece);
-  void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                        struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)(struct dt_iop_module_t *self, const dt_iop_params_t *params,
+                        const struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*change_image)(struct dt_iop_module_t *self);
   void (*reload_defaults)(struct dt_iop_module_t *self);
   void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece);
-  void (*modify_roi_in)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  void (*modify_roi_in)(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
                         const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-  void (*modify_roi_out)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  void (*modify_roi_out)(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
                          struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-  int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
+  int (*legacy_params)(struct dt_iop_module_t *self, const void *old_params, const int old_version,
                        void *new_params, const int new_version);
   // allow to select a shape inside an iop
   void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
 
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const struct dt_iop_roi_t *const roi_in,
-                  const struct dt_iop_roi_t *const roi_out);
-  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                         const struct dt_iop_roi_t *const roi_out, const int bpp);
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                        const struct dt_iop_roi_t *const roi_out);
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                       const struct dt_iop_roi_t *const roi_out);
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                    void *const o, const struct dt_iop_roi_t *const roi_in,
-                    const struct dt_iop_roi_t *const roi_out);
-  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                           const struct dt_iop_roi_t *const roi_out, const int bpp);
+  // process() are heady pixel ops and need to get as many const args as possible for optimization
+  // however, the tiled variants need to write in *self, so no const for them
+  void (*process)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                  const void * DT_ALIGNED_ARRAY i, void * DT_ALIGNED_ARRAY  o,
+                  const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 
-  int (*distort_transform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
+  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                         const void * DT_ALIGNED_ARRAY  i, void * DT_ALIGNED_ARRAY o,
+                         const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  void (*process_plain)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                        const void * DT_ALIGNED_ARRAY i, void * DT_ALIGNED_ARRAY o,
+                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+
+  void (*process_sse2)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                       const void * DT_ALIGNED_ARRAY i, void * DT_ALIGNED_ARRAY o,
+                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+
+  int (*process_cl)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                    const void *i, void *o,
+                    const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+
+  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                           const void *i, void *o,
+                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  int (*distort_transform)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
                            size_t points_count);
-  int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  int (*distort_backtransform)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
-  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+  void (*distort_mask)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                       const float *in, float *out,
+                       const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
   // introspection related callbacks
   gboolean have_introspection;
@@ -414,16 +422,16 @@ typedef struct dt_iop_module_t
 
   /** what default colorspace this iop use? */
   int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
+                            struct dt_dev_pixelpipe_iop_t *piece);
   /** what input colorspace it expects? */
   int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
+                          struct dt_dev_pixelpipe_iop_t *piece);
   /** what will it output? */
   int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
+                           struct dt_dev_pixelpipe_iop_t *piece);
   /** what colorspace the blend module operates with? */
   int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
+                          struct dt_dev_pixelpipe_iop_t *piece);
 
   /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -440,20 +448,20 @@ typedef struct dt_iop_module_t
   /** destroy widget. */
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
-  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                          int32_t pointerx, int32_t pointery);
+  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, const int32_t width, const int32_t height,
+                          const int32_t pointerx, const int32_t pointery);
   /** optional callback to be notified if the module acquires gui focus/loses it. */
   void (*gui_focus)(struct dt_iop_module_t *self, gboolean in);
 
   /** optional event callbacks */
   int (*mouse_leave)(struct dt_iop_module_t *self);
-  int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
-  int (*button_released)(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int (*button_pressed)(struct dt_iop_module_t *self, double x, double y, double pressure, int which,
-                        int type, uint32_t state);
-  int (*key_pressed)(struct dt_iop_module_t *self, uint16_t which);
-  int (*scrolled)(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
-  void (*configure)(struct dt_iop_module_t *self, int width, int height);
+  int (*mouse_moved)(struct dt_iop_module_t *self, const double x, const double y, const double pressure, const int which);
+  int (*button_released)(struct dt_iop_module_t *self, const double x, const double y, const int which, const uint32_t state);
+  int (*button_pressed)(struct dt_iop_module_t *self, const double x, const double y, const double pressure, const int which,
+                        const int type, const uint32_t state);
+  int (*key_pressed)(struct dt_iop_module_t *self, const uint16_t which);
+  int (*scrolled)(struct dt_iop_module_t *self, const double x, const double y, const int up, const uint32_t state);
+  void (*configure)(struct dt_iop_module_t *self, const int width, const int height);
 
   void (*init)(struct dt_iop_module_t *self); // this MUST set params_size!
   void (*original_init)(struct dt_iop_module_t *self);
@@ -464,8 +472,8 @@ typedef struct dt_iop_module_t
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
   /** this commits (a mutex will be locked to synch pipe/gui) the given history params to the pixelpipe piece.
    */
-  void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                        struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)(struct dt_iop_module_t *self, const dt_iop_params_t *params,
+                        const struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults)(struct dt_iop_module_t *self);
   /** called after the image has changed in darkroom */
@@ -473,11 +481,11 @@ typedef struct dt_iop_module_t
   /** this destroys all resources needed by the piece of the pixelpipe. */
   void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece);
-  void (*modify_roi_in)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  void (*modify_roi_in)(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
                         const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-  void (*modify_roi_out)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  void (*modify_roi_out)(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
                          struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-  int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
+  int (*legacy_params)(struct dt_iop_module_t *self, const void *old_params, const int old_version,
                        void *new_params, const int new_version);
   // allow to select a shape inside an iop
   void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
@@ -487,43 +495,48 @@ typedef struct dt_iop_module_t
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
   /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const struct dt_iop_roi_t *const roi_in,
-                  const struct dt_iop_roi_t *const roi_out);
+
+  // process() are heady pixel ops and need to get as many const args as possible for optimization
+  // however, the tiled variants need to write in *self, so no const for them
+  void (*process)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                  const void *i, void *o,
+                  const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+
   /** a tiling variant of process(). */
   void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                         const struct dt_iop_roi_t *const roi_out, const int bpp);
+                         const void *i, void *o,
+                         const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   /** WARNING: in IOP implementation, it is called process()!!! */
   /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                        const struct dt_iop_roi_t *const roi_out);
+  void (*process_plain)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *i, void *o,
+                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** a variant process(), that can contain SSE2 intrinsics. */
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                       const struct dt_iop_roi_t *const roi_out);
+  void (*process_sse2)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                       const void *i, void *o,
+                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** the opencl equivalent of process(). */
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                    void *const o, const struct dt_iop_roi_t *const roi_in,
-                    const struct dt_iop_roi_t *const roi_out);
+  int (*process_cl)(const struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *piece,
+                    const void *i, void *o,
+                    const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** a tiling variant of process_cl(). */
   int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                           const struct dt_iop_roi_t *const roi_out, const int bpp);
+                           const void *i, void *o,
+                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 
   /** this functions are used for distort iop
    * points is an array of float {x1,y1,x2,y2,...}
    * size is 2*points_count */
   /** points before the iop is applied => point after processed */
-  int (*distort_transform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
+  int (*distort_transform)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
                            size_t points_count);
   /** reverse points after the iop is applied => point before process */
-  int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+  int (*distort_backtransform)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
   /** apply the image distortion to a single channel float buffer. only needed by iops that distort the image */
-  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+  void (*distort_mask)(const struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                       const float *in, float *out,
+                       const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
@@ -581,8 +594,8 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
 /** commits params and updates piece hash. */
-void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
-                          struct dt_develop_blend_params_t *blendop_params, struct dt_dev_pixelpipe_t *pipe,
+void dt_iop_commit_params(dt_iop_module_t *module, const dt_iop_params_t *params,
+                          const struct dt_develop_blend_params_t *blendop_params, struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
 void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
@@ -632,7 +645,7 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module);
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
 
 /** iterates over the users hash table and checks if a specific mask is being used */
-gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id);
+gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, int id);
 
 /** returns the previous visible module on the module list */
 dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module);

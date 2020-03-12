@@ -110,12 +110,15 @@ void connect_key_accels(dt_iop_module_t *self)
 #define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_bloom_data_t *data = (dt_iop_bloom_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   const int ch = piece->colors;
 
   /* gather light by threshold */
@@ -234,7 +237,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *inp = in + ch * k;
+    const float *inp = in + ch * k;
     float *outp = out + ch * k;
     outp[0] = 100.0f - (((100.0f - inp[0]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
     outp[1] = inp[1];
@@ -257,8 +260,9 @@ static int bucket_next(unsigned int *state, unsigned int max)
   return next;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem restrict dev_in, cl_mem restrict dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
   const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->global_data;
@@ -464,8 +468,8 @@ static void size_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
   dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;

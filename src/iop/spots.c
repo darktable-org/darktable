@@ -237,9 +237,9 @@ static gboolean _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module
 }
 
 
-static gboolean masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                     dt_masks_form_t *form, const dt_iop_roi_t *roi_in,
-                                     const dt_iop_roi_t *roi_out)
+static gboolean masks_form_is_in_roi(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                     dt_masks_form_t *const form, const dt_iop_roi_t *const restrict roi_in,
+                                     const dt_iop_roi_t *const restrict roi_out)
 {
   // we get the area for the form
   int fl, ft, fw, fh;
@@ -322,7 +322,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->height = CLAMP(roib - roi_in->y, 1, scheight + .5f - roi_in->y);
 }
 
-static void masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+static void masks_point_denormalize(const dt_dev_pixelpipe_iop_t *const piece, const dt_iop_roi_t *const restrict roi,
                                     const float *points, size_t points_count, float *new)
 {
   const float scalex = piece->pipe->iwidth * roi->scale, scaley = piece->pipe->iheight * roi->scale;
@@ -334,8 +334,8 @@ static void masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_
   }
 }
 
-static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                  const dt_iop_roi_t *roi, const float *target, const float *source, int *dx,
+static int masks_point_calc_delta(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                  const dt_iop_roi_t *const roi, const float *target, const float *source, int *dx,
                                   int *dy)
 {
   float points[4];
@@ -351,7 +351,8 @@ static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   return res;
 }
 
-static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+static int masks_get_delta(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                           const dt_iop_roi_t *const roi,
                            dt_masks_form_t *form, int *dx, int *dy)
 {
   int res = 0;
@@ -378,8 +379,9 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return res;
 }
 
-void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
-              float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int ch)
+void _process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+              const float *const restrict in, float *const restrict out,
+              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out, const int ch)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -546,9 +548,12 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   const float *in = (float *)i;
   float *out = (float *)o;
   _process(self, piece, in, out, roi_in, roi_out, piece->colors);
@@ -614,8 +619,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy(piece->data, params, sizeof(dt_iop_spots_params_t));
 }

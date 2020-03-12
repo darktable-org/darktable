@@ -147,9 +147,10 @@ void dt_iop_clip_and_zoom(float *out, const float *const in, const dt_iop_roi_t 
 
 // apply clip and zoom on the image region supplied in the input buffer.
 // roi_in and roi_out describe which part of the full image this relates to.
-void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
-                              const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                              const int32_t in_stride)
+void dt_iop_clip_and_zoom_roi(float *const restrict out, const float *const restrict in,
+                              const dt_iop_roi_t *const restrict roi_out,
+                              const dt_iop_roi_t *const restrict roi_in,
+                              const int32_t out_stride, const int32_t in_stride)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_roi(itor, out, roi_out, out_stride * 4 * sizeof(float), in, roi_in,

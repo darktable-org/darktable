@@ -521,8 +521,9 @@ static float lerp_lut(const float *const lut, const float v)
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->global_data;
@@ -631,10 +632,12 @@ static inline void apply_blue_mapping(const float *const in, float *const out)
   }
 }
 
-static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix_bm(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                      const void * restrict ivoid, void * restrict ovoid,
+                                      const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
@@ -713,10 +716,12 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   }
 }
 
-static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                            const void *const ivoid, void *const ovoid,
-                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix_fastpath_simple(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                                   const void * restrict ivoid, void * restrict ovoid,
+                                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -729,8 +734,8 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *in = (float *)ivoid + (size_t)ch * k;
-    float *out = (float *)ovoid + (size_t)ch * k;
+    const float *const restrict in = (const float *const)ivoid + (size_t)ch * k;
+    float *const restrict out = (float *const)ovoid + (size_t)ch * k;
 
     float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -747,10 +752,12 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
   }
 }
 
-static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                              const void *const ivoid, void *const ovoid,
-                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix_fastpath_clipping(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                                     const void * restrict ivoid, void * restrict ovoid,
+                                                     const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -763,8 +770,8 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *in = (float *)ivoid + (size_t)ch * k;
-    float *out = (float *)ovoid + (size_t)ch * k;
+    const float *const restrict in = (const float *const)ivoid + (size_t)ch * k;
+    float *const restrict out = (float *const)ovoid + (size_t)ch * k;
 
     float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
@@ -796,10 +803,12 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
   }
 }
 
-static void process_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                     const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                     const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix_fastpath(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                            const void * restrict ivoid, void * restrict ovoid,
+                                            const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int clipping = (d->nrgb != NULL);
 
@@ -813,10 +822,12 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelp
   }
 }
 
-static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                   const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                   const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix_proper(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                          const void * restrict ivoid, void * restrict ovoid,
+                                          const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
@@ -893,9 +904,12 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
   }
 }
 
-static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                            void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_cmatrix(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                   const void * restrict ivoid, void * restrict ovoid,
+                                   const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
@@ -913,10 +927,12 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
 }
 
-static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                             void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out)
+static inline void process_lcms2_bm(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const void * restrict ivoid, void * restrict ovoid,
+                                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -960,10 +976,12 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
 }
 
-static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                 const dt_iop_roi_t *const roi_out)
+static inline void process_lcms2_proper(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                        const void * restrict ivoid, void * restrict ovoid,
+                                        const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -1001,9 +1019,12 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_lcms2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                 const void * restrict ivoid, void * restrict ovoid,
+                                 const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
@@ -1018,9 +1039,12 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
 
   if(d->type == DT_COLORSPACE_LAB)
@@ -1042,10 +1066,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE2__)
-static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                    const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                    const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix_bm(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                           const void * restrict ivoid, void * restrict ovoid,
+                                           const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
@@ -1054,8 +1080,8 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpi
   const float *const cmat = d->cmatrix;
   const float *const nmat = d->nmatrix;
   const float *const lmat = d->lmatrix;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const float * restrict in = (const float *const)ivoid;
+  float * restrict out = (float *const)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
@@ -1065,8 +1091,8 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpi
   for(int j = 0; j < roi_out->height; j++)
   {
 
-    float *buf_in = in + (size_t)ch * roi_in->width * j;
-    float *buf_out = out + (size_t)ch * roi_out->width * j;
+    const float * restrict buf_in = in + (size_t)ch * roi_in->width * j;
+    float * restrict buf_out = out + (size_t)ch * roi_out->width * j;
     float cam[3];
     const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
     const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
@@ -1116,11 +1142,12 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpi
   _mm_sfence();
 }
 
-static void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                                 const void *const ivoid, void *const ovoid,
-                                                 const dt_iop_roi_t *const roi_in,
-                                                 const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix_fastpath_simple(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                                       const void * restrict ivoid, void * restrict ovoid,
+                                                       const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -1138,8 +1165,8 @@ static void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, d
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *in = (float *)ivoid + (size_t)ch * k;
-    float *out = (float *)ovoid + (size_t)ch * k;
+    const float *const restrict in = (const float *const)ivoid + (size_t)ch * k;
+    float *const restrict out = (float *const)ovoid + (size_t)ch * k;
 
     __m128 input = _mm_load_ps(in);
 
@@ -1151,11 +1178,13 @@ static void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, d
   _mm_sfence();
 }
 
-static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                                   const void *const ivoid, void *const ovoid,
-                                                   const dt_iop_roi_t *const roi_in,
-                                                   const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix_fastpath_clipping(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                                           const void * restrict ivoid, void * restrict ovoid,
+                                                           const dt_iop_roi_t *const restrict roi_in,
+                                                           const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -1178,8 +1207,8 @@ static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *in = (float *)ivoid + (size_t)ch * k;
-    float *out = (float *)ovoid + (size_t)ch * k;
+    const float *const restrict in = (const float *const)ivoid + (size_t)ch * k;
+    float *const restrict out = (float *const)ovoid + (size_t)ch * k;
 
     __m128 input = _mm_load_ps(in);
 
@@ -1195,10 +1224,12 @@ static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
   _mm_sfence();
 }
 
-static void process_sse2_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                          const void *const ivoid, void *const ovoid,
-                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix_fastpath(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                                 const void * restrict ivoid, void * restrict ovoid,
+                                                 const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int clipping = (d->nrgb != NULL);
 
@@ -1212,10 +1243,12 @@ static void process_sse2_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_p
   }
 }
 
-static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                        const void *const ivoid, void *const ovoid,
-                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix_proper(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                               const void * restrict ivoid, void * restrict ovoid,
+                                               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
@@ -1224,8 +1257,8 @@ static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pix
   const float *const cmat = d->cmatrix;
   const float *const nmat = d->nmatrix;
   const float *const lmat = d->lmatrix;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const float *const restrict in = (const float *const)ivoid;
+  float *const out = (float *const )ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
@@ -1235,8 +1268,8 @@ static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pix
   for(int j = 0; j < roi_out->height; j++)
   {
 
-    float *buf_in = in + (size_t)ch * roi_in->width * j;
-    float *buf_out = out + (size_t)ch * roi_out->width * j;
+    const float *restrict buf_in = in + (size_t)ch * roi_in->width * j;
+    float *restrict buf_out = out + (size_t)ch * roi_out->width * j;
     float cam[3];
     const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
     const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
@@ -1284,10 +1317,12 @@ static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pix
   _mm_sfence();
 }
 
-static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                 const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_cmatrix(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                        const void * restrict ivoid, void * restrict ovoid,
+                                        const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
@@ -1305,10 +1340,12 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                  const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_lcms2_bm(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                         const void * restrict ivoid, void * restrict ovoid,
+                                         const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -1320,8 +1357,8 @@ static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+    const float * restrict in = ((const float *const)ivoid) + (size_t)ch * k * roi_out->width;
+    float * restrict out = ((float *const)ovoid) + (size_t)ch * k * roi_out->width;
 
     float *camptr = (float *)out;
     for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
@@ -1355,10 +1392,12 @@ static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe
 }
 
 
-static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                      const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                      const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_lcms2_proper(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                             const void * restrict ivoid, void * restrict ovoid,
+                                             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -1370,8 +1409,8 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+    const float *const restrict in = ((const float *const)ivoid) + (size_t)ch * k * roi_out->width;
+    float *const restrict out = ((float *const)ovoid) + (size_t)ch * k * roi_out->width;
 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     if(!d->nrgb)
@@ -1398,9 +1437,9 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
   }
 }
 
-static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out)
+static inline void process_sse2_lcms2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                      const void * restrict ivoid, void * restrict ovoid,
+                                      const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
@@ -1416,8 +1455,9 @@ static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   }
 }
 
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
 
@@ -1453,7 +1493,8 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;

@@ -234,7 +234,7 @@ void init_presets (dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
-static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
+static void deflicker_prepare_histogram(const dt_iop_module_t *const self, uint32_t **histogram,
                                         dt_dev_histogram_stats_t *histogram_stats)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
@@ -289,9 +289,10 @@ static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level
   return raw_ev;
 }
 
-static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                               const uint32_t *const histogram,
-                               const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
+static inline void compute_correction(const dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                                      const dt_dev_pixelpipe_t *const pipe,
+                                      const uint32_t *const histogram,
+                                      const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
 {
   const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
 
@@ -324,7 +325,7 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_de
   *correction = p->deflicker_target_level - ev;
 }
 
-static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static inline void process_common_setup(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
@@ -363,8 +364,9 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->global_data;
@@ -395,9 +397,12 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
   process_common_setup(self, piece);
@@ -420,9 +425,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict i, void * restrict o,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
   process_common_setup(self, piece);
@@ -450,8 +458,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;

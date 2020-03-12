@@ -673,9 +673,12 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
@@ -790,7 +793,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // reduced by the factor exp(-1)
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
-static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem img, int w1, rgb_pixel *pA0)
+static float ambient_light_cl(const struct dt_iop_module_t *const self, int devid, cl_mem img, int w1, rgb_pixel *pA0)
 {
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
@@ -809,7 +812,7 @@ error:
 }
 
 
-static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
+static int box_min_cl(const struct dt_iop_module_t *const self, int devid, cl_mem in, cl_mem out, const int w)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
@@ -842,7 +845,7 @@ error:
 }
 
 
-static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
+static int box_max_cl(const struct dt_iop_module_t *const self, int devid, cl_mem in, cl_mem out, const int w)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
@@ -875,7 +878,7 @@ error:
 }
 
 
-static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img1, cl_mem img2, const int w1,
+static int transition_map_cl(const struct dt_iop_module_t *const self, int devid, cl_mem img1, cl_mem img2, const int w1,
                              const float strength, const float *const A0)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
@@ -904,7 +907,7 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
 }
 
 
-static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_mem trans_map, cl_mem img_out,
+static int dehaze_cl(const struct dt_iop_module_t *const self, int devid, cl_mem img_in, cl_mem trans_map, cl_mem img_out,
                      const float t_min, const float *const A0)
 {
   dt_iop_hazeremoval_global_data_t *gd = self->global_data;
@@ -928,8 +931,9 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
 }
 
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem restrict img_in, cl_mem restrict img_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;

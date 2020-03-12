@@ -225,8 +225,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 }
 
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)p1;
   dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;
@@ -256,10 +256,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 }
 
 
-void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
-             const void *const restrict DT_ALIGNED_ARRAY ivoid, void *const restrict DT_ALIGNED_ARRAY ovoid,
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_negadoctor_data_t *const d = piece->data;
   assert(piece->colors = 4);
 
@@ -305,7 +307,8 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;

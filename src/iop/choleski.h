@@ -275,8 +275,8 @@ static inline int triangular_ascent_safe(const float *const restrict L,
 
 
 __DT_CLONE_TARGETS__
-static inline int solve_hermitian(const float *const restrict A,
-                                  float *const restrict y,
+static inline int solve_hermitian(const float * restrict A,
+                                  float * restrict y,
                                   const size_t n, const int checks)
 {
   // Solve A x = y where A an hermitian positive definite matrix n × n
@@ -293,6 +293,8 @@ static inline int solve_hermitian(const float *const restrict A,
   // to the safe but slower path.
 
   // clock_t start = clock();
+
+  DT_ALIGNED_IN_OUT(A, y);
 
   int valid = 0;
   float *const restrict x = dt_alloc_sse_ps(n);
@@ -376,14 +378,17 @@ static inline int transpose_dot_vector(float *const restrict A, // input
 
 
 __DT_CLONE_TARGETS__
-static inline int pseudo_solve(float *const restrict A,
-                               float *const restrict y,
+static inline int pseudo_solve(float * restrict A,
+                               float * restrict y,
                                const size_t m, const size_t n, const int checks)
 {
   // Solve the linear problem A x = y with the over-constrained rectanguler matrice A
   // of dimension m × n (m >= n) by the least squares method
 
   //clock_t start = clock();
+
+  A = (float *const)DT_IS_ALIGNED(A);
+  y = (float *const)DT_IS_ALIGNED(y);
 
   int valid = 1;
   if(m < n)

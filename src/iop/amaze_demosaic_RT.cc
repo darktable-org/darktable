@@ -27,8 +27,9 @@ extern "C" {
 #include "develop/imageop_math.h"
 
 // otherwise the name will be mangled and the linker won't be able to see the function ...
-void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+void amaze_demosaic_RT(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                       const float * in, float *out,
+                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const int filters);
 }
 
@@ -317,8 +318,9 @@ template <typename _Tp> static inline const _Tp ULIM(const _Tp a, const _Tp b, c
 // {
 
 // SSEFUNCTION void RawImageSource::amaze_demosaic_RT(int winx, int winy, int winw, int winh)
-void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+void amaze_demosaic_RT(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                       const float * __restrict in, float * __restrict out,
+                       const dt_iop_roi_t *const __restrict roi_in, const dt_iop_roi_t *const __restrict roi_out,
                        const int filters)
 {
   //   BENCHFUN
@@ -332,6 +334,8 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   //         RAWParams::BayerSensor::methodstring[RAWParams::BayerSensor::amaze]));
   //     plistener->setProgress(0.0);
   //   }
+
+  DT_ALIGNED_IN_OUT(in, out);
 
   int winx = roi_out->x;
   int winy = roi_out->y;

@@ -318,9 +318,12 @@ static inline float sign(float x)
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -497,8 +500,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
   dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)self->global_data;
@@ -727,8 +731,8 @@ static void highlights_ccorrect_callback(GtkWidget *slider, gpointer user_data)
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)p1;
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;

@@ -40,7 +40,7 @@ typedef struct dt_iop_gamma_params_t
 
 const char *name()
 {
-  return C_("modulename", "gamma");
+  return C_("modulename", "display encoding");
 }
 
 int default_group()
@@ -68,7 +68,7 @@ static inline float Hue_2_RGB(float v1, float v2, float vH)
   return v1;
 }
 
-static inline void HSL_2_RGB(const float *HSL, float *RGB)
+static inline void HSL_2_RGB(const float *const restrict HSL, float *const restrict RGB)
 {
   float H = HSL[0];
   float S = HSL[1];
@@ -95,31 +95,31 @@ static inline void HSL_2_RGB(const float *HSL, float *RGB)
   }
 }
 
-static inline void LCH_2_Lab(const float *LCH, float *Lab)
+static inline void LCH_2_Lab(const float *const restrict LCH, float *const restrict Lab)
 {
   Lab[0] = LCH[0];
   Lab[1] = cosf(2.0f * M_PI * LCH[2]) * LCH[1];
   Lab[2] = sinf(2.0f * M_PI * LCH[2]) * LCH[1];
 }
 
-static inline void LCH_2_RGB(const float *LCH, float *RGB)
+static inline void LCH_2_RGB(const float *const restrict LCH, float *const restrict RGB)
 {
-  float Lab[3], XYZ[3];
+  float DT_ALIGNED_PIXEL Lab[3], DT_ALIGNED_PIXEL XYZ[3];
   LCH_2_Lab(LCH, Lab);
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_sRGB_clipped(XYZ, RGB);
 }
 
-static inline void Lab_2_RGB(const float *Lab, float *RGB)
+static inline void Lab_2_RGB(const float *const restrict Lab, float *const restrict RGB)
 {
-  float XYZ[3];
+  float DT_ALIGNED_PIXEL XYZ[3];
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_sRGB_clipped(XYZ, RGB);
 }
 
-static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channel, float *out)
+static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channel, float *const out)
 {
-  float in[3];
+  float DT_ALIGNED_PIXEL in[3];
 
   switch((channel & DT_DEV_PIXELPIPE_DISPLAY_ANY) & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
@@ -190,9 +190,13 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  i = (const float *const)DT_IS_ALIGNED(i);
+  o = (uint8_t *const)DT_IS_ALIGNED(o);
+
   const int ch = piece->colors;
 
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;

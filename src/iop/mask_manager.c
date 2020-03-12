@@ -19,9 +19,9 @@
 /*
  * This is a dummy module intended only to be used in history so hist->module is not NULL
  * when the entry correspond to the mask manager
- * 
+ *
  * It is always disabled and do not show in module list, only in history
- * 
+ *
  * We start at version 2 so previous version of dt can add records in history with NULL params
  */
 
@@ -74,16 +74,19 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
   const int ch = piece->colors;
   memcpy(o, i, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem restrict dev_in, cl_mem restrict dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -103,8 +106,8 @@ error:
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy(piece->data, params, sizeof(dt_iop_mask_manager_params_t));
 }

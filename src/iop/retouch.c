@@ -88,8 +88,8 @@ typedef struct dt_iop_retouch_form_data_t
 
 typedef struct retouch_user_data_t
 {
-  dt_iop_module_t *self;
-  dt_dev_pixelpipe_iop_t *piece;
+  const dt_iop_module_t *const self;
+  const dt_dev_pixelpipe_iop_t *const piece;
   dt_iop_roi_t roi;
   int display_scale;
   int mask_display;
@@ -873,9 +873,9 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
   }
 }
 
-static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                        dt_masks_form_t *form, const dt_iop_roi_t *roi_in,
-                                        const dt_iop_roi_t *roi_out)
+static gboolean rt_masks_form_is_in_roi(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                        dt_masks_form_t *form, const dt_iop_roi_t *const roi_in,
+                                        const dt_iop_roi_t *const roi_out)
 {
   // we get the area for the form
   int fl, ft, fw, fh;
@@ -891,7 +891,7 @@ static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_
   return TRUE;
 }
 
-static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi, const float *points,
+static void rt_masks_point_denormalize(const dt_dev_pixelpipe_iop_t *const piece, const dt_iop_roi_t *const roi, const float *points,
                                        size_t points_count, float *new)
 {
   const float scalex = piece->pipe->iwidth * roi->scale, scaley = piece->pipe->iheight * roi->scale;
@@ -903,7 +903,8 @@ static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_i
   }
 }
 
-static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+static int rt_masks_point_calc_delta(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                     const dt_iop_roi_t *const roi,
                                      const float *target, const float *source, int *dx, int *dy)
 {
   float points[4];
@@ -920,7 +921,8 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
 }
 
 /* returns (dx dy) to get from the source to the destination */
-static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+static int rt_masks_get_delta_to_destination(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                             const dt_iop_roi_t *roi,
                                              dt_masks_form_t *form, int *dx, int *dy)
 {
   int res = 0;
@@ -2495,8 +2497,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy(piece->data, params, sizeof(dt_iop_retouch_params_t));
 }
@@ -3644,7 +3646,8 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
   }
 }
 
-static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const img_src,
+static void rt_process_stats(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                             float *const img_src,
                              const int width, const int height, const int ch, float levels[3], int use_sse)
 {
   const int size = width * height * ch;
@@ -3690,7 +3693,8 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   levels[1] = (l_sum / (float)count) / 100.f;
 }
 
-static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width,
+static void rt_adjust_levels(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                             float *img_src, const int width,
                              const int height, const int ch, const float levels[3], int use_sse)
 {
   const int size = width * height * ch;
@@ -4065,9 +4069,9 @@ cleanup:
   if(img_src) dt_free_align(img_src);
 }
 
-static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
+static void retouch_blur(const dt_iop_module_t *const self, float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
-                         const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
+                         const float blur_radius, const dt_dev_pixelpipe_iop_t *const piece, const int use_sse)
 {
   if(fabs(blur_radius) <= 0.1f) return;
 
@@ -4177,8 +4181,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 {
   int scale = scale1;
   retouch_user_data_t *usr_d = (retouch_user_data_t *)wt_p->user_data;
-  dt_iop_module_t *self = usr_d->self;
-  dt_dev_pixelpipe_iop_t *piece = usr_d->piece;
+  const dt_iop_module_t *const self = usr_d->self;
+  const dt_dev_pixelpipe_iop_t *const piece = usr_d->piece;
 
   // if preview a single scale, just process that scale and original image
   // unless merge is activated
@@ -4353,10 +4357,13 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   }
 }
 
-static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                             void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const int use_sse)
+static inline void process_internal(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const void * restrict ivoid, void * restrict ovoid,
+                                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                    const int use_sse)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -4366,7 +4373,6 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dt_iop_roi_t *roi_rt = &roi_retouch;
 
   const int ch = piece->colors;
-  retouch_user_data_t usr_data = { 0 };
   dwt_params_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
@@ -4380,13 +4386,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   memcpy(in_retouch, ivoid, roi_rt->width * roi_rt->height * ch * sizeof(float));
 
   // user data passed from the decompose routine to the one that process each scale
-  usr_data.self = self;
-  usr_data.piece = piece;
-  usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
-  usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
-                            && (piece->pipe == self->dev->pipe));
-  usr_data.display_scale = p->curr_scale;
+  retouch_user_data_t usr_data = { .self = (const struct dt_iop_module_t *)self,
+                                   .piece = (const dt_dev_pixelpipe_iop_t *)piece,
+                                   .roi = *roi_rt,
+                                   .mask_display = 0,
+                                   .suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+                                                          && (piece->pipe == self->dev->pipe)),
+                                   .display_scale = p->curr_scale };
 
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, ch, p->num_scales,
@@ -4477,15 +4483,17 @@ cleanup:
   if(dwt_p) dt_dwt_free(dwt_p);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void *const restrict ivoid, void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 0);
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void *const restrict ivoid, void *const restrict ovoid,
+                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 1);
 }
@@ -4499,7 +4507,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 #ifdef HAVE_OPENCL
 
-cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
+cl_int rt_process_stats_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                           const int devid, cl_mem dev_img,
                            const int width, const int height, float levels[3])
 {
   cl_int err = CL_SUCCESS;
@@ -4538,7 +4547,7 @@ cleanup:
   return err;
 }
 
-cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
+cl_int rt_adjust_levels_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece, const int devid, cl_mem dev_img,
                            const int width, const int height, const float levels[3])
 {
   cl_int err = CL_SUCCESS;
@@ -4812,7 +4821,7 @@ cleanup:
 
 static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                              const int blur_type, const float blur_radius, dt_dev_pixelpipe_iop_t *piece,
+                              const int blur_type, const float blur_radius, const dt_dev_pixelpipe_iop_t *const piece,
                               dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
@@ -4988,8 +4997,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
 
   int scale = scale1;
   retouch_user_data_t *usr_d = (retouch_user_data_t *)wt_p->user_data;
-  dt_iop_module_t *self = usr_d->self;
-  dt_dev_pixelpipe_iop_t *piece = usr_d->piece;
+  const dt_iop_module_t *const self = usr_d->self;
+  const dt_dev_pixelpipe_iop_t *const piece = usr_d->piece;
 
   // if preview a single scale, just process that scale and original image
   // unless merge is activated
@@ -5185,8 +5194,9 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
@@ -5199,7 +5209,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_roi_t *roi_rt = &roi_retouch;
 
   const int ch = piece->colors;
-  retouch_user_data_t usr_data = { 0 };
   dwt_params_cl_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
@@ -5224,13 +5233,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // user data passed from the decompose routine to the one that process each scale
-  usr_data.self = self;
-  usr_data.piece = piece;
-  usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
-  usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
-                            && (piece->pipe == self->dev->pipe));
-  usr_data.display_scale = p->curr_scale;
+  retouch_user_data_t usr_data = { .self = (const struct dt_iop_module_t *)self,
+                                   .piece = (const dt_dev_pixelpipe_iop_t *)piece,
+                                   .roi = *roi_rt,
+                                   .mask_display = 0,
+                                   .suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+                                                          && (piece->pipe == self->dev->pipe)),
+                                   .display_scale = p->curr_scale };
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,

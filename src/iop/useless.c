@@ -110,7 +110,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 static const int mask_id = 1; // key "0" is reserved for the pipe
 static const char *mask_name = "useless checkerboard";
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy(piece->data, p1, self->params_size);
 
@@ -129,8 +130,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 // float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void *const restrict DT_ALIGNED_ARRAY ivoid, void *const restrict DT_ALIGNED_ARRAY ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:

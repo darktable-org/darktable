@@ -104,10 +104,12 @@ void connect_key_accels(dt_iop_module_t *self)
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels.
  * This is the Bayer sensor variant. */
-static int process_bayer(const dt_iop_hotpixels_data_t *data,
-                         const void *const ivoid, void *const ovoid,
-                         const dt_iop_roi_t *const roi_out)
+static inline int process_bayer(const dt_iop_hotpixels_data_t *const data,
+                                const void * restrict ivoid, void * restrict ovoid,
+                                const dt_iop_roi_t *const roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const float threshold = data->threshold;
   const float multiplier = data->multiplier;
   const gboolean markfixed = data->markfixed;
@@ -165,10 +167,12 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
 }
 
 /* X-Trans sensor equivalent of process_bayer(). */
-static int process_xtrans(const dt_iop_hotpixels_data_t *data,
-                          const void *const ivoid, void *const ovoid,
-                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6])
+static inline int process_xtrans(const dt_iop_hotpixels_data_t *const data,
+                                 const void * restrict ivoid, void * restrict ovoid,
+                                 const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6])
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // for each cell of sensor array, pre-calculate, a list of the x/y
   // offsets of the four radially nearest pixels of the same color
   int offsets[6][6][4][2];
@@ -278,8 +282,9 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   return fixed;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
@@ -342,8 +347,8 @@ void cleanup(dt_iop_module_t *module)
   module->global_data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;

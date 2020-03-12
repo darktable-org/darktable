@@ -119,8 +119,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
@@ -297,7 +298,7 @@ static inline float interp_pix_xtrans(const int ratio_next,
   }
 }
 
-static inline void interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
+static inline void interpolate_color_xtrans(const void * restrict ivoid, void * restrict ovoid,
                                             const dt_iop_roi_t *const roi_in,
                                             const dt_iop_roi_t *const roi_out,
                                             int dim, int dir, int other,
@@ -305,6 +306,8 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
                                             const uint8_t (*const xtrans)[6],
                                             const int pass)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // In Bayer each row/col has only green/red or green/blue
   // transitions, hence can reconstruct color by single ratio per
   // row. In x-trans there can be transitions between arbitrary colors
@@ -423,10 +426,12 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
   }
 }
 
-static inline void interpolate_color(const void *const ivoid, void *const ovoid,
-                                     const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
+static inline void interpolate_color(const void * restrict ivoid, void * restrict ovoid,
+                                     const dt_iop_roi_t *const restrict roi_out, int dim, int dir, int other,
                                      const float *clip, const uint32_t filters, const int pass)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   float ratio = 1.0f;
   float *in, *out;
 
@@ -535,10 +540,13 @@ static inline void interpolate_color(const void *const ivoid, void *const ovoid,
 #define SQRT3 1.7320508075688772935274463415058723669L
 #define SQRT12 3.4641016151377545870548926830117447339L // 2*SQRT3
 
-static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                              void *const ovoid, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const roi_out, const float clip)
+static inline void process_lch_bayer(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                     const void * restrict ivoid, void * restrict ovoid,
+                                     const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                     const float clip)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const uint32_t filters = piece->pipe->dsc.filters;
 
 #ifdef _OPENMP
@@ -636,10 +644,13 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   }
 }
 
-static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                               void *const ovoid, const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out, const float clip)
+static inline void process_lch_xtrans(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                      const void * restrict ivoid, void * restrict ovoid,
+                                      const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                      const float clip)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
 #ifdef _OPENMP
@@ -770,10 +781,14 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 #undef SQRT3
 #undef SQRT12
 
-static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                               const float clip)
+static inline void process_clip_plain(const dt_dev_pixelpipe_iop_t *const piece,
+                                      const void * restrict ivoid, void * restrict ovoid,
+                                      const dt_iop_roi_t *const restrict roi_in,
+                                      const dt_iop_roi_t *const restrict roi_out,
+                                      const float clip)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -806,10 +821,13 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
 }
 
 #if defined(__SSE__)
-static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                              const float clip)
+static inline void process_clip_sse2(const dt_dev_pixelpipe_iop_t *const piece,
+                                     const void * restrict ivoid, void * restrict ovoid,
+                                     const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                     const float clip)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   if(piece->pipe->dsc.filters)
   { // raw mosaic
     const __m128 clipm = _mm_set1_ps(clip);
@@ -851,10 +869,12 @@ static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const i
 }
 #endif
 
-static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+static void process_clip(const dt_dev_pixelpipe_iop_t *const piece, const void * restrict ivoid, void * restrict ovoid,
+                         const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
                          const float clip)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   if(darktable.codepath.OPENMP_SIMD) process_clip_plain(piece, ivoid, ovoid, roi_in, roi_out, clip);
 #if defined(__SSE__)
   else if(darktable.codepath.SSE2)
@@ -864,8 +884,9 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
     dt_unreachable_codepath();
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
@@ -983,8 +1004,8 @@ static void mode_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
@@ -1049,7 +1070,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  // enable this per default if raw or sraw, 
+  // enable this per default if raw or sraw,
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
 
 end:

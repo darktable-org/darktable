@@ -1342,8 +1342,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   }
 }
 
-static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                      dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static inline int dt_ellipse_get_source_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                      const dt_masks_form_t *const form, int *const width, int *const height, int *const posx, int *const posy)
 {
   // we get the ellipse values
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
@@ -1429,8 +1429,8 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   return 1;
 }
 
-static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                               int *width, int *height, int *posx, int *posy)
+static inline int dt_ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                               int *const width, int *const height, int *const posx, int *const posy)
 {
   // we get the ellipse values
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
@@ -1518,8 +1518,8 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   return 1;
 }
 
-static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                               float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                               float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   double start2 = dt_get_wtime();
 
@@ -1654,8 +1654,8 @@ static inline float fast_atan2(float y, float x)
 }
 
 
-static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                   dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                   const dt_masks_form_t *const form, const dt_iop_roi_t *const roi, float *const buffer)
 {
   double start1 = dt_get_wtime();
   double start2 = start1;

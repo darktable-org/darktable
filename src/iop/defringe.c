@@ -159,9 +159,12 @@ static inline void fib_latt(int *const x, int *const y, float radius, int step, 
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
 // and having everything user-defineable would be just too much
 // -----------------------------------------------------------------------------------------
-void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-             void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   dt_iop_defringe_data_t *d = (dt_iop_defringe_data_t *)piece->data;
 
   const int order = 1; // 0,1,2
@@ -181,8 +184,8 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   float avg_edge_chroma = 0.0;
 
-  float *const in = (float *const)i;
-  float *const out = (float *const)o;
+  const float *const restrict in = (float *const)i;
+  float *const restrict out = (float *const)o;
   int width = roi_in->width;
   int height = roi_in->height;
 

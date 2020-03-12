@@ -536,8 +536,8 @@ static inline int _brush_cyclic_cursor(int n, int nb)
 
 /** get all points of the brush and the border */
 /** this takes care of gaps and iop distortions */
-static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction,
-                                    dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
+static int _brush_get_points_border(dt_develop_t *const dev, const dt_masks_form_t *const form, const double iop_order, const int transf_direction,
+                                    dt_dev_pixelpipe_t *const pipe, float **points, int *points_count,
                                     float **border, int *border_count, float **payload, int *payload_count,
                                     int source)
 {
@@ -965,7 +965,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
   }
 }
 
-static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
+static int dt_brush_get_points_border(dt_develop_t *const dev, const dt_masks_form_t *const form, float **points,
                                       int *points_count, float **border, int *border_count, int source)
 {
   return _brush_get_points_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
@@ -2475,8 +2475,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 }
 
-static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                    dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static inline int dt_brush_get_source_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const dt_masks_form_t *const form, int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   // we get buffers for all points
@@ -2525,8 +2525,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   return 1;
 }
 
-static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                             int *width, int *height, int *posx, int *posy)
+static inline int dt_brush_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                             int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   // we get buffers for all points
@@ -2577,7 +2577,7 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment */
-static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw, float hardness,
+static inline void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw, float hardness,
                            float density)
 {
   // segment length
@@ -2604,8 +2604,8 @@ static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
   }
 }
 
-static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                             float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_brush_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                             float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   double start = dt_get_wtime();
@@ -2742,8 +2742,8 @@ static inline void _brush_falloff_roi(float *buffer, const int *p0, const int *p
   }
 }
 
-static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                 dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_brush_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                 const dt_masks_form_t *const form, const dt_iop_roi_t *const roi, float *const buffer)
 {
   if(!module) return 0;
   double start = dt_get_wtime();

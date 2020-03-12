@@ -178,25 +178,25 @@ static INLINE float intp(const float a, const float b, const float c)
 
 ////////////////////////////////////////////////////////////////
 //
-//		Chromatic Aberration Auto-correction
+//    Chromatic Aberration Auto-correction
 //
-//		copyright (c) 2008-2010  Emil Martinec <ejmartin@uchicago.edu>
+//    copyright (c) 2008-2010  Emil Martinec <ejmartin@uchicago.edu>
 //
 //
 // code dated: November 26, 2010
 //
-//	CA_correct_RT.cc is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
+//  CA_correct_RT.cc is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -298,8 +298,9 @@ static inline void pixSort(float *a, float *b)
 }
 
 // void RawImageSource::CA_correct_RT(const double cared, const double cablue, const double caautostrength)
-static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in2,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void CA_correct(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                              const float *const restrict in2, float *const restrict out,
+                              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1487,10 +1488,12 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict i, void * restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
-  CA_correct(self, piece, (float *)i, (float *)o, roi_in, roi_out);
+  DT_ALIGNED_IN_OUT(i, o);
+  CA_correct(self, piece, (const float *const)i, (float *const)o, roi_in, roi_out);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1541,10 +1544,10 @@ void cleanup(dt_iop_module_t *module)
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_image_t *img = &pipe->image;
+  const dt_image_t *const img = &pipe->image;
   if(!dt_image_is_raw(img) || dt_image_is_monochrome(img)) piece->enabled = 0;
 }
 

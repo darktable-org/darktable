@@ -317,11 +317,11 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
   pcoarse += 4;
 #endif
 
-typedef void((*eaw_decompose_t)(float *const out, const float *const in, float *const detail, const int scale,
+typedef void((*eaw_decompose_t)(float *const restrict out, const float *const restrict in, float *const restrict detail, const int scale,
                                 const float sharpen, const int32_t width, const int32_t height));
 
-static void eaw_decompose(float *const out, const float *const in, float *const detail, const int scale,
-                          const float sharpen, const int32_t width, const int32_t height)
+static inline void eaw_decompose(float *const restrict out, const float *const restrict in, float *const restrict detail, const int scale,
+                                 const float sharpen, const int32_t width, const int32_t height)
 {
   const int mult = 1 << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
@@ -568,8 +568,8 @@ typedef void((*eaw_synthesize_t)(float *const out, const float *const in, const 
                                  const float *thrsf, const float *boostf, const int32_t width,
                                  const int32_t height));
 
-static void eaw_synthesize(float *const out, const float *const in, const float *const detail,
-                           const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+static inline void eaw_synthesize(float *const out, const float *const in, const float *const detail,
+                                  const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
 {
   const float threshold[4] = { thrsf[0], thrsf[1], thrsf[2], thrsf[3] };
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
@@ -592,9 +592,10 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
 }
 
 #if defined(__SSE2__)
-static void eaw_synthesize_sse2(float *const out, const float *const in, const float *const detail,
-                                const float *thrsf, const float *boostf, const int32_t width,
-                                const int32_t height)
+static inline void eaw_synthesize_sse2(float *const restrict out, const float *const restrict in,
+                                       const float *const restrict detail,
+                                       const float *thrsf, const float *boostf, const int32_t width,
+                                       const int32_t height)
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
@@ -696,11 +697,14 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
 }
 
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
-static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                             const void *const i, void *const o, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const eaw_decompose_t decompose,
-                             const eaw_synthesize_t synthesize)
+inline static void process_wavelets(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *const piece,
+                                    const void * restrict i, void * restrict o,
+                                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                    const eaw_decompose_t decompose,
+                                    const eaw_synthesize_t synthesize)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs[MAX_NUM_SCALES][4];
   float boost[MAX_NUM_SCALES][4];
@@ -784,15 +788,17 @@ error:
   return;
 }
 
-void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-             void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *const piece,
+             const void *const restrict i, void *const restrict o,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose, eaw_synthesize);
 }
 
 #if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *const piece,
+                  const void *const restrict i, void *const restrict o,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose_sse2, eaw_synthesize_sse2);
 }
@@ -800,8 +806,9 @@ void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 #ifdef HAVE_OPENCL
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem restrict dev_in, cl_mem restrict dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs[MAX_NUM_SCALES][4];
@@ -1007,8 +1014,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;

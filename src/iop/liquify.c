@@ -461,7 +461,7 @@ int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, con
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) && 
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
       !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->distort_transform(module, piece, points, points_count);
@@ -651,7 +651,7 @@ static void _distort_paths (const struct dt_iop_module_t *module,
     else
       dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
   }
-  
+
   // record back the transformed points
 
   b = buffer;
@@ -920,9 +920,9 @@ static void compute_round_stamp_extent (cairo_rectangle_int_t *stamp_extent,
   Our stamp is stored in a rectangular region.
 */
 
-static void build_round_stamp (float complex **pstamp,
-                               cairo_rectangle_int_t *stamp_extent,
-                               const dt_liquify_warp_t *warp)
+static inline void build_round_stamp(float complex **pstamp,
+                                     cairo_rectangle_int_t *stamp_extent,
+                                     const dt_liquify_warp_t *warp)
 {
   const int iradius = round (cabs (warp->radius - warp->point));
   assert (iradius > 0);
@@ -1035,11 +1035,11 @@ static void build_round_stamp (float complex **pstamp,
   encompassing all our paths.
 */
 
-static void add_to_global_distortion_map (float complex *global_map,
-                                          const cairo_rectangle_int_t *global_map_extent,
-                                          const dt_liquify_warp_t *warp,
-                                          const float complex *stamp,
-                                          const cairo_rectangle_int_t *stamp_extent)
+static inline void add_to_global_distortion_map(float complex *const global_map,
+                                                const cairo_rectangle_int_t *global_map_extent,
+                                                const dt_liquify_warp_t *warp,
+                                                const float complex *const stamp,
+                                                const cairo_rectangle_int_t *stamp_extent)
 {
   cairo_rectangle_int_t mmext = *stamp_extent;
   mmext.x += (int) round (creal (warp->point));
@@ -1075,14 +1075,14 @@ static void add_to_global_distortion_map (float complex *global_map,
   device coords.
 */
 
-static void apply_global_distortion_map (struct dt_iop_module_t *module,
-                                         dt_dev_pixelpipe_iop_t *piece,
-                                         const float *in,
-                                         float *out,
-                                         const dt_iop_roi_t *roi_in,
-                                         const dt_iop_roi_t *roi_out,
-                                         const float complex *map,
-                                         const cairo_rectangle_int_t *extent)
+static inline void apply_global_distortion_map(const struct dt_iop_module_t *const module,
+                                               const dt_dev_pixelpipe_iop_t *const piece,
+                                               const float * restrict in,
+                                               float * restrict out,
+                                               const dt_iop_roi_t *const restrict roi_in,
+                                               const dt_iop_roi_t *const restrict roi_out,
+                                               const float complex *const restrict map,
+                                               const cairo_rectangle_int_t *extent)
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -1139,9 +1139,9 @@ static void apply_global_distortion_map (struct dt_iop_module_t *module,
 
 // calculate the map extent.
 
-static void _get_map_extent (const dt_iop_roi_t *roi_out,
-                             GList *interpolated,
-                             cairo_rectangle_int_t *map_extent)
+static inline void _get_map_extent(const dt_iop_roi_t *const roi_out,
+                                   GList *interpolated,
+                                   cairo_rectangle_int_t *map_extent)
 {
   const cairo_rectangle_int_t roi_out_rect = { roi_out->x, roi_out->y, roi_out->width, roi_out->height };
   cairo_region_t *roi_out_region = cairo_region_create_rectangle (&roi_out_rect);
@@ -1165,7 +1165,7 @@ static void _get_map_extent (const dt_iop_roi_t *roi_out,
   cairo_region_destroy (roi_out_region);
 }
 
-static float complex *create_global_distortion_map (const cairo_rectangle_int_t *map_extent,
+static inline float complex *create_global_distortion_map (const cairo_rectangle_int_t *map_extent,
                                                     GList *interpolated,
                                                     gboolean inverted)
 {
@@ -1246,11 +1246,11 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
   return map;
 }
 
-static float complex *build_global_distortion_map (struct dt_iop_module_t *module,
-                                                   const dt_dev_pixelpipe_iop_t *piece,
-                                                   const dt_iop_roi_t *roi_in,
-                                                   const dt_iop_roi_t *roi_out,
-                                                   cairo_rectangle_int_t *map_extent)
+static inline float complex *build_global_distortion_map(const struct dt_iop_module_t *const module,
+                                                         const dt_dev_pixelpipe_iop_t *const piece,
+                                                         const dt_iop_roi_t *const restrict roi_in,
+                                                         const dt_iop_roi_t *const restrict roi_out,
+                                                         cairo_rectangle_int_t *map_extent)
 {
   // copy params
   dt_iop_liquify_params_t copy_params;
@@ -1336,7 +1336,8 @@ void modify_roi_in (struct dt_iop_module_t *module,
   g_list_free_full (interpolated, free);
 }
 
-static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count, gboolean inverted)
+static int _distort_xtransform(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                               float *const points, size_t points_count, gboolean inverted)
 {
   const float scale = piece->iscale;
 
@@ -1455,9 +1456,12 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 }
 
-void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
-             void *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict in, void * restrict out,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(in, out);
+
   // 1. copy the whole image (we'll change only a small part of it)
 
   const int ch = piece->colors;
@@ -1465,7 +1469,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   const int height = MIN(roi_in->height, roi_out->height);
   const int width = MIN(roi_in->width, roi_out->width);
-  
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, height, in, out, roi_in, roi_out, width) \
@@ -1526,12 +1530,12 @@ typedef struct
 typedef cl_mem cl_mem_t;
 typedef cl_int cl_int_t;
 
-static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
-                                                dt_dev_pixelpipe_iop_t *piece,
+static cl_int_t apply_global_distortion_map_cl (const struct dt_iop_module_t *const module,
+                                                const dt_dev_pixelpipe_iop_t *const piece,
                                                 const cl_mem_t dev_in,
                                                 const cl_mem_t dev_out,
-                                                const dt_iop_roi_t *roi_in,
-                                                const dt_iop_roi_t *roi_out,
+                                                const dt_iop_roi_t *const restrict roi_in,
+                                                const dt_iop_roi_t *const restrict roi_out,
                                                 const float complex *map,
                                                 const cairo_rectangle_int_t *map_extent)
 {
@@ -1623,19 +1627,19 @@ error:
   return err;
 }
 
-int process_cl (struct dt_iop_module_t *module,
-                dt_dev_pixelpipe_iop_t *piece,
+int process_cl (const struct dt_iop_module_t *const module,
+                const dt_dev_pixelpipe_iop_t *const piece,
                 const cl_mem_t dev_in,
                 const cl_mem_t dev_out,
-                const dt_iop_roi_t *roi_in,
-                const dt_iop_roi_t *roi_out)
+                const dt_iop_roi_t *const restrict roi_in,
+                const dt_iop_roi_t *const restrict roi_out)
 {
   cl_int_t err = -999;
   const int devid = piece->pipe->devid;
 
   const int height = MIN(roi_in->height, roi_out->height);
   const int width = MIN(roi_in->width, roi_out->width);
-  
+
   // 1. copy the whole image (we'll change only a small part of it)
 
   {
@@ -1722,10 +1726,10 @@ void cleanup_pipe (struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_
 
 /* commit is the synch point between core and gui, so it copies params to pipe data. */
 
-void commit_params (struct dt_iop_module_t *module,
-                    dt_iop_params_t *params,
-                    dt_dev_pixelpipe_t *pipe,
-                    dt_dev_pixelpipe_iop_t *piece)
+void commit_params (struct dt_iop_module_t *const module,
+                    const dt_iop_params_t *const params,
+                    const dt_dev_pixelpipe_t *const pipe,
+                    dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy (piece->data, params, module->params_size);
 }

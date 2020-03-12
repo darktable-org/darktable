@@ -871,8 +871,8 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   darktable.gui->reset = reset;
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_rgblevels_data_t *d = (dt_iop_rgblevels_data_t *)piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
@@ -1156,7 +1156,7 @@ void gui_cleanup(dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void _get_selected_area(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
                                dt_iop_rgblevels_gui_data_t *g, const dt_iop_roi_t *const roi_in, int *box_out)
 {
   box_out[0] = box_out[1] = box_out[2] = box_out[3] = 0;
@@ -1211,6 +1211,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     }
   }
 }
+
 
 static void _auto_levels(const float *const img, const int width, const int height, int *box_area,
                            dt_iop_rgblevels_params_t *p, const int _channel, const dt_iop_order_iccprofile_info_t *const work_profile)
@@ -1282,9 +1283,12 @@ static void _auto_levels(const float *const img, const int width, const int heig
   p->levels[channel][1] = (p->levels[channel][2] + p->levels[channel][0]) / 2.f;
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const int ch = piece->colors;
   const dt_iop_rgblevels_data_t *const d = (dt_iop_rgblevels_data_t *)piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)&d->params;
@@ -1399,8 +1403,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 

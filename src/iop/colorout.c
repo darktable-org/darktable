@@ -234,7 +234,7 @@ static void output_profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      
+
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
       return;
     }
@@ -264,8 +264,9 @@ static float lerp_lut(const float *const lut, const float v)
 #endif
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->global_data;
@@ -331,11 +332,14 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                              const void *const ivoid, void *const ovoid,
-                                              const dt_iop_roi_t *const roi_in,
-                                              const dt_iop_roi_t *const roi_out)
+static inline void process_fastpath_apply_tonecurves(const struct dt_iop_module_t *const self,
+                                                     const dt_dev_pixelpipe_iop_t *const piece,
+                                                     const void * restrict ivoid, void * restrict ovoid,
+                                                     const dt_iop_roi_t *const restrict roi_in,
+                                                     const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
 
@@ -384,9 +388,12 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
@@ -406,8 +413,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
-      const float *const in = (const float *const)ivoid + (size_t)k;
-      float *out = (float *)ovoid + (size_t)k;
+      const float *const restrict in = (const float *const)ivoid + (size_t)k;
+      float *const restrict out = (float *)ovoid + (size_t)k;
 
       float xyz[3];
       dt_Lab_to_XYZ(in, xyz);
@@ -434,8 +441,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+      const float *const restrict in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+      float *restrict out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
 
       cmsDoTransform(d->xform, in, out, roi_out->width);
 
@@ -461,9 +468,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
@@ -566,8 +576,8 @@ static cmsHPROFILE _make_clipping_profile(cmsHPROFILE profile)
   return profile;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;

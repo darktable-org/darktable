@@ -226,7 +226,7 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   if(xform) cmsDeleteTransform(xform);
 }
 
-static void _transform_lcms2(struct dt_iop_module_t *self, const float *const image_in, float *const image_out,
+static void _transform_lcms2(const struct dt_iop_module_t *const self, const float *const image_in, float *const image_out,
                              const int width, const int height, const int cst_from, const int cst_to,
                              int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -492,9 +492,9 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in, f
 }
 
 
-static inline void _transform_matrix(struct dt_iop_module_t *self, const float *const restrict image_in, float *const restrict image_out,
-                              const int width, const int height, const int cst_from, const int cst_to,
-                              int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _transform_matrix(const struct dt_iop_module_t *const self, const float *const restrict image_in, float *const restrict image_out,
+                                     const int width, const int height, const int cst_from, const int cst_to,
+                                     int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   if(cst_from == cst_to)
   {
@@ -1054,7 +1054,7 @@ static void _transform_matrix_rgb_sse(float *const image, const int width, const
 }
 #endif
 
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
+void dt_ioppr_transform_image_colorspace(const struct dt_iop_module_t *const self, const float *const image_in,
                                          float *const image_out, const int width, const int height,
                                          const int cst_from, const int cst_to, int *converted_cst,
                                          const dt_iop_order_iccprofile_info_t *const profile_info)

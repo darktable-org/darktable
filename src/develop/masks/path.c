@@ -157,7 +157,7 @@ static void _path_init_ctrl_points(dt_masks_form_t *form)
   }
 }
 
-static gboolean _path_is_clockwise(dt_masks_form_t *form)
+static gboolean _path_is_clockwise(const dt_masks_form_t *const form)
 {
   if(g_list_length(form->points) > 2)
   {
@@ -498,7 +498,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
 
 /** get all points of the path and the border */
 /** this take care of gaps and self-intersection and iop distortions */
-static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction,
+static int _path_get_points_border(dt_develop_t *const dev, const dt_masks_form_t *const form, const double iop_order, const int transf_direction,
                                    dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
                                    float **border, int *border_count, int source)
 {
@@ -615,7 +615,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     }
 
     dt_masks_dynbuf_add_n(dpoints, rc, 2);
-    
+
     border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
     if(dborder)
@@ -825,7 +825,7 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
   else *inside_border = 1;
 }
 
-static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
+static int dt_path_get_points_border(dt_develop_t *const dev, const dt_masks_form_t *const form, float **points,
                                      int *points_count, float **border, int *border_count, int source)
 {
   return _path_get_points_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
@@ -1052,10 +1052,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
         if(!gui2) return 1;
         gui2->group_selected = pos2;
-        
+
         dt_masks_select_form(crea_module, dt_masks_get_from_id(darktable.develop, form->formid));
       }
-      
+
       dt_control_queue_redraw_center();
     }
   }
@@ -2012,8 +2012,8 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
   }
 }
 
-static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                   dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static inline int dt_path_get_source_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                   const dt_masks_form_t *const form, int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   // we get buffers for all points
@@ -2068,8 +2068,8 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   return 1;
 }
 
-static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                            int *width, int *height, int *posx, int *posy)
+static inline int dt_path_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                            int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   // we get buffers for all points
@@ -2150,8 +2150,8 @@ static void _path_falloff(float **buffer, int *p0, int *p1, int posx, int posy, 
   }
 }
 
-static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                            float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                            float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   if(!module) return 0;
   double start = dt_get_wtime();
@@ -2399,7 +2399,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
 /** crop path to roi given by xmin, xmax, ymin, ymax. path segments outside of roi are replaced by
     nodes lying on roi borders. */
-static int _path_crop_to_roi(float *path, const int point_count, float xmin, float xmax, float ymin,
+static inline int _path_crop_to_roi(float *path, const int point_count, float xmin, float xmax, float ymin,
                              float ymax)
 {
   int point_start = -1;
@@ -2539,7 +2539,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
+static inline void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
 {
   // segment length
   const int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0]) + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
@@ -2566,8 +2566,8 @@ static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
   }
 }
 
-static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                                const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                                const dt_iop_roi_t *const roi, float *const buffer)
 {
   if(!module) return 0;
   double start = dt_get_wtime();

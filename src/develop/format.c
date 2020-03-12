@@ -39,8 +39,8 @@ size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc)
   return bpp;
 }
 
-void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
-                          dt_iop_buffer_dsc_t *dsc)
+void default_input_format(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_t *const pipe,
+                          struct dt_dev_pixelpipe_iop_t *const piece, dt_iop_buffer_dsc_t *const dsc)
 {
   dsc->channels = 4;
   dsc->datatype = TYPE_FLOAT;
@@ -57,8 +57,8 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
     dsc->datatype = TYPE_UINT16;
 }
 
-void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
-                           dt_iop_buffer_dsc_t *dsc)
+void default_output_format(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_t *const pipe,
+                           struct dt_dev_pixelpipe_iop_t *const piece, struct dt_iop_buffer_dsc_t *const dsc)
 {
   dsc->channels = 4;
   dsc->datatype = TYPE_FLOAT;
@@ -75,20 +75,20 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
     dsc->datatype = TYPE_UINT16;
 }
 
-int default_input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
-                     dt_dev_pixelpipe_iop_t *piece)
+int default_input_colorspace(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_t *const pipe,
+                             struct dt_dev_pixelpipe_iop_t *piece)
 {
   return self->default_colorspace(self, pipe, piece);
 }
 
-int default_output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
-                      dt_dev_pixelpipe_iop_t *piece)
+int default_output_colorspace(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_t *const pipe,
+                              struct dt_dev_pixelpipe_iop_t *const piece)
 {
   return self->default_colorspace(self, pipe, piece);
 }
 
-int default_blend_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
-                      dt_dev_pixelpipe_iop_t *piece)
+int default_blend_colorspace(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_t *const pipe,
+                             struct dt_dev_pixelpipe_iop_t *const piece)
 {
   return self->default_colorspace(self, pipe, piece);
 }

@@ -189,8 +189,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel_trilinear(const float *const in, float *const out,
-                             const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
+inline void correct_pixel_trilinear(const float *const in, float *const out,
+                                    const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -267,8 +267,8 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 
 // from OpenColorIO
 // https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
-void correct_pixel_tetrahedral(const float *const in, float *const out,
-                               const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
+inline void correct_pixel_tetrahedral(const float *const in, float *const out,
+                                      const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -355,8 +355,8 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 
 // from Study on the 3D Interpolation Models Used in Color Conversion
 // http://ijetch.org/papers/318-T860.pdf
-void correct_pixel_pyramid(const float *const in, float *const out,
-                           const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
+inline void correct_pixel_pyramid(const float *const in, float *const out,
+                                  const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -939,8 +939,9 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->global_data;
@@ -1019,9 +1020,12 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ibuf, void * restrict obuf,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ibuf, obuf);
+
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1340,8 +1344,8 @@ static void show_hide_controls(dt_iop_module_t *self)
 }
 #endif  // HAVE_GMIC
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;

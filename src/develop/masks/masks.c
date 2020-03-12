@@ -710,7 +710,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
   return fdest->formid;
 }
 
-int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
+inline int dt_masks_get_points_border(dt_develop_t *const dev, const dt_masks_form_t *const form, float **points, int *points_count,
                                float **border, int *border_count, int source)
 {
   if(form->type & DT_MASKS_CIRCLE)
@@ -775,8 +775,8 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
   return 0;
 }
 
-int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                      int *width, int *height, int *posx, int *posy)
+inline int dt_masks_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                      int *const width, int *const height, int *const posx, int *const posy)
 {
   if(form->type & DT_MASKS_CIRCLE)
   {
@@ -802,8 +802,8 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   return 0;
 }
 
-int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                             int *width, int *height, int *posx, int *posy)
+inline int dt_masks_get_source_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                             int *const width, int *const height, int *const posx, int *const posy)
 {
   *width = *height = *posx = *posy = 0;
 
@@ -830,8 +830,8 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   return 0;
 }
 
-int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                      float **buffer, int *width, int *height, int *posx, int *posy)
+inline int dt_masks_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                      float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   if(form->type & DT_MASKS_CIRCLE)
   {
@@ -860,8 +860,8 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   return 0;
 }
 
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                          const dt_iop_roi_t *roi, float *buffer)
+inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                          const dt_iop_roi_t *const roi, float *const buffer)
 {
   if(form->type & DT_MASKS_CIRCLE)
   {

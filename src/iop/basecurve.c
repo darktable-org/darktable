@@ -398,7 +398,7 @@ static float exposure_increment(float stops, int e, float fusion, float bias)
 
 #ifdef HAVE_OPENCL
 static
-int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+int gauss_blur_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
                   cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
                   const int width, const int height)
 {
@@ -428,7 +428,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 static
-int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+int gauss_expand_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
                     cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
                     const int width, const int height)
 {
@@ -450,7 +450,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 
 static
-int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+int gauss_reduce_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
                     cl_mem dev_in, cl_mem dev_coarse, cl_mem dev_detail,
                     cl_mem dev_tmp1, cl_mem dev_tmp2,
                     const int width, const int height)
@@ -495,8 +495,9 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 static
-int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl_fusion(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                      cl_mem dev_in, cl_mem dev_out,
+                      const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
@@ -801,8 +802,9 @@ error:
 }
 
 static
-int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl_lut(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                   cl_mem dev_in, cl_mem dev_out,
+                   const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
@@ -882,8 +884,9 @@ error:
   return FALSE;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
 
@@ -1135,11 +1138,14 @@ static inline void gauss_reduce(
   }
 }
 
-void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_fusion(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                  const void * restrict ivoid, void * restrict ovoid,
+                                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
+  const float *const restrict in = (const float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
@@ -1311,11 +1317,14 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   free(comb);
 }
 
-void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                 void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_lut(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                               const void * restrict ivoid, void * restrict ovoid,
+                               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
+  const float *const restrict in = (const float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   //const int ch = piece->colors; <-- it appears someone was trying to make this handle monochrome data,
   //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
   //configurations we might encounter here and handle those too
@@ -1333,9 +1342,12 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
 
   // are we doing exposure fusion?
@@ -1345,8 +1357,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_lut(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;

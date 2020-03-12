@@ -453,8 +453,8 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b);
 
 /** apply blend */
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                              const struct dt_iop_roi_t *const roi_out);
+                              const void *i, void *o,
+                              const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 
 /** get blend version */
 int dt_develop_blend_version(void);
@@ -487,8 +487,8 @@ int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
 int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out);
+                                cl_mem dev_in, cl_mem dev_out,
+                                const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

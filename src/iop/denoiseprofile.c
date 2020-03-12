@@ -1106,8 +1106,8 @@ static inline __m128 weight_sse(const __m128 *c1, const __m128 *c2, const float 
 typedef void((*eaw_decompose_t)(float *const out, const float *const in, float *const detail, const int scale,
                                 const float inv_sigma2, const int32_t width, const int32_t height));
 
-static void eaw_decompose(float *const out, const float *const in, float *const detail, const int scale,
-                          const float inv_sigma2, const int32_t width, const int32_t height)
+static void eaw_decompose(float *const restrict out, const float *const restrict in, float *const restrict  detail,
+                          const int scale, const float inv_sigma2, const int32_t width, const int32_t height)
 {
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
@@ -1227,8 +1227,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 #undef SUM_PIXEL_EPILOGUE
 
 #if defined(__SSE2__)
-static void eaw_decompose_sse(float *const out, const float *const in, float *const detail, const int scale,
-                              const float inv_sigma2, const int32_t width, const int32_t height)
+static inline void eaw_decompose_sse(float *const restrict out, const float *const restrict in,
+                                     float *const restrict detail, const int scale,
+                                     const float inv_sigma2, const int32_t width, const int32_t height)
 {
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
@@ -1354,8 +1355,8 @@ typedef void((*eaw_synthesize_t)(float *const out, const float *const in, const 
                                  const float *thrsf, const float *boostf, const int32_t width,
                                  const int32_t height));
 
-static void eaw_synthesize(float *const out, const float *const in, const float *const detail,
-                           const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+static inline void eaw_synthesize(float *const out, const float *const in, const float *const detail,
+                                  const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
 {
   const float threshold[4] = { thrsf[0], thrsf[1], thrsf[2], thrsf[3] };
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
@@ -1378,9 +1379,10 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
 }
 
 #if defined(__SSE2__)
-static void eaw_synthesize_sse2(float *const out, const float *const in, const float *const detail,
-                                const float *thrsf, const float *boostf, const int32_t width,
-                                const int32_t height)
+static inline void eaw_synthesize_sse2(float *const  restrict out, const float *const restrict in,
+                                       const float *const restrict detail, const float *const restrict thrsf,
+                                       const float *const restrict boostf,
+                                       const int32_t width, const int32_t height)
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
@@ -1499,11 +1501,13 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   }
 }
 
-static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const eaw_decompose_t decompose,
-                             const eaw_synthesize_t synthesize)
+static inline void process_wavelets(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const void * restrict ivoid, void * restrict ovoid,
+                                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                                    const eaw_decompose_t decompose, const eaw_synthesize_t synthesize)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
@@ -1762,15 +1766,17 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #undef MAX_MAX_SCALE
 }
 
-static int sign(int a)
+static inline int sign(int a)
 {
   return (a > 0) - (a < 0);
 }
 
-static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                            const dt_iop_roi_t *const roi_out)
+static inline void process_nlmeans(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                   const void * restrict ivoid, void * restrict ovoid,
+                                   const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_denoiseprofile_data_t *const d = piece->data;
@@ -2011,10 +2017,12 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 }
 
 #if defined(__SSE2__)
-static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                const dt_iop_roi_t *const roi_out)
+static inline void process_nlmeans_sse(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                       const void * restrict ivoid, void * restrict ovoid,
+                                       const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
@@ -2300,7 +2308,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 }
 #endif
 
-static void sum_rec(const unsigned npixels, const float *in, float *out)
+static void sum_rec(const unsigned npixels, const float *const restrict in, float *const restrict out)
 {
   if(npixels <= 3)
   {
@@ -2329,7 +2337,7 @@ static void sum_rec(const unsigned npixels, const float *in, float *out)
 }
 
 /* this gives (npixels-1)*V[X] */
-static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
+static inline void variance_rec(const unsigned npixels, const float *const restrict in, float *const restrict out, const float mean[3])
 {
   if(npixels <= 3)
   {
@@ -2358,10 +2366,12 @@ static void variance_rec(const unsigned npixels, const float *in, float *out, co
   }
 }
 
-static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                             void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out)
+static inline void process_variance(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                    const void * restrict ivoid, void * restrict ovoid,
+                                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_denoiseprofile_data_t *const d = piece->data;
   dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
@@ -2445,9 +2455,9 @@ static int bucket_next(unsigned int *state, unsigned int max)
   return next;
 }
 
-static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                              cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const roi_out)
+static int process_nlmeans_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                              cl_mem dev_in, cl_mem dev_out,
+                              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
@@ -2751,9 +2761,9 @@ error:
 }
 
 
-static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                               cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out)
+static int process_wavelets_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                               cl_mem dev_in, cl_mem dev_out,
+                               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
@@ -3240,8 +3250,9 @@ error:
   return FALSE;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
@@ -3261,9 +3272,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif // HAVE_OPENCL
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
     process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -3274,9 +3288,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
     process_nlmeans_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -3491,8 +3508,8 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)params;
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;

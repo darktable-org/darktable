@@ -197,7 +197,7 @@ static void dt_iop_levels_compute_levels_manual(const uint32_t *histogram, float
   levels[1] = levels[0] / 2 + levels[2] / 2;
 }
 
-static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece)
+static void dt_iop_levels_compute_levels_automatic(const dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
@@ -236,7 +236,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece
     d->levels[1] = (1.0f - center) * d->levels[0] + center * d->levels[2];
 }
 
-static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
+static void compute_lut(const dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
@@ -357,7 +357,7 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
  * WARNING: unlike commit_params, which is thread safe wrt gui thread and
  * pipes, this function lives in the pipeline thread, and NOT thread safe!
  */
-static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void commit_params_late(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -406,9 +406,12 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const int ch = piece->colors;
   const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
 
@@ -466,8 +469,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->global_data;
@@ -521,8 +525,8 @@ error:
 //  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
 //}
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;

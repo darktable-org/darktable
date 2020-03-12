@@ -92,13 +92,13 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
 
-static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *const piece,
                                  const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
 }
 
-static void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+static void dt_iop_modify_roi_out(struct dt_iop_module_t *self, const struct dt_dev_pixelpipe_iop_t *const piece,
                                   dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
@@ -128,32 +128,32 @@ static int default_operation_tags_filter(void)
   return 0;
 }
 
-static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                                  dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+static void default_commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const params,
+                                  const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   memcpy(piece->data, params, self->params_size);
 }
 
-static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
-                              dt_dev_pixelpipe_iop_t *piece)
+static void default_init_pipe(struct dt_iop_module_t *const self, dt_dev_pixelpipe_t *const pipe,
+                              dt_dev_pixelpipe_iop_t *const piece)
 {
   piece->data = malloc(self->params_size);
   default_commit_params(self, self->default_params, pipe, piece);
 }
 
-static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
-                                 dt_dev_pixelpipe_iop_t *piece)
+static void default_cleanup_pipe(struct dt_iop_module_t *const self, dt_dev_pixelpipe_t *const pipe,
+                                 dt_dev_pixelpipe_iop_t *const piece)
 {
   free(piece->data);
 }
 
-static void default_gui_cleanup(dt_iop_module_t *self)
+static void default_gui_cleanup(dt_iop_module_t *const self)
 {
   g_free(self->gui_data);
   self->gui_data = NULL;
 }
 
-static void default_cleanup(dt_iop_module_t *module)
+static void default_cleanup(dt_iop_module_t *const module)
 {
   g_free(module->gui_data);
   module->gui_data = NULL; // just to be sure
@@ -164,21 +164,24 @@ static void default_cleanup(dt_iop_module_t *module)
 }
 
 
-static int default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+static int default_distort_transform(const dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, float *points,
                                      size_t points_count)
 {
   return 1;
 }
-static int default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+static int default_distort_backtransform(const dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, float *points,
                                          size_t points_count)
 {
   return 1;
 }
 
-static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                            const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                            const struct dt_iop_roi_t *const roi_out)
+static void default_process(const struct dt_iop_module_t *const self, const struct dt_dev_pixelpipe_iop_t *const piece,
+                            const void * restrict i, void * restrict o,
+                            const struct dt_iop_roi_t *const restrict roi_in,
+                            const struct dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(i, o);
+
   if(darktable.codepath.OPENMP_SIMD && self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);
 #if defined(__SSE__)
@@ -281,6 +284,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->button_released = NULL;
   if(!g_module_symbol(module->module, "button_pressed", (gpointer) & (module->button_pressed)))
     module->button_pressed = NULL;
+  if(!g_module_symbol(module->module, "key_pressed", (gpointer) & (module->key_pressed)))
+    module->key_pressed = NULL;
   if(!g_module_symbol(module->module, "configure", (gpointer) & (module->configure)))
     module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
@@ -434,6 +439,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->mouse_moved = so->mouse_moved;
   module->button_released = so->button_released;
   module->button_pressed = so->button_pressed;
+  module->key_pressed = so->key_pressed;
   module->configure = so->configure;
   module->scrolled = so->scrolled;
 
@@ -1546,7 +1552,7 @@ void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
 }
 
 // make sure that blend_params are in sync with the iop struct
-void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_params_t *blendop_params)
+void dt_iop_commit_blend_params(dt_iop_module_t *const module, const dt_develop_blend_params_t *const blendop_params)
 {
   if(module->raster_mask.sink.source)
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
@@ -1576,9 +1582,9 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
   module->raster_mask.sink.id = 0;
 }
 
-void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
-                          dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
-                          dt_dev_pixelpipe_iop_t *piece)
+void dt_iop_commit_params(dt_iop_module_t *const module, const dt_iop_params_t *const params,
+                          const dt_develop_blend_params_t *const blendop_params, dt_dev_pixelpipe_t *const pipe,
+                          dt_dev_pixelpipe_iop_t *const piece)
 {
   piece->hash = 0;
 
@@ -2364,7 +2370,7 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority)
   module->multi_priority = new_priority;
 }
 
-gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
+gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *const module, int id)
 {
   GHashTableIter iter;
   gpointer key, value;

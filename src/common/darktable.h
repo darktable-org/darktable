@@ -112,8 +112,13 @@ typedef unsigned int u_int;
 #define DT_ALIGNED_ARRAY __attribute__((aligned(64)))
 #define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
 
-/* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
+/* Helper to declare stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64);
+
+/* Helper to declare input/output arrays aligned in IOP process() */
+#define DT_ALIGNED_IN_OUT(ivoid, ovoid) \
+ivoid = (const float *const)DT_IS_ALIGNED(ivoid); \
+ovoid = (float *const)DT_IS_ALIGNED(ovoid);
 
 #ifndef _RELEASE
 #include "common/poison.h"

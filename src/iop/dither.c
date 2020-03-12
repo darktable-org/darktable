@@ -135,7 +135,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_gray(float *val, float *err, const float f, const float rf)
+static inline void _find_nearest_color_n_levels_gray(float *val, float *err, const float f, const float rf)
 {
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
@@ -153,7 +153,7 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
 
 #if defined(__SSE2__)
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, const float rf)
+static inline __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, const float rf)
 {
   __m128 err;
   __m128 new;
@@ -172,7 +172,7 @@ static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, c
 #endif
 
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_rgb(float *val, float *err, const float f, const float rf)
+static inline void _find_nearest_color_n_levels_rgb(float *val, float *err, const float f, const float rf)
 {
   for(int c = 0; c < 4; c++)
   {
@@ -188,7 +188,7 @@ static void _find_nearest_color_n_levels_rgb(float *val, float *err, const float
 
 #if defined(__SSE2__)
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_rgb_sse2(float *val, const float f, const float rf)
+static inline __m128 _find_nearest_color_n_levels_rgb_sse2(float *val, const float f, const float rf)
 {
   __m128 old = _mm_load_ps(val);
   __m128 tmp = _mm_mul_ps(old, _mm_set1_ps(f));        // old * f
@@ -234,10 +234,12 @@ static inline float clipnan(const float x)
   return r;
 }
 
-static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                    const void *const ivoid, void *const ovoid,
-                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_floyd_steinberg(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                           const void * restrict ivoid, void * restrict ovoid,
+                                           const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   const int width = roi_in->width;
@@ -401,10 +403,13 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 }
 
 #if defined(__SSE2__)
-static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                         const void *const ivoid, void *const ovoid,
-                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_floyd_steinberg_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                         const void * restrict ivoid, void * restrict ovoid,
+                                         const dt_iop_roi_t *const restrict roi_in,
+                                         const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   const int width = roi_in->width;
@@ -594,10 +599,12 @@ static float tpdf(unsigned int urandom)
 }
 
 
-static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                           const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                           const dt_iop_roi_t *const roi_out)
+static inline void process_random(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                                  const void * restrict ivoid, void * restrict ovoid,
+                                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   const int width = roi_in->width;
@@ -637,9 +644,12 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
@@ -649,9 +659,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                  const void * restrict ivoid, void * restrict ovoid,
+                  const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
@@ -713,8 +726,8 @@ range_callback (GtkWidget *slider, gpointer user_data)
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)p1;
   dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;

@@ -709,8 +709,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   }
 }
 
-static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radius, float **points,
-                                int *points_count)
+static inline int dt_circle_get_points(dt_develop_t *const dev, const float x, const float y, const float radius, float **points,
+                                int *const points_count)
 {
   float wd = dev->preview_pipe->iwidth;
   float ht = dev->preview_pipe->iheight;
@@ -748,8 +748,8 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   return 0;
 }
 
-static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                     dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static inline int dt_circle_get_source_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                     const dt_masks_form_t *const form, int *const width, int *const height, int *const posx, int *const posy)
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
@@ -799,8 +799,8 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   return 1;
 }
 
-static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                              int *width, int *height, int *posx, int *posy)
+static inline int dt_circle_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                              int *const width, int *const height, int *const posx, int *const posy)
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
@@ -851,8 +851,8 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   return 1;
 }
 
-static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                              float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_circle_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                              float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   double start2 = dt_get_wtime();
 
@@ -935,8 +935,8 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 }
 
 
-static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                  dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_circle_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                  const dt_masks_form_t *const form, const dt_iop_roi_t *const roi, float *const buffer)
 {
   double start1 = dt_get_wtime();
   double start2 = start1;

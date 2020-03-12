@@ -135,8 +135,8 @@ static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out
   }
 }
 
-static void _transform_image_colorspace(dt_iop_module_t *self, const float *const img_in, float *const img_out,
-                                        const dt_iop_roi_t *const roi_in)
+static inline void _transform_image_colorspace(const dt_iop_module_t *const self, const float *const restrict img_in, float *const restrict img_out,
+                                               const dt_iop_roi_t *const roi_in)
 {
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
   gchar *histogram_filename = NULL;
@@ -156,9 +156,12 @@ static void _transform_image_colorspace(dt_iop_module_t *self, const float *cons
     fprintf(stderr, "[_transform_image_colorspace] can't create transform profile\n");
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_develop_t *dev = self->dev;
 
   const int ch = piece->colors;
@@ -222,7 +225,7 @@ cleanup:
 }
 
 #ifdef HAVE_OPENCL
-static void _transform_image_colorspace_cl(dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
+static void _transform_image_colorspace_cl(const dt_iop_module_t *const self, const int devid, cl_mem dev_img_in,
                                            cl_mem dev_img_out, const dt_iop_roi_t *const roi_in)
 {
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
@@ -243,8 +246,9 @@ static void _transform_image_colorspace_cl(dt_iop_module_t *self, const int devi
     fprintf(stderr, "[_transform_image_colorspace_cl] can't create transform profile\n");
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)self->global_data;
@@ -317,8 +321,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   if(pipe->type != DT_DEV_PIXELPIPE_FULL || !self->dev->overexposed.enabled || !self->dev->gui_attached)
     piece->enabled = 0;

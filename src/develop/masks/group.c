@@ -246,8 +246,8 @@ static void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 }
 
-static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                          float **buffer, int *width, int *height, int *posx, int *posy)
+static inline void _inverse_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                          float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   // we create a new buffer
   const int wt = piece->iwidth;
@@ -283,8 +283,8 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   *height = ht;
 }
 
-static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                             float **buffer, int *width, int *height, int *posx, int *posy)
+static inline int dt_group_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                             float **buffer, int *const width, int *const height, int *const posx, int *const posy)
 {
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
@@ -446,8 +446,8 @@ error:
   return 0;
 }
 
-static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                 dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static inline int dt_group_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                 const dt_masks_form_t *const form, const dt_iop_roi_t *const roi, float *const buffer)
 {
   double start = dt_get_wtime();
   const guint nb = g_list_length(form->points);
@@ -619,8 +619,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   return nb_ok != 0;
 }
 
-int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                              const dt_iop_roi_t *roi, float *buffer)
+
+inline int dt_masks_group_render_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece, const dt_masks_form_t *const form,
+                              const dt_iop_roi_t *const roi, float *const buffer)
 {
   const double start = dt_get_wtime();
   if(!form) return 0;

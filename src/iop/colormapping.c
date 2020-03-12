@@ -165,7 +165,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "number of clusters"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "color dominance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram equalization"));
-  
+
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as source"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as target"), 0, 0);
 }
@@ -446,9 +446,12 @@ static void kmeans(const float *col, const int width, const int height, const in
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   float *in = (float *)ivoid;
@@ -587,8 +590,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->global_data;
@@ -781,8 +785,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)p1;
   dt_iop_colormapping_data_t *d = (dt_iop_colormapping_data_t *)piece->data;

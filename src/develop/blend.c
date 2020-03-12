@@ -2577,10 +2577,13 @@ _blend_row_func *dt_develop_choose_blend_func(const unsigned int blend_mode)
   return blend;
 }
 
-void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
-                              const struct dt_iop_roi_t *const roi_out)
+void dt_develop_blend_process(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_iop_t *const piece,
+                              const void * restrict ivoid, void * restrict ovoid,
+                              const struct dt_iop_roi_t *const restrict roi_in,
+                              const struct dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return;
 
   const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
@@ -2703,7 +2706,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
-    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
+    dt_masks_form_t *const form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
     if(form && (!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
@@ -2892,9 +2895,10 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 }
 
 #ifdef HAVE_OPENCL
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out)
+int dt_develop_blend_process_cl(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_iop_t *const piece,
+                                cl_mem restrict dev_in, cl_mem restrict dev_out,
+                                const struct dt_iop_roi_t *const restrict roi_in,
+                                const struct dt_iop_roi_t *const restrict roi_out)
 {
   if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return TRUE;
 
@@ -3077,7 +3081,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
-    dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
+    dt_masks_form_t *const form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
     if(form && (!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
@@ -3385,9 +3389,9 @@ int dt_develop_blend_version(void)
 }
 
 /** report back specific memory requirements for blend step (only relevant for OpenCL path) */
-void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                             struct dt_develop_tiling_t *tiling)
+void tiling_callback_blendop(struct dt_iop_module_t *const self, struct dt_dev_pixelpipe_iop_t *const piece,
+                             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out,
+                             struct dt_develop_tiling_t *const tiling)
 {
   tiling->factor = 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
   tiling->maxbuf = 1.0f;

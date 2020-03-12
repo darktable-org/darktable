@@ -177,6 +177,7 @@ typedef struct dt_iop_toneequalizer_data_t
   float scale;
   int radius;
   int iterations;
+  int skip_process;
   dt_iop_luminance_mask_method_t method;
   dt_iop_toneequalizer_filter_t details;
 } dt_iop_toneequalizer_data_t;
@@ -541,7 +542,7 @@ static void invalidate_luminance_cache(dt_iop_module_t *self)
 }
 
 
-static int sanity_check(dt_iop_module_t *self)
+static int sanity_check(dt_iop_module_t *const self)
 {
   // If tone equalizer is put after flip/orientation module,
   // the pixel buffer will be in landscape orientation even for pictures displayed in portrait orientation
@@ -837,15 +838,17 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 __DT_CLONE_TARGETS__
 static
-void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-             const void *const restrict ivoid, void *const restrict ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void toneeq_process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+                    const void * restrict ivoid, void * restrict ovoid,
+                    const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
+  DT_ALIGNED_IN_OUT(ivoid, ovoid);
+
   const dt_iop_toneequalizer_data_t *const d = (const dt_iop_toneequalizer_data_t *const)piece->data;
   dt_iop_toneequalizer_gui_data_t *const g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  const float *const restrict in = dt_check_sse_aligned((float *const)ivoid);
-  float *const restrict out = dt_check_sse_aligned((float *const)ovoid);
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
   float *restrict luminance = NULL;
 
   if(in == NULL || out == NULL)
@@ -870,7 +873,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(roi_in->width < roi_out->width || roi_in->height < roi_out->height) return; // input should be at least as large as output
   if(piece->colors != 4) return;  // we need RGB signal
 
-  if(!sanity_check(self))
+  if(d->skip_process)
   {
     // if module just got disabled by sanity checks, due to pipe position, just pass input through
     dt_simd_memcpy(in, out, num_elem * ch);
@@ -1025,9 +1028,9 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-             const void *const restrict ivoid, void *const restrict ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(const struct dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece,
+             const void * restrict ivoid, void * restrict ovoid,
+             const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
     toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
@@ -1422,12 +1425,14 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *const self, const dt_iop_params_t *const p1,
+                   const dt_dev_pixelpipe_t *const pipe, dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)p1;
   dt_iop_toneequalizer_data_t *d = (dt_iop_toneequalizer_data_t *)piece->data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  d->skip_process = !sanity_check(self);
 
   // Trivial params passing
   d->method = p->method;
