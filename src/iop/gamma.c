@@ -40,7 +40,7 @@ typedef struct dt_iop_gamma_params_t
 
 const char *name()
 {
-  return C_("modulename", "gamma");
+  return C_("modulename", "display encoding");
 }
 
 int default_group()
