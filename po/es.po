@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-10 15:55-0600\n"
-"PO-Revision-Date: 2020-03-10 22:07-0600\n"
+"POT-Creation-Date: 2020-03-12 17:34-0600\n"
+"PO-Revision-Date: 2020-03-12 18:35-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2312,7 +2312,7 @@ msgstr "m"
 msgid "working..."
 msgstr "Procesando..."
 
-#: ../src/control/control.c:672
+#: ../src/control/control.c:673
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
 msgstr "Desplácese para cambiar <b>% s</b> del módulo %s"
@@ -9088,8 +9088,8 @@ msgstr "rotar 90 grados en sentido horario"
 
 #: ../src/iop/gamma.c:43
 msgctxt "modulename"
-msgid "gamma"
-msgstr "gamma"
+msgid "display encoding"
+msgstr "codificado de visualización"
 
 #: ../src/iop/globaltonemap.c:102
 msgid "global tonemap"
@@ -10976,7 +10976,7 @@ msgstr "Brillo del difuminado"
 
 #: ../src/iop/soften.c:759
 msgid "the mix of effect"
-msgstr "La combinación del efecto"
+msgstr "La intensidad del efecto"
 
 #: ../src/iop/splittoning.c:90
 msgid "split-toning"
@@ -15815,6 +15815,10 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:2433
 msgid "Action"
 msgstr "Acción"
+
+#~ msgctxt "modulename"
+#~ msgid "gamma"
+#~ msgstr "gamma"
 
 #~ msgid ""
 #~ "this will set when db size is checked for possible maintenance condition "
