@@ -422,7 +422,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
 
 // move all thumbs from the table.
 // if clamp, we verify that the move is allowed (collection bounds, etc...)
-static gboolean _move(dt_thumbtable_t *table, int x, int y, gboolean clamp)
+static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean clamp)
 {
   int posx = x;
   int posy = y;
@@ -660,7 +660,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   gtk_widget_queue_draw(table->widget);
 }
 
-void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom)
+void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, const int oldzoom, const int newzoom)
 {
   if(oldzoom == newzoom) return;
 
@@ -794,8 +794,8 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    int dx = ceil(event->x_root) - table->last_x;
-    int dy = ceil(event->y_root) - table->last_y;
+    const int dx = ceil(event->x_root) - table->last_x;
+    const int dy = ceil(event->y_root) - table->last_y;
     _move(table, dx, dy, TRUE);
     table->drag_dx += dx;
     table->drag_dy += dy;
@@ -995,7 +995,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
 // this is called each time collected images change
 static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                            int next, gpointer user_data)
+                                            const int next, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
@@ -1111,7 +1111,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 }
 
 static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
-                           guint target_type, guint time, gpointer user_data)
+                           const guint target_type, const guint time, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   g_assert(selection_data != NULL);
@@ -1336,7 +1336,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   return table;
 }
 
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y)
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const int y)
 {
   if(g_list_length(table->list) == 0 || table->code_scrolling || !table->scrollbars) return;
 
@@ -1630,7 +1630,7 @@ int dt_thumbtable_get_offset(dt_thumbtable_t *table)
   return table->offset;
 }
 // set offset and redraw if needed
-gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw)
+gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, const int offset, const gboolean redraw)
 {
   if(offset < 1 || offset == table->offset) return FALSE;
   table->offset = offset;
@@ -1640,12 +1640,12 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean r
 }
 
 // set offset at specific imgid and redraw if needed
-gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw)
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid, const gboolean redraw)
 {
   return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
 }
 
-static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
@@ -1653,7 +1653,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
-static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
@@ -1661,41 +1661,41 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
-static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
   return dt_history_copy(dt_view_get_image_to_act_on2());
 }
-static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
   return dt_history_copy_parts(dt_view_get_image_to_act_on2());
 }
-static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
-  gboolean ret = dt_history_paste_on_list(imgs, TRUE);
+  const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
-static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
-  gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
+  const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
-static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
-  gboolean ret = dt_history_delete_on_list(imgs, TRUE);
+  const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
 }
-static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                  GdkModifierType modifier, gpointer data)
 {
   const int sourceid = dt_view_get_image_to_act_on2();
@@ -1710,31 +1710,31 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   return TRUE;
 }
-static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
   dt_selection_select_all(darktable.selection);
   return TRUE;
 }
-static gboolean _accel_select_none(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_select_none(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
   dt_selection_clear(darktable.selection);
   return TRUE;
 }
-static gboolean _accel_select_invert(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_select_invert(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
   dt_selection_invert(darktable.selection);
   return TRUE;
 }
-static gboolean _accel_select_film(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_select_film(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
   dt_selection_select_filmroll(darktable.selection);
   return TRUE;
 }
-static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
   dt_selection_select_unaltered(darktable.selection);
@@ -1786,7 +1786,7 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 }
 // connect all accels if thumbtable is active in the view and they are not loaded
 // disconnect them if not
-void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view)
+void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int view)
 {
   // we verify that thumbtable may be active for this view
   if(!(view & DT_VIEW_LIGHTTABLE) && !(view & DT_VIEW_DARKROOM) && !(view & DT_VIEW_TETHERING)
@@ -1862,7 +1862,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view)
                           g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
 }
 
-static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
+static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
   // get first and last fully visible thumbnails
@@ -1886,7 +1886,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   }
   return TRUE;
 }
-static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
+static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
 
@@ -1951,7 +1951,7 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, int ro
   }
   return FALSE;
 }
-gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid)
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int imgid)
 {
   if(imgid < 1) return FALSE;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -1962,7 +1962,7 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid
   return FALSE;
 }
 
-static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // base point
   int baseid = dt_control_get_mouse_over_id();
@@ -2031,7 +2031,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   if(select) dt_selection_select_range(darktable.selection, imgid);
   return TRUE;
 }
-static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // let's be sure that the current image is selected
   int baseid = dt_control_get_mouse_over_id();
@@ -2087,7 +2087,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
   return moved;
 }
 
-gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select)
+gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     return _filemanager_key_move(table, move, select);

@@ -385,7 +385,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < MAX_STARS; i++)
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
@@ -488,7 +488,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
 
   // we prelight all stars before the current one
   gboolean pre = TRUE;
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < MAX_STARS; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, pre);
     gtk_widget_queue_draw(thumb->w_stars[i]);
@@ -499,7 +499,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
 static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < MAX_STARS; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
     gtk_widget_queue_draw(thumb->w_stars[i]);
@@ -603,7 +603,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
 
     // the stars
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < MAX_STARS; i++)
     {
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
@@ -794,7 +794,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height)
   gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
   gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * width - r1 * 0.75);
   // stars
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < MAX_STARS; i++)
   {
     gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
     gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * width - r1 * 0.75);
