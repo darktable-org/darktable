@@ -29,6 +29,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -765,12 +766,12 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  // TODO: only if image changed!
-  // if()
+  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
+    dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
   // cleanup visible masks
@@ -2719,13 +2720,13 @@ void leave(dt_view_t *self)
   }
 
   // be sure light table will regenerate the thumbnail:
-  // TODO: only if changed!
-  // if()
+  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
+    dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
   // clear gui.
