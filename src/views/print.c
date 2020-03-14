@@ -70,6 +70,13 @@ static void _film_strip_activated(const int imgid, void *data)
 
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
 
+  // update the active images list
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // force redraw
   dt_control_queue_redraw();
 }
@@ -207,6 +214,25 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
   if (prt->image_id > 0)
     expose_print_page (self, cri, width_i, height_i, pointerx, pointery);
+}
+
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+{
+  const dt_print_t *prt = (dt_print_t *)self->data;
+
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  if(mouse_over_id != prt->image_id)
+  {
+    mouse_over_id = prt->image_id;
+    dt_control_set_mouse_over_id(mouse_over_id);
+  }
+}
+void mouse_leave(dt_view_t *self)
+{
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  const dt_print_t *prt = (dt_print_t *)self->data;
+  dt_control_set_mouse_over_id(prt->image_id);
 }
 
 int try_enter(dt_view_t *self)
