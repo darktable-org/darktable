@@ -169,9 +169,7 @@ void dt_collection_memory_update()
                         NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
-
-  gchar *ins_query = NULL;
-  ins_query = dt_util_dstrcat(ins_query, "INSERT INTO memory.collected_images (imgid) %s", query);
+  gchar *ins_query = dt_util_dstrcat(NULL, "INSERT INTO memory.collected_images (imgid) %s", query);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), ins_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);

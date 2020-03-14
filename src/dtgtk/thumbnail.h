@@ -19,6 +19,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#define MAX_STARS 5
+
 typedef enum dt_thumbnail_border_t
 {
   DT_THUMBNAIL_BORDER_NONE = 0,
@@ -69,7 +71,7 @@ typedef struct
   GtkWidget *w_bottom_eb; // GtkEventBox -- background of the bottom infos area (contains w_bottom)
   GtkWidget *w_bottom;    // GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext
   GtkWidget *w_reject;    // GtkDarktableThumbnailBtn -- Reject icon
-  GtkWidget *w_stars[5];  // GtkDarktableThumbnailBtn -- Stars icons
+  GtkWidget *w_stars[MAX_STARS];  // GtkDarktableThumbnailBtn -- Stars icons
   GtkWidget *w_color;     // GtkDarktableThumbnailBtn -- Colorlabels "flower" icon
 
   GtkWidget *w_local_copy; // GtkDarktableThumbnailBtn -- localcopy triangle
