@@ -522,7 +522,7 @@ void expose(
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
     const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
@@ -580,7 +580,7 @@ void expose(
   else
   {
     // masks
-    if(dev->form_visible)
+    if(dev->form_visible && dev->gui_module->enabled)
     {
       // The masks paths should only be displayed inside the visible image
       const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
