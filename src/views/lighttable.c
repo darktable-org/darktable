@@ -310,10 +310,12 @@ static int _culling_preview_init_values(dt_view_t *self, gboolean culling, gbool
   if(first_id < 1)
   {
     // search the first selected image
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
-        "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "SELECT col.imgid "
+          "FROM memory.collected_images AS col, main.selected_images as sel "
+          "WHERE col.imgid=sel.imgid "
+          "ORDER BY col.rowid "
+          "LIMIT 1",
         -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -340,18 +342,19 @@ static int _culling_preview_init_values(dt_view_t *self, gboolean culling, gbool
   // selection count
   int sel_count = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT count(*) FROM memory.collected_images AS col, main.selected_images as sel "
-                              "WHERE col.imgid=sel.imgid",
+                              "SELECT count(*) "
+                                "FROM memory.collected_images AS col, main.selected_images as sel "
+                                "WHERE col.imgid=sel.imgid",
                               -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   // is first_id inside selection ?
   gboolean inside = FALSE;
-  gchar *query
-      = dt_util_dstrcat(NULL,
-                        "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images AS sel "
-                        "WHERE col.imgid=sel.imgid AND col.imgid=%d",
-                        first_id);
+  gchar *query = dt_util_dstrcat(NULL,
+                                "SELECT col.imgid "
+                                  "FROM memory.collected_images AS col, main.selected_images AS sel "
+                                  "WHERE col.imgid=sel.imgid AND col.imgid=%d",
+                                first_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
   sqlite3_finalize(stmt);
@@ -370,10 +373,12 @@ static int _culling_preview_init_values(dt_view_t *self, gboolean culling, gbool
     {
       lib->culling_follow_selection = TRUE;
       // ensure that first_id is the first selected
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images as sel "
-          "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "SELECT col.imgid "
+            "FROM memory.collected_images AS col, main.selected_images as sel "
+            "WHERE col.imgid=sel.imgid "
+            "ORDER BY col.rowid "
+            "LIMIT 1",
           -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -550,10 +555,12 @@ static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
   {
     // on dynamic mode, nb of image follow selection size
     // so we return first image in selection
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
-        "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "SELECT col.imgid "
+          "FROM main.selected_images as sel, memory.collected_images as col "
+          "WHERE col.imgid=sel.imgid "
+          "ORDER BY col.rowid "
+          "LIMIT 1",
         -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -564,12 +571,12 @@ static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
     {
       // we search the first still selected (this can be the current one)
       newid = -1;
-      gchar *query
-          = dt_util_dstrcat(NULL,
+      gchar *query = dt_util_dstrcat(NULL,
                             "SELECT col.imgid FROM memory.collected_images AS col, main.selected_images AS sel "
-                            "WHERE col.imgid=sel.imgid AND col.rowid>="
-                            "(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-                            "ORDER BY col.rowid LIMIT 1",
+                            "WHERE col.imgid=sel.imgid "
+                                  "AND col.rowid>=(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
+                            "ORDER BY col.rowid "
+                            "LIMIT 1",
                             imgid);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
@@ -579,10 +586,12 @@ static int _culling_find_first_valid_imgid(dt_view_t *self, int imgid)
       // if not found, revert to selection beginning
       if(newid < 0)
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(
-            dt_database_get(darktable.db),
-            "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
-            "WHERE col.imgid=sel.imgid ORDER BY col.rowid LIMIT 1",
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+            "SELECT col.imgid "
+              "FROM main.selected_images as sel, memory.collected_images as col "
+              "WHERE col.imgid=sel.imgid "
+              "ORDER BY col.rowid "
+              "LIMIT 1",
             -1, &stmt, NULL);
         if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
@@ -628,10 +637,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
         else
         {
           sqlite3_stmt *stmt;
-          DT_DEBUG_SQLITE3_PREPARE_V2(
-              dt_database_get(darktable.db),
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
               "SELECT col.imgid FROM main.selected_images as sel, memory.collected_images as col "
-              "WHERE col.imgid=sel.imgid",
+                "WHERE col.imgid=sel.imgid",
               -1, &stmt, NULL);
           while(sqlite3_step(stmt) == SQLITE_ROW)
           {
@@ -928,21 +936,25 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   if(lib->culling_use_selection)
   {
     query = dt_util_dstrcat(NULL,
-                            "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
-                            "main.selected_images AS s, images AS b WHERE "
-                            "m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s ORDER BY m.rowid LIMIT %d",
+                            "SELECT m.imgid, b.aspect_ratio "
+                              "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
+                              "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s "
+                              "ORDER BY m.rowid "
+                              "LIMIT %d",
                             rowid_txt, img_count);
   }
   else
   {
     query = dt_util_dstrcat(NULL,
-                            "SELECT m.imgid, b.aspect_ratio FROM "
-                            "(SELECT rowid, imgid FROM memory.collected_images"
-                            " WHERE rowid < %s + %d"
-                            " ORDER BY rowid DESC LIMIT %d) AS m, "
-                            "images AS b "
-                            "WHERE m.imgid = b.id "
-                            "ORDER BY m.rowid",
+                            "SELECT m.imgid, b.aspect_ratio "
+                              "FROM (SELECT rowid, imgid "
+                                      "FROM memory.collected_images "
+                                      "WHERE rowid < %s + %d "
+                                      "ORDER BY rowid DESC "
+                                      "LIMIT %d) AS m, "
+                                    "images AS b "
+                              "WHERE m.imgid = b.id "
+                              "ORDER BY m.rowid",
                             rowid_txt, img_count, img_count);
   }
 
@@ -987,9 +999,10 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
     const int nb = img_count - lib->slots_count;
     query = dt_util_dstrcat(NULL,
                             "SELECT m.imgid, b.aspect_ratio "
-                            "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
-                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %s "
-                            "ORDER BY m.rowid DESC LIMIT %d",
+                              "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
+                              "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %s "
+                              "ORDER BY m.rowid DESC "
+                              "LIMIT %d",
                             rowid_txt, nb);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
@@ -1281,22 +1294,25 @@ static void _culling_prefetch(dt_view_t *self)
       if(lib->culling_use_selection)
       {
         query = dt_util_dstrcat(NULL,
-                                "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
-                                "main.selected_images AS s, images AS b "
-                                "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
-                                "AND m.imgid = s.imgid AND m.imgid = b.id "
-                                "ORDER BY m.rowid %s "
-                                "LIMIT 1",
+                                "SELECT m.imgid, b.aspect_ratio "
+                                  "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
+                                  "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                                        "AND m.imgid = s.imgid "
+                                        "AND m.imgid = b.id "
+                                  "ORDER BY m.rowid %s "
+                                  "LIMIT 1",
                                 (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
       }
       else
       {
         query = dt_util_dstrcat(
             NULL,
-            "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b "
-            "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
-            "ORDER BY m.rowid %s "
-            "LIMIT 1",
+            "SELECT m.imgid, b.aspect_ratio "
+              "FROM memory.collected_images AS m, images AS b "
+              "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                    "AND m.imgid = b.id "
+              "ORDER BY m.rowid %s "
+              "LIMIT 1",
             (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
       }
       sqlite3_stmt *stmt;
