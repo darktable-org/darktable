@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2012 aldric renaudin.
-    copyright (c) 2013 Ulrich Pegelow.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -858,12 +856,18 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
-  if(border) dt_free_align(*border);
-  if(border) *border = NULL;
-  if(border) *border_count = 0;
-  if(payload) dt_free_align(*payload);
-  if(payload) *payload = NULL;
-  if(payload) *payload_count = 0;
+  if(border)
+  {
+    dt_free_align(*border);
+    *border = NULL;
+    *border_count = 0;
+  }
+  if(payload)
+  {
+    dt_free_align(*payload);
+    *payload = NULL;
+    *payload_count = 0;
+  }
   return 0;
 }
 
@@ -2309,11 +2313,11 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 
   // draw corners
-  float anchor_size;
   if(gui->group_selected == index && gpt->points_count > nb * 3 + 2)
   {
     for(int k = 0; k < nb; k++)
     {
+      float anchor_size;
       if(k == gui->point_dragging || k == gui->point_selected)
       {
         anchor_size = 7.0f / zoom_scale;

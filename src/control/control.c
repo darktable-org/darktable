@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2010--2013 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
     Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
@@ -527,6 +526,7 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
 
+#ifdef HAVE_GAME
   // ↑ ↑ ↓ ↓ ← → ← → b a
   static int konami_state = 0;
   static guint konami_sequence[] = {
@@ -552,7 +552,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
   else
     konami_state = 0;
-
+#endif
 
   // TODO: if darkroom mode
   // did a : vim-style command start?

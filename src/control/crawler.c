@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 tobias ellinghaus.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -384,7 +384,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
-  GtkWidget *reload_button = gtk_button_new_with_label(_("reload selected xmp files"));
+  GtkWidget *reload_button = gtk_button_new_with_label(_("update database from selected xmp files"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));
   gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);

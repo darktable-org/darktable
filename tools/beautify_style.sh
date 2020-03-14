@@ -1,9 +1,15 @@
 #!/bin/bash
 
+echo "THIS SCRIPT IS DEPRECATED"
+echo
+echo "It must be updated to ensure all strings are keep as-is"
+echo "and especially the SQL statements"
+exit 1
+
 # this uses clang-format to standardize our indentation/braces etc
 
 # change if your executable is named different
-CLANG_FORMAT=clang-format-3.6
+CLANG_FORMAT=clang-format-9
 
 
 # add all the files and directories that may not be reformatted, relative to src/

@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
-    copyright (c) 2010--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -454,7 +453,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(!base_value || !*base_value)
+        if(*base_value == '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -470,7 +469,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(*base_value)
+        if(*base_value != '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -493,15 +492,15 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
         expansion is the characters between offset and that result.
       */
       {
-        const size_t base_value_utf8_length = g_utf8_strlen(base_value, -1);
-        const int offset = strtol(*variable, variable, 10);
+        const glong base_value_utf8_length = g_utf8_strlen(base_value, -1);
+        const glong offset = strtol(*variable, variable, 10);
 
         // find where to start
         char *start; // from where to copy ...
         if(offset >= 0)
           start = g_utf8_offset_to_pointer(base_value, MIN(offset, base_value_utf8_length));
         else
-          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -1 * base_value_utf8_length));
+          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -base_value_utf8_length));
 
         // now find the end if there is a length provided
         char *end = base_value + base_value_length; // ... and until where
@@ -513,7 +512,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           if(length >= 0)
             end = g_utf8_offset_to_pointer(start, MIN(length, start_utf8_length));
           else
-            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -1 * start_utf8_length));
+            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -start_utf8_length));
         }
 
         char *_base_value = g_strndup(start, end - start);

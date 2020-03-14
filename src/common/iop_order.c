@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 edgardo hoszowski.
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,6 +53,21 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
                       "tree-vectorize")
 #endif
 
+const char *iop_order_string[] =
+{
+  N_("custom"),
+  N_("legacy"),
+  N_("v3.0")
+};
+
+const char *dt_iop_order_string(const dt_iop_order_t order)
+{
+  if(order >= DT_IOP_ORDER_LAST)
+    return "???";
+  else
+    return iop_order_string[order];
+}
+
 // note legacy_order & v30_order have the original iop-order double that is
 // used only for the initial database migration.
 //
@@ -89,6 +104,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
+  { {27.5f }, "negadoctor", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
   { {29.0f }, "colorchecker", 0},
@@ -170,6 +186,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
   { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
@@ -240,7 +257,7 @@ const dt_iop_order_entry_t v30_order[] = {
 static void *_dup_iop_order_entry(const void *src, gpointer data);
 static int _count_entries_operation(GList *e_list, const char *operation);
 
-#if 0
+
 static GList *_insert_before(GList *iop_order_list, const char *module, const char *new_module)
 {
   gboolean exists = FALSE;
@@ -274,7 +291,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
       {
         dt_iop_order_entry_t *new_entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-        strncpy(new_entry->operation, new_module, sizeof(new_entry->operation) - 1);
+        g_strlcpy(new_entry->operation, new_module, sizeof(new_entry->operation));
         new_entry->instance = 0;
         new_entry->o.iop_order = 0;
 
@@ -288,7 +305,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
   return iop_order_list;
 }
-#endif
+
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
@@ -476,7 +493,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
   return DT_IOP_ORDER_CUSTOM;
 }
 
-static gboolean _has_multiple_instances(GList *iop_order_list)
+gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
 {
   GList *l = iop_order_list;
 
@@ -484,8 +501,8 @@ static gboolean _has_multiple_instances(GList *iop_order_list)
   {
     GList *next = g_list_next(l);
     if(next
-       && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
-                 ((dt_iop_order_entry_t *)(next->data))->operation))
+       && (strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                  ((dt_iop_order_entry_t *)(next->data))->operation) == 0))
     {
       return TRUE;
     }
@@ -505,7 +522,7 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_li
   if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
   sqlite3_finalize(stmt);
 
-  if(kind == DT_IOP_ORDER_CUSTOM || _has_multiple_instances(iop_order_list))
+  if(kind == DT_IOP_ORDER_CUSTOM || dt_ioppr_has_multiple_instances(iop_order_list))
   {
     gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -547,7 +564,7 @@ GList *_table_to_list(const dt_iop_order_entry_t entries[])
   {
     dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-    strncpy(entry->operation, entries[k].operation, sizeof(entry->operation) - 1);
+    g_strlcpy(entry->operation, entries[k].operation, sizeof(entry->operation));
     entry->instance = 0;
     entry->o.iop_order_f = entries[k].o.iop_order_f;
     iop_order_list = g_list_append(iop_order_list, entry);
@@ -612,9 +629,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         {
           // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
-#if 0
-          _insert_before(iop_order_list, "<CURRENT_MODULE>", "<NEW_MODULE>");
-#endif
+          _insert_before(iop_order_list, "nlmeans", "negadoctor");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
@@ -946,7 +961,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   return INT_MAX;
 }
 
- void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
+void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
   GList *e_list = entry_list;
 
@@ -954,6 +969,15 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
   while(e_list)
   {
     const dt_iop_order_entry_t *const restrict ep = (dt_iop_order_entry_t *)e_list->data;
+
+    gboolean force_append = FALSE;
+
+    // we also need to force append (even if overwrite mode is
+    // selected - append = FALSE) when a module has a specific name
+    // and this name is not present into the current iop list.
+
+    if(*ep->name && !dt_iop_get_module_by_instance_name(dev->iop, ep->operation, ep->name))
+      force_append = TRUE;
 
     int max_multi_priority = 0, count = 0;
     int max_multi_priority_enabled = 0, count_enabled = 0;
@@ -978,7 +1002,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
         int start_multi_priority = 0;
         int nb_replace = 0;
 
-        if(append)
+        if(append || force_append)
         {
           nb_replace = count - count_enabled;
           add_count = MAX(0, new_active_instances - nb_replace);
@@ -1023,7 +1047,7 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
         for(int k = 0; k<add_count; k++)
         {
           dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-          strncpy(n->operation, ep->operation, sizeof(n->operation));
+          g_strlcpy(n->operation, ep->operation, sizeof(n->operation));
           n->instance = multi_priority++;
           n->o.iop_order = 0;
           dev->iop_order_list = g_list_insert_before(dev->iop_order_list, l, n);
@@ -1055,6 +1079,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, gboolea
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     memcpy(n->operation, si->operation, sizeof(n->operation));
     n->instance = si->multi_priority;
+    g_strlcpy(n->name, si->multi_name, sizeof(n->name));
     n->o.iop_order = 0;
     e_list = g_list_append(e_list, n);
 
@@ -1093,8 +1118,9 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, gboolean app
     const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)m_list->data;
 
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-    strncpy(n->operation, mod->op, sizeof(n->operation));
+    g_strlcpy(n->operation, mod->op, sizeof(n->operation));
     n->instance = mod->multi_priority;
+    g_strlcpy(n->name, mod->multi_name, sizeof(n->name));
     n->o.iop_order = 0;
     e_list = g_list_append(e_list, n);
 
@@ -1760,7 +1786,7 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *
 
   dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
 
-  strncpy(entry->operation, operation, sizeof(entry->operation));
+  g_strlcpy(entry->operation, operation, sizeof(entry->operation));
   entry->instance = instance;
   entry->o.iop_order = 0;
 
@@ -1978,7 +2004,7 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 
     // first operation name
 
-    strncpy(entry->operation, (char *)l->data, sizeof(entry->operation) - 1);
+    g_strlcpy(entry->operation, (char *)l->data, sizeof(entry->operation));
 
     // then operation instance
 

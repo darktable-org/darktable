@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1977,7 +1976,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
 // Copied from dcraw's pseudoinverse()
 static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
 {
-  double work[3][6], num;
+  double work[3][6];
 
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 6; j++)
@@ -1987,7 +1986,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
         work[i][j] += in[k][i] * in[k][j];
   }
   for(int i = 0; i < 3; i++) {
-    num = work[i][i];
+    double num = work[i][i];
     for(int j = 0; j < 6; j++)
       work[i][j] /= num;
     for(int k = 0; k < 3; k++) {

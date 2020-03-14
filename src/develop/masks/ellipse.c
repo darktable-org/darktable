@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012--2013 aldric renaudin.
-    copyright (c) 2013--2016 Ulrich Pegelow.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1898,11 +1897,11 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse total render took %0.04f sec\n", form->name, dt_get_wtime() - start1);
-
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse total render took %0.04f sec\n", form->name,
+             dt_get_wtime() - start1);
+  }
   return 1;
 }
 

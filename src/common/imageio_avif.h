@@ -1,5 +1,6 @@
 /*
  * This file is part of darktable,
+ * Copyright (C) 2019 darktable developers.
  *
  *  Copyright (c) 2019      Andreas Schneider
  *

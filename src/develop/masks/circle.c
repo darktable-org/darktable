@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 aldric renaudin.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1171,10 +1171,11 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] circle total render took %0.04f sec\n", form->name, dt_get_wtime() - start1);
+    dt_print(DT_DEBUG_MASKS, "[masks %s] circle total render took %0.04f sec\n", form->name,
+             dt_get_wtime() - start1);
+  }
 
   return 1;
 }

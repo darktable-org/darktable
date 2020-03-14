@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -354,10 +354,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->filmstrip, TRUE, TRUE, 0);
 
   /* initialize view manager proxy */
-  darktable.view_manager->proxy.filmstrip.module = self;
+  darktable.view_manager->proxy.filmstrip.module          = self;
   darktable.view_manager->proxy.filmstrip.scroll_to_image = _lib_filmstrip_scroll_to_image;
   darktable.view_manager->proxy.filmstrip.activated_image = _lib_filmstrip_get_activated_imgid;
-  darktable.view_manager->proxy.filmstrip.widget = _lib_filmstrip_get_widget;
+  darktable.view_manager->proxy.filmstrip.widget          = _lib_filmstrip_get_widget;
 
   /* connect signal handler */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
@@ -885,10 +885,11 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
   const int img = dt_view_get_image_to_act_on();
 
   if(img < 0)
-    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE, strip->dg.selops);
+    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
+                                           strip->dg.selops, strip->dg.copy_iop_order);
   else
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
-                                       strip->dg.selops);
+                                       strip->dg.selops, strip->dg.copy_iop_order);
 
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -909,10 +910,11 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
   if(res == GTK_RESPONSE_CANCEL) return FALSE;
 
   if(img < 0)
-    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE, strip->dg.selops);
+    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
+                                           strip->dg.selops, strip->dg.copy_iop_order);
   else
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
-                                       strip->dg.selops);
+                                       strip->dg.selops, strip->dg.copy_iop_order);
 
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -946,7 +948,7 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
   const int32_t newimgid = dt_image_duplicate(mouse_over_id);
   if(newimgid != -1)
   {
-    dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL);
+    dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL, TRUE);
     dt_collection_update_query(darktable.collection);
   }
 

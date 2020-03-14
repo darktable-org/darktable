@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@ const gchar *dt_database_get_path(const struct dt_database_t *db);
 gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
 /** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
 void dt_database_show_error(const struct dt_database_t *db);
+/** perform pre-db-close optimizations (always call when quiting darktable) */
+void dt_database_optimize(const struct dt_database_t *);
+/** conditionally perfrom db maintenance */
+void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

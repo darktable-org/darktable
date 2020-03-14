@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2012-2016 tobias ellinghaus.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +26,7 @@
 #include "common/file_location.h"
 #include "common/iop_order.h"
 #include "common/styles.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/legacy_presets.h"
@@ -44,8 +44,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 23
-#define CURRENT_DATABASE_VERSION_DATA     5
+#define CURRENT_DATABASE_VERSION_LIBRARY 24
+#define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
 {
@@ -1214,7 +1214,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     {
       const int32_t imgid = sqlite3_column_int(mig_stmt, 0);
       char operation[20] = { 0 };
-      memcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
+      g_strlcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
       const int multi_priority = sqlite3_column_int(mig_stmt, 2);
       const double iop_order = sqlite3_column_double(mig_stmt, 3);
       const int iop_order_version = sqlite3_column_int(mig_stmt, 4);
@@ -1290,8 +1290,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             GList *next = g_list_next(l);
             if(next
-               && strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
-                         ((dt_iop_order_entry_t *)(next->data))->operation))
+               && (strcmp(((dt_iop_order_entry_t *)(l->data))->operation,
+                          ((dt_iop_order_entry_t *)(next->data))->operation) == 0))
             {
               has_multiple_instances = TRUE;
               break;
@@ -1414,6 +1414,114 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 23;
+  }
+  else if(version == 23)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    TRY_EXEC("CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+             "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
+             "[init] can't create table history_hash\n");
+
+    // use the former dt_image_altered() to initialise the history_hash table
+    // insert an history_hash entry for all images which have an history
+    // note that images without history don't get hash and are considered as basic
+    sqlite3_stmt *h_stmt;
+    const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+    char *query = NULL;
+    query = dt_util_dstrcat(query,
+                            "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
+                            // first, images which are both in images and history (avoids history orphans)
+                            "FROM (SELECT DISTINCT id FROM main.images JOIN main.history ON imgid = id) "
+                            "LEFT JOIN (SELECT DISTINCT imgid FROM main.images JOIN main.history ON imgid = id "
+                            "           WHERE num < history_end AND enabled = 1"
+                            "             AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare', "
+                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)) "
+                            "ON imgid = id",
+                             basecurve_auto_apply ? ", 'basecurve'" : "",
+                             sharpen_auto_apply ? ", 'sharpen'" : "");
+    TRY_PREPARE(h_stmt, query,
+                "[init] can't prepare selecting history for history_hash migration\n");
+    while(sqlite3_step(h_stmt) == SQLITE_ROW)
+    {
+      const int32_t imgid= sqlite3_column_int(h_stmt, 0);
+      const int32_t altered = sqlite3_column_int(h_stmt, 1);
+
+      guint8 *hash = NULL;
+      GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+      gsize hash_len = 0;
+
+      // get history
+      sqlite3_stmt *h2_stmt;
+      sqlite3_prepare_v2(db->handle,
+                         "SELECT operation, op_params, blendop_params"
+                         " FROM main.history"
+                         " WHERE imgid = ?1 AND enabled = 1"
+                         " ORDER BY num",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      while(sqlite3_step(h2_stmt) == SQLITE_ROW)
+      {
+        // operation
+        char *buf = (char *)sqlite3_column_text(h2_stmt, 0);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+        // op_params
+        buf = (char *)sqlite3_column_blob(h2_stmt, 1);
+        int params_len = sqlite3_column_bytes(h2_stmt, 1);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+        // blendop_params
+        buf = (char *)sqlite3_column_blob(h2_stmt, 2);
+        params_len = sqlite3_column_bytes(h2_stmt, 2);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      }
+      sqlite3_finalize(h2_stmt);
+
+      // get module order
+      h2_stmt = NULL;
+      sqlite3_prepare_v2(db->handle,
+                         "SELECT version, iop_list"
+                         " FROM main.module_order"
+                         " WHERE imgid = ?1",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      if(sqlite3_step(h2_stmt) == SQLITE_ROW)
+      {
+        const int version_h = sqlite3_column_int(h2_stmt, 0);
+        g_checksum_update(checksum, (const guchar *)&version_h, sizeof(version_h));
+        if(version_h == DT_IOP_ORDER_CUSTOM)
+        {
+          // iop_list
+          const char *buf = (char *)sqlite3_column_text(h2_stmt, 1);
+          if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+        }
+      }
+      sqlite3_finalize(h2_stmt);
+
+      const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
+      hash = g_malloc(checksum_len);
+      hash_len = checksum_len;
+      g_checksum_get_digest(checksum, hash, &hash_len);
+
+      g_checksum_free(checksum);
+      // insert the hash for that image
+      h2_stmt = NULL;
+      sqlite3_prepare_v2(db->handle,
+                         "INSERT INTO main.history_hash"
+                         " VALUES (?1, ?2, NULL, ?3)",
+                         -1, &h2_stmt, NULL);
+      sqlite3_bind_int(h2_stmt, 1, imgid);
+      sqlite3_bind_blob(h2_stmt, 2, altered ? NULL : hash, altered ? 0 : hash_len, SQLITE_TRANSIENT);
+      sqlite3_bind_blob(h2_stmt, 3, hash, hash_len, SQLITE_TRANSIENT);
+      TRY_STEP(h2_stmt, SQLITE_DONE, "[init] can't insert into history_hash\n");
+      sqlite3_finalize(h2_stmt);
+      g_free(hash);
+    }
+    sqlite3_finalize(h_stmt);
+    g_free(query);
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 24;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1559,7 +1667,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
              "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
              "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
-             "[init] can't create s table'\n");
+             "[init] can't create style_items table'\n");
     TRY_EXEC("INSERT INTO data.style_items SELECT styleid, num, module, operation, op_params, enabled, "
              " blendop_params, blendop_version, multi_priority, multi_name "
              "FROM s",
@@ -1570,6 +1678,32 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 5;
+  }
+  else if(version == 5)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // make style.id a PRIMARY KEY and add iop_list
+    TRY_EXEC("ALTER TABLE data.styles RENAME TO s",
+             "[init] can't rename styles to s\n");
+    TRY_EXEC("CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
+             "[init] can't create styles table\n");
+    TRY_EXEC("INSERT INTO data.styles SELECT id, name, description, NULL FROM s",
+             "[init] can't populate styles table\n");
+    TRY_EXEC("DROP TABLE s",
+             "[init] can't drop table s\n");
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS data.styles_name_index ON styles (name)",
+             "[init] can't create styles_nmae_index\n");
+
+    // make style_items.styleid index
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS data.style_items_styleid_index ON style_items (styleid)",
+             "[init] can't create style_items_styleid_index\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 6;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1596,7 +1730,7 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_LIBRARY)
   {
-    int new_version = _upgrade_library_schema_step(db, version);
+    const int new_version = _upgrade_library_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_library_schema_step
     else
@@ -1611,7 +1745,7 @@ static gboolean _upgrade_data_schema(dt_database_t *db, int version)
 {
   while(version < CURRENT_DATABASE_VERSION_DATA)
   {
-    int new_version = _upgrade_data_schema_step(db, version);
+    const int new_version = _upgrade_data_schema_step(db, version);
     if(new_version == version)
       return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_data_schema_step
     else
@@ -1696,6 +1830,9 @@ static void _create_library_schema(dt_database_t *db)
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
+               NULL, NULL, NULL);
 }
 
 /* create the current database schema and set the version in db_info accordingly */
@@ -1715,14 +1852,19 @@ static void _create_data_schema(dt_database_t *db)
                            "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
-  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER, name VARCHAR, description VARCHAR)",
+  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
                         NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX data.styles_name_index ON styles (name)", NULL, NULL, NULL);
   ////////////////////////////// style_items
   sqlite3_exec(
       db->handle,
       "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      NULL, NULL, NULL);
+  sqlite3_exec(
+      db->handle,
+      "CREATE INDEX IF NOT EXISTS data.style_items_styleid_index ON style_items (styleid)",
       NULL, NULL, NULL);
   ////////////////////////////// presets
   sqlite3_exec(db->handle, "CREATE TABLE data.presets (name VARCHAR, description VARCHAR, operation "
@@ -1771,6 +1913,8 @@ static void _create_memory_schema(dt_database_t *db)
       "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
       "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
       NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+      "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))", NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
@@ -1930,7 +2074,7 @@ static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename,
 {
   gboolean lock_acquired = FALSE;
   mode_t old_mode;
-  int fd = 0, lock_tries = 0;
+  int lock_tries = 0;
   gchar *pid = g_strdup_printf("%d", getpid());
 
   if(!strcmp(dbfilename, ":memory:"))
@@ -1943,7 +2087,7 @@ static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename,
 lock_again:
     lock_tries++;
     old_mode = umask(0);
-    fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    int fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
     if(fd != -1) // the lockfile was successfully created - write our PID into it
@@ -2118,15 +2262,15 @@ start:
     if(!dbname)
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/library.db", datadir);
     else if(!strcmp(dbname, ":memory:"))
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
     else if(dbname[0] != '/')
       snprintf(dbfilename_library, sizeof(dbfilename_library), "%s/%s", datadir, dbname);
     else
-      snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", dbname);
+      g_strlcpy(dbfilename_library, dbname, sizeof(dbfilename_library));
   }
   else
   {
-    snprintf(dbfilename_library, sizeof(dbfilename_library), "%s", alternative);
+    g_strlcpy(dbfilename_library, alternative, sizeof(dbfilename_library));
 
     GFile *galternative = g_file_new_for_path(alternative);
     dbname = g_file_get_basename(galternative);
@@ -2250,6 +2394,11 @@ start:
           db = NULL;
           goto error;
         }
+
+        // upgrade was successfull, time for some housekeeping
+        sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+        sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
+
       }
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
       {
@@ -2328,6 +2477,10 @@ start:
         db = NULL;
         goto error;
       }
+
+      // upgrade was successfull, time for some housekeeping
+      sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+      sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
@@ -2521,6 +2674,157 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
 {
   return db->lock_acquired;
 }
+
+void _dt_database_maintenance(const struct dt_database_t *db)
+{
+  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+}
+
+gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
+{
+  if(!has_gui)
+  {
+    return FALSE;
+  }
+
+  char *later_info = NULL;
+  char *size_info = g_format_size(size);
+  char *config = dt_conf_get_string("database/maintenance_check");
+  if((closing_time && (!g_strcmp0(config, "on both"))) || !g_strcmp0(config, "on startup"))
+  {
+    later_info = _("click later to be asked on next startup");
+  }
+  else if (!closing_time && (!g_strcmp0(config, "on both")))
+  {
+    later_info = _("click later to be asked when closing darktable");
+  }
+  else if (!g_strcmp0(config, "on close"))
+  {
+    later_info = _("click later to be asked next time when closing darktable");
+  }
+
+
+  char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
+                                                 "\n"
+                                                 "there's <span style=\"italic\">%s</span> to be freed"
+                                                 "\n\n"
+                                                 "do you want to proceed now?\n\n"
+                                                 "%s\n"
+                                                 "you can always change maintenance preferences in core options"),
+                                                 size_info, later_info);
+
+    const gboolean shall_perform_maintenance =
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - schema maintenance"), label_text,
+                                           _("later"), _("yes"));
+
+    g_free(label_text);
+    g_free(size_info);
+
+    return shall_perform_maintenance;
+}
+
+int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+{
+  char *config = dt_conf_get_string("database/maintenance_check");
+
+  if(!g_strcmp0(config, "never"))
+  {
+    // early bail out on "never"
+    dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
+    return;
+  }
+
+  gboolean check_for_maintenance = FALSE;
+  const gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
+
+  if(config)
+  {
+    if((strstr(config, "on both")) // should cover "(don't ask) suffix
+        || (closing_time && (strstr(config, "on close")))
+        || (!closing_time && (strstr(config, "on startup"))))
+    {
+      // we have "on both/on close/on startup" setting, so - checking!
+      dt_print(DT_DEBUG_SQL, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
+      check_for_maintenance = TRUE;
+    }
+    // if the config was "never", check_for_vacuum is false.
+    g_free(config);
+  }
+
+  if(!check_for_maintenance)
+  {
+    return;
+  }
+
+  // checking free pages
+  const int main_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int main_page_count = _get_pragma_val(db, "main.page_count");
+  const int main_page_size = _get_pragma_val(db, "main.page_size");
+
+  const int data_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int data_page_count = _get_pragma_val(db, "data.page_count");
+  const int data_page_size = _get_pragma_val(db, "data.page_size");
+
+  dt_print(DT_DEBUG_SQL,
+      "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
+      main_free_count, main_page_count, data_free_count, data_page_count);
+
+  if(main_page_count <= 0 || data_page_count <= 0)
+  {
+    //something's wrong with PRAGMA page_size returns. early bail.
+    dt_print(DT_DEBUG_SQL,
+        "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
+        main_page_count, data_page_count);
+    return;
+  }
+
+  // we don't need fine-grained percentages, so let's do ints
+  const int main_free_percentage = (main_free_count * 100 ) / main_page_count;
+  const int data_free_percentage = (data_free_count * 100 ) / data_page_count;
+
+  const int freepage_ratio = dt_conf_get_int("database/maintenance_freepage_ratio");
+
+  if((main_free_percentage >= freepage_ratio)
+      || (data_free_percentage >= freepage_ratio))
+  {
+    const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
+
+    if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
+    {
+      _dt_database_maintenance(db);
+      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GUINT64_FORMAT " bytes freed.\n", calc_size);
+    }
+  }
+}
+
+void dt_database_optimize(const struct dt_database_t *db)
+{
+  // optimize should in most cases be no-op and have no noticeable downsides
+  // this should be ran on every exit
+  // see: https://www.sqlite.org/pragma.html#pragma_optimize
+  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 henrik andersson.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ typedef struct dt_gui_hist_dialog_t
   GList *selops;
   GtkTreeView *items;
   int copied_imageid;
+  gboolean copy_iop_order;
 } dt_gui_hist_dialog_t;
 
 /** shows a dialog for creating a new style, w if not null is a widget to

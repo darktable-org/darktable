@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -612,6 +611,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_widget_set_name(GTK_WIDGET(hbox), "export-max-size");
   label = gtk_label_new(_("max size"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);

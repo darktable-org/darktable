@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 Google Inc.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -182,9 +182,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   }
 
   WebPPictureFree(&pic);
-  pic_init = 0;
   fclose(out);
-  out = NULL;
 
   dt_exif_write_blob(exif, exif_len, filename, 1);
 

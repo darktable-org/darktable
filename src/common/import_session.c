@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 Henrik Andersson.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -241,6 +241,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
   /* expand next filename */
   g_free((void *)self->current_filename);
+  self->current_filename = NULL;
   pattern = _import_session_filename_pattern();
   if(pattern == NULL)
   {

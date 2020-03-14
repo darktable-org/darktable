@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson,
-    copyright (c) 2011-2012 johannes hanika
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -382,7 +381,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     }
 
     module->enabled = mod_src->enabled;
-    snprintf(module->multi_name, sizeof(module->multi_name), "%s", mod_src->multi_name);
+    g_strlcpy(module->multi_name, mod_src->multi_name, sizeof(module->multi_name));
 
     memcpy(module->params, mod_src->params, module->params_size);
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
@@ -704,7 +703,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   return ret_val;
 }
 
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops)
+int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -723,6 +722,13 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
   hist->imgid = dest_imgid;
   dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
+  if(copy_iop_order)
+  {
+    GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+    dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
+    g_list_free_full(iop_list, g_free);
+  }
 
   int ret_val = 0;
   if(merge)
@@ -782,15 +788,14 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   {
     if(strcmp((const char*)sqlite3_column_text(stmt, 1), "mask_manager") == 0) continue;
 
-    char name[512] = { 0 };
     const int is_active = sqlite3_column_int(stmt, 2);
 
     if(enabled == FALSE || is_active)
     {
+      char name[512] = { 0 };
       dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
       item->num = sqlite3_column_int(stmt, 0);
-      char *mname = NULL;
-      mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
+      char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if(enabled)
       {
         if(strcmp(mname, "0") == 0)
@@ -851,7 +856,7 @@ char *dt_history_get_items_as_string(int32_t imgid)
   return result;
 }
 
-int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops)
+int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops, gboolean copy_iop_order)
 {
   if(imgid < 0) return 1;
 
@@ -869,7 +874,7 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
       int32_t dest_imgid = sqlite3_column_int(stmt, 0);
 
       /* paste history stack onto image id */
-      dt_history_copy_and_paste_on_image(imgid, dest_imgid, merge, ops);
+      dt_history_copy_and_paste_on_image(imgid, dest_imgid, merge, ops, copy_iop_order);
 
     } while(sqlite3_step(stmt) == SQLITE_ROW);
     dt_undo_end_group(darktable.undo);
@@ -1204,6 +1209,259 @@ GList *dt_history_duplicate(GList *hist)
     h = g_list_next(h);
   }
   return result;
+}
+
+#if 0
+// for debug
+static gchar *_hash_history_to_string(guint8 *hash, const gsize checksum_len)
+{
+  char *hash_text = NULL;
+  guint8 *p = hash;
+  for(int i=0; i<checksum_len; i++)
+  {
+    uint8_t byte = p[0];
+    hash_text = dt_util_dstrcat(hash_text, "%02x", byte);
+    p++;
+  }
+  return hash_text;
+}
+#endif
+
+// if the image has no history return 0
+static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
+{
+  if(imgid == -1) return 0;
+
+  GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+  gsize hash_len = 0;
+
+  // get history
+  gboolean history_on = FALSE;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation, op_params, blendop_params"
+                              " FROM main.history"
+                              " WHERE imgid = ?1 AND enabled = 1"
+                              " ORDER BY num",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    // operation
+    char *buf = (char *)sqlite3_column_text(stmt, 0);
+    if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+    // op_params
+    buf = (char *)sqlite3_column_blob(stmt, 1);
+    int params_len = sqlite3_column_bytes(stmt, 1);
+    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+    // blendop_params
+    buf = (char *)sqlite3_column_blob(stmt, 2);
+    params_len = sqlite3_column_bytes(stmt, 2);
+    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+    history_on = TRUE;
+  }
+  sqlite3_finalize(stmt);
+
+  if(history_on)
+  {
+    // get module order
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT version, iop_list"
+                                " FROM main.module_order"
+                                " WHERE imgid = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int version = sqlite3_column_int(stmt, 0);
+      g_checksum_update(checksum, (const guchar *)&version, sizeof(version));
+      if(version == DT_IOP_ORDER_CUSTOM)
+      {
+        // iop_list
+        const char *buf = (char *)sqlite3_column_text(stmt, 1);
+        if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+      }
+    }
+    sqlite3_finalize(stmt);
+
+    const gsize checksum_len = g_checksum_type_get_length(G_CHECKSUM_MD5);
+    *hash = g_malloc(checksum_len);
+    hash_len = checksum_len;
+    g_checksum_get_digest(checksum, *hash, &hash_len);
+  }
+  g_checksum_free(checksum);
+
+  return hash_len;
+}
+
+void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type)
+{
+  if(imgid == -1) return;
+
+  guint8 *hash = NULL;
+  gsize hash_len = _history_hash_compute_from_db(imgid, &hash);
+  if(hash_len)
+  {
+    char *fields = NULL;
+    char *values = NULL;
+    char *conflict = NULL;
+    if(type & DT_HISTORY_HASH_BASIC)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "basic_hash");
+      values = g_strdup("?2,");
+      conflict = g_strdup("basic_hash=?2,");
+    }
+    if(type & DT_HISTORY_HASH_AUTO)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "auto_hash");
+      values = dt_util_dstrcat(values, "?2,");
+      conflict = dt_util_dstrcat(conflict, "auto_hash=?2,");
+    }
+    if(type & DT_HISTORY_HASH_CURRENT)
+    {
+      fields = dt_util_dstrcat(fields, "%s,", "current_hash");
+      values = dt_util_dstrcat(values, "?2,");
+      conflict = dt_util_dstrcat(conflict, "current_hash=?2,");
+    }
+    // remove the useless last comma
+    if(fields) fields[strlen(fields) - 1] = '\0';
+    if(values) values[strlen(values) - 1] = '\0';
+    if(conflict) conflict[strlen(conflict) - 1] = '\0';
+
+    if(fields)
+    {
+      sqlite3_stmt *stmt;
+#ifdef HAVE_SQLITE_324_OR_NEWER
+      char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
+                                          " (imgid, %s) VALUES (?1, %s)"
+                                          " ON CONFLICT (imgid)"
+                                          " DO UPDATE SET %s",
+                                          fields, values, conflict);
+#else
+      char *query = NULL;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT imgid FROM main.history_hash"
+                                  " WHERE imgid = ?1",
+                                   -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        sqlite3_finalize(stmt);
+        query = dt_util_dstrcat(NULL, "UPDATE main.history_hash"
+                                      " SET %s"
+                                      " WHERE imgid = ?1",
+                                      conflict);
+      }
+      else
+      {
+        sqlite3_finalize(stmt);
+        query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
+                                      " (imgid, %s) VALUES (?1, %s)",
+                                      fields, values);
+      }
+#endif
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash, hash_len, SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      g_free(query);
+      g_free(fields);
+      g_free(values);
+      g_free(conflict);
+    }
+    g_free(hash);
+  }
+}
+
+void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash)
+{
+  if(hash->basic || hash->auto_apply || hash->current)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "INSERT OR REPLACE INTO main.history_hash"
+                                " (imgid, basic_hash, auto_hash, current_hash)"
+                                " VALUES (?1, ?2, ?3, ?4)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, hash->basic, hash->basic_len, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, hash->auto_apply, hash->auto_apply_len, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, hash->current, hash->current_len, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    g_free(hash->basic);
+    g_free(hash->auto_apply);
+    g_free(hash->current);
+  }
+}
+
+void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
+{
+  hash->basic = hash->auto_apply = hash->current = NULL;
+  hash->basic_len = hash->auto_apply_len = hash->current_len = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT basic_hash, auto_hash, current_hash"
+                              " FROM main.history_hash"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    void *buf = (void *)sqlite3_column_blob(stmt, 0);
+    hash->basic_len = sqlite3_column_bytes(stmt, 0);
+    if(buf)
+    {
+      hash->basic = malloc(hash->basic_len);
+      memcpy(hash->basic, buf, hash->basic_len);
+    }
+    buf = (void *)sqlite3_column_blob(stmt, 1);
+    hash->auto_apply_len = sqlite3_column_bytes(stmt, 1);
+    if(buf)
+    {
+      hash->auto_apply = malloc(hash->auto_apply_len);
+      memcpy(hash->auto_apply, buf, hash->auto_apply_len);
+    }
+    buf = (void *)sqlite3_column_blob(stmt, 2);
+    hash->current_len = sqlite3_column_bytes(stmt, 2);
+    if(buf)
+    {
+      hash->current = malloc(hash->current_len);
+      memcpy(hash->current, buf, hash->current_len);
+    }
+  }
+  sqlite3_finalize(stmt);
+}
+
+const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
+{
+  dt_history_hash_t status = 0;
+  if(imgid == -1) return status;
+  sqlite3_stmt *stmt;
+  char *query = dt_util_dstrcat(NULL,
+                                "SELECT CASE"
+                                "  WHEN basic_hash == current_hash THEN %d"
+                                "  WHEN auto_hash == current_hash THEN %d"
+                                "  WHEN (basic_hash IS NULL OR current_hash != basic_hash) AND"
+                                "       (auto_hash IS NULL OR current_hash != auto_hash) THEN %d"
+                                "  ELSE %d END AS status"
+                                " FROM main.history_hash"
+                                " WHERE imgid = %d",
+                                DT_HISTORY_HASH_BASIC, DT_HISTORY_HASH_AUTO,
+                                DT_HISTORY_HASH_CURRENT, DT_HISTORY_HASH_BASIC, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    status = sqlite3_column_int(stmt, 0);
+  }
+  // if no history_hash basic status
+  else status = DT_HISTORY_HASH_BASIC;
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return status;
 }
 
 #undef DT_IOP_ORDER_INFO

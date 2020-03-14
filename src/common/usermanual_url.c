@@ -1,5 +1,6 @@
 /*
     This file is part of darktable,
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,5 +131,6 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "invert")) return "modules.html#invert";
   if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
   if(!strcmp(name, "filmic")) return "tone_group.html#filmic";
+  if(!strcmp(name, "filmicrgb")) return "tone_group.html#filmic";
   return NULL;
 }

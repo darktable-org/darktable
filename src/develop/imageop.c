@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 Henrik Andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -575,8 +573,8 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander, -1);
 
-    gtk_widget_destroy(module->widget);
     dt_iop_gui_cleanup_module(module);
+    gtk_widget_destroy(module->widget);
   }
 
   // we remove all references in the history stack and dev->iop
@@ -628,7 +626,6 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   module->accel_closures = NULL;
   // don't delete the module, a pipe may still need it
   dev->alliop = g_list_append(dev->alliop, module);
-  module = NULL;
 
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
@@ -737,6 +734,8 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   prev->dev->preview_pipe->cache_obsolete = 1;
   prev->dev->preview2_pipe->cache_obsolete = 1;
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(prev->dev);
 }
@@ -776,6 +775,8 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   next->dev->pipe->cache_obsolete = 1;
   next->dev->preview_pipe->cache_obsolete = 1;
   next->dev->preview2_pipe->cache_obsolete = 1;
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(next->dev);
@@ -1579,7 +1580,6 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
-  uint64_t hash = 5381;
   piece->hash = 0;
 
   if(piece->enabled)
@@ -1613,6 +1613,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
 
     module->commit_params(module, params, pipe, piece);
+    uint64_t hash = 5381;
     for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
 
@@ -1878,6 +1879,11 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
   if(e->button == 1)
   {
+    if(e->state & GDK_SHIFT_MASK)
+    {
+      _iop_gui_rename_module(module);
+      return FALSE;
+    }
     if((e->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
@@ -2180,6 +2186,31 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   sqlite3_finalize(stmt);
 }
 
+// to be called before issuing any query based on memory.darktable_iop_names
+void dt_iop_set_darktable_iop_table()
+{
+  sqlite3_stmt *stmt;
+  gchar *module_list = NULL;
+  GList *iop = g_list_first(darktable.iop);
+  while(iop != NULL)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+    module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module->name());
+    iop = g_list_next(iop);
+  }
+
+  if(module_list)
+  {
+    module_list[strlen(module_list) - 1] = '\0';
+    char *query = dt_util_dstrcat(NULL, "INSERT INTO memory.darktable_iop_names (operation, name) VALUES %s", module_list);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    g_free(query);
+    g_free(module_list);
+  }
+}
+
 gchar *dt_iop_get_localized_name(const gchar *op)
 {
   // Prepare mapping op -> localized name
@@ -2363,6 +2394,27 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *op
 
     if(strcmp(mod->op, operation) == 0
        && (mod->multi_priority == multi_priority || multi_priority == -1))
+    {
+      mod_ret = mod;
+      break;
+    }
+
+    m = g_list_next(m);
+  }
+  return mod_ret;
+}
+
+dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name)
+{
+  dt_iop_module_t *mod_ret = NULL;
+
+  GList *m = g_list_first(modules);
+  while(m)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+
+    if((strcmp(mod->op, operation) == 0)
+       && ((multi_name == NULL) || (strcmp(mod->multi_name, multi_name) == 0)))
     {
       mod_ret = mod;
       break;

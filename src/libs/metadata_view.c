@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,12 +73,10 @@ enum
   md_height,
 
   /* xmp */
-  md_xmp_title,
-  md_xmp_creator,
-  md_xmp_rights,
+  md_xmp_metadata,
 
   /* geotagging */
-  md_geotagging_lat,
+  md_geotagging_lat = md_xmp_metadata + DT_METADATA_NUMBER,
   md_geotagging_lon,
   md_geotagging_ele,
 
@@ -124,9 +122,12 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_height] = _("export height");
 
   /* xmp */
-  _md_labels[md_xmp_title] = _("title");
-  _md_labels[md_xmp_creator] = _("creator");
-  _md_labels[md_xmp_rights] = _("copyright");
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    _md_labels[md_xmp_metadata+i] = _(name);
+  }
 
   /* geotagging */
   _md_labels[md_geotagging_lat] = _("latitude");
@@ -141,6 +142,7 @@ static void _lib_metatdata_view_init_labels()
 
 typedef struct dt_lib_metadata_view_t
 {
+  GtkLabel *name[md_size];
   GtkLabel *metadata[md_size];
 } dt_lib_metadata_view_t;
 
@@ -276,7 +278,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
 
-    snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"));
+    g_strlcpy(value, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(value));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
@@ -490,35 +492,34 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* XMP */
     GList *res;
-    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL)) != NULL)
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
-      snprintf(value, sizeof(value), "%s", (char *)res->data);
-      _filter_non_printable(value, sizeof(value));
-      g_list_free_full(res, &g_free);
+      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+      const gchar *key = dt_metadata_get_key(keyid);
+      if((res = dt_metadata_get(img->id, key, NULL)) != NULL)
+      {
+        g_strlcpy(value, (char *)res->data, sizeof(value));
+        _filter_non_printable(value, sizeof(value));
+        g_list_free_full(res, &g_free);
+      }
+      else
+        g_strlcpy(value, NODATA_STRING, sizeof(value));
+      _metadata_update_value(d->metadata[md_xmp_metadata+i], value);
+      const gchar *name = dt_metadata_get_name(keyid);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+      const gboolean hidden = dt_conf_get_bool(setting);
+      g_free(setting);
+      if(hidden)
+      {
+        gtk_widget_hide(GTK_WIDGET(d->name[md_xmp_metadata+i]));
+        gtk_widget_hide(GTK_WIDGET(d->metadata[md_xmp_metadata+i]));
+      }
+      else
+      {
+        gtk_widget_show(GTK_WIDGET(d->name[md_xmp_metadata+i]));
+        gtk_widget_show(GTK_WIDGET(d->metadata[md_xmp_metadata+i]));
+      }
     }
-    else
-      g_strlcpy(value, NODATA_STRING, sizeof(value));
-    _metadata_update_value(d->metadata[md_xmp_title], value);
-
-    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL)) != NULL)
-    {
-      snprintf(value, sizeof(value), "%s", (char *)res->data);
-      _filter_non_printable(value, sizeof(value));
-      g_list_free_full(res, &g_free);
-    }
-    else
-      g_strlcpy(value, NODATA_STRING, sizeof(value));
-    _metadata_update_value(d->metadata[md_xmp_creator], value);
-
-    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL)) != NULL)
-    {
-      snprintf(value, sizeof(value), "%s", (char *)res->data);
-      _filter_non_printable(value, sizeof(value));
-      g_list_free_full(res, &g_free);
-    }
-    else
-      g_strlcpy(value, NODATA_STRING, sizeof(value));
-    _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geotagging */
     /* latitude */
@@ -627,6 +628,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_tag_names], tagstring ? tagstring : NODATA_STRING);
     _metadata_update_value(d->metadata[md_categories], categoriesstring ? categoriesstring : NODATA_STRING);
 
+    g_free(tagstring);
+    g_free(categoriesstring);
     dt_tag_free_result(&tags);
 
     /* release img */
@@ -728,6 +731,7 @@ void gui_init(dt_lib_module_t *self)
     GtkWidget *evb = gtk_event_box_new();
     gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
+    d->name[k] = name;
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
     gtk_label_set_selectable(d->metadata[k], TRUE);
     gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));

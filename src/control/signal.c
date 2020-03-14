@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,6 +104,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     NULL, NULL, FALSE }, // DT_SIGNAL_HISTORY_CHANGE
   { "dt-develop-module-remove", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1,
     pointer_arg, NULL, TRUE }, // DT_SIGNAL_MODULE_REMOVE
+  { "dt-develop-module-moved", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_MODULE_MOVED
   { "dt-develop-image-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,

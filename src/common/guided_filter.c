@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018-2019 Heiko Bauke.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,33 +83,43 @@ static inline int max_i(int a, int b)
   return a > b ? a : b;
 }
 
+// Kahan summation algorithm
+static inline float Kahan_sum(const float m, float *c, const float add)
+{
+   const float t1 = add - (*c);
+   const float t2 = m + t1;
+   *c = (t2 - m) - t1;
+   return t2;
+}
+
 // calculate the one-dimensional moving average over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
-  float m = 0.f, n_box = 0.f;
+  float m = 0.f, n_box = 0.f, c = 0.f;
   if(N > 2 * w)
   {
     for(int i = 0, i_end = w + 1; i < i_end; i++)
     {
-      m += x[i];
+      m = Kahan_sum(m, &c, x[i]);
       n_box++;
     }
     for(int i = 0, i_end = w; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m += x[i + w + 1];
+      m = Kahan_sum(m, &c, x[i + w + 1]);
       n_box++;
     }
     for(int i = w, i_end = N - w - 1; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m += x[i + w + 1] - x[i - w];
+      m = Kahan_sum(m, &c, x[i + w + 1]),
+      m = Kahan_sum(m, &c, -x[i - w]);
     }
     for(int i = N - w - 1, i_end = N; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m -= x[i - w];
+      m = Kahan_sum(m, &c, -x[i - w]);
       n_box--;
     }
   }
@@ -117,7 +127,7 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
   {
     for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
     {
-      m += x[i];
+      m = Kahan_sum(m, &c, x[i]);
       n_box++;
     }
     for(int i = 0; i < N; i++)
@@ -125,12 +135,12 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
       y[i * stride_y] = m / n_box;
       if(i - w >= 0)
       {
-        m -= x[i - w];
+        m = Kahan_sum(m, &c, -x[i - w]);
         n_box--;
       }
       if(i + w + 1 < N)
       {
-        m += x[i + w + 1];
+        m = Kahan_sum(m, &c, x[i + w + 1]);
         n_box++;
       }
     }

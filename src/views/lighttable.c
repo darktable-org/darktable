@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011--2012 Henrik Andersson.
+    Copyright (C) 2009-2020 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -4453,7 +4452,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
 
   // timeline
-  dt_accel_register_view(self, NC_("accel", "toggle filmstrip/timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "toggle filmstrip or timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -4568,7 +4567,7 @@ void connect_key_accels(dt_view_t *self)
 
   // timeline
   closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle filmstrip/timeline", closure);
+  dt_accel_connect_view(self, "toggle filmstrip or timeline", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)

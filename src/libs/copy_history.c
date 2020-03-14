@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,6 +144,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     d->dg.selops = NULL;
     d->dg.copied_imageid = d->imageid;
+    d->dg.copy_iop_order = TRUE;
 
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
@@ -187,7 +188,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
     d->dg.copied_imageid = d->imageid;
 
     // launch dialog to select the ops to copy
-    int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
+    const int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
 
     if(res != GTK_RESPONSE_CANCEL && d->dg.selops)
     {
@@ -254,9 +255,9 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   const int img = dt_view_get_image_to_act_on();
 
   if(img < 0)
-    dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops);
+    dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
   else
-    dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops);
+    dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
 
   dt_collection_update_query(darktable.collection);
   /* redraw */

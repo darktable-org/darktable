@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 johannes hanika.
-    copyright (c) 2012--2014 tobias ellinghaus.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +35,7 @@ G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
 // INNER_PADDING is the horizontal space between slider and quad
 // and vertical space between labels and slider baseline
-#define INNER_PADDING 4.0
+static const double INNER_PADDING = 4.0;
 
 // fwd declare
 static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
@@ -592,6 +591,9 @@ void dt_bauhaus_init()
   // gtk_window_set_keep_above isn't enough on OS X
   gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window),
                                GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  // needed on macOS to avoid fullscreening the popup with newer GTK
+  gtk_window_set_type_hint(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+
   gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
   // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
   gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
@@ -1044,22 +1046,27 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
-  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL);
+  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+}
+
+void dt_bauhaus_combobox_add_section(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, NULL, NULL, FALSE);
 }
 
 void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align)
 {
-  dt_bauhaus_combobox_add_full(widget, text, align, NULL, NULL);
+  dt_bauhaus_combobox_add_full(widget, text, align, NULL, NULL, TRUE);
 }
 
 void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
-                                  gpointer data, void (free_func)(void *data))
+                                  gpointer data, void (free_func)(void *data), gboolean sensitive)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
-  dt_bauhaus_combobox_entry_t *entry = new_combobox_entry(text, align, TRUE, data, free_func);
+  dt_bauhaus_combobox_entry_t *entry = new_combobox_entry(text, align, sensitive, data, free_func);
   d->entries = g_list_append(d->entries, entry);
   if(d->active < 0) d->active = 0;
 }
@@ -1659,6 +1666,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_save(cr);
       float first_label_width = 0.0;
       gboolean first_label = TRUE;
+      gboolean show_box_label = TRUE;
       int k = 0, i = 0;
       int hovered = darktable.bauhaus->mouse_y / ht;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
@@ -1682,13 +1690,16 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             set_color(cr, text_color);
 
           if(entry->alignment == DT_BAUHAUS_COMBOBOX_ALIGN_LEFT)
-            label_width = show_pango_text(w, context, cr, entry->label, 0, ht * k, max_width, FALSE);
+            label_width = show_pango_text(w, context, cr, entry->label, INNER_PADDING, ht * k + INNER_PADDING, max_width, FALSE);
           else
-            label_width = show_pango_text(w, context, cr, entry->label, wd - INNER_PADDING - darktable.bauhaus->quad_width, ht * k, max_width, TRUE);
+            label_width
+                = show_pango_text(w, context, cr, entry->label, wd - INNER_PADDING - darktable.bauhaus->quad_width,
+                                  ht * k + INNER_PADDING, max_width, TRUE);
 
           // prefer the entry over the label wrt. ellipsization when expanded
           if(first_label)
           {
+            show_box_label = entry->alignment == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT;
             first_label_width = label_width;
             first_label = FALSE;
           }
@@ -1701,9 +1712,12 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
 
       // left aligned box label. add it to the gui after the entries so we can ellipsize it if needed
-      set_color(cr, text_color);
-      show_pango_text(w, context, cr, w->label, 0, 0, wd - INNER_PADDING - darktable.bauhaus->quad_width - first_label_width, FALSE);
-
+      if(show_box_label)
+      {
+        set_color(cr, text_color);
+        show_pango_text(w, context, cr, w->label, INNER_PADDING, INNER_PADDING,
+                        wd - INNER_PADDING - darktable.bauhaus->quad_width - first_label_width, FALSE);
+      }
       g_free(keys);
     }
     break;
@@ -1903,7 +1917,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      tmp.height = tmp.height * d->num_labels;
+      tmp.height = inner_height(tmp) * d->num_labels + 2 * INNER_PADDING;
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;

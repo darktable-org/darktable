@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017 johannes hanika.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "iop/gaussian_elimination.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>

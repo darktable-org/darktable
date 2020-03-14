@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 edgardo hoszowski.
-    copyright (c) 2018-2019 Pascal Obry.
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -146,6 +145,7 @@ typedef struct dt_iop_order_entry_t
   // operation + instance is the unique id for an active module in the pipe
   char operation[20];
   int32_t instance;      // or previously named multi_priority
+  char name[25];
 } dt_iop_order_entry_t;
 
 typedef struct dt_iop_order_rule_t
@@ -154,8 +154,12 @@ typedef struct dt_iop_order_rule_t
   char op_next[20];
 } dt_iop_order_rule_t;
 
+/** return the name string for that dy_iop_order */
+const char *dt_iop_order_string(const dt_iop_order_t order);
+
 /** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
+
 /** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
     or a customr order  */
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);
@@ -168,6 +172,8 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority);
 /** likewise, but returns the link in the list instead of the entry */
 GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority);
+/** For a non custom order, returns TRUE if iop_order_list has multiple instances grouped together */
+gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list);
 
 /** returns the iop_order from iop_order_list list with operation = op_name */
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);

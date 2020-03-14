@@ -337,7 +337,18 @@ if(USE_LENSFUN)
   endif()
 endif()
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+find_package(Sqlite3 3.15 REQUIRED)
+if(NOT Sqlite3_VERSION VERSION_LESS 3.24)
+  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
+  message(STATUS "Sqlite3 version 3.24 or newer")
+else()
+  message(STATUS "Sqlite3 version older than 3.24, some features may be downgraded")
+endif()
+include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
+list(APPEND LIBS ${Sqlite3_LIBRARIES})
+add_definitions(${Sqlite3_DEFINITIONS})
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -746,6 +757,13 @@ else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
 
+if(USE_GAME)
+  add_definitions("-DHAVE_GAME")
+  message(STATUS "Game: the good knight")
+else(USE_GAME)
+  message(STATUS "Game: no")
+endif(USE_GAME)
+
 #
 # set development flags for our code
 #
@@ -787,24 +805,9 @@ if(USE_XMLLINT)
 endif(USE_XMLLINT)
 
 #
-# Generate mapping of key strings to internal metadata id
-#
-add_custom_command(
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating metadata .c/.h"
-)
-add_custom_target(
-  generate_metadata ALL
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
-#
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
@@ -812,7 +815,6 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GEN
 
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
-add_dependencies(lib_darktable generate_metadata)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,6 +138,9 @@ typedef enum dt_signal_t
     no returned value
     */
   DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+
+  /** \brief This signal is raised when order of modules in pipeline is changed */
+  DT_SIGNAL_DEVELOP_MODULE_MOVED,
 
   /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,

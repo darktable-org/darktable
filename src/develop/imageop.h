@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -620,6 +618,13 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 /* returns the iop-module found in list with the given name */
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
+/** returns module with op + multi_priority or NULL if not found on the list,
+    if multi_priority == -1 do not checl for it */
+dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
+/** returns module with op + multi_name or NULL if not found on the list,
+    if multi_name == NULL do not checl for it */
+dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
+
 
 /** get module flags, works in dev and lt mode */
 int get_module_flags(const char *op);
@@ -641,8 +646,8 @@ dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)
 /** returns the next visible module on the module list */
 dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
 
-/** returns module with op + multi_priority or NULL if not found on the list, if multi_priority == -1 do not checl for it */
-dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
+// initializes memory.darktable_iop_names
+void dt_iop_set_darktable_iop_table();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

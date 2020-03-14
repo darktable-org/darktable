@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 johannes hanika
-    copyright (c) 2010-2012 henrik andersson
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,7 +206,6 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
 
 static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   sqlite3_stmt *stmt;
@@ -217,7 +215,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   while(t)
   {
     gboolean from_cache = FALSE;
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
     char dtfilename[PATH_MAX] = { 0 };
     dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
@@ -520,26 +518,23 @@ end:
 
 static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
-  int newimgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   guint total = g_list_length(t);
   char message[512] = { 0 };
-  double fraction = 0;
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
-    newimgid = dt_image_duplicate(imgid);
+    const int imgid = GPOINTER_TO_INT(t->data);
+    const int newimgid = dt_image_duplicate(imgid);
     if(newimgid != -1)
     {
-      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
       dt_collection_update_query(darktable.collection);
     }
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
@@ -550,21 +545,19 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 static int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   const int cw = params->flag;
   GList *t = params->index;
   guint total = g_list_length(t);
-  double fraction = 0;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    const double fraction = 1.0 / total;
     dt_image_set_aspect_ratio(imgid);
     dt_control_job_set_progress(job, fraction);
   }
@@ -579,14 +572,13 @@ static char *_get_image_list(GList *l)
   const guint size = g_list_length(l);
   char num[8];
   char *buffer = calloc(size, sizeof(num));
-  int imgid;
   gboolean first = TRUE;
 
   buffer[0] = '\0';
 
   while(l)
   {
-    imgid = GPOINTER_TO_INT(l->data);
+    const int imgid = GPOINTER_TO_INT(l->data);
     snprintf(num, sizeof(num), "%s%6d", first ? "" : ",", imgid);
     g_strlcat(buffer, num, size * sizeof(num));
     l = g_list_next(l);
@@ -631,7 +623,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char *imgs = _get_image_list(t);
   guint total = g_list_length(t);
   char message[512] = { 0 };
-  double fraction = 0;
   snprintf(message, sizeof(message), ngettext("removing %d image", "removing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   sqlite3_stmt *stmt = NULL;
@@ -645,7 +636,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = sqlite3_column_int(stmt, 0);
     if(!dt_image_safe_remove(imgid))
     {
       remove_ok = FALSE;
@@ -676,15 +667,14 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
-  char *imgname;
   while(list)
   {
-    imgname = (char *)list->data;
+    char *imgname = (char *)list->data;
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   }
@@ -889,14 +879,12 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
 
 static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
   char imgidstr[25] = { 0 };
   guint total = g_list_length(t);
   char message[512] = { 0 };
-  double fraction = 0;
   gboolean delete_on_trash_error = FALSE;
   if (dt_conf_get_bool("send_to_trash"))
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
@@ -920,7 +908,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
@@ -990,7 +978,7 @@ delete_next_file:
     g_free(dirname);
 #endif
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
@@ -1000,10 +988,9 @@ delete_next_file:
   params->index = NULL;
   sqlite3_finalize(stmt);
 
-  char *imgname;
   while(list)
   {
-    imgname = (char *)list->data;
+    char *imgname = (char *)list->data;
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   }
@@ -1122,7 +1109,6 @@ static int32_t dt_control_copy_images_job_run(dt_job_t *job)
 
 static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
   guint tagid = 0;
@@ -1145,7 +1131,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     if(is_copy)
     {
       if (dt_image_local_copy_set(imgid) == 0)
@@ -1169,17 +1155,15 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
 static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
   guint total = g_list_length(t);
-  double fraction = 0;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
+    const int imgid = GPOINTER_TO_INT(t->data);
     gboolean from_cache = TRUE;
     char sourcefile[PATH_MAX];
     dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
@@ -1191,7 +1175,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
@@ -1282,10 +1266,10 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // make sure the 'exported' tag is set on the image
     dt_tag_attach_from_gui(etagid, imgid, FALSE, FALSE);
     // check if image still exists:
-    char imgfilename[PATH_MAX] = { 0 };
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
     if(image)
     {
+      char imgfilename[PATH_MAX] = { 0 };
       gboolean from_cache = TRUE;
       dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
       if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))

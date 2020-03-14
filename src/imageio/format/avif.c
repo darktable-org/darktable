@@ -1,5 +1,6 @@
 /*
  * This file is part of darktable,
+ * Copyright (C) 2019-2020 darktable developers.
  *
  *  Copyright (c) 2019      Andreas Schneider
  *
@@ -403,7 +404,8 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   switch (d->compression_type) {
   case AVIF_COMP_LOSSLESS:
-    encoder->speed = AVIF_SPEED_SLOWEST;
+    /* It isn't recommend to use the extremities */
+    encoder->speed = AVIF_SPEED_SLOWEST + 1;
 
     encoder->minQuantizer = AVIF_QUANTIZER_LOSSLESS;
     encoder->maxQuantizer = AVIF_QUANTIZER_LOSSLESS;

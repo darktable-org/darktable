@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2011--2014 Ulrich Pegelow.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2816,20 +2815,21 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
     if(mask_tone_curve && opacity > 1e-4f)
     {
+      const float mask_epsilon = 16 * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(brightness, buffsize, e, mask, opacity)
+      dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity)
 #endif
       for(size_t k = 0; k < buffsize; k++)
       {
         float x = mask[k] / opacity;
         x = 2.f * x - 1.f;
         if (1.f - brightness <= 0.f)
-          x = mask[k] <= FLT_EPSILON ? -1.f : 1.f;
+          x = mask[k] <= mask_epsilon ? -1.f : 1.f;
         else if (1.f + brightness <= 0.f)
-          x = mask[k] >= 1.f - FLT_EPSILON ? 1.f : -1.f;
+          x = mask[k] >= 1.f - mask_epsilon ? 1.f : -1.f;
         else if (brightness > 0.f)
         {
           x = (x + brightness) / (1.f - brightness);

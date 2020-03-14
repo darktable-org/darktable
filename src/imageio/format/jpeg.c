@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,18 +102,16 @@ static void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
 
 static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
 {
-  unsigned int num_markers; /* total number of markers we'll write */
   int cur_marker = 1;       /* per spec, counting starts at 1 */
-  unsigned int length;      /* number of bytes to write in this marker */
 
   /* Calculate the number of markers we'll need, rounding up of course */
-  num_markers = icc_data_len / MAX_DATA_BYTES_IN_MARKER;
+  unsigned int num_markers = icc_data_len / MAX_DATA_BYTES_IN_MARKER;
   if(num_markers * MAX_DATA_BYTES_IN_MARKER != icc_data_len) num_markers++;
 
   while(icc_data_len > 0)
   {
     /* length of profile to put in this marker */
-    length = icc_data_len;
+    unsigned int length = icc_data_len;
     if(length > MAX_DATA_BYTES_IN_MARKER) length = MAX_DATA_BYTES_IN_MARKER;
     icc_data_len -= length;
 
