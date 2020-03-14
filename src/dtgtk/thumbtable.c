@@ -1970,7 +1970,6 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
 
   int baserowid = 1;
-  int newrowid = 1;
   if(baseid <= 0)
   {
     baserowid = table->offset;
@@ -1981,6 +1980,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     baserowid = _thumb_get_rowid(baseid);
   }
 
+  int newrowid = baserowid;
   // last rowid of the current collection
   int maxrowid = 1;
   sqlite3_stmt *stmt;
@@ -2014,7 +2014,6 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     newrowid = 1;
   else if(move == DT_THUMBTABLE_MOVE_END)
     newrowid = maxrowid;
-
 
   if(newrowid == baserowid) return FALSE;
 
