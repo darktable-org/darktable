@@ -876,6 +876,13 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop)
   }
 }
 
+// force the image to be reloaded from cache if any
+void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
+{
+  thumb->img_surf_dirty = TRUE;
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

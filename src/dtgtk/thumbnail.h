@@ -102,6 +102,9 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop);
 // update the informations of the image and update icons accordingly
 void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
 
+// force image recomputing
+void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
