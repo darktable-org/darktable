@@ -537,7 +537,6 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
 
   const int currentval = dt_bauhaus_combobox_get(combobox);
   const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(combobox) : currentval - 1;
-
   dt_bauhaus_combobox_set(combobox, prevval);
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
