@@ -48,7 +48,7 @@ typedef struct dt_undo_geotag_t
 
 typedef struct dt_map_t
 {
-  GtkWidget *center;
+  gboolean entering;
   OsmGpsMap *map;
   OsmGpsMapSource_t map_source;
   OsmGpsMapLayer *osd;
@@ -374,6 +374,18 @@ static GdkPixbuf *init_place_pin()
                                                (GdkPixbufDestroyNotify)free, NULL);
   cairo_surface_destroy(cst);
   return pixbuf;
+}
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  if(lib->entering)
+  {
+    // we need to ensure there's no remaining things on canvas.
+    // otherwise they can appear on map move
+    lib->entering = FALSE;
+    cairo_set_source_rgb(cri, 0, 0, 0);
+    cairo_paint(cri);
+  }
 }
 
 void init(dt_view_t *self)
@@ -815,6 +827,7 @@ void enter(dt_view_t *self)
 
   lib->selected_image = 0;
   lib->start_drag = FALSE;
+  lib->entering = TRUE;
 
   /* set the correct map source */
   _view_map_set_map_source_g_object(self, lib->map_source);
@@ -877,12 +890,6 @@ void leave(dt_view_t *self)
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
-}
-
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
-{
-  // redraw center on mousemove
-  dt_control_queue_redraw_center();
 }
 
 void init_key_accels(dt_view_t *self)
