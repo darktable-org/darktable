@@ -177,6 +177,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "camera model"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "lens model"), 0, (GdkModifierType)0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "select corrections"), 0, (GdkModifierType)0);
+
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "corrections"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -192,6 +194,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_slider_iop(self, "TCA R", GTK_WIDGET(g->tca_r));
   dt_accel_connect_slider_iop(self, "TCA B", GTK_WIDGET(g->tca_b));
+
+  dt_accel_connect_combobox_iop(self, "corrections", GTK_WIDGET(g->modflags));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
