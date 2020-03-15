@@ -262,7 +262,6 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
              && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 && thumb->single_click)))
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, thumb->imgid);
-    return TRUE;
   }
   return FALSE;
 }
