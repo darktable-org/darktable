@@ -2832,6 +2832,22 @@ void mouse_restrict_range(dt_view_t *self, double xpos, double ypos, float *x_li
   *y_lim = fmaxf(tbar, fminf(ypos,height_i - tbar));
 }
 
+/* This helper function tests for a position to be within the displayed area
+   of an image. To avoid "border cases" we accept values to be slighly out of area too.
+*/
+static int mouse_in_imagearea(dt_view_t *self, double x, double y)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  x -= (self->width - dev->pipe->output_backbuf_width) / 2;
+  y -= (self->height - dev->pipe->output_backbuf_height) / 2;
+
+  if((x<-3) || (x>(dev->pipe->output_backbuf_width+6))) return FALSE;
+  if((y<-3) || (y>(dev->pipe->output_backbuf_height+6))) return FALSE;
+
+  return TRUE;
+}
+
 void mouse_enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2866,30 +2882,33 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && ctl->button_down_which == 1)
   {
     // module requested a color box
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
-    float xpos=x, ypos=y, b_xpos=x, b_ypos=y;
-    mouse_restrict_range(self, x, y, &xpos, &ypos);
-    mouse_restrict_range(self, ctl->button_x, ctl->button_y, &b_xpos, &b_ypos);
-
-    float zoom_x, zoom_y, bzoom_x, bzoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, xpos + offx, ypos + offy, &zoom_x, &zoom_y);
-    dt_dev_get_pointer_zoom_pos(dev, b_xpos + offx, b_ypos + offy, &bzoom_x, &bzoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      const float delta_x = 1.0f / dev->width;
+      const float delta_y = 1.0f / dev->height;
+      float xpos=x, ypos=y, b_xpos=x, b_ypos=y;
+      mouse_restrict_range(self, x, y, &xpos, &ypos);
+      mouse_restrict_range(self, ctl->button_x, ctl->button_y, &b_xpos, &b_ypos);
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    }
+      float zoom_x, zoom_y, bzoom_x, bzoom_y;
+      dt_dev_get_pointer_zoom_pos(dev, xpos + offx, ypos + offy, &zoom_x, &zoom_y);
+      dt_dev_get_pointer_zoom_pos(dev, b_xpos + offx, b_ypos + offy, &bzoom_x, &bzoom_y);
 
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
+    }
     dt_control_queue_redraw();
     return;
   }
@@ -2973,31 +2992,44 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
+    const float delta_x = 5.0f / fmaxf(dev->width, dev->height);
+    const float delta_y = delta_x * (float)self->width / (float)self->height;
     float xpos=x, ypos=y;
     float zoom_x, zoom_y;
     mouse_restrict_range(self, x, y, &xpos, &ypos);
     dt_dev_get_pointer_zoom_pos(dev, xpos+offx, ypos+offy, &zoom_x, &zoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
     }
-
     dt_control_queue_redraw();
-
     return 1;
   }
+
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 3)
+  {
+    // default is hardcoded this way
+    dev->gui_module->color_picker_box[0] = dev->gui_module->color_picker_box[1] = .01f;
+    dev->gui_module->color_picker_box[2] = dev->gui_module->color_picker_box[3] = .99f;
+
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_control_queue_redraw();
+    return 1;
+  }
+
   x += offx;
   y += offy;
   // masks
