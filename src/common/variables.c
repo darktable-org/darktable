@@ -371,6 +371,20 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
+  else if(has_prefix(variable, "DUP_NAME"))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.dup_name", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      result = g_strdup((char *)res->data);
+    }
+    else
+    {
+      result = g_strdup_printf("%d", params->data->version);
+    }
+    g_list_free_full(res, &g_free);
+  }
   else if(has_prefix(variable, "OPENCL_ACTIVATED"))
   {
     if(dt_opencl_is_enabled())

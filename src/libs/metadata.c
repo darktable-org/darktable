@@ -139,21 +139,32 @@ static void update(dt_lib_module_t *self, gboolean early_bark_out)
   // takes ages.
   if(imgsel < 0) // selected images
   {
+    //n.b. metadata duplicate name defaults to the version number if not present
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) imgs_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value, COUNT(id) AS ct FROM main.meta_data WHERE id IN "
-                                                               "(SELECT imgid FROM main.selected_images) GROUP BY "
-                                                               "key, value ORDER BY value",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value, COUNT(id) AS ct FROM "
+                                                               "(SELECT key, value, id FROM main.meta_data WHERE id IN (SELECT imgid FROM main.selected_images) "
+                                                               "UNION "
+                                                               "SELECT ?1, cast(version as text), id FROM main.images im WHERE id IN (SELECT imgid FROM main.selected_images) "
+                                                               "AND NOT EXISTS (SELECT 'y' FROM main.meta_data WHERE id = im.id AND key = ?1))"
+                                                               "GROUP BY key, value ORDER BY value",
                                 -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_METADATA_XMP_DUP_NAME);
   }
   else // single image under mouse cursor
   {
     imgs_count = 1;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value, COUNT(id) AS ct FROM main.meta_data "
-                                                               "WHERE id = ?1 GROUP BY key, value ORDER BY value",
+    //n.b. metadata duplicate name defaults to the version number if not present
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value, COUNT(id) AS ct FROM "
+                                                               "(SELECT key, value, id FROM main.meta_data WHERE id = ?1 "
+                                                               "UNION "
+                                                               "SELECT ?2, cast(version as text), id FROM main.images im WHERE id = ?1 "
+                                                               "AND NOT EXISTS (SELECT 'y' FROM main.meta_data WHERE id = im.id AND key = ?2))"
+                                                               "GROUP BY key, value ORDER BY value",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgsel);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DUP_NAME);
   }
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
