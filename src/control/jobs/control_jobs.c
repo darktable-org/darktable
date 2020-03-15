@@ -147,7 +147,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     completeSuccess &= (fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1);
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
@@ -161,6 +161,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   }
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -695,7 +696,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   {
     int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
@@ -709,7 +710,9 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   }
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
   dt_control_queue_redraw_center();
+
   return 0;
 }
 
