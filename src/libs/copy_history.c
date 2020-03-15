@@ -96,9 +96,10 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-
-    if(dt_history_load_and_apply_on_selection(dtfilename) != 0)
+    GList *imgs = dt_view_get_images_to_act_on();
+    if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
+      g_list_free(imgs);
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
@@ -107,6 +108,11 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 #endif
       gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
+    }
+    else
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_control_queue_redraw_center();
     }
 
     g_free(dtfilename);
