@@ -865,6 +865,20 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   dt_thumbtable_full_redraw(table, TRUE);
 }
 
+static void _dt_profile_change_callback(gpointer instance, int type, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_image_refresh(th);
+    l = g_list_next(l);
+  }
+}
+
 // this is called each time the list of active images change
 static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 {
@@ -1324,6 +1338,8 @@ dt_thumbtable_t *dt_thumbtable_new()
                             G_CALLBACK(_dt_mouse_over_image_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                             G_CALLBACK(_dt_active_images_callback), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                            G_CALLBACK(_dt_profile_change_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
                             table);
   gtk_widget_show(table->widget);
