@@ -510,8 +510,9 @@ static gboolean bauhaus_combobox_next_callback(GtkAccelGroup *accel_group, GObje
 {
   GtkWidget *combobox = GTK_WIDGET(data);
 
-  int currentval = dt_bauhaus_combobox_get(combobox);
-  dt_bauhaus_combobox_set(combobox, ++currentval);
+  const int currentval = dt_bauhaus_combobox_get(combobox);
+  const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
+  dt_bauhaus_combobox_set(combobox, nextval);
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
 
@@ -534,8 +535,10 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
 {
   GtkWidget *combobox = GTK_WIDGET(data);
 
-  int currentval = dt_bauhaus_combobox_get(combobox);
-  dt_bauhaus_combobox_set(combobox, --currentval);
+  const int currentval = dt_bauhaus_combobox_get(combobox);
+  const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(combobox) : currentval - 1;
+
+  dt_bauhaus_combobox_set(combobox, prevval);
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
 
