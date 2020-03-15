@@ -78,7 +78,7 @@ gboolean dt_history_paste_on_list(GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo);
 
 /** load a dt file and applies to selected images */
-int dt_history_load_and_apply_on_selection(gchar *filename);
+int dt_history_load_and_apply_on_list(gchar *filename, GList *list);
 
 /** load a dt file and applies to specified image */
 int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);

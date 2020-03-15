@@ -161,7 +161,24 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
     dt_image_reset_final_size(imgid);
   }
   dt_unlock_image(imgid);
+  // signal that the mipmap need to be updated
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   return 0;
+}
+
+int dt_history_load_and_apply_on_list(gchar *filename, GList *list)
+{
+  int res = 0;
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  GList *l = list;
+  while(l)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    if(dt_history_load_and_apply(imgid, filename, 1)) res = 1;
+    l = g_list_next(l);
+  }
+  dt_undo_end_group(darktable.undo);
+  return res;
 }
 
 // returns the first history item with hist->module == module
