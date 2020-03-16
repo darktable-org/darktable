@@ -835,6 +835,10 @@ void enter(dt_view_t *self)
   /* add map to center widget */
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
 
+  // ensure the log msg widget stay on top
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
   /* setup proxy functions */

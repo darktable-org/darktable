@@ -463,6 +463,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
+  // update log visibility
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+
   return 0;
 }
 
