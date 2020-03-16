@@ -35,6 +35,7 @@ typedef enum dt_history_hash_t
   DT_HISTORY_HASH_BASIC   = 1 << 0,  // only mandatory modules
   DT_HISTORY_HASH_AUTO    = 1 << 1,  // mandatory modules plus the auto applied ones
   DT_HISTORY_HASH_CURRENT = 1 << 2,  // current state, with or without change
+  DT_HISTORY_HASH_MIPMAP  = 1 << 3,  // last mipmap hash
 } dt_history_hash_t;
 
 typedef struct dt_history_hash_values_t
@@ -103,6 +104,12 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
 
 /** return the hash history status */
 const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
+
+/** return true if mipmap_hash = current_hash */
+const gboolean dt_history_hash_get_mipmap_sync(const int32_t imgid);
+
+/** update mipmap hash to db (= current_hash) */
+void dt_history_hash_set_mipmap(const int32_t imgid);
 
 /** write hash values to db */
 void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);

@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 24
+#define CURRENT_DATABASE_VERSION_LIBRARY 25
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1523,6 +1523,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 24;
   }
+  else if(version == 24)
+  {
+    TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN mipmap_hash BLOB",
+             "[init] can't add `mipmap_hash' column to history_hash table in database\n");
+
+    new_version = 25;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1831,7 +1838,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB)",
                NULL, NULL, NULL);
 }
 
