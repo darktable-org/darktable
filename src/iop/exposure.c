@@ -123,24 +123,24 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target level"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
   dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->black));
   dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
   dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
   dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
   dt_accel_connect_slider_iop(self, "target level", GTK_WIDGET(g->deflicker_target_level));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
