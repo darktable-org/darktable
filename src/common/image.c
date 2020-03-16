@@ -658,8 +658,8 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
     /* set image aspect ratio */
     image->aspect_ratio = aspect_ratio;
 
-    /* store */
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+    /* store but don't save xmp*/
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
     if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);

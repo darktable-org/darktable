@@ -750,7 +750,7 @@ static void _reset_parameters(dt_iop_colorzones_params_t *p, const int channel, 
   }
   p->strength = 0.0f;
   p->channel = channel;
-  p->mode = DT_IOP_COLORZONES_MODE_STRONG;
+  p->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
   p->splines_version = splines_version;
 }
 

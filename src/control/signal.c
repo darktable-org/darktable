@@ -161,8 +161,10 @@ dt_control_signal_t *dt_control_signal_init()
         _signal_description[k].accumulator, _signal_description[k].accu_data,
         _signal_description[k].c_marshaller, _signal_description[k].return_type,
         _signal_description[k].n_params, _signal_description[k].param_types);
-    if(_signal_description[k].destructor) {
-      g_signal_connect_after(G_OBJECT(ctlsig->sink), _signal_description[k].name, _signal_description[k].destructor, NULL);
+    if(_signal_description[k].destructor)
+    {
+      g_signal_connect_after(G_OBJECT(ctlsig->sink), _signal_description[k].name,
+                             _signal_description[k].destructor, NULL);
     }
   }
   return ctlsig;
@@ -185,7 +187,8 @@ static gboolean _signal_raise(gpointer user_data)
   return FALSE;
 }
 
-typedef struct async_com_data {
+typedef struct async_com_data
+{
   GCond end_cond;
   GMutex end_mutex;
   gpointer user_data;
@@ -243,7 +246,8 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
         g_value_set_pointer(&instance_and_params[i], va_arg(extra_args, void *));
         break;
       default:
-        fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n", g_type_name(type), signal_description->name);
+        fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n",
+                g_type_name(type), signal_description->name);
         va_end(extra_args);
         for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);
         free(instance_and_params);
@@ -261,10 +265,15 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
   if(!signal_description->synchronous)
   {
     g_main_context_invoke(NULL, _signal_raise, params);
-  } else {
-    if(pthread_equal(darktable.control->gui_thread, pthread_self())) {
+  }
+  else
+  {
+    if(pthread_equal(darktable.control->gui_thread, pthread_self()))
+    {
       _signal_raise(params);
-    } else {
+    }
+    else
+    {
       async_com_data communication;
       g_mutex_init(&communication.end_mutex);
       g_cond_init(&communication.end_cond);

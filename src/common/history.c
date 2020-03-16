@@ -1435,6 +1435,41 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
   sqlite3_finalize(stmt);
 }
 
+const gboolean dt_history_hash_get_mipmap_sync(const int32_t imgid)
+{
+  gboolean status = FALSE;
+  if(imgid == -1) return status;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT CASE"
+                              "  WHEN mipmap_hash == current_hash THEN 1"
+                              "  ELSE 0 END AS status"
+                              " FROM main.history_hash"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    status = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  return status;
+}
+
+void dt_history_hash_set_mipmap(const int32_t imgid)
+{
+  if(imgid == -1) return;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.history_hash"
+                              " SET mipmap_hash = current_hash"
+                              " WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
   dt_history_hash_t status = 0;
