@@ -90,25 +90,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
-  const gchar *value = gtk_entry_get_text(GTK_ENTRY(widget));
-  dt_metadata_set(imgid, "Xmp.darktable.dup_name", value, FALSE, FALSE);
-
-  //empty values automatically reset to version number
-  if(value[0] == '\0')
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT cast(version as text) FROM images WHERE id = ?1",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      gchar *path = (gchar *)sqlite3_column_text(stmt, 0);
-      gtk_entry_set_text(GTK_ENTRY(widget), path);
-    }
-    sqlite3_finalize (stmt);
-  }
-
+  dt_metadata_set(imgid, "Xmp.darktable.short_desc", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
   dt_image_synch_xmp(imgid);
 
   return FALSE;
@@ -389,17 +371,16 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   int count = 0;
 
   // we get a summarize of all versions of the image
-  //n.b. metadata duplicate name defaults to the version number if not present
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT i.version, i.id, ifnull(m.value, cast(version as text)) AS value"
+                              "SELECT i.version, i.id, m.value"
                               " FROM images AS i"
-                              " LEFT OUTER JOIN meta_data AS m ON m.id = i.id AND m.key = ?3"
+                              " LEFT JOIN meta_data AS m ON m.id = i.id AND m.key = ?3"
                               " WHERE film_id = ?1 AND filename = ?2"
                               " ORDER BY i.version",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_DUP_NAME);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_SHORT_DESC);
 
   GtkWidget *bt = NULL;
 

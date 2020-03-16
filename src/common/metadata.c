@@ -47,7 +47,7 @@ static const struct
   {"Xmp.dc.description", N_("description"), 1},
   {"Xmp.dc.rights", N_("rights"), 4},
   {"Xmp.acdsee.notes", N_("notes"), 5},
-  {"Xmp.darktable.dup_name", N_("duplicate name"), 6}
+  {"Xmp.darktable.short_desc", N_("short description"), 6}
   // clang-format on
 };
 

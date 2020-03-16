@@ -273,7 +273,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
         "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
-        "Xmp.acdsee.notes","Xmp.darktable.dup_name",
+        "Xmp.acdsee.notes","Xmp.darktable.short_desc",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
 
