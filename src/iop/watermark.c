@@ -930,6 +930,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions(svg, &dimension);
+  // if no text is given dimensions are null
+  if(!dimension.width) dimension.width = 1;
+  if(!dimension.height) dimension.height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
