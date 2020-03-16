@@ -211,9 +211,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "presets"));
 
-  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera neutral"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/spot"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/as shot"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/neutral daylight"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/from image area"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -231,13 +231,13 @@ void connect_key_accels(dt_iop_module_t *self)
   GClosure *closure;
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_camera), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "preset/camera", closure);
+  dt_accel_connect_iop(self, "preset/as shot", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "preset/camera neutral", closure);
+  dt_accel_connect_iop(self, "preset/neutral daylight", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "preset/spot", closure);
+  dt_accel_connect_iop(self, "preset/from image area", closure);
 }
 
 /*
@@ -781,9 +781,9 @@ void gui_update(struct dt_iop_module_t *self)
   for(int k = 0; k < 4; k++) g->mod_coeff[k] = p->coeffs[k];
 
   dt_bauhaus_combobox_clear(g->presets);
-  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
-  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera neutral"));
-  dt_bauhaus_combobox_add(g->presets, C_("white balance", "spot"));
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "neutral daylight")); // old "camera neutral", reason: better matches intent
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
@@ -1499,7 +1499,7 @@ void gui_init(struct dt_iop_module_t *self)
   gui_sliders_update(self);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
+  dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->presets, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
   // create hidden color picker to be able to send its signal when spot selected
