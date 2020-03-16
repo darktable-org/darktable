@@ -323,6 +323,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "luminance estimator"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve details"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -344,7 +346,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
   dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
   dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
-
+  dt_accel_connect_combobox_iop(self, "luminance estimator", GTK_WIDGET(g->method));
+  dt_accel_connect_combobox_iop(self, "preserve details", GTK_WIDGET(g->details));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
