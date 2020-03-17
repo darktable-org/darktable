@@ -599,6 +599,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "search radius"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scattering"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "central pixel weight"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -613,6 +614,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "search radius", GTK_WIDGET(g->nbhood));
   dt_accel_connect_slider_iop(self, "scattering", GTK_WIDGET(g->scattering));
   dt_accel_connect_slider_iop(self, "central pixel weight", GTK_WIDGET(g->central_pixel_weight));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 typedef union floatint_t
