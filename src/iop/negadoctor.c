@@ -277,8 +277,8 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
     for(size_t c = 0; c < 4; c++)
     {
       // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
-      const float *const restrict pix_in = DT_IS_ALIGNED(in) + k;
-      float *const restrict pix_out = DT_IS_ALIGNED(out) + k;
+      const float *const restrict pix_in = in + k;
+      float *const restrict pix_out = out + k;
       const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
       const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
       const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
