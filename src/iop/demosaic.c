@@ -190,6 +190,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "edge threshold", GTK_WIDGET(g->median_thrs));
+  dt_accel_connect_combobox_iop(self, "method (bayer)", GTK_WIDGET(g->demosaic_method_bayer));
   dt_accel_connect_combobox_iop(self, "method (xtrans)", GTK_WIDGET(g->demosaic_method_xtrans));
   dt_accel_connect_combobox_iop(self, "color smoothing", GTK_WIDGET(g->color_smoothing));
   dt_accel_connect_combobox_iop(self, "match greens", GTK_WIDGET(g->greeneq));

@@ -179,6 +179,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "select corrections"), 0, (GdkModifierType)0);
 
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "corrections"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "geometry"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -196,6 +198,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "TCA B", GTK_WIDGET(g->tca_b));
 
   dt_accel_connect_combobox_iop(self, "corrections", GTK_WIDGET(g->modflags));
+  dt_accel_connect_combobox_iop(self, "geometry", GTK_WIDGET(g->target_geom));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->reverse));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
