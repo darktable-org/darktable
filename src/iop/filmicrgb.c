@@ -277,6 +277,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target middle grey"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target white luminance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target power transfer function"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve chrominance"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -295,6 +296,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "target middle grey", GTK_WIDGET(g->grey_point_target));
   dt_accel_connect_slider_iop(self, "target white luminance", GTK_WIDGET(g->white_point_target));
   dt_accel_connect_slider_iop(self, "target power transfer function", GTK_WIDGET(g->output_power));
+  dt_accel_connect_combobox_iop(self, "preserve chrominance", GTK_WIDGET(g->preserve_color));
 }
 
 
