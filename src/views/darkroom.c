@@ -38,6 +38,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -99,7 +100,7 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 
@@ -636,6 +637,7 @@ void reset(dt_view_t *self)
 int try_enter(dt_view_t *self)
 {
   int selected = dt_control_get_mouse_over_id();
+
   if(selected < 0)
   {
     // try last selected
@@ -681,19 +683,6 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-
-
-static void select_this_image(const int imgid)
-{
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-}
-
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
   dt_accel_disconnect_list(module->accel_closures);
@@ -705,6 +694,13 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // change active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // disable color picker when changing image
   if(dev->gui_module)
   {
@@ -715,11 +711,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
   }
 
   // clean the undo list
@@ -781,8 +777,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
-
-  select_this_image(imgid);
 
   while(dev->history)
   {
@@ -933,9 +927,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
-
   // release pixel pipe mutices
   dt_pthread_mutex_BAD_unlock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
@@ -954,67 +945,53 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 }
 
-static void film_strip_activated(const int imgid, void *data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  // switch images in darkroom mode:
-  const dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  dt_dev_change_image(dev, imgid);
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-  // record the imgid to display when going back to lighttable
-  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-  // force redraw
-  dt_control_queue_redraw();
-}
-
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data)
-{
-  int32_t imgid = 0;
-  if((imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) > 0)
-    film_strip_activated(imgid, user_data);
-}
-
-static void dt_dev_jump_image(dt_develop_t *dev, int diff)
-{
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  int offset = 0;
-  if(qin)
+  if(imgid > 0)
   {
-    int orig_imgid = -1, imgid = -1;
-    sqlite3_stmt *stmt;
+    // switch images in darkroom mode:
+    const dt_view_t *self = (dt_view_t *)user_data;
+    dt_develop_t *dev = (dt_develop_t *)self->data;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) orig_imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    offset = dt_collection_image_offset(orig_imgid);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      imgid = sqlite3_column_int(stmt, 0);
-
-      if(orig_imgid == imgid)
-      {
-        // nothing to do
-        sqlite3_finalize(stmt);
-        return;
-      }
-
-      if(!dev->image_loading)
-      {
-        dt_dev_change_image(dev, imgid);
-        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-        // record the imgid to display when going back to lighttable
-        dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-      }
-    }
-    sqlite3_finalize(stmt);
+    dt_dev_change_image(dev, imgid);
+    // move filmstrip
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    // force redraw
+    dt_control_queue_redraw();
   }
+}
+
+static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
+{
+  if(dev->image_loading) return;
+
+  const int imgid = dev->image_storage.id;
+  int new_offset = 1;
+  int new_id = -1;
+
+  // we new offset and imgid after the jump
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid, imgid "
+                                          "FROM memory.collected_images "
+                                          "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
+                                 imgid, diff);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    new_offset = sqlite3_column_int(stmt, 0);
+    new_id = sqlite3_column_int(stmt, 1);
+  }
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  if(new_id < 0) return;
+
+  // if id seems valid, we change the image and move filmstrip
+  dt_dev_change_image(dev, new_id);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+
+  // if it's a change by key_press, we set mouse_over to the active image
+  if(by_key) dt_control_set_mouse_over_id(new_id);
 }
 
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1109,14 +1086,14 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, 1);
+  dt_dev_jump_image((dt_develop_t *)data, 1, TRUE);
   return TRUE;
 }
 
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, -1);
+  dt_dev_jump_image((dt_develop_t *)data, -1, TRUE);
   return TRUE;
 }
 
@@ -2545,7 +2522,9 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
 
-  select_this_image(dev->image_storage.id);
+  // change active image
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(dev->image_storage.id, TRUE);
 
   dt_control_set_dev_zoom(DT_ZOOM_FIT);
   dt_control_set_dev_zoom_x(0);
@@ -2604,7 +2583,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
@@ -2633,11 +2612,8 @@ void enter(dt_view_t *self)
   dt_control_set_dev_zoom_y(zoom_y);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_darkroom_filmstrip_activate_callback), self);
-
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
 
@@ -2712,11 +2688,11 @@ void leave(dt_view_t *self)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, FALSE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, FALSE);
   }
 
   // be sure light table will regenerate the thumbnail:
@@ -2797,9 +2773,12 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
-  darktable.develop->image_storage.id = -1;
   // darkroom development could have changed a collection, so update that before being back in lightroom
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                             g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
+
+  darktable.develop->image_storage.id = -1;
+
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
