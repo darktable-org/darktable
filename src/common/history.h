@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <glib.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 
@@ -48,6 +48,15 @@ typedef struct dt_history_hash_values_t
   int current_len;
 } dt_history_hash_values_t;
 
+typedef struct dt_history_copy_item_t
+{
+  GList *selops;
+  GtkTreeView *items;
+  int copied_imageid;
+  gboolean partial;
+  gboolean copy_iop_order;
+} dt_history_copy_item_t;
+
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
 
@@ -64,24 +73,29 @@ void dt_history_delete_on_image(int32_t imgid);
 void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops, gboolean copy_iop_order);
+gboolean dt_history_copy(int imgid);
+gboolean dt_history_copy_parts(int imgid);
+gboolean dt_history_paste_on_list(GList *list, gboolean undo);
+gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo);
 
 /** load a dt file and applies to selected images */
-int dt_history_load_and_apply_on_selection(gchar *filename);
+int dt_history_load_and_apply_on_list(gchar *filename, GList *list);
 
 /** load a dt file and applies to specified image */
 int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
 
 /** delete historystack of selected images */
-void dt_history_delete_on_selection();
+gboolean dt_history_delete_on_list(GList *list, gboolean undo);
 
 /** compress history stack */
-int dt_history_compress_on_selection();
+int dt_history_compress_on_list(GList *imgs);
 void dt_history_compress_on_image(int32_t imgid);
 /* set or clear a tag representing an error state while compressing history */
 void dt_history_set_compress_problem(int32_t imgid, gboolean set);
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
+
+
 
 typedef struct dt_history_item_t
 {

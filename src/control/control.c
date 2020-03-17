@@ -247,40 +247,8 @@ void *dt_control_expose(void *voidptr)
   dt_view_manager_expose(darktable.view_manager, cr, width, height, pointerx, pointery);
   cairo_restore(cr);
 
-  // draw log message, if any
-  dt_pthread_mutex_lock(&darktable.control->log_mutex);
-  if(darktable.control->log_ack != darktable.control->log_pos)
-  {
-    PangoRectangle ink;
-    PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float pad = DT_PIXEL_APPLY_DPI(10.0f), xc = width / 2.0;
-    const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = MIN(pad + ink.width * .5f, width * .5f - pad);
-    float rad = DT_PIXEL_APPLY_DPI(14);
-    // ellipsze the text if it does not fit on the screen
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
-    pango_layout_set_width(layout, (int)(PANGO_SCALE * wd * 2.0f));
-    cairo_move_to(cr, xc - wd, yc + rad);
-    cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
-    cairo_line_to(cr, xc + wd, yc - rad);
-    cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
-    cairo_line_to(cr, xc - wd, yc + rad);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
-    cairo_fill(cr);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
-    cairo_move_to(cr, xc - wd + pad, yc - ink.height * 0.5);
-    pango_cairo_show_layout(cr, layout);
-    pango_font_description_free(desc);
-    g_object_unref(layout);
-  }
   // draw busy indicator
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_busy > 0)
   {
     PangoRectangle ink;
@@ -409,7 +377,7 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
     darktable.control->log_ack = (darktable.control->log_ack + 1) % DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_redraw_center();
+  dt_control_log_redraw();
   return FALSE;
 }
 
@@ -449,7 +417,7 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
 
 static gboolean _redraw_center(gpointer user_data)
 {
-  dt_control_queue_redraw_center();
+  dt_control_log_redraw();
   return FALSE; // don't call this again
 }
 
@@ -507,6 +475,11 @@ void dt_control_queue_redraw_center()
 void dt_control_navigation_redraw()
 {
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+}
+
+void dt_control_log_redraw()
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 }
 
 static gboolean _gtk_widget_queue_draw(gpointer user_data)
