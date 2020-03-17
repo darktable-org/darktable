@@ -301,6 +301,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "output saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast fulcrum"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color control sliders"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -311,6 +313,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "output saturation", GTK_WIDGET(g->saturation_out));
   dt_accel_connect_slider_iop(self, "contrast fulcrum", GTK_WIDGET(g->grey));
   dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
+  dt_accel_connect_combobox_iop(self, "color control sliders", GTK_WIDGET(g->controls));
 }
 
 static inline float CDL(float x, float slope, float offset, float power)
