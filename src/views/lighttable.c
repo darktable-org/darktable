@@ -202,20 +202,6 @@ static inline gint get_zoom(void)
   return dt_view_lighttable_get_zoom(darktable.view_manager);
 }
 
-static int _get_collection_count(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  if(lib->collection_count < 0)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images", -1,
-                                &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) lib->collection_count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-  }
-  return lib->collection_count;
-}
-
 static void _force_expose_all(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1672,7 +1658,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   check_layout(self);
 
-  if(_get_collection_count(self) <= 0)
+  if(!darktable.collection || darktable.collection->count <= 0)
   {
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
       gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
