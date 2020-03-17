@@ -424,6 +424,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
 // if clamp, we verify that the move is allowed (collection bounds, etc...)
 static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean clamp)
 {
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
   int posx = x;
   int posy = y;
   if(clamp)
@@ -537,6 +538,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
 static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
 {
+  if(imgid <= 0) return NULL;
   GList *l = table->list;
   while(l)
   {
@@ -663,6 +665,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, const int oldzoom, const int newzoom)
 {
   if(oldzoom == newzoom) return;
+  if(!table->list || g_list_length(table->list) == 0) return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
