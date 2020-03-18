@@ -220,18 +220,24 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)
 {
   gchar accel_next_path[256];
+  gchar accel_next_path_trans[256];
   gchar accel_prev_path[256];
+  gchar accel_prev_path_trans[256];
 
   dt_accel_t *accel_next = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
   dt_accel_t *accel_prev = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
 
+  gchar *module_name_fixed = dt_util_str_replace(so->name(), "/", "-");
+
   //accel to select next value
   snprintf(accel_next_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
            NC_("accel", "next"));
+  snprintf(accel_next_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+           g_dpgettext2(NULL, "accel", path), C_("accel", "next"));
   gtk_accel_map_add_entry(accel_next_path, 0, 0);
   g_strlcpy(accel_next->path, accel_next_path, sizeof(accel_next->path));
   dt_accel_path_iop_translated(accel_next_path, sizeof(accel_next_path), so, path);
-  g_strlcpy(accel_next->translated_path, accel_next_path, sizeof(accel_next->translated_path));
+  g_strlcpy(accel_next->translated_path, accel_next_path_trans, sizeof(accel_next->translated_path));
   g_strlcpy(accel_next->module, so->op, sizeof(accel_next->module));
   accel_next->local = local;
   accel_next->views = DT_VIEW_DARKROOM;
@@ -240,14 +246,18 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   //accel to select previous value
   snprintf(accel_prev_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
            NC_("accel", "previous"));
+  snprintf(accel_prev_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+           g_dpgettext2(NULL, "accel", path), C_("accel", "previous"));
   gtk_accel_map_add_entry(accel_prev_path, 0, 0);
   g_strlcpy(accel_prev->path, accel_prev_path, sizeof(accel_prev->path));
   dt_accel_path_iop_translated(accel_prev_path, sizeof(accel_prev_path), so, path);
-  g_strlcpy(accel_next->translated_path, accel_prev_path, sizeof(accel_prev->translated_path));
+  g_strlcpy(accel_prev->translated_path, accel_prev_path_trans, sizeof(accel_prev->translated_path));
   g_strlcpy(accel_prev->module, so->op, sizeof(accel_prev->module));
   accel_prev->local = local;
   accel_prev->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel_prev);
+
+  g_free(module_name_fixed);
 }
 
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)
