@@ -527,10 +527,13 @@ void expose(
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
-    const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
-    const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+    const int pwidth = dev->pipe->output_backbuf_width<<closeup;
+    const int pheight = dev->pipe->output_backbuf_height<<closeup;
+
+    const float hbar = (self->width - pwidth) * .5f;
+    const float tbar = (self->height - pheight) * .5f;
     cairo_save(cri);
-    cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
     cairo_clip(cri);
 
     const float wd = dev->preview_pipe->backbuf_width;
@@ -585,10 +588,13 @@ void expose(
     if(dev->form_visible && dev->gui_module->enabled)
     {
       // The masks paths should only be displayed inside the visible image
-      const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
-      const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+      const int pwidth = dev->pipe->output_backbuf_width<<closeup;
+      const int pheight = dev->pipe->output_backbuf_height<<closeup;
+
+      const float hbar = (self->width - pwidth) * .5f;
+      const float tbar = (self->height - pheight) * .5f;
       cairo_save(cri);
-      cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+      cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
       cairo_clip(cri);
 
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
@@ -2799,16 +2805,22 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
-void mouse_restrict_range(dt_view_t *self, double xpos, double ypos, float *x_lim, float *y_lim)
+/* This helper function tests for a position to be within the displayed area
+   of an image. To avoid "border cases" we accept values to be slighly out of area too.
+*/
+static int mouse_in_imagearea(dt_view_t *self, double x, double y)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  const float width_i = self->width;
-  const float height_i = self->height;
-  const float hbar = (width_i - dev->pipe->output_backbuf_width) / 2;
-  const float tbar = (height_i - dev->pipe->output_backbuf_height) / 2 ;
 
-  *x_lim = fmaxf(hbar, fminf(xpos,width_i - hbar));
-  *y_lim = fmaxf(tbar, fminf(ypos,height_i - tbar));
+  const int closeup = dt_control_get_dev_closeup();
+  const int pwidth = dev->pipe->output_backbuf_width<<closeup;
+  const int pheight = dev->pipe->output_backbuf_height<<closeup;
+
+  x -= (self->width - pwidth) / 2;
+  y -= (self->height - pheight) / 2;
+
+  if((x < -3) || (x > (pwidth + 6)) || (y < -3) || (y > (pheight + 6))) return FALSE;
+  return TRUE;
 }
 
 void mouse_enter(dt_view_t *self)
@@ -2845,30 +2857,31 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && ctl->button_down_which == 1)
   {
     // module requested a color box
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
-    float xpos=x, ypos=y, b_xpos=x, b_ypos=y;
-    mouse_restrict_range(self, x, y, &xpos, &ypos);
-    mouse_restrict_range(self, ctl->button_x, ctl->button_y, &b_xpos, &b_ypos);
-
-    float zoom_x, zoom_y, bzoom_x, bzoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, xpos + offx, ypos + offy, &zoom_x, &zoom_y);
-    dt_dev_get_pointer_zoom_pos(dev, b_xpos + offx, b_ypos + offy, &bzoom_x, &bzoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      // Make sure a minimal width/height 
+      float delta_x = 1 / (float) dev->pipe->processed_width;
+      float delta_y = 1 / (float) dev->pipe->processed_height;
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    }
+      float zoom_x, zoom_y, bzoom_x, bzoom_y;
+      dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+      dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
 
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
+    }
     dt_control_queue_redraw();
     return;
   }
@@ -2952,31 +2965,43 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
-    float xpos=x, ypos=y;
     float zoom_x, zoom_y;
-    mouse_restrict_range(self, x, y, &xpos, &ypos);
-    dt_dev_get_pointer_zoom_pos(dev, xpos+offx, ypos+offy, &zoom_x, &zoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      // The default box will be a square with 1% of the image width
+      const float delta_x = 0.01f;
+      const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
     }
-
     dt_control_queue_redraw();
-
     return 1;
   }
+
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 3)
+  {
+    // default is hardcoded this way
+    dev->gui_module->color_picker_box[0] = dev->gui_module->color_picker_box[1] = .01f;
+    dev->gui_module->color_picker_box[2] = dev->gui_module->color_picker_box[3] = .99f;
+
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_control_queue_redraw();
+    return 1;
+  }
+
   x += offx;
   y += offy;
   // masks
