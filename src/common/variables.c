@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/debug.h"
 #include "common/variables.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -63,6 +64,8 @@ typedef struct dt_variables_data_t
   double elevation;
 
   uint32_t tags_flags;
+
+  int count_versios;
 
 } dt_variables_data_t;
 
@@ -252,6 +255,40 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->camera_alias);
   else if(has_prefix(variable, "ID"))
     result = g_strdup_printf("%d", params->imgid);
+  else if(has_prefix(variable, "VERSION_NAME"))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      result = g_strdup((char *)res->data);
+    }
+    g_list_free_full(res, &g_free);
+  }
+  else if(has_prefix(variable, "VERSION_IF_MULTI"))
+  {
+    sqlite3_stmt *stmt;
+
+    // count duplicates
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(1)"
+                                " FROM images AS i1"
+                                " WHERE EXISTS (SELECT 'y' FROM images AS i2"
+                                "               WHERE  i2.id = ?1"
+                                "               AND    i1.film_id = i2.film_id"
+                                "               AND    i1.filename = i2.filename)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, params->imgid);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int count = sqlite3_column_int(stmt, 0);
+      //only return data if more than one matching image
+      if(count > 1)
+        result = g_strdup_printf("%d", params->data->version);
+    }
+    sqlite3_finalize (stmt);
+  }
   else if(has_prefix(variable, "VERSION"))
     result = g_strdup_printf("%d", params->data->version);
   else if(has_prefix(variable, "JOBCODE"))
@@ -364,16 +401,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "RIGHTS"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    res = g_list_first(res);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(has_prefix(variable, "SHORT_DESCRIPTION"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.short_desc", NULL);
     res = g_list_first(res);
     if(res != NULL)
     {

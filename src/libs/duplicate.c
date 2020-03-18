@@ -90,7 +90,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
-  dt_metadata_set(imgid, "Xmp.darktable.short_desc", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
+  dt_metadata_set(imgid, "Xmp.darktable.version_name", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
   dt_image_synch_xmp(imgid);
 
   return FALSE;
@@ -380,7 +380,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_SHORT_DESC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_VERSION_NAME);
 
   GtkWidget *bt = NULL;
 
