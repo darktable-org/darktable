@@ -59,6 +59,7 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, 
  * we need 2 different since there are different kinds of signals we need to listen to. */
 static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data);
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data);
+static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data);
 
 /* determine image offset of specified imgid for the given collection */
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
@@ -96,7 +97,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT,
                             G_CALLBACK(_dt_collection_recount_callback_2), collection);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
-                            G_CALLBACK(_dt_collection_recount_callback_2), collection);
+                            G_CALLBACK(_dt_collection_filmroll_imported_callback), collection);
   return collection;
 }
 
@@ -1919,6 +1920,10 @@ static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_d
 
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data)
 {
+  _dt_collection_recount_callback_1(instance, user_data);
+}
+static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data)
+{
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
@@ -1926,7 +1931,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD, NULL, -1);
+    dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
   }
 }
 
