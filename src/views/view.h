@@ -18,13 +18,13 @@
 
 #pragma once
 
+#include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
-#include "common/history.h"
 #include <osm-gps-map.h>
 #endif
 #include <cairo.h>
