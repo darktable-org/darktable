@@ -184,6 +184,9 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifPixelFormat format = AVIF_PIXEL_FORMAT_NONE;
   avifImage *image = NULL;
+  avifRGBImage rgb = {
+      .format = AVIF_RGB_FORMAT_RGB,
+  };
   avifEncoder *encoder = NULL;
   uint8_t *icc_profile_data = NULL;
   uint32_t icc_profile_len;
@@ -228,37 +231,37 @@ int write_image(struct dt_imageio_module_data_t *data,
            avif_get_compression_string(d->compression_type),
            d->quality);
 
-  avifImageAllocatePlanes(image, AVIF_PLANES_RGB);
+  avifRGBImageSetDefaults(&rgb, image);
+  rgb.format = AVIF_RGB_FORMAT_RGB;
+
+  avifRGBImageAllocatePixels(&rgb);
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
 
-  const size_t R_rowbytes = image->rgbRowBytes[AVIF_CHAN_R];
-  const size_t G_rowbytes = image->rgbRowBytes[AVIF_CHAN_G];
-  const size_t B_rowbytes = image->rgbRowBytes[AVIF_CHAN_B];
+  const size_t rowbytes = rgb.rowBytes;
 
   const float *const restrict in_data = (const float *)in;
-
-  uint8_t *const restrict R_plane8 = (uint8_t *)image->rgbPlanes[AVIF_CHAN_R];
-  uint8_t *const restrict G_plane8 = (uint8_t *)image->rgbPlanes[AVIF_CHAN_G];
-  uint8_t *const restrict B_plane8 = (uint8_t *)image->rgbPlanes[AVIF_CHAN_B];
+  uint8_t *const restrict out = (uint8_t *)rgb.pixels;
 
   switch(bit_depth) {
   case 12:
   case 10: {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_data, width, height, R_plane8, G_plane8, B_plane8, \
-                      R_rowbytes, G_rowbytes, B_rowbytes, max_channel_f) \
+  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++) {
-      for (size_t x = 0; x < width; x++) {
-          const float *pixel = &in_data[(size_t)4 * ((y * width) + x)];
+    for (size_t y = 0; y < height; y++)
+    {
+      for (size_t x = 0; x < width; x++)
+      {
+          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
+          uint16_t *out_pixel = (uint16_t *)&out[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
 
-          *((uint16_t *)&R_plane8[(x * 2) + (y * R_rowbytes)]) = (uint16_t)CLAMP(pixel[0] * max_channel_f, 0, max_channel_f);
-          *((uint16_t *)&G_plane8[(x * 2) + (y * G_rowbytes)]) = (uint16_t)CLAMP(pixel[1] * max_channel_f, 0, max_channel_f);
-          *((uint16_t *)&B_plane8[(x * 2) + (y * B_rowbytes)]) = (uint16_t)CLAMP(pixel[2] * max_channel_f, 0, max_channel_f);
+          out_pixel[0] = (uint16_t)CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f);
+          out_pixel[1] = (uint16_t)CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f);
+          out_pixel[2] = (uint16_t)CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f);
       }
     }
     break;
@@ -266,18 +269,20 @@ int write_image(struct dt_imageio_module_data_t *data,
   case 8: {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_data, width, height, R_plane8, G_plane8, B_plane8, \
-                      R_rowbytes, G_rowbytes, B_rowbytes, max_channel_f) \
+  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++) {
-      for (size_t x = 0; x < width; x++) {
-          const float *pixel = &in_data[(size_t)4 * ((y * width) + x)];
+    for (size_t y = 0; y < height; y++)
+    {
+      for (size_t x = 0; x < width; x++)
+      {
+          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
+          uint8_t *out_pixel = (uint8_t *)&out[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
 
-          R_plane8[x + (y * R_rowbytes)] = (uint8_t)CLAMP(pixel[0] * max_channel_f, 0, max_channel_f);
-          G_plane8[x + (y * G_rowbytes)] = (uint8_t)CLAMP(pixel[1] * max_channel_f, 0, max_channel_f);
-          B_plane8[x + (y * B_rowbytes)] = (uint8_t)CLAMP(pixel[2] * max_channel_f, 0, max_channel_f);
+          out_pixel[0] = (uint8_t)CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f);
+          out_pixel[1] = (uint8_t)CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f);
+          out_pixel[2] = (uint8_t)CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f);
       }
     }
     break;
@@ -287,6 +292,8 @@ int write_image(struct dt_imageio_module_data_t *data,
     rc = 1;
     goto out;
   }
+
+  avifImageRGBToYUV(image, &rgb);
 
   if (imgid > 0) {
     avifNclxColorProfile nclx = {
@@ -501,6 +508,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   rc = 0; /* success */
 out:
+  avifRGBImageFreePixels(&rgb);
   avifImageDestroy(image);
   avifEncoderDestroy(encoder);
   avifRWDataFree(&output);
