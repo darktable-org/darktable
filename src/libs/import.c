@@ -551,12 +551,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
 
+  GtkWidget *metadata_label[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    label = gtk_label_new(_(metadata_name[i]));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], label, GTK_POS_RIGHT, 1, 1);
+    metadata_label[i] = gtk_label_new(_(metadata_name[i]));
+    gtk_widget_set_halign(metadata_label[i], GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), metadata_label[i], 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], metadata_label[i], GTK_POS_RIGHT, 1, 1);
   }
 
   label = gtk_label_new(_("tags"));
@@ -565,6 +566,19 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_grid_attach_next_to(GTK_GRID(grid), tags, label, GTK_POS_RIGHT, 1, 1);
 
   gtk_widget_show_all(frame);
+
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
+    const gboolean hidden = dt_conf_get_bool(setting);
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type_by_display_order(i);
+    if(meta_type == DT_METADATA_TYPE_INTERNAL || hidden)
+    {
+      gtk_widget_hide(metadata_label[i]);
+      gtk_widget_hide(metadata[i]);
+    }
+  }
 
   if(data != NULL)
   {
