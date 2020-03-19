@@ -526,8 +526,6 @@ static gboolean bauhaus_combobox_next_callback(GtkAccelGroup *accel_group, GObje
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
 
-  g_signal_emit_by_name(G_OBJECT(combobox), "value-changed");
-
   if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
   {
     if(w->module && w->module->multi_name[0] != '\0')
@@ -551,8 +549,6 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
   dt_bauhaus_combobox_set(combobox, prevval);
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
-
-  g_signal_emit_by_name(G_OBJECT(combobox), "value-changed");
 
   if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
   {
