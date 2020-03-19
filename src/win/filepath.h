@@ -18,7 +18,7 @@
 #pragma once
 
 
-gboolean win_valid_duplicate_filename(const char *filename);
+GList* win_image_find_duplicates(const char *filename);
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

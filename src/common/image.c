@@ -963,19 +963,13 @@ gboolean dt_image_altered(const uint32_t imgid)
 GList* dt_image_find_duplicates(const char* filename)
 {
   // find all duplicates of an image
+#ifndef _WIN32
   gchar pattern[PATH_MAX] = { 0 };
   GList* files = NULL;
   gchar *imgpath = g_path_get_dirname(filename);
-
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
-#ifdef _WIN32
-  // Windows only accepts generic wildcards for filename
-  static const gchar *glob_patterns[] = { "", "_????", NULL };
-#else
   static const gchar *glob_patterns[]
     = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
-#endif
-
   const gchar **glob_pattern = glob_patterns;
   files = NULL;
   while(*glob_pattern)
@@ -987,25 +981,6 @@ GList* dt_image_find_duplicates(const char* filename)
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
-
-#ifdef _WIN32
-    wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
-    WIN32_FIND_DATAW data;
-    HANDLE handle = FindFirstFileW(wpattern, &data);
-    g_free(wpattern);
-    if(handle != INVALID_HANDLE_VALUE)
-    {
-      do
-      {
-        char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        if(win_valid_duplicate_filename(file)) files =
-                                                 g_list_append(files, g_build_filename(imgpath, file, NULL));
-        g_free(file);
-      }
-      while(FindNextFileW(handle, &data));
-    }
-    FindClose(handle);
-#else
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))
     {
@@ -1013,13 +988,15 @@ GList* dt_image_find_duplicates(const char* filename)
         files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
       globfree(&globbuf);
     }
-#endif
 
     glob_pattern++;
   }
 
   g_free(imgpath);
   return files;
+#else
+  return win_image_find_duplicates(filename);
+#endif 
 }
 
 
