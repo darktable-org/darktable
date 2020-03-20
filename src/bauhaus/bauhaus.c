@@ -1197,7 +1197,20 @@ void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->active = CLAMP(pos, -1, d->num_labels - 1);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+  if(!darktable.gui->reset) 
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+
+    if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
+    {
+      if(w->module && w->module->multi_name[0] != '\0')
+        dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(widget));
+      else if(w->module)
+        dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(widget));
+      else
+        dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(widget));
+    }
+  }
 }
 
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *widget, const char *text)
