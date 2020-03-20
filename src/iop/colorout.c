@@ -118,6 +118,18 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   return cst;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "export profile"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "export profile", GTK_WIDGET(g->output_profile));
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {

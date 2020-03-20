@@ -81,6 +81,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
                                      guint accel_key, GdkModifierType mods);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
+void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
                               GdkModifierType mods);
@@ -93,6 +94,7 @@ dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GCl
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
+void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *combobox);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
