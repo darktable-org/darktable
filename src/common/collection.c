@@ -1765,12 +1765,15 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    if(!text || text[0] == '\0') {
+    if(!text || text[0] == '\0')
+    {
       if (mode == 1) // for OR show all
         query_parts[i] = g_strdup(" OR 1=1");
       else
         query_parts[i] = g_strdup("");
-    } else {
+    }
+    else
+    {
       gchar *query = get_query_string(property, text);
 
       query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
