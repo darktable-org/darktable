@@ -949,6 +949,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       fprintf(stderr, "ERROR: can't init gui, aborting.\n");
       return 1;
     }
+    darktable.gui->reset = 1;
     dt_bauhaus_init();
   }
   else
@@ -1017,6 +1018,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
+    darktable.gui->reset = 0;
   }
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
