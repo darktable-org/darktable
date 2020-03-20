@@ -145,6 +145,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clip"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -160,6 +161,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->sl_saturation));
   dt_accel_connect_slider_iop(self, "vibrance", GTK_WIDGET(g->sl_vibrance));
   dt_accel_connect_slider_iop(self, "clip", GTK_WIDGET(g->sl_clip));
+  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
 }
 
 static void _turn_select_region_off(struct dt_iop_module_t *self)
