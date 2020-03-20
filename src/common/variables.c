@@ -65,8 +65,6 @@ typedef struct dt_variables_data_t
 
   uint32_t tags_flags;
 
-  int count_versios;
-
 } dt_variables_data_t;
 
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop);
