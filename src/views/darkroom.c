@@ -463,6 +463,14 @@ void expose(
     dt_colorpicker_sample_t *sample = NULL;
 
     cairo_save(cri);
+    // The colorpicker samples bounding rectangle should only be displayed inside the visible image
+    const int pwidth = dev->pipe->output_backbuf_width<<closeup;
+    const int pheight = dev->pipe->output_backbuf_height<<closeup;
+
+    const float hbar = (self->width - pwidth) * .5f;
+    const float tbar = (self->height - pheight) * .5f;
+    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
+    cairo_clip(cri);
 
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
