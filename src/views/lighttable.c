@@ -839,6 +839,10 @@ static int expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
   const float offy = height * 0.2f;
   const float offx = DT_PIXEL_APPLY_DPI(60);
   const float at = 0.3f;
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG); 
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
   PangoLayout *layout;
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
