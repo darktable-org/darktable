@@ -455,9 +455,23 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       }
       table->realign_top_try = 0;
 
-      // we stop when last image is fully shown (that means empty space at the bottom)
       dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-      if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
+      if(table->thumbs_per_row == 1 && posy < 0 && g_list_length(table->list) == 1)
+      {
+        // special case for zoom == 1 as we don't want any space under last image (the image would have disappear)
+        int nbid = 1;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images",
+                                    -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+        if(nbid <= last->rowid) return FALSE;
+      }
+      else
+      {
+        // we stop when last image is fully shown (that means empty space at the bottom)
+        if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
+      }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
