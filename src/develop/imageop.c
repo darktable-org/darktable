@@ -813,6 +813,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
@@ -845,7 +846,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
