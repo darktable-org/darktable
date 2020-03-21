@@ -759,9 +759,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     return;
   }
 
-  // get last active plugin, make sure focus out is called:
-  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
-  dt_iop_request_focus(NULL);
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
 
@@ -771,6 +768,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
+
+  // get last active plugin, make sure focus out is called:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  dt_iop_request_focus(NULL);
 
   // commit image ops to db
   dt_dev_write_history(dev);
@@ -914,18 +915,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  if(active_plugin)
-  {
-    modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
-      modules = g_list_next(modules);
-    }
-    g_free(active_plugin);
-  }
-
   dt_dev_masks_list_change(dev);
 
   /* last set the group to update visibility of iop modules for new pipe */
@@ -937,6 +926,18 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = reset;
+
+  if(active_plugin)
+  {
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
+      modules = g_list_next(modules);
+    }
+    g_free(active_plugin);
+  }
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
