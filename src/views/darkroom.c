@@ -887,7 +887,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+        dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
 
@@ -2573,7 +2573,11 @@ void enter(dt_view_t *self)
       dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
       snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
-      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
+      if(dt_conf_get_bool(option))
+        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+      else
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+        
     }
 
     /* setup key accelerators (only if not hidden) */
