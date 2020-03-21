@@ -389,6 +389,38 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
+
+  // and the tooltip
+  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
+  if(strcmp(pattern, "") == 0)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
+  }
+  else
+  {
+    // we compute the info line (we reuse the function used in export to disk)
+    char input_dir[1024] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
+
+    dt_variables_params_t *vp;
+    dt_variables_params_init(&vp);
+
+    vp->filename = input_dir;
+    vp->jobcode = "infos";
+    vp->imgid = thumb->imgid;
+    vp->sequence = 0;
+
+    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+
+    dt_variables_params_destroy(vp);
+
+    // we change the label
+    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
+
+    g_free(msg);
+  }
+  g_free(pattern);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
