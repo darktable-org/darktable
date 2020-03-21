@@ -851,8 +851,8 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
   {
-    dt_iop_gui_set_expanded(base, FALSE, FALSE);
-    dt_iop_gui_set_expanded(module, TRUE, FALSE);
+    dt_iop_gui_set_expanded(base, FALSE, TRUE);
+    dt_iop_gui_set_expanded(module, TRUE, TRUE);
   }
 
   /* setup key accelerators */
