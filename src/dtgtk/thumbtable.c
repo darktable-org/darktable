@@ -858,7 +858,7 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
       if(strcmp(scrollbars_conf, "no scrollbars")) table->scrollbars = TRUE;
-    } 
+    }
 
     g_free(scrollbars_conf);
   }
@@ -1413,7 +1413,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     // we update the scrollbars
     gboolean bars = (gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
                      || gtk_widget_get_visible(darktable.gui->scrollbars.hscrollbar));
-    if(bars != _thumbtable_update_scrollbars(table))
+    if(bars != _thumbtable_update_scrollbars(table) && table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       // scrollabrs visibility changed, no need to go further, as this function will
       // be triggered another time by widget resizing
