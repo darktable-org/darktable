@@ -107,7 +107,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->middle_grey = old->middle_grey;
     new->brightness = old->brightness;
     new->saturation = old->saturation;
-    new->clip = old->clip;
+    // version 2 vibrance field added before clip
+    new->clip = old->vibrance;
     new->vibrance = 0;
     return 0;
   }
