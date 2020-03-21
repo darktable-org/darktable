@@ -1325,22 +1325,6 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-
-    //get the new minimum version (may be non-zero)
-    // returned to calling function
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
-       "SELECT id FROM main.images i1 WHERE film_id = ?1 AND filename = ?2 AND "
-          "version = (SELECT MIN(version) FROM main.images i2 WHERE i2.film_id = i1.film_id "
-          "AND i2.filename = i1.filename)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      id = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
-  
   }
   else
   {
@@ -1354,10 +1338,23 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
-    id=0;
   }
 
+  //get the minimum id
+  // returned to calling function
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT id FROM main.images i1 WHERE film_id = ?1 AND filename = ?2 AND "
+        "version = (SELECT MIN(version) FROM main.images i2 WHERE i2.film_id = i1.film_id "
+        "AND i2.filename = i1.filename)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  
   //synch database entries to xmp
   dt_image_synch_all_xmp(normalized_filename);
 
