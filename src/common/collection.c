@@ -107,6 +107,8 @@ void dt_collection_free(const dt_collection_t *collection)
                                (gpointer)collection);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2),
                                (gpointer)collection);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_filmroll_imported_callback),
+                               (gpointer)collection);
 
   g_free(collection->query);
   g_free(collection->query_no_group);
