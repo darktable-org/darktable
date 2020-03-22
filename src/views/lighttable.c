@@ -839,7 +839,7 @@ static int expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
   const float offy = height * 0.2f;
   const float offx = DT_PIXEL_APPLY_DPI(60);
   const float at = 0.3f;
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG); 
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
@@ -2963,33 +2963,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
-static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                            GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
-  {
-    // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-    // we want to be sure that lib visibility are ok for this view
-    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE);
-  }
-  else
-  {
-    // there's only timeline in bottom panel, so better hide/show it instead of timeline lib
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-    // we want to be sure that lib visibility are ok for this view
-    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE);
-    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, TRUE);
-  }
-  return TRUE;
-}
-
 void init_key_accels(dt_view_t *self)
 {
   // movement keys
@@ -3031,9 +3004,6 @@ void init_key_accels(dt_view_t *self)
   // zoom for full preview
   dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
-
-  // timeline
-  dt_accel_register_view(self, NC_("accel", "toggle filmstrip or timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -3149,10 +3119,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "preview zoom 100%", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_preview_zoom_fit), (gpointer)self, NULL);
   dt_accel_connect_view(self, "preview zoom fit", closure);
-
-  // timeline
-  closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle filmstrip or timeline", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
