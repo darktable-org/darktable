@@ -232,9 +232,6 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
 
-  dt_accel_path_global(path, sizeof(path), "toggle header");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_header);
-
   dt_accel_path_global(path, sizeof(path), "zoom in");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_in);
 
@@ -431,6 +428,14 @@ static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject
 
   return TRUE;
 }
+static gboolean _toggle_header_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data)
+{
+  dt_ui_toggle_header(darktable.gui->ui);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
+}
+
 
 static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -1305,8 +1310,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_connect_global("toggle bottom panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                                 GINT_TO_POINTER(DT_UI_BORDER_BOTTOM), NULL));
 
-  // toggle view of header
+  // specific top/bottom toggles
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
+  dt_accel_connect_global("toggle header", g_cclosure_new(G_CALLBACK(_toggle_header_accel_callback), NULL, NULL));
 
   // toggle focus peaking everywhere
   dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);

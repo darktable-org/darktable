@@ -663,13 +663,6 @@ int dt_control_key_pressed_override(guint key, guint state)
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     return 1;
   }
-  else if(key == accels->global_header.accel_key && state == accels->global_header.accel_mods)
-  {
-    /* toggle panel viewstate */
-    dt_ui_toggle_header(darktable.gui->ui);
-    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-    return 1;
-  }
   // add an option to allow skip mouse events while editing masks
   else if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
   {
