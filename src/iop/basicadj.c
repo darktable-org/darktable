@@ -95,7 +95,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
   if(old_version == 1 && new_version == 2)
   {
-    const dt_iop_basicadj_params_t *old = old_params;
+    typedef struct dt_iop_basicadj_params_v1_t
+    {
+      float black_point;
+      float exposure;
+      float hlcompr;
+      float hlcomprthresh;
+      float contrast;
+      int preserve_colors;
+      float middle_grey;
+      float brightness;
+      float saturation;
+      float clip;
+    } dt_iop_basicadj_params_v1_t;
+
+    const dt_iop_basicadj_params_v1_t *old = old_params;
     dt_iop_basicadj_params_t *new = new_params;
 
     new->black_point = old->black_point;
