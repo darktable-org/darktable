@@ -358,7 +358,7 @@
   </dtconfig>
   <dtconfig prefs="gui">
     <name>show_folder_levels</name>
-    <type>int</type>
+    <type min="1" max="5">int</type>
     <default>1</default>
     <shortdescription>number of folder levels to show in lists</shortdescription>
     <longdescription>the number of folder levels to show in film roll names, starting from the right</longdescription>
