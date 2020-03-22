@@ -166,7 +166,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  const int id = dt_view_get_image_to_act_on();
+  const int id = dt_view_get_image_to_act_on2();
 
   if(id > 0 && dt_history_copy_parts(id))
   {
