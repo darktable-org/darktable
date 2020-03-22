@@ -69,9 +69,6 @@
 
 DT_MODULE(1)
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data);
-
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                GdkModifierType modifier, gpointer data);
 
@@ -1064,17 +1061,6 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
   dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
   dt_control_navigation_redraw();
-  return TRUE;
-}
-
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
   return TRUE;
 }
 
@@ -2593,7 +2579,6 @@ void enter(dt_view_t *self)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
       else
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
-        
     }
 
     /* setup key accelerators (only if not hidden) */
@@ -2887,7 +2872,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     // module requested a color box
     if(mouse_in_imagearea(self, x, y))
     {
-      // Make sure a minimal width/height 
+      // Make sure a minimal width/height
       float delta_x = 1 / (float) dev->pipe->processed_width;
       float delta_y = 1 / (float) dev->pipe->processed_height;
 
@@ -3388,9 +3373,6 @@ void configure(dt_view_t *self, int wd, int ht)
 
 void init_key_accels(dt_view_t *self)
 {
-  // Film strip shortcuts
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-
   // Zoom shortcuts
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
@@ -3462,10 +3444,6 @@ void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
   dt_develop_t *data = (dt_develop_t *)self->data;
-
-  // Film strip shortcuts
-  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 
   // Zoom shortcuts
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);

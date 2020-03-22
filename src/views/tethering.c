@@ -104,17 +104,6 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, int img
   if(imgid >= 0) dt_control_queue_redraw_center();
 }
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-  return TRUE;
-}
-
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_capture_t));
@@ -396,18 +385,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_view_t *self)
-{
-  // Setup key accelerators in capture view...
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
