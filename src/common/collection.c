@@ -1821,7 +1821,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   if(!collection->clone)
   {
     dt_collection_memory_update();
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change, list, next);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change,
+                            g_list_copy(list), next);
   }
 }
 
