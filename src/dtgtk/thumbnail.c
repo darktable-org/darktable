@@ -54,6 +54,8 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
   if(img)
   {
+    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
+
     thumb->rating = (img->flags & 0x7);
 
     thumb->groupid = img->group_id;
