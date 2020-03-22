@@ -279,6 +279,22 @@ void expose(
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
+
+    /* If boxw and boxh very closely match the zoomed size in the darktable window we might have resizing with
+       every expose because adding a slider will change the image area and might force a resizing in next expose.
+       So we disable in cases close to full.  
+    */
+    if(boxw > 0.95f)
+    {
+      zx = .0f;
+      boxw = 1.01f;
+    }
+    if(boxh > 0.95f)
+    {
+      zy = .0f;
+      boxh = 1.01f;
+    }
+
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
