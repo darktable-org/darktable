@@ -1180,7 +1180,9 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
   params->index = NULL;
 
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_queue_redraw_center();
   return 0;
 }
 
