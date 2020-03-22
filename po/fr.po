@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-22 16:43+0100\n"
-"PO-Revision-Date: 2020-03-22 16:48+0100\n"
+"POT-Creation-Date: 2020-03-22 21:14+0100\n"
+"PO-Revision-Date: 2020-03-22 21:14+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1505,7 +1505,7 @@ msgstr "ouverture"
 #. exposure
 #: ../src/common/collection.c:609 ../src/gui/preferences.c:523
 #: ../src/gui/preferences.c:1460 ../src/gui/presets.c:464
-#: ../src/iop/basicadj.c:757 ../src/iop/exposure.c:106
+#: ../src/iop/basicadj.c:771 ../src/iop/exposure.c:106
 #: ../src/iop/exposure.c:887 ../src/iop/relight.c:360
 #: ../src/libs/metadata_view.c:113
 msgid "exposure"
@@ -3729,6 +3729,135 @@ msgstr ""
 msgid "double-click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
+#. setup rating key accelerators
+#: ../src/dtgtk/thumbtable.c:1799
+msgctxt "accel"
+msgid "views/thumbtable/rate 0"
+msgstr "vues/miniature/pas d'étoile"
+
+#: ../src/dtgtk/thumbtable.c:1800
+msgctxt "accel"
+msgid "views/thumbtable/rate 1"
+msgstr "vues/miniature/1 étoile"
+
+#: ../src/dtgtk/thumbtable.c:1801
+msgctxt "accel"
+msgid "views/thumbtable/rate 2"
+msgstr "vues/miniature/2 étoiles"
+
+#: ../src/dtgtk/thumbtable.c:1802
+msgctxt "accel"
+msgid "views/thumbtable/rate 3"
+msgstr "vues/miniature/3 étoiles"
+
+#: ../src/dtgtk/thumbtable.c:1803
+msgctxt "accel"
+msgid "views/thumbtable/rate 4"
+msgstr "vues/miniature/4 étoiles"
+
+#: ../src/dtgtk/thumbtable.c:1804
+msgctxt "accel"
+msgid "views/thumbtable/rate 5"
+msgstr "vues/miniature/5 étoiles"
+
+#: ../src/dtgtk/thumbtable.c:1805
+msgctxt "accel"
+msgid "views/thumbtable/rate reject"
+msgstr "vues/miniature/rejeter"
+
+#. setup history key accelerators
+#: ../src/dtgtk/thumbtable.c:1808
+msgctxt "accel"
+msgid "views/thumbtable/copy history"
+msgstr "vues/miniature/copie historique"
+
+#: ../src/dtgtk/thumbtable.c:1809
+msgctxt "accel"
+msgid "views/thumbtable/copy history parts"
+msgstr "vues/miniature/copier une partie du développement"
+
+#: ../src/dtgtk/thumbtable.c:1811
+msgctxt "accel"
+msgid "views/thumbtable/paste history"
+msgstr "vues/miniature/coller le développement"
+
+#: ../src/dtgtk/thumbtable.c:1812
+msgctxt "accel"
+msgid "views/thumbtable/paste history parts"
+msgstr "vues/miniature/coller une partie du développement"
+
+#: ../src/dtgtk/thumbtable.c:1814
+msgctxt "accel"
+msgid "views/thumbtable/discard history"
+msgstr "vues/miniature/supprimer historique"
+
+#: ../src/dtgtk/thumbtable.c:1816
+msgctxt "accel"
+msgid "views/thumbtable/duplicate image"
+msgstr "vues/miniature/cloner l'image"
+
+#: ../src/dtgtk/thumbtable.c:1817
+msgctxt "accel"
+msgid "views/thumbtable/duplicate image virgin"
+msgstr "vues/miniature/dupliquer image vierge"
+
+#. setup color label accelerators
+#: ../src/dtgtk/thumbtable.c:1821
+msgctxt "accel"
+msgid "views/thumbtable/color red"
+msgstr "vues/miniature/couleur rouge"
+
+#: ../src/dtgtk/thumbtable.c:1822
+msgctxt "accel"
+msgid "views/thumbtable/color yellow"
+msgstr "vues/miniature/couleur jaune"
+
+#: ../src/dtgtk/thumbtable.c:1823
+msgctxt "accel"
+msgid "views/thumbtable/color green"
+msgstr "vues/miniature/couleur vert"
+
+#: ../src/dtgtk/thumbtable.c:1824
+msgctxt "accel"
+msgid "views/thumbtable/color blue"
+msgstr "vues/miniature/couleur bleue"
+
+#: ../src/dtgtk/thumbtable.c:1825
+msgctxt "accel"
+msgid "views/thumbtable/color purple"
+msgstr "vues/miniature/couleur violette"
+
+#: ../src/dtgtk/thumbtable.c:1826
+msgctxt "accel"
+msgid "views/thumbtable/clear color labels"
+msgstr "vues/miniature/aucun label couleur"
+
+#. setup selection accelerators
+#: ../src/dtgtk/thumbtable.c:1829
+msgctxt "accel"
+msgid "views/thumbtable/select all"
+msgstr "vues/miniature/tout sélectionner"
+
+#: ../src/dtgtk/thumbtable.c:1830
+msgctxt "accel"
+msgid "views/thumbtable/select none"
+msgstr "vues/miniature/ne rien sélectionner"
+
+#: ../src/dtgtk/thumbtable.c:1832
+msgctxt "accel"
+msgid "views/thumbtable/invert selection"
+msgstr "vues/miniature/inverser sélection"
+
+#: ../src/dtgtk/thumbtable.c:1833
+msgctxt "accel"
+msgid "views/thumbtable/select film roll"
+msgstr "vues/miniature/sélectionner film"
+
+#: ../src/dtgtk/thumbtable.c:1834
+msgctxt "accel"
+msgid "views/thumbtable/select untouched"
+msgstr "vues/miniature/non développées"
+
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
 #. * Column 3 - WB name.
@@ -4190,27 +4319,27 @@ msgstr "activer/désactiver le panneau supérieur"
 #: ../src/gui/gtk.c:1351
 msgctxt "accel"
 msgid "toggle filmstrip and timeline"
-msgstr "activer ou désactiver le bandeau et la chronologie"
+msgstr "activer/désactiver le bandeau et la chronologie"
 
 #: ../src/gui/gtk.c:1355
 msgctxt "accel"
 msgid "toggle top toolbar"
-msgstr "activer ou désactiver la barre d'outil du haut"
+msgstr "activer/désactiver la barre d'outil du haut"
 
 #: ../src/gui/gtk.c:1359
 msgctxt "accel"
 msgid "toggle bottom toolbar"
-msgstr "activer ou désactiver la barre d'outil du bas"
+msgstr "activer/désactiver la barre d'outil du bas"
 
 #: ../src/gui/gtk.c:1363
 msgctxt "accel"
 msgid "toggle all top panels"
-msgstr "activer ou désactiver tous les panneaux du haut"
+msgstr "activer/désactiver tous les panneaux du haut"
 
 #: ../src/gui/gtk.c:1367
 msgctxt "accel"
 msgid "toggle all bottom panels"
-msgstr "activer ou désactiver tous les panneaux du bas"
+msgstr "activer/désactiver tous les panneaux du bas"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1372
@@ -4563,7 +4692,7 @@ msgstr "modèle"
 msgid "maker"
 msgstr "fabricant"
 
-#: ../src/gui/preferences.c:536 ../src/iop/basicadj.c:824
+#: ../src/gui/preferences.c:536 ../src/iop/basicadj.c:838
 #: ../src/iop/borders.c:1038 ../src/iop/levels.c:725
 #: ../src/iop/rgblevels.c:1107
 msgid "auto"
@@ -5874,7 +6003,7 @@ msgctxt "accel"
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:200 ../src/iop/basicadj.c:148
+#: ../src/iop/basecurve.c:200 ../src/iop/basicadj.c:162
 #: ../src/iop/rgbcurve.c:149 ../src/iop/rgblevels.c:129
 #: ../src/iop/tonecurve.c:212
 msgctxt "accel"
@@ -5993,14 +6122,14 @@ msgstr ""
 "échelle pour le graphe, utilisez une échelle logarithmique pour une "
 "meilleure précision près des noirs"
 
-#: ../src/iop/basecurve.c:2182 ../src/iop/basicadj.c:778
+#: ../src/iop/basecurve.c:2182 ../src/iop/basicadj.c:792
 #: ../src/iop/rgbcurve.c:1612 ../src/iop/rgblevels.c:1134
 #: ../src/iop/tonecurve.c:1437
 msgid "preserve colors"
 msgstr "préserver couleur"
 
 #: ../src/iop/basecurve.c:2183 ../src/iop/basecurve.c:2196
-#: ../src/iop/basicadj.c:779 ../src/iop/clipping.c:1740
+#: ../src/iop/basicadj.c:793 ../src/iop/clipping.c:1740
 #: ../src/iop/clipping.c:2041 ../src/iop/clipping.c:2086
 #: ../src/iop/clipping.c:2226 ../src/iop/clipping.c:2253
 #: ../src/iop/colorreconstruction.c:1381 ../src/iop/lens.cc:2307
@@ -6012,43 +6141,43 @@ msgstr "préserver couleur"
 msgid "none"
 msgstr "sans"
 
-#: ../src/iop/basecurve.c:2184 ../src/iop/basicadj.c:780
+#: ../src/iop/basecurve.c:2184 ../src/iop/basicadj.c:794
 #: ../src/iop/rgbcurve.c:1614 ../src/iop/rgblevels.c:1136
 #: ../src/iop/tonecurve.c:1439
 msgid "luminance"
 msgstr "luminance"
 
-#: ../src/iop/basecurve.c:2185 ../src/iop/basicadj.c:781
+#: ../src/iop/basecurve.c:2185 ../src/iop/basicadj.c:795
 #: ../src/iop/filmicrgb.c:1578 ../src/iop/rgbcurve.c:1615
 #: ../src/iop/rgblevels.c:1137 ../src/iop/tonecurve.c:1440
 msgid "max RGB"
 msgstr "max RVB"
 
-#: ../src/iop/basecurve.c:2186 ../src/iop/basicadj.c:782
+#: ../src/iop/basecurve.c:2186 ../src/iop/basicadj.c:796
 #: ../src/iop/rgbcurve.c:1616 ../src/iop/rgblevels.c:1138
 #: ../src/iop/tonecurve.c:1441
 msgid "average RGB"
 msgstr "moyenne RVB"
 
-#: ../src/iop/basecurve.c:2187 ../src/iop/basicadj.c:783
+#: ../src/iop/basecurve.c:2187 ../src/iop/basicadj.c:797
 #: ../src/iop/rgbcurve.c:1617 ../src/iop/rgblevels.c:1139
 #: ../src/iop/tonecurve.c:1442
 msgid "sum RGB"
 msgstr "somme RVB"
 
-#: ../src/iop/basecurve.c:2188 ../src/iop/basicadj.c:784
+#: ../src/iop/basecurve.c:2188 ../src/iop/basicadj.c:798
 #: ../src/iop/rgbcurve.c:1618 ../src/iop/rgblevels.c:1140
 #: ../src/iop/tonecurve.c:1443
 msgid "norm RGB"
 msgstr "norme RVB"
 
-#: ../src/iop/basecurve.c:2189 ../src/iop/basicadj.c:785
+#: ../src/iop/basecurve.c:2189 ../src/iop/basicadj.c:799
 #: ../src/iop/rgbcurve.c:1619 ../src/iop/rgblevels.c:1141
 #: ../src/iop/tonecurve.c:1444
 msgid "basic power"
 msgstr "puissance de base"
 
-#: ../src/iop/basecurve.c:2191 ../src/iop/basicadj.c:787
+#: ../src/iop/basecurve.c:2191 ../src/iop/basicadj.c:801
 #: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1143
 #: ../src/iop/tonecurve.c:1446
 msgid "method to preserve colors when applying contrast"
@@ -6096,44 +6225,44 @@ msgstr ""
 msgid "exposure bias"
 msgstr "biais d'exposition"
 
-#: ../src/iop/basicadj.c:119
+#: ../src/iop/basicadj.c:133
 msgid "basic adjustments"
 msgstr "ajustement de base"
 
-#: ../src/iop/basicadj.c:139
+#: ../src/iop/basicadj.c:153
 msgctxt "accel"
 msgid "black level correction"
 msgstr "correction du niveau du noir"
 
-#: ../src/iop/basicadj.c:140 ../src/iop/exposure.c:127 ../src/iop/relight.c:110
+#: ../src/iop/basicadj.c:154 ../src/iop/exposure.c:127 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposition"
 
-#: ../src/iop/basicadj.c:141
+#: ../src/iop/basicadj.c:155
 msgctxt "accel"
 msgid "highlight compression"
 msgstr "compression hautes lumières"
 
-#: ../src/iop/basicadj.c:142 ../src/iop/bilat.c:116 ../src/iop/colisa.c:99
+#: ../src/iop/basicadj.c:156 ../src/iop/bilat.c:116 ../src/iop/colisa.c:99
 #: ../src/iop/colorbalance.c:303 ../src/iop/filmicrgb.c:272
 #: ../src/iop/lowpass.c:197
 msgctxt "accel"
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/basicadj.c:143
+#: ../src/iop/basicadj.c:157
 msgctxt "accel"
 msgid "middle grey"
 msgstr "gris moyen"
 
-#: ../src/iop/basicadj.c:144 ../src/iop/colisa.c:100 ../src/iop/lowpass.c:198
+#: ../src/iop/basicadj.c:158 ../src/iop/colisa.c:100 ../src/iop/lowpass.c:198
 #: ../src/iop/soften.c:107 ../src/iop/vignette.c:176
 msgctxt "accel"
 msgid "brightness"
 msgstr "luminosité"
 
-#: ../src/iop/basicadj.c:145 ../src/iop/colisa.c:101
+#: ../src/iop/basicadj.c:159 ../src/iop/colisa.c:101
 #: ../src/iop/colorchecker.c:137 ../src/iop/colorcorrection.c:115
 #: ../src/iop/colorize.c:128 ../src/iop/graduatednd.c:168
 #: ../src/iop/lowpass.c:199 ../src/iop/soften.c:106 ../src/iop/vignette.c:177
@@ -6141,21 +6270,21 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/basicadj.c:146 ../src/iop/vibrance.c:84
+#: ../src/iop/basicadj.c:160 ../src/iop/vibrance.c:84
 msgctxt "accel"
 msgid "vibrance"
 msgstr "vibrance"
 
-#: ../src/iop/basicadj.c:147
+#: ../src/iop/basicadj.c:161
 msgctxt "accel"
 msgid "clip"
 msgstr "tronquer"
 
-#: ../src/iop/basicadj.c:745 ../src/iop/exposure.c:897
+#: ../src/iop/basicadj.c:759 ../src/iop/exposure.c:897
 msgid "black level correction"
 msgstr "correction du niveau du noir"
 
-#: ../src/iop/basicadj.c:747
+#: ../src/iop/basicadj.c:761
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -6167,7 +6296,7 @@ msgstr ""
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/basicadj.c:758 ../src/iop/exposure.c:807
+#: ../src/iop/basicadj.c:772 ../src/iop/exposure.c:807
 #: ../src/iop/exposure.c:886 ../src/iop/exposure.c:925
 #: ../src/iop/graduatednd.c:1224 ../src/iop/relight.c:359
 #: ../src/iop/soften.c:749
@@ -6175,48 +6304,48 @@ msgstr ""
 msgid "%.2f EV"
 msgstr "%.2f IL"
 
-#: ../src/iop/basicadj.c:759 ../src/iop/exposure.c:885
+#: ../src/iop/basicadj.c:773 ../src/iop/exposure.c:885
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition"
 
-#: ../src/iop/basicadj.c:765
+#: ../src/iop/basicadj.c:779
 msgid "highlight compression"
 msgstr "compression hautes lumières"
 
-#: ../src/iop/basicadj.c:766
+#: ../src/iop/basicadj.c:780
 msgid "highlight compression adjustment"
 msgstr "ajustement de la compression des hautes lumières"
 
-#: ../src/iop/basicadj.c:772 ../src/iop/bilat.c:504 ../src/iop/colisa.c:381
+#: ../src/iop/basicadj.c:786 ../src/iop/bilat.c:504 ../src/iop/colisa.c:381
 #: ../src/iop/colorbalance.c:2428 ../src/iop/colorbalance.c:2430
 #: ../src/iop/filmic.c:1753 ../src/iop/filmicrgb.c:1532
 #: ../src/iop/lowpass.c:687
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/basicadj.c:773 ../src/iop/colisa.c:389
+#: ../src/iop/basicadj.c:787 ../src/iop/colisa.c:389
 msgid "contrast adjustment"
 msgstr "ajustement du contraste"
 
-#: ../src/iop/basicadj.c:791
+#: ../src/iop/basicadj.c:805
 msgid "middle grey"
 msgstr "gris moyen"
 
-#: ../src/iop/basicadj.c:793
+#: ../src/iop/basicadj.c:807
 msgid "middle grey adjustment"
 msgstr "ajustement gris moyen"
 
-#: ../src/iop/basicadj.c:805 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2903
+#: ../src/iop/basicadj.c:819 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2903
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
 msgid "brightness"
 msgstr "luminosité"
 
-#: ../src/iop/basicadj.c:806 ../src/iop/colisa.c:390
+#: ../src/iop/basicadj.c:820 ../src/iop/colisa.c:390
 msgid "brightness adjustment"
 msgstr "ajustement de la luminosité"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/basicadj.c:811 ../src/iop/channelmixer.c:456
+#: ../src/iop/basicadj.c:825 ../src/iop/channelmixer.c:456
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2526
 #: ../src/iop/colorbalance.c:2576 ../src/iop/colorbalance.c:2625
 #: ../src/iop/colorchecker.c:1410 ../src/iop/colorcorrection.c:294
@@ -6227,23 +6356,23 @@ msgstr "ajustement de la luminosité"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/basicadj.c:812
+#: ../src/iop/basicadj.c:826
 msgid "saturation adjustment"
 msgstr "ajustement de la saturation"
 
-#: ../src/iop/basicadj.c:817 ../src/iop/vibrance.c:64 ../src/iop/vibrance.c:252
+#: ../src/iop/basicadj.c:831 ../src/iop/vibrance.c:64 ../src/iop/vibrance.c:252
 msgid "vibrance"
 msgstr "vibrance"
 
-#: ../src/iop/basicadj.c:818
+#: ../src/iop/basicadj.c:832
 msgid "vibrance adjustment"
 msgstr "ajustement de la vibrance"
 
-#: ../src/iop/basicadj.c:825
+#: ../src/iop/basicadj.c:839
 msgid "apply auto exposure based on the entire image"
 msgstr "applique une exposition automatique en fonction de l'image complète"
 
-#: ../src/iop/basicadj.c:833
+#: ../src/iop/basicadj.c:847
 msgid ""
 "apply auto exposure based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -6253,11 +6382,11 @@ msgstr ""
 "clic et déplacer pour sélectionner la zone\n"
 "clic-droit pour annuler"
 
-#: ../src/iop/basicadj.c:843
+#: ../src/iop/basicadj.c:857
 msgid "clip"
 msgstr "tronquer"
 
-#: ../src/iop/basicadj.c:844
+#: ../src/iop/basicadj.c:858
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "ajuste les valeurs seuils pour le calcul automatique de l'exposition"
 
@@ -16142,32 +16271,12 @@ msgstr "action"
 #~ msgstr "copier le développement"
 
 #~ msgctxt "accel"
-#~ msgid "copy history parts"
-#~ msgstr "copier une partie du développement"
-
-#~ msgctxt "accel"
-#~ msgid "paste history"
-#~ msgstr "coller le développement"
-
-#~ msgctxt "accel"
-#~ msgid "paste history parts"
-#~ msgstr "coller une partie du développement"
-
-#~ msgctxt "accel"
 #~ msgid "discard history"
 #~ msgstr "supprimer le développement"
 
 #~ msgctxt "accel"
-#~ msgid "duplicate image"
-#~ msgstr "cloner l'image"
-
-#~ msgctxt "accel"
 #~ msgid "color red"
 #~ msgstr "couleur rouge"
-
-#~ msgctxt "accel"
-#~ msgid "color yellow"
-#~ msgstr "couleur jaune"
 
 #~ msgctxt "accel"
 #~ msgid "color green"
@@ -16176,14 +16285,6 @@ msgstr "action"
 #~ msgctxt "accel"
 #~ msgid "color blue"
 #~ msgstr "couleur bleue"
-
-#~ msgctxt "accel"
-#~ msgid "color purple"
-#~ msgstr "couleur violette"
-
-#~ msgctxt "accel"
-#~ msgid "clear color labels"
-#~ msgstr "aucun label couleur"
 
 #~ msgctxt "accel"
 #~ msgid "navigate up"
