@@ -279,7 +279,7 @@ void expose(
 
     /* If boxw and boxh very closely match the zoomed size in the darktable window we might have resizing with
        every expose because adding a slider will change the image area and might force a resizing in next expose.
-       So we disable in cases close to full.  
+       So we disable in cases close to full.
     */
     if(boxw > 0.95f)
     {
@@ -1944,7 +1944,7 @@ void gui_init(dt_view_t *self)
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
-                              _("toggle ISO 12646 colour assessment conditions"));
+                              _("toggle ISO 12646 color assessment conditions"));
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
