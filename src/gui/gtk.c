@@ -232,9 +232,6 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
 
-  dt_accel_path_global(path, sizeof(path), "toggle header");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_header);
-
   dt_accel_path_global(path, sizeof(path), "zoom in");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_in);
 
@@ -431,6 +428,48 @@ static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject
 
   return TRUE;
 }
+static gboolean _toggle_header_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data)
+{
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, !_panel_is_visible(DT_UI_PANEL_TOP), TRUE);
+  return TRUE;
+}
+static gboolean _toggle_filmstrip_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                                 GdkModifierType modifier, gpointer data)
+{
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !_panel_is_visible(DT_UI_PANEL_BOTTOM), TRUE);
+  return TRUE;
+}
+static gboolean _toggle_top_tool_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, !_panel_is_visible(DT_UI_PANEL_CENTER_TOP), TRUE);
+  return TRUE;
+}
+static gboolean _toggle_bottom_tool_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                   guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, !_panel_is_visible(DT_UI_PANEL_CENTER_BOTTOM),
+                   TRUE);
+  return TRUE;
+}
+static gboolean _toggle_top_all_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                               GdkModifierType modifier, gpointer data)
+{
+  const gboolean v = (_panel_is_visible(DT_UI_PANEL_CENTER_TOP) || _panel_is_visible(DT_UI_PANEL_TOP));
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, !v, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, !v, TRUE);
+  return TRUE;
+}
+static gboolean _toggle_bottom_all_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                                  GdkModifierType modifier, gpointer data)
+{
+  const gboolean v = (_panel_is_visible(DT_UI_PANEL_CENTER_BOTTOM) || _panel_is_visible(DT_UI_PANEL_BOTTOM));
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !v, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, !v, TRUE);
+  return TRUE;
+}
+
 
 static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -1305,8 +1344,29 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_connect_global("toggle bottom panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                                 GINT_TO_POINTER(DT_UI_BORDER_BOTTOM), NULL));
 
-  // toggle view of header
+  // specific top/bottom toggles
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
+  dt_accel_connect_global("toggle header", g_cclosure_new(G_CALLBACK(_toggle_header_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle filmstrip and timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_connect_global("toggle filmstrip and timeline",
+                          g_cclosure_new(G_CALLBACK(_toggle_filmstrip_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle top toolbar"), 0, 0);
+  dt_accel_connect_global("toggle top toolbar",
+                          g_cclosure_new(G_CALLBACK(_toggle_top_tool_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle bottom toolbar"), 0, 0);
+  dt_accel_connect_global("toggle bottom toolbar",
+                          g_cclosure_new(G_CALLBACK(_toggle_bottom_tool_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle all top panels"), 0, 0);
+  dt_accel_connect_global("toggle all top panels",
+                          g_cclosure_new(G_CALLBACK(_toggle_top_all_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle all bottom panels"), 0, 0);
+  dt_accel_connect_global("toggle all bottom panels",
+                          g_cclosure_new(G_CALLBACK(_toggle_bottom_all_accel_callback), NULL, NULL));
 
   // toggle focus peaking everywhere
   dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -1741,13 +1801,6 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   }
 
   dt_ui_restore_panels(ui);
-  g_free(key);
-}
-
-void dt_ui_toggle_header(struct dt_ui_t *ui)
-{
-  gchar *key = _panels_get_panel_path(DT_UI_PANEL_TOP, "_visible");
-  dt_ui_panel_show(ui, DT_UI_PANEL_TOP, !dt_conf_get_bool(key), TRUE);
   g_free(key);
 }
 
