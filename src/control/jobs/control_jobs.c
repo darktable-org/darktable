@@ -84,9 +84,6 @@ typedef struct dt_control_image_enumerator_t
 /* enumerator of images from filmroll */
 static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
 {
-  g_list_free(t->index);
-  t->index = NULL;
-
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
@@ -95,7 +92,7 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = sqlite3_column_int(stmt, 0);
     t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
   }
   sqlite3_finalize(stmt);
@@ -104,16 +101,13 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 /* enumerator of selected images */
 static void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  g_list_free(t->index);
-  t->index = NULL;
-
-  int imgid = dt_view_get_image_to_act_on();
+  const int imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0) /* get sorted list of selected images */
     t->index = dt_collection_get_selected(darktable.collection, -1);
   else
     /* Create a list with only one image */
-    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
+    t->index = g_list_append(NULL, GINT_TO_POINTER(imgid));
 }
 
 static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
@@ -123,7 +117,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
   gchar *newdir = (gchar *)params->data;
@@ -150,7 +144,6 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
 
   if(completeSuccess)
   {
@@ -160,7 +153,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   }
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -169,7 +162,6 @@ static void *dt_control_image_enumerator_alloc()
 {
   dt_control_image_enumerator_t *params = calloc(1, sizeof(dt_control_image_enumerator_t));
   if(!params) return NULL;
-
   return params;
 }
 
@@ -178,6 +170,7 @@ static void dt_control_image_enumerator_cleanup(void *p)
   dt_control_image_enumerator_t *params = p;
 
   g_list_free(params->index);
+  params->index = NULL;
 
   free(params);
 }
@@ -220,9 +213,7 @@ static dt_job_t *dt_control_generic_image_job_create(dt_job_execute_callback exe
   if(progress_type != PROGRESS_NONE)
     dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
 
-  g_list_free(params->index);
-  params->index = NULL;
-  params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
+  params->index = g_list_append(NULL, GINT_TO_POINTER(imgid));
 
   dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
 
@@ -258,9 +249,8 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
       sqlite3_clear_bindings(stmt);
     }
     dt_image_cache_read_release(darktable.image_cache, img);
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
   }
-  params->index = NULL;
   sqlite3_finalize(stmt);
   return 0;
 }
@@ -488,14 +478,13 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
                                  FALSE, "pre:rawprepare", FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
                                  num, total, NULL);
 
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
 
     /* update the progress bar */
     fraction += 1.0 / (total + 1);
     dt_control_job_set_progress(job, fraction);
     num++;
   }
-  params->index = NULL;
 
   if(d.abort) goto end;
 
@@ -547,7 +536,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
@@ -560,11 +549,10 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
       dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     }
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -576,7 +564,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   const int cw = params->flag;
   GList *t = params->index;
   GList *imgs = NULL;
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
   dt_control_job_set_progress_message(job, message);
@@ -584,14 +572,13 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   {
     const int imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const double fraction = 1.0 / total;
     dt_image_set_aspect_ratio(imgid, FALSE);
     dt_control_job_set_progress(job, fraction);
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   }
-  params->index = NULL;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -699,7 +686,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
 
   while(list)
   {
@@ -708,8 +694,8 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   }
   dt_film_remove_empty();
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
   dt_control_queue_redraw_center();
 
   return 0;
@@ -1015,7 +1001,6 @@ delete_next_file:
       break;
   }
 
-  params->index = NULL;
   sqlite3_finalize(stmt);
 
   while(list)
@@ -1026,8 +1011,8 @@ delete_next_file:
   }
   g_list_free(list);
   dt_film_remove_empty();
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, t);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1173,14 +1158,13 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
       if (dt_image_local_copy_reset(imgid) == 0)
         dt_tag_detach_from_gui(tagid, imgid, FALSE, FALSE);
     }
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -1207,11 +1191,10 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
   return 0;
 }
 
@@ -1285,7 +1268,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     const int imgid = GPOINTER_TO_INT(t->data);
-    t = g_list_delete_link(t, t);
+    t = g_list_next(t);
     const guint num = total - g_list_length(t);
 
     // progress message
@@ -1326,7 +1309,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     if(fraction > 1.0) fraction = 1.0;
     dt_control_job_set_progress(job, fraction);
   }
-  params->index = NULL;
   g_list_free_full(metadata.list, g_free);
 
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
