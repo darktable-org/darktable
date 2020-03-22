@@ -858,7 +858,7 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
       if(strcmp(scrollbars_conf, "no scrollbars")) table->scrollbars = TRUE;
-    } 
+    }
 
     g_free(scrollbars_conf);
   }
@@ -1307,6 +1307,7 @@ dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
+  dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
   // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");
@@ -1580,11 +1581,20 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
   {
     // we change the widget name
     if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    {
       gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+      dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+    }
     else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
+    {
       gtk_widget_set_name(table->widget, "thumbtable_filmstrip");
+      dt_gui_add_help_link(table->widget, dt_get_help_url("filmstrip"));
+    }
     else if(mode == DT_THUMBTABLE_MODE_ZOOM)
+    {
       gtk_widget_set_name(table->widget, "thumbtable_zoom");
+      dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_zoomable"));
+    }
 
     // if needed, we block/unblock drag and drop
     if(mode == DT_THUMBTABLE_MODE_ZOOM)
