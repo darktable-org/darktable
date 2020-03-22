@@ -464,8 +464,8 @@ void expose(
 
     cairo_save(cri);
     // The colorpicker samples bounding rectangle should only be displayed inside the visible image
-    const int pwidth = dev->pipe->output_backbuf_width<<closeup;
-    const int pheight = dev->pipe->output_backbuf_height<<closeup;
+    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
     const float hbar = (self->width - pwidth) * .5f;
     const float tbar = (self->height - pheight) * .5f;
@@ -535,8 +535,8 @@ void expose(
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
-    const int pwidth = dev->pipe->output_backbuf_width<<closeup;
-    const int pheight = dev->pipe->output_backbuf_height<<closeup;
+    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
     const float hbar = (self->width - pwidth) * .5f;
     const float tbar = (self->height - pheight) * .5f;
@@ -596,8 +596,8 @@ void expose(
     if(dev->form_visible && dev->gui_module->enabled)
     {
       // The masks paths should only be displayed inside the visible image
-      const int pwidth = dev->pipe->output_backbuf_width<<closeup;
-      const int pheight = dev->pipe->output_backbuf_height<<closeup;
+      const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+      const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
       const float hbar = (self->width - pwidth) * .5f;
       const float tbar = (self->height - pheight) * .5f;
@@ -2825,8 +2825,8 @@ static int mouse_in_imagearea(dt_view_t *self, double x, double y)
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   const int closeup = dt_control_get_dev_closeup();
-  const int pwidth = dev->pipe->output_backbuf_width<<closeup;
-  const int pheight = dev->pipe->output_backbuf_height<<closeup;
+  const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+  const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
   x -= (self->width - pwidth) / 2;
   y -= (self->height - pheight) / 2;
