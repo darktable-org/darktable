@@ -81,6 +81,16 @@ typedef struct dt_midi_knob_t
   float acceleration;
 } dt_midi_knob_t;
 
+typedef struct dt_midi_note_t
+{
+  gint group;
+  gint channel;
+  gint key;
+
+  guint accelerator_key;
+  GdkModifierType accelerator_mods;
+} dt_midi_note_t;
+
 typedef struct MidiDevice
 {
   gchar          *device;
@@ -112,6 +122,7 @@ typedef struct MidiDevice
 
   gboolean        config_loaded;
   GSList         *mapping_list;
+  GSList         *note_list;
 
   gint            mapping_channel;
   gint            mapping_key;
@@ -131,6 +142,11 @@ typedef struct MidiDevice
   gint            rating_key_light;
   gint            reset_knob_key;
   gint            first_knob_key;
+
+  gint            LED_ring_behavior_off;
+  gint            LED_ring_behavior_pan;
+  gint            LED_ring_behavior_fan;
+  gint            LED_ring_behavior_trim;
 } MidiDevice;
 
 typedef struct _GMidiSource
@@ -155,7 +171,18 @@ void midi_config_save(MidiDevice *midi)
   f = g_fopen(midipath, "w");
   if(!f) return;
 
-  g_fprintf(f,"group,channel,key,path,encoding,accel\n");
+  g_fprintf(f, "num_columns=%d\n", midi->num_columns);
+  g_fprintf(f, "group_switch_key=%d\n", midi->group_switch_key);
+  g_fprintf(f, "group_key_light=%d\n", midi->group_key_light);
+  g_fprintf(f, "rating_key_light=%d\n", midi->rating_key_light);
+  g_fprintf(f, "reset_knob_key=%d\n", midi->reset_knob_key);
+  g_fprintf(f, "first_knob_key=%d\n", midi->first_knob_key);
+  g_fprintf(f, "LED_ring_behavior_off=%d\n", midi->LED_ring_behavior_off);
+  g_fprintf(f, "LED_ring_behavior_pan=%d\n", midi->LED_ring_behavior_pan);
+  g_fprintf(f, "LED_ring_behavior_fan=%d\n", midi->LED_ring_behavior_fan);
+  g_fprintf(f, "LED_ring_behavior_trim=%d\n", midi->LED_ring_behavior_trim);
+
+  g_fprintf(f, "\ngroup,channel,key,path,encoding,accel\n");
 
   GSList *l = midi->mapping_list;
   while (l)
@@ -171,6 +198,20 @@ void midi_config_save(MidiDevice *midi)
 
     l = g_slist_next(l);
   }  
+
+  g_fprintf(f, "\ngroup,channel,key,path\n");
+
+  l = midi->note_list;
+  while (l)
+  {
+    dt_midi_note_t *n = (dt_midi_note_t *)l->data;
+    g_fprintf(f,"%d,%d,%d,%s\n", 
+                n->group, n->channel, n->key, 
+                gtk_accelerator_name(n->accelerator_key,n->accelerator_mods));
+
+    l = g_slist_next(l);
+  }  
+
   fclose(f);
 }
 
@@ -185,6 +226,10 @@ void midi_config_load(MidiDevice *midi)
     midi->rating_key_light = 0;
     midi->reset_knob_key = 0;
     midi->first_knob_key = 1;
+    midi->LED_ring_behavior_off = 0;
+    midi->LED_ring_behavior_pan = 1;
+    midi->LED_ring_behavior_fan = 2;
+    midi->LED_ring_behavior_trim = 4;
   }
   else if (strstr(midi->model_name, "Arturia BeatStep"))
   {
@@ -213,15 +258,32 @@ void midi_config_load(MidiDevice *midi)
     f = g_fopen(midipath, "rb");
     if(!f) return;
   }
-  read = fscanf(f,"group,channel,key,path,encoding,accel\n");
+
+  char buffer[200];
+
+//  read = fscanf(f,"group,channel,key,path,encoding,accel\n");
   while(!feof(f))
   {
+    fgets(buffer, 100, f);
+  
+    if (sscanf(buffer, "num_columns=%d\n", &midi->num_columns) == 1) continue;
+    if (sscanf(buffer, "group_switch_key=%d\n", &midi->group_switch_key) == 1) continue;
+    if (sscanf(buffer, "group_key_light=%d\n", &midi->group_key_light) == 1) continue;
+    if (sscanf(buffer, "rating_key_light=%d\n", &midi->rating_key_light) == 1) continue;
+    if (sscanf(buffer, "reset_knob_key=%d\n", &midi->reset_knob_key) == 1) continue;
+    if (sscanf(buffer, "first_knob_key=%d\n", &midi->first_knob_key) == 1) continue;
+    if (sscanf(buffer, "LED_ring_behavior_off=%d\n", &midi->LED_ring_behavior_off) == 1) continue;
+    if (sscanf(buffer, "LED_ring_behavior_pan=%d\n", &midi->LED_ring_behavior_pan) == 1) continue;
+    if (sscanf(buffer, "LED_ring_behavior_fan=%d\n", &midi->LED_ring_behavior_fan) == 1) continue;
+    if (sscanf(buffer, "LED_ring_behavior_trim=%d\n", &midi->LED_ring_behavior_trim) == 1) continue;
+
     dt_midi_knob_t *k = (dt_midi_knob_t *)g_malloc(sizeof(dt_midi_knob_t));
 
     char accelpath[200];
-    read = fscanf(f, "%d,%d,%d,%[^,],%d,%f\n", 
-                    &k->group, &k->channel, &k->key, accelpath, &k->encoding, &k->acceleration);
-    if(read > 0)
+
+    read = sscanf(buffer, "%d,%d,%d,%[^,],%d,%f\n", 
+                  &k->group, &k->channel, &k->key, accelpath, &k->encoding, &k->acceleration);
+    if(read == 6)
     {
       g_strlcat(accelpath,"/dynamic",200);
       GSList *al = darktable.control->dynamic_accelerator_list;
@@ -243,8 +305,31 @@ void midi_config_load(MidiDevice *midi)
       {
         g_free(k);
       }
+      continue;
+    }
+
+    dt_midi_note_t *n = (dt_midi_note_t *)g_malloc(sizeof(dt_midi_note_t));
+    read = sscanf(buffer, "%d,%d,%d,%[^\n]\n",
+                  &n->group, &n->channel, &n->key, accelpath);
+
+    if (read == 4)
+    {
+      gtk_accelerator_parse(accelpath, 
+                            &n->accelerator_key,
+                            &n->accelerator_mods);
+      if (n->accelerator_key)
+      {
+        midi->note_list = g_slist_append(midi->note_list, n);
+      }
+      else
+      {
+        g_free(n);
+      }
+
+      continue;
     }
   }
+
   fclose(f);
 }
 
@@ -344,15 +429,15 @@ void refresh_sliders_to_device(MidiDevice *midi)
 
           midi_write(midi, k->channel, 0xB, k->key, velocity);
 
-          // For X-touch mini; set pattern of rotator lights
+          // For Behringer; set pattern of rotator lights
           if (k->key < 9)
           {
             if (min == -max)
-              midi_write(midi, 0, 0xB, k->key, 4);
+              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_trim);
             else if (min == 0 && (max == 1 || max == 100))
-              midi_write(midi, 0, 0xB, k->key, 2);
+              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_fan);
             else
-              midi_write(midi, 0, 0xB, k->key, 1);
+              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_pan);
           }
         }
       }
@@ -781,7 +866,7 @@ void note_on(MidiDevice *midi, gint channel, gint note)
     // try to initialise rotator lights off
     for (gint knob = 1; knob <= midi->num_columns; knob++)
     {
-      midi_write(midi,       0, 0xB, knob, 0); // set single pattern on x-touch mini
+      midi_write(midi,       0, 0xB, knob, midi->LED_ring_behavior_off); // set single pattern on x-touch mini
       midi_write(midi, channel, 0xB, knob, 0); 
     }
 
@@ -871,6 +956,29 @@ void note_on(MidiDevice *midi, gint channel, gint note)
       l = g_slist_next(l);
     }
   }
+  else
+  {
+    GSList *l = midi->note_list;
+    while(l)
+    {
+      dt_midi_note_t *n = (dt_midi_note_t *)l->data;
+      if ((n->group > midi->group) |
+          ((n->group == midi->group) && 
+            ((n->channel > channel) |
+            ((n->channel == channel) && (n->key >= note)))))
+      {
+        if ((n->group == midi->group) &&
+            (n->channel == channel) && 
+            (n->key == note))
+        {
+          gtk_accel_groups_activate(G_OBJECT(dt_ui_main_window(darktable.gui->ui)), n->accelerator_key, n->accelerator_mods);
+        } 
+        break;
+      }
+      l = g_slist_next(l);
+    }
+  }
+  
 
 }
 
@@ -1362,6 +1470,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
 
     midi->config_loaded    = FALSE;
     midi->mapping_list     = NULL;
+    midi->note_list        = NULL;
 
     midi->mapping_channel  = -1;
     midi->mapping_key      = -1;
@@ -1379,6 +1488,11 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->rating_key_light = -1;
     midi->reset_knob_key   = -1;
     midi->first_knob_key   = -1;
+
+    midi->LED_ring_behavior_off = 0;
+    midi->LED_ring_behavior_pan = 0;
+    midi->LED_ring_behavior_fan = 0;
+    midi->LED_ring_behavior_trim = 0; 
 
 #ifdef HAVE_ALSA
     if (! g_ascii_strcasecmp (midi->device, "alsa"))
@@ -1540,6 +1654,9 @@ void midi_device_free(MidiDevice *midi)
 
   if (midi->model_name)
     g_free(midi->model_name);
+
+  g_slist_free_full (midi->mapping_list, g_free);
+  g_slist_free_full (midi->note_list, g_free);
 }
 
 void midi_open_devices(dt_lib_module_t *self)
