@@ -142,6 +142,8 @@ typedef struct MidiDevice
   gint            rating_key_light;
   gint            reset_knob_key;
   gint            first_knob_key;
+  gint            num_rotators;
+  gint            last_known[128];
 
   gint            LED_ring_behavior_off;
   gint            LED_ring_behavior_pan;
@@ -177,6 +179,7 @@ void midi_config_save(MidiDevice *midi)
   g_fprintf(f, "rating_key_light=%d\n", midi->rating_key_light);
   g_fprintf(f, "reset_knob_key=%d\n", midi->reset_knob_key);
   g_fprintf(f, "first_knob_key=%d\n", midi->first_knob_key);
+  g_fprintf(f, "num_rotators=%d\n", midi->num_rotators);
   g_fprintf(f, "LED_ring_behavior_off=%d\n", midi->LED_ring_behavior_off);
   g_fprintf(f, "LED_ring_behavior_pan=%d\n", midi->LED_ring_behavior_pan);
   g_fprintf(f, "LED_ring_behavior_fan=%d\n", midi->LED_ring_behavior_fan);
@@ -226,6 +229,7 @@ void midi_config_load(MidiDevice *midi)
     midi->rating_key_light = 0;
     midi->reset_knob_key = 0;
     midi->first_knob_key = 1;
+    midi->num_rotators = 8;
     midi->LED_ring_behavior_off = 0;
     midi->LED_ring_behavior_pan = 1;
     midi->LED_ring_behavior_fan = 2;
@@ -272,6 +276,7 @@ void midi_config_load(MidiDevice *midi)
     if (sscanf(buffer, "rating_key_light=%d\n", &midi->rating_key_light) == 1) continue;
     if (sscanf(buffer, "reset_knob_key=%d\n", &midi->reset_knob_key) == 1) continue;
     if (sscanf(buffer, "first_knob_key=%d\n", &midi->first_knob_key) == 1) continue;
+    if (sscanf(buffer, "num_rotators=%d\n", &midi->num_rotators) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_off=%d\n", &midi->LED_ring_behavior_off) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_pan=%d\n", &midi->LED_ring_behavior_pan) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_fan=%d\n", &midi->LED_ring_behavior_fan) == 1) continue;
@@ -427,7 +432,11 @@ void refresh_sliders_to_device(MidiDevice *midi)
           
           int velocity = round((c-min)/(max-min)*127);
 
-          midi_write(midi, k->channel, 0xB, k->key, velocity);
+          if (velocity != midi->last_known[k->key])
+          {
+            midi_write(midi, k->channel, 0xB, k->key, velocity);
+            midi->last_known[k->key] = velocity;
+          }
 
           // For Behringer; set pattern of rotator lights
           if (k->key < 9)
@@ -463,7 +472,6 @@ void refresh_sliders_to_device(MidiDevice *midi)
           {
             on_lights = 31 >> (5-rating);
           }
-
         }
         else if (midi->group == 2)
         {
@@ -627,6 +635,8 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
           if (midi->stored_knob->encoding == MIDI_ABSOLUTE)
           {
+            midi->last_known[midi->stored_key] = midi->accum;
+
             float wmin = dt_bauhaus_slider_get_soft_min(w);
             float wmax = dt_bauhaus_slider_get_soft_max(w);
 
@@ -864,10 +874,11 @@ void note_on(MidiDevice *midi, gint channel, gint note)
     midi->group = note - midi->group_switch_key + 1;
 
     // try to initialise rotator lights off
-    for (gint knob = 1; knob <= midi->num_columns; knob++)
+    for (gint knob = midi->first_knob_key; knob <= midi->num_rotators; knob++)
     {
       midi_write(midi,       0, 0xB, knob, midi->LED_ring_behavior_off); // set single pattern on x-touch mini
-      midi_write(midi, channel, 0xB, knob, 0); 
+      midi_write(midi, channel, 0xB, knob, 0);
+      midi->last_known[knob] = 0; 
     }
 
     if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
@@ -1488,6 +1499,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->rating_key_light = -1;
     midi->reset_knob_key   = -1;
     midi->first_knob_key   = -1;
+    midi->num_rotators     = -100;
 
     midi->LED_ring_behavior_off = 0;
     midi->LED_ring_behavior_pan = 0;
