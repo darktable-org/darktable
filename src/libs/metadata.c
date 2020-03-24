@@ -243,7 +243,7 @@ static void write_metadata(dt_lib_module_t *self)
   g_list_free(key_value);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, 2);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);
@@ -499,7 +499,8 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       }
     }
     if(meta_signal)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, meta_remove ? 1 : 0);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+                              meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);
   gtk_widget_destroy(dialog);

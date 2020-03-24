@@ -2088,7 +2088,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-  if(type != 2)
+  if(type != DT_METADATA_SIGNAL_NEW_VALUE)
   {
     // hidden metadata have changed - update the collection list
     for(int i = 0; i < MAX_RULES; i++)
@@ -2124,13 +2124,13 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
 
   // update metadata if metadata have been hidden or a metadata collection is active
   const int prop = _combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo));
-  if(type == 1 || (prop >= DT_COLLECTION_PROP_METADATA
+  if(type == DT_METADATA_SIGNAL_HIDDEN || (prop >= DT_COLLECTION_PROP_METADATA
      && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
     _lib_collect_gui_update(self);
-    // update collection
+    // update images collection
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
