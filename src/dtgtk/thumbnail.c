@@ -284,6 +284,10 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
   return FALSE;
 }
 
+static gboolean _event_rating_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  return TRUE;
+}
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -312,7 +316,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
                                  g_list_append(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
   }
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -639,6 +643,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       thumb->w_stars[i] = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_star, 0, NULL);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "enter-notify-event", G_CALLBACK(_event_star_enter), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "leave-notify-event", G_CALLBACK(_event_star_leave), thumb);
+      g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-press-event", G_CALLBACK(_event_rating_press), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event", G_CALLBACK(_event_rating_release),
                        thumb);
       gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
