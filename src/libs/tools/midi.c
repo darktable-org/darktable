@@ -254,18 +254,22 @@ void midi_config_load(MidiDevice *midi)
 
   f = g_fopen(midipath, "rb");
   
-  if(!f)
-  {
-    dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-    snprintf(midipath, sizeof(midipath), "%s/midirc_default-%s", datadir, midi->model_name);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(midipath, sizeof(midipath), "%s/midirc-%s", datadir, midi->model_name);
 
+  while (!f && strlen(midipath)>strlen(datadir))
+  {
     f = g_fopen(midipath, "rb");
-    if(!f) return;
+    if (strrchr(midipath,' ') != NULL)
+      *(strrchr(midipath,' ')) = 0;
+    else
+      *midipath = 0;
   }
+
+  if(!f) return;
 
   char buffer[200];
 
-//  read = fscanf(f,"group,channel,key,path,encoding,accel\n");
   while(!feof(f))
   {
     fgets(buffer, 100, f);
@@ -282,12 +286,12 @@ void midi_config_load(MidiDevice *midi)
     if (sscanf(buffer, "LED_ring_behavior_fan=%d\n", &midi->LED_ring_behavior_fan) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_trim=%d\n", &midi->LED_ring_behavior_trim) == 1) continue;
 
-    dt_midi_knob_t *k = (dt_midi_knob_t *)g_malloc(sizeof(dt_midi_knob_t));
-
+    gint group, channel, key, encoding;
     char accelpath[200];
+    float acceleration;
 
     read = sscanf(buffer, "%d,%d,%d,%[^,],%d,%f\n", 
-                  &k->group, &k->channel, &k->key, accelpath, &k->encoding, &k->acceleration);
+                  &group, &channel, &key, accelpath, &encoding, &acceleration);
     if(read == 6)
     {
       g_strlcat(accelpath,"/dynamic",200);
@@ -303,34 +307,40 @@ void midi_config_load(MidiDevice *midi)
       }
       if (al)
       {
+        dt_midi_knob_t *k = (dt_midi_knob_t *)g_malloc(sizeof(dt_midi_knob_t));
+
+        k->group = group;
+        k->channel = channel;
+        k->key = key;
         k->accelerator = da;
+        k->encoding = encoding;
+        k->acceleration = acceleration;
+
         midi->mapping_list = g_slist_append(midi->mapping_list, k);
-      }
-      else
-      {
-        g_free(k);
       }
       continue;
     }
 
-    dt_midi_note_t *n = (dt_midi_note_t *)g_malloc(sizeof(dt_midi_note_t));
     read = sscanf(buffer, "%d,%d,%d,%[^\n]\n",
-                  &n->group, &n->channel, &n->key, accelpath);
+                  &group, &channel, &key, accelpath);
 
     if (read == 4)
     {
-      gtk_accelerator_parse(accelpath, 
-                            &n->accelerator_key,
-                            &n->accelerator_mods);
-      if (n->accelerator_key)
+      guint accelerator_key;
+      GdkModifierType accelerator_mods;
+      gtk_accelerator_parse(accelpath, &accelerator_key, &accelerator_mods);
+      if (accelerator_key)
       {
+        dt_midi_note_t *n = (dt_midi_note_t *)g_malloc(sizeof(dt_midi_note_t));
+
+        n->group = group;
+        n->channel = channel;
+        n->key = key;
+        n->accelerator_key = accelerator_key;
+        n->accelerator_mods = accelerator_mods;
+
         midi->note_list = g_slist_append(midi->note_list, n);
       }
-      else
-      {
-        g_free(n);
-      }
-
       continue;
     }
   }
