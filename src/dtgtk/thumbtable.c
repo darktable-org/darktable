@@ -769,8 +769,6 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
   table->mouse_inside = FALSE;
-  table->last_x = -1;
-  table->last_y = -1;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
 }
