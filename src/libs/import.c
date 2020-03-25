@@ -92,15 +92,6 @@ typedef struct dt_lib_import_metadata_t
   GtkWidget *tags;
 } dt_lib_import_metadata_t;
 
-enum
-{
-  NAME_COLUMN,
-  CREATOR_COLUMN,
-  PUBLISHER_COLUMN,
-  RIGHTS_COLUMN,
-  N_COLUMNS
-};
-
 const char *name(dt_lib_module_t *self)
 {
   return _("import");
@@ -507,7 +498,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", NAME_COLUMN, NULL);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -533,7 +524,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     if(op_params_size == total_len)
     {
       gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), -1);
+      // column 0 give the name, the following ones the different metadata
+      gtk_list_store_set(model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
         gtk_list_store_set(model, &iter, i+1, metadata_param[i], -1);
