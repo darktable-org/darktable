@@ -363,6 +363,8 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
           thumb->single_click = TRUE;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
         }
+        dt_thumbnail_set_sensitive(thumb, (table->mode != DT_THUMBTABLE_MODE_FILMSTRIP
+                                           || !dt_conf_get_bool("plugins/filmstrip/readonly_buttons")));
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_prepend(table->list, thumb);
@@ -405,6 +407,8 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
           thumb->single_click = TRUE;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
         }
+        dt_thumbnail_set_sensitive(thumb, (table->mode != DT_THUMBTABLE_MODE_FILMSTRIP
+                                           || !dt_conf_get_bool("plugins/filmstrip/readonly_buttons")));
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_append(table->list, thumb);
@@ -1518,6 +1522,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
           thumb->single_click = TRUE;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_MOD_ONLY;
         }
+        dt_thumbnail_set_sensitive(thumb, (table->mode != DT_THUMBTABLE_MODE_FILMSTRIP
+                                           || !dt_conf_get_bool("plugins/filmstrip/readonly_buttons")));
         thumb->x = posx;
         thumb->y = posy;
         newlist = g_list_append(newlist, thumb);
@@ -1634,6 +1640,17 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
       th->sel_mode = sel_mode;
       th->single_click = single_click;
+      l = g_list_next(l);
+    }
+
+    // we eventually disable buttons in filmstrip
+    const gboolean fs
+        = (mode != DT_THUMBTABLE_MODE_FILMSTRIP || !dt_conf_get_bool("plugins/filmstrip/readonly_buttons"));
+    l = g_list_first(table->list);
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_set_sensitive(th, fs);
       l = g_list_next(l);
     }
 

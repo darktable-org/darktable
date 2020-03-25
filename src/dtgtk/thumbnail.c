@@ -922,6 +922,16 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
   gtk_widget_queue_draw(thumb->w_main);
 }
 
+// set sensitivity of thumbnail buttons
+void dt_thumbnail_set_sensitive(dt_thumbnail_t *thumb, gboolean sensitive)
+{
+  gtk_widget_set_sensitive(thumb->w_reject, sensitive);
+  for(int i = 0; i < MAX_STARS; i++)
+  {
+    gtk_widget_set_sensitive(thumb->w_stars[i], sensitive);
+  }
+  gtk_widget_set_sensitive(thumb->w_group, sensitive);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -100,6 +100,7 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
 static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
+  if(!gtk_widget_get_sensitive(widget)) return FALSE;
   int flags = gtk_widget_get_state_flags(widget);
   flags |= GTK_STATE_FLAG_PRELIGHT;
 

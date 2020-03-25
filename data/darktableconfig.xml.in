@@ -648,6 +648,13 @@
     <shortdescription>enable extended thumb overlay</shortdescription>
     <longdescription>if set to true, thumb overlay shows filename and some exif data.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/filmstrip/readonly_buttons</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>disable buttons (stars, ...) in filmstrip thumbnail</shortdescription>
+    <longdescription>if set to true, thumbnail buttons will not be clickable</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui" section="lighttable">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>string</type>
