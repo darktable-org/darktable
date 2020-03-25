@@ -74,9 +74,10 @@ end
 found_presets = []
 ARGV.each do |filename|
   red = green = blue = maker = model = preset = nil
+  finetune = 0
   listed_presets = []
   fl_count = 0
-  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model \"#{filename}\"") do |io|
+  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model -WBShiftAB -WBShiftAB_GM -WhiteBalanceFineTune -WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\"") do |io|
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip
@@ -132,6 +133,10 @@ ARGV.each do |filename|
         fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
         p = "Unknown" if !p || p==""
         listed_presets << [p,r,g,b]
+      elsif tag == "WB Shift AB" #canon - positive is towards amber, panasonic/leica/pentax - positive is towards blue?
+        finetune = values[0]
+      elsif tag == "WBShiftAB_GM" #sony
+        finetune = values[0]
       end
     end
   end
@@ -150,13 +155,13 @@ ARGV.each do |filename|
     end
 
     preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
-    [maker, model, preset, red, green, blue]
+    [maker, model, preset, "0", red, green, blue]
   end
 
   # Print out the WB value that was used in the file
   preset = "\"#{ARGV[0]}\"" if !preset
   if red && green && blue
-    found_presets << [maker, model, preset, red, green, blue]
+    found_presets << [maker, model, preset, finetune, red, green, blue]
   end
 end
 
@@ -177,22 +182,22 @@ def convert_preset_to_sort(preset)
 end
 
 found_presets.sort! do |a, b|
-  convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])
+  (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])) == 0 ? a[3].to_i <=> b[3].to_i : (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2]))
 end
 
 min_padding = 0
-found_presets.each do |maker, model, preset, red, green, blue, acc|
+found_presets.each do |maker, model, preset, finetune, red, green, blue, acc|
   min_padding = preset.size if preset.size > min_padding
 end
 
 # Print out the presets if they exist
-found_presets.each do |maker, model, preset, red, green, blue|
+found_presets.each do |maker, model, preset, finetune, red, green, blue|
   if IGNORED_PRESETS.include? preset
     $stderr.puts "Ignoring preset '#{preset}'"
   else
     preset = '"'+preset+'"' if preset[-1] == "K"
     preset = preset + " "*(min_padding-preset.size)
-    puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
+    puts "  { \"#{maker}\", \"#{model}\", #{preset}, #{finetune}, { #{red}, #{green}, #{blue}, 0 } },"
   end
 end
 
