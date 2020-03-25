@@ -587,6 +587,7 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
 
 const char *dt_collection_name(dt_collection_properties_t prop)
 {
+  char *col_name = NULL;
   switch(prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:     return _("film roll");
@@ -597,11 +598,6 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_TIME:         return _("time");
     case DT_COLLECTION_PROP_HISTORY:      return _("history");
     case DT_COLLECTION_PROP_COLORLABEL:   return _("color label");
-    case DT_COLLECTION_PROP_TITLE:        return _("title");
-    case DT_COLLECTION_PROP_DESCRIPTION:  return _("description");
-    case DT_COLLECTION_PROP_CREATOR:      return _("creator");
-    case DT_COLLECTION_PROP_PUBLISHER:    return _("publisher");
-    case DT_COLLECTION_PROP_RIGHTS:       return _("rights");
     case DT_COLLECTION_PROP_LENS:         return _("lens");
     case DT_COLLECTION_PROP_FOCAL_LENGTH: return _("focal length");
     case DT_COLLECTION_PROP_ISO:          return _("ISO");
@@ -614,11 +610,25 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_LOCAL_COPY:   return _("local copy");
     case DT_COLLECTION_PROP_MODULE:       return _("module");
     case DT_COLLECTION_PROP_ORDER:        return _("module order");
-    case DT_COLLECTION_PROP_LAST:         return _("???");
-  };
-
-  // should never happen
-  return _("???");
+    case DT_COLLECTION_PROP_LAST:         return NULL;
+    default:
+    {
+      if(prop >= DT_COLLECTION_PROP_METADATA
+         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+      {
+        const int i = prop - DT_COLLECTION_PROP_METADATA;
+        const int type = dt_metadata_get_type_by_display_order(i);
+        if(type != DT_METADATA_TYPE_INTERNAL)
+        {
+          const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
+          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+          const gboolean hidden = dt_conf_get_bool(setting);
+          if(!hidden) col_name = _(name);
+        }
+      }
+    }
+  }
+  return col_name;
 };
 
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
@@ -1417,28 +1427,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               escaped_text);
       break;
 
-    // TODO: How to handle images without metadata? In the moment they are not shown.
-    // TODO: Autogenerate this code?
-    case DT_COLLECTION_PROP_TITLE: // title
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_TITLE, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_DESCRIPTION: // description
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_CREATOR: // creator
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_CREATOR, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_RIGHTS: // rights
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_RIGHTS, escaped_text);
-      break;
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
       break;
@@ -1612,7 +1600,19 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     default:
-      // we shouldn't be here
+      {
+        if(property >= DT_COLLECTION_PROP_METADATA
+           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        {
+          const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
+          if(strcmp(escaped_text, _("not defined")) != 0)
+            query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+                                           "LIKE '%%%s%%'))", keyid, escaped_text);
+          else
+            query = dt_util_dstrcat(query, "(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+                                           keyid);
+        }
+      }
       break;
   }
   sqlite3_free(escaped_text);

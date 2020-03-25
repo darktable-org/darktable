@@ -87,6 +87,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_TAG_CHANGED
+  { "dt-metadata-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
+    FALSE }, // DT_SIGNAL_METADATA_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_STYLE_CHANGED
   { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,

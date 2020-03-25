@@ -243,6 +243,7 @@ static void write_metadata(dt_lib_module_t *self)
   g_list_free(key_value);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);
@@ -430,7 +431,7 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label),
             _("tick if the corresponding metadata is of no interest for you"
-              "\nit will be hidden from metadata editor, image information and import module"
+              "\nit will be hidden from metadata editor, collection, image information and import module"
               "\nneither will it be exported"));
   label = gtk_label_new(_("private"));
   gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
@@ -475,6 +476,8 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
+    gboolean meta_signal = FALSE;
+    gboolean meta_remove = FALSE;
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
       const int type = dt_metadata_get_type_by_display_order(i);
@@ -482,7 +485,12 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       {
         char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
         const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
-        if(hidden_nv !=  hidden_v[i]) dt_conf_set_bool(setting, hidden_nv);
+        if(hidden_nv !=  hidden_v[i])
+        {
+          dt_conf_set_bool(setting, hidden_nv);
+          meta_signal = TRUE;
+          meta_remove =  hidden_nv ? TRUE : meta_remove;
+        }
         g_free(setting);
         setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
         const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
@@ -490,6 +498,9 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
         g_free(setting);
       }
     }
+    if(meta_signal)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+                              meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);
   gtk_widget_destroy(dialog);
