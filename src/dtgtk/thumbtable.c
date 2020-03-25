@@ -614,6 +614,14 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   table->thumb_size = new_size;
   _pos_compute_area(table);
 
+  // we ensure there's still some visible thumbnails
+  const int space = new_size * 0.5; // we want at least 1/2 thumb to stay visible
+  int posy = MIN(table->view_height - space - table->thumbs_area.y, 0);
+  posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
+  int posx = MIN(table->view_width - space - table->thumbs_area.x, 0);
+  posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
+  if(posx != 0 && posy != 0) _move(table, posx, posy, FALSE);
+
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table);
   changed += _thumbs_remove_unneeded(table);
