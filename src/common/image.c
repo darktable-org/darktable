@@ -141,7 +141,6 @@ const char *dt_image_film_roll_name(const char *path)
   int numparts = dt_conf_get_int("show_folder_levels");
   numparts = CLAMPS(numparts, 1, 5);
   int count = 0;
-  if(numparts < 1) numparts = 1;
   while(folder > path)
   {
     if(*folder == G_DIR_SEPARATOR)
@@ -648,7 +647,7 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -658,15 +657,16 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
     /* set image aspect ratio */
     image->aspect_ratio = aspect_ratio;
 
-    /* store */
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+    /* store but don't save xmp*/
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
-    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                                 g_list_append(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio)
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -684,12 +684,13 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_r
     else
       dt_image_cache_read_release(darktable.image_cache, image);
 
-    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                                 g_list_append(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
-void dt_image_reset_aspect_ratio(const int32_t imgid)
+void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -700,11 +701,12 @@ void dt_image_reset_aspect_ratio(const int32_t imgid)
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
-  if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               g_list_append(NULL, GINT_TO_POINTER(imgid)));
 }
 
-double dt_image_set_aspect_ratio(const int32_t imgid)
+double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise)
 {
   dt_mipmap_buffer_t buf;
   double aspect_ratio = 0.0;
@@ -717,7 +719,7 @@ double dt_image_set_aspect_ratio(const int32_t imgid)
     if(buf.buf && buf.height && buf.width)
     {
       aspect_ratio = (double)buf.width / (double)buf.height;
-      dt_image_set_aspect_ratio_to(imgid, aspect_ratio);
+      dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -878,7 +880,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       darktable.gui->expanded_group_id = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);
     }
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
   return newid;
 }
@@ -960,19 +962,13 @@ gboolean dt_image_altered(const uint32_t imgid)
 GList* dt_image_find_duplicates(const char* filename)
 {
   // find all duplicates of an image
+#ifndef _WIN32
   gchar pattern[PATH_MAX] = { 0 };
   GList* files = NULL;
   gchar *imgpath = g_path_get_dirname(filename);
-
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
-#ifdef _WIN32
-  // Windows only accepts generic wildcards for filename
-  static const gchar *glob_patterns[] = { "", "_????", NULL };
-#else
   static const gchar *glob_patterns[]
     = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
-#endif
-
   const gchar **glob_pattern = glob_patterns;
   files = NULL;
   while(*glob_pattern)
@@ -984,25 +980,6 @@ GList* dt_image_find_duplicates(const char* filename)
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
-
-#ifdef _WIN32
-    wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
-    WIN32_FIND_DATAW data;
-    HANDLE handle = FindFirstFileW(wpattern, &data);
-    g_free(wpattern);
-    if(handle != INVALID_HANDLE_VALUE)
-    {
-      do
-      {
-        char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        if(win_valid_duplicate_filename(file)) files =
-                                                 g_list_append(files, g_build_filename(imgpath, file, NULL));
-        g_free(file);
-      }
-      while(FindNextFileW(handle, &data));
-    }
-    FindClose(handle);
-#else
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))
     {
@@ -1010,18 +987,21 @@ GList* dt_image_find_duplicates(const char* filename)
         files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
       globfree(&globbuf);
     }
-#endif
 
     glob_pattern++;
   }
 
   g_free(imgpath);
   return files;
+#else
+  return win_image_find_duplicates(filename);
+#endif 
 }
 
 
-void dt_image_read_duplicates(const uint32_t id, const char *filename)
+int dt_image_read_duplicates(const uint32_t id, const char *filename)
 {
+  int count_xmps_processed = 0;
   // Search for duplicate's sidecar files and import them if found and not in DB yet
   gchar pattern[PATH_MAX] = { 0 };
 
@@ -1065,10 +1045,13 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
+    count_xmps_processed++;
     file_iter = g_list_next(file_iter);
   }
 
   g_list_free_full(files, g_free);
+
+  return count_xmps_processed;
 
 }
 
@@ -1176,11 +1159,13 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
    * next image position
    * 0000 0003 0000 0000
    */
+
+  //insert a dummy record (which will be used to load xmp files and may later be removed)
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
      "                         max_version, history_end, position)"
-     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, -1, -1, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
      " FROM images",
      -1, &stmt, NULL);
 
@@ -1327,7 +1312,49 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
   // read all sidecar files
-  dt_image_read_duplicates(id, normalized_filename);
+  if(dt_image_read_duplicates(id, normalized_filename))
+  {
+    //duplicates were loaded from sidecar files
+    //dummy record no longer required
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+                                "DELETE FROM main.images WHERE film_id = ?1 AND filename = ?2 AND version = -1",
+                                -1, &stmt,
+                                NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    //no sidecar files were loaded
+    //the dummy record now represents v0
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE main.images SET version = 0, max_version = 0 WHERE film_id = ?1 AND filename = ?2 AND version = -1",
+       -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+
+  //get the minimum id
+  // returned to calling function
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT id FROM main.images i1 WHERE film_id = ?1 AND filename = ?2 AND "
+        "version = (SELECT MIN(version) FROM main.images i2 WHERE i2.film_id = i1.film_id "
+        "AND i2.filename = i1.filename)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  
+  //synch database entries to xmp
   dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
@@ -1857,7 +1884,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         // write xmp file
         dt_image_write_sidecar_file(newid);
 
-        dt_collection_update_query(darktable.collection);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
       }
 
       g_free(filename);

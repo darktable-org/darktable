@@ -25,6 +25,7 @@
 #include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
@@ -46,7 +47,7 @@ typedef struct dt_undo_geotag_t
 
 typedef struct dt_map_t
 {
-  GtkWidget *center;
+  gboolean entering;
   OsmGpsMap *map;
   OsmGpsMapSource_t map_source;
   OsmGpsMapLayer *osd;
@@ -94,9 +95,10 @@ static GObject *_view_map_add_marker(const dt_view_t *view, dt_geo_map_display_t
 static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
 
 /* callback when the collection changs */
-static void _view_map_collection_changed(gpointer instance, gpointer user_data);
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                         int next, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
-static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                                    GtkSelectionData *selection_data, guint target_type, guint time,
@@ -372,6 +374,18 @@ static GdkPixbuf *init_place_pin()
   cairo_surface_destroy(cst);
   return pixbuf;
 }
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  if(lib->entering)
+  {
+    // we need to ensure there's no remaining things on canvas.
+    // otherwise they can appear on map move
+    lib->entering = FALSE;
+    cairo_set_source_rgb(cri, 0, 0, 0);
+    cairo_paint(cri);
+  }
+}
 
 void init(dt_view_t *self)
 {
@@ -410,8 +424,7 @@ void init(dt_view_t *self)
     lib->map = g_object_new(OSM_TYPE_GPS_MAP, "map-source", OSM_GPS_MAP_SOURCE_NULL, "proxy-uri",
                             g_getenv("http_proxy"), NULL);
 
-    GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
-    gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
+    g_object_ref(lib->map); // we want to keep map alive until explicit destroy
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
                             TRUE, "show-zoom", TRUE,
@@ -645,11 +658,10 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   // activate this callback late in the process as we need the filmstrip proxy to be setup. This is not the
   // case in the initialization phase.
-  if(!lib->drop_filmstrip_activated && darktable.view_manager->proxy.filmstrip.module)
+  if(!lib->drop_filmstrip_activated)
   {
-    g_signal_connect(
-        darktable.view_manager->proxy.filmstrip.widget(darktable.view_manager->proxy.filmstrip.module),
-        "drag-data-received", G_CALLBACK(_view_map_dnd_remove_callback), self);
+    g_signal_connect(dt_ui_thumbtable(darktable.gui->ui)->widget, "drag-data-received",
+                     G_CALLBACK(_view_map_dnd_remove_callback), self);
     lib->drop_filmstrip_activated = TRUE;
   }
 }
@@ -814,15 +826,17 @@ void enter(dt_view_t *self)
 
   lib->selected_image = 0;
   lib->start_drag = FALSE;
+  lib->entering = TRUE;
 
   /* set the correct map source */
   _view_map_set_map_source_g_object(self, lib->map_source);
 
-  /* replace center widget */
-  GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
-  gtk_widget_hide(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
+  /* add map to center widget */
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
 
-  gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
+  // ensure the log msg widget stay on top
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
 
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
@@ -845,14 +859,15 @@ void enter(dt_view_t *self)
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback), self);
 
   /* scroll filmstrip to the first selected image */
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
   if(selected_images)
   {
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), GPOINTER_TO_INT(selected_images->data),
+                                   TRUE);
     g_list_free(selected_images);
   }
 
@@ -867,28 +882,23 @@ void leave(dt_view_t *self)
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_filmstrip_activate_callback),
                                (gpointer)self);
+  g_signal_handlers_disconnect_by_func(dt_ui_thumbtable(darktable.gui->ui)->widget,
+                                       G_CALLBACK(_view_map_dnd_remove_callback), self);
 
   dt_map_t *lib = (dt_map_t *)self->data;
 
   gtk_widget_hide(GTK_WIDGET(lib->map));
+  gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
   gtk_widget_show_all(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
-{
-  // redraw center on mousemove
-  dt_control_queue_redraw_center();
-}
-
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
-  // Film strip shortcuts
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -905,17 +915,6 @@ static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acc
   return TRUE;
 }
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-  return TRUE;
-}
-
 void connect_key_accels(dt_view_t *self)
 {
   // undo/redo
@@ -923,9 +922,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_view_map_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
-  // Film strip shortcuts
-  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 
@@ -1088,7 +1084,8 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
   if(_view_map_prefs_changed(lib)) g_signal_emit_by_name(lib->map, "changed");
 }
 
-static void _view_map_collection_changed(gpointer instance, gpointer user_data)
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                         int next, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
    dt_map_t *lib = (dt_map_t *)self->data;
@@ -1186,10 +1183,9 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *sel
     return FALSE;
 }
 
-static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
-  const int32_t imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
   _view_map_center_on_image(self, imgid);
 }
 

@@ -257,14 +257,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 
 void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
-             const void *const restrict DT_ALIGNED_ARRAY ivoid, void *const restrict DT_ALIGNED_ARRAY ovoid,
+             const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_negadoctor_data_t *const d = piece->data;
   assert(piece->colors = 4);
 
-  const float *const restrict DT_ALIGNED_ARRAY in = (float *)ivoid;
-  float *const restrict DT_ALIGNED_ARRAY out = (float *)ovoid;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
 
 
 #ifdef _OPENMP
@@ -274,14 +274,14 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * 4; k += 4)
   {
-    for(size_t c = 0; c < 4; c++) // not sure if
+    for(size_t c = 0; c < 4; c++)
     {
       // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
-      const float *const restrict DT_ALIGNED_PIXEL pix_in = in + k;
-      float *const restrict DT_ALIGNED_PIXEL pix_out = out + k;
-      const float *const restrict DT_ALIGNED_PIXEL Dmin = d->Dmin;
-      const float *const restrict DT_ALIGNED_PIXEL wb_high = d->wb_high;
-      const float *const restrict DT_ALIGNED_PIXEL offset = d->offset;
+      const float *const restrict pix_in = in + k;
+      float *const restrict pix_out = out + k;
+      const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
+      const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
+      const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
 
       // Convert transmission to density using Dmin as a fulcrum
       const float density = - log10f(Dmin[c] / fmaxf(pix_in[c], THRESHOLD)); // threshold to -32 EV

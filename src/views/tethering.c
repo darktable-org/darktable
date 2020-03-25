@@ -39,6 +39,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/settings.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -82,7 +83,7 @@ typedef struct dt_capture_t
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
@@ -98,28 +99,14 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  if(dt_view_filmstrip_get_activated_imgid(darktable.view_manager) >= 0) dt_control_queue_redraw_center();
-}
-
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-  return TRUE;
+  if(imgid >= 0) dt_control_queue_redraw_center();
 }
 
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_capture_t));
-
-  /* prefetch next few from first selected image on. */
-  dt_view_filmstrip_prefetch();
 
   /* setup the tethering view proxy */
   darktable.view_manager->proxy.tethering.view               = self;
@@ -173,7 +160,11 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   if(!cam) return;
 
   lib->image_over = DT_VIEW_DESERT;
-  lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  GSList *l = dt_view_active_images_get();
+  if(g_slist_length(l) > 0)
+    lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
+  else
+    lib->image_id = -1;
 
   if(cam->is_live_viewing == TRUE) // display the preview
   {
@@ -256,7 +247,7 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
-static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -304,11 +295,13 @@ void enter(dt_view_t *self)
 
 
   /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
-
+  // change active image
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->image_id, TRUE);
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
 
   /* initialize a session */
   lib->session = dt_import_session_new();
@@ -392,18 +385,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_view_t *self)
-{
-  // Setup key accelerators in capture view...
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)

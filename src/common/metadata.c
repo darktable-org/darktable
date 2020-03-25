@@ -38,16 +38,17 @@ static const struct
 {
   char *key;
   char *name;
+  int type;
   uint32_t display_order;
 } dt_metadata_def[] = {
   // clang-format off
-  {"Xmp.dc.creator", N_("creator"), 2},
-  {"Xmp.dc.publisher", N_("publisher"), 3},
-  {"Xmp.dc.title", N_("title"), 0},
-  {"Xmp.dc.description", N_("description"), 1},
-  {"Xmp.dc.rights", N_("rights"), 4},
-  {"Xmp.acdsee.notes", N_("notes"), 5},
-  {"Xmp.darktable.version_name", N_("version name"), 6}
+  {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
+  {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
+  {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
+  {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
+  {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
+  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
+  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_INTERNAL, 6}
   // clang-format on
 };
 
@@ -77,6 +78,19 @@ const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
   return -1;
 }
 
+const int dt_metadata_get_type_by_display_order(const uint32_t order)
+{
+  if(order < DT_METADATA_NUMBER)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      if(order == dt_metadata_def[i].display_order)
+        return dt_metadata_def[i].type;
+    }
+  }
+  return 0;
+}
+
 const char *dt_metadata_get_name(const uint32_t keyid)
 {
   if(keyid < DT_METADATA_NUMBER)
@@ -101,6 +115,14 @@ const char *dt_metadata_get_key(const uint32_t keyid)
     return dt_metadata_def[keyid].key;
   else
     return NULL;
+}
+
+const int dt_metadata_get_type(const uint32_t keyid)
+{
+  if(keyid < DT_METADATA_NUMBER)
+    return dt_metadata_def[keyid].type;
+  else
+    return 0;
 }
 
 typedef struct dt_undo_metadata_t

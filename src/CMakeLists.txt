@@ -109,6 +109,9 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/thumbnail.c"
+  "dtgtk/thumbnail_btn.c"
+  "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
@@ -319,7 +322,7 @@ if(USE_WEBP)
 endif(USE_WEBP)
 
 if (USE_AVIF)
-    find_package(libavif 0.5.2 CONFIG)
+    find_package(libavif 0.6.0 CONFIG)
     if (TARGET avif)
         list(APPEND LIBS avif)
         add_definitions(-DHAVE_LIBAVIF=1)

@@ -3221,13 +3221,16 @@ static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid, con
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    if(export_flag)
+    if(export_flag && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
     {
       const gchar *name = dt_metadata_get_name(keyid);
       gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name);
       const gboolean private_flag =  dt_conf_get_bool(setting);
       g_free(setting);
-      if(!private_flag)
+      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+      const gboolean hidden_flag =  dt_conf_get_bool(setting);
+      g_free(setting);
+      if(!private_flag && !hidden_flag)
         xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
     }
     else

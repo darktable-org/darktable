@@ -36,11 +36,22 @@ typedef enum dt_metadata_t
 }
 dt_metadata_t;
 
+typedef enum dt_metadata_type_t
+{
+  DT_METADATA_TYPE_USER,     // metadata for users
+  DT_METADATA_TYPE_OPTIONAL, // metadata hidden by default
+  DT_METADATA_TYPE_INTERNAL  // metadata for dt internal usage - the user cannot see it
+}
+dt_metadata_type_t;
+
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 
 /** return the metadata keyid by display order */
 const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+
+/** return the metadata type by display order */
+const int dt_metadata_get_type_by_display_order(const uint32_t order);
 
 /** return the metadata name of the metadata keyid */
 const char *dt_metadata_get_name(const uint32_t keyid);
@@ -48,8 +59,11 @@ const char *dt_metadata_get_name(const uint32_t keyid);
 /** return the keyid of the metadata key */
 const dt_metadata_t dt_metadata_get_keyid(const char* key);
 
-/** retunr the key of the metadata keyid */
+/** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
+
+/** return the type of the metadata keyid */
+const int dt_metadata_get_type(const uint32_t keyid);
 
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // exif.cc, ligthroom.c, duplicate.c, lua/image.c

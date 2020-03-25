@@ -22,6 +22,7 @@
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -257,6 +258,11 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   }
   else
     dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    dt_thumbtable_zoom_changed(dt_ui_thumbtable(darktable.gui->ui), d->current_zoom, zoom);
+  }
 }
 
 static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data)
@@ -382,7 +388,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     d->combo_evt_reset = TRUE;
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), layout);
     d->combo_evt_reset = FALSE;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_queue_redraw_center();
   }
   else
   {

@@ -95,7 +95,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
   if(old_version == 1 && new_version == 2)
   {
-    const dt_iop_basicadj_params_t *old = old_params;
+    typedef struct dt_iop_basicadj_params_v1_t
+    {
+      float black_point;
+      float exposure;
+      float hlcompr;
+      float hlcomprthresh;
+      float contrast;
+      int preserve_colors;
+      float middle_grey;
+      float brightness;
+      float saturation;
+      float clip;
+    } dt_iop_basicadj_params_v1_t;
+
+    const dt_iop_basicadj_params_v1_t *old = old_params;
     dt_iop_basicadj_params_t *new = new_params;
 
     new->black_point = old->black_point;
@@ -145,6 +159,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clip"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -160,6 +175,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->sl_saturation));
   dt_accel_connect_slider_iop(self, "vibrance", GTK_WIDGET(g->sl_vibrance));
   dt_accel_connect_slider_iop(self, "clip", GTK_WIDGET(g->sl_clip));
+  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
 }
 
 static void _turn_select_region_off(struct dt_iop_module_t *self)
