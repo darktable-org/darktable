@@ -89,13 +89,19 @@ typedef struct dt_iop_temperature_data_t
   float coeffs[4];
 } dt_iop_temperature_data_t;
 
-
 typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
   int kernel_whitebalance_1f_xtrans;
 } dt_iop_temperature_global_data_t;
+
+typedef struct dt_iop_temperature_preset_data_t
+{
+  int no_ft_pos;
+  int min_ft_pos;
+  int max_ft_pos;
+} dt_iop_temperature_preset_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -751,6 +757,67 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+int generate_preset_combo(struct dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  int presets_found = 0;
+
+  const char *wb_name = NULL;
+  if(!dt_image_is_ldr(&self->dev->image_storage))
+    for(int i = 0; i < wb_preset_count; i++)
+    {
+      if(presets_found >= 50) break;
+      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+         && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model))
+      {
+        if(!wb_name) // This is first found preset for maker/model. add section.
+        {
+          char *section = g_strdup_printf("%s %s", self->dev->image_storage.camera_maker, self->dev->image_storage.camera_model);
+          dt_bauhaus_combobox_add_section(g->presets, section);
+          g_free(section);
+          g->preset_cnt++;
+        }
+        if(!wb_name || strcmp(wb_name, wb_preset[i].name))
+        {
+          // new preset found
+          dt_iop_temperature_preset_data_t *preset = malloc(sizeof(dt_iop_temperature_preset_data_t));
+          wb_name = wb_preset[i].name;
+          preset->no_ft_pos = i;
+          preset->max_ft_pos = i;
+          preset->min_ft_pos = i;
+          if(wb_preset[i].tuning != 0)
+          {
+            // finetuning found.
+            // min finetuning is always first, since wb_preset is ordered.
+            int ft_pos = i;
+            int last_ft = wb_preset[i].tuning;
+            preset->min_ft_pos = ft_pos++;
+            while (strcmp(wb_name, wb_preset[ft_pos].name) == 0)
+            {
+              if(wb_preset[ft_pos].tuning == 0)
+              {
+                preset->no_ft_pos = ft_pos;
+              }
+              if(wb_preset[ft_pos].tuning > last_ft)
+              {
+                preset->max_ft_pos = ft_pos;
+                last_ft = wb_preset[ft_pos].tuning;
+              }
+              ft_pos++;
+            }
+            
+          }
+          dt_bauhaus_combobox_add_full(g->presets, _(wb_preset[i].name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
+          g->preset_num[g->preset_cnt] = i;
+          g->preset_cnt++;
+          presets_found++;
+        }
+      }
+    }
+
+  return presets_found;
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -785,6 +852,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "neutral daylight")); // old "camera neutral", reason: better matches intent
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
+
+  //TODO: section of combobox using dt_bauhaus_combobox_add_section
+
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
 
@@ -792,23 +862,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->finetune, 0);
   gtk_widget_set_sensitive(g->finetune, 0);
 
-  const char *wb_name = NULL;
-  if(!dt_image_is_ldr(&self->dev->image_storage))
-    for(int i = 0; i < wb_preset_count; i++)
-    {
-      if(g->preset_cnt >= 50) break;
-      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-         && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model))
-      {
-        if(!wb_name || strcmp(wb_name, wb_preset[i].name))
-        {
-          wb_name = wb_preset[i].name;
-          dt_bauhaus_combobox_add(g->presets, _(wb_preset[i].name));
-          g->preset_num[g->preset_cnt] = i;
-          g->preset_cnt++;
-        }
-      }
-    }
+  generate_preset_combo(self);
 
   gboolean found = FALSE;
   // is this a camera white balance?
@@ -847,7 +901,15 @@ void gui_update(struct dt_iop_module_t *self)
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
-          gtk_widget_set_sensitive(g->finetune, 1);
+          dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
+          if(preset != NULL)
+          {
+            gtk_widget_set_sensitive(g->finetune, (preset->min_ft_pos != preset->max_ft_pos));
+            dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
+            dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
+            dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+          }
+          
           dt_bauhaus_slider_set(g->finetune, wb_preset[i].tuning);
           found = TRUE;
           break;
@@ -891,7 +953,14 @@ void gui_update(struct dt_iop_module_t *self)
               // got exact match!
 
               dt_bauhaus_combobox_set(g->presets, j);
-              gtk_widget_set_sensitive(g->finetune, 1);
+              dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
+              if(preset != NULL)
+              {
+                gtk_widget_set_sensitive(g->finetune, (preset->min_ft_pos != preset->max_ft_pos));
+                dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
+                dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
+                dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+              }
               dt_bauhaus_slider_set(g->finetune, tune);
               found = TRUE;
               break;
@@ -1089,6 +1158,7 @@ void reload_defaults(dt_iop_module_t *module)
            && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
            && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
         {
+
           for(int k = 0; k < 4; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
           break;
         }
@@ -1272,11 +1342,12 @@ static void apply_preset(dt_iop_module_t *self)
     default: // camera WB presets
     {
       gboolean found = FALSE;
+      dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[pos]; (i < wb_preset_count)
+      for(int i = preset->min_ft_pos; (i < (preset->max_ft_pos + 1)) // we can limit search spread thanks to knowing where to look!
                                       && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
                                       && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
-                                      && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
+                                      && !strcmp(wb_preset[i].name, wb_preset[preset->no_ft_pos].name);
           i++)
       {
         if(wb_preset[i].tuning == tune)
@@ -1297,10 +1368,10 @@ static void apply_preset(dt_iop_module_t *self)
 
         // look through all variants of this preset, with different tuning, starting from second entry (if
         // any)
-        int i = g->preset_num[pos] + 1;
-        while((i < wb_preset_count) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+        int i = preset->min_ft_pos + 1;
+        while((i < preset->max_ft_pos+1) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
               && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
-              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name))
+              && !strcmp(wb_preset[i].name, wb_preset[preset->no_ft_pos].name))
         {
           if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
           {
@@ -1315,6 +1386,7 @@ static void apply_preset(dt_iop_module_t *self)
         // have we found enough good data?
         if(min_id == INT_MIN || max_id == INT_MIN || min_id == max_id) break; // hysteresis
 
+        found = TRUE;
         wb_data interpolated = {.tuning = tune };
         dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
         for(int k = 0; k < 4; k++) p->coeffs[k] = interpolated.channel[k];
@@ -1331,9 +1403,21 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   apply_preset(self);
-  const int pos = dt_bauhaus_combobox_get(widget);
+  //const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  gtk_widget_set_sensitive(g->finetune, pos >= DT_IOP_NUM_OF_STD_TEMP_PRESETS);
+  const dt_iop_temperature_preset_data_t *const preset = dt_bauhaus_combobox_get_data(widget);
+  if(preset != NULL)
+  {
+    const int32_t old_reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    gtk_widget_set_sensitive(g->finetune, (preset->min_ft_pos != preset->max_ft_pos));
+    dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
+    dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
+    dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+    darktable.gui->reset = old_reset;
+  } else {
+    gtk_widget_set_sensitive(g->finetune, FALSE);
+  }
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
 }
 
