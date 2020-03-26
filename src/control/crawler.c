@@ -78,6 +78,13 @@ GList *dt_control_crawler_run()
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
 
+    // if the image is missing we ignore it.
+    if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
+    {
+      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing.\n", image_path, id);
+      continue;
+    }
+
     // no need to look for xmp files if none get written anyway.
     if(look_for_xmp)
     {
