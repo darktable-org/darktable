@@ -709,6 +709,24 @@ filechooserdialog scrolledwindow
   margin: 0;
 }
 
+frame#import_metadata label
+{
+  margin: 4px 3px 4px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata entry
+{
+  margin: 2px 3px 2px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata checkbutton
+{
+  margin: 0px;
+  padding: 0px;
+}
+
 .dialog-vbox treeview check
 {
   border-radius: 2px;
@@ -908,7 +926,7 @@ entry
 /* checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
-checkbutton check
+checkbutton:not(#import_metadata) check
 {
   margin: 5px 8px 5px 0;
 }
