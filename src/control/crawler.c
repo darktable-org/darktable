@@ -129,11 +129,12 @@ GList *dt_control_crawler_run()
 
     // step 2: check if the image has associated files (.txt, .wav)
     size_t len = strlen(image_path);
-    char *c = image_path + len;
-    while((c > image_path) && (*c != '.')) *c-- = '\0';
+    const char *c = image_path + len;
+    while((c > image_path) && (*c != '.')) c--;
     len = c - image_path + 1;
 
-    char *extra_path = g_strndup(image_path, len + 3);
+    char *extra_path = (char *)calloc(len + 3 + 1, sizeof(char));
+    g_strlcpy(extra_path, image_path, len + 1);
 
     extra_path[len] = 't';
     extra_path[len + 1] = 'x';
@@ -181,7 +182,7 @@ GList *dt_control_crawler_run()
       sqlite3_clear_bindings(inner_stmt);
     }
 
-    g_free(extra_path);
+    free(extra_path);
   }
 
   sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
