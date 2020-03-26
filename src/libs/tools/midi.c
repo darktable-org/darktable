@@ -270,10 +270,8 @@ void midi_config_load(MidiDevice *midi)
 
   char buffer[200];
 
-  while(!feof(f))
+  while(fgets(buffer, 100, f))
   {
-    fgets(buffer, 100, f);
-  
     if (sscanf(buffer, "num_columns=%d\n", &midi->num_columns) == 1) continue;
     if (sscanf(buffer, "group_switch_key=%d\n", &midi->group_switch_key) == 1) continue;
     if (sscanf(buffer, "group_key_light=%d\n", &midi->group_key_light) == 1) continue;
@@ -321,7 +319,7 @@ void midi_config_load(MidiDevice *midi)
       continue;
     }
 
-    read = sscanf(buffer, "%d,%d,%d,%[^\n]\n",
+    read = sscanf(buffer, "%d,%d,%d,%[^\r\n]\r\n",
                   &group, &channel, &key, accelpath);
 
     if (read == 4)
@@ -806,7 +804,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             }
             else
             {
-              new_knob->encoding = velocity;
+              new_knob->encoding = velocity | 1; // force last bit to 1
             }
           
             midi_config_save(midi);
@@ -1158,6 +1156,7 @@ static gboolean midi_port_dispatch (GSource     *source,
     switch (eventType)
     {
       case 0x9:  // note on
+        g_print("Note: Channel %d, Data1 %d\n", eventChannel, eventData1);
         note_on(midi, eventChannel, eventData1);
         break;
 
@@ -1166,6 +1165,7 @@ static gboolean midi_port_dispatch (GSource     *source,
         break;
 
       case 0xb:  // controllers, sustain
+        g_print("Controller: Channel %d, Data1 %d, Data2 %d\n", eventChannel, eventData1, eventData2);
         aggregate_and_set_slider(midi, eventChannel, eventData1, eventData2);
         break;
 
