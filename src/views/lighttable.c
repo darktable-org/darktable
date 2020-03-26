@@ -59,10 +59,6 @@
 DT_MODULE(1)
 
 #define FULL_PREVIEW_IN_MEMORY_LIMIT 9
-// TODO: this is also defined in lib/tools/lighttable.c
-//       fix so this value is shared.. DT_CTL_SET maybe ?
-#define DT_LIBRARY_MAX_ZOOM 13
-
 
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_custom_image_order_actif(const dt_view_t *self);
@@ -2426,9 +2422,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   else if(lib->full_preview_id > -1)
   {
     if(up)
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
+      lib->track = -DT_LIGHTTABLE_MAX_ZOOM;
     else
-      lib->track = +DT_LIBRARY_MAX_ZOOM;
+      lib->track = +DT_LIGHTTABLE_MAX_ZOOM;
 
     if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0) _culling_scroll(lib, up);
   }
@@ -2954,7 +2950,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
   {
     zoom++;
-    if(zoom > 2 * DT_LIBRARY_MAX_ZOOM) zoom = 2 * DT_LIBRARY_MAX_ZOOM;
+    if(zoom > 2 * DT_LIGHTTABLE_MAX_ZOOM) zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
 
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
     return 1;
