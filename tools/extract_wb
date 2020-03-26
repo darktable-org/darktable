@@ -77,7 +77,11 @@ ARGV.each do |filename|
   finetune = 0
   listed_presets = []
   fl_count = 0
-  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model -WBShiftAB -WBShiftAB_GM -WhiteBalanceFineTune -WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\"") do |io|
+  command = "exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model -WBShiftAB -WBShiftAB_GM -WhiteBalanceFineTune -WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\""
+  if filename.end_with? ".txt"
+    command = "cat \"#{filename}\""
+  end
+  IO.popen(command) do |io|
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip
