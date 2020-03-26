@@ -229,7 +229,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // Get DefaultUserCrop
     if (img->flags & DT_IMAGE_HAS_USERCROP)
-      dt_img_check_usercrop(img, filename);
+      dt_exif_img_check_usercrop(img, filename);
 
     if(r->getDataType() == TYPE_FLOAT32)
     {

@@ -621,8 +621,8 @@ const char *dt_collection_name(dt_collection_properties_t prop)
         if(type != DT_METADATA_TYPE_INTERNAL)
         {
           const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
-          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-          const gboolean hidden = dt_conf_get_bool(setting);
+          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
           if(!hidden) col_name = _(name);
         }
       }
