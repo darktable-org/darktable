@@ -89,6 +89,7 @@ typedef struct dt_lib_import_metadata_t
   GtkWidget *apply_metadata;
   GtkWidget *presets;
   GtkWidget *metadata[DT_METADATA_NUMBER];
+  GtkWidget *imported[DT_METADATA_NUMBER];
   GtkWidget *tags;
 } dt_lib_import_metadata_t;
 
@@ -367,9 +368,17 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
       if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
       {
         const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-        g_signal_handlers_block_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
-        gtk_entry_set_text(GTK_ENTRY(data->metadata[keyid]), sv);
-        g_signal_handlers_unblock_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
+        const char *name = dt_metadata_get_name(keyid);
+        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+        const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+        g_free(setting);
+        // make sure we don't provide values for hidden stuff
+        if(!hidden)
+        {
+          g_signal_handlers_block_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
+          gtk_entry_set_text(GTK_ENTRY(data->metadata[keyid]), sv);
+          g_signal_handlers_unblock_by_func(data->metadata[keyid], _lib_import_metadata_changed, data->presets);
+        }
       }
       g_value_unset(&value);
     }
@@ -400,18 +409,15 @@ static void _check_button_callback(GtkWidget *widget, gpointer data)
                      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
-static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_import_metadata_t *data, gboolean import_folder)
+static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self, dt_lib_import_metadata_t *data, gboolean import_folder)
 {
   // add extra lines to 'extra'. don't forget to destroy the widgets later.
   GtkWidget *expander = gtk_expander_new(_("import options"));
   gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
 
   GtkWidget *frame = gtk_frame_new(NULL);
-  gtk_widget_set_hexpand(frame, TRUE);
-  GtkWidget *event_box = gtk_event_box_new();
-
-  gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), expander);
+  gtk_widget_set_name(frame, "import_metadata");
+  gtk_container_add(GTK_CONTAINER(frame), expander);
 
   GtkWidget *extra;
   extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -439,14 +445,11 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   }
 
   // default metadata
-  GtkWidget *apply_metadata;
-  GtkWidget *grid, *label, *tags;
-  apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
+  GtkWidget *apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
   gtk_widget_set_tooltip_text(apply_metadata, _("apply some metadata to all newly imported images."));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
                                dt_conf_get_bool("ui_last/import_apply_metadata"));
   gtk_box_pack_start(GTK_BOX(extra), apply_metadata, FALSE, FALSE, 0);
-
 
   GValue value = {
     0,
@@ -456,7 +459,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
   g_value_unset(&value);
 
-  grid = gtk_grid_new();
+  GtkWidget *grid = gtk_grid_new();
   gtk_box_pack_start(GTK_BOX(extra), grid, FALSE, FALSE, 0);
 
 #ifdef USE_LUA
@@ -464,26 +467,6 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
 #endif
-
-  GtkWidget *metadata[DT_METADATA_NUMBER];
-  gchar *metadata_name[DT_METADATA_NUMBER];
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    metadata[i] = gtk_entry_new();
-    metadata_name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
-    char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name[i]);
-    gchar *str = dt_conf_get_string(setting);
-    gtk_entry_set_text(GTK_ENTRY(metadata[i]), str);
-    g_free(str);
-    g_free(setting);
-  }
-
-  tags = gtk_entry_new();
-  gtk_widget_set_size_request(tags, DT_PIXEL_APPLY_DPI(300), -1);
-  gchar *str = dt_conf_get_string("ui_last/import_last_tags");
-  gtk_widget_set_tooltip_text(tags, _("comma separated list of tags"));
-  gtk_entry_set_text(GTK_ENTRY(tags), str);
-  g_free(str);
 
   // presets from the metadata plugin
   GtkCellRenderer *renderer;
@@ -494,11 +477,6 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     types[i] = G_TYPE_STRING;
   }
   GtkListStore *model = gtk_list_store_newv(DT_METADATA_NUMBER + 1, types);
-
-  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  renderer = gtk_cell_renderer_text_new();
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -534,58 +512,90 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   }
   sqlite3_finalize(stmt);
 
-  g_object_unref(model);
-
+  // grid headers
   int line = 0;
 
-  label = gtk_label_new(_("preset"));
+  GtkWidget *label = gtk_label_new(_("preset"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"));
 
+  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
+  gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
+  g_object_unref(model);
+
+  label = gtk_label_new(_("to be imported"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
+                              _("selected metadata are imported from image and override the default value"));
+  gtk_grid_attach_next_to(GTK_GRID(grid), label, presets, GTK_POS_RIGHT, 1, 1);
+
+  // grid content
+  // metadata
+  GtkWidget *metadata[DT_METADATA_NUMBER] = { NULL };
   GtkWidget *metadata_label[DT_METADATA_NUMBER];
+  GtkWidget *imported[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    metadata_label[i] = gtk_label_new(_(metadata_name[i]));
-    gtk_widget_set_halign(metadata_label[i], GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(grid), metadata_label[i], 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], metadata_label[i], GTK_POS_RIGHT, 1, 1);
+    if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
+    {
+      const gchar*metadata_name = (gchar *)dt_metadata_get_name_by_display_order(i);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      const uint32_t flag = dt_conf_get_int(setting);
+      g_free(setting);
+      if(!(flag & DT_METADATA_FLAG_HIDDEN))
+      {
+        metadata_label[i] = gtk_label_new(_(metadata_name));
+        gtk_widget_set_halign(metadata_label[i], GTK_ALIGN_START);
+        gtk_grid_attach(GTK_GRID(grid), metadata_label[i], 0, line++, 1, 1);
+
+        metadata[i] = gtk_entry_new();
+        setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+        gchar *str = dt_conf_get_string(setting);
+        gtk_entry_set_text(GTK_ENTRY(metadata[i]), str);
+        g_free(str);
+        g_free(setting);
+        gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], metadata_label[i], GTK_POS_RIGHT, 1, 1);
+
+        imported[i] = gtk_check_button_new();
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(imported[i]),
+                                     flag & DT_METADATA_FLAG_IMPORTED);
+        gtk_widget_set_name(imported[i], "import_metadata");
+        gtk_grid_attach_next_to(GTK_GRID(grid), imported[i], metadata[i], GTK_POS_RIGHT, 1, 1);
+        gtk_widget_set_halign(imported[i], GTK_ALIGN_CENTER);
+      }
+    }
   }
 
+  //tags
   label = gtk_label_new(_("tags"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label, 0, line, 1, 1);
+
+  GtkWidget *tags = gtk_entry_new();
+  gtk_widget_set_size_request(tags, DT_PIXEL_APPLY_DPI(300), -1);
+  gchar *str = dt_conf_get_string("ui_last/import_last_tags");
+  gtk_widget_set_tooltip_text(tags, _("comma separated list of tags"));
+  gtk_entry_set_text(GTK_ENTRY(tags), str);
+  g_free(str);
   gtk_grid_attach_next_to(GTK_GRID(grid), tags, label, GTK_POS_RIGHT, 1, 1);
 
   gtk_widget_show_all(frame);
 
+  data->frame = frame;
+  data->recursive = recursive;
+  data->ignore_jpeg = ignore_jpeg;
+  data->expander = expander;
+  data->apply_metadata = apply_metadata;
+  data->presets = presets;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
-    const gboolean hidden = dt_conf_get_bool(setting);
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type_by_display_order(i);
-    if(meta_type == DT_METADATA_TYPE_INTERNAL || hidden)
-    {
-      gtk_widget_hide(metadata_label[i]);
-      gtk_widget_hide(metadata[i]);
-    }
+    data->metadata[i] = metadata[i];
+    data->imported[i] = imported[i];
   }
-
-  if(data != NULL)
-  {
-    data->frame = frame;
-    data->recursive = recursive;
-    data->ignore_jpeg = ignore_jpeg;
-    data->expander = expander;
-    data->apply_metadata = apply_metadata;
-    data->presets = presets;
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-    {
-      data->metadata[i] = metadata[i];
-    }
-    data->tags = tags;
-  }
+  data->tags = tags;
 
   g_signal_connect(apply_metadata, "toggled", G_CALLBACK(_lib_import_apply_metadata_toggled), grid);
   // needed since the apply_metadata starts being turned off, and setting it to off doesn't emit the 'toggled' signal ...
@@ -594,7 +604,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    g_signal_connect(GTK_ENTRY(metadata[i]), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
+    if(metadata[i])
+      g_signal_connect(GTK_ENTRY(metadata[i]), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
   }
 // todo - signal for tags is missing
   return frame;
@@ -614,10 +625,18 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->apply_metadata)));
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
-    char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
-    dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(data->metadata[i])));
-    g_free(setting);
+    if(data->metadata[i])
+    {
+      const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
+      char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(data->metadata[i])));
+      g_free(setting);
+      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      const gboolean imported = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->imported[i]));
+      const uint32_t flag = dt_conf_get_int(setting);
+      dt_conf_set_int(setting, imported ? flag | DT_METADATA_FLAG_IMPORTED : flag & ~DT_METADATA_FLAG_IMPORTED);
+      g_free(setting);
+    }
   }
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }

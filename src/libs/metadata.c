@@ -71,17 +71,20 @@ void init(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const int type = dt_metadata_get_type(i);
-    if(type == DT_METADATA_TYPE_OPTIONAL)
+    const char *name = (gchar *)dt_metadata_get_name(i);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+    if(!dt_conf_key_exists(setting))
     {
-      const char *name = (gchar *)dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-      if(!dt_conf_key_exists(setting))
+      // per default should be imported
+      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
+      if(type == DT_METADATA_TYPE_OPTIONAL)
       {
         // per default this one should be hidden
-        dt_conf_set_bool(setting, TRUE);
+        flag |= DT_METADATA_FLAG_HIDDEN;
       }
-      g_free(setting);
+      dt_conf_set_int(setting, flag);
     }
+    g_free(setting);
   }
 }
 
@@ -329,8 +332,8 @@ static void update_layout(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-    const gboolean hidden = dt_conf_get_bool(setting);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
     const int type = dt_metadata_get_type_by_display_order(i);
     if(hidden || type == DT_METADATA_TYPE_INTERNAL)
     {
@@ -453,19 +456,18 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_widget_set_hexpand(label, TRUE);
       hidden[i] = gtk_check_button_new();
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
-      hidden_v[i] = dt_conf_get_bool(setting);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
+      const uint32_t flag = dt_conf_get_int(setting);
+      g_free(setting);
+      hidden_v[i] = flag & DT_METADATA_FLAG_HIDDEN;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hidden[i]), hidden_v[i]);
       gtk_grid_attach(GTK_GRID(grid), hidden[i], 1, i+1, 1, 1);
       gtk_widget_set_halign(hidden[i], GTK_ALIGN_CENTER);
-      g_free(setting);
       private[i] = gtk_check_button_new();
-      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
-      private_v[i] = dt_conf_get_bool(setting);
+      private_v[i] = flag & DT_METADATA_FLAG_PRIVATE;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), private_v[i]);
       gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
       gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
-      g_free(setting);
     }
   }
 
@@ -483,18 +485,21 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       const int type = dt_metadata_get_type_by_display_order(i);
       if(type != DT_METADATA_TYPE_INTERNAL)
       {
-        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
+        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
+        uint32_t flag = dt_conf_get_int(setting);
         const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
         if(hidden_nv !=  hidden_v[i])
         {
-          dt_conf_set_bool(setting, hidden_nv);
+          flag = hidden_nv ? flag | DT_METADATA_FLAG_HIDDEN : flag & ~DT_METADATA_FLAG_HIDDEN;
           meta_signal = TRUE;
           meta_remove =  hidden_nv ? TRUE : meta_remove;
         }
-        g_free(setting);
-        setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
         const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
-        if(private_nv != private_v[i]) dt_conf_set_bool(setting, private_nv);
+        if(private_nv != private_v[i])
+        {
+          flag = private_nv ? flag | DT_METADATA_FLAG_PRIVATE : flag & ~DT_METADATA_FLAG_PRIVATE;
+        }
+        dt_conf_set_int(setting, flag);
         g_free(setting);
       }
     }
