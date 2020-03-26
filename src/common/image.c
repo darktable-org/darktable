@@ -1000,10 +1000,10 @@ GList* dt_image_find_duplicates(const char* filename)
 #endif
 }
 
-static int _image_read_duplicates(const uint32_t id, const char *filename)
+// Search for duplicate's sidecar files and import them if found and not in DB yet
+static void _image_read_duplicates(const uint32_t id, const char *filename)
 {
   int count_xmps_processed = 0;
-  // Search for duplicate's sidecar files and import them if found and not in DB yet
   gchar pattern[PATH_MAX] = { 0 };
 
   GList *files = dt_image_find_duplicates(filename);
@@ -1072,11 +1072,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   g_list_free_full(files, g_free);
-
-  return count_xmps_processed;
-
 }
-
 
 static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename,
                                          gboolean override_ignore_jpegs, gboolean lua_locking)
@@ -1166,21 +1162,6 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     flags |= DT_IMAGE_HAS_TXT;
     g_free(extra_file);
   }
-
-  // insert dummy image entry in database
-
-  /* Image Position Calculation
-   *
-   * The upper int32_t of the last image position is increased by one
-   * while the lower 32 bits are masked out.
-   *
-   * Example:
-   * last image position: (Hex)
-   * 0000 0002 0000 0001
-   *
-   * next image position
-   * 0000 0003 0000 0000
-   */
 
   //insert a v0 record (which may be updated later if no v0 xmp exists)
   DT_DEBUG_SQLITE3_PREPARE_V2

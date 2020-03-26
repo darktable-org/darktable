@@ -519,39 +519,78 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   int keyid = dt_metadata_get_keyid(key);
   if(keyid != -1) // known key
   {
-    const gchar *name = dt_metadata_get_name(keyid);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-    const gboolean hidden = dt_conf_get_bool(setting);
-    g_free(setting);
-    if(!hidden)
+    GList *imgs = NULL;
+    if(imgid == -1)
+      imgs = dt_collection_get_selected(darktable.collection, -1);
+    else
+      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    if(imgs)
     {
-      GList *imgs = NULL;
-      if(imgid == -1)
-        imgs = dt_collection_get_selected(darktable.collection, -1);
-      else
-        imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-      if(imgs)
+      GList *undo = NULL;
+      if(group_on) dt_grouping_add_grouped_images(&imgs);
+      if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+      const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+      const gchar *cvalue = _cleanup_metadata_value(value);
+      GList *metadata = NULL;
+      metadata = g_list_append(metadata, (gpointer)ckey);
+      metadata = g_list_append(metadata, (gpointer)cvalue);
+
+      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
+
+      g_list_free_full(metadata, g_free);
+      g_list_free(imgs);
+      if(undo_on)
       {
-        GList *undo = NULL;
-        if(group_on) dt_grouping_add_grouped_images(&imgs);
-        if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+        dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+        dt_undo_end_group(darktable.undo);
+      }
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    }
+  }
+}
 
-        const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
-        const gchar *cvalue = _cleanup_metadata_value(value);
-        GList *metadata = NULL;
-        metadata = g_list_append(metadata, (gpointer)ckey);
-        metadata = g_list_append(metadata, (gpointer)cvalue);
+void dt_metadata_set_import(const int imgid, const char *key, const char *value)
+{
+  if(!key || !imgid) return;
 
-        _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
-
-        g_list_free_full(metadata, g_free);
-        g_list_free(imgs);
-        if(undo_on)
+  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  {
+    int keyid = dt_metadata_get_keyid(key);
+    if(keyid != -1) // known key
+    {
+      gboolean imported = TRUE;
+      if(dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
+      {
+        const gchar *name = dt_metadata_get_name(keyid);
+        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+        const uint32_t flag = dt_conf_get_int(setting);
+        imported = !(flag & DT_METADATA_FLAG_HIDDEN) && (flag & DT_METADATA_FLAG_IMPORTED);
+        g_free(setting);
+      }
+      if(imported)
+      {
+        GList *imgs = NULL;
+        if(imgid == -1)
+          imgs = dt_collection_get_selected(darktable.collection, -1);
+        else
+          imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+        if(imgs)
         {
-          dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
-          dt_undo_end_group(darktable.undo);
+          GList *undo = NULL;
+
+          const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+          const gchar *cvalue = _cleanup_metadata_value(value);
+          GList *metadata = NULL;
+          metadata = g_list_append(metadata, (gpointer)ckey);
+          metadata = g_list_append(metadata, (gpointer)cvalue);
+
+          _metadata_execute(imgs, metadata, &undo, FALSE, DT_MA_ADD);
+
+          g_list_free_full(metadata, g_free);
+          g_list_free(imgs);
+          dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
         }
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
       }
     }
   }
@@ -620,8 +659,8 @@ void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean g
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-      const gboolean hidden = dt_conf_get_bool(setting);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
       if(!hidden)
       {
