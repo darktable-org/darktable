@@ -182,3 +182,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTAL
 # Install bash completion file. users/packagers can symlink that to /etc/bash_completion.d/
 #
 install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
+#
+# Install midi device configs
+#
+FILE(GLOB MIDIRCS "midi/midirc-*")
+install(FILES ${MIDIRCS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/midi COMPONENT DTApplication)
