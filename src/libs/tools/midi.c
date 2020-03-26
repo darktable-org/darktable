@@ -255,7 +255,7 @@ void midi_config_load(MidiDevice *midi)
   f = g_fopen(midipath, "rb");
   
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(midipath, sizeof(midipath), "%s/midirc-%s", datadir, midi->model_name);
+  snprintf(midipath, sizeof(midipath), "%s/midi/midirc-%s", datadir, midi->model_name);
 
   while (!f && strlen(midipath)>strlen(datadir))
   {
