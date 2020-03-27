@@ -1101,7 +1101,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
         collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
         g_free(name_folded_slash);
-        g_free(name_folded);
       }
       else
         collate_key = tag_collate_key(name_folded);
