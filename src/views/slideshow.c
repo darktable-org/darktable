@@ -107,7 +107,8 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       const gboolean export_masks)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
 
@@ -211,7 +212,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   {
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-                                 high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
+                                 high_quality, TRUE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_DISPLAY,
                                  NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
 
     // lock to copy back into the slot the rendered buffer, not that this is done only if
