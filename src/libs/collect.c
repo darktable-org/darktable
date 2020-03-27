@@ -1076,7 +1076,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     prequery = (sort_descend && g_str_has_suffix(prequery,"ASC")) 
           ? strcat(g_strndup(prequery,strlen(prequery) - 3),"DESC") : prequery;
-    const gchar *query=g_strndup(prequery,strlen(prequery));
+    gchar *query=g_strndup(prequery,strlen(prequery));
     g_free(where_ext);
     g_free(prequery);       
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1112,6 +1112,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       sorted_names = g_list_prepend(sorted_names, tuple);
     }
     sqlite3_finalize(stmt);
+    free(query);
 
     sorted_names = g_list_sort(sorted_names,(sort_descend && (folders || days || times)) 
         ? neg_sort_folder_tag : sort_folder_tag);
