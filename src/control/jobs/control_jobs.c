@@ -65,7 +65,7 @@ typedef struct dt_control_export_t
   int max_width, max_height, format_index, storage_index;
   dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export
   // is dispatched, but we have to keep that information
-  gboolean high_quality, upscale;
+  gboolean high_quality, upscale, export_masks;
   char style[128];
   gboolean style_append;
   dt_colorspaces_color_profile_type_t icc_type;
@@ -319,7 +319,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
                                         const void *const ivoid,
                                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
                                         void *exif, int exif_len, int imgid, int num, int total,
-                                        dt_dev_pixelpipe_t *pipe)
+                                        dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
@@ -475,8 +475,8 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE,
-                                 FALSE, "pre:rawprepare", FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
-                                 num, total, NULL);
+                                 FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                 NULL, num, total, NULL);
 
     t = g_list_next(t);
 
@@ -1299,8 +1299,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       {
         dt_image_cache_read_release(darktable.image_cache, image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale,
-                           settings->icc_type, settings->icc_filename, settings->icc_intent,
-                          &metadata) != 0)
+                           settings->export_masks, settings->icc_type, settings->icc_filename, settings->icc_intent,
+                           &metadata) != 0)
           dt_control_job_cancel(job);
       }
     }
@@ -1706,7 +1706,7 @@ static void dt_control_export_cleanup(void *p)
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
+                       gboolean high_quality, gboolean upscale, gboolean export_masks, char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export)
 {
@@ -1740,6 +1740,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   }
   data->sdata = sdata;
   data->high_quality = high_quality;
+  data->export_masks = export_masks;
   data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;

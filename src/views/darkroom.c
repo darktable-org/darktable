@@ -1080,6 +1080,7 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   const gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const gboolean export_masks = dt_conf_get_bool("plugins/lighttable/export/export_masks");
   const gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -1089,8 +1090,8 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   gchar *metadata_export = dt_lib_export_metadata_get_conf();
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
-                    icc_type, icc_filename, icc_intent, metadata_export);
+  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks, style,
+                    style_append, icc_type, icc_filename, icc_intent, metadata_export);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);

@@ -14,6 +14,7 @@ Options:
     --bpp <bpp>
     --hq <0|1|false|true>
     --upscale <0|1|false|true>
+    --export_masks <0|1|false|true>
     --style <style name>
     --style-overwrite
     --apply-custom-presets <0|1|false|true>
@@ -82,6 +83,12 @@ Defaults to true.
 =item B<< --upscale <0|1|true|false>  >>
 
 A flag that defines whether to allow upscaling during export.
+Defaults to false.
+
+=item B<< --export_masks <0|1|true|false>  >>
+
+A flag that defines whether masks used in the image will be stored as layers in the
+exported image (provided the format supports it).
 Defaults to false.
 
 =item B<< --style <style name>  >>
