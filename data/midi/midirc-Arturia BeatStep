@@ -5,6 +5,7 @@ rating_key_light=8
 reset_knob_key=-1
 first_knob_key=-1
 num_rotators=-100
+LED_ring_behavior_channel=-1
 LED_ring_behavior_off=0
 LED_ring_behavior_pan=0
 LED_ring_behavior_fan=0

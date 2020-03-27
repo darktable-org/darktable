@@ -145,6 +145,7 @@ typedef struct MidiDevice
   gint            num_rotators;
   gint            last_known[128];
 
+  gint            LED_ring_behavior_channel;
   gint            LED_ring_behavior_off;
   gint            LED_ring_behavior_pan;
   gint            LED_ring_behavior_fan;
@@ -180,6 +181,7 @@ void midi_config_save(MidiDevice *midi)
   g_fprintf(f, "reset_knob_key=%d\n", midi->reset_knob_key);
   g_fprintf(f, "first_knob_key=%d\n", midi->first_knob_key);
   g_fprintf(f, "num_rotators=%d\n", midi->num_rotators);
+  g_fprintf(f, "LED_ring_behavior_channel=%d\n", midi->LED_ring_behavior_channel);
   g_fprintf(f, "LED_ring_behavior_off=%d\n", midi->LED_ring_behavior_off);
   g_fprintf(f, "LED_ring_behavior_pan=%d\n", midi->LED_ring_behavior_pan);
   g_fprintf(f, "LED_ring_behavior_fan=%d\n", midi->LED_ring_behavior_fan);
@@ -222,26 +224,6 @@ void midi_config_load(MidiDevice *midi)
 {
   midi->config_loaded = TRUE;
 
-  if (strstr(midi->model_name, "X-TOUCH MINI"))
-  {
-    midi->group_switch_key = 16;
-    midi->group_key_light = 8;
-    midi->rating_key_light = 0;
-    midi->reset_knob_key = 0;
-    midi->first_knob_key = 1;
-    midi->num_rotators = 8;
-    midi->LED_ring_behavior_off = 0;
-    midi->LED_ring_behavior_pan = 1;
-    midi->LED_ring_behavior_fan = 2;
-    midi->LED_ring_behavior_trim = 4;
-  }
-  else if (strstr(midi->model_name, "Arturia BeatStep"))
-  {
-    midi->group_switch_key = 0;
-    midi->group_key_light = 0;
-    midi->rating_key_light = 8;
-  }
-
   FILE *f = 0;
 
   int read = 0;
@@ -279,6 +261,7 @@ void midi_config_load(MidiDevice *midi)
     if (sscanf(buffer, "reset_knob_key=%d\n", &midi->reset_knob_key) == 1) continue;
     if (sscanf(buffer, "first_knob_key=%d\n", &midi->first_knob_key) == 1) continue;
     if (sscanf(buffer, "num_rotators=%d\n", &midi->num_rotators) == 1) continue;
+    if (sscanf(buffer, "LED_ring_behavior_channel=%d\n", &midi->LED_ring_behavior_channel) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_off=%d\n", &midi->LED_ring_behavior_off) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_pan=%d\n", &midi->LED_ring_behavior_pan) == 1) continue;
     if (sscanf(buffer, "LED_ring_behavior_fan=%d\n", &midi->LED_ring_behavior_fan) == 1) continue;
@@ -447,14 +430,16 @@ void refresh_sliders_to_device(MidiDevice *midi)
           }
 
           // For Behringer; set pattern of rotator lights
-          if (k->key < 9)
+          if (k->key >= midi->first_knob_key && 
+              k->key <= midi->num_rotators && 
+              midi->LED_ring_behavior_channel >= 0)
           {
             if (min == -max)
-              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_trim);
+              midi_write(midi, midi->LED_ring_behavior_channel, 0xB, k->key, midi->LED_ring_behavior_trim);
             else if (min == 0 && (max == 1 || max == 100))
-              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_fan);
+              midi_write(midi, midi->LED_ring_behavior_channel, 0xB, k->key, midi->LED_ring_behavior_fan);
             else
-              midi_write(midi, 0, 0xB, k->key, midi->LED_ring_behavior_pan);
+              midi_write(midi, midi->LED_ring_behavior_channel, 0xB, k->key, midi->LED_ring_behavior_pan);
           }
         }
       }
@@ -884,7 +869,10 @@ void note_on(MidiDevice *midi, gint channel, gint note)
     // try to initialise rotator lights off
     for (gint knob = midi->first_knob_key; knob <= midi->num_rotators; knob++)
     {
-      midi_write(midi,       0, 0xB, knob, midi->LED_ring_behavior_off); // set single pattern on x-touch mini
+      if (midi->LED_ring_behavior_channel >= 0)
+      {
+        midi_write(midi, midi->LED_ring_behavior_channel, 0xB, knob, midi->LED_ring_behavior_off); // set single pattern on x-touch mini
+      }
       midi_write(midi, channel, 0xB, knob, 0);
       midi->last_known[knob] = 0; 
     }
@@ -1511,6 +1499,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->first_knob_key   = -1;
     midi->num_rotators     = -100;
 
+    midi->LED_ring_behavior_channel = -1;
     midi->LED_ring_behavior_off = 0;
     midi->LED_ring_behavior_pan = 0;
     midi->LED_ring_behavior_fan = 0;
