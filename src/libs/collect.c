@@ -1112,7 +1112,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       sorted_names = g_list_prepend(sorted_names, tuple);
     }
     sqlite3_finalize(stmt);
-    g_free(query);
 
     sorted_names = g_list_sort(sorted_names,(sort_descend && (folders || days || times)) 
         ? neg_sort_folder_tag : sort_folder_tag);
