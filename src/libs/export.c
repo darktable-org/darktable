@@ -40,9 +40,10 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE(6)
+DT_MODULE(7)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
+#define CONFIG_PREFIX "plugins/lighttable/export/"
 
 typedef struct dt_lib_export_t
 {
@@ -53,6 +54,7 @@ typedef struct dt_lib_export_t
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
+  GtkWidget *export_masks;
   GtkWidget *metadata_button;
   char *metadata_export;
 } dt_lib_export_t;
@@ -87,13 +89,13 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
-  int max_width = dt_conf_get_int("plugins/lighttable/export/width");
-  int max_height = dt_conf_get_int("plugins/lighttable/export/height");
+  int max_width = dt_conf_get_int(CONFIG_PREFIX "width");
+  int max_height = dt_conf_get_int(CONFIG_PREFIX "height");
 
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
   // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
-  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
-  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
+  char *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
 
@@ -137,18 +139,19 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     }
   }
 
-  gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
-  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
-  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
+  gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
+  gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
+  char *tmp = dt_conf_get_string(CONFIG_PREFIX "style");
+  gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
   if(tmp)
   {
     g_strlcpy(style, tmp, sizeof(style));
     g_free(tmp);
   }
-  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
   const int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
@@ -158,22 +161,10 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   else
     list = dt_collection_get_selected(darktable.collection, -1);
 
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale,
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
   g_free(icc_filename);
-}
-
-static void width_changed(GtkSpinButton *spin, gpointer user_data)
-{
-  int value = gtk_spin_button_get_value(spin);
-  dt_conf_set_int("plugins/lighttable/export/width", value);
-}
-
-static void height_changed(GtkSpinButton *spin, gpointer user_data)
-{
-  int value = gtk_spin_button_get_value(spin);
-  dt_conf_set_int("plugins/lighttable/export/height", value);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -181,23 +172,24 @@ void gui_reset(dt_lib_module_t *self)
   // make sure we don't do anything useless:
   if(!dt_control_running()) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  gtk_spin_button_set_value(d->width, dt_conf_get_int("plugins/lighttable/export/width"));
-  gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
+  gtk_spin_button_set_value(d->width, dt_conf_get_int(CONFIG_PREFIX "width"));
+  gtk_spin_button_set_value(d->height, dt_conf_get_int(CONFIG_PREFIX "height"));
 
   // Set storage
-  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   g_free(storage_name);
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
-  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0);
+  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0);
+  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0);
+  dt_bauhaus_combobox_set(d->export_masks, dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0);
 
-  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int(CONFIG_PREFIX "iccintent") + 1);
 
   // iccprofile
-  int icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  int icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_bauhaus_combobox_set(d->profile, 0);
   if(icctype != DT_COLORSPACE_NONE)
   {
@@ -218,7 +210,7 @@ void gui_reset(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   gboolean rc = FALSE;
-  gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
+  gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
   if(style != NULL)
   {
     rc = dt_bauhaus_combobox_set_from_text(d->style, style);
@@ -229,12 +221,12 @@ void gui_reset(dt_lib_module_t *self)
     dt_bauhaus_combobox_set(d->style, 0);
 
   // style mode to overwrite as it was the initial behavior
-  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool("plugins/lighttable/export/style_append"));
+  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool(CONFIG_PREFIX "style_append"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
-  if (d->metadata_export) g_free(d->metadata_export);
+  g_free(d->metadata_export);
   d->metadata_export = dt_lib_export_metadata_get_conf();
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
@@ -247,35 +239,59 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
 {
   // Find the selected format plugin among all existing plugins
   dt_imageio_module_format_t *module = NULL;
-  GList *it = g_list_first(darktable.imageio->plugins_format);
-  if(it != NULL) do
+  for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
+  {
+    if(g_strcmp0(((dt_imageio_module_format_t *)it->data)->name(), name) == 0
+        || g_strcmp0(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
     {
-      if(g_strcmp0(((dt_imageio_module_format_t *)it->data)->name(), name) == 0
-         || g_strcmp0(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
-      {
-        module = (dt_imageio_module_format_t *)it->data;
-        break;
-      }
-    } while((it = g_list_next(it)));
+      module = (dt_imageio_module_format_t *)it->data;
+      break;
+    }
+  }
 
-  if(!module) {
+  if(!module)
+  {
     gtk_widget_hide(d->format_extra_container);
     return;
-  } else if(module->widget) {
+  }
+  else if(module->widget)
+  {
     gtk_widget_show_all(d->format_extra_container);
     gtk_stack_set_visible_child(GTK_STACK(d->format_extra_container), module->widget);
-  } else {
+  }
+  else
+  {
     gtk_widget_hide(d->format_extra_container);
   }
 
   // Store the new format
-  dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
+  dt_conf_set_string(CONFIG_PREFIX "format_name", module->plugin_name);
 
   if(dt_bauhaus_combobox_set_from_text(d->format, module->name()) == FALSE)
     dt_bauhaus_combobox_set(d->format, 0);
 
   // Let's also update combination of storage/format dimension restrictions
   _update_dimensions(d);
+
+  // only some modules support export of masks
+  // set it to 0 when insensitive and restore when making it sensitive again. this doesn't survive dt restarts.
+  const gboolean support_layers = (module->flags(NULL) & FORMAT_FLAGS_SUPPORT_LAYERS) == FORMAT_FLAGS_SUPPORT_LAYERS;
+  const gboolean is_enabled = gtk_widget_get_sensitive(d->export_masks);
+  if(support_layers && !is_enabled)
+  {
+    // combobox was disabled and shall be enabled. we want to restore the old setting.
+    const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
+    gtk_widget_set_sensitive(d->export_masks, TRUE);
+    dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
+  }
+  else if(!support_layers && is_enabled)
+  {
+    // combobox was enabled but shall be disabled. we want to save the current setting.
+    const int export_masks = dt_bauhaus_combobox_get(d->export_masks);
+    dt_bauhaus_combobox_set(d->export_masks, 0);
+    dt_conf_set_bool(CONFIG_PREFIX "export_masks", export_masks == 1);
+    gtk_widget_set_sensitive(d->export_masks, FALSE);
+  }
 }
 
 static void format_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -288,10 +304,10 @@ static void format_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height)
 {
-  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
   g_free(storage_name);
-  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
   g_free(format_name);
   if(storage && format)
@@ -347,7 +363,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
     gtk_widget_hide(d->storage_extra_container);
   }
   dt_bauhaus_combobox_set(d->storage, k);
-  dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
+  dt_conf_set_string(CONFIG_PREFIX "storage_name", module->plugin_name);
 
 
   // Check if plugin recommends a max dimension and set
@@ -355,8 +371,8 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   uint32_t w = 0, h = 0;
   module->recommended_dimension(module, NULL, &w, &h);
 
-  const uint32_t cw = dt_conf_get_int("plugins/lighttable/export/width");
-  const uint32_t ch = dt_conf_get_int("plugins/lighttable/export/height");
+  const uint32_t cw = dt_conf_get_int(CONFIG_PREFIX "width");
+  const uint32_t ch = dt_conf_get_int(CONFIG_PREFIX "height");
 
   // If user's selected value is below the max, select it
   if(w > cw || w == 0) w = cw;
@@ -370,7 +386,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   _update_formats_combobox(d);
 
   // Lets try to set selected format if fail select first in list..
-  gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  gchar *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
   g_free(format_name);
   if(format == NULL || dt_bauhaus_combobox_set_from_text(d->format, format->name()) == FALSE)
@@ -396,58 +412,50 @@ static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
       dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
       if(pp->out_pos == pos)
       {
-        dt_conf_set_int("plugins/lighttable/export/icctype", pp->type);
+        dt_conf_set_int(CONFIG_PREFIX "icctype", pp->type);
         if(pp->type == DT_COLORSPACE_FILE)
-          dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
+          dt_conf_set_string(CONFIG_PREFIX "iccprofile", pp->filename);
         else
-          dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
+          dt_conf_set_string(CONFIG_PREFIX "iccprofile", "");
         return;
       }
     }
   }
-  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_NONE);
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
+  dt_conf_set_int(CONFIG_PREFIX "icctype", DT_COLORSPACE_NONE);
+  dt_conf_set_string(CONFIG_PREFIX "iccprofile", "");
 }
 
-static void upscale_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void size_changed(GtkSpinButton *spin, gpointer user_data)
 {
-  const int pos = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_bool("plugins/lighttable/export/upscale", pos == 1);
+  const char *key = (const char *)user_data;
+  dt_conf_set_int(key, gtk_spin_button_get_value(spin));
 }
 
-static void high_quality_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _callback_bool(GtkWidget *widget, gpointer user_data)
 {
-  const int pos = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_bool("plugins/lighttable/export/high_quality_processing", pos == 1);
+  const char *key = (const char *)user_data;
+  dt_conf_set_bool(key, dt_bauhaus_combobox_get(widget) == 1);
 }
 
 static void intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
+  dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
 }
 
 static void style_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   if(dt_bauhaus_combobox_get(d->style) == 0)
   {
-    dt_conf_set_string("plugins/lighttable/export/style", "");
+    dt_conf_set_string(CONFIG_PREFIX "style", "");
     gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), FALSE);
   }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(d->style);
-    dt_conf_set_string("plugins/lighttable/export/style", style);
+    dt_conf_set_string(CONFIG_PREFIX "style", style);
     gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), TRUE);
   }
-}
-
-static void style_mode_changed(GtkComboBox *widget, dt_lib_export_t *d)
-{
-  if(dt_bauhaus_combobox_get(d->style_mode) == 0)
-    dt_conf_set_bool("plugins/lighttable/export/style_append", FALSE);
-  else
-    dt_conf_set_bool("plugins/lighttable/export/style_append", TRUE);
 }
 
 int position()
@@ -461,7 +469,7 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   dt_bauhaus_combobox_clear(d->format);
 
   // Get current selected storage
-  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
   g_free(storage_name);
 
@@ -533,7 +541,7 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
 static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
-  const gboolean ondisk = name && !g_strcmp0(name, _("file on disk"));
+  const gboolean ondisk = name && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
   d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
 }
 
@@ -636,6 +644,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->high_quality, _("do high quality resampling during export"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->high_quality, FALSE, TRUE, 0);
 
+  d->export_masks = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->export_masks, NULL, _("store masks"));
+  dt_bauhaus_combobox_add(d->export_masks, _("no"));
+  dt_bauhaus_combobox_add(d->export_masks, _("yes"));
+  gtk_widget_set_tooltip_text(d->export_masks, _("store masks as layers in exported images. only works for some formats."));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->export_masks, FALSE, TRUE, 0);
+
   //  Add profile combo
 
   char datadir[PATH_MAX] = { 0 };
@@ -699,12 +714,17 @@ void gui_init(dt_lib_module_t *self)
 
   //  Set callback signals
 
-  g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(upscale_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->high_quality), "value-changed", G_CALLBACK(high_quality_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(_callback_bool),
+                   (gpointer)CONFIG_PREFIX "upscale");
+  g_signal_connect(G_OBJECT(d->high_quality), "value-changed", G_CALLBACK(_callback_bool),
+                   (gpointer)CONFIG_PREFIX "high_quality_processing");
+  g_signal_connect(G_OBJECT(d->export_masks), "value-changed", G_CALLBACK(_callback_bool),
+                   (gpointer)CONFIG_PREFIX "export_masks");
   g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(style_mode_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
+                   (gpointer)CONFIG_PREFIX "style_append");
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
@@ -725,8 +745,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
-  g_signal_connect(G_OBJECT(d->height), "value-changed", G_CALLBACK(height_changed), NULL);
+  g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(size_changed), CONFIG_PREFIX "width");
+  g_signal_connect(G_OBJECT(d->height), "value-changed", G_CALLBACK(size_changed), CONFIG_PREFIX "height");
   g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(metadata_export_clicked), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
@@ -760,7 +780,7 @@ void gui_cleanup(dt_lib_module_t *self)
     if(module->widget) gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   } while((it = g_list_next(it)));
 
-  if (d->metadata_export) g_free(d->metadata_export);
+  g_free(d->metadata_export);
 
   free(self->data);
   self->data = NULL;
@@ -774,15 +794,14 @@ void init_presets(dt_lib_module_t *self)
 
 
   // I know that it is super ugly to have this inside a module, but then is export not your average module
-  // since it
-  // handles the params blobs of imageio libs.
+  // since it handles the params blobs of imageio libs.
   // - get all existing presets for export from db,
   // - extract the versions of the embedded format/storage blob
   // - check if it's up to date
   // - if older than the module -> call its legacy_params and update the preset
   // - drop presets that cannot be updated
 
-  int version = self->version();
+  const int version = self->version();
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -814,7 +833,7 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 5*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
+      // skip 6*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
       buf += 6 * sizeof(int32_t);
       // skip metadata presets string
       buf += strlen(buf) + 1;
@@ -966,10 +985,8 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     // copy everything until here to the new params
     size_t first_half = (void *)buf - (void *)old_params;
     memcpy(new_params, old_params, first_half);
-    // add the versions. at the time this code was added all modules were at version 1, except of picasa which
-    // was at 2.
-    // every newer version of the imageio modules should result in a preset that is not going through this
-    // code.
+    // add the versions. at the time this code was added all modules were at version 1, except of picasa which was at 2.
+    // every newer version of the imageio modules should result in a preset that is not going through this code.
     int32_t fversion = 1;
     int32_t sversion = (strcmp(sname, "picasa") == 0 ? 2 : 1);
     memcpy(new_params + first_half, &fversion, sizeof(int32_t));
@@ -1075,6 +1092,17 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   else if(old_version == 5)
   {
     // add metadata preset string
+
+    // format of v5:
+    //  - 6 x int32_t (max_width, max_height, upscale, high_quality, iccintent, icctype)
+    //  - char* (iccfilename)
+    //  - old rest
+    // format of v6:
+    //  - 6 x int32_t (max_width, max_height, upscale, high_quality, iccintent, icctype)
+    //  - char* (metadata_export)
+    //  - char* (iccfilename)
+    //  - old rest
+
     const gboolean omit = dt_conf_get_bool("omit_tag_hierarchy");
     char *flags = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
     const int flags_size = strlen(flags) + 1;
@@ -1092,6 +1120,29 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_version = 6;
     return new_params;
   }
+  else if(old_version == 6)
+  {
+    // add export_masks
+
+    // format of v6:
+    //  - 6 x int32_t (max_width, max_height, upscale, high_quality, iccintent, icctype)
+    //  - old rest
+    // format of v7:
+    //  - 7 x int32_t (max_width, max_height, upscale, high_quality, export_masks, iccintent, icctype)
+    //  - old rest
+
+    const size_t new_params_size = old_params_size + sizeof(int32_t);
+    void *new_params = calloc(1, new_params_size);
+
+    size_t pos = 0;
+    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    pos += 5 * sizeof(int32_t);
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 4 * sizeof(int32_t));
+
+    *new_size = new_params_size;
+    *new_version = 7;
+    return new_params;
+  }
 
   return NULL;
 }
@@ -1104,7 +1155,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(!mformat || !mstorage) return NULL;
 
-  // size will be only as large as to remove random pointers from params (stored at the end).
+  // size will be only as large as needed to remove random pointers from params (stored at the end).
   size_t fsize = mformat->params_size(mformat);
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
   size_t ssize = mstorage->params_size(mstorage);
@@ -1127,15 +1178,16 @@ void *get_params(dt_lib_module_t *self, int *size)
   // TODO: get this stuff from gui and not from conf, so it will be sanity-checked (you can never delete an
   // insane preset)?
   // also store icc profile/intent here.
-  const int32_t iccintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  const int32_t icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
-  const int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
-  const int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
-  const int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
-  const int32_t high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0;
-  gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
-  const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  const int32_t iccintent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
+  const int32_t icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  const int32_t max_width = dt_conf_get_int(CONFIG_PREFIX "width");
+  const int32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
+  const int32_t upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0;
+  const int32_t high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0;
+  const int32_t export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0;
+  gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
+  gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
+  const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
   const char *metadata_export = d->metadata_export;
 
   if(fdata)
@@ -1154,7 +1206,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
+  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
           + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
 
   char *params = (char *)calloc(1, *size);
@@ -1166,6 +1218,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &upscale, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &high_quality, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &export_masks, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &iccintent, sizeof(int32_t));
   pos += sizeof(int32_t);
@@ -1221,13 +1275,15 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const int high_quality = *(const int *)buf;
   buf += sizeof(int32_t);
+  const int export_masks = *(const int *)buf;
+  buf += sizeof(int32_t);
   const int iccintent = *(const int *)buf;
   buf += sizeof(int32_t);
   const int icctype = *(const int *)buf;
   buf += sizeof(int32_t);
   const char *metadata_export = buf;
   buf += strlen(metadata_export) + 1;
-  if (d->metadata_export) g_free(d->metadata_export);
+  g_free(d->metadata_export);
   d->metadata_export = g_strdup(metadata_export);
   dt_lib_export_metadata_set_conf(d->metadata_export);
   const char *iccfilename = buf;
@@ -1273,7 +1329,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   if(size
-     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
+     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
         + strlen(iccfilename) + 1 + strlen(metadata_export) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
@@ -1298,6 +1354,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   gtk_spin_button_set_value(d->height, max_height);
   dt_bauhaus_combobox_set(d->upscale, upscale ? 1 : 0);
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
+  dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
 
   // propagate to modules
   int res = 0;

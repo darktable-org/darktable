@@ -178,7 +178,8 @@ int write_image(struct dt_imageio_module_data_t *data,
                 int imgid,
                 int num,
                 int total,
-                struct dt_dev_pixelpipe_t *pipe)
+                struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   dt_imageio_avif_t *d = (dt_imageio_avif_t *)data;
 
