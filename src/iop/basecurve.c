@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
 #include <assert.h>
@@ -175,6 +176,40 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+typedef struct dt_iop_basecurve_gui_data_t
+{
+  dt_draw_curve_t *minmax_curve; // curve for gui to draw
+  int minmax_curve_type, minmax_curve_nodes;
+  GtkBox *hbox;
+  GtkDrawingArea *area;
+  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
+  GtkWidget *cmb_preserve_colors;
+  double mouse_x, mouse_y;
+  int selected;
+  int timeout_handle;
+  double selected_offset, selected_y, selected_min, selected_max;
+  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+  int loglogscale;
+} dt_iop_basecurve_gui_data_t;
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "exposure fusion"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
+  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
+  dt_accel_connect_combobox_iop(self, "exposure fusion", GTK_WIDGET(g->fusion));
+}
+
 static const char neutral[] = N_("neutral");
 static const char canon_eos[] = N_("canon eos like");
 static const char canon_eos_alt[] = N_("canon eos like alternate");
@@ -269,24 +304,6 @@ static const basecurve_preset_t basecurve_presets[] = {
 };
 #undef m
 static const int basecurve_presets_cnt = sizeof(basecurve_presets) / sizeof(basecurve_preset_t);
-
-typedef struct dt_iop_basecurve_gui_data_t
-{
-  dt_draw_curve_t *minmax_curve; // curve for gui to draw
-  int minmax_curve_type, minmax_curve_nodes;
-  GtkBox *hbox;
-  GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
-  GtkWidget *cmb_preserve_colors;
-  double mouse_x, mouse_y;
-  int selected;
-  int timeout_handle;
-  double selected_offset, selected_y, selected_min, selected_max;
-  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
-  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
-  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
-  int loglogscale;
-} dt_iop_basecurve_gui_data_t;
 
 typedef struct dt_iop_basecurve_data_t
 {

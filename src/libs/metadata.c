@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,25 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+}
+
+void init(dt_lib_module_t *self)
+{
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const int type = dt_metadata_get_type(i);
+    if(type == DT_METADATA_TYPE_OPTIONAL)
+    {
+      const char *name = (gchar *)dt_metadata_get_name(i);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+      if(!dt_conf_key_exists(setting))
+      {
+        // per default this one should be hidden
+        dt_conf_set_bool(setting, TRUE);
+      }
+      g_free(setting);
+    }
+  }
 }
 
 static gboolean _is_leave_unchanged(const char *text)
@@ -224,6 +243,7 @@ static void write_metadata(dt_lib_module_t *self)
   g_list_free(key_value);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);
@@ -311,7 +331,8 @@ static void update_layout(dt_lib_module_t *self)
     const gchar *name = dt_metadata_get_name_by_display_order(i);
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
     const gboolean hidden = dt_conf_get_bool(setting);
-    if(hidden)
+    const int type = dt_metadata_get_type_by_display_order(i);
+    if(hidden || type == DT_METADATA_TYPE_INTERNAL)
     {
       for(int j = 0; j < 2; j++)
       {
@@ -408,8 +429,14 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
   label = gtk_label_new(_("hidden"));
   gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
+            _("tick if the corresponding metadata is of no interest for you"
+              "\nit will be hidden from metadata editor, collection, image information and import module"
+              "\nneither will it be exported"));
   label = gtk_label_new(_("private"));
   gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
+            _("tick if you want to keep this information private (not exported with images)"));
   gchar *name[DT_METADATA_NUMBER];
   GtkWidget *hidden[DT_METADATA_NUMBER];
   GtkWidget *private[DT_METADATA_NUMBER];
@@ -417,25 +444,29 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   gboolean private_v[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
-    label = gtk_label_new(_(name[i]));
-    gtk_grid_attach(GTK_GRID(grid), label, 0, i+1, 1, 1);
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_widget_set_hexpand(label, TRUE);
-    hidden[i] = gtk_check_button_new();
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
-    hidden_v[i] = dt_conf_get_bool(setting);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hidden[i]), hidden_v[i]);
-    gtk_grid_attach(GTK_GRID(grid), hidden[i], 1, i+1, 1, 1);
-    gtk_widget_set_halign(hidden[i], GTK_ALIGN_CENTER);
-    g_free(setting);
-    private[i] = gtk_check_button_new();
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
-    private_v[i] = dt_conf_get_bool(setting);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), private_v[i]);
-    gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
-    gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
-    g_free(setting);
+    const int type = dt_metadata_get_type_by_display_order(i);
+    if(type != DT_METADATA_TYPE_INTERNAL)
+    {
+      name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
+      label = gtk_label_new(_(name[i]));
+      gtk_grid_attach(GTK_GRID(grid), label, 0, i+1, 1, 1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_widget_set_hexpand(label, TRUE);
+      hidden[i] = gtk_check_button_new();
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
+      hidden_v[i] = dt_conf_get_bool(setting);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hidden[i]), hidden_v[i]);
+      gtk_grid_attach(GTK_GRID(grid), hidden[i], 1, i+1, 1, 1);
+      gtk_widget_set_halign(hidden[i], GTK_ALIGN_CENTER);
+      g_free(setting);
+      private[i] = gtk_check_button_new();
+      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
+      private_v[i] = dt_conf_get_bool(setting);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), private_v[i]);
+      gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
+      gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
+      g_free(setting);
+    }
   }
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -445,17 +476,31 @@ static void config_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
+    gboolean meta_signal = FALSE;
+    gboolean meta_remove = FALSE;
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
-      const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
-      if(hidden_nv !=  hidden_v[i]) dt_conf_set_bool(setting, hidden_nv);
-      g_free(setting);
-      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
-      const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
-      if(private_nv != private_v[i]) dt_conf_set_bool(setting, private_nv);
-      g_free(setting);
+      const int type = dt_metadata_get_type_by_display_order(i);
+      if(type != DT_METADATA_TYPE_INTERNAL)
+      {
+        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name[i]);
+        const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
+        if(hidden_nv !=  hidden_v[i])
+        {
+          dt_conf_set_bool(setting, hidden_nv);
+          meta_signal = TRUE;
+          meta_remove =  hidden_nv ? TRUE : meta_remove;
+        }
+        g_free(setting);
+        setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_private", name[i]);
+        const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
+        if(private_nv != private_v[i]) dt_conf_set_bool(setting, private_nv);
+        g_free(setting);
+      }
     }
+    if(meta_signal)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+                              meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);
   gtk_widget_destroy(dialog);

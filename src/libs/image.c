@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ uint32_t container(dt_lib_module_t *self)
 static void _group_helper_function(void)
 {
   int new_group_id = darktable.gui->expanded_group_id;
+  GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
@@ -95,19 +96,21 @@ static void _group_helper_function(void)
     int id = sqlite3_column_int(stmt, 0);
     if(new_group_id == -1) new_group_id = id;
     dt_grouping_add_to_group(new_group_id, id);
+    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
   if(darktable.gui->grouping)
     darktable.gui->expanded_group_id = new_group_id;
   else
     darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
 }
 
 /** removes the selected images from their current group. */
 static void _ungroup_helper_function(void)
 {
+  GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
@@ -115,10 +118,11 @@ static void _ungroup_helper_function(void)
   {
     int id = sqlite3_column_int(stmt, 0);
     dt_grouping_remove_from_group(id);
+    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
   darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
 }
 
@@ -233,7 +237,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(rating_flag)
   {
     const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
-    dt_ratings_apply(img, stars, FALSE, TRUE, TRUE);
+    dt_ratings_apply_on_image(img, stars, FALSE, TRUE, TRUE);
   }
   if(colors_flag)
   {
@@ -267,7 +271,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   if(undo_type)
   {
     dt_undo_end_group(darktable.undo);
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     dt_control_queue_redraw_center();
     dt_image_synch_xmp(img);
   }

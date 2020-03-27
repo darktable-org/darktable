@@ -109,6 +109,9 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/thumbnail.c"
+  "dtgtk/thumbnail_btn.c"
+  "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
@@ -319,7 +322,7 @@ if(USE_WEBP)
 endif(USE_WEBP)
 
 if (USE_AVIF)
-    find_package(libavif 0.5.2 CONFIG)
+    find_package(libavif 0.6.0 CONFIG)
     if (TARGET avif)
         list(APPEND LIBS avif)
         add_definitions(-DHAVE_LIBAVIF=1)
@@ -337,7 +340,18 @@ if(USE_LENSFUN)
   endif()
 endif()
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+find_package(Sqlite3 3.15 REQUIRED)
+if(NOT Sqlite3_VERSION VERSION_LESS 3.24)
+  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
+  message(STATUS "Sqlite3 version 3.24 or newer")
+else()
+  message(STATUS "Sqlite3 version older than 3.24, some features may be downgraded")
+endif()
+include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
+list(APPEND LIBS ${Sqlite3_LIBRARIES})
+add_definitions(${Sqlite3_DEFINITIONS})
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -745,6 +759,13 @@ if(BUILD_PRINT)
 else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
+
+if(USE_GAME)
+  add_definitions("-DHAVE_GAME")
+  message(STATUS "Game: the good knight")
+else(USE_GAME)
+  message(STATUS "Game: no")
+endif(USE_GAME)
 
 #
 # set development flags for our code

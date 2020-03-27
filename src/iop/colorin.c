@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable project.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
@@ -154,6 +155,22 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "input profile"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "working profile"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "gamut clipping"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "input profile", GTK_WIDGET(g->profile_combobox));
+  dt_accel_connect_combobox_iop(self, "working profile", GTK_WIDGET(g->work_combobox));
+  dt_accel_connect_combobox_iop(self, "gamut clipping", GTK_WIDGET(g->clipping_combobox));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

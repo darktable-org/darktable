@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable project.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/presets.h"
+#include "gui/accelerators.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
@@ -140,6 +141,22 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation method"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "interpolation method", GTK_WIDGET(g->interpolator));
+  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->autoscale));
 }
 
 void init_presets(dt_iop_module_so_t *self)

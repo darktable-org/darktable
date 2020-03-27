@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2020 darktable project.
+  Copyright (C) 2016-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -523,6 +523,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "focal length"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop factor"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "aspect adjust"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guides"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "lens model"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -536,6 +539,9 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "focal length", GTK_WIDGET(g->f_length));
   dt_accel_connect_slider_iop(self, "crop factor", GTK_WIDGET(g->crop_factor));
   dt_accel_connect_slider_iop(self, "aspect adjust", GTK_WIDGET(g->aspect));
+  dt_accel_connect_combobox_iop(self, "guides", GTK_WIDGET(g->guide_lines));
+  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->cropmode));
+  dt_accel_connect_combobox_iop(self, "lens model", GTK_WIDGET(g->mode));
 }
 
 // multiply 3x3 matrix with 3x1 vector

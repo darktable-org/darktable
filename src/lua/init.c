@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable project.
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -115,11 +115,13 @@ static int run_early_script(lua_State* L)
   g_free(luarc);
   if(darktable.gui != NULL)
   {
+    darktable.gui->reset = 1;
     // run user init script
     dt_loc_get_user_config_dir(basedir, sizeof(basedir));
     luarc = g_build_filename(basedir, "luarc", NULL);
     dt_lua_check_print_error(L, luaL_dofile(L, luarc));
     g_free(luarc);
+    darktable.gui->reset = 0;
   }
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);

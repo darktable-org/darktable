@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,7 +509,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
       const gboolean hidden = dt_conf_get_bool(setting);
       g_free(setting);
-      if(hidden)
+      const int meta_type = dt_metadata_get_type(keyid);
+      if(meta_type == DT_METADATA_TYPE_INTERNAL || hidden)
       {
         gtk_widget_hide(GTK_WIDGET(d->name[md_xmp_metadata+i]));
         gtk_widget_hide(GTK_WIDGET(d->metadata[md_xmp_metadata+i]));

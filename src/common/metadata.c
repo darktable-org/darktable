@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,15 +38,16 @@ static const struct
 {
   char *key;
   char *name;
+  int type;
   uint32_t display_order;
 } dt_metadata_def[] = {
   // clang-format off
-  {"Xmp.dc.creator", N_("creator"), 2},
-  {"Xmp.dc.publisher", N_("publisher"), 3},
-  {"Xmp.dc.title", N_("title"), 0},
-  {"Xmp.dc.description", N_("description"), 1},
-  {"Xmp.dc.rights", N_("rights"), 4},
-  {"Xmp.acdsee.notes", N_("notes"), 5}
+  {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
+  {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
+  {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
+  {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
+  {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
+  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5}
   // clang-format on
 };
 
@@ -76,6 +77,19 @@ const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
   return -1;
 }
 
+const int dt_metadata_get_type_by_display_order(const uint32_t order)
+{
+  if(order < DT_METADATA_NUMBER)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      if(order == dt_metadata_def[i].display_order)
+        return dt_metadata_def[i].type;
+    }
+  }
+  return 0;
+}
+
 const char *dt_metadata_get_name(const uint32_t keyid)
 {
   if(keyid < DT_METADATA_NUMBER)
@@ -100,6 +114,14 @@ const char *dt_metadata_get_key(const uint32_t keyid)
     return dt_metadata_def[keyid].key;
   else
     return NULL;
+}
+
+const int dt_metadata_get_type(const uint32_t keyid)
+{
+  if(keyid < DT_METADATA_NUMBER)
+    return dt_metadata_def[keyid].type;
+  else
+    return 0;
 }
 
 typedef struct dt_undo_metadata_t
@@ -423,10 +445,33 @@ static void _metadata_add_metadata_to_list(GList **list, GList *metadata)
   }
 }
 
+static void _metadata_remove_metadata_from_list(GList **list, GList *metadata)
+{
+  // caution: metadata is a simple list here
+  GList *m = metadata;
+  while(m)
+  {
+    GList *same_key = g_list_find_custom(*list, m->data, _compare_metadata);
+    if(same_key)
+    {
+      // same key for that image - remove metadata item
+      GList *same2 = g_list_next(same_key);
+      *list = g_list_remove_link(*list, same_key);
+      g_free(same_key->data);
+      g_list_free(same_key);
+      *list = g_list_remove_link(*list, same2);
+      g_free(same2->data);
+      g_list_free(same2);
+    }
+    m = g_list_next(m);
+  }
+}
+
 typedef enum dt_tag_actions_t
 {
   DT_MA_SET = 0,
-  DT_MA_ADD
+  DT_MA_ADD,
+  DT_MA_REMOVE
 } dt_tag_actions_t;
 
 static void _metadata_execute(GList *imgs, GList *metadata, GList **undo, const gboolean undo_on, const gint action)
@@ -447,6 +492,10 @@ static void _metadata_execute(GList *imgs, GList *metadata, GList **undo, const 
       case DT_MA_ADD:
         undometadata->after = g_list_copy_deep(undometadata->before, (GCopyFunc)g_strdup, NULL);
         _metadata_add_metadata_to_list(&undometadata->after, metadata);
+        break;
+      case DT_MA_REMOVE:
+        undometadata->after = g_list_copy_deep(undometadata->before, (GCopyFunc)g_strdup, NULL);
+        _metadata_remove_metadata_from_list(&undometadata->after, metadata);
         break;
       default:
         undometadata->after = g_list_copy_deep(undometadata->before, (GCopyFunc)g_strdup, NULL);
@@ -556,32 +605,56 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
         dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
         dt_undo_end_group(darktable.undo);
       }
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     }
+    g_list_free_full(metadata, g_free);
   }
 }
 
 void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-  if(imgs)
+  // do not clear internal or hidden metadata
+  GList *metadata = NULL;
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
-
-    _metadata_execute(imgs, NULL, &undo, undo_on, DT_MA_SET);
-
-    g_list_free(imgs);
-    if(undo_on)
+    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
-      dt_undo_end_group(darktable.undo);
+      const gchar *name = dt_metadata_get_name(i);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
+      const gboolean hidden = dt_conf_get_bool(setting);
+      g_free(setting);
+      if(!hidden)
+      {
+        // caution: metadata is a simple list here
+        metadata = g_list_append(metadata, dt_util_dstrcat(NULL, "%d", i));
+      }
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  }
+
+  if(metadata)
+  {
+    GList *imgs = NULL;
+    if(imgid == -1)
+      imgs = dt_collection_get_selected(darktable.collection, -1);
+    else
+      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    if(imgs)
+    {
+      GList *undo = NULL;
+      if(group_on) dt_grouping_add_grouped_images(&imgs);
+      if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_REMOVE);
+
+      g_list_free(imgs);
+      if(undo_on)
+      {
+        dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+        dt_undo_end_group(darktable.undo);
+      }
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    }
+    g_list_free_full(metadata, g_free);
   }
 }
 

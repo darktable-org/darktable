@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,15 +91,6 @@ typedef struct dt_lib_import_metadata_t
   GtkWidget *metadata[DT_METADATA_NUMBER];
   GtkWidget *tags;
 } dt_lib_import_metadata_t;
-
-enum
-{
-  NAME_COLUMN,
-  CREATOR_COLUMN,
-  PUBLISHER_COLUMN,
-  RIGHTS_COLUMN,
-  N_COLUMNS
-};
 
 const char *name(dt_lib_module_t *self)
 {
@@ -507,7 +498,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", NAME_COLUMN, NULL);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -533,7 +524,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     if(op_params_size == total_len)
     {
       gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), -1);
+      // column 0 give the name, the following ones the different metadata
+      gtk_list_store_set(model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
         gtk_list_store_set(model, &iter, i+1, metadata_param[i], -1);
@@ -551,12 +543,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
 
+  GtkWidget *metadata_label[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    label = gtk_label_new(_(metadata_name[i]));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], label, GTK_POS_RIGHT, 1, 1);
+    metadata_label[i] = gtk_label_new(_(metadata_name[i]));
+    gtk_widget_set_halign(metadata_label[i], GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), metadata_label[i], 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), metadata[i], metadata_label[i], GTK_POS_RIGHT, 1, 1);
   }
 
   label = gtk_label_new(_("tags"));
@@ -565,6 +558,19 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_grid_attach_next_to(GTK_GRID(grid), tags, label, GTK_POS_RIGHT, 1, 1);
 
   gtk_widget_show_all(frame);
+
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", metadata_name[i]);
+    const gboolean hidden = dt_conf_get_bool(setting);
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type_by_display_order(i);
+    if(meta_type == DT_METADATA_TYPE_INTERNAL || hidden)
+    {
+      gtk_widget_hide(metadata_label[i]);
+      gtk_widget_hide(metadata[i]);
+    }
+  }
 
   if(data != NULL)
   {
@@ -907,7 +913,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
       dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
       dt_conf_set_int("plugins/lighttable/collect/item0", 0);
       dt_conf_set_string("plugins/lighttable/collect/string0", first_filename);
-      dt_collection_update_query(darktable.collection);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
       g_free(first_filename);
     }
 

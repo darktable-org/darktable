@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2020 darktable project.
+  Copyright (C) 2015-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -179,6 +179,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "range extent"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "precedence"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -189,6 +190,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "spatial extent", GTK_WIDGET(g->spatial));
   dt_accel_connect_slider_iop(self, "range extent", GTK_WIDGET(g->range));
   dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
+  dt_accel_connect_combobox_iop(self, "precedence", GTK_WIDGET(g->precedence));
 }
 
 typedef struct dt_iop_colorreconstruct_bilateral_t

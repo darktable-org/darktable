@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -201,6 +201,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line size"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line offset"));
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick frame line color from image"), 0, 0);
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "orientation"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "horizontal position"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "vertical position"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -211,6 +215,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick frame line color from image", GTK_WIDGET(g->frame_colorpick));
   dt_accel_connect_slider_iop(self, "frame line size", GTK_WIDGET(g->frame_size));
   dt_accel_connect_slider_iop(self, "frame line offset", GTK_WIDGET(g->frame_offset));
+  dt_accel_connect_combobox_iop(self, "aspect", GTK_WIDGET(g->aspect));
+  dt_accel_connect_combobox_iop(self, "orientation", GTK_WIDGET(g->aspect_orient));
+  dt_accel_connect_combobox_iop(self, "horizontal position", GTK_WIDGET(g->pos_h));
+  dt_accel_connect_combobox_iop(self, "vertical position", GTK_WIDGET(g->pos_v));
 }
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)

@@ -90,8 +90,8 @@
 @define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
-@define-color bauhaus_fg_disabled @grey_70;
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
 
 /* GTK Buttons and tabs */
 @define-color button_border @grey_30;
@@ -122,28 +122,30 @@
 /* Views */
 @define-color darkroom_bg_color @grey_45;
 @define-color darkroom_preview_bg_color @grey_35;
-@define-color lighttable_bg_color @grey_45;
+@define-color print_bg_color @grey_45;
+@define-color lighttable_bg_color @print_bg_color;
 @define-color lighttable_preview_bg_color @grey_35;
 @define-color lighttable_bg_font_color @grey_75;
-@define-color print_bg_color @grey_45;
-
-/* Brushes */
-@define-color brush_cursor alpha(white, .9);
-@define-color brush_trace alpha(black, .8);
 
 /* Lighttable and film-strip */
 @define-color thumbnail_font_color @grey_50;
-@define-color thumbnail_bg_color @grey_40; /* area between border and outline */
-@define-color thumbnail_outline_color @grey_50; /* square around image+metadata */
+@define-color thumbnail_bg_color @grey_40;
+@define-color thumbnail_bg50_color @grey_100;
+@define-color thumbnail_outline_color @grey_50;
 @define-color thumbnail_selected_font_color @grey_50;
 @define-color thumbnail_selected_bg_color @grey_60;
 @define-color thumbnail_selected_outline_color @grey_50;
 @define-color thumbnail_hover_font_color @grey_50;
 @define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_hover_fg_color @grey_70;
 @define-color thumbnail_hover_outline_color @grey_50;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color culling_selected_border_color @grey_10;
 @define-color culling_filmstrip_selected_border_color @grey_10;
+
+/* Brushes */
+@define-color brush_cursor alpha(white, .9);
+@define-color brush_trace alpha(black, .8);
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_10;
@@ -781,7 +783,7 @@ notebook tab label /* disabled tabs */
   font-weight: normal;
 }
 
-notebook header /* add space between notebook tabs and options below */ 
+notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 5px;
 }
@@ -1015,6 +1017,10 @@ cell:selected
 #show_mask_button
 {
     color: #ffff00;
+}
+
+#export-max-size spinbutton {
+    padding: 0px 5px;
 }
 
 /* Preferences dialog window options */
@@ -1380,4 +1386,260 @@ scale contents trough slider:hover
 #picker-white
 {
   color: @grey_100;
+}
+
+/* thumbtable css
+
+Hierachy :
+
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom (GtkLayout -- main widget which contains all thumbs)
+    #thumb_main                                                      (GtkOverlay -- thumbnail widget)
+      #thumb_back                                                    (GtkEventBox -- thumbnail background)
+      #thumb_ext                                                     (GtkLabel -- thumbnail extension)
+      #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
+        #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
+      #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
+      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
+      #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
+      #thumb_localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
+      #thumb_altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
+      #thumb_group                                                   (GtkDarktableThumbnailBtn -- grouping icon)
+      #thumb_audio                                                   (GtkDarktableThumbnailBtn -- audio sidecar icon)
+
+Details :
+
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
+    class = .dt_thumbtable           present for all thumbtable types
+    class = .dt_show_overlays       if user has choosed to always show overlay
+    class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
+    class = .dt_extended_overlay    for extended overlay mode (filename + exif)
+  #thumb_main
+    state = :selected  if the thumb is in current selection
+    state = :active    if the thumb correspond to one of the images worked on (filmstrip)
+    state = :hover     if the mouse hover the widget
+    class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders arround thumb
+  #thumb_image
+    only the borders are drawn - background is ignored
+  all icons inside the widget
+    class = .dt_thumb_btn
+    state = :hover : the mouse is hovering the icon
+    if color and background-color are transparent, the icon is not drawn and inactive
+  #thumb_reject :
+    state = :active   if the image is actually rejected
+    state = :hover    the mouse is hover the icon (a circle is added around the cross)
+  #thumb_star :
+    - color is the color of the star outline.
+    - background-color is the inner part of the star
+    state = :active : the rating of the image is >=
+  #thumb_group :
+    state = :active : the image is the group leader
+*/
+
+/* thumbtable */
+.dt_thumbtable
+{
+  background-color: @lighttable_bg_color;
+}
+
+/* background */
+@keyframes lastactive
+{
+  0% {border-color: @lighttable_bg_color; border-width : 2px;}
+  50% {border-color: @thumbnail_bg50_color; border-width : 6px;}
+  100% {border-color: @lighttable_bg_color; border-width : 2px;}
+}
+#thumb_back
+{
+  background-color: @thumbnail_bg_color;
+  border: 1px solid @lighttable_bg_color;
+}
+#thumb_main:selected #thumb_back
+{
+  background-color: @thumbnail_selected_bg_color;
+}
+#thumb_main:hover #thumb_back
+{
+  background-color: @thumbnail_hover_bg_color;
+}
+
+.dt_group_left #thumb_back
+{
+  border-left: 2px solid rgb(255, 187, 0);
+}
+.dt_group_top #thumb_back
+{
+  border-top: 2px solid rgb(255, 187, 0);
+}
+.dt_group_right #thumb_back
+{
+  border-right: 2px solid rgb(255, 187, 0);
+}
+.dt_group_bottom #thumb_back
+{
+  border-bottom: 2px solid rgb(255, 187, 0);
+}
+
+.dt_thumbtable_reorder #thumb_main:hover #thumb_back
+{
+  border-left : 4px solid rgb(255, 187, 0);
+}
+
+.dt_last_active #thumb_back
+{
+  animation-name: lastactive;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: 3;
+}
+
+/* extension */
+#thumb_ext
+{
+  font-weight: bold;
+  color: @thumbnail_font_color;
+}
+#thumb_main:selected #thumb_ext
+{
+  color: @thumbnail_selected_font_color;
+}
+#thumb_main:hover #thumb_ext
+{
+  color: @thumbnail_hover_font_color;
+}
+
+/* image */
+#thumb_image
+{
+  border: none;
+}
+#thumb_main:active #thumb_image
+{
+  border: 2px solid @plugin_bg_color;
+}
+
+/* bottom area */
+#thumb_bottom
+{
+  border : 1px solid transparent; /* to not overlay thumb borders */
+}
+#thumb_bottom_label
+{
+  border : 5px solid transparent; /* act as text margins */
+  color: transparent;
+  font-weight: bold;
+}
+#thumb_main:hover #thumb_bottom,
+.dt_show_overlays #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
+}
+#thumb_main:hover #thumb_bottom:hover
+{
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
+}
+.dt_extended_overlay#thumb_main:hover #thumb_bottom,
+.dt_extended_overlay.dt_show_overlays #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
+}
+.dt_extended_overlay#thumb_main:hover #thumb_bottom_label,
+.dt_extended_overlay.dt_show_overlays #thumb_bottom_label
+{
+  color: @thumbnail_hover_font_color;
+}
+.dt_group_left #thumb_bottom
+{
+  border-left-width: 2px;
+}
+.dt_group_bottom #thumb_bottom
+{
+  border-bottom-width: 2px;
+}
+.dt_group_right #thumb_bottom
+{
+  border-right-width: 2px;
+}
+
+/* thumbnails buttons */
+.dt_thumb_btn
+{
+  color: transparent;
+  background-color: transparent;
+}
+#thumb_main:hover .dt_thumb_btn,
+.dt_show_overlays .dt_thumb_btn
+{
+  color: @thumbnail_hover_outline_color;
+}
+
+/* reject */
+#thumb_main:hover #thumb_reject:active,
+.dt_show_overlays #thumb_reject:active
+{
+  color: red;
+}
+
+/* stars */
+#thumb_main:hover #thumb_star:active,
+.dt_show_overlays #thumb_star:active
+{
+  color: @bauhaus_fg_hover;
+  background-color: @thumbnail_hover_outline_color;
+}
+#thumb_main:hover #thumb_star:hover
+{
+  color: @bauhaus_fg_hover;
+  background-color: @thumbnail_hover_fg_color;
+}
+
+/* local copy */
+#thumb_localcopy
+{
+  border-top : 1px solid @lighttable_bg_color;
+  border-right : 1px solid @lighttable_bg_color;
+}
+.dt_group_right #thumb_localcopy
+{
+  border-right: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+.dt_group_top #thumb_localcopy
+{
+  border-top: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+#thumb_main:hover #thumb_localcopy,
+.dt_show_overlays #thumb_localcopy
+{
+  color: white;
+  background-color: white;
+}
+
+/* other icons */
+#thumb_main:hover #thumb_altered,
+#thumb_main:hover #thumb_group,
+#thumb_main:hover #thumb_audio,
+.dt_show_overlays #thumb_altered,
+.dt_show_overlays #thumb_group,
+.dt_show_overlays #thumb_audio
+{
+  color: @thumbnail_outline_color;
+}
+#thumb_main:hover #thumb_group:hover,
+#thumb_main:hover #thumb_group:active,
+#thumb_main:hover #thumb_audio:hover,
+.dt_show_overlays #thumb_group:hover,
+.dt_show_overlays #thumb_group:active,
+.dt_show_overlays #thumb_audio:hover
+{
+  color: @thumbnail_hover_fg_color;
+}
+
+#log-msg
+{
+  color: @log_fg_color;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: @log_bg_color;
+  padding: 8px 20px 4px 20px;
+  border-radius: 14px;
 }

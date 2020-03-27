@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 24
+#define CURRENT_DATABASE_VERSION_LIBRARY 25
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1523,6 +1523,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 24;
   }
+  else if(version == 24)
+  {
+    TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN mipmap_hash BLOB",
+             "[init] can't add `mipmap_hash' column to history_hash table in database\n");
+
+    new_version = 25;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1831,7 +1838,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB)",
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB)",
                NULL, NULL, NULL);
 }
 
@@ -2683,23 +2690,40 @@ void _dt_database_maintenance(const struct dt_database_t *db)
   sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
 }
 
-gboolean _ask_for_maintenance(const gboolean has_gui, guint64 size)
+gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
 {
   if(!has_gui)
   {
-    return 0;
+    return FALSE;
   }
 
+  char *later_info = NULL;
   char *size_info = g_format_size(size);
+  char *config = dt_conf_get_string("database/maintenance_check");
+  if((closing_time && (!g_strcmp0(config, "on both"))) || !g_strcmp0(config, "on startup"))
+  {
+    later_info = _("click later to be asked on next startup");
+  }
+  else if (!closing_time && (!g_strcmp0(config, "on both")))
+  {
+    later_info = _("click later to be asked when closing darktable");
+  }
+  else if (!g_strcmp0(config, "on close"))
+  {
+    later_info = _("click later to be asked next time when closing darktable");
+  }
+
 
   char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
                                                  "\n"
                                                  "there's <span style=\"italic\">%s</span> to be freed"
-                                                 "\n"
-                                                 "do you want to proceed now\n"),
-                                                 size_info);
+                                                 "\n\n"
+                                                 "do you want to proceed now?\n\n"
+                                                 "%s\n"
+                                                 "you can always change maintenance preferences in core options"),
+                                                 size_info, later_info);
 
-    gboolean shall_perform_maintenance =
+    const gboolean shall_perform_maintenance =
       dt_gui_show_standalone_yes_no_dialog(_("darktable - schema maintenance"), label_text,
                                            _("later"), _("yes"));
 
@@ -2714,7 +2738,7 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   int val = -1;
   sqlite3_stmt *stmt;
-  int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     val = sqlite3_column_int(stmt, 0);
@@ -2727,17 +2751,26 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
 
 void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
 {
-  gboolean check_for_maintenance = FALSE;
-
   char *config = dt_conf_get_string("database/maintenance_check");
+
+  if(!g_strcmp0(config, "never"))
+  {
+    // early bail out on "never"
+    dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
+    return;
+  }
+
+  gboolean check_for_maintenance = FALSE;
+  const gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
 
   if(config)
   {
-    if((!g_strcmp0(config, "on both"))
-        || (closing_time && !g_strcmp0(config, "on close"))
-        || (!closing_time && !g_strcmp0(config, "on startup")))
+    if((strstr(config, "on both")) // should cover "(don't ask) suffix
+        || (closing_time && (strstr(config, "on close")))
+        || (!closing_time && (strstr(config, "on startup"))))
     {
       // we have "on both/on close/on startup" setting, so - checking!
+      dt_print(DT_DEBUG_SQL, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
       check_for_maintenance = TRUE;
     }
     // if the config was "never", check_for_vacuum is false.
@@ -2758,8 +2791,16 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
   const int data_page_count = _get_pragma_val(db, "data.page_count");
   const int data_page_size = _get_pragma_val(db, "data.page_size");
 
-  if(main_page_count <= 0 || data_page_count <= 0){
+  dt_print(DT_DEBUG_SQL,
+      "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
+      main_free_count, main_page_count, data_free_count, data_page_count);
+
+  if(main_page_count <= 0 || data_page_count <= 0)
+  {
     //something's wrong with PRAGMA page_size returns. early bail.
+    dt_print(DT_DEBUG_SQL,
+        "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
+        main_page_count, data_page_count);
     return;
   }
 
@@ -2773,10 +2814,12 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
       || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
 
-    if(_ask_for_maintenance(has_gui, calc_size))
+    if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
+      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GUINT64_FORMAT " bytes freed.\n", calc_size);
     }
   }
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -312,6 +312,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "marker"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale on"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -324,6 +326,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
   dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
   dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
+  dt_accel_connect_combobox_iop(self, "marker", GTK_WIDGET(g->watermarks));
+  dt_accel_connect_combobox_iop(self, "scale on", GTK_WIDGET(g->sizeto));
 }
 
 static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
@@ -930,6 +934,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions(svg, &dimension);
+  // if no text is given dimensions are null
+  if(!dimension.width) dimension.width = 1;
+  if(!dimension.height) dimension.height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;

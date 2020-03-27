@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbtable.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/preferences.h"
@@ -142,7 +143,7 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
     gtk_widget_set_tooltip_text(widget, _("collapse grouped images"));
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
   darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 
 #ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
@@ -155,20 +156,17 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
 
 static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  darktable.gui->show_overlays = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  if(darktable.gui->show_overlays)
+  gboolean show = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if(show)
     gtk_widget_set_tooltip_text(widget, _("hide image overlays"));
   else
     gtk_widget_set_tooltip_text(widget, _("show image overlays"));
-  dt_conf_set_bool("lighttable/ui/expose_statuses", darktable.gui->show_overlays);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_conf_set_bool("lighttable/ui/expose_statuses", show);
+  dt_thumbtable_set_overlays(dt_ui_thumbtable(darktable.gui->ui), show);
 
 #ifdef USE_LUA
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"const char*","global_toolbox-overlay_toggle",
-      LUA_ASYNC_TYPENAME,"bool",darktable.gui->show_overlays,
-      LUA_ASYNC_DONE);
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper, 0, NULL, NULL, LUA_ASYNC_TYPENAME, "const char*",
+                          "global_toolbox-overlay_toggle", LUA_ASYNC_TYPENAME, "bool", show, LUA_ASYNC_DONE);
 #endif // USE_LUA
 }
 

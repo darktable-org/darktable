@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable project.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1511,7 +1511,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev == NULL && data.has_rating)
   {
-    dt_ratings_apply(imgid, data.rating, FALSE, FALSE, FALSE);
+    dt_ratings_apply_on_image(imgid, data.rating, FALSE, FALSE, FALSE);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("rating"), sizeof(imported));

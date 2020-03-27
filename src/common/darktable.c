@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable project.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1035,6 +1035,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
+#ifdef HAVE_GAME
     // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
     time_t now;
     time(&now);
@@ -1051,6 +1052,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         mode = "knight";
       }
     }
+#endif
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);

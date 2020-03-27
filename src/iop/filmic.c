@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2018-2020 darktable project.
+   Copyright (C) 2018-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>

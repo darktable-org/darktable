@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1940,7 +1940,7 @@ gboolean dt_colorspaces_is_profile_equal(const char *fullname, const char *filen
   // basename as recorded in an iop.
   return _colorspaces_is_base_name(filename)
     ? !strcmp(_colorspaces_get_base_name(fullname), filename)
-    : !strcmp(fullname, filename);
+    : !strcmp(_colorspaces_get_base_name(fullname), _colorspaces_get_base_name(filename));
 }
 
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable project.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -244,8 +244,8 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
-/** look for duplicate's xmp files and read them. */
-void dt_image_read_duplicates(uint32_t id, const char *filename);
+/** look for duplicate's xmp files and read them, return the number of xmp files processed */
+int dt_image_read_duplicates(uint32_t id, const char *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
@@ -272,15 +272,15 @@ void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 gboolean dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
-double dt_image_set_aspect_ratio(const int32_t imgid);
+double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
 /** set the image raw aspect ratio */
 void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** set the image final/cropped aspect ratio if different from stored*/
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio);
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid);
+void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {

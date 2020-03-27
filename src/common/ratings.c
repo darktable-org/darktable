@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,15 +106,29 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
   }
 }
 
-void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on, const gboolean group_on)
+void dt_ratings_apply_on_list(GList *list, const int rating, const gboolean undo_on)
+{
+  if(g_list_length(list) < 1) return;
+
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+  _ratings_apply(list, rating, &undo, undo_on);
+
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+  dt_collection_hint_message(darktable.collection);
+}
+
+void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on,
+                               const gboolean group_on)
 {
   GList *imgs = NULL;
   int new_rating = rating;
 
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  if(imgid > 0) imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
 
   if(imgs)
   {
@@ -141,18 +155,9 @@ void dt_ratings_apply(const int imgid, const int rating, const gboolean toggle_o
         dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
                        new_rating, count);
     }
-    
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    GList *undo = NULL;
-    _ratings_apply(imgs, new_rating, &undo, undo_on);
 
+    dt_ratings_apply_on_list(imgs, new_rating, undo_on);
     g_list_free(imgs);
-    if(undo_on)
-    {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
-      dt_undo_end_group(darktable.undo);
-    }
-    dt_collection_hint_message(darktable.collection);
   }
   else
     dt_control_log(_("no images selected to apply rating"));

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable project.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ typedef struct dt_lib_copy_history_t
   GtkWidget *copy_parts_button;
   GtkButton *compress_button;
 
-  dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -97,9 +96,10 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-
-    if(dt_history_load_and_apply_on_selection(dtfilename) != 0)
+    GList *imgs = dt_view_get_images_to_act_on();
+    if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
+      g_list_free(imgs);
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
@@ -109,6 +109,11 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
     }
+    else
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_control_queue_redraw_center();
+    }
 
     g_free(dtfilename);
   }
@@ -116,36 +121,15 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static int _get_source_image(void)
-{
-  // if the mouse is over an image, always choose this one
-  // otherwise, choose the first image selected
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) return imgid;
-
-  GList *l = dt_collection_get_selected(darktable.collection, 1);
-  if(l)
-  {
-    imgid = GPOINTER_TO_INT(l->data);
-    g_list_free(l);
-  }
-
-  return imgid;
-}
-
 static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = _get_source_image();
+  const int id = dt_view_get_image_to_act_on2();
 
-  if(d->imageid > 0)
+  if(id > 0 && dt_history_copy(id))
   {
-    d->dg.selops = NULL;
-    d->dg.copied_imageid = d->imageid;
-    d->dg.copy_iop_order = TRUE;
-
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
   }
@@ -154,11 +138,12 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  if (dt_collection_get_selected_count(darktable.collection) < 1 ) return;
+  GList *imgs = dt_view_get_images_to_act_on();
+  if(g_list_length(imgs) < 1) return;
 
-  const int missing = dt_history_compress_on_selection();
+  const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -181,20 +166,12 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = _get_source_image();
+  const int id = dt_view_get_image_to_act_on2();
 
-  if(d->imageid > 0)
+  if(id > 0 && dt_history_copy_parts(id))
   {
-    d->dg.copied_imageid = d->imageid;
-
-    // launch dialog to select the ops to copy
-    const int res = dt_gui_hist_dialog_new(&(d->dg), d->imageid, TRUE);
-
-    if(res != GTK_RESPONSE_CANCEL && d->dg.selops)
-    {
-      gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
-      gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
-    }
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
   }
 }
 
@@ -202,17 +179,13 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  const int img = dt_view_get_image_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on();
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number;
-    if(img != -1)
-      number = 1;
-    else
-      number = dt_collection_get_selected_count(darktable.collection);
+    const int number = g_list_length(imgs);
 
     if (number == 0) return;
 
@@ -231,12 +204,9 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    if(img < 0)
-      dt_history_delete_on_selection();
-    else
-      dt_history_delete_on_image(img);
+    dt_history_delete_on_list(imgs, TRUE);
 
-    dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
     dt_control_queue_redraw_center();
   }
 }
@@ -251,27 +221,24 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   const int mode = dt_bauhaus_combobox_get(d->pastemode);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
-  /* copy history from d->imageid and past onto selection */
-  const int img = dt_view_get_image_to_act_on();
+  /* copy history from previously copied image and past onto selection */
+  GList *imgs = dt_view_get_images_to_act_on();
 
-  if(img < 0)
-    dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
-  else
-    dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops, d->dg.copy_iop_order);
-
-  dt_collection_update_query(darktable.collection);
-  /* redraw */
-  dt_control_queue_redraw_center();
+  if(dt_history_paste_on_list(imgs, TRUE))
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  }
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  /* copy history from previously copied image and past onto selection */
+  GList *imgs = dt_view_get_images_to_act_on();
 
-  // launch dialog to select the ops to paste
-  if(dt_gui_hist_dialog_new(&(d->dg), d->dg.copied_imageid, FALSE) == GTK_RESPONSE_OK)
-    paste_button_clicked(widget, user_data);
+  if(dt_history_paste_parts_on_list(imgs, TRUE))
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  }
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
@@ -302,8 +269,6 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
-  d->imageid = -1;
-  dt_gui_hist_dialog_init(&d->dg);
 
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));

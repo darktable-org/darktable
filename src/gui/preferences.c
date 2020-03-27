@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-///////////// gui language selection
+///////////// gui language and theme selection
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
@@ -279,7 +279,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 }
 
-///////////// end of gui language selection
+///////////// end of gui and theme language selection
 
 
 void dt_gui_preferences_show()

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable project.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -842,12 +842,9 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */
     if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_image_set_aspect_ratio(newimgid);
+      dt_image_set_aspect_ratio(newimgid, TRUE);
     else
-      dt_image_reset_aspect_ratio(newimgid);
-
-    /* if we have created a duplicate, reset collected images */
-    if(duplicate) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+      dt_image_reset_aspect_ratio(newimgid, TRUE);
 
     /* redraw center view to update visible mipmaps */
     dt_control_queue_redraw_center();

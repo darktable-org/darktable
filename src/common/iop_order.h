@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable project.
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -145,6 +145,7 @@ typedef struct dt_iop_order_entry_t
   // operation + instance is the unique id for an active module in the pipe
   char operation[20];
   int32_t instance;      // or previously named multi_priority
+  char name[25];
 } dt_iop_order_entry_t;
 
 typedef struct dt_iop_order_rule_t

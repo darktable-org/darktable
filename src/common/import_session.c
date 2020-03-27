@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable project.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,7 +180,7 @@ void dt_import_session_import(struct dt_import_session_t *self)
   int id = dt_image_import(self->film->id, self->current_filename, TRUE);
   if(id)
   {
-    dt_view_filmstrip_set_active_image(darktable.view_manager, id);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
     dt_control_queue_redraw();
   }
 }

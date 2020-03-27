@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable project.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -143,6 +144,20 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "application color space"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "application color space", GTK_WIDGET(g->colorspace));
+  dt_accel_connect_combobox_iop(self, "interpolation ", GTK_WIDGET(g->interpolation ));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -782,7 +797,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           return 0;
         }
       }
-      else
+      else if (nb_token == 3 && g_ascii_isdigit(token[0][0]))
       {
         if (!level)
         {

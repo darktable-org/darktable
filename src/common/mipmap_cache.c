@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable project.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -660,7 +660,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 
 static gboolean _raise_signal_mipmap_updated(gpointer user_data)
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, GPOINTER_TO_INT(user_data));
   return FALSE; // only call once
 }
 
@@ -855,7 +855,7 @@ void dt_mipmap_cache_get_with_caller(
     if(mipmap_generated)
     {
       /* raise signal that mipmaps has been flushed to cache */
-      g_idle_add(_raise_signal_mipmap_updated, 0);
+      g_idle_add(_raise_signal_mipmap_updated, GINT_TO_POINTER(imgid));
     }
 
     buf->width = dsc->width;
