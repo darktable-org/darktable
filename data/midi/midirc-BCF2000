@@ -1,0 +1,64 @@
+num_columns=8
+group_switch_key=41
+group_key_light=41
+rating_key_light=33
+reset_knob_key=1
+first_knob_key=1
+num_rotators=32
+LED_ring_behavior_channel=-1
+LED_ring_behavior_off=0
+LED_ring_behavior_pan=3
+LED_ring_behavior_fan=5
+LED_ring_behavior_trim=8
+
+group;channel;key;path;encoding;accel
+1;0;1;<Darktable>/image operations/clipping/top;0;1.0000
+1;0;2;<Darktable>/image operations/clipping/left;0;1.0000
+1;0;3;<Darktable>/image operations/clipping/right;0;1.0000
+1;0;4;<Darktable>/image operations/clipping/bottom;0;1.0000
+1;0;5;<Darktable>/image operations/clipping/angle;0;1.0000
+1;0;6;<Darktable>/image operations/colisa/brightness;0;1.0000
+1;0;7;<Darktable>/image operations/colisa/contrast;0;1.0000
+1;0;8;<Darktable>/image operations/colisa/saturation;0;1.0000
+1;0;81;<Darktable>/image operations/sharpen/amount;0;1.0000
+1;0;82;<Darktable>/image operations/sharpen/radius;0;1.0000
+1;0;83;<Darktable>/image operations/sharpen/threshold;0;1.0000
+1;0;84;<Darktable>/image operations/soften/size;0;1.0000
+1;0;85;<Darktable>/image operations/soften/saturation;0;1.0000
+1;0;86;<Darktable>/image operations/soften/brightness;0;1.0000
+1;0;87;<Darktable>/image operations/hazeremoval/strength;0;1.0000
+1;0;88;<Darktable>/image operations/hazeremoval/distance;0;1.0000
+2;0;1;<Darktable>/image operations/toneequal/blacks;0;0.5000
+2;0;2;<Darktable>/image operations/toneequal/deep shadows;0;0.5000
+2;0;3;<Darktable>/image operations/toneequal/shadows;0;0.5000
+2;0;4;<Darktable>/image operations/toneequal/light shadows;0;0.5000
+2;0;5;<Darktable>/image operations/toneequal/midtones;0;0.5000
+2;0;6;<Darktable>/image operations/toneequal/dark highlights;0;0.5000
+2;0;7;<Darktable>/image operations/toneequal/highlights;0;0.5000
+2;0;8;<Darktable>/image operations/toneequal/whites;0;0.5000
+2;0;81;<Darktable>/image operations/filmicrgb/target black luminance;0;1.0000
+2;0;82;<Darktable>/image operations/filmicrgb/target middle grey;0;1.0000
+2;0;83;<Darktable>/image operations/filmicrgb/target white luminance;0;1.0000
+2;0;84;<Darktable>/image operations/filmicrgb/target power transfer function;0;1.0000
+2;0;85;<Darktable>/image operations/filmicrgb/black exposure;0;1.0000
+2;0;86;<Darktable>/image operations/filmicrgb/middle grey luminance;0;1.0000
+2;0;87;<Darktable>/image operations/filmicrgb/white exposure;0;1.0000
+2;0;88;<Darktable>/image operations/filmicrgb/contrast;0;1.0000
+
+group;channel;key;path
+1;0;33;1
+1;0;34;2
+1;0;35;3
+1;0;36;4
+1;0;37;5
+1;0;38;r
+1;0;39;BackSpace
+1;0;40;space
+2;0;33;F1
+2;0;34;F2
+2;0;35;F3
+2;0;36;F4
+2;0;37;F5
+2;0;38;r
+2;0;39;BackSpace
+2;0;40;space
