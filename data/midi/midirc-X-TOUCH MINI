@@ -10,55 +10,55 @@ LED_ring_behavior_pan=1
 LED_ring_behavior_fan=2
 LED_ring_behavior_trim=4
 
-group,channel,key,path,encoding,accel
-1,10,1,<Darktable>/image operations/clipping/top,0,1.0000
-1,10,2,<Darktable>/image operations/clipping/left,0,1.0000
-1,10,3,<Darktable>/image operations/clipping/right,0,1.0000
-1,10,4,<Darktable>/image operations/clipping/bottom,0,1.0000
-1,10,5,<Darktable>/image operations/clipping/angle,0,1.0000
-1,10,6,<Darktable>/image operations/colisa/brightness,0,1.0000
-1,10,7,<Darktable>/image operations/colisa/contrast,0,1.0000
-1,10,8,<Darktable>/image operations/colisa/saturation,0,1.0000
-2,10,1,<Darktable>/image operations/sharpen/amount,0,1.0000
-2,10,2,<Darktable>/image operations/sharpen/radius,0,1.0000
-2,10,3,<Darktable>/image operations/sharpen/threshold,0,1.0000
-2,10,4,<Darktable>/image operations/soften/size,0,1.0000
-2,10,5,<Darktable>/image operations/soften/saturation,0,1.0000
-2,10,6,<Darktable>/image operations/soften/brightness,0,1.0000
-2,10,7,<Darktable>/image operations/hazeremoval/strength,0,1.0000
-2,10,8,<Darktable>/image operations/hazeremoval/distance,0,1.0000
-3,10,1,<Darktable>/image operations/toneequal/blacks,0,0.5000
-3,10,2,<Darktable>/image operations/toneequal/deep shadows,0,0.5000
-3,10,3,<Darktable>/image operations/toneequal/shadows,0,0.5000
-3,10,4,<Darktable>/image operations/toneequal/light shadows,0,0.5000
-3,10,5,<Darktable>/image operations/toneequal/midtones,0,0.5000
-3,10,6,<Darktable>/image operations/toneequal/dark highlights,0,0.5000
-3,10,7,<Darktable>/image operations/toneequal/highlights,0,0.5000
-3,10,8,<Darktable>/image operations/toneequal/whites,0,0.5000
-3,10,9,<Darktable>/image operations/toneequal/speculars,0,0.5000
-4,10,1,<Darktable>/image operations/filmicrgb/target black luminance,0,1.0000
-4,10,2,<Darktable>/image operations/filmicrgb/target middle grey,0,1.0000
-4,10,3,<Darktable>/image operations/filmicrgb/target white luminance,0,1.0000
-4,10,4,<Darktable>/image operations/filmicrgb/target power transfer function,0,1.0000
-4,10,5,<Darktable>/image operations/filmicrgb/black exposure,0,1.0000
-4,10,6,<Darktable>/image operations/filmicrgb/middle grey luminance,0,1.0000
-4,10,7,<Darktable>/image operations/filmicrgb/white exposure,0,1.0000
-4,10,8,<Darktable>/image operations/filmicrgb/contrast,0,1.0000
+group;channel;key;path;encoding;accel
+1;10;1;<Darktable>/image operations/clipping/top;0;1.0000
+1;10;2;<Darktable>/image operations/clipping/left;0;1.0000
+1;10;3;<Darktable>/image operations/clipping/right;0;1.0000
+1;10;4;<Darktable>/image operations/clipping/bottom;0;1.0000
+1;10;5;<Darktable>/image operations/clipping/angle;0;1.0000
+1;10;6;<Darktable>/image operations/colisa/brightness;0;1.0000
+1;10;7;<Darktable>/image operations/colisa/contrast;0;1.0000
+1;10;8;<Darktable>/image operations/colisa/saturation;0;1.0000
+2;10;1;<Darktable>/image operations/sharpen/amount;0;1.0000
+2;10;2;<Darktable>/image operations/sharpen/radius;0;1.0000
+2;10;3;<Darktable>/image operations/sharpen/threshold;0;1.0000
+2;10;4;<Darktable>/image operations/soften/size;0;1.0000
+2;10;5;<Darktable>/image operations/soften/saturation;0;1.0000
+2;10;6;<Darktable>/image operations/soften/brightness;0;1.0000
+2;10;7;<Darktable>/image operations/hazeremoval/strength;0;1.0000
+2;10;8;<Darktable>/image operations/hazeremoval/distance;0;1.0000
+3;10;1;<Darktable>/image operations/toneequal/blacks;0;0.5000
+3;10;2;<Darktable>/image operations/toneequal/deep shadows;0;0.5000
+3;10;3;<Darktable>/image operations/toneequal/shadows;0;0.5000
+3;10;4;<Darktable>/image operations/toneequal/light shadows;0;0.5000
+3;10;5;<Darktable>/image operations/toneequal/midtones;0;0.5000
+3;10;6;<Darktable>/image operations/toneequal/dark highlights;0;0.5000
+3;10;7;<Darktable>/image operations/toneequal/highlights;0;0.5000
+3;10;8;<Darktable>/image operations/toneequal/whites;0;0.5000
+3;10;9;<Darktable>/image operations/toneequal/speculars;0;0.5000
+4;10;1;<Darktable>/image operations/filmicrgb/target black luminance;0;1.0000
+4;10;2;<Darktable>/image operations/filmicrgb/target middle grey;0;1.0000
+4;10;3;<Darktable>/image operations/filmicrgb/target white luminance;0;1.0000
+4;10;4;<Darktable>/image operations/filmicrgb/target power transfer function;0;1.0000
+4;10;5;<Darktable>/image operations/filmicrgb/black exposure;0;1.0000
+4;10;6;<Darktable>/image operations/filmicrgb/middle grey luminance;0;1.0000
+4;10;7;<Darktable>/image operations/filmicrgb/white exposure;0;1.0000
+4;10;8;<Darktable>/image operations/filmicrgb/contrast;0;1.0000
 
-group,channel,key,path
-1,10,8,1
-1,10,9,2
-1,10,10,3
-1,10,11,4
-1,10,12,5
-1,10,13,r
-1,10,14,BackSpace
-1,10,15,space
-2,10,8,F1
-2,10,9,F2
-2,10,10,F3
-2,10,11,F4
-2,10,12,F5
-2,10,13,r
-2,10,14,BackSpace
-2,10,15,space
+group;channel;key;path
+1;10;8;1
+1;10;9;2
+1;10;10;3
+1;10;11;4
+1;10;12;5
+1;10;13;r
+1;10;14;BackSpace
+1;10;15;space
+2;10;8;F1
+2;10;9;F2
+2;10;10;F3
+2;10;11;F4
+2;10;12;F5
+2;10;13;r
+2;10;14;BackSpace
+2;10;15;space

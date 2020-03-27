@@ -185,7 +185,7 @@ void midi_config_save(MidiDevice *midi)
   g_fprintf(f, "LED_ring_behavior_fan=%d\n", midi->LED_ring_behavior_fan);
   g_fprintf(f, "LED_ring_behavior_trim=%d\n", midi->LED_ring_behavior_trim);
 
-  g_fprintf(f, "\ngroup,channel,key,path,encoding,accel\n");
+  g_fprintf(f, "\ngroup;channel;key;path;encoding;accel\n");
 
   GSList *l = midi->mapping_list;
   while (l)
@@ -194,7 +194,7 @@ void midi_config_save(MidiDevice *midi)
 
     gchar *spath = g_strndup( k->accelerator->path,strlen(k->accelerator->path)-strlen("/dynamic") );
 
-    g_fprintf(f,"%d,%d,%d,%s,%d,%.4f\n", 
+    g_fprintf(f,"%d;%d;%d;%s;%d;%.4f\n",
                 k->group, k->channel, k->key, spath, k->encoding, k->acceleration);
 
     g_free(spath);
@@ -208,7 +208,7 @@ void midi_config_save(MidiDevice *midi)
   while (l)
   {
     dt_midi_note_t *n = (dt_midi_note_t *)l->data;
-    g_fprintf(f,"%d,%d,%d,%s\n", 
+    g_fprintf(f,"%d;%d;%d;%s\n", 
                 n->group, n->channel, n->key, 
                 gtk_accelerator_name(n->accelerator_key,n->accelerator_mods));
 
@@ -288,7 +288,7 @@ void midi_config_load(MidiDevice *midi)
     char accelpath[200];
     float acceleration;
 
-    read = sscanf(buffer, "%d,%d,%d,%[^,],%d,%f\n", 
+    read = sscanf(buffer, "%d;%d;%d;%[^;];%d;%f\n", 
                   &group, &channel, &key, accelpath, &encoding, &acceleration);
     if(read == 6)
     {
@@ -319,7 +319,7 @@ void midi_config_load(MidiDevice *midi)
       continue;
     }
 
-    read = sscanf(buffer, "%d,%d,%d,%[^\r\n]\r\n",
+    read = sscanf(buffer, "%d;%d;%d;%[^\r\n]\r\n",
                   &group, &channel, &key, accelpath);
 
     if (read == 4)
