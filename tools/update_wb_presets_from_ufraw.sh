@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
 # Script updates our wb_presets which we regularly steal from UFRaw.
 #

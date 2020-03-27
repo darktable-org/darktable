@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 echo "THIS SCRIPT IS DEPRECATED"
 echo
