@@ -21,13 +21,16 @@ fi
 tmp_dir=$(mktemp -d -t dt-wb-XXXXXXXXXX)
 cur_dir=$(pwd)
 
-tarball="$cur_dir"/darktable-whitebalance-$(date +'%Y%m%d').tar.gz
+tarball="$cur_dir"/darktable-whitebalance-$(date +'%Y%m%d').tar.bz2
 
 echo "Extracting WB presets."
 for image in "$@"
 do
     echo -n "."
-    exiftool "-WB_*" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model -WBShiftAB -WBShiftAB_GM -WhiteBalanceFineTune -WBShiftIntelligentAuto -WBShiftCreativeControl -WhiteBalanceBracket "${image}" > "${tmp_dir}/${image}.txt"
+    exiftool -Make -Model "-WB_*" -WhiteBalance -WhiteBalance2 -WhitePoint \
+      -WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune \
+      -WhiteBalanceBracket -WBShiftIntelligentAuto -WBShiftCreativeControl \
+      "${image}" > "${tmp_dir}/${image}.txt"
 done
 
 echo

@@ -77,7 +77,9 @@ ARGV.each do |filename|
   finetune = 0
   listed_presets = []
   fl_count = 0
-  command = "exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model -WBShiftAB -WBShiftAB_GM -WhiteBalanceFineTune -WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\""
+  command = "exiftool -Make -Model \"-WB_*\" -WhiteBalance -WhiteBalance2 "\
+    "-WhitePoint -WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune "\
+    "-WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\""
   if filename.end_with? ".txt"
     command = "cat \"#{filename}\""
   end
@@ -87,7 +89,11 @@ ARGV.each do |filename|
       tag = lineparts[0].strip
       values = lineparts[1].strip.split(" ")
 
-      if tag == "WB RGGB Levels"
+      if tag.split.include? "Make"
+        maker = lineparts[1].strip
+      elsif tag.split.include? "Model"
+        model = lineparts[1].strip
+      elsif tag == "WB RGGB Levels"
         green = (values[1].to_f+values[2].to_f)/2.0
         red = values[0].to_f/green
         blue = values[3].to_f/green
@@ -110,10 +116,6 @@ ARGV.each do |filename|
         red = values[0].to_f/green
         blue = values[3].to_f/green
         green = 1
-      elsif tag.split.include? "Make"
-        maker = lineparts[1].strip
-      elsif tag.split.include? "Model"
-        model = lineparts[1].strip
       elsif tag == "White Balance" || tag == "White Balance 2"
         preset = values.join(" ")
         preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
