@@ -1,0 +1,44 @@
+num_columns=32
+group_switch_key=-100
+group_key_light=-1
+rating_key_light=-1
+reset_knob_key=17
+first_knob_key=17
+num_rotators=32
+LED_ring_behavior_channel=-1
+LED_ring_behavior_off=0
+LED_ring_behavior_pan=3
+LED_ring_behavior_fan=5
+LED_ring_behavior_trim=8
+
+group;channel;key;path;encoding;accel
+1;0;33;<Darktable>/image operations/exposure/exposure;127;1.0000
+1;0;36;<Darktable>/image operations/basicadj/saturation;63;1.0000
+1;0;37;<Darktable>/image operations/basicadj/vibrance;63;1.0000
+1;0;38;<Darktable>/image operations/temperature/temperature;127;1.0000
+1;0;39;<Darktable>/image operations/temperature/tint;127;1.0000
+1;0;40;<Darktable>/image operations/shadhi/highlights;127;1.0000
+1;0;44;<Darktable>/image operations/shadhi/shadows;127;1.0000
+1;0;46;<Darktable>/image operations/colisa/contrast;127;1.0000
+
+group;channel;key;path
+1;0;49;F1
+1;0;50;F2
+1;0;51;F3
+1;0;52;F4
+1;0;53;F5
+1;0;70;Tab
+1;0;76;Up
+1;0;77;Down
+1;0;78;BackSpace
+1;0;79;Space
+1;0;92;Ctrl+E
+1;0;92;Ctrl+C
+1;0;92;Ctrl+V
+1;0;95;Ctrl+Z
+1;0;96;Ctrl+Y
+1;0;97;F11
+1;0;102;Ctrl+S
+1;0;114;1
+1;0;115;2
+1;0;116;3
