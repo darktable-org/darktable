@@ -1042,7 +1042,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
-    gchar *prequery = g_strdup_printf(
+    gchar *query = g_strdup_printf(
       folders ?
         "SELECT folder, film_rolls_id, COUNT(*) AS count"
         " FROM main.images AS mi"
@@ -1074,10 +1074,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       NULL,
       where_ext);
 
-    gchar *query = (sort_descend && g_str_has_suffix(prequery,"ASC")) 
-          ? strcat(g_strndup(prequery,strlen(prequery) - 3),"DESC") : prequery;
     g_free(where_ext);
-    g_free(prequery);       
+      
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     char **last_tokens = NULL;
