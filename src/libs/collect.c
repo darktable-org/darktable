@@ -1063,14 +1063,12 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
         " FROM main.images AS mi"
         " WHERE %s"
-        " GROUP BY date"
-        " ORDER BY datetime_taken ASC" :
+        " GROUP BY date" :
       times ?
         "SELECT datetime_taken AS date, 1, COUNT(*) AS count"
         " FROM main.images AS mi"
         " WHERE %s"
-        " GROUP BY date"
-        " ORDER BY datetime_taken ASC" :
+        " GROUP BY date" :
       NULL,
       where_ext);
 
