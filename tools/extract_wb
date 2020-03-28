@@ -77,6 +77,7 @@ ARGV.each do |filename|
   finetune = 0
   listed_presets = []
   fl_count = 0
+  gm_skew = false;
   command = "exiftool -Make -Model \"-WB_*\" -WhiteBalance -WhiteBalance2 "\
     "-WhitePoint -WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune "\
     "-WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\""
@@ -139,12 +140,43 @@ ARGV.each do |filename|
         fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
         p = "Unknown" if !p || p==""
         listed_presets << [p,r,g,b]
-      elsif tag == "WB Shift AB" #canon - positive is towards amber, panasonic/leica/pentax - positive is towards blue?
+      elsif tag == "WB Shift AB" # canon - positive is towards amber, panasonic/leica/pentax - positive is towards blue?
         finetune = values[0]
-      elsif tag == "WBShiftAB_GM" #sony
+      elsif tag == "WB Shift GM" # detect GM shift and warn about it
+        gm_skew = gm_skew || (values[0].to_i != 0)
+        if values[0].to_i != 0
+          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
+        end
+      elsif tag == "WBShiftAB_GM" # sony
         finetune = values[0]
+        gm_skew = gm_skew || (values[1].to_i != 0)
+        if values[1].to_i != 0
+          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
+        end
+      elsif tag == "White Balance Fine Tune" && make == "NIKON" # nikon
+        finetune = values[0] * 2 # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
+        gm_skew = gm_skew || (values[1].to_i != 0)
+        if values[1].to_i != 0
+          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
+        end
+      elsif tag == "White Balance Fine Tune" && make == "FUJIFILM" # fuji
+        finetune = values[3].to_i / 20 # Fuji has -180..180 but steps are every 20
+        gm_skew = gm_skew || (values[1].to_i != 0)
+        if values[1].to_i != 0
+          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
+        end
+      elseif tag == "White Balance Bracket" # olympus
+        finetune = values[0]
+        gm_skew = gm_skew || (values[1].to_i != 0)
+        if values[1].to_i != 0
+          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
+        end
       end
     end
+  end
+
+  if gm_skew
+    $stderr.puts "WARNING: #{filename} has finetuning over GM axis! Data is skewed!"
   end
 
   # Adjust the maker/model we found with the map we generated before
