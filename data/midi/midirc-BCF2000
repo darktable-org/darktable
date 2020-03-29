@@ -1,10 +1,10 @@
 num_columns=8
-group_switch_key=41
-group_key_light=41
-rating_key_light=33
-reset_knob_key=1
+group_switch_key=95
+group_key_light=95
+rating_key_light=65
+reset_knob_key=33
 first_knob_key=1
-num_rotators=32
+num_rotators=8
 LED_ring_behavior_channel=-1
 LED_ring_behavior_off=0
 LED_ring_behavior_pan=3
@@ -28,14 +28,14 @@ group;channel;key;path;encoding;accel
 1;0;86;<Darktable>/image operations/soften/brightness;0;1.0000
 1;0;87;<Darktable>/image operations/hazeremoval/strength;0;1.0000
 1;0;88;<Darktable>/image operations/hazeremoval/distance;0;1.0000
-2;0;1;<Darktable>/image operations/toneequal/blacks;0;0.5000
-2;0;2;<Darktable>/image operations/toneequal/deep shadows;0;0.5000
-2;0;3;<Darktable>/image operations/toneequal/shadows;0;0.5000
-2;0;4;<Darktable>/image operations/toneequal/light shadows;0;0.5000
-2;0;5;<Darktable>/image operations/toneequal/midtones;0;0.5000
-2;0;6;<Darktable>/image operations/toneequal/dark highlights;0;0.5000
-2;0;7;<Darktable>/image operations/toneequal/highlights;0;0.5000
-2;0;8;<Darktable>/image operations/toneequal/whites;0;0.5000
+2;0;1;<Darktable>/image operations/toneequal/blacks;0;1.0000
+2;0;2;<Darktable>/image operations/toneequal/deep shadows;0;1.0000
+2;0;3;<Darktable>/image operations/toneequal/shadows;0;1.0000
+2;0;4;<Darktable>/image operations/toneequal/light shadows;0;1.0000
+2;0;5;<Darktable>/image operations/toneequal/midtones;0;1.0000
+2;0;6;<Darktable>/image operations/toneequal/dark highlights;0;1.0000
+2;0;7;<Darktable>/image operations/toneequal/highlights;0;1.0000
+2;0;8;<Darktable>/image operations/toneequal/whites;0;1.0000
 2;0;81;<Darktable>/image operations/filmicrgb/target black luminance;0;1.0000
 2;0;82;<Darktable>/image operations/filmicrgb/target middle grey;0;1.0000
 2;0;83;<Darktable>/image operations/filmicrgb/target white luminance;0;1.0000
@@ -46,19 +46,19 @@ group;channel;key;path;encoding;accel
 2;0;88;<Darktable>/image operations/filmicrgb/contrast;0;1.0000
 
 group;channel;key;path
-1;0;33;1
-1;0;34;2
-1;0;35;3
-1;0;36;4
-1;0;37;5
-1;0;38;r
-1;0;39;BackSpace
-1;0;40;space
-2;0;33;F1
-2;0;34;F2
-2;0;35;F3
-2;0;36;F4
-2;0;37;F5
-2;0;38;r
-2;0;39;BackSpace
-2;0;40;space
+1;0;65;1
+1;0;66;2
+1;0;67;3
+1;0;68;4
+1;0;69;5
+1;0;90;r
+1;0;91;BackSpace
+1;0;92;space
+2;0;65;F1
+2;0;66;F2
+2;0;67;F3
+2;0;68;F4
+2;0;69;F5
+2;0;90;r
+2;0;91;BackSpace
+2;0;92;space
