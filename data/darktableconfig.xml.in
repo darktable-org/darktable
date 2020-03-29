@@ -447,6 +447,13 @@
     <shortdescription>jobcode of import job</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/collect/descending</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort collection recent to older</shortdescription>
+    <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
+  </dtconfig> 
   <dtconfig>
     <name>ui_last/colorpicker_mean</name>
     <type>int</type>

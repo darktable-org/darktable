@@ -963,6 +963,14 @@ static gint sort_folder_tag(gconstpointer a, gconstpointer b)
   return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
 }
 
+static gint neg_sort_folder_tag(gconstpointer a, gconstpointer b)
+{
+  const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
+  const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
+
+  return -g_strcmp0(tuple_a->collate_key, tuple_b->collate_key); 
+}  
+
 // create a key such that "darktable|" is coming first, and the rest is ordered such that sub tags are coming directly
 // behind their parent
 static char *tag_collate_key(char *tag)
@@ -1011,8 +1019,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   const gboolean tags = (property == DT_COLLECTION_PROP_TAG);
   const gboolean days = (property == DT_COLLECTION_PROP_DAY);
   const gboolean times = (property == DT_COLLECTION_PROP_TIME);
-  const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S :
-  days || times ? "%s:" : "%s|";
+  const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : days || times ? "%s:" : "%s|";
+  const gint sort_descend = dt_conf_get_bool("plugins/collect/descending");
 
   set_properties(dr);
 
@@ -1034,7 +1042,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
-    const char *query = g_strdup_printf(
+    gchar *query = g_strdup_printf(
       folders ?
         "SELECT folder, film_rolls_id, COUNT(*) AS count"
         " FROM main.images AS mi"
@@ -1055,18 +1063,17 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
         " FROM main.images AS mi"
         " WHERE %s"
-        " GROUP BY date"
-        " ORDER BY datetime_taken ASC" :
+        " GROUP BY date" :
       times ?
         "SELECT datetime_taken AS date, 1, COUNT(*) AS count"
         " FROM main.images AS mi"
         " WHERE %s"
-        " GROUP BY date"
-        " ORDER BY datetime_taken ASC" :
+        " GROUP BY date" :
       NULL,
       where_ext);
 
     g_free(where_ext);
+      
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     char **last_tokens = NULL;
@@ -1079,21 +1086,20 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char *name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      char *name_folded = g_utf8_casefold(name, -1);                                              
       gchar *collate_key = NULL;
 
       const int count = sqlite3_column_int(stmt, 2);
 
       if(folders)
       {
-        char *name_folded = g_utf8_casefold(name, -1);
         char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
         collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
         g_free(name_folded_slash);
-        g_free(name_folded);
       }
-      else if(tags)
-        collate_key = tag_collate_key(name);
-
+      else
+        collate_key = tag_collate_key(name_folded);
+      g_free(name_folded);
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
       tuple->collate_key = collate_key;
@@ -1101,10 +1107,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       sorted_names = g_list_prepend(sorted_names, tuple);
     }
     sqlite3_finalize(stmt);
-
-    if(folders || tags)
-      sorted_names = g_list_sort(sorted_names, sort_folder_tag);
-
+    g_free(query);
+    sorted_names = g_list_sort(sorted_names,(sort_descend && (folders || days || times)) 
+        ? neg_sort_folder_tag : sort_folder_tag);
+        
     for(GList *names = sorted_names; names; names = g_list_next(names))
     {
       name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
@@ -1220,7 +1226,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     g_list_free_full(sorted_names, free_tuple);
 
-
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
     d->treefilter = _create_filtered_model(model, dr);
@@ -1241,7 +1246,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     g_object_unref(model);
     g_strfreev(last_tokens);
-
     d->view_rule = property;
   }
 
