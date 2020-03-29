@@ -22,8 +22,8 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
-static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
-                                   int *inside_border, int *near, int *inside_source)
+static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, 
+      int *inside, int *inside_border, int *near, int *inside_source)
 {
   // initialise returned values
   *inside_source = 0;
@@ -495,43 +495,47 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
-
     if(gui->guipoints_count == 0)
     {
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float radius1, radius2;
+    
+      float radius[2] = { 0.f, 0.f };
+      float preview_scale = MIN(darktable.develop->preview_pipe->iwidth,
+            darktable.develop->preview_pipe->iheight);
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
-        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
-        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+        radius[0] = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
+        radius[1] = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
       }
       else
       {
-        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
-        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
+        radius[0] = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
+        radius[1] = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
       }
-      radius2 += radius1;
-      radius1 *= MIN(wd, ht);
-      radius2 *= MIN(wd, ht);
+      
+      radius[1] += radius[0];
+      
+      dt_dev_distort_backtransform(darktable.develop, radius, 1);
+      float inner_radius = radius[0] * preview_scale / darktable.develop->preview_pipe->iwidth;
+      float outer_radius = radius[1] * preview_scale / darktable.develop->preview_pipe->iheight;
 
-      float xpos, ypos;
-      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+      float pzx = gui->posx;
+      float pzy = gui->posy;
+      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
       {
         const float zoom_x = dt_control_get_dev_zoom_x();
         const float zoom_y = dt_control_get_dev_zoom_y();
-        xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-        ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
+        pzx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
+        pzy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
       }
-      else
-      {
-        xpos = gui->posx;
-        ypos = gui->posy;
-      }
-
+      
+      float pts[2] = { pzx, pzy };
+      dt_dev_distort_backtransform(darktable.develop, pts, 1);
+      float xt = pts[0] / darktable.develop->preview_pipe->iwidth;
+      float yt = pts[1] / darktable.develop->preview_pipe->iheight;
+      
       cairo_save(cr);
 
       // draw circle
@@ -539,7 +543,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 3.0 / zoom_scale);
       cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
-      cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
+      cairo_arc(cr, xt, yt, inner_radius, 0, 2.0 * M_PI);
 
       cairo_stroke_preserve(cr);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
@@ -551,7 +555,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 1.0 / zoom_scale);
       cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
-      cairo_arc(cr, xpos, ypos, radius2, 0, 2.0 * M_PI);
+      cairo_arc(cr, xt, yt, outer_radius, 0, 2.0 * M_PI);
 
       cairo_stroke_preserve(cr);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
@@ -563,7 +567,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       if(form->type & DT_MASKS_CLONE)
       {
         float x = 0.f, y = 0.f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, xpos, ypos, xpos, ypos, &x, &y, FALSE);
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, pzx, pzy, pzx, pzy, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
