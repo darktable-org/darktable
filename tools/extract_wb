@@ -147,25 +147,25 @@ ARGV.each do |filename|
         if values[0].to_i != 0
           $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
         end
-      elsif tag == "WBShiftAB_GM" # sony
+      elsif tag == "WB Shift AB GM" # sony
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
         if values[1].to_i != 0
           $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
         end
-      elsif tag == "White Balance Fine Tune" && make == "NIKON" # nikon
-        finetune = values[0] * 2 # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
+      elsif tag == "White Balance Fine Tune" && maker.start_with?("NIKON") # nikon
+        finetune = 0-(values[0].to_i * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
         gm_skew = gm_skew || (values[1].to_i != 0)
         if values[1].to_i != 0
           $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
         end
-      elsif tag == "White Balance Fine Tune" && make == "FUJIFILM" # fuji
+      elsif tag == "White Balance Fine Tune" && maker == "FUJIFILM" # fuji
         finetune = values[3].to_i / 20 # Fuji has -180..180 but steps are every 20
         gm_skew = gm_skew || (values[1].to_i != 0)
         if values[1].to_i != 0
           $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
         end
-      elseif tag == "White Balance Bracket" # olympus
+      elsif tag == "White Balance Bracket" # olympus
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
         if values[1].to_i != 0
@@ -199,10 +199,11 @@ ARGV.each do |filename|
   # Print out the WB value that was used in the file
   preset = "\"#{ARGV[0]}\"" if !preset
   if red && green && blue
-    found_presets << [maker, model, preset, finetune, red, green, blue]
+    found_presets << [maker, model, preset, finetune.to_s, red, green, blue]
   end
 end
 
+puts found_presets.inspect.gsub("], ", "],\n")
 # Get rid of duplicate presets
 found_presets = Hash[found_presets.sort.zip].keys
 
@@ -224,8 +225,20 @@ found_presets.sort! do |a, b|
 end
 
 min_padding = 0
-found_presets.each do |maker, model, preset, finetune, red, green, blue, acc|
+found_presets.each do |maker, model, preset, finetune, red, green, blue|
   min_padding = preset.size if preset.size > min_padding
+end
+
+(found_presets.length - 1).times do |index|
+  #dealing with Nikon half-steps
+  if found_presets[index][0] == "Nikon" && found_presets[index+1][0] == found_presets[index][0] && found_presets[index+1][1] == found_presets[index][1] && found_presets[index+1][2] == found_presets[index][2] && found_presets[index+1][3] == found_presets[index][3] #case now translated
+    curr_finetune = found_presets[index][3].to_i
+    if curr_finetune < 0 # finetune
+      found_presets[index+1][3] = ((found_presets[index+1][3].to_i) + 1).to_s
+    elsif curr_finetune > 0
+      found_presets[index][3] = ((found_presets[index][3].to_i) - 1).to_s
+    end
+  end
 end
 
 # Print out the presets if they exist
