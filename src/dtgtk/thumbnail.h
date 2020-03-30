@@ -16,6 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the thumbnail class for the lighttable module.  */
+
+#ifndef THUMBNAIL_H
+#define THUMBNAIL_H
+
 #include <glib.h>
 #include <gtk/gtk.h>
 
@@ -101,6 +105,9 @@ typedef struct
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
 
   dt_thumbnail_overlay_t over; // type of overlays
+
+  // specific for culling and preview
+  double aspect_ratio;
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over);
@@ -122,6 +129,7 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
 void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
