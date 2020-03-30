@@ -33,6 +33,7 @@
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "dtgtk/button.h"
+#include "dtgtk/culling.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
@@ -106,6 +107,9 @@ typedef struct dt_layout_image_t
  */
 typedef struct dt_library_t
 {
+  dt_culling_t *culling;
+  dt_culling_t *preview;
+
   // tmp mouse vars:
   float pan_x, pan_y;
   uint32_t modifiers;
@@ -411,9 +415,14 @@ static void check_layout(dt_view_t *self)
   {
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
+
+    dt_culling_init(lib->culling);
+
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
-    _culling_recreate_slots_at(self, _culling_preview_init_values(self, TRUE, FALSE));
+    gtk_widget_show(lib->culling->widget);
+
+    //_culling_recreate_slots_at(self, _culling_preview_init_values(self, TRUE, FALSE));
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling_use_selection;
   }
 
@@ -767,6 +776,9 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.culling_is_image_visible = _culling_is_image_visible;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
 
+  lib->culling = dt_culling_new(DT_CULLING_MODE_CULLING);
+  lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
+
   lib->modifiers = 0;
   lib->pan = lib->track = 0;
   lib->activate_on_release = DT_VIEW_ERR;
@@ -824,6 +836,8 @@ void cleanup(dt_view_t *self)
   g_hash_table_destroy(lib->thumbs_table);
   dt_free_align(lib->full_res_thumb);
   free(lib->slots);
+  free(lib->culling);
+  free(lib->preview);
   free(self->data);
 }
 
