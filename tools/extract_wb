@@ -144,33 +144,18 @@ ARGV.each do |filename|
         finetune = values[0]
       elsif tag == "WB Shift GM" # detect GM shift and warn about it
         gm_skew = gm_skew || (values[0].to_i != 0)
-        if values[0].to_i != 0
-          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
-        end
       elsif tag == "WB Shift AB GM" # sony
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
-        if values[1].to_i != 0
-          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
-        end
       elsif tag == "White Balance Fine Tune" && maker.start_with?("NIKON") # nikon
         finetune = 0-(values[0].to_i * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
         gm_skew = gm_skew || (values[1].to_i != 0)
-        if values[1].to_i != 0
-          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
-        end
       elsif tag == "White Balance Fine Tune" && maker == "FUJIFILM" # fuji
         finetune = values[3].to_i / 20 # Fuji has -180..180 but steps are every 20
         gm_skew = gm_skew || (values[1].to_i != 0)
-        if values[1].to_i != 0
-          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
-        end
       elsif tag == "White Balance Bracket" # olympus
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
-        if values[1].to_i != 0
-          $stderr.puts "WARNING: finetuning over GM axis detected! data is skewed!"
-        end
       end
     end
   end
@@ -203,9 +188,17 @@ ARGV.each do |filename|
   end
 end
 
-puts found_presets.inspect.gsub("], ", "],\n")
+# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
+ 
 # Get rid of duplicate presets
 found_presets = Hash[found_presets.sort.zip].keys
+
+#get rid of ignored presets (might speed up things later on?)
+found_presets.reject! do |maker, model, preset, finetune, red, green, blue|
+  IGNORED_PRESETS.include? preset
+end
+
+# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
 
 def convert_preset_to_sort(preset)
   if IGNORED_PRESETS.include? preset
@@ -221,7 +214,10 @@ def convert_preset_to_sort(preset)
 end
 
 found_presets.sort! do |a, b|
-  (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])) == 0 ? a[3].to_i <=> b[3].to_i : (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2]))
+  (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])) == 0 ? 
+    a[3].to_i <=> b[3].to_i 
+    : 
+    (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2]))
 end
 
 min_padding = 0
@@ -229,16 +225,41 @@ found_presets.each do |maker, model, preset, finetune, red, green, blue|
   min_padding = preset.size if preset.size > min_padding
 end
 
+ #dealing with Nikon half-steps
 (found_presets.length - 1).times do |index|
-  #dealing with Nikon half-steps
-  if found_presets[index][0] == "Nikon" && found_presets[index+1][0] == found_presets[index][0] && found_presets[index+1][1] == found_presets[index][1] && found_presets[index+1][2] == found_presets[index][2] && found_presets[index+1][3] == found_presets[index][3] #case now translated
+  if found_presets[index][0] == "Nikon" && #case now translated
+      found_presets[index+1][0] == found_presets[index][0] && ##
+      found_presets[index+1][1] == found_presets[index][1] &&
+      found_presets[index+1][2] == found_presets[index][2] &&
+      found_presets[index+1][3] == found_presets[index][3]
+      
     curr_finetune = found_presets[index][3].to_i
-    if curr_finetune < 0 # finetune
+    if curr_finetune < 0 
       found_presets[index+1][3] = ((found_presets[index+1][3].to_i) + 1).to_s
     elsif curr_finetune > 0
-      found_presets[index][3] = ((found_presets[index][3].to_i) - 1).to_s
+      found_presets[index][3] = ((curr_finetune) - 1).to_s
     end
   end
+end
+
+lazy_finetuning = []
+(found_presets.length - 1).times do |index|
+  if found_presets[index+1][0] == found_presets[index][0] && ##
+      found_presets[index+1][1] == found_presets[index][1] &&
+      found_presets[index+1][2] == found_presets[index][2] &&
+      found_presets[index+1][3].to_i != ((found_presets[index][3].to_i)+1)
+    # found gap. complain about needing to interpolate
+    lazy_finetuning << [found_presets[index][0], found_presets[index][1], found_presets[index][2]]
+  end
+end
+
+# Get rid of duplicate lazy finetuning reports
+lazy_finetuning = Hash[lazy_finetuning.sort.zip].keys
+
+# $stderr.puts lazy_finetuning.inspect.gsub("], ", "],\n") # debug content
+
+lazy_finetuning.each do |maker, model, preset|
+  $stderr.puts "Gaps detected in finetuning for #{maker} #{model} preset #{preset}, dt will need to interpolate!"
 end
 
 # Print out the presets if they exist
