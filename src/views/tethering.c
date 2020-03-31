@@ -184,11 +184,11 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         scale = fminf(w / ph, h / pw);
       scale = fminf(1.0, scale);
 
-      cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);  // origin to middle of canvas
-      if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);     // mirror image
-      cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);            // rotate around middle
-      if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale); // scale to fit canvas
-      cairo_translate(cr, -0.5 * pw, -0.5 * ph);                      // origin back to corner
+      cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
+      if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
+      if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
+      if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
+      cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
 
       gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
       cairo_paint(cr);
