@@ -3099,14 +3099,46 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // dynamic accels
   if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
   {
-    gtk_widget_grab_focus(self->dynamic_accel_current->widget);
-    float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
-    float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+    GtkWidget *widget = self->dynamic_accel_current->widget;
+    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
-    if(up)
-      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+    if(w->type == DT_BAUHAUS_SLIDER)
+    {
+      gtk_widget_grab_focus(self->dynamic_accel_current->widget);
+      float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
+      float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+
+      if(up)
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+      else
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    }
     else
-      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    {
+      const int currentval = dt_bauhaus_combobox_get(widget);
+
+      if(up)
+      {
+        const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(widget) ? 0 : currentval + 1;
+        dt_bauhaus_combobox_set(widget, nextval);
+      }
+      else
+      {
+        const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(widget) : currentval - 1;
+        dt_bauhaus_combobox_set(widget, prevval);
+      }
+
+      if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
+      {
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(widget));
+        else if(w->module)
+          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(widget));
+        else
+          dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(widget));
+      }
+
+    }
     g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
     return;
   }
