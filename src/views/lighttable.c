@@ -699,7 +699,7 @@ static inline int _get_max_in_memory_images()
   return MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
 }
 
-static void _sort_preview_surface(dt_library_t *lib, dt_layout_image_t *images, const int sel_img_count,
+/*static void _sort_preview_surface(dt_library_t *lib, dt_layout_image_t *images, const int sel_img_count,
                                   const int max_in_memory_images)
 {
 #define SWAP_PREVIEW_SURFACE(x1, x2)                                                                              \
@@ -763,7 +763,7 @@ static void _sort_preview_surface(dt_library_t *lib, dt_layout_image_t *images, 
   }
 
 #undef SWAP_PREVIEW_SURFACE
-}
+}*/
 
 void init(dt_view_t *self)
 {
@@ -1038,7 +1038,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   return TRUE;
 }
 
-static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t height,
+/*static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t height,
                                        const dt_lighttable_layout_t layout)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1271,9 +1271,9 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   dt_conf_set_int("plugins/lighttable/culling_last_id", lib->slots[0].imgid);
 
   return TRUE;
-}
+}*/
 
-static void _culling_prefetch(dt_view_t *self)
+/*static void _culling_prefetch(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   if(lib->slots_count == 0) return;
@@ -1348,9 +1348,9 @@ static void _culling_prefetch(dt_view_t *self)
         img->imgid = -2; // no image available
     }
   }
-}
+}*/
 
-static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+/*static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                           int32_t pointery, const dt_lighttable_layout_t layout)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1468,7 +1468,7 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   return missing;
-}
+}*/
 
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
@@ -1692,7 +1692,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
           gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
         break;
       case DT_LIGHTTABLE_LAYOUT_CULLING:
-        lib->missing_thumbnails = expose_culling(self, cr, width, height, pointerx, pointery, layout);
+        if(!gtk_widget_get_visible(lib->culling->widget)) gtk_widget_show(lib->culling->widget);
+        // lib->missing_thumbnails = expose_culling(self, cr, width, height, pointerx, pointery, layout);
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:
       case DT_LIGHTTABLE_LAYOUT_LAST:
@@ -2260,6 +2261,10 @@ void leave(dt_view_t *self)
     darktable.view_manager->active_images = NULL;
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
   }
+
+  // we hide culling and preview too
+  gtk_widget_hide(lib->culling->widget);
+  gtk_widget_hide(lib->preview->widget);
 
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipmaps_updated_signal_callback),
@@ -3434,6 +3439,11 @@ void gui_init(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  // add culling and preview to the center widget
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget);
+  gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
                                                      NULL);
