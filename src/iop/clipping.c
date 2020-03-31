@@ -3355,6 +3355,11 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "top"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "right"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bottom"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect ratio"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guide lines"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "flip"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "keystone"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -3370,6 +3375,11 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "top", GTK_WIDGET(g->cy));
   dt_accel_connect_slider_iop(self, "right", GTK_WIDGET(g->cw));
   dt_accel_connect_slider_iop(self, "bottom", GTK_WIDGET(g->ch));
+  dt_accel_connect_combobox_iop(self, "guide lines", GTK_WIDGET(g->guide_lines));
+  dt_accel_connect_combobox_iop(self, "aspect ratio", GTK_WIDGET(g->aspect_presets));
+  dt_accel_connect_combobox_iop(self, "flip", GTK_WIDGET(g->hvflip));
+  dt_accel_connect_combobox_iop(self, "keystone", GTK_WIDGET(g->keystone_type));
+  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->crop_auto));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

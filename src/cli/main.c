@@ -65,6 +65,7 @@ static void usage(const char *progname)
   fprintf(stderr, "   --bpp <bpp>, unsupported\n");
   fprintf(stderr, "   --hq <0|1|false|true> default: true\n");
   fprintf(stderr, "   --upscale <0|1|false|true>, default: false\n");
+  fprintf(stderr, "   --export_masks <0|1|false|true>, default: false\n");
   fprintf(stderr, "   --style <style name>\n");
   fprintf(stderr, "   --style-overwrite\n");
   fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
@@ -91,7 +92,8 @@ int main(int argc, char *arg[])
   char *style = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
-  gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE, style_overwrite = FALSE, custom_presets = TRUE;
+  gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
+           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -137,6 +139,22 @@ int main(int argc, char *arg[])
         else
         {
           fprintf(stderr, "%s: %s\n", _("unknown option for --hq"), arg[k]);
+          usage(arg[0]);
+          exit(1);
+        }
+        g_free(str);
+      }
+      else if(!strcmp(arg[k], "--export_masks") && argc > k + 1)
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
+          export_masks = FALSE;
+        else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
+          export_masks = TRUE;
+        else
+        {
+          fprintf(stderr, "%s: %s\n", _("unknown option for --export_masks"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -434,7 +452,7 @@ int main(int argc, char *arg[])
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale,
+    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
                    icc_type, icc_filename, icc_intent, &metadata);
   }
 

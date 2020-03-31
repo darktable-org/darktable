@@ -607,18 +607,19 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
-                      const gboolean copy_metadata, dt_colorspaces_color_profile_type_t icc_type,
-                      const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
-                      dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *storage_params, int num,
-                      int total, dt_export_metadata_t *metadata)
+                      const gboolean copy_metadata, const gboolean export_masks,
+                      dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                      dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
+                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata)
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
-    return format->write_image(format_params, filename, NULL, icc_type, icc_filename, NULL, 0, imgid, num, total, NULL);
+    return format->write_image(format_params, filename, NULL, icc_type, icc_filename, NULL, 0, imgid, num, total, NULL,
+                               export_masks);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params, FALSE, FALSE, high_quality, upscale,
-                                        FALSE, NULL, copy_metadata, icc_type, icc_filename, icc_intent, storage,
-                                        storage_params, num, total, metadata);
+                                        FALSE, NULL, copy_metadata, export_masks, icc_type, icc_filename, icc_intent,
+                                        storage, storage_params, num, total, metadata);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -626,11 +627,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                                  dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
                                  const gboolean ignore_exif, const gboolean display_byteorder,
                                  const gboolean high_quality, const gboolean upscale, const gboolean thumbnail_export,
-                                 const char *filter, const gboolean copy_metadata,
+                                 const char *filter, const gboolean copy_metadata, const gboolean export_masks,
                                  dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                                 dt_iop_color_intent_t icc_intent,
-                                 dt_imageio_module_storage_t *storage,
-                                 dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata)
+                                 dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
+                                 dt_imageio_module_data_t *storage_params, int num, int total,
+                                 dt_export_metadata_t *metadata)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -664,7 +665,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
   res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), TRUE); // TODO
+                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {
     dt_control_log(
@@ -917,14 +918,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
-                              num, total, &pipe);
+                              num, total, &pipe, export_masks);
 
     free(exif_profile);
   }
   else
   {
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, NULL, 0, imgid, num, total,
-                              &pipe);
+                              &pipe, export_masks);
   }
 
   dt_dev_pixelpipe_cleanup(&pipe);

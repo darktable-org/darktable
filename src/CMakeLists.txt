@@ -109,6 +109,9 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/thumbnail.c"
+  "dtgtk/thumbnail_btn.c"
+  "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
@@ -319,7 +322,7 @@ if(USE_WEBP)
 endif(USE_WEBP)
 
 if (USE_AVIF)
-    find_package(libavif 0.5.2 CONFIG)
+    find_package(libavif 0.6.0 CONFIG)
     if (TARGET avif)
         list(APPEND LIBS avif)
         add_definitions(-DHAVE_LIBAVIF=1)
@@ -360,15 +363,6 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
-
-if(USE_FLICKR)
-  find_package(FLICKCURL)
-  if(FLICKCURL_FOUND)
-    include_directories(SYSTEM ${FLICKCURL_INCLUDE_DIRS})
-    list(APPEND LIBS ${FLICKCURL_LIBRARIES})
-    add_definitions(${FLICKCURL_DEFINITIONS})
-  endif(FLICKCURL_FOUND)
-endif(USE_FLICKR)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -756,6 +750,13 @@ if(BUILD_PRINT)
 else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
+
+if(USE_GAME)
+  add_definitions("-DHAVE_GAME")
+  message(STATUS "Game: the good knight")
+else(USE_GAME)
+  message(STATUS "Game: no")
+endif(USE_GAME)
 
 #
 # set development flags for our code

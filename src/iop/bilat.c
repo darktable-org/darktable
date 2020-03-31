@@ -117,6 +117,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtone range"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -129,6 +130,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
   dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
   dt_accel_connect_slider_iop(self, "midtone range", GTK_WIDGET(g->midtone));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 int legacy_params(

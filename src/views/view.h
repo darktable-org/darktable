@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
@@ -111,6 +112,9 @@ typedef struct dt_mouse_action_t
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
 
+/* maximum zoom factor for the lighttable */
+#define DT_LIGHTTABLE_MAX_ZOOM 25
+
 /**
  * main dt view module (as lighttable or darkroom)
  */
@@ -184,8 +188,14 @@ typedef enum dt_view_image_over_t
 } dt_view_image_over_t;
 
 /** returns -1 if the action has to be applied to the selection,
-    or the imgid otherwise */
+    or the imgid otherwise
+    TODO : remove it in profit of next functions*/
 int32_t dt_view_get_image_to_act_on();
+
+// get images to act on for gloabals change (via libs or accels)
+GList *dt_view_get_images_to_act_on();
+// get the main image to act on during global changes (libs, accels)
+int dt_view_get_image_to_act_on2();
 
 /** guess the image_over flag assuming that all possible controls are displayed */
 dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
@@ -224,6 +234,8 @@ typedef struct dt_view_image_expose_t
 } dt_view_image_expose_t;
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_expose(dt_view_image_expose_t *vals);
+/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface);
 
 /* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
    this routine does not output any meta-data as the version above.
@@ -251,6 +263,12 @@ typedef struct dt_view_manager_t
 {
   GList *views;
   dt_view_t *current_view;
+
+  // images currently active in the main view (there can be more than 1 in culling)
+  GSList *active_images;
+
+  // copy/paste history structure
+  dt_history_copy_item_t copy_paste;
 
   struct
   {
@@ -281,6 +299,12 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *get_grouped;
   } statements;
 
+  struct
+  {
+    GPid audio_player_pid;   // the pid of the child process
+    int32_t audio_player_id; // the imgid of the image the audio is played for
+    guint audio_player_event_source;
+  } audio;
 
   /*
    * Proxy
@@ -320,9 +344,6 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
-      int32_t (*activated_image)(struct dt_lib_module_t *);
-      GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
 
     /* darkroom view proxy object */
@@ -342,12 +363,11 @@ typedef struct dt_view_manager_t
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
-      void (*set_position)(struct dt_view_t *view, uint32_t pos);
-      uint32_t (*get_position)(struct dt_view_t *view);
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
       void (*force_expose_all)(struct dt_view_t *view);
       gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
+      void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -436,8 +456,8 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);
 
 /** set scrollbar positions, gui method. */
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float vscroll_lower, float hsize, float hwinsize,
-                           float vpos, float hscroll_lower, float vsize, float vwinsize);
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hscroll_lower, float hsize, float hwinsize,
+                           float vpos, float vscroll_lower, float vsize, float vwinsize);
 
 /*
  * Tethering View PROXY
@@ -457,18 +477,10 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
  */
 void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
 
-/*
- * NEW filmstrip api
- */
-/*** scrolls filmstrip to the image in position 'diff' from the current one
- *** offset to be provided is the offset of the current image, as given by
- *** dt_collection_image_offset. Getting this data before changing flags allows
- *** for using this function with images disappearing from the current collection  */
-void dt_view_filmstrip_scroll_relative(const int diff, int offset);
-/** scrolls filmstrip to the specified image */
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
-/** get the imageid from last filmstrip activate request */
-int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
+// active images functions
+void dt_view_active_images_reset(gboolean raise);
+void dt_view_active_images_add(int imgid, gboolean raise);
+GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
@@ -482,26 +494,21 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** gets the culling zoom mode */
 dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
-/** set first visible image offset */
-void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
-/** read first visible image offset */
-uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 /** force a full redraw of the lighttable */
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
 /** is the image visible in culling layout */
 gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
-
-/** set active image */
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
-/** prefetch the next few images in film strip, from selected on.
-    TODO: move to control ?
-*/
-void dt_view_filmstrip_prefetch();
+/** sets the offset image (for culling and full preview) */
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
+
+/* audio */
+void dt_view_audio_start(dt_view_manager_t *vm, int imgid);
+void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy

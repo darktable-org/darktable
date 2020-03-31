@@ -310,16 +310,19 @@ void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, gboolean show);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
-/** \brief toggle view of header */
-void dt_ui_toggle_header(struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
+GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
 /** \brief get the main window widget */
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
+/** \brief get the thumb table */
+struct dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui);
+/** \brief get the log message widget */
+GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui);
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
 

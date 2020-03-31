@@ -33,6 +33,11 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
+  /** \brief This signal is raised when image shown in the main view change
+      no param, no returned value
+   */
+  DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+
   /** \brief This signal is raised when dt_control_queue_redraw() is called.
     no param, no returned value
   */
@@ -51,20 +56,20 @@ typedef enum dt_signal_t
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
   /** \bief This signal is raised when a thumb is doubleclicked in
-    no param, no returned value
-      filmstrip module.
+    thumbtable (filemananger, filmstrip)
+    1 : int the imageid of the thumbnail
+    no returned value
    */
-  DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
 
-  /** \brief This signal is raised when collection changed
-  no param, no returned value
+  /** \brief This signal is raised when collection changed. To avoid leaking the list,
+    dt_collection_t is connected to this event and responsible of that.
+    1 : dt_collection_change_t the reason why the collection has changed
+    2 : GList of imageids that have changed (can be null if it's a global change)
+    3 : next untouched imgid in the list (-1 if no list)
+    no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
-
-  /** \brief This signal is raised when collection query is changed
-  no param, no returned value
-    */
-  DT_SIGNAL_COLLECTION_QUERY_CHANGED,
 
   /** \brief This signal is raised when the selection is changed
   no param, no returned value
@@ -73,6 +78,9 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
+
+  /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
+  DT_SIGNAL_METADATA_CHANGED,
 
   /** \brief This signal is raised when a style is added/deleted/changed  */
   DT_SIGNAL_STYLE_CHANGED,
@@ -101,7 +109,8 @@ typedef enum dt_signal_t
   DT_SIGNAL_DEVELOP_INITIALIZE,
 
   /** \brief This signal is raised when a mipmap has been generated and flushed to cache
-  no param, no returned value
+    1 :  int the imgid of the mipmap
+    no returned value
     */
   DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
 
@@ -196,6 +205,11 @@ typedef enum dt_signal_t
     no param, no returned value
   */
   DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+
+  /** \brief This signal is raised when dt_control_log_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_LOG_REDRAW,
 
   /** \brief This signal is raised when new color picker data are available in the pixelpipe.
     1 module

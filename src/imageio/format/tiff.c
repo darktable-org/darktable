@@ -23,12 +23,19 @@
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
+#include "develop/pixelpipe_hb.h"
 #include <inttypes.h>
 #include <memory.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <tiffio.h>
+
+#define CLAMP_FLT(A) ((A) > (0.0f) ? ((A) < (1.0f) ? (A) : (1.0f)) : (0.0f))
+
+// it would be nice to save space by storing the masks as single channel float data,
+// but at least GIMP can't open TIFF files where not all layers have the same format.
+#define MASKS_USE_SAME_FORMAT
 
 DT_MODULE(3)
 
@@ -51,7 +58,8 @@ typedef struct dt_imageio_tiff_gui_t
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
@@ -62,6 +70,11 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   void *rowdata = NULL;
 
+  gboolean free_mask = FALSE;
+  float *raster_mask = NULL;
+#ifdef _WIN32
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+#endif
   int rc = 1; // default to error
 
   if(imgid > 0)
@@ -80,19 +93,28 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
   }
 
+  int n_pages = 1;
+  // only when masks are to be stored we check for extra pages!
+  if(export_masks && pipe)
+  {
+    for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+      n_pages += g_hash_table_size(((dt_dev_pixelpipe_iop_t *)iter->data)->raster_masks);
+  }
+
   // Create little endian tiff image
 #ifdef _WIN32
-  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
   tif = TIFFOpenW(wfilename, "wl");
-  g_free(wfilename);
 #else
   tif = TIFFOpen(filename, "wl");
 #endif
+
   if(!tif)
   {
     rc = 1;
     goto exit;
   }
+
+  TIFFSetField(tif, TIFFTAG_DOCUMENTNAME, filename);
 
   // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
   // "A proprietary ZIP/Flate compression code (0x80b2) has been used by some"
@@ -215,11 +237,13 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
   }
 
-  // success
   rc = 0;
 
-exit:
   // close the file before adding exif data
+  TIFFSetField(tif, TIFFTAG_PAGENAME, _("image"));
+  TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+  TIFFSetField(tif, TIFFTAG_PAGENUMBER, 0, n_pages);
+
   if(tif)
   {
     TIFFClose(tif);
@@ -231,10 +255,221 @@ exit:
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
+
+  // exiv2 doesn't support multi page tiffs. so we have to write in two steps. :-(
+
+  if(rc == 0 && n_pages > 1)
+  {
+#ifdef _WIN32
+    tif = TIFFOpenW(wfilename, "al");
+#else
+    tif = TIFFOpen(filename, "al");
+#endif
+
+    if(!tif)
+    {
+      rc = 1;
+      goto exit;
+    }
+
+    // add masks
+    float missing_raster_mask[8 * 8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                         0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+                                         0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0,
+                                         0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+                                         0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                         0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+                                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    static const size_t missing_raster_mask_w = 8, missing_raster_mask_h = 8;
+    int page = 1;
+    for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
+
+      GHashTableIter rm_iter;
+      gpointer key, value;
+
+      g_hash_table_iter_init(&rm_iter, piece->raster_masks);
+      while(g_hash_table_iter_next(&rm_iter, &key, &value))
+      {
+        if(free_mask) dt_free_align(raster_mask);
+        raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+
+
+        size_t w = d->global.width, h = d->global.height;
+        if(!raster_mask)
+        {
+          // this should never happen
+          w = missing_raster_mask_w;
+          h = missing_raster_mask_h;
+          raster_mask = missing_raster_mask;
+          free_mask = FALSE;
+        }
+
+        TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+        TIFFSetField(tif, TIFFTAG_PAGENUMBER, page, n_pages);
+
+        const char *pagename = g_hash_table_lookup(piece->module->raster_mask.source.masks, key);
+        if(pagename)
+          TIFFSetField(tif, TIFFTAG_PAGENAME, pagename);
+        else
+          TIFFSetField(tif, TIFFTAG_PAGENAME, piece->module->name());
+
+        if(d->compress == 1)
+        {
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+          TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_NONE);
+          TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
+        }
+        else if(d->compress == 2)
+        {
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+          TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
+          TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
+        }
+        else if(d->compress == 3)
+        {
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+          if(d->bpp == 32)
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
+          else
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
+          TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
+        }
+        else // (d->compress == 0)
+        {
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+        }
+
+        TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
+
+        if(resolution > 0)
+        {
+          TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
+          TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+        }
+
+        TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
+        TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
+        TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
+        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
+        TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
+
+#ifdef MASKS_USE_SAME_FORMAT
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
+        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
+        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+
+        free(rowdata);
+        const size_t _rowsize = (w * 3) * d->bpp / 8;
+        rowdata = malloc(_rowsize);
+
+        if(d->bpp == 32)
+        {
+          for(int y = 0; y < h; y++)
+          {
+            const float *in = raster_mask + (size_t)y * w;
+            float *out = (float *)rowdata;
+
+            for(int x = 0; x < w; x++, out += 3)
+            {
+              for(int c = 0; c < 3; c++)
+                out[c] = in[x];
+            }
+
+            if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
+            {
+              rc = 1;
+              goto exit;
+            }
+          }
+        }
+        else if(d->bpp == 16)
+        {
+          for(int y = 0; y < h; y++)
+          {
+            const float *in = raster_mask + (size_t)y * w;
+            uint16_t *out = (uint16_t *)rowdata;
+
+            for(int x = 0; x < w; x++, out += 3)
+            {
+              for(int c = 0; c < 3; c++)
+                out[c] = CLAMP_FLT(in[x]) * 65535;
+            }
+
+            if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
+            {
+              rc = 1;
+              goto exit;
+            }
+          }
+        }
+        else
+        {
+          for(int y = 0; y < h; y++)
+          {
+            const float *in = raster_mask + (size_t)y * w;
+            uint8_t *out = (uint8_t *)rowdata;
+
+            for(int x = 0; x < w; x++, out += 3)
+            {
+              for(int c = 0; c < 3; c++)
+                out[c] = CLAMP_FLT(in[x]) * 255;
+            }
+
+            if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
+            {
+              rc = 1;
+              goto exit;
+            }
+          }
+        }
+#else // MASKS_USE_SAME_FORMAT
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)1);
+        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)32);
+        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)SAMPLEFORMAT_IEEEFP);
+        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
+
+        for(int y = 0; y < h; y++)
+        {
+          const float *in = raster_mask + (size_t)y * w;
+          if(TIFFWriteScanline(tif, (void *)in, y, 0) == -1)
+          {
+            rc = 1;
+            goto exit;
+          }
+        }
+#endif // MASKS_USE_SAME_FORMAT
+
+        page++;
+
+        if(page < n_pages)
+        {
+          TIFFWriteDirectory(tif);
+        }
+      } // for all raster masks
+    } // for all pipe nodes
+
+    TIFFClose(tif);
+    tif = NULL;
+  } // if more than 1 page, i.e., there are masks
+
+  // success
+  rc = 0;
+
+exit:
   free(profile);
   profile = NULL;
   free(rowdata);
   rowdata = NULL;
+#ifdef _WIN32
+  g_free(wfilename);
+#endif
+  if(free_mask)
+    dt_free_align(raster_mask);
 
   return rc;
 }
@@ -516,7 +751,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  return FORMAT_FLAGS_SUPPORT_XMP;
+  return FORMAT_FLAGS_SUPPORT_XMP | FORMAT_FLAGS_SUPPORT_LAYERS;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

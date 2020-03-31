@@ -29,6 +29,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -37,6 +38,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "dtgtk/button.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -67,9 +69,6 @@
 
 DT_MODULE(1)
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data);
-
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                GdkModifierType modifier, gpointer data);
 
@@ -98,7 +97,7 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 
@@ -277,6 +276,22 @@ void expose(
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
+
+    /* If boxw and boxh very closely match the zoomed size in the darktable window we might have resizing with
+       every expose because adding a slider will change the image area and might force a resizing in next expose.
+       So we disable in cases close to full.
+    */
+    if(boxw > 0.95f)
+    {
+      zx = .0f;
+      boxw = 1.01f;
+    }
+    if(boxh > 0.95f)
+    {
+      zy = .0f;
+      boxh = 1.01f;
+    }
+
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
@@ -461,6 +476,14 @@ void expose(
     dt_colorpicker_sample_t *sample = NULL;
 
     cairo_save(cri);
+    // The colorpicker samples bounding rectangle should only be displayed inside the visible image
+    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+
+    const float hbar = (self->width - pwidth) * .5f;
+    const float tbar = (self->height - pheight) * .5f;
+    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
+    cairo_clip(cri);
 
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
@@ -522,13 +545,16 @@ void expose(
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
-    const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
-    const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+
+    const float hbar = (self->width - pwidth) * .5f;
+    const float tbar = (self->height - pheight) * .5f;
     cairo_save(cri);
-    cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
     cairo_clip(cri);
 
     const float wd = dev->preview_pipe->backbuf_width;
@@ -580,13 +606,16 @@ void expose(
   else
   {
     // masks
-    if(dev->form_visible)
+    if(dev->form_visible && dev->gui_module->enabled)
     {
       // The masks paths should only be displayed inside the visible image
-      const float hbar = (self->width - dev->pipe->output_backbuf_width) * .5f;
-      const float tbar = (self->height - dev->pipe->output_backbuf_height) * .5f;
+      const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+      const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+
+      const float hbar = (self->width - pwidth) * .5f;
+      const float tbar = (self->height - pheight) * .5f;
       cairo_save(cri);
-      cairo_rectangle(cri,hbar,tbar,dev->pipe->output_backbuf_width,dev->pipe->output_backbuf_height);
+      cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
       cairo_clip(cri);
 
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
@@ -635,6 +664,7 @@ void reset(dt_view_t *self)
 int try_enter(dt_view_t *self)
 {
   int selected = dt_control_get_mouse_over_id();
+
   if(selected < 0)
   {
     // try last selected
@@ -680,19 +710,6 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-
-
-static void select_this_image(const int imgid)
-{
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-}
-
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
   dt_accel_disconnect_list(module->accel_closures);
@@ -704,6 +721,13 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // change active image
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
   // disable color picker when changing image
   if(dev->gui_module)
   {
@@ -714,11 +738,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
   }
 
   // clean the undo list
@@ -765,12 +789,12 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  // TODO: only if image changed!
-  // if()
+  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
+    dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
   // cleanup visible masks
@@ -780,8 +804,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
-
-  select_this_image(imgid);
 
   while(dev->history)
   {
@@ -878,7 +900,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+        dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
 
@@ -932,9 +954,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
-
   // release pixel pipe mutices
   dt_pthread_mutex_BAD_unlock(&dev->preview2_pipe_mutex);
   dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
@@ -953,67 +972,53 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 }
 
-static void film_strip_activated(const int imgid, void *data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  // switch images in darkroom mode:
-  const dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  dt_dev_change_image(dev, imgid);
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-  // record the imgid to display when going back to lighttable
-  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-  // force redraw
-  dt_control_queue_redraw();
-}
-
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data)
-{
-  int32_t imgid = 0;
-  if((imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) > 0)
-    film_strip_activated(imgid, user_data);
-}
-
-static void dt_dev_jump_image(dt_develop_t *dev, int diff)
-{
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  int offset = 0;
-  if(qin)
+  if(imgid > 0)
   {
-    int orig_imgid = -1, imgid = -1;
-    sqlite3_stmt *stmt;
+    // switch images in darkroom mode:
+    const dt_view_t *self = (dt_view_t *)user_data;
+    dt_develop_t *dev = (dt_develop_t *)self->data;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) orig_imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    offset = dt_collection_image_offset(orig_imgid);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      imgid = sqlite3_column_int(stmt, 0);
-
-      if(orig_imgid == imgid)
-      {
-        // nothing to do
-        sqlite3_finalize(stmt);
-        return;
-      }
-
-      if(!dev->image_loading)
-      {
-        dt_dev_change_image(dev, imgid);
-        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-        // record the imgid to display when going back to lighttable
-        dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-      }
-    }
-    sqlite3_finalize(stmt);
+    dt_dev_change_image(dev, imgid);
+    // move filmstrip
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    // force redraw
+    dt_control_queue_redraw();
   }
+}
+
+static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
+{
+  if(dev->image_loading) return;
+
+  const int imgid = dev->image_storage.id;
+  int new_offset = 1;
+  int new_id = -1;
+
+  // we new offset and imgid after the jump
+  sqlite3_stmt *stmt;
+  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid, imgid "
+                                          "FROM memory.collected_images "
+                                          "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
+                                 imgid, diff);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    new_offset = sqlite3_column_int(stmt, 0);
+    new_id = sqlite3_column_int(stmt, 1);
+  }
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  if(new_id < 0) return;
+
+  // if id seems valid, we change the image and move filmstrip
+  dt_dev_change_image(dev, new_id);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
+
+  // if it's a change by key_press, we set mouse_over to the active image
+  if(by_key) dt_control_set_mouse_over_id(new_id);
 }
 
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1059,17 +1064,6 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
   return TRUE;
 }
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-  return TRUE;
-}
-
 static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
@@ -1086,6 +1080,7 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   const gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const gboolean export_masks = dt_conf_get_bool("plugins/lighttable/export/export_masks");
   const gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -1095,8 +1090,8 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   gchar *metadata_export = dt_lib_export_metadata_get_conf();
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
-                    icc_type, icc_filename, icc_intent, metadata_export);
+  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks, style,
+                    style_append, icc_type, icc_filename, icc_intent, metadata_export);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);
@@ -1108,14 +1103,14 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, 1);
+  dt_dev_jump_image((dt_develop_t *)data, 1, TRUE);
   return TRUE;
 }
 
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  dt_dev_jump_image((dt_develop_t *)data, -1);
+  dt_dev_jump_image((dt_develop_t *)data, -1, TRUE);
   return TRUE;
 }
 
@@ -1950,7 +1945,7 @@ void gui_init(dt_view_t *self)
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
-                              _("toggle ISO 12646 colour assessment conditions"));
+                              _("toggle ISO 12646 color assessment conditions"));
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
@@ -2544,7 +2539,9 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
 
-  select_this_image(dev->image_storage.id);
+  // change active image
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(dev->image_storage.id, TRUE);
 
   dt_control_set_dev_zoom(DT_ZOOM_FIT);
   dt_control_set_dev_zoom_x(0);
@@ -2579,7 +2576,10 @@ void enter(dt_view_t *self)
       dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
       snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
-      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
+      if(dt_conf_get_bool(option))
+        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+      else
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
     }
 
     /* setup key accelerators (only if not hidden) */
@@ -2603,7 +2603,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
@@ -2632,11 +2632,8 @@ void enter(dt_view_t *self)
   dt_control_set_dev_zoom_y(zoom_y);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_darkroom_filmstrip_activate_callback), self);
-
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
 
@@ -2711,21 +2708,21 @@ void leave(dt_view_t *self)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, FALSE);
   }
   else
   {
-    dt_image_set_aspect_ratio(dev->image_storage.id);
+    dt_image_set_aspect_ratio(dev->image_storage.id, FALSE);
   }
 
   // be sure light table will regenerate the thumbnail:
-  // TODO: only if changed!
-  // if()
+  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
+    dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
   // clear gui.
@@ -2796,9 +2793,12 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
-  darktable.develop->image_storage.id = -1;
   // darkroom development could have changed a collection, so update that before being back in lightroom
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                             g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
+
+  darktable.develop->image_storage.id = -1;
+
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
@@ -2819,16 +2819,22 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
-void mouse_restrict_range(dt_view_t *self, double xpos, double ypos, float *x_lim, float *y_lim)
+/* This helper function tests for a position to be within the displayed area
+   of an image. To avoid "border cases" we accept values to be slighly out of area too.
+*/
+static int mouse_in_imagearea(dt_view_t *self, double x, double y)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  const float width_i = self->width;
-  const float height_i = self->height;
-  const float hbar = (width_i - dev->pipe->output_backbuf_width) / 2;
-  const float tbar = (height_i - dev->pipe->output_backbuf_height) / 2 ;
 
-  *x_lim = fmaxf(hbar, fminf(xpos,width_i - hbar));
-  *y_lim = fmaxf(tbar, fminf(ypos,height_i - tbar));
+  const int closeup = dt_control_get_dev_closeup();
+  const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+  const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+
+  x -= (self->width - pwidth) / 2;
+  y -= (self->height - pheight) / 2;
+
+  if((x < -3) || (x > (pwidth + 6)) || (y < -3) || (y > (pheight + 6))) return FALSE;
+  return TRUE;
 }
 
 void mouse_enter(dt_view_t *self)
@@ -2865,30 +2871,31 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && ctl->button_down_which == 1)
   {
     // module requested a color box
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
-    float xpos=x, ypos=y, b_xpos=x, b_ypos=y;
-    mouse_restrict_range(self, x, y, &xpos, &ypos);
-    mouse_restrict_range(self, ctl->button_x, ctl->button_y, &b_xpos, &b_ypos);
-
-    float zoom_x, zoom_y, bzoom_x, bzoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, xpos + offx, ypos + offy, &zoom_x, &zoom_y);
-    dt_dev_get_pointer_zoom_pos(dev, b_xpos + offx, b_ypos + offy, &bzoom_x, &bzoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      // Make sure a minimal width/height
+      float delta_x = 1 / (float) dev->pipe->processed_width;
+      float delta_y = 1 / (float) dev->pipe->processed_height;
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    }
+      float zoom_x, zoom_y, bzoom_x, bzoom_y;
+      dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+      dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
 
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
+    }
     dt_control_queue_redraw();
     return;
   }
@@ -2972,31 +2979,43 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
-    const float delta_x = 1.0f / dev->width;
-    const float delta_y = 1.0f / dev->height;
-    float xpos=x, ypos=y;
     float zoom_x, zoom_y;
-    mouse_restrict_range(self, x, y, &xpos, &ypos);
-    dt_dev_get_pointer_zoom_pos(dev, xpos+offx, ypos+offy, &zoom_x, &zoom_y);
-    if(darktable.lib->proxy.colorpicker.size)
+    dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+    if(mouse_in_imagearea(self, x, y))
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
-    }
-    else
-    {
-      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+      // The default box will be a square with 1% of the image width
+      const float delta_x = 0.01f;
+      const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
+      if(darktable.lib->proxy.colorpicker.size)
+      {
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
+      }
+      else
+      {
+        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      }
     }
-
     dt_control_queue_redraw();
-
     return 1;
   }
+
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 3)
+  {
+    // default is hardcoded this way
+    dev->gui_module->color_picker_box[0] = dev->gui_module->color_picker_box[1] = .01f;
+    dev->gui_module->color_picker_box[2] = dev->gui_module->color_picker_box[3] = .99f;
+
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+    dt_control_queue_redraw();
+    return 1;
+  }
+
   x += offx;
   y += offy;
   // masks
@@ -3355,9 +3374,6 @@ void configure(dt_view_t *self, int wd, int ht)
 
 void init_key_accels(dt_view_t *self)
 {
-  // Film strip shortcuts
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-
   // Zoom shortcuts
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
@@ -3429,10 +3445,6 @@ void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
   dt_develop_t *data = (dt_develop_t *)self->data;
-
-  // Film strip shortcuts
-  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 
   // Zoom shortcuts
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);
