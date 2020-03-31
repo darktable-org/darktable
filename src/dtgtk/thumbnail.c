@@ -56,8 +56,9 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   if(img)
   {
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
-
     thumb->rating = (img->flags & 0x7);
+    thumb->is_bw = dt_image_is_monochrome(img);
+    thumb->is_hdr = dt_image_is_hdr(img);
 
     thumb->groupid = img->group_id;
 
@@ -219,16 +220,18 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     gchar *ext2 = NULL;
     while(ext > thumb->filename && *ext != '.') ext--;
     ext++;
+    gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw);
+
     if(thumb->img_width < thumb->img_height)
     {
       // vertical disposition
-      for(int i = 0; i < strlen(ext); i++) ext2 = dt_util_dstrcat(ext2, "%.1s\n", &ext[i]);
+      for(int i = 0; i < strlen(uext); i++) ext2 = dt_util_dstrcat(ext2, "%.1s\n", &uext[i]);
     }
     else
-      ext2 = dt_util_dstrcat(ext2, "%s", ext);
-    gchar *upcase_ext = g_ascii_strup(ext2, -1); // extension in capital letters to avoid character descenders
-    gtk_label_set_text(GTK_LABEL(thumb->w_ext), upcase_ext);
-    g_free(upcase_ext);
+      ext2 = dt_util_dstrcat(ext2, "%s", uext);
+
+    gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
+    g_free(uext);
     g_free(ext2);
 
     return TRUE;
