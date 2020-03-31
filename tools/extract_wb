@@ -42,7 +42,7 @@ FL_PRESET_REPLACE={
 PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
               "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
               "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "HighTempMercuryVaporFluorescent",
-              "SodiumVaporFluorescent", "Underwater", "Flash"]
+              "HTMercury", "SodiumVaporFluorescent", "Underwater", "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
@@ -188,15 +188,15 @@ ARGV.each do |filename|
   end
 end
 
-# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
- 
-# Get rid of duplicate presets
-found_presets = Hash[found_presets.sort.zip].keys
-
 #get rid of ignored presets (might speed up things later on?)
 found_presets.reject! do |maker, model, preset, finetune, red, green, blue|
   IGNORED_PRESETS.include? preset
 end
+
+# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
+ 
+# Get rid of duplicate presets
+found_presets = Hash[found_presets.sort.zip].keys
 
 # $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
 
@@ -242,12 +242,32 @@ end
   end
 end
 
+# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
+
+# pack Nikon finetuning in case there were no half-steps 
+(found_presets.length - 1).times do |index|
+  if found_presets[index][0] == "Nikon" && #case now translated
+      found_presets[index+1][0] == found_presets[index][0] && ##
+      found_presets[index+1][1] == found_presets[index][1] &&
+      found_presets[index+1][2] == found_presets[index][2] &&
+      found_presets[index+1][3].to_i.even? && found_presets[index][3].to_i.even? &&
+      (found_presets[index+1][3].to_i) == (found_presets[index][3].to_i + 2)
+    
+    #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
+    found_presets[index][3] = (found_presets[index][3].to_i / 2).to_s
+    found_presets[index+1][3] = (found_presets[index+1][3].to_i / 2).to_s
+  end
+end
+# $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
+
+#detect lazy finetuning (will not complain if there's no finetuning)
 lazy_finetuning = []
 (found_presets.length - 1).times do |index|
   if found_presets[index+1][0] == found_presets[index][0] && ##
       found_presets[index+1][1] == found_presets[index][1] &&
       found_presets[index+1][2] == found_presets[index][2] &&
       found_presets[index+1][3].to_i != ((found_presets[index][3].to_i)+1)
+      
     # found gap. complain about needing to interpolate
     lazy_finetuning << [found_presets[index][0], found_presets[index][1], found_presets[index][2]]
   end
