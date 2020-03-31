@@ -1154,6 +1154,40 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
+    int is_monochrome = FALSE;
+    int is_hdr = dt_image_is_hdr(img);
+
+    // Finding out about DNG hdr and monochrome images can be done here while reading exif data.
+    if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
+    {
+      int format = 1;
+      int bps = 0;
+      int spp = 0;
+      int phi = 0;
+
+      if(FIND_EXIF_TAG("Exif.SubImage1.SampleFormat"))
+        format = pos->toLong();
+      else if(FIND_EXIF_TAG("Exif.Image.SampleFormat"))
+        format = pos->toLong();
+
+      if(FIND_EXIF_TAG("Exif.SubImage1.BitsPerSample"))
+        bps = pos->toLong();
+
+      if(FIND_EXIF_TAG("Exif.SubImage1.SamplesPerPixel"))
+        spp = pos->toLong();
+
+      if(FIND_EXIF_TAG("Exif.SubImage1.PhotometricInterpretation"))
+        phi = pos->toLong();
+
+      if((format == 3) && (bps >= 16) && (((spp == 1) && (phi == 32803)) || ((spp == 3) && (phi == 34892)))) is_hdr = TRUE;
+      if((format == 1) && (bps == 16) && (spp == 1) && (phi == 34892)) is_monochrome = TRUE; 
+    }
+
+    if(is_hdr)
+      dt_imageio_set_hdr_tag(img);
+
+    if(is_monochrome)
+      dt_imageio_set_bw_tag(img); 
 
     // some files have the colorspace explicitly set. try to read that.
     // is_ldr -> none

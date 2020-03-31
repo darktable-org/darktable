@@ -55,6 +55,8 @@ typedef struct
   gboolean is_altered;
   gboolean has_audio;
   gboolean is_grouped;
+  gboolean is_bw;
+  gboolean is_hdr;
   gboolean has_localcopy;
   int groupid;
 
