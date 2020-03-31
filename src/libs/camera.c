@@ -464,7 +464,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(modes_label), GTK_POS_RIGHT, 1, 1);
 
   lib->gui.timer = gtk_spin_button_new_with_range(1, 60, 1);
-  lib->gui.count = gtk_spin_button_new_with_range(1, 5000, 1);
+  lib->gui.count = gtk_spin_button_new_with_range(1, 9999, 1);
   lib->gui.brackets = gtk_spin_button_new_with_range(1, 5, 1);
   lib->gui.steps = gtk_spin_button_new_with_range(1, 9, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.timer), GTK_WIDGET(timer_label), GTK_POS_RIGHT, 1, 1);
