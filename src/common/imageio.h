@@ -53,9 +53,9 @@ typedef enum dt_imageio_levels_t
 
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
-
+// Set te darktable/mode/monochrome tag
 void dt_imageio_set_bw_tag(dt_image_t *img);
-
+// Set te darktable/mode/hdr tag
 void dt_imageio_set_hdr_tag(dt_image_t *img);
 
 // opens the file using pfm, hdr, exr.
