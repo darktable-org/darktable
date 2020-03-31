@@ -1004,6 +1004,26 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
+void dt_imageio_set_bw_tag(dt_image_t *img)
+{
+  guint tagid = 0;
+  char tagname[64];
+  snprintf(tagname, sizeof(tagname), "darktable|mode|monochrome");
+  dt_tag_new(tagname, &tagid);
+  dt_tag_attach(tagid, img->id, FALSE, FALSE);
+  img->flags |= DT_IMAGE_MONOCHROME;
+}
+
+void dt_imageio_set_hdr_tag(dt_image_t *img)
+{
+  guint tagid = 0;
+  char tagname[64];
+  snprintf(tagname, sizeof(tagname), "darktable|mode|hdr");
+  dt_tag_new(tagname, &tagid);
+  dt_tag_attach(tagid, img->id, FALSE, FALSE);
+  img->flags |= DT_IMAGE_HDR;
+  img->flags &= ~DT_IMAGE_LDR;
+}
 
 // =================================================
 //   combined reading
@@ -1015,6 +1035,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
 {
   /* first of all, check if file exists, don't bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return !DT_IMAGEIO_OK;
+  const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
+  const int32_t was_bw = (img->flags & DT_IMAGE_MONOCHROME); 
 
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   img->loader = LOADER_UNKNOWN;
@@ -1040,6 +1062,12 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_exotic(img, filename, buf);
+
+  if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
+    dt_imageio_set_hdr_tag(img);
+
+  if((ret == DT_IMAGEIO_OK) && !was_bw && (img->flags & DT_IMAGE_MONOCHROME))
+    dt_imageio_set_bw_tag(img);
 
   return ret;
 }
