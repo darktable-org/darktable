@@ -31,6 +31,7 @@
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/history.h"
+#include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -995,7 +996,7 @@ GList* dt_image_find_duplicates(const char* filename)
   return files;
 #else
   return win_image_find_duplicates(filename);
-#endif 
+#endif
 }
 
 static int _image_read_duplicates(const uint32_t id, const char *filename)
@@ -1058,6 +1059,8 @@ static int _image_read_duplicates(const uint32_t id, const char *filename)
       //create a new duplicate based on the passed-in id
       newid = dt_image_duplicate_with_version(id, version);
     }
+    // make sure newid is not selected
+    dt_selection_clear(darktable.selection);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, newid, 'w');
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     img->version = version;
