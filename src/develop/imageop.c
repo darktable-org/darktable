@@ -2130,8 +2130,11 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_dev_modulegroups_switch(darktable.develop, module);
   }
 
-  dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-  dt_iop_request_focus(module);
+  dt_iop_gui_set_expanded(module, !module->expanded, dt_conf_get_bool("darkroom/ui/single_module"));
+  if(module->expanded)
+  {
+    dt_iop_request_focus(module);
+  }
   return TRUE;
 }
 
