@@ -21,6 +21,7 @@
 #include "common/image.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include "common/tags.h"
 #include <glib.h>
 #include <stdio.h>
 
@@ -52,6 +53,10 @@ typedef enum dt_imageio_levels_t
 
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
+
+void dt_imageio_set_bw_tag(dt_image_t *img);
+
+void dt_imageio_set_hdr_tag(dt_image_t *img);
 
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
