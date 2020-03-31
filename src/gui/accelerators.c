@@ -233,9 +233,12 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   gchar accel_next_path_trans[256];
   gchar accel_prev_path[256];
   gchar accel_prev_path_trans[256];
+  gchar accel_dynamic_path[256];
+  gchar accel_dynamic_path_trans[256];
 
   dt_accel_t *accel_next = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
   dt_accel_t *accel_prev = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
+  dt_accel_t *accel_dynamic = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
 
   gchar *module_name_fixed = dt_util_str_replace(so->name(), "/", "-");
 
@@ -246,7 +249,6 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
            g_dpgettext2(NULL, "accel", path), C_("accel", "next"));
   gtk_accel_map_add_entry(accel_next_path, 0, 0);
   g_strlcpy(accel_next->path, accel_next_path, sizeof(accel_next->path));
-  dt_accel_path_iop_translated(accel_next_path, sizeof(accel_next_path), so, path);
   g_strlcpy(accel_next->translated_path, accel_next_path_trans, sizeof(accel_next->translated_path));
   g_strlcpy(accel_next->module, so->op, sizeof(accel_next->module));
   accel_next->local = local;
@@ -260,12 +262,36 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
            g_dpgettext2(NULL, "accel", path), C_("accel", "previous"));
   gtk_accel_map_add_entry(accel_prev_path, 0, 0);
   g_strlcpy(accel_prev->path, accel_prev_path, sizeof(accel_prev->path));
-  dt_accel_path_iop_translated(accel_prev_path, sizeof(accel_prev_path), so, path);
   g_strlcpy(accel_prev->translated_path, accel_prev_path_trans, sizeof(accel_prev->translated_path));
   g_strlcpy(accel_prev->module, so->op, sizeof(accel_prev->module));
   accel_prev->local = local;
   accel_prev->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel_prev);
+
+  // dynamic accel
+  snprintf(accel_dynamic_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
+           NC_("accel", "dynamic"));
+  snprintf(accel_dynamic_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+           g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
+  gtk_accel_map_add_entry(accel_dynamic_path, 0, 0);
+  g_strlcpy(accel_dynamic->path, accel_dynamic_path, sizeof(accel_dynamic->path));
+  g_strlcpy(accel_dynamic->translated_path, accel_dynamic_path_trans, sizeof(accel_dynamic->translated_path));
+  g_strlcpy(accel_dynamic->module, so->op, sizeof(accel_dynamic->module));
+  accel_dynamic->local = local;
+  accel_dynamic->views = DT_VIEW_DARKROOM;
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel_dynamic);
+
+  dt_accel_dynamic_t *daccel = (dt_accel_dynamic_t *)g_malloc0(sizeof(dt_accel_dynamic_t));
+
+  g_strlcpy(daccel->path, accel_dynamic_path, sizeof(daccel->path));
+  g_strlcpy(daccel->translated_path, accel_dynamic_path_trans, sizeof(daccel->translated_path));
+  g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
+  daccel->local = local;
+  daccel->views = DT_VIEW_DARKROOM;
+  daccel->mod_so = so;
+
+  darktable.control->dynamic_accelerator_list
+      = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
 
   g_free(module_name_fixed);
 }
@@ -605,6 +631,7 @@ void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, G
 {
   gchar accel_next_path[256];
   gchar accel_prev_path[256];
+  gchar accel_dynamic_path[256];
 
   assert(DT_IS_BAUHAUS_WIDGET(combobox));
 
@@ -626,6 +653,25 @@ void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, G
   accel = _lookup_accel(accel_prev_path);
   if(accel) accel->closure = closure;
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_prev_path, closure);
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+
+  //dynamic
+  snprintf(accel_dynamic_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), module->so->op, path,
+           NC_("accel", "dynamic"));
+
+  // dynamic accel : no closure, as we'll use key_press/release/scroll
+  GSList *l = darktable.control->dynamic_accelerator_list;
+  while(l)
+  {
+    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
+    if(da && !strcmp(da->path, accel_dynamic_path))
+    {
+      da->widget = combobox;
+      break;
+    }
+    l = g_slist_next(l);
+  }
+  accel = _lookup_accel(accel_dynamic_path);
   module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
