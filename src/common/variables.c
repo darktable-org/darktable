@@ -55,6 +55,7 @@ typedef struct dt_variables_data_t
   struct tm exif_tm;
 
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_focal_length;
   float exif_focus_distance;
@@ -96,6 +97,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
+  params->data->exif_exposure_bias = NAN;
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
@@ -120,6 +122,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     if(params->data->stars == 6) params->data->stars = -1;
 
     params->data->exif_exposure = img->exif_exposure;
+    params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
     if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
@@ -186,6 +189,11 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
     result = g_strdup_printf("\n");
+  else if(has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
+  {
+    if(!isnan(params->data->exif_exposure_bias))
+      result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
+  }
   else if(has_prefix(variable, "EXIF_EXPOSURE"))
   {
     /* no special chars for all jobs except infos */

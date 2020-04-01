@@ -771,13 +771,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
      "   raw_auto_bright_threshold, raw_black, raw_maximum,"
      "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
      "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end,"
-     "   position, aspect_ratio)"
+     "   position, aspect_ratio, exposure_bias)"
      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
      "       caption, description, license, sha1sum, orientation, histogram, lightmap,"
-     "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1, aspect_ratio"
+     "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
+     "       aspect_ratio, exposure_bias"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
@@ -1408,6 +1409,7 @@ void dt_image_init(dt_image_t *img)
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
   img->exif_exposure = 0;
+  img->exif_exposure_bias = NAN;
   img->exif_aperture = 0;
   img->exif_iso = 0;
   img->exif_focal_length = 0;
@@ -1718,14 +1720,14 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
          "   raw_auto_bright_threshold, raw_black, raw_maximum,"
          "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
-         "   position, aspect_ratio)"
+         "   position, aspect_ratio, exposure_bias)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
          "        flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
          "        raw_auto_bright_threshold, raw_black, raw_maximum,"
          "        caption, description, license, sha1sum, orientation, histogram, lightmap,"
          "        longitude, latitude, altitude, color_matrix, colorspace, -1, -1,"
-         "        ?3, aspect_ratio"
+         "        ?3, aspect_ratio, exposure_bias"
          " FROM main.images"
          " WHERE id = ?4",
         -1, &stmt, NULL);
