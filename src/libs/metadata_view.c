@@ -61,6 +61,7 @@ enum
   md_exif_lens,
   md_exif_aperture,
   md_exif_exposure,
+  md_exif_exposure_bias,
   md_exif_focal_length,
   md_exif_focus_distance,
   md_exif_iso,
@@ -111,6 +112,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_exif_lens] = _("lens");
   _md_labels[md_exif_aperture] = _("aperture");
   _md_labels[md_exif_exposure] = _("exposure");
+  _md_labels[md_exif_exposure_bias] = _("exposure bias");
   _md_labels[md_exif_focal_length] = _("focal length");
   _md_labels[md_exif_focus_distance] = _("focus distance");
   _md_labels[md_exif_iso] = _("ISO");
@@ -447,6 +449,16 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
       snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
+
+    if(isnan(img->exif_exposure_bias))
+    {
+      _metadata_update_value(d->metadata[md_exif_exposure_bias], NODATA_STRING);
+    }
+    else
+    {
+      snprintf(value, sizeof(value), _("%+.2f EV"), img->exif_exposure_bias);
+      _metadata_update_value(d->metadata[md_exif_exposure_bias], value);
+    }
 
     snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
