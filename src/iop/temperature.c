@@ -1156,7 +1156,8 @@ void reload_defaults(dt_iop_module_t *module)
       {
         if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker)
            && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
-           && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
+           && (!strcmp(wb_preset[i].name, Daylight) || !strcmp(wb_preset[i].name, DirectSunlight))
+           && wb_preset[i].tuning == 0)
         {
 
           for(int k = 0; k < 4; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
