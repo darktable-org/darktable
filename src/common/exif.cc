@@ -734,6 +734,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0 / pos->toFloat();
     }
+
+    // Read exposure bias
+    if(FIND_EXIF_TAG("Exif.Photo.ExposureBiasValue"))
+    {
+      img->exif_exposure_bias = pos->toFloat();
+    }
+
     /* Read aperture */
     if(FIND_EXIF_TAG("Exif.Photo.FNumber"))
     {
@@ -1180,14 +1187,14 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         phi = pos->toLong();
 
       if((format == 3) && (bps >= 16) && (((spp == 1) && (phi == 32803)) || ((spp == 3) && (phi == 34892)))) is_hdr = TRUE;
-      if((format == 1) && (bps == 16) && (spp == 1) && (phi == 34892)) is_monochrome = TRUE; 
+      if((format == 1) && (bps == 16) && (spp == 1) && (phi == 34892)) is_monochrome = TRUE;
     }
 
     if(is_hdr)
       dt_imageio_set_hdr_tag(img);
 
     if(is_monochrome)
-      dt_imageio_set_bw_tag(img); 
+      dt_imageio_set_bw_tag(img);
 
     // some files have the colorspace explicitly set. try to read that.
     // is_ldr -> none

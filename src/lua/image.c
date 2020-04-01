@@ -502,6 +502,7 @@ int dt_lua_init_image(lua_State *L)
 {
   luaA_struct(L, dt_image_t);
   luaA_struct_member(L, dt_image_t, exif_exposure, float);
+  luaA_struct_member(L, dt_image_t, exif_exposure_bias, float);
   luaA_struct_member(L, dt_image_t, exif_aperture, float);
   luaA_struct_member(L, dt_image_t, exif_iso, float);
   luaA_struct_member(L, dt_image_t, exif_focal_length, float);
