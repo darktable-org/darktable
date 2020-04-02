@@ -24,6 +24,9 @@ FL_PRESET_REPLACE={
   "White Fluorescent" => "WhiteFluorescent",
   "Unknown (0x600)" => "Underwater",
   "Sunny" => "DirectSunlight",
+  "Fine Weather" => "DirectSunlight",
+  "Tungsten (Incandescent)" => "Tungsten",
+  "ISO Studio Tungsten" => "Tungsten",
   "Cool WHT FL" => "CoolWhiteFluorescent",
   "Daylight FL" => "DaylightFluorescent",
   "Warm WHT FL" => "WarmWhiteFluorescent",
@@ -39,10 +42,12 @@ FL_PRESET_REPLACE={
   "6000K (Cloudy)" => "Cloudy",
   "7500K (Fine Weather with Shade)" => "Shade",
 }
-PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
-              "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
-              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "HighTempMercuryVaporFluorescent",
-              "HTMercury", "SodiumVaporFluorescent", "Underwater", "Flash"]
+PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
+              "Tungsten","Incandescent","Fluorescent", "WarmWhiteFluorescent",
+              "CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
+              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
+              "HighTempMercuryVaporFluorescent", "HTMercury", 
+              "SodiumVaporFluorescent", "Underwater", "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
@@ -76,20 +81,25 @@ ARGV.each do |filename|
   red = green = blue = maker = model = preset = nil
   finetune = 0
   listed_presets = []
+  preset_names = {}
   fl_count = 0
   gm_skew = false;
-  command = "exiftool -Make -Model \"-WB_*\" -WhiteBalance -WhiteBalance2 "\
-    "-WhitePoint -WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune "\
-    "-WBShiftIntelligentAuto -WBShiftCreativeControl \"#{filename}\""
+  command = "exiftool -Make -Model \"-WBType*\" \"-WB_*\" "\
+    "-WhiteBalance -WhiteBalance2 -WhitePoint "\
+    "-WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune "\
+    "-WBShiftIntelligentAuto -WBShiftCreativeControl "\
+    "-WBRedLevel -WBBlueLevel -WBGreenLevel "\
+    "\"#{filename}\""
   if filename.end_with? ".txt"
     command = "cat \"#{filename}\""
   end
   IO.popen(command) do |io|
+    rlevel = blevel = glevel = 0
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip
       values = lineparts[1].strip.split(" ")
-
+    
       if tag.split.include? "Make"
         maker = lineparts[1].strip
       elsif tag.split.include? "Model"
@@ -112,6 +122,11 @@ ARGV.each do |filename|
         red = values[1].to_f/green
         blue = values[2].to_f/green
         green = 1
+      # elsif tag == "WB GRB Levels Auto" && maker == "FUJIFILM" # fuji seems to use "WB GRB Levels Auto to describe manual finetuning
+      #  green = values[0].to_f
+      #  red = values[1].to_f/green
+      #  blue = values[2].to_f/green
+      #  green = 1
       elsif tag == "White Point" && values.length > 3
         green = (values[1].to_f+values[2].to_f)/2.0
         red = values[0].to_f/green
@@ -120,8 +135,14 @@ ARGV.each do |filename|
       elsif tag == "White Balance" || tag == "White Balance 2"
         preset = values.join(" ")
         preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
+      elsif tag.split[0..1].join(" ") == "WB Type"
+        preset_names[tag.split[2..-1].join] = values.join(" ");
       elsif ["WB RGB Levels", "WB RGGB Levels"].include? tag.split[0..2].join(" ")
         p = tag.split[3..-1].join
+        
+        if preset_names.has_key?(p)
+          p = preset_names[p];
+        end
 
         r=g=b=0
         if values.size == 4
@@ -140,6 +161,12 @@ ARGV.each do |filename|
         fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
         p = "Unknown" if !p || p==""
         listed_presets << [p,r,g,b]
+      elsif tag == "WB Red Level"
+        rlevel = values[0].to_f
+      elsif tag == "WB Blue Level"
+        blevel = values[0].to_f
+      elsif tag == "WB Green Level"
+        glevel = values[0].to_f
       elsif tag == "WB Shift AB" # canon - positive is towards amber, panasonic/leica/pentax - positive is towards blue?
         finetune = values[0]
       elsif tag == "WB Shift GM" # detect GM shift and warn about it
@@ -151,12 +178,18 @@ ARGV.each do |filename|
         finetune = 0-(values[0].to_i * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
         gm_skew = gm_skew || (values[1].to_i != 0)
       elsif tag == "White Balance Fine Tune" && maker == "FUJIFILM" # fuji
+        $stderr.puts "Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)"
         finetune = values[3].to_i / 20 # Fuji has -180..180 but steps are every 20
         gm_skew = gm_skew || (values[1].to_i != 0)
       elsif tag == "White Balance Bracket" # olympus
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
       end
+    end
+    if rlevel > 0 && glevel > 0 && blevel > 0
+      red = rlevel/glevel
+      blue = blevel/glevel
+      green = 1
     end
   end
 
