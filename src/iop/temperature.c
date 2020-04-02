@@ -82,6 +82,8 @@ typedef struct dt_iop_temperature_gui_data_t
   double daylight_wb[4];
   double mod_coeff[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
+  int colored_sliders;
+  int blackbody_is_confusing; // TODO: come up with bettern name
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -818,6 +820,65 @@ int generate_preset_combo(struct dt_iop_module_t *self)
   return presets_found;
 }
 
+void color_finetuning_slider(struct dt_iop_module_t *self, const gboolean visible)
+{
+
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  if(!g->colored_sliders || !gtk_widget_is_visible(g->finetune)) return;
+
+  dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
+  if(preset != NULL)
+  {
+    //we can do realistic/exagerated.
+
+    double min_tune[3] = {0.0};
+    double no_tune[3] = {0.0};
+    double max_tune[3] = {0.0};
+    if(!g->blackbody_is_confusing) {
+      //realistic
+      const double neutral[3] = {
+          0.5 / wb_preset[preset->no_ft_pos].channel[0],
+          0.5 / wb_preset[preset->no_ft_pos].channel[1],
+          0.5 / wb_preset[preset->no_ft_pos].channel[2],
+      };
+      for(int ch=0; ch<3; ch++) {
+        min_tune[ch] = neutral[ch] * wb_preset[preset->min_ft_pos].channel[ch];
+        no_tune[ch]  = neutral[ch] * wb_preset[preset->no_ft_pos].channel[ch];
+        max_tune[ch] = neutral[ch] * wb_preset[preset->max_ft_pos].channel[ch];
+      }
+    } else {
+      //exagerated
+
+      for(int ch=0; ch<3; ch++) {
+        min_tune[ch] = 0.5;
+        no_tune[ch]  = 0.95;
+        max_tune[ch] = 0.5;
+      }
+
+      if(wb_preset[preset->min_ft_pos].channel[0] < wb_preset[preset->max_ft_pos].channel[0]) {
+        // from blue to red
+        min_tune[0] = 0.05;
+        min_tune[2] = 0.95;
+        max_tune[0] = 0.95;
+        max_tune[2] = 0.05;
+      } else {
+        //from red to blue
+        min_tune[0] = 0.95;
+        min_tune[2] = 0.05;
+        max_tune[0] = 0.05;
+        max_tune[2] = 0.95;
+      }
+    }
+
+    dt_bauhaus_slider_clear_stops(g->finetune);
+
+    dt_bauhaus_slider_set_stop(g->finetune, 0.0, min_tune[0], min_tune[1], min_tune[2]);
+    dt_bauhaus_slider_set_stop(g->finetune, 0.5, no_tune[0],  no_tune[1],  no_tune[2]);
+    dt_bauhaus_slider_set_stop(g->finetune, 1.0, max_tune[0], max_tune[1], max_tune[2]);
+  }
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -852,8 +913,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "neutral daylight")); // old "camera neutral", reason: better matches intent
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
-
-  //TODO: section of combobox using dt_bauhaus_combobox_add_section
 
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
@@ -975,7 +1034,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
-
+  color_finetuning_slider(self);
 }
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
@@ -1420,6 +1479,7 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_sensitive(g->finetune, FALSE);
   }
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
+  color_finetuning_slider(self, gtk_widget_is_visible(g->finetune));
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
@@ -1499,7 +1559,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
   
-  const int colored_sliders = dt_conf_get_bool("plugins/darkroom/temperature/colored_sliders");
+  g->colored_sliders = dt_conf_get_bool("plugins/darkroom/temperature/colored_sliders");
+  g->blackbody_is_confusing = dt_conf_get_bool("plugins/darkroom/temperature/blackbody_is_confusing");
+  const int colored_sliders = g->colored_sliders;
   const int feedback = colored_sliders ? 0 : 1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1529,7 +1591,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
   
     const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
-    const int blackbody_is_confusing = dt_conf_get_bool("plugins/darkroom/temperature/blackbody_is_confusing");
+    const int blackbody_is_confusing = g->blackbody_is_confusing;
     // reflect actual black body colors for the temperature slider (or not)
     for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
     {
@@ -1592,7 +1654,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
   //TODO: hide finetune if there are no finetuning
-  g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
+  g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
   // initially doesn't have fine tuning stuff (camera wb)
