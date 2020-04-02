@@ -1342,7 +1342,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
-  if(!run || image->id <= 0)
+  // Also make sure this is only done while in gui
+  if(!run || (image->id <= 0) || (!dev->gui_attached))
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     return FALSE;
