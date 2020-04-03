@@ -1287,7 +1287,13 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     }
 
     str = dt_conf_get_string("ui_last/import_last_tags");
-    if(str != NULL && str[0] != '\0') dt_tag_attach_string_list(str, img->id, FALSE, FALSE);
+    if(img->id > 0 && str != NULL && str[0] != '\0')
+    {
+      GList *imgs = NULL;
+      imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
+      dt_tag_attach_string_list(str, imgs, FALSE, FALSE);
+      g_list_free(imgs);
+    }
     g_free(str);
   }
 }

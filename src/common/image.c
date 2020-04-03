@@ -2066,6 +2066,19 @@ void dt_image_write_sidecar_file(int imgid)
   }
 }
 
+void dt_image_synch_xmps(const GList *img)
+{
+  if(!img) return;
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    const GList *imgs = img;
+    while(imgs)
+    {
+      dt_image_write_sidecar_file(GPOINTER_TO_INT(imgs->data));
+      imgs = g_list_next(imgs);
+    }
+  }
+}
 
 void dt_image_synch_xmp(const int selected)
 {
@@ -2073,17 +2086,11 @@ void dt_image_synch_xmp(const int selected)
   {
     dt_image_write_sidecar_file(selected);
   }
-  else if(dt_conf_get_bool("write_sidecar_files"))
+  else
   {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_write_sidecar_file(imgid);
-    }
-    sqlite3_finalize(stmt);
+    GList *imgs = dt_view_get_images_to_act_on();
+    dt_image_synch_xmps(imgs);
+    g_list_free(imgs);
   }
 }
 

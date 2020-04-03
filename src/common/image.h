@@ -334,6 +334,7 @@ void dt_image_local_copy_synch(void);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
+void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
 // add an offset to the exif_datetime_taken field
