@@ -456,18 +456,12 @@ static void _tag_execute(GList *tags, GList *imgs, GList **undo, const gboolean 
   }
 }
 
-gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on)
 {
+  if(!img) return FALSE;
   GList *undo = NULL;
   GList *tags = NULL;
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-  {
-    if(dt_is_tag_attached(tagid, imgid)) return FALSE;
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-  }
+  GList *imgs = g_list_copy((GList *)img);
 
   if(imgs)
   {
@@ -489,6 +483,22 @@ gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_
   }
 
   return FALSE;
+}
+
+gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+{
+  GList *imgs = NULL;
+  if(imgid == -1)
+    imgs = dt_view_get_images_to_act_on();
+  else
+  {
+    if(dt_is_tag_attached(tagid, imgid)) return FALSE;
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  }
+
+  const gboolean res = dt_tag_attach_images(tagid, imgs, undo_on, group_on);
+  g_list_free(imgs);
+  return res;
 }
 
 void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
@@ -522,18 +532,15 @@ void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, con
   }
 }
 
-void dt_tag_attach_string_list(const gchar *tags, gint imgid, const gboolean undo_on, const gboolean group_on)
+void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on, const gboolean group_on)
 {
+  if(!img) return;
   // tags may not exist yet
   // undo only undoes the tags attachments. it doesn't remove created tags.
   gchar **tokens = g_strsplit(tags, ",", 0);
   if(tokens)
   {
-    GList *imgs = NULL;
-    if(imgid == -1)
-      imgs = dt_collection_get_selected(darktable.collection, -1);
-    else
-      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    GList *imgs = g_list_copy((GList *)img);
     if(imgs)
     {
       GList *undo = NULL;
@@ -578,13 +585,9 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid, const gboolean und
   g_strfreev(tokens);
 }
 
-void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *tags = NULL;
@@ -603,6 +606,18 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
       dt_undo_end_group(darktable.undo);
     }
   }
+}
+
+void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+{
+  GList *imgs = NULL;
+  if(imgid == -1)
+    imgs = dt_view_get_images_to_act_on();
+  else
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+
+  dt_tag_detach_images(tagid, imgs, undo_on, group_on);
+  g_list_free(imgs);
 }
 
 void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
@@ -1027,35 +1042,39 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
   return ret;
 }
 
-GList *dt_tag_get_images_from_selection(gint imgid, gint tagid)
+GList *dt_tag_get_images_from_list(const GList *img, gint tagid)
 {
   GList *result = NULL;
-  sqlite3_stmt *stmt;
-
-  if(imgid > 0)
+  char *images = NULL;
+  GList *imgs = (GList *)img;
+  while(imgs)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE "
-                                "imgid = ?1 AND tagid = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
+    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
+    imgs = g_list_next(imgs);
   }
-  else
+  if(images)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE "
-                                "tagid = ?1 AND imgid IN (SELECT imgid FROM main.selected_images)", -1, &stmt,
-                                NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    images[strlen(images) - 1] = '\0';
+
+    sqlite3_stmt *stmt;
+
+    char *query = NULL;
+    query = dt_util_dstrcat(query,
+                            "SELECT imgid FROM main.tagged_images"
+                            " WHERE tagid = %d AND imgid IN (%s)",
+                            tagid, images);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int id = sqlite3_column_int(stmt, 0);
+      result = g_list_append(result, GINT_TO_POINTER(id));
+    }
+
+    sqlite3_finalize(stmt);
+    g_free(query);
+    g_free(images);
   }
-
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int id = sqlite3_column_int(stmt, 0);
-    result = g_list_append(result, GINT_TO_POINTER(id));
-  }
-
-  sqlite3_finalize(stmt);
-
   return result;
 }
 
