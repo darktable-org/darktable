@@ -820,7 +820,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
   return presets_found;
 }
 
-void color_finetuning_slider(struct dt_iop_module_t *self, const gboolean visible)
+void color_finetuning_slider(struct dt_iop_module_t *self)
 {
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
@@ -876,6 +876,79 @@ void color_finetuning_slider(struct dt_iop_module_t *self, const gboolean visibl
     dt_bauhaus_slider_set_stop(g->finetune, 0.0, min_tune[0], min_tune[1], min_tune[2]);
     dt_bauhaus_slider_set_stop(g->finetune, 0.5, no_tune[0],  no_tune[1],  no_tune[2]);
     dt_bauhaus_slider_set_stop(g->finetune, 1.0, max_tune[0], max_tune[1], max_tune[2]);
+  }
+}
+
+void color_rgb_sliders(struct dt_iop_module_t *self)
+{
+
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  if(!g->colored_sliders || !gtk_widget_is_visible(g->scale_r)) return;
+
+  dt_bauhaus_slider_clear_stops(g->scale_r);
+  dt_bauhaus_slider_clear_stops(g->scale_g);
+  dt_bauhaus_slider_clear_stops(g->scale_b);
+  dt_bauhaus_slider_clear_stops(g->scale_g2);
+  // there are 3 ways to do colored sliders: naive (independed 0->1), smart(er) (dependent 0->1) and real (coeff)
+
+  if(FALSE)
+  {
+  //naive:
+    dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, 0.0, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, 0.0, 0.0);
+
+    dt_bauhaus_slider_set_stop(g->scale_g, 0.0, 0.0, 0.0, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_g, 1.0, 0.0, 1.0, 0.0);
+
+    dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
+
+    dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
+  }
+  if(g->blackbody_is_confusing)
+  {
+    //smart(er)
+    const float rchan = dt_bauhaus_slider_get(g->scale_r) / dt_bauhaus_slider_get_hard_max(g->scale_r);
+    const float gchan = dt_bauhaus_slider_get(g->scale_g) / dt_bauhaus_slider_get_hard_max(g->scale_g);
+    const float bchan = dt_bauhaus_slider_get(g->scale_b) / dt_bauhaus_slider_get_hard_max(g->scale_b);
+
+    dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, gchan, bchan);
+    dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, gchan, bchan);
+
+    dt_bauhaus_slider_set_stop(g->scale_g, 0.0, rchan, 0.0, bchan);
+    dt_bauhaus_slider_set_stop(g->scale_g, 1.0, rchan, 1.0, bchan);
+
+    dt_bauhaus_slider_set_stop(g->scale_b, 0.0, rchan, gchan, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_b, 1.0, rchan, gchan, 1.0);
+  } else {
+    //real (ish)
+    //we consider dalight wb to be "reference white"
+    const double white[3] = {
+      1.0/g->daylight_wb[0],
+      1.0/g->daylight_wb[1],
+      1.0/g->daylight_wb[2],
+    };
+
+    const float rchanmul = dt_bauhaus_slider_get(g->scale_r);
+    const float rchanmulmax = dt_bauhaus_slider_get_hard_max(g->scale_r);
+    const float gchanmul = dt_bauhaus_slider_get(g->scale_g);
+    const float gchanmulmax = dt_bauhaus_slider_get_hard_max(g->scale_g);
+    const float bchanmul = dt_bauhaus_slider_get(g->scale_b);
+    const float bchanmulmax = dt_bauhaus_slider_get_hard_max(g->scale_g);
+
+    dt_bauhaus_slider_set_stop(g->scale_r, 0.0, white[0]*0.0, white[1]*gchanmul, white[2]*bchanmul);
+    dt_bauhaus_slider_set_stop(g->scale_r, g->daylight_wb[0]/rchanmulmax, white[0]*g->daylight_wb[0], white[1]*gchanmul, white[2]*bchanmul);
+    dt_bauhaus_slider_set_stop(g->scale_r, 1.0, white[0]*1.0, white[1]*(gchanmul/gchanmulmax), white[2]*(bchanmul/bchanmulmax));
+
+    dt_bauhaus_slider_set_stop(g->scale_g, 0.0, white[0]*rchanmul, white[1]*0.0, white[2]*bchanmul);
+    dt_bauhaus_slider_set_stop(g->scale_g, g->daylight_wb[1]/bchanmulmax, white[0]*rchanmul, white[1]*g->daylight_wb[1], white[2]*bchanmul);
+    dt_bauhaus_slider_set_stop(g->scale_g, 1.0, white[0]*(rchanmul/rchanmulmax), white[1]*1.0, white[2]*(bchanmul/bchanmulmax));
+
+    dt_bauhaus_slider_set_stop(g->scale_b, 0.0, white[0]*rchanmul, white[1]*gchanmul, white[2]*0.0);
+    dt_bauhaus_slider_set_stop(g->scale_b, g->daylight_wb[2]/bchanmulmax, white[0]*rchanmul, white[1]*gchanmul, white[2]*g->daylight_wb[2]);
+    dt_bauhaus_slider_set_stop(g->scale_b, 1.0, white[0]*(rchanmul/rchanmulmax), white[1]*(gchanmul/gchanmulmax), white[2]*1.0);
   }
 }
 
@@ -1299,6 +1372,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   --darktable.gui->reset;
+  color_rgb_sliders(self);
 }
 
 static void temp_changed(dt_iop_module_t *self)
@@ -1328,6 +1402,7 @@ static void temp_changed(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  color_rgb_sliders(self);
 }
 
 static void tint_callback(GtkWidget *slider, gpointer user_data)
@@ -1463,7 +1538,6 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   apply_preset(self);
-  //const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   const dt_iop_temperature_preset_data_t *const preset = dt_bauhaus_combobox_get_data(widget);
   if(preset != NULL)
@@ -1479,7 +1553,7 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_sensitive(g->finetune, FALSE);
   }
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
-  color_finetuning_slider(self, gtk_widget_is_visible(g->finetune));
+  color_finetuning_slider(self);
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
@@ -1549,8 +1623,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   }
 
   gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
-
-  //TODO: hide finetuning if presets are not available
+  color_rgb_sliders(self);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1614,14 +1687,7 @@ void gui_init(struct dt_iop_module_t *self)
 
     dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
     dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_g, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_g, 1.0, 0.0, 1.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
-    dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
-    dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
+
 
     // TODO: color the finetune slider
   }
