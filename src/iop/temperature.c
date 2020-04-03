@@ -212,9 +212,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "presets"));
 
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera neutral"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/spot"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera neutral"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/spot"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
