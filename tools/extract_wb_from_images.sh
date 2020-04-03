@@ -27,11 +27,14 @@ echo "Extracting WB presets."
 for image in "$@"
 do
     echo -n "."
-    exiftool -Make -Model "-WBType*" "-WB_*" \
-      -WhiteBalance -WhiteBalance2 -WhitePoint \
-      -WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune \
-      -WhiteBalanceBracket -WBShiftIntelligentAuto -WBShiftCreativeControl \
-      -WBRedLevel -WBBlueLevel -WBGreenLevel \
+    exiftool -Make -Model "-WBType*" "-WB_*" "-ColorTemp*"                     \
+      -WhiteBalance -WhiteBalance2 -WhitePoint -ColorCompensationFilter        \
+      -WBShiftAB -WBShiftAB_GM -WBShiftAB_GM_Precise -WBShiftGM -WBScale       \
+      -WhiteBalanceFineTune -WhiteBalanceComp -WhiteBalanceSetting             \
+      -WhiteBalanceBracket -WhiteBalanceBias -WBMode -WhiteBalanceMode         \
+      -WhiteBalanceTemperature -WhiteBalanceDetected -ColorTemperature         \
+      -WBShiftIntelligentAuto -WBShiftCreativeControl -WhiteBalanceSetup       \
+      -WBRedLevel -WBBlueLevel -WBGreenLevel -RedBalance -BlueBalance          \
       "${image}" > "${tmp_dir}/${image}.txt"
 done
 
