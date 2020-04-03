@@ -241,7 +241,6 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const float yref = gpt->points[1];
 
     float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
-    dt_dev_distort_backtransform(darktable.develop, pts, 4);
 
     const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
@@ -290,20 +289,12 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float pts[8] = { x0, y0, pzx * wd, pzy * ht, 0, 0, 0, 4000 };
+    float pts[8] = { x0, y0, pzx * wd, pzy * ht, x0 - 100, y0 -100, x0 + 100, y0 + 100 };
     dt_dev_distort_backtransform(darktable.develop, pts, 4);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    if(rotation > 0.0f)
-    {
-      rotation = atan2f(pts[3] - pts[1], pts[2] - pts[0]);
-    }
-    else
-    {
-      // compute angle bettween the 2 vectors taking into account any rotation in flip or corp&rorate module
-      rotation = atan2(pts[7] - pts[5], pts[6] - pts[4]) - atan2(4000, 0);
-    }
+    rotation = atan2(pts[7] - pts[5], pts[6] - pts[4]) - atan2(200, 200);
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
     const float steepness = 0.0f; // MIN(1.0f,dt_conf_get_float("plugins/darkroom/masks/gradient/steepness"));
