@@ -26,7 +26,6 @@ FL_PRESET_REPLACE={
   "Sunny" => "DirectSunlight",
   "Fine Weather" => "DirectSunlight",
   "Tungsten (Incandescent)" => "Tungsten",
-  "ISO Studio Tungsten" => "Tungsten",
   "Cool WHT FL" => "CoolWhiteFluorescent",
   "Daylight FL" => "DaylightFluorescent",
   "Warm WHT FL" => "WarmWhiteFluorescent",
@@ -43,8 +42,9 @@ FL_PRESET_REPLACE={
   "7500K (Fine Weather with Shade)" => "Shade",
 }
 PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
-              "Tungsten","Incandescent","Fluorescent", "WarmWhiteFluorescent",
-              "CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
+              "Tungsten", "ISO Studio Tungsten", "Incandescent","Fluorescent", 
+              "WarmWhiteFluorescent", "CoolWhiteFluorescent",
+              "DayWhiteFluorescent","DaylightFluorescent",
               "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
               "HighTempMercuryVaporFluorescent", "HTMercury", 
               "SodiumVaporFluorescent", "Underwater", "Flash"]
@@ -84,11 +84,14 @@ ARGV.each do |filename|
   preset_names = {}
   fl_count = 0
   gm_skew = false;
-  command = "exiftool -Make -Model \"-WBType*\" \"-WB_*\" "\
-    "-WhiteBalance -WhiteBalance2 -WhitePoint "\
-    "-WBShiftAB -WBShiftAB_GM -WBShiftGM -WhiteBalanceFineTune "\
-    "-WBShiftIntelligentAuto -WBShiftCreativeControl "\
-    "-WBRedLevel -WBBlueLevel -WBGreenLevel "\
+  command = "exiftool -Make -Model \"-WBType*\" \"-WB_*\" \"-ColorTemp*\"    "\
+    "-WhiteBalance -WhiteBalance2 -WhitePoint -ColorCompensationFilter       "\
+    "-WBShiftAB -WBShiftAB_GM -WBShiftAB_GM_Precise -WBShiftGM -WBScale      "\
+    "-WhiteBalanceFineTune -WhiteBalanceComp -WhiteBalanceSetting            "\
+    "-WhiteBalanceBracket -WhiteBalanceBias -WBMode -WhiteBalanceMode        "\
+    "-WhiteBalanceTemperature -WhiteBalanceDetected -ColorTemperature        "\
+    "-WBShiftIntelligentAuto -WBShiftCreativeControl -WhiteBalanceSetup      "\
+    "-WBRedLevel -WBBlueLevel -WBGreenLevel -RedBalance -BlueBalance         "\
     "\"#{filename}\""
   if filename.end_with? ".txt"
     command = "cat \"#{filename}\""
@@ -184,6 +187,8 @@ ARGV.each do |filename|
       elsif tag == "White Balance Bracket" # olympus
         finetune = values[0]
         gm_skew = gm_skew || (values[1].to_i != 0)
+      elsif tag == "Color Compensation Filter" # minolta?
+        gm_skew = gm_skew || (values[0].to_i != 0)
       end
     end
     if rlevel > 0 && glevel > 0 && blevel > 0
