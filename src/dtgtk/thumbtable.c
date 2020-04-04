@@ -456,7 +456,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       if(posy < table->view_height) // we don't load invisible thumbs
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays);
+                                                 sqlite3_column_int(stmt, 0), table->overlays, FALSE);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -498,7 +498,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays);
+                                                 sqlite3_column_int(stmt, 0), table->overlays, FALSE);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -1655,7 +1655,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       else
       {
         // we create a completly new thumb
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays);
+        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays, FALSE);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;

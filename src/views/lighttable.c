@@ -420,6 +420,7 @@ static void check_layout(dt_view_t *self)
 
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    gtk_widget_hide(lib->preview->widget);
     gtk_widget_show(lib->culling->widget);
 
     //_culling_recreate_slots_at(self, _culling_preview_init_values(self, TRUE, FALSE));
@@ -1693,6 +1694,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
       case DT_LIGHTTABLE_LAYOUT_CULLING:
         if(!gtk_widget_get_visible(lib->culling->widget)) gtk_widget_show(lib->culling->widget);
+        gtk_widget_hide(lib->preview->widget);
         // lib->missing_thumbnails = expose_culling(self, cr, width, height, pointerx, pointery, layout);
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:

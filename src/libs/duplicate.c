@@ -316,7 +316,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     const int imgid = sqlite3_column_int(stmt, 1);
 
-    dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_NONE);
+    dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_NONE, FALSE);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
     thumb->disable_mouseover = TRUE;
     dt_thumbnail_set_mouseover(thumb, imgid == dev->image_storage.id);

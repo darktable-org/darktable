@@ -343,16 +343,130 @@ static int _thumbs_load_needed(dt_culling_t *table)
   return NULL;
 }*/
 
+static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, double posy, int state)
+{
+  const int max_in_memory_images = _get_max_in_memory_images();
+  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
+  {
+    dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
+    return TRUE;
+  }
+
+  // we get the 100% zoom of the largest image
+  float zmax = 1.0f;
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    const float z100 = dt_thumbnail_get_zoom100(th);
+    if(z100 > zmax) zmax = z100;
+    l = g_list_next(l);
+  }
+
+  float nz = fminf(zmax, table->full_zoom + val);
+  nz = fmaxf(nz, 1.0f);
+
+  // if full preview, we center the zoom at mouse position
+  if(g_list_length(table->list) > 0 && table->full_zoom != nz && table->mode == DT_CULLING_MODE_PREVIEW
+     && posx >= 0.0f && posy >= 0.0f)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    // we want to zoom "around" the pointer
+    float dx = nz / table->full_zoom
+                   * (posx - (table->view_width - th->w_fit * table->full_zoom) * 0.5f - table->full_x)
+               - posx + (table->view_width - th->w_fit * nz) * 0.5f;
+    float dy = nz / table->full_zoom
+                   * (posy - (table->view_height - th->h_fit * table->full_zoom) * 0.5f - table->full_y)
+               - posy + (table->view_height - th->h_fit * nz) * 0.5f;
+    table->full_x = -dx;
+    table->full_y = -dy;
+  }
+
+  // culling
+  if(table->mode == DT_CULLING_MODE_CULLING)
+  {
+    // if shift+ctrl, we only change the current image
+    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      int mouseid = dt_control_get_mouse_over_id();
+      l = table->list;
+      while(l)
+      {
+        dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+        if(th->imgid == mouseid)
+        {
+          th->zoom_delta += val;
+          break;
+        }
+        l = g_list_next(l);
+      }
+    }
+    else
+    {
+      // if global zoom doesn't change (we reach bounds) we may have to move individual values
+      if(table->full_zoom == nz && ((nz == 1.0f && val < 0.0f) || (nz == zmax && val > 0.0f)))
+      {
+        l = table->list;
+        while(l)
+        {
+          dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+          if(th->zoom_delta != 0.0f) th->zoom_delta += val;
+          l = g_list_next(l);
+        }
+      }
+      table->full_zoom = nz;
+    }
+    // sanitize specific zoomming of individual images
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(table->full_zoom + th->zoom_delta < 1.0f) th->zoom_delta = 1.0f - table->full_zoom;
+      if(table->full_zoom + th->zoom_delta > th->zoom_100) th->zoom_delta = th->zoom_100 - table->full_zoom;
+      l = g_list_next(l);
+    }
+  }
+  else // full preview
+  {
+    table->full_zoom = nz;
+  }
+
+  // redraw
+  l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->zoom_glob = table->full_zoom;
+    dt_thumbnail_image_refresh(th);
+    l = g_list_next(l);
+  }
+
+  return TRUE;
+}
+
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  /*GdkEventScroll *e = (GdkEventScroll *)event;
+  GdkEventScroll *e = (GdkEventScroll *)event;
   dt_culling_t *table = (dt_culling_t *)user_data;
   gdouble delta;
 
   if(dt_gui_get_scroll_delta(e, &delta))
   {
-  }*/
-  // we stop here to avoid scrolledwindow to move
+    if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    {
+      const double x = 0; // TODO
+      const double y = 0;
+      // zooming
+      if(delta > 0)
+      {
+        _thumbs_zoom_add(table, 0.5f, x, y, e->state);
+      }
+      else
+      {
+        _thumbs_zoom_add(table, -0.5f, x, y, e->state);
+      }
+    }
+  }
   return TRUE;
 }
 
@@ -437,7 +551,7 @@ static void _dt_profile_change_callback(gpointer instance, int type, gpointer us
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
-  // dt_culling_t *table = (dt_culling_t *)user_data;
+  dt_culling_t *table = (dt_culling_t *)user_data;
 
   const int imgid = dt_control_get_mouse_over_id();
 
@@ -446,6 +560,16 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
     // let's be absolutely sure that the right widget has the focus
     // otherwise accels don't work...
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+  }
+
+  // we crawl over all images to find the right one
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    // if needed, the change mouseover value of the thumb
+    if(th->mouse_over != (th->imgid == imgid)) dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
+    l = g_list_next(l);
   }
 }
 
@@ -975,7 +1099,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, TRUE);
       double aspect_ratio = sqlite3_column_double(stmt, 2);
       if(!aspect_ratio || aspect_ratio < 0.0001)
       {
@@ -1024,7 +1148,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow);
+          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, TRUE);
           double aspect_ratio = sqlite3_column_double(stmt, 2);
           if(!aspect_ratio || aspect_ratio < 0.0001)
           {
