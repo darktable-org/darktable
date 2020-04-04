@@ -272,6 +272,12 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         const float z = thumb->zoom_glob - thumb->zoom_delta;
         res = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.97 * z, thumb->height * 0.97 * z,
                                         &thumb->img_surf);
+        if(!res)
+        {
+          // and we set the max movement at the same occasion
+          thumb->zx_max = MAX(0, (cairo_image_surface_get_width(thumb->img_surf) - thumb->width) / 2);
+          thumb->zy_max = MAX(0, (cairo_image_surface_get_height(thumb->img_surf) - thumb->height) / 2);
+        }
       }
       else
       {
@@ -351,7 +357,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return TRUE;
 
   // we draw the image
-  cairo_set_source_surface(cr, thumb->img_surf, 0, 0);
+  cairo_set_source_surface(cr, thumb->img_surf, thumb->zx_glob + thumb->zx_delta, thumb->zy_glob + thumb->zy_delta);
   cairo_paint(cr);
 
   // and eventually the image border
@@ -1098,6 +1104,14 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
   g_free(lb);
 }
 
+// force the image to be redraw at the right position
+void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
+{
+  thumb->img_surf_pos_changed = TRUE;
+  gtk_widget_queue_draw(thumb->w_main);
+}
+
+// get the max zoom value of the thumb
 float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
 {
   if(thumb->zoom_100 < 1.0f) // we only compute the sizes if needed

@@ -84,6 +84,7 @@ typedef struct
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
   gboolean img_surf_preview; // if TRUE, the image is originated from preview pipe
   gboolean img_surf_dirty;   // if TRUE, we need to recreate the surface on next drawing code
+  gboolean img_surf_pos_changed; // if TRUE, we need to the surface on next drawing code
 
   GtkWidget *w_bottom_eb; // GtkEventBox -- background of the bottom infos area (contains w_bottom)
   GtkWidget *w_bottom;    // GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext
@@ -121,6 +122,8 @@ typedef struct
   float zy_delta;
 
   float zoom_100; // max zoom value
+  float zx_max;   // max left/right panning
+  float zy_max;   // max top/bottom panning
 
   float w_fit;
   float h_fit;
@@ -145,6 +148,8 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
 void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+// force image position refresh (only in the case of zoomed image)
+void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb);
 
 float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
 
