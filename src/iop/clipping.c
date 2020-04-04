@@ -1645,6 +1645,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", p->ratio_n);
     if(self->dt->gui->reset) return;
     apply_box_aspect(self, GRAB_HORIZONTAL);
+    dt_iop_request_focus(self);
     dt_control_queue_redraw_center();
   }
 }
@@ -1655,6 +1656,7 @@ static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   p->angle = -dt_bauhaus_slider_get(slider);
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
 }
 
@@ -1682,6 +1684,7 @@ static void cxywh_callback(GtkWidget *slider, dt_iop_module_t *self)
   g->clip_y = p->cy;
   g->clip_h = fabsf(p->ch) - p->cy;
 
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
 }
 
@@ -1728,6 +1731,7 @@ static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->crop_auto, (g->k_show == 0));
   gtk_widget_set_sensitive(g->aspect_presets, (g->k_show == 0));
 
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
   dt_control_queue_redraw_center();
 }
@@ -1877,6 +1881,7 @@ static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
   const int flip = dt_bauhaus_combobox_get(widget);
   p->cw = copysignf(p->cw, (flip & 1) ? -1.0 : 1.0);
   p->ch = copysignf(p->ch, (flip & 2) ? -1.0 : 1.0);
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
 }
 
@@ -1891,6 +1896,7 @@ static void key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   p->ratio_d = -p->ratio_d;
   apply_box_aspect(self, GRAB_HORIZONTAL);
+  dt_iop_request_focus(self);
   dt_control_queue_redraw_center();
 }
 
@@ -1900,6 +1906,7 @@ static gboolean key_commit_callback(GtkAccelGroup *accel_group, GObject *acceler
   dt_iop_module_t *self = (dt_iop_module_t *)data;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
   return TRUE;
 }
@@ -1939,6 +1946,7 @@ static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int which = dt_bauhaus_combobox_get(combo);
+  dt_iop_request_focus(self);
   guides_presets_set_visibility(g, which);
 
   // remember setting
@@ -1951,6 +1959,7 @@ static void guides_flip_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   int flip = dt_bauhaus_combobox_get(combo);
 
+  dt_iop_request_focus(self);
   // remember setting
   dt_conf_set_int("plugins/darkroom/clipping/flip_guides", flip);
 
@@ -1964,6 +1973,7 @@ static void crop_auto_changed(GtkWidget *combo, dt_iop_module_t *self)
 
   if(dt_bauhaus_combobox_get(combo) == p->crop_auto) return; // no change
   p->crop_auto = dt_bauhaus_combobox_get(combo);
+  dt_iop_request_focus(self);
   commit_box(self, g, p);
   dt_control_queue_redraw_center();
 }
