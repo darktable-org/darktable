@@ -107,10 +107,26 @@ typedef struct
   dt_thumbnail_overlay_t over; // type of overlays
 
   // specific for culling and preview
+  gboolean zoomable;
   double aspect_ratio;
+
+  // global zoom values actually applied to all images in culling table
+  float zoom_glob;
+  float zx_glob;
+  float zy_glob;
+
+  // difference between the global zoom values and the value to apply to this specific thumbnail
+  float zoom_delta;
+  float zx_delta;
+  float zy_delta;
+
+  float zoom_100; // max zoom value
+
+  float w_fit;
+  float h_fit;
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
@@ -129,6 +145,9 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
 void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+
+float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
