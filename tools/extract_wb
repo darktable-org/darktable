@@ -9,7 +9,8 @@ end
 IGNORED_PRESETS=["Auto","Kelvin","Measured","AsShot","Kelvin","Preset",
                  "Multi Auto", "Color Temperature Enhancement", "Custom",
                  "One Touch WB 1", "One Touch WB 2", "One Touch WB 3",
-                 "One Touch WB 4", "Custom WB 1", "Auto0", "Auto1", "Auto2"]
+                 "One Touch WB 4", "Custom WB 1", "Auto0", "Auto1", "Auto2",
+                 "CWB1", "CWB2", "CWB3", "CWB4"]
 # Preset names we adjust
 FL_PRESET_REPLACE={
   "Fluorescent" => "CoolWhiteFluorescent",
@@ -41,13 +42,13 @@ FL_PRESET_REPLACE={
   "6000K (Cloudy)" => "Cloudy",
   "7500K (Fine Weather with Shade)" => "Shade",
 }
-PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
+PRESET_ORDER=["DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
               "Tungsten", "ISO Studio Tungsten", "Incandescent","Fluorescent", 
               "WarmWhiteFluorescent", "CoolWhiteFluorescent",
               "DayWhiteFluorescent","DaylightFluorescent",
               "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
               "HighTempMercuryVaporFluorescent", "HTMercury", 
-              "SodiumVaporFluorescent", "Underwater", "Flash"]
+              "SodiumVaporFluorescent", "Underwater", "Flash", "Unknown"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
@@ -159,7 +160,30 @@ ARGV.each do |filename|
           b = values[2].to_f/g
           g = 1
         else
-          $stderr.puts "Found tag '#{p}' with #{values.size} values instead of 3 or 4"
+          $stderr.puts "Found RGB tag '#{p}' with #{values.size} values instead of 3 or 4"
+        end
+        fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
+        p = "Unknown" if !p || p==""
+        listed_presets << [p,r,g,b]
+      elsif ["WB RB Levels"].include? tag.split[0..2].join(" ")
+        p = tag.split[3..-1].join
+        
+        if preset_names.has_key?(p)
+          p = preset_names[p];
+        end
+
+        r=g=b=0
+        if values.size == 4
+          g = (values[2].to_f+values[3].to_f)/2.0
+          r = values[0].to_f/g
+          b = values[1].to_f/g
+          g = 1
+        elsif values.size == 2
+          r = values[0].to_f
+          b = values[2].to_f
+          g = 1
+        else
+          $stderr.puts "Found RB tag '#{p}' with #{values.size} values instead of 2 or 4"
         end
         fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
         p = "Unknown" if !p || p==""
