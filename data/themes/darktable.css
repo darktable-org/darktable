@@ -1865,3 +1865,27 @@ radiobutton
   padding: 8px 20px 4px 20px;
   border-radius: 14px;
 }
+
+.dt_culling
+{
+  background-color: @lighttable_bg_color;
+}
+
+.dt_culling #thumb_back, .dt_culling #thumb_main:selected #thumb_back, .dt_culling #thumb_main:hover #thumb_back
+{
+  background-color: transparent;
+  border: none;
+}
+
+.dt_culling #thumb_ext, .dt_culling #thumb_main:selected #thumb_ext, .dt_culling #thumb_main:hover #thumb_ext
+{
+  color: transparent;
+}
+.dt_culling #thumb_main:selected #thumb_image
+{
+  border: 4px solid @plugin_bg_color;
+}
+.dt_culling #thumb_main:hover #thumb_image
+{
+  border: 4px solid @thumbnail_hover_bg_colorte;
+}

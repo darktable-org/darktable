@@ -54,6 +54,12 @@ typedef struct dt_culling_t
   gboolean selection_sync;            // should the selection follow current culling images
 
   gboolean select_desactivate;
+
+  // global zoom/pan values. Individual values for images not synchronized with the other are stored inside
+  // dt_thumbnail_t
+  float full_zoom; // global zooming value, 1.0 == zoom to fit
+  float full_x;    // global panning value
+  float full_y;    // global panning value
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);

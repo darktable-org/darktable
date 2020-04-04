@@ -266,7 +266,18 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
     else
     {
-      const gboolean res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &thumb->img_surf);
+      gboolean res;
+      if(thumb->zoomable)
+      {
+        const float z = thumb->zoom_glob - thumb->zoom_delta;
+        res = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.97 * z, thumb->height * 0.97 * z,
+                                        &thumb->img_surf);
+      }
+      else
+      {
+        res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &thumb->img_surf);
+      }
+
       if(res)
       {
         // if the image is missing, we reload it again
@@ -817,7 +828,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   return thumb->w_main;
 }
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over)
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -825,6 +836,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->imgid = imgid;
   thumb->rowid = rowid;
   thumb->over = over;
+  thumb->zoomable = zoomable;
+  thumb->zoom_glob = 1.0f;
 
   // we read and cache all the infos from dt_image_t that we need
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1083,6 +1096,21 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
   // we set the text
   gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
   g_free(lb);
+}
+
+float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
+{
+  if(thumb->zoom_100 < 1.0f) // we only compute the sizes if needed
+  {
+    int w = 0;
+    int h = 0;
+    dt_image_get_final_size(thumb->imgid, &w, &h);
+    // 0.97f value come from dt_view_image_expose
+    thumb->zoom_100 = fmaxf((float)w / ((float)thumb->width * 0.97f), (float)h / ((float)thumb->height * 0.97f));
+    if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
+  }
+
+  return thumb->zoom_100;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
