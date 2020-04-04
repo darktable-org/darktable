@@ -392,10 +392,10 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_height);
   else if (has_prefix(variable, "CATEGORY"))
   {
-    // TAG should be followed by n [0,3] and "(category)". category can contain 0 or more '|'
-    if (*variable[0] == '0' || *variable[0] == '1' || *variable[0] == '2' || *variable[0] == '3')
+    // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
+    if (g_ascii_isdigit(*variable[0]))
     {
-      const uint8_t level = (uint8_t)*variable[0] & 0b11;
+      const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
       if (*variable[0] == '(')
       {

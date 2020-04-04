@@ -413,10 +413,10 @@
             </row>
             <row>
               <entry>
-                <code>$(CATEGORYn$(category))</code>
+                <code>$(CATEGORYn(category))</code>
               </entry>
               <entry>
-                tag name of level n [0,3] of selected category (or tag)
+                tag name of level n [0,9] of selected category (or tag)
               </entry>
             </row>
           </tbody>
