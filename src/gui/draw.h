@@ -27,6 +27,7 @@
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/splines.h"
+#include "control/conf.h"
 #include <cairo.h>
 #include <glib.h>
 #include <math.h>
@@ -43,6 +44,40 @@ typedef struct dt_draw_curve_t
   CurveData c;
   CurveSample csample;
 } dt_draw_curve_t;
+
+/** set color based on gui overlay preference */
+static inline void dt_draw_set_color_overlay(cairo_t *cr, double amt, double alpha)
+{
+  char *overlay_color = dt_conf_get_string("darkroom/ui/overlay_color");
+
+  if(!strcmp(overlay_color, "gray"))
+  {
+    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 1.0 * amt, alpha);
+  }
+  else if(!strcmp(overlay_color, "red"))
+  {
+    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 0.0, alpha);
+  }
+  else if(!strcmp(overlay_color, "green"))
+  {
+    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 0.0, alpha);
+  }
+  else if(!strcmp(overlay_color, "yellow"))
+  {
+    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 0.0, alpha);
+  }
+  else if(!strcmp(overlay_color, "cyan"))
+  {
+    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 1.0 * amt, alpha);
+  }
+  else if(!strcmp(overlay_color, "magenta"))
+  {
+    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 1.0 * amt, alpha);
+  }
+
+  g_free(overlay_color);
+
+}
 
 /** draws a rating star
  */
