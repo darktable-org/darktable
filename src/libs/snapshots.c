@@ -73,6 +73,8 @@ typedef struct dt_lib_snapshots_t
 /* callback for take snapshot */
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data);
+static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data);
 
 
 const char *name(dt_lib_module_t *self)
@@ -99,6 +101,7 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "take snapshot"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "toggle last snapshot"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -106,6 +109,10 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   dt_accel_connect_button_lib(self, "take snapshot", d->take_button);
+
+  GClosure *closure;
+  closure = g_cclosure_new(G_CALLBACK(_lib_snapshots_toggle_last), (gpointer)self, NULL);
+  dt_accel_connect_lib(self, "toggle last snapshot", closure);
 }
 
 /* expose snapshot over center viewport */
@@ -412,6 +419,21 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
   /* redraw center view */
   dt_control_queue_redraw_center();
+}
+
+static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  if(d->num_snapshots)
+  {
+    gtk_widget_activate(d->snapshot[0].button);
+    _lib_snapshots_toggled_callback((GtkToggleButton *)(d->snapshot[0].button), data);
+  }
+
+  return TRUE;
+
 }
 
 #ifdef USE_LUA
