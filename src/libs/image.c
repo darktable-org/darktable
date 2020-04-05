@@ -190,24 +190,6 @@ int position()
   return 700;
 }
 
-
-static int _get_source_image(void)
-{
-  // if the mouse is over an image, always choose this one
-  // otherwise, choose the first image selected
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) return imgid;
-
-  GList *l = dt_collection_get_selected(darktable.collection, 1);
-  if(l)
-  {
-    imgid = GPOINTER_TO_INT(l->data);
-    g_list_free(l);
-  }
-
-  return imgid;
-}
-
 typedef enum dt_metadata_actions_t
 {
   DT_MA_REPLACE = 0,
@@ -280,7 +262,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
 static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  d->imageid = _get_source_image();
+
+  d->imageid = dt_view_get_image_to_act_on2();
   if(d->imageid)
   {
     gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
