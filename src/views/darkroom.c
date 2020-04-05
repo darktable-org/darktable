@@ -548,13 +548,12 @@ void expose(
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
-    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
-    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
-
-    const float hbar = (self->width - pwidth) * .5f;
-    const float tbar = (self->height - pheight) * .5f;
+    const float pwidth = (float)(dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+    const float pheight = (float)(dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+    const float hbar = ((float)self->width - pwidth) * .5f;
+    const float tbar = ((float)self->height - pheight) * .5f;
     cairo_save(cri);
-    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
+    cairo_rectangle(cri, hbar, tbar, pwidth, pheight);
     cairo_clip(cri);
 
     const float wd = dev->preview_pipe->backbuf_width;
@@ -609,13 +608,12 @@ void expose(
     if(dev->form_visible && dev->gui_module->enabled)
     {
       // The masks paths should only be displayed inside the visible image
-      const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
-      const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
-
-      const float hbar = (self->width - pwidth) * .5f;
-      const float tbar = (self->height - pheight) * .5f;
+      const float pwidth = (float)(dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
+      const float pheight = (float)(dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
+      const float hbar = ((float)self->width - pwidth) * .5f;
+      const float tbar = ((float)self->height - pheight) * .5f;
       cairo_save(cri);
-      cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
+      cairo_rectangle(cri, hbar, tbar, pwidth, pheight);
       cairo_clip(cri);
 
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
