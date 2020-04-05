@@ -83,7 +83,7 @@ const int dt_metadata_get_type(const uint32_t keyid);
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // duplicate.c, lua/image.c
 
-/** Set imported metadata for a specific image, or all selected for id == -1. */
+/** Set imported metadata for a specific image */
 void dt_metadata_set_import(int id, const char *key, const char *value); // exif.cc, ligthroom.c
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
