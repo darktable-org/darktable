@@ -1309,22 +1309,6 @@
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
-    <name>darkroom/ui/overlay_color</name>
-    <type>
-       <enum>
-          <option>gray</option>
-          <option>red</option>
-          <option>green</option>
-          <option>yellow</option>
-          <option>cyan</option>
-          <option>magenta</option>
-       </enum>
-    </type>
-    <default>gray</default>
-    <shortdescription>color of lines overlaying the darkroom image</shortdescription>
-    <longdescription>set the color of lines that overlay the image in the darkroom. Affects crop and rotate guides, drawn masks, vignetting and graduated density modules</longdescription>
-  </dtconfig>
   <dtconfig prefs="gui">
     <name>scrollbars</name>
     <type>

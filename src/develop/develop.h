@@ -53,6 +53,16 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_overlay_colors_t
+{
+  DT_DEV_OVERLAY_GRAY = 0,
+  DT_DEV_OVERLAY_RED = 1,
+  DT_DEV_OVERLAY_GREEN = 2,
+  DT_DEV_OVERLAY_YELLOW = 3,
+  DT_DEV_OVERLAY_CYAN = 4,
+  DT_DEV_OVERLAY_MAGENTA = 5
+} dt_dev_overlay_colors_t;
+
 typedef enum dt_dev_rawoverexposed_mode_t {
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID = 1,
@@ -271,6 +281,16 @@ typedef struct dt_develop_t
     dt_dev_rawoverexposed_colorscheme_t colorscheme;
     float threshold;
   } rawoverexposed;
+
+  // for the overlay color indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button, *colors; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_overlay_colors_t color;
+  } overlay_color;
 
   // ISO 12646-compliant colour assessment conditions
   struct
