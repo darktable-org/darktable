@@ -2286,7 +2286,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->overlay_color.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->overlay_color.button,
                                 _("set the color of lines that overlay the image (drawn masks, crop and rotate guides etc.)"));
     g_signal_connect(G_OBJECT(dev->overlay_color.button), "clicked",
