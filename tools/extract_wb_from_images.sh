@@ -21,7 +21,7 @@ fi
 tmp_dir=$(mktemp -d -t dt-wb-XXXXXXXXXX)
 cur_dir=$(pwd)
 
-tarball="$cur_dir"/darktable-whitebalance-$(date +'%Y%m%d').tar.bz2
+tarball="$cur_dir"/darktable-whitebalance-$(date +'%Y%m%d').tar.gz
 
 echo "Extracting WB presets."
 for image in "$@"
@@ -41,7 +41,7 @@ done
 echo
 echo "preparing tarball..."
 
-tar -cjf "${tarball}" -C ${tmp_dir} .
+tar -czf "${tarball}" -C ${tmp_dir} .
 
 echo "cleaning up..."
 rm -rf $tmp_dir
