@@ -496,7 +496,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) / zoom_scale);
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
-  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
@@ -506,7 +506,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  dt_draw_set_color_overlay(cr, 0.8, 0.8);
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
@@ -527,14 +527,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_close_path(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 1 || g->dragging == 1)
-    cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
+    dt_draw_set_color_overlay(cr, 0.8, 1.0);
   else
-    cairo_set_source_rgba(cr, .8, .8, .8, .5);
+    dt_draw_set_color_overlay(cr, 0.8, 0.5);
   cairo_fill_preserve(cr);
   if(g->selected == 1 || g->dragging == 1)
-    cairo_set_source_rgba(cr, .3, .3, .3, 1.0);
+    dt_draw_set_color_overlay(cr, 0.3, 1.0);
   else
-    cairo_set_source_rgba(cr, .3, .3, .3, .5);
+    dt_draw_set_color_overlay(cr, 0.3, 0.5);
   cairo_stroke(cr);
 
   x1 = xb - (xb - xa) * ext / l;
@@ -549,14 +549,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_close_path(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 2 || g->dragging == 2)
-    cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
+    dt_draw_set_color_overlay(cr, 0.8, 1.0);
   else
-    cairo_set_source_rgba(cr, .8, .8, .8, .5);
+    dt_draw_set_color_overlay(cr, 0.8, 0.5);
   cairo_fill_preserve(cr);
   if(g->selected == 2 || g->dragging == 2)
-    cairo_set_source_rgba(cr, .3, .3, .3, 1.0);
+    dt_draw_set_color_overlay(cr, 0.3, 1.0);
   else
-    cairo_set_source_rgba(cr, .3, .3, .3, .5);
+    dt_draw_set_color_overlay(cr, 0.3, 0.5);
   cairo_stroke(cr);
 }
 
