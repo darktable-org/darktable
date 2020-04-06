@@ -296,6 +296,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
+float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *self, float value, dt_bauhaus_curve_t dir));
 

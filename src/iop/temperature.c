@@ -346,7 +346,7 @@ static cmsCIEXYZ spectrum_to_XYZ(double TempK, spd I)
   return Source;
 }
 
-//
+// TODO: temperature and tint cannot be disjoined! (here it assumes no tint)
 static cmsCIEXYZ temperature_to_XYZ(double TempK)
 {
   if(TempK < DT_IOP_LOWEST_TEMPERATURE) TempK = DT_IOP_LOWEST_TEMPERATURE;
@@ -379,7 +379,8 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, double *TempK, double *tint)
       mintemp = *TempK;
   }
 
-  *tint = (_xyz.Y / _xyz.X) / (XYZ.Y / XYZ.X);
+  *tint = (_xyz.Y / _xyz.X) / (XYZ.Y / XYZ.X); // TODO: Fix this to move orthoigonally to planckian locus
+
 
   if(*TempK < DT_IOP_LOWEST_TEMPERATURE) *TempK = DT_IOP_LOWEST_TEMPERATURE;
   if(*TempK > DT_IOP_HIGHEST_TEMPERATURE) *TempK = DT_IOP_HIGHEST_TEMPERATURE;
@@ -410,7 +411,14 @@ static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mu
 {
   cmsCIEXYZ xyz = temperature_to_XYZ(TempK);
 
-  xyz.Y /= tint;
+  xyz.Y /= tint; // TODO: This is baaad!
+  /**
+   * TODO:
+   * problem here is that tint as it is is just a nasty hack modyfying Y component
+   * and therefore changing RGB coefficients in wrong way,
+   * because modifying only Y in that way doesn’t move XYZ point orthogonally
+   * to planckian locus. That means it actually changes temperature and thus it lies!
+   */
 
   xyz2mul(self, xyz, mul);
 }
@@ -825,7 +833,7 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  if(!g->colored_sliders || !gtk_widget_is_visible(g->finetune)) return;
+  if(!g->colored_sliders) return;
 
   dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
   if(preset != NULL)
@@ -852,22 +860,22 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
 
       for(int ch=0; ch<3; ch++) {
         min_tune[ch] = 0.5;
-        no_tune[ch]  = 0.95;
+        no_tune[ch]  = 0.9;
         max_tune[ch] = 0.5;
       }
 
       if(wb_preset[preset->min_ft_pos].channel[0] < wb_preset[preset->max_ft_pos].channel[0]) {
         // from blue to red
-        min_tune[0] = 0.05;
-        min_tune[2] = 0.95;
-        max_tune[0] = 0.95;
-        max_tune[2] = 0.05;
+        min_tune[0] = 0.1;
+        min_tune[2] = 0.9;
+        max_tune[0] = 0.9;
+        max_tune[2] = 0.1;
       } else {
         //from red to blue
-        min_tune[0] = 0.95;
-        min_tune[2] = 0.05;
-        max_tune[0] = 0.05;
-        max_tune[2] = 0.95;
+        min_tune[0] = 0.9;
+        min_tune[2] = 0.1;
+        max_tune[0] = 0.1;
+        max_tune[2] = 0.9;
       }
     }
 
@@ -877,6 +885,9 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->finetune, 0.5, no_tune[0],  no_tune[1],  no_tune[2]);
     dt_bauhaus_slider_set_stop(g->finetune, 1.0, max_tune[0], max_tune[1], max_tune[2]);
   }
+  if(gtk_widget_get_visible(GTK_WIDGET(g->finetune))) {
+    gtk_widget_queue_draw(GTK_WIDGET(g->finetune));
+  }
 }
 
 void color_rgb_sliders(struct dt_iop_module_t *self)
@@ -884,7 +895,7 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  if(!g->colored_sliders || !gtk_widget_is_visible(g->scale_r)) return;
+  if(!g->colored_sliders) return;
 
   dt_bauhaus_slider_clear_stops(g->scale_r);
   dt_bauhaus_slider_clear_stops(g->scale_g);
@@ -907,9 +918,9 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
     dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
   }
-  if(g->blackbody_is_confusing)
+  if(!g->blackbody_is_confusing)
   {
-    //smart(er)
+    //smart(er) than naive
     const float rchan = dt_bauhaus_slider_get(g->scale_r) / dt_bauhaus_slider_get_hard_max(g->scale_r);
     const float gchan = dt_bauhaus_slider_get(g->scale_g) / dt_bauhaus_slider_get_hard_max(g->scale_g);
     const float bchan = dt_bauhaus_slider_get(g->scale_b) / dt_bauhaus_slider_get_hard_max(g->scale_b);
@@ -949,6 +960,78 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_b, 0.0, white[0]*rchanmul, white[1]*gchanmul, white[2]*0.0);
     dt_bauhaus_slider_set_stop(g->scale_b, g->daylight_wb[2]/bchanmulmax, white[0]*rchanmul, white[1]*gchanmul, white[2]*g->daylight_wb[2]);
     dt_bauhaus_slider_set_stop(g->scale_b, 1.0, white[0]*(rchanmul/rchanmulmax), white[1]*(gchanmul/gchanmulmax), white[2]*1.0);
+  }
+
+  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_r))) {
+    gtk_widget_queue_draw(GTK_WIDGET(g->scale_r));
+    gtk_widget_queue_draw(GTK_WIDGET(g->scale_g));
+    gtk_widget_queue_draw(GTK_WIDGET(g->scale_b));
+  }
+}
+
+void color_temptint_sliders(struct dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  if(!g->colored_sliders) return;
+
+  dt_bauhaus_slider_clear_stops(g->scale_k);
+  dt_bauhaus_slider_clear_stops(g->scale_tint);
+
+  const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+  const int blackbody_is_confusing = g->blackbody_is_confusing;
+
+  //const float def_temp = dt_bauhaus_slider_get_default(g->scale_k);
+  const float def_tint = dt_bauhaus_slider_get_default(g->scale_tint);
+
+  //const float cur_temp = dt_bauhaus_slider_get(g->scale_k);
+  const float cur_tint = dt_bauhaus_slider_get(g->scale_tint);
+
+  //we consider dalight wb to be "reference white"
+  const double white[3] = {
+    1/g->daylight_wb[0],
+    1/g->daylight_wb[1],
+    1/g->daylight_wb[2],
+  };
+  // reflect actual black body colors for the temperature slider (or not)
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+    const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+
+    if(!blackbody_is_confusing)
+    {
+      // it isn't!
+      // TODO: this SHOULD take tint into account!
+      const cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
+      float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
+      dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
+    }
+    else
+    {
+      // i think lightroom-ish look is ok-ish
+      //dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[2], sRGB[1], sRGB[0]);
+      double coeffs[4];
+      temp2mul(self, K, cur_tint, coeffs);
+      coeffs[0] /= coeffs[1];
+      coeffs[2] /= coeffs[1];
+      coeffs[3] /= coeffs[1];
+      coeffs[1] = 1.0;
+
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, white[0]*coeffs[0], white[1]*coeffs[1], white[2]*coeffs[2]);
+    }
+  }
+
+  const float neutral_stop_tint = (def_tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
+
+  dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+
+  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_k))) {
+    gtk_widget_queue_draw(GTK_WIDGET(g->scale_k));
+    gtk_widget_queue_draw(GTK_WIDGET(g->scale_tint));
   }
 }
 
@@ -1107,6 +1190,8 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
+  color_temptint_sliders(self);
+  color_rgb_sliders(self);
   color_finetuning_slider(self);
 }
 
@@ -1304,14 +1389,9 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
 
-    if(dt_conf_get_bool("plugins/darkroom/temperature/colored_sliders"))
-    {
-      const float neutral_stop_tint = (tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
-      dt_bauhaus_slider_clear_stops(g->scale_tint);
-      dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
-      dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
-      dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
-    }
+    color_temptint_sliders(module);
+    color_rgb_sliders(module);
+    color_finetuning_slider(module);
   }
 
 end:
@@ -1372,7 +1452,10 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   --darktable.gui->reset;
+
+  color_temptint_sliders(self);
   color_rgb_sliders(self);
+  color_finetuning_slider(self);
 }
 
 static void temp_changed(dt_iop_module_t *self)
@@ -1402,7 +1485,10 @@ static void temp_changed(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  color_temptint_sliders(self);
   color_rgb_sliders(self);
+  color_finetuning_slider(self);
 }
 
 static void tint_callback(GtkWidget *slider, gpointer user_data)
@@ -1553,12 +1639,18 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_sensitive(g->finetune, FALSE);
   }
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
+
+  color_temptint_sliders(self);
+  color_rgb_sliders(self);
   color_finetuning_slider(self);
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
 {
   apply_preset((dt_iop_module_t *)user_data);
+  color_temptint_sliders((dt_iop_module_t *)user_data);
+  color_rgb_sliders((dt_iop_module_t *)user_data);
+  color_finetuning_slider((dt_iop_module_t *)user_data);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -1583,6 +1675,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  color_rgb_sliders(self);
+  color_temptint_sliders(self);
 }
 
 static void gui_sliders_update(struct dt_iop_module_t *self)
@@ -1623,7 +1718,6 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   }
 
   gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
-  color_rgb_sliders(self);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1634,8 +1728,8 @@ void gui_init(struct dt_iop_module_t *self)
   
   g->colored_sliders = dt_conf_get_bool("plugins/darkroom/temperature/colored_sliders");
   g->blackbody_is_confusing = dt_conf_get_bool("plugins/darkroom/temperature/blackbody_is_confusing");
-  const int colored_sliders = g->colored_sliders;
-  const int feedback = colored_sliders ? 0 : 1;
+
+  const int feedback = g->colored_sliders ? 0 : 1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -1659,38 +1753,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale_g = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[1], 3, feedback);
   g->scale_b = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[2], 3, feedback);
   g->scale_g2 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[3], 3, feedback);
-
-  if(colored_sliders)
-  {
-  
-    const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
-    const int blackbody_is_confusing = g->blackbody_is_confusing;
-    // reflect actual black body colors for the temperature slider (or not)
-    for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
-    {
-      const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
-      const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
-      const cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
-      float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
-      dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
-      if(!blackbody_is_confusing)
-      {
-        // it isn't!
-        dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
-      }
-      else
-      {
-        // i think lightroom-ish look is ok-ish
-        dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[2], sRGB[1], sRGB[0]);
-      }
-    }
-
-    dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
-    dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
-
-
-    // TODO: color the finetune slider
-  }
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
@@ -1719,7 +1781,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
   gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
-  //TODO: hide finetune if there are no finetuning
   g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
@@ -1751,12 +1812,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
+
+  color_rgb_sliders(self);
+  color_temptint_sliders(self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
   gui_sliders_update(self);
+
+  color_rgb_sliders(self);
+  color_temptint_sliders(self);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
