@@ -1020,16 +1020,24 @@ void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   cairo_set_line_width(cr, 0.1);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   
+  cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
   cairo_move_to(cr, 0.0, 0.3);
   cairo_line_to(cr, 1.0, 0.3);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgb(cr, 0.0, 1.0, 0.0);
   cairo_move_to(cr, 0.0, 0.6);
   cairo_line_to(cr, 1.0, 0.6);
+  cairo_stroke(cr);
 
+  cairo_set_source_rgb(cr, 1.0, 0.0, 1.0);
   cairo_move_to(cr, 0.3, 0.0);
   cairo_line_to(cr, 0.3, 1.0);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgb(cr, 1.0, 1.0, 0.0);
   cairo_move_to(cr, 0.6, 0.0);
   cairo_line_to(cr, 0.6, 1.0);
-
   cairo_stroke(cr);
 
   cairo_identity_matrix(cr);
