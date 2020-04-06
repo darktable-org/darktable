@@ -606,20 +606,10 @@ void expose(
   {
     // masks
     if(dev->form_visible && dev->gui_module->enabled)
-    {
-      // The masks paths should only be displayed inside the visible image
-      const double pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
-      const double pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
-      const double hbar = ((float)self->width - pwidth) * .5f;
-      const double tbar = ((float)self->height - pheight) * .5f;
-      cairo_save(cri);
-      cairo_rectangle(cri, hbar, tbar, pwidth, pheight);
-      cairo_clip(cri);
-
-      dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
-
-      cairo_restore(cri);
-    }
+        dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+    // module
+    if(dev->gui_module && dev->gui_module->gui_post_expose)
+      dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
