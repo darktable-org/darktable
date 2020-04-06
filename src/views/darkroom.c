@@ -1300,6 +1300,37 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_center(d);
 }
 
+/* overlay color */
+static void _overlay_color_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overlay_color.enabled = !d->overlay_color.enabled;
+  dt_dev_reprocess_center(d);
+}
+
+static gboolean _overlay_color_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  _toolbar_show_popup(d->overlay_color.floating_window);
+  return TRUE;
+}
+
+static gboolean _overlay_color_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(d->overlay_color.timeout > 0) g_source_remove(d->overlay_color.timeout);
+  d->overlay_color.timeout = 0;
+  return FALSE;
+}
+
+static void overlay_colors_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overlay_color.color = dt_bauhaus_combobox_get(combo);
+  dt_conf_set_int("darkroom/ui/overlay_color", d->overlay_color.color);
+  dt_dev_reprocess_center(d);
+}
+
 /* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -1890,6 +1921,18 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
   return TRUE;
 }
 
+static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+  GtkWidget * combobox = dev->overlay_color.colors;
+
+  const int currentval = dt_bauhaus_combobox_get(combobox);
+  const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
+  dt_bauhaus_combobox_set(combobox, nextval);
+  return TRUE;
+}
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2223,6 +2266,47 @@ void gui_init(dt_view_t *self)
                               G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+  }
+
+  /* create overlay color changer popup tool */
+  {
+    // the button
+    dev->overlay_color.button
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(dev->overlay_color.button,
+                                _("set the color of lines that overlay the image (drawn masks, crop and rotate guides etc.)"));
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "clicked",
+                     G_CALLBACK(_overlay_color_quickbutton_clicked), dev);
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-press-event",
+                     G_CALLBACK(_overlay_color_quickbutton_pressed), dev);
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-release-event",
+                     G_CALLBACK(_overlay_color_quickbutton_released), dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overlay_color.button, DT_VIEW_DARKROOM);
+
+    // and the popup window
+    dev->overlay_color.floating_window = gtk_popover_new(dev->overlay_color.button);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->overlay_color.floating_window), dialog_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(dev->overlay_color.floating_window), "transitions-enabled", FALSE, NULL);
+#endif
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->overlay_color.floating_window), vbox);
+
+    /** let's fill the encapsulating widget */
+    GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(overlay_colors, NULL, _("overlay color"));
+    dt_bauhaus_combobox_add(overlay_colors, _("gray"));
+    dt_bauhaus_combobox_add(overlay_colors, _("red"));
+    dt_bauhaus_combobox_add(overlay_colors, _("green"));
+    dt_bauhaus_combobox_add(overlay_colors, _("yellow"));
+    dt_bauhaus_combobox_add(overlay_colors, _("cyan"));
+    dt_bauhaus_combobox_add(overlay_colors, _("magenta"));
+    dt_bauhaus_combobox_set(overlay_colors, dev->overlay_color.color);
+    gtk_widget_set_tooltip_text(overlay_colors, _("set overlay color"));
+    g_signal_connect(G_OBJECT(overlay_colors), "value-changed", G_CALLBACK(overlay_colors_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(overlay_colors), TRUE, TRUE, 0);
+    gtk_widget_set_state_flags(overlay_colors, GTK_STATE_FLAG_SELECTED, TRUE);
   }
 
   darktable.view_manager->proxy.darkroom.view = self;
@@ -3413,6 +3497,9 @@ void init_key_accels(dt_view_t *self)
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
 
+  // cycle overlay colors
+  dt_accel_register_view(self, NC_("accel", "cycle overlay colors"), GDK_KEY_o, GDK_CONTROL_MASK);
+
   // toggle softproofing
   dt_accel_register_view(self, NC_("accel", "softproof"), GDK_KEY_s, GDK_CONTROL_MASK);
 
@@ -3496,6 +3583,10 @@ void connect_key_accels(dt_view_t *self)
   // toggle overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->overexposed.button, NULL);
   dt_accel_connect_view(self, "overexposed", closure);
+
+  // cycle through overlay colors
+  closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "cycle overlay colors", closure);
 
   // toggle softproof indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.softproof_button, NULL);
