@@ -944,6 +944,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   if(ended)
   {
     gtk_widget_destroy(d->floating_window);
+    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
     free(d);
     return TRUE;
   }
