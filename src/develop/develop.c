@@ -1433,8 +1433,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
 
-  // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  // make sure these end up in the image_cache; as the history is not correct right now
+  // we don't write the sidecar here but later in dt_dev_read_history_ext
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -1829,6 +1830,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   if(first_run)
   {
     flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
+
+    // As we have a proper history right now and this is first_run we write the xmp now
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   }
   else if(legacy_params)
   {
