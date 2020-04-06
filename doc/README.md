@@ -28,6 +28,7 @@ Optionally, you might need for special features:
  - `libcolord-dev` `libcolord-gtk-dev` for colour profile support
  - `webp` and `openjpeg` libraries for WebP and JPEG 2000 support
  - GraphicsMagick library for TIFF-encoded EXIF thumbnails and LDR image format support
+ - `exiftool` for creating whitebalance presets
 
 ### Build
 
