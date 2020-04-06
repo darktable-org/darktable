@@ -106,8 +106,6 @@ typedef struct _range_t
 
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 static void _lib_folders_update_collection(const gchar *filmroll);
-static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
-                          dt_lib_collect_rule_t *d);
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
 static void collection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
                                gpointer self);
@@ -1731,11 +1729,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     if(text)
     {
       g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
       g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
       g_free(text);
       d->rule[i].typing = FALSE;
     }
@@ -1785,10 +1781,8 @@ void gui_reset(dt_lib_module_t *self)
 static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
-  g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
-  g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
@@ -1892,14 +1886,10 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
     }
   }
 
-  g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   gtk_editable_set_position(GTK_EDITABLE(d->rule[active].text), -1);
-  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text,
-                                    NULL);
-  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed,
-                                    NULL);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   g_free(text);
 
   if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
@@ -1938,6 +1928,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
     rows = gtk_tree_model_iter_n_children(model, NULL);
 
+    // if only one row, press enter in entry box to fill it with the row value
     if(rows == 1)
     {
       GtkTreeIter iter;
@@ -1946,14 +1937,11 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
         gchar *text;
         gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
-        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         gtk_entry_set_text(GTK_ENTRY(d->text), text);
         gtk_editable_set_position(GTK_EDITABLE(d->text), -1);
-        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         g_free(text);
-        d->typing = FALSE;
         update_view(d);
       }
     }
@@ -1963,16 +1951,12 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
-}
-
-static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
-                          dt_lib_collect_rule_t *d)
-{
-  d->typing = TRUE;
+  d->typing = FALSE;
 }
 
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
+  dr->typing = TRUE;
   update_view(dr);
 }
 
@@ -2114,10 +2098,8 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
       if(property != -1 && !_combo_set_active_collection(GTK_COMBO_BOX(d->rule[i].combo), property))
       {
         // this one has been hidden - remove entry
-        g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), "");
-        g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         d->rule[i].typing = FALSE;
         set_properties(&d->rule[i]);
@@ -2306,7 +2288,6 @@ void gui_init(dt_lib_module_t *self)
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_insert_text), d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
