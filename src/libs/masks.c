@@ -1251,7 +1251,7 @@ static gboolean _tree_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean 
     return FALSE;
   }
   
-  gchar *tmp;
+  gchar *tmp = NULL;
   gtk_tree_model_get(model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
   if(!show)
   {
