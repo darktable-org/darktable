@@ -2701,19 +2701,17 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       img->legacy_flip.legacy = 0;
     }
 
+    int32_t preset_applied = 0;
+    
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.auto_presets_applied"))) != xmpData.end())
     {
-      const int32_t i = pos->toLong();
-      // set or clear bit in image struct
-      if(i == 1) img->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
-      if(i == 0) img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+      preset_applied = pos->toLong();
+
       // in any case, this is no legacy image.
       img->flags |= DT_IMAGE_NO_LEGACY_PRESETS;
     }
     else
     {
-      // not found means 0 (old xmp)
-      img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
       // so we are legacy (thus have to clear the no-legacy flag)
       img->flags &= ~DT_IMAGE_NO_LEGACY_PRESETS;
     }
@@ -2979,6 +2977,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     {
       int history_end = MIN(pos->toLong(), num);
       if(num_masks > 0) history_end++;
+      if((history_end < 1) && preset_applied) preset_applied = -1;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
                                   &stmt, NULL);
@@ -2994,6 +2993,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     else
     {
+      if(preset_applied) preset_applied = -1;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "UPDATE main.images "
                                   " SET history_end = (SELECT IFNULL(MAX(num) + 1, 0)"
@@ -3020,6 +3020,23 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
 end:
     sqlite3_finalize(stmt);
+
+    // set or clear bit in image struct. ONLY set if the Xmp.darktable.auto_presets_applied was 1
+    // AND there was a history in xmp
+    if(preset_applied > 0)
+    {
+      img->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
+    }
+    else
+    {
+      // not found for old or buggy xmp where it was found but history was 0
+      img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+
+      if(preset_applied < 0)
+      {
+        fprintf(stderr,"[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",filename,img->id);
+      }
+    }
 
     g_list_free_full(iop_order_list, free);
     g_list_free_full(history_entries, free_history_entry);
