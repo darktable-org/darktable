@@ -521,7 +521,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_collection_get_selected(darktable.collection, -1);
+      imgs = dt_view_get_images_to_act_on();
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -552,7 +552,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
 
 void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 {
-  if(!key || !imgid) return;
+  if(!key || !imgid || imgid == -1) return;
 
   if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
   {
@@ -571,10 +571,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
       if(imported)
       {
         GList *imgs = NULL;
-        if(imgid == -1)
-          imgs = dt_collection_get_selected(darktable.collection, -1);
-        else
-          imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+        imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
         if(imgs)
         {
           GList *undo = NULL;
@@ -627,7 +624,7 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_collection_get_selected(darktable.collection, -1);
+      imgs = dt_view_get_images_to_act_on();
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -674,7 +671,7 @@ void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean g
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_collection_get_selected(darktable.collection, -1);
+      imgs = dt_view_get_images_to_act_on();
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -701,7 +698,7 @@ void dt_metadata_set_list_id(const int imgid, GList *metadata, const gboolean cl
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
+    imgs = dt_view_get_images_to_act_on();
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(imgs)

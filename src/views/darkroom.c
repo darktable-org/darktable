@@ -610,9 +610,6 @@ void expose(
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
-    // module
-    if(dev->gui_module && dev->gui_module->gui_post_expose)
-      dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
   }
 
   // indicate if we are in gamut check or softproof mode
