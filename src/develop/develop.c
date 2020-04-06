@@ -149,6 +149,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
+  dev->overlay_color.enabled = FALSE;
+  dev->overlay_color.color = dt_conf_get_int("darkroom/ui/overlay_color");
+
   dev->iso_12646.enabled = FALSE;
 
   dev->second_window.zoom = DT_ZOOM_FIT;
@@ -222,6 +225,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
+
+  dt_conf_set_int("darkroom/ui/overlay_color", dev->overlay_color.color);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
@@ -1428,8 +1433,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
 
-  // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  // make sure these end up in the image_cache; as the history is not correct right now
+  // we don't write the sidecar here but later in dt_dev_read_history_ext
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -1824,6 +1830,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   if(first_run)
   {
     flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
+
+    // As we have a proper history right now and this is first_run we write the xmp now
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   }
   else if(legacy_params)
   {
