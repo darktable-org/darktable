@@ -525,14 +525,14 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
     // draw main line
     cairo_set_line_width(cr, 5.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
     cairo_move_to(cr, 0.0f, ypos - xpos * trotation);
     cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
                   ypos + (darktable.develop->preview_pipe->backbuf_width - xpos) * trotation);
     cairo_stroke_preserve(cr);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
 
     // draw the arrow
@@ -547,16 +547,16 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     pivot_end_y = ypos0 + cosf(rotation) * distance;
     cairo_set_dash(cr, dashed, 0, 0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
     // from start to end
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_line_to(cr, pivot_start_x, pivot_start_y);
     cairo_line_to(cr, pivot_end_x, pivot_end_y);
     cairo_stroke(cr);
 
     // start side of the gradient
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
     cairo_stroke(cr);
@@ -564,7 +564,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     // end side of the gradient
     cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke(cr);
 
     // draw arrow on the end of the gradient to clearly display the direction
@@ -582,7 +582,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
     const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
 
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_move_to(cr, pivot_end_x, pivot_end_y);
     cairo_line_to(cr, arrow_x1, arrow_y1);
     cairo_line_to(cr, arrow_x2, arrow_y2);
@@ -598,20 +598,20 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     pivot_end_y = ypos0 + cosf(rotation) * compression * scale;
     cairo_set_dash(cr, dashed, len, 0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, 0.0f, pivot_start_y - pivot_start_x * trotation);
     cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
                   pivot_start_y + (darktable.develop->preview_pipe->backbuf_width - pivot_start_x) * trotation);
     cairo_stroke_preserve(cr);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, 0.0f, pivot_end_y - pivot_end_x * trotation);
     cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
                   pivot_end_y + (darktable.develop->preview_pipe->backbuf_width - pivot_end_x) * trotation);
     cairo_stroke_preserve(cr);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
 
@@ -668,7 +668,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
         cairo_set_line_width(cr, 5.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 3.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
       cairo_move_to(cr, x, y);
 
@@ -688,7 +688,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_stroke(cr);
     }
   }
@@ -725,7 +725,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
       cairo_move_to(cr, x, y);
 
@@ -745,7 +745,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_set_dash(cr, dashed, len, 4);
       cairo_stroke(cr);
     }
@@ -763,7 +763,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   {
     cairo_set_dash(cr, dashed, 0, 0);
     const float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
     cairo_fill_preserve(cr);
 
@@ -771,7 +771,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke(cr);
   }
 
@@ -783,16 +783,16 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
     // from start to end
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_move_to(cr, pivot_start_x, pivot_start_y);
     cairo_line_to(cr, pivot_end_x, pivot_end_y);
     cairo_stroke(cr);
 
     // start side of the gradient
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
     cairo_stroke(cr);
@@ -800,7 +800,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     // end side of the gradient
     cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke(cr);
 
     // draw arrow on the end of the gradient to clearly display the direction
@@ -818,7 +818,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
     const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
 
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_move_to(cr, pivot_end_x, pivot_end_y);
     cairo_line_to(cr, arrow_x1, arrow_y1);
     cairo_line_to(cr, arrow_x2, arrow_y2);
