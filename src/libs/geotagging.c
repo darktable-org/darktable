@@ -356,6 +356,7 @@ static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_
     g_strfreev(tokens);
   }
   gtk_widget_destroy(d->floating_window);
+  gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
 }
 
 static gboolean _lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
@@ -365,6 +366,7 @@ static gboolean _lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey
   {
     case GDK_KEY_Escape:
       gtk_widget_destroy(d->floating_window);
+      gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
       return TRUE;
 
     case GDK_KEY_Return:

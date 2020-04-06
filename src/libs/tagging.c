@@ -2813,6 +2813,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_Escape:
       g_list_free(d->floating_tag_imgs);
       gtk_widget_destroy(d->floating_tag_window);
+      gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
       return TRUE;
     case GDK_KEY_Tab:
       return TRUE;
@@ -2831,6 +2832,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       _init_treeview(self, 0);
       _init_treeview(self, 1);
       gtk_widget_destroy(d->floating_tag_window);
+      gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
       return TRUE;
