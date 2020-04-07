@@ -96,10 +96,6 @@ void dt_imageio_flip_buffers(char *out, const char *in,
                              const int wd, const int ht, const int fwd, const int fht, const int stride,
                              const dt_image_orientation_t orientation);
 
-void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black,
-                                           const float white, const int ch, const int wd, const int ht,
-                                           const int fwd, const int fht, const int stride,
-                                           const dt_image_orientation_t orientation);
 void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white,
                                           const int ch, const int wd, const int ht, const int fwd,
                                           const int fht, const int stride,
