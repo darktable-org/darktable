@@ -546,30 +546,28 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
       table->full_x += x - table->pan_x;
       table->full_y += y - table->pan_y;
-      table->full_x = fminf(table->full_x, th->zx_max);
-      table->full_x = fmaxf(table->full_x, -th->zx_max);
-      table->full_y = fminf(table->full_y, th->zy_max);
-      table->full_y = fmaxf(table->full_y, -th->zy_max);
+      table->full_x = fminf(table->full_x, th->img_width - th->width * 0.97);
+      table->full_x = fmaxf(table->full_x, 0);
+      table->full_y = fminf(table->full_y, th->img_height - th->height * 0.97);
+      table->full_y = fmaxf(table->full_y, 0);
     }
     else if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count <= max_in_memory_images)
     {
       const float valx = x - table->pan_x;
       const float valy = y - table->pan_y;
 
-      float xmax = 0.0f;
-      float ymax = 0.0f;
+      float xmin = 0.0f;
+      float ymin = 0.0f;
       l = table->list;
       while(l)
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        xmax = fmaxf(xmax, th->zx_max);
-        ymax = fmaxf(ymax, th->zy_max);
+        xmin = fminf(xmin, th->width * 0.97 - th->img_width);
+        ymin = fminf(ymin, th->height * 0.97 - th->img_height);
         l = g_list_next(l);
       }
-      float nx = fminf(xmax, table->full_x + valx);
-      nx = fmaxf(nx, -xmax);
-      float ny = fminf(ymax, table->full_y + valy);
-      ny = fmaxf(ny, -ymax);
+      float nx = fmaxf(xmin, table->full_x + valx);
+      float ny = fmaxf(ymin, table->full_y + valy);
 
       if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
@@ -590,7 +588,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       else
       {
         // if global position doesn't change (we reach bounds) we may have to move individual values
-        if(table->full_x == nx && ((nx == -xmax && valx < 0.0f) || (nx == xmax && valx > 0.0f)))
+        if(table->full_x == nx && ((nx == 0 && valx < 0.0f) || (nx == xmin && valx > 0.0f)))
         {
           l = table->list;
           while(l)
@@ -600,7 +598,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
             l = g_list_next(l);
           }
         }
-        if(table->full_y == ny && ((ny == -ymax && valy < 0.0f) || (ny == ymax && valy > 0.0f)))
+        if(table->full_y == ny && ((ny == 0 && valy < 0.0f) || (ny == ymin && valy > 0.0f)))
         {
           l = table->list;
           while(l)
@@ -618,10 +616,12 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       while(l)
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        if(table->full_x + th->zx_delta < -th->zx_max) th->zx_delta = -th->zx_max - table->full_x;
-        if(table->full_x + th->zx_delta > th->zx_max) th->zx_delta = th->zx_max - table->full_x;
-        if(table->full_y + th->zy_delta < -th->zy_max) th->zy_delta = -th->zy_max - table->full_y;
-        if(table->full_y + th->zy_delta > th->zy_max) th->zy_delta = th->zy_max - table->full_y;
+        if(table->full_x + th->zx_delta > 0) th->zx_delta = -table->full_x;
+        if(table->full_x + th->zx_delta < th->width * 0.97 - th->img_width)
+          th->zx_delta = th->width * 0.97 - th->img_width - table->full_x;
+        if(table->full_y + th->zy_delta > 0) th->zy_delta = -table->full_y;
+        if(table->full_y + th->zy_delta < th->height * 0.97 - th->img_height)
+          th->zy_delta = th->height * 0.97 - th->img_height - table->full_y;
         l = g_list_next(l);
       }
     }

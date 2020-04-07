@@ -272,12 +272,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         const float z = thumb->zoom_glob - thumb->zoom_delta;
         res = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.97 * z, thumb->height * 0.97 * z,
                                         &thumb->img_surf);
-        if(!res)
-        {
-          // and we set the max movement at the same occasion
-          thumb->zx_max = MAX(0, (cairo_image_surface_get_width(thumb->img_surf) - thumb->width) / 2);
-          thumb->zy_max = MAX(0, (cairo_image_surface_get_height(thumb->img_surf) - thumb->height) / 2);
-        }
       }
       else
       {
@@ -296,6 +290,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
+<<<<<<< HEAD
     gtk_widget_set_size_request(widget, thumb->img_width, thumb->img_height);
     // and we set the position of the image
     int posx, posy;
@@ -330,6 +325,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
     gtk_widget_set_margin_start(thumb->w_image, posx);
     gtk_widget_set_margin_top(thumb->w_image, posy);
+=======
+    gtk_widget_set_size_request(thumb->w_image_box, MIN(thumb->img_width, thumb->width * 0.97),
+                                MIN(thumb->img_height, thumb->height * 0.97));
+>>>>>>> culling : fix panning and image borders
 
     // now that we know image ratio, we can fill the extension label
     const char *ext = thumb->filename + strlen(thumb->filename);
@@ -361,8 +360,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   cairo_paint(cr);
 
   // and eventually the image border
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
-  gtk_render_frame(context, cr, 0, 0, thumb->img_width, thumb->img_height);
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
+  gtk_render_frame(context, cr, 0, 0, MIN(thumb->img_width, thumb->width * 0.97),
+                   MIN(thumb->img_height, thumb->height * 0.97));
 
   return TRUE;
 }
@@ -719,6 +719,12 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_ext, TRUE);
 
+    thumb->w_image_box = gtk_overlay_new();
+    gtk_widget_set_name(thumb->w_image_box, "thumb_image");
+    gtk_widget_set_size_request(thumb->w_image_box, thumb->width, thumb->height);
+    gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_CENTER);
+    gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_CENTER);
+    gtk_widget_show(thumb->w_image_box);
     // the image drawing area
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
@@ -731,7 +737,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     gtk_widget_show(thumb->w_image);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();

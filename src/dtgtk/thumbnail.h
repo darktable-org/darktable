@@ -79,6 +79,7 @@ typedef struct
   GtkWidget *w_back;               // GtkEventBox -- thumbnail background
   GtkWidget *w_ext;                // GtkLabel -- thumbnail extension
 
+  GtkWidget *w_image_box;
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
   GtkBorder *img_margin;     // in percentage of the main widget size
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
@@ -122,8 +123,6 @@ typedef struct
   float zy_delta;
 
   float zoom_100; // max zoom value
-  float zx_max;   // max left/right panning
-  float zy_max;   // max top/bottom panning
 
   float w_fit;
   float h_fit;
