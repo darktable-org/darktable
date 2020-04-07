@@ -1392,6 +1392,19 @@
     <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
     <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="lighttable">
+    <name>plugins/lighttable/ui/border_size</name>
+    <type>
+      <enum>
+        <option>small</option>
+        <option>normal</option>
+        <option>large</option>
+      </enum>
+    </type>
+    <default>normal</default>
+    <shortdescription>border around an image in lighttable mode</shortdescription>
+    <longdescription>defines the size of the gray border around the image in lighttable mode (filemanager and zoomable lighttable). Requires restart.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
     <type>int</type>

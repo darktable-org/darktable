@@ -115,6 +115,14 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  float imgsize = 0.0;
+  const gchar *bordersize = dt_conf_get_string("plugins/lighttable/ui/border_size");
+
+  if (strcmp(bordersize, "small") == 0) imgsize = 0.95;
+  else if (strcmp(bordersize, "large") == 0) imgsize = 0.87;
+  else imgsize = 0.91;
+
   if(thumb->imgid <= 0)
   {
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
@@ -168,7 +176,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       if(tmp_surface)
       {
         const float scale
-            = fminf(thumb->width * 0.91 / (float)buf_width, thumb->height * 0.91 / (float)buf_height);
+            = fminf(thumb->width * imgsize / (float)buf_width, thumb->height * imgsize / (float)buf_height);
         const int img_width = buf_width * scale;
         const int img_height = buf_height * scale;
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -200,7 +208,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     else
     {
       const gboolean res
-          = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.91, thumb->height * 0.91, &thumb->img_surf);
+          = dt_view_image_get_surface(thumb->imgid, thumb->width * imgsize, thumb->height * imgsize, &thumb->img_surf);
       if(res)
       {
         // if the image is missing, we reload it again
