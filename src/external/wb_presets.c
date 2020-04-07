@@ -8087,7 +8087,7 @@ const wb_data wb_preset[] =
   { "Sony", "ILCA-68", "6000K"             , 0, { 2.687500, 1, 1.476562, 0 } },
   { "Sony", "ILCA-68", "8500K"             , 0, { 3.148438, 1, 1.246094, 0 } },
 
-  // firmware ILCE-7 (A7) f/w 3.20
+  // Sony ILCE-7 (A7) firmware version 3.20
   { "Sony", "ILCE-7", Daylight            , -7, { 1.87890625, 1, 1.890625, 0 } },
   { "Sony", "ILCE-7", Daylight            , -6, { 1.9375, 1, 1.82421875, 0 } },
   { "Sony", "ILCE-7", Daylight            , -5, { 2.0, 1, 1.7578125, 0 } },
