@@ -6,7 +6,7 @@ if ARGV.size < 1
 end
 
 # Presets we just skip
-IGNORED_PRESETS=["Auto","Kelvin","Measured","AsShot","Kelvin","Preset",
+IGNORED_PRESETS=["Auto", "Kelvin", "Measured", "AsShot","Preset", "Natural Auto",
                  "Multi Auto", "Color Temperature Enhancement", "Custom",
                  "One Touch WB 1", "One Touch WB 2", "One Touch WB 3",
                  "One Touch WB 4", "Custom WB 1", "Auto0", "Auto1", "Auto2",
