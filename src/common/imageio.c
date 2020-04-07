@@ -228,62 +228,6 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
   }
 }
 
-void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black,
-                                           const float white, const int ch, const int wd, const int ht,
-                                           const int fwd, const int fht, const int stride,
-                                           const dt_image_orientation_t orientation)
-{
-  const float scale = 1.0f / (white - black);
-  if(!orientation)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(wd, ch, scale, stride, black, ht) \
-    shared(in, out) \
-    schedule(static)
-#endif
-    for(int j = 0; j < ht; j++)
-      for(int i = 0; i < wd; i++)
-        for(int k = 0; k < ch; k++)
-          out[4 * ((size_t)j * wd + i) + k] = (in[ch * ((size_t)j * stride + i) + k] - black) * scale;
-    return;
-  }
-  int ii = 0, jj = 0;
-  int si = 4, sj = wd * 4;
-  if(orientation & ORIENTATION_SWAP_XY)
-  {
-    sj = 4;
-    si = ht * 4;
-  }
-  if(orientation & ORIENTATION_FLIP_Y)
-  {
-    jj = (int)fht - jj - 1;
-    sj = -sj;
-  }
-  if(orientation & ORIENTATION_FLIP_X)
-  {
-    ii = (int)fwd - ii - 1;
-    si = -si;
-  }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(wd, ch, black, scale, stride, ht) \
-  shared(in, out, jj, ii, sj, si) \
-  schedule(static)
-#endif
-  for(int j = 0; j < ht; j++)
-  {
-    float *out2 = out + (size_t)labs(sj) * jj + (size_t)labs(si) * ii + (size_t)sj * j;
-    const uint16_t *in2 = in + stride * j;
-    for(int i = 0; i < wd; i++)
-    {
-      for(int k = 0; k < ch; k++) out2[k] = (in2[k] - black) * scale;
-      in2 += ch;
-      out2 += si;
-    }
-  }
-}
-
 void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white,
                                           const int ch, const int wd, const int ht, const int fwd,
                                           const int fht, const int stride,
