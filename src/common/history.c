@@ -86,8 +86,9 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end = 0,"
-                              " aspect_ratio = 0.0 WHERE id = ?1",
+                              "UPDATE main.images"
+                              " SET history_end = 0, aspect_ratio = 0.0"
+                              " WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -692,8 +693,8 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     // and finally copy the history hash, except mipmap hash
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.history_hash (imgid,"
-                                " basic_hash, auto_hash, current_hash)"
+                                "INSERT INTO main.history_hash"
+                                "    (imgid, basic_hash, auto_hash, current_hash)"
                                 " SELECT ?2, basic_hash, auto_hash, current_hash"
                                 "   FROM main.history_hash "
                                 "   WHERE imgid = ?1",
@@ -791,8 +792,12 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num, operation, enabled, multi_name"
                               " FROM main.history"
-                              " WHERE imgid=?1 AND num IN (SELECT MAX(num) FROM main.history hst2 WHERE hst2.imgid=?1 AND "
-                              "       hst2.operation=main.history.operation GROUP BY multi_priority) "
+                              " WHERE imgid=?1"
+                              "   AND num IN (SELECT MAX(num)"
+                              "               FROM main.history hst2"
+                              "               WHERE hst2.imgid=?1"
+                              "                 AND hst2.operation=main.history.operation"
+                              "               GROUP BY multi_priority)"
                               " ORDER BY num DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
