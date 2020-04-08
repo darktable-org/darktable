@@ -961,8 +961,33 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
       darktable.gui->scroll_to[1] = module->expander;
   }
 
-  dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+  if(dt_conf_get_bool("lighttable/ui/single_module"))
+  {
+    GList *it = g_list_first(darktable.lib->plugins);
+    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    gboolean all_other_closed = TRUE;
+    while(it)
+    {
+      dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
+      if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
+      {
+        all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
+        dt_lib_gui_set_expanded(m, FALSE);
+      }
+
+      it = g_list_next(it);
+    }
+    if(all_other_closed)
+      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+    else
+      dt_lib_gui_set_expanded(module, TRUE);
+    }
+    else
+    {
+      /* else just toggle */
+      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+    }
   return TRUE;
 }
 
