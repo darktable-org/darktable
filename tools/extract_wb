@@ -277,10 +277,17 @@ def convert_preset_to_sort(preset)
 end
 
 found_presets.sort! do |a, b|
-  (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])) == 0 ? 
-    a[3].to_i <=> b[3].to_i 
-    : 
-    (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2]))
+  if (a[0] <=> b[0]) != 0
+    a[0] <=> b[0]
+  elsif (a[1] <=> b[1]) != 0
+    a[1] <=> b[1]
+  elsif (convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])) != 0
+    convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])
+  elsif (a[3].to_i <=> b[3].to_i) != 0
+    a[3].to_i <=> b[3].to_i
+  else
+    a[4] <=> b[4]
+  end
 end
 
 min_padding = 0
