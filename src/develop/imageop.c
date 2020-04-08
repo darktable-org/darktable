@@ -1895,7 +1895,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
 
-      gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
+      const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
       return TRUE;
