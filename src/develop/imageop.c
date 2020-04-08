@@ -1900,6 +1900,11 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
       return FALSE;
     }
+    else if(e->state & GDK_CONTROL_MASK)
+    {
+      _iop_gui_rename_module(module);
+      return FALSE;
+    }
     else
     {
     // make gtk scroll to the module once it updated its allocation size
