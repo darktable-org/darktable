@@ -71,28 +71,38 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.module_order WHERE imgid = ?1", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.module_order WHERE imgid = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "UPDATE main.images SET history_end = 0, aspect_ratio = 0.0 WHERE id = ?1", -1, &stmt,
-      NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end = 0,"
+                              " aspect_ratio = 0.0 WHERE id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.masks_history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history_hash WHERE imgid = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -114,6 +124,9 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
   dt_unlock_image(imgid);
+
+  // update history hash
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   if(undo)
   {
@@ -581,23 +594,24 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   sqlite3_stmt *stmt;
 
   // replace history stack
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   // and shapes
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.masks_history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "UPDATE main.images SET history_end = 0, aspect_ratio = 0.0 WHERE id = ?1", -1, &stmt,
-      NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end = 0, aspect_ratio = 0.0 WHERE id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -653,12 +667,35 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // and finaly copy the module order
+    // copy the module order
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT OR REPLACE INTO main.module_order (imgid, iop_list, version)"
                                 " SELECT ?2, iop_list, version"
-                                "   FROM module_order"
+                                "   FROM main.module_order"
+                                "   WHERE imgid = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dest_imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    // it is possible the source image has no hash yet. make sure this is copied too
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.history_hash WHERE imgid = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    // and finally copy the history hash, except mipmap hash
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "INSERT INTO main.history_hash (imgid,"
+                                " basic_hash, auto_hash, current_hash)"
+                                " SELECT ?2, basic_hash, auto_hash, current_hash"
+                                "   FROM main.history_hash "
                                 "   WHERE imgid = ?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -997,6 +1034,7 @@ void dt_history_compress_on_image(int32_t imgid)
     sqlite3_finalize(stmt);
   }
   dt_unlock_image(imgid);
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
 int dt_history_compress_on_list(GList *imgs)
@@ -1083,6 +1121,7 @@ int dt_history_compress_on_list(GList *imgs)
       dt_history_set_compress_problem(imgid, FALSE);
 
     dt_unlock_image(imgid);
+    dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
     l = g_list_next(l);
   }
 
