@@ -112,6 +112,9 @@ typedef struct dt_mouse_action_t
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
 
+/* maximum zoom factor for the lighttable */
+#define DT_LIGHTTABLE_MAX_ZOOM 25
+
 /**
  * main dt view module (as lighttable or darkroom)
  */
@@ -229,6 +232,8 @@ typedef struct dt_view_image_expose_t
   int *full_surface_ht;
   int *full_surface_w_lock;
 } dt_view_image_expose_t;
+/** returns an uppercase string of file extension **plus** some flag information **/
+char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_expose(dt_view_image_expose_t *vals);
 /** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */

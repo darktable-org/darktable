@@ -607,21 +607,7 @@ void expose(
   {
     // masks
     if(dev->form_visible && dev->gui_module->enabled)
-    {
-      // The masks paths should only be displayed inside the visible image
-      const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
-      const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
-
-      const float hbar = (self->width - pwidth) * .5f;
-      const float tbar = (self->height - pheight) * .5f;
-      cairo_save(cri);
-      cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
-      cairo_clip(cri);
-
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
-
-      cairo_restore(cri);
-    }
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
@@ -1080,6 +1066,7 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   const gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const gboolean export_masks = dt_conf_get_bool("plugins/lighttable/export/export_masks");
   const gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -1089,8 +1076,8 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   gchar *metadata_export = dt_lib_export_metadata_get_conf();
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
-                    icc_type, icc_filename, icc_intent, metadata_export);
+  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks, style,
+                    style_append, icc_type, icc_filename, icc_intent, metadata_export);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);
@@ -1310,6 +1297,37 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_configure(d, d->width, d->height);
 
   dt_ui_restore_panels(darktable.gui->ui);
+  dt_dev_reprocess_center(d);
+}
+
+/* overlay color */
+static void _overlay_color_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overlay_color.enabled = !d->overlay_color.enabled;
+  dt_dev_reprocess_center(d);
+}
+
+static gboolean _overlay_color_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  _toolbar_show_popup(d->overlay_color.floating_window);
+  return TRUE;
+}
+
+static gboolean _overlay_color_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(d->overlay_color.timeout > 0) g_source_remove(d->overlay_color.timeout);
+  d->overlay_color.timeout = 0;
+  return FALSE;
+}
+
+static void overlay_colors_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overlay_color.color = dt_bauhaus_combobox_get(combo);
+  dt_conf_set_int("darkroom/ui/overlay_color", d->overlay_color.color);
   dt_dev_reprocess_center(d);
 }
 
@@ -1903,6 +1921,18 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
   return TRUE;
 }
 
+static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+  GtkWidget * combobox = dev->overlay_color.colors;
+
+  const int currentval = dt_bauhaus_combobox_get(combobox);
+  const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
+  dt_bauhaus_combobox_set(combobox, nextval);
+  return TRUE;
+}
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2236,6 +2266,47 @@ void gui_init(dt_view_t *self)
                               G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+  }
+
+  /* create overlay color changer popup tool */
+  {
+    // the button
+    dev->overlay_color.button
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(dev->overlay_color.button,
+                                _("set the color of lines that overlay the image (drawn masks, crop and rotate guides etc.)"));
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "clicked",
+                     G_CALLBACK(_overlay_color_quickbutton_clicked), dev);
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-press-event",
+                     G_CALLBACK(_overlay_color_quickbutton_pressed), dev);
+    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-release-event",
+                     G_CALLBACK(_overlay_color_quickbutton_released), dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overlay_color.button, DT_VIEW_DARKROOM);
+
+    // and the popup window
+    dev->overlay_color.floating_window = gtk_popover_new(dev->overlay_color.button);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->overlay_color.floating_window), dialog_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(dev->overlay_color.floating_window), "transitions-enabled", FALSE, NULL);
+#endif
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->overlay_color.floating_window), vbox);
+
+    /** let's fill the encapsulating widget */
+    GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(overlay_colors, NULL, _("overlay color"));
+    dt_bauhaus_combobox_add(overlay_colors, _("gray"));
+    dt_bauhaus_combobox_add(overlay_colors, _("red"));
+    dt_bauhaus_combobox_add(overlay_colors, _("green"));
+    dt_bauhaus_combobox_add(overlay_colors, _("yellow"));
+    dt_bauhaus_combobox_add(overlay_colors, _("cyan"));
+    dt_bauhaus_combobox_add(overlay_colors, _("magenta"));
+    dt_bauhaus_combobox_set(overlay_colors, dev->overlay_color.color);
+    gtk_widget_set_tooltip_text(overlay_colors, _("set overlay color"));
+    g_signal_connect(G_OBJECT(overlay_colors), "value-changed", G_CALLBACK(overlay_colors_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(overlay_colors), TRUE, TRUE, 0);
+    gtk_widget_set_state_flags(overlay_colors, GTK_STATE_FLAG_SELECTED, TRUE);
   }
 
   darktable.view_manager->proxy.darkroom.view = self;
@@ -3098,14 +3169,46 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // dynamic accels
   if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
   {
-    gtk_widget_grab_focus(self->dynamic_accel_current->widget);
-    float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
-    float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+    GtkWidget *widget = self->dynamic_accel_current->widget;
+    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
-    if(up)
-      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+    if(w->type == DT_BAUHAUS_SLIDER)
+    {
+      gtk_widget_grab_focus(self->dynamic_accel_current->widget);
+      float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
+      float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+
+      if(up)
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+      else
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    }
     else
-      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    {
+      const int currentval = dt_bauhaus_combobox_get(widget);
+
+      if(up)
+      {
+        const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(widget) ? 0 : currentval + 1;
+        dt_bauhaus_combobox_set(widget, nextval);
+      }
+      else
+      {
+        const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(widget) : currentval - 1;
+        dt_bauhaus_combobox_set(widget, prevval);
+      }
+
+      if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
+      {
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(widget));
+        else if(w->module)
+          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(widget));
+        else
+          dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(widget));
+      }
+
+    }
     g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
     return;
   }
@@ -3394,6 +3497,9 @@ void init_key_accels(dt_view_t *self)
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
 
+  // cycle overlay colors
+  dt_accel_register_view(self, NC_("accel", "cycle overlay colors"), GDK_KEY_o, GDK_CONTROL_MASK);
+
   // toggle softproofing
   dt_accel_register_view(self, NC_("accel", "softproof"), GDK_KEY_s, GDK_CONTROL_MASK);
 
@@ -3477,6 +3583,10 @@ void connect_key_accels(dt_view_t *self)
   // toggle overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->overexposed.button, NULL);
   dt_accel_connect_view(self, "overexposed", closure);
+
+  // cycle through overlay colors
+  closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "cycle overlay colors", closure);
 
   // toggle softproof indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.softproof_button, NULL);

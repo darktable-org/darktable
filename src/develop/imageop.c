@@ -933,6 +933,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   if(ended)
   {
     gtk_widget_destroy(d->floating_window);
+    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
     free(d);
     return TRUE;
   }
@@ -1888,11 +1889,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
       return FALSE;
     }
-    else if(e->state & GDK_SHIFT_MASK)
-    {
-      _iop_gui_rename_module(module);
-      return FALSE;
-    }
     else
     {
       // make gtk scroll to the module once it updated its allocation size
@@ -2130,8 +2126,11 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_dev_modulegroups_switch(darktable.develop, module);
   }
 
-  dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-  dt_iop_request_focus(module);
+  dt_iop_gui_set_expanded(module, !module->expanded, dt_conf_get_bool("darkroom/ui/single_module"));
+  if(module->expanded)
+  {
+    dt_iop_request_focus(module);
+  }
   return TRUE;
 }
 

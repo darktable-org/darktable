@@ -28,8 +28,6 @@
 #include "gui/drag_and_drop.h"
 #include "views/view.h"
 
-#define ZOOM_MAX 13
-
 // specials functions for GList globals actions
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
@@ -234,7 +232,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 
     if(force || allocation.width != table->view_width || allocation.height != table->view_height)
     {
-      table->thumbs_per_row = ZOOM_MAX;
+      table->thumbs_per_row = DT_LIGHTTABLE_MAX_ZOOM;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
       table->thumb_size = table->view_width / npr;
@@ -287,7 +285,8 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
     const int pos_h
         = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
 
-    const int total_width = ZOOM_MAX * table->thumb_size + 2 * (table->view_width - table->thumb_size * 0.5);
+    const int total_width = DT_LIGHTTABLE_MAX_ZOOM * table->thumb_size
+      + 2 * (table->view_width - table->thumb_size * 0.5);
     const int pos_w = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
 
     dt_view_set_scrollbar(darktable.view_manager->current_view, pos_w, 0, total_width, table->view_width, pos_h, 0,
@@ -614,6 +613,14 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   table->thumb_size = new_size;
   _pos_compute_area(table);
 
+  // we ensure there's still some visible thumbnails
+  const int space = new_size * 0.5; // we want at least 1/2 thumb to stay visible
+  int posy = MIN(table->view_height - space - table->thumbs_area.y, 0);
+  posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
+  int posx = MIN(table->view_width - space - table->thumbs_area.x, 0);
+  posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
+  if(posx != 0 && posy != 0) _move(table, posx, posy, FALSE);
+
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table);
   changed += _thumbs_remove_unneeded(table);
@@ -704,7 +711,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
       int new = old;
       if(delta > 0)
-        new = MIN(ZOOM_MAX, new + 1);
+        new = MIN(DT_LIGHTTABLE_MAX_ZOOM, new + 1);
       else
         new = MAX(1, new - 1);
 
@@ -728,7 +735,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
       int new = old;
       if(delta > 0)
-        new = MIN(ZOOM_MAX, new + 1);
+        new = MIN(DT_LIGHTTABLE_MAX_ZOOM, new + 1);
       else
         new = MAX(1, new - 1);
 
@@ -761,8 +768,6 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
   table->mouse_inside = FALSE;
-  table->last_x = -1;
-  table->last_y = -1;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
 }

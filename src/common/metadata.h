@@ -44,6 +44,22 @@ typedef enum dt_metadata_type_t
 }
 dt_metadata_type_t;
 
+typedef enum dt_metadata_signal_t
+{
+  DT_METADATA_SIGNAL_SHOWN,     // metadata set as shown
+  DT_METADATA_SIGNAL_HIDDEN,    // metadata set as hidden
+  DT_METADATA_SIGNAL_NEW_VALUE  // metadata value changed
+}
+dt_metadata_signal_t;
+
+typedef enum dt_metadata_flag_t
+{
+  DT_METADATA_FLAG_HIDDEN = 1 << 0,     // metadata set as shown
+  DT_METADATA_FLAG_PRIVATE = 1 << 1,    // metadata set as hidden
+  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
+}
+dt_metadata_flag_t;
+
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 
@@ -66,7 +82,10 @@ const char *dt_metadata_get_key(const uint32_t keyid);
 const int dt_metadata_get_type(const uint32_t keyid);
 
 /** Set metadata for a specific image, or all selected for id == -1. */
-void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // exif.cc, ligthroom.c, duplicate.c, lua/image.c
+void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // duplicate.c, lua/image.c
+
+/** Set imported metadata for a specific image */
+void dt_metadata_set_import(int id, const char *key, const char *value); // exif.cc, ligthroom.c
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
 /** list is a set of key, value */

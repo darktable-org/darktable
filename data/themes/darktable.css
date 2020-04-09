@@ -90,8 +90,8 @@
 @define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
-@define-color bauhaus_fg_disabled @grey_70;
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
 
 /* GTK Buttons and tabs */
 @define-color button_border @grey_30;
@@ -709,6 +709,24 @@ filechooserdialog scrolledwindow
   margin: 0;
 }
 
+frame#import_metadata label
+{
+  margin: 4px 3px 4px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata entry
+{
+  margin: 2px 3px 2px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata checkbutton
+{
+  margin: 0px;
+  padding: 0px;
+}
+
 .dialog-vbox treeview check
 {
   border-radius: 2px;
@@ -908,7 +926,7 @@ entry
 /* checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
-checkbutton check
+checkbutton:not(#import_metadata) check
 {
   margin: 5px 8px 5px 0;
 }
