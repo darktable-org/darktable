@@ -225,6 +225,11 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
     gtk_widget_set_size_request(widget, thumb->img_width, thumb->img_height);
+    // and we set the position of the image
+    const int posx = MAX(thumb->width * thumb->img_margin->left / 100, (thumb->width - thumb->img_width) / 2);
+    const int posy = MAX(thumb->height * thumb->img_margin->top / 100, (thumb->height - thumb->img_height) / 2);
+    gtk_widget_set_margin_start(thumb->w_image, posx);
+    gtk_widget_set_margin_top(thumb->w_image, posy);
 
     // now that we know image ratio, we can fill the extension label
     const char *ext = thumb->filename + strlen(thumb->filename);
@@ -617,8 +622,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     gtk_widget_set_size_request(thumb->w_image, thumb->width, thumb->height);
-    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
-    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_START);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
                                               | GDK_POINTER_MOTION_MASK);
