@@ -731,6 +731,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   float *lclut = NULL;
   uint32_t i = 0;
   size_t buf_size = 0;
+  uint32_t out_of_range_nb = 0;
 
   if(!(cube_file = g_fopen(filepath, "r")))
   {
@@ -797,7 +798,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           return 0;
         }
       }
-      else if (nb_token == 3 && g_ascii_isdigit(token[0][0]))
+      else if (nb_token == 3)
       {
         if (!level)
         {
@@ -810,6 +811,16 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         for (int j=0; j < 3; j++)
         {
           lclut[i+j] = dt_atof(token[j]);
+          if(isnan(lclut[i+j]))
+          {
+            fprintf(stderr, "[lut3d] error - invalid number line %d\n", (int)i/3);
+            dt_control_log(_("error - cube lut invalid number line %d"), (int)i/3);
+            free(line);
+            fclose(cube_file);
+            return 0;
+          }
+          else if(lclut[i+j] < 0.0 || lclut[i+j] > 1.0)
+            out_of_range_nb++;
         }
         i += 3;
       }
@@ -817,12 +828,19 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   if (i != buf_size || i == 0)
   {
-    fprintf(stderr, "[lut3d] error - cube lut lines number is not correct\n");
-    dt_control_log(_("error - cube lut lines number is not correct"));
+    fprintf(stderr, "[lut3d] error - cube lut lines number %d is not correct, should be %d\n",
+            (int)i/3, (int)buf_size/3);
+    dt_control_log(_("error - cube lut lines number %d is not correct, should be %d"),
+                   (int)i/3, (int)buf_size/3);
     dt_free_align(lclut);
     free(line);
     fclose(cube_file);
     return 0;
+  }
+  if(out_of_range_nb)
+  {
+    fprintf(stderr, "[lut3d] warning - %d out of range values [0,1]\n", out_of_range_nb);
+    dt_control_log(_("warning - cube lut %d out of range values [0,1]"), out_of_range_nb);
   }
   *clut = lclut;
   free(line);
