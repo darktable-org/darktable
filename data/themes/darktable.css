@@ -1530,6 +1530,7 @@ Details :
 #thumb_image
 {
   border: none;
+  margin : 5px; /* not real pixels, but percentage of the thumb size */
 }
 #thumb_main:active #thumb_image
 {
