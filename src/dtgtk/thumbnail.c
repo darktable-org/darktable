@@ -141,6 +141,17 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   // if we don't have it in memory, we want the image surface
   if(!thumb->img_surf || thumb->img_surf_dirty)
   {
+    if(!thumb->img_margin)
+    {
+      // we retrieve image margins from css
+      GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_image);
+      thumb->img_margin = gtk_border_new();
+      GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+      gtk_style_context_get_margin(context, state, thumb->img_margin);
+    }
+    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
+    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
+
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
     {
@@ -168,7 +179,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       if(tmp_surface)
       {
         const float scale
-            = fminf(thumb->width * 0.91 / (float)buf_width, thumb->height * 0.91 / (float)buf_height);
+            = fminf(thumb->width * ratio_w / (float)buf_width, thumb->height * ratio_h / (float)buf_height);
         const int img_width = buf_width * scale;
         const int img_height = buf_height * scale;
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -199,8 +210,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
     else
     {
-      const gboolean res
-          = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.91, thumb->height * 0.91, &thumb->img_surf);
+      const gboolean res = dt_view_image_get_surface(thumb->imgid, thumb->width * ratio_w, thumb->height * ratio_h,
+                                                     &thumb->img_surf);
       if(res)
       {
         // if the image is missing, we reload it again
@@ -778,6 +789,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   thumb->img_surf = NULL;
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
+  if(thumb->img_margin) gtk_border_free(thumb->img_margin);
   free(thumb);
 }
 
