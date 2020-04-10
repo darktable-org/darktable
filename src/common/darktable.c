@@ -239,8 +239,6 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
   {
     // import a directory into a film roll
-    unsigned int last_char = strlen(filename) - 1;
-    if(filename[last_char] == '/') filename[last_char] = '\0';
     id = dt_film_import(filename);
     if(id)
     {
