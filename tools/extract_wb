@@ -28,6 +28,7 @@ FL_PRESET_REPLACE={
   "Sunny" => "DirectSunlight",
   "Fine Weather" => "DirectSunlight",
   "Tungsten (Incandescent)" => "Tungsten",
+  "ISO Studio Tungsten" => "Tungsten",
   "Cool WHT FL" => "CoolWhiteFluorescent",
   "Daylight FL" => "DaylightFluorescent",
   "Warm WHT FL" => "WarmWhiteFluorescent",
@@ -44,7 +45,7 @@ FL_PRESET_REPLACE={
   "7500K (Fine Weather with Shade)" => "Shade",
 }
 PRESET_ORDER=["DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
-              "Tungsten", "ISO Studio Tungsten", "Incandescent","Fluorescent", 
+              "Tungsten", "Incandescent","Fluorescent", 
               "WarmWhiteFluorescent", "CoolWhiteFluorescent",
               "DayWhiteFluorescent","DaylightFluorescent",
               "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
