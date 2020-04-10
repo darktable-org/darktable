@@ -1280,7 +1280,7 @@ static void _pop_menu_dictionary_delete_path(GtkWidget *menuitem, dt_lib_module_
   if (tag_count == 0) return;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons( _("delete branch"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+  GtkWidget *dialog = gtk_dialog_new_with_buttons( _("delete path"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                 _("cancel"), GTK_RESPONSE_NONE, _("delete"), GTK_RESPONSE_YES, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -1953,7 +1953,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
         g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_delete_tag, self);
       }
 
-      menuitem = gtk_menu_item_new_with_label(_("delete branch"));
+      menuitem = gtk_menu_item_new_with_label(_("delete path"));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_delete_path, self);
 
