@@ -1961,6 +1961,12 @@ static void _sanitize_db(dt_database_t *db)
   }
   sqlite3_finalize(stmt);
   sqlite3_finalize(innerstmt);
+
+  // make sure film_roll folders don't end in "/", that will result in empty entries in the collect module
+  sqlite3_exec(db->handle,
+               "UPDATE main.film_rolls SET folder = substr(folder, 1, length(folder) - 1) WHERE folder LIKE '%/'",
+               NULL, NULL, NULL);
+
 }
 
 // in library we keep the names of the tags used in tagged_images. however, using that table at runtime results
