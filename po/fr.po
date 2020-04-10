@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-06 19:13+0200\n"
-"PO-Revision-Date: 2020-04-06 19:19+0200\n"
+"POT-Creation-Date: 2020-04-10 09:21+0200\n"
+"PO-Revision-Date: 2020-04-10 09:25+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1304,8 +1304,8 @@ msgstr "%s: %s"
 #: ../src/gui/preferences.c:1611 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:340 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1588 ../src/libs/collect.c:243
-#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:473
+#: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:241
+#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
 #: ../src/libs/import.c:772 ../src/libs/import.c:879 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2149
 #: ../src/libs/tagging.c:2190
@@ -1524,13 +1524,13 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1330 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2534
-#: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1421
+#: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1419
 #: ../src/views/darkroom.c:2300
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1332 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1421
+#: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1419
 #: ../src/views/darkroom.c:2302
 msgid "yellow"
 msgstr "jaune"
@@ -1539,48 +1539,48 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:374 ../src/iop/channelmixer.c:459
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2541
 #: ../src/iop/temperature.c:1368 ../src/iop/temperature.c:1381
-#: ../src/libs/collect.c:1421 ../src/views/darkroom.c:2301
+#: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2301
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:1336 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:375 ../src/iop/channelmixer.c:460
 #: ../src/iop/channelmixer.c:481 ../src/iop/colorbalance.c:2548
-#: ../src/iop/temperature.c:1382 ../src/libs/collect.c:1421
+#: ../src/iop/temperature.c:1382 ../src/libs/collect.c:1419
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1338 ../src/libs/collect.c:1421
+#: ../src/common/collection.c:1338 ../src/libs/collect.c:1419
 msgid "purple"
 msgstr "violet"
 
 #: ../src/common/collection.c:1352 ../src/common/collection.c:1360
-#: ../src/libs/collect.c:1368
+#: ../src/libs/collect.c:1366
 msgid "basic"
 msgstr "basique"
 
-#: ../src/common/collection.c:1354 ../src/libs/collect.c:1368
+#: ../src/common/collection.c:1354 ../src/libs/collect.c:1366
 msgid "auto applied"
 msgstr "appliqué automatiquement"
 
-#: ../src/common/collection.c:1356 ../src/libs/collect.c:1368
+#: ../src/common/collection.c:1356 ../src/libs/collect.c:1366
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1369 ../src/libs/collect.c:1381
+#: ../src/common/collection.c:1369 ../src/libs/collect.c:1379
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1375 ../src/libs/collect.c:1393
+#: ../src/common/collection.c:1375 ../src/libs/collect.c:1391
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1576 ../src/libs/collect.c:1495
+#: ../src/common/collection.c:1576 ../src/libs/collect.c:1493
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1608 ../src/libs/collect.c:1556
+#: ../src/common/collection.c:1608 ../src/libs/collect.c:1554
 msgid "not defined"
 msgstr "non défini"
 
@@ -1681,7 +1681,7 @@ msgid "BRG (for testing)"
 msgstr "BRV (pour test)"
 
 #: ../src/common/colorspaces.c:1601 ../src/iop/colorin.c:2153
-#: ../src/iop/lut3d.c:1778
+#: ../src/iop/lut3d.c:1796
 msgid "sRGB"
 msgstr "sRVB"
 
@@ -1987,22 +1987,22 @@ msgstr ""
 "impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
 
-#: ../src/common/history.c:684
+#: ../src/common/history.c:722
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:789 ../src/common/history.c:792
-#: ../src/common/history.c:808 ../src/common/styles.c:991
+#: ../src/common/history.c:831 ../src/common/history.c:834
+#: ../src/common/history.c:850 ../src/common/styles.c:991
 #: ../src/common/styles.c:995 ../src/develop/blend_gui.c:2789
 #: ../src/develop/develop.c:1986 ../src/iop/ashift.c:4870
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:789 ../src/common/history.c:792
-#: ../src/common/history.c:808 ../src/common/styles.c:991
+#: ../src/common/history.c:831 ../src/common/history.c:834
+#: ../src/common/history.c:850 ../src/common/styles.c:991
 #: ../src/common/styles.c:995 ../src/develop/blend_gui.c:2521
 #: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:1986
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
@@ -2086,12 +2086,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:654 ../src/common/mipmap_cache.c:1063
+#: ../src/common/imageio.c:598 ../src/common/mipmap_cache.c:1063
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
 
-#: ../src/common/imageio.c:672
+#: ../src/common/imageio.c:616
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -2100,17 +2100,17 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:673
+#: ../src/common/imageio.c:617
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:673
+#: ../src/common/imageio.c:617
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:683
+#: ../src/common/imageio.c:627
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -2702,7 +2702,7 @@ msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1831 ../src/libs/geotagging.c:781
+#: ../src/control/jobs/control_jobs.c:1831 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "décalage"
 
@@ -2942,30 +2942,30 @@ msgid "toggle polarity of drawn mask"
 msgstr "inverser la polarité du masque dessiné"
 
 #: ../src/develop/blend_gui.c:1948 ../src/libs/masks.c:1009
-#: ../src/libs/masks.c:1049 ../src/libs/masks.c:1660
+#: ../src/libs/masks.c:1049 ../src/libs/masks.c:1657
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
 #: ../src/develop/blend_gui.c:1957 ../src/iop/retouch.c:2660
 #: ../src/iop/spots.c:680 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
-#: ../src/libs/masks.c:1666
+#: ../src/libs/masks.c:1663
 msgid "add path"
 msgstr "ajouter un chemin"
 
 #: ../src/develop/blend_gui.c:1966 ../src/iop/retouch.c:2667
 #: ../src/iop/spots.c:687 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
-#: ../src/libs/masks.c:1673
+#: ../src/libs/masks.c:1670
 msgid "add ellipse"
 msgstr "ajouter une ellipse"
 
 #: ../src/develop/blend_gui.c:1975 ../src/iop/retouch.c:2674
 #: ../src/iop/spots.c:694 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
-#: ../src/libs/masks.c:1680
+#: ../src/libs/masks.c:1677
 msgid "add circle"
 msgstr "ajouter un cercle"
 
 #: ../src/develop/blend_gui.c:1984 ../src/iop/retouch.c:2654
-#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1686
+#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1683
 msgid "add brush"
 msgstr "ajouter une forme au pinceau"
 
@@ -3318,79 +3318,79 @@ msgstr "amélioration du masque"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:1011
+#: ../src/develop/imageop.c:1012
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:1017
+#: ../src/develop/imageop.c:1018
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1023 ../src/libs/masks.c:1170
+#: ../src/develop/imageop.c:1024 ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:1029 ../src/libs/masks.c:1173
+#: ../src/develop/imageop.c:1030 ../src/libs/masks.c:1173
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:1035 ../src/libs/image.c:168
+#: ../src/develop/imageop.c:1036 ../src/libs/image.c:168
 #: ../src/libs/tagging.c:1194 ../src/libs/tagging.c:1284
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1042 ../src/libs/tagging.c:1755
+#: ../src/develop/imageop.c:1043 ../src/libs/tagging.c:1755
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1085 ../src/develop/imageop.c:2004
+#: ../src/develop/imageop.c:1086 ../src/develop/imageop.c:2005
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1085 ../src/develop/imageop.c:2004
+#: ../src/develop/imageop.c:1086 ../src/develop/imageop.c:2005
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1413 ../src/gui/accelerators.c:898
+#: ../src/develop/imageop.c:1414 ../src/gui/accelerators.c:898
 #: ../src/gui/accelerators.c:982 ../src/gui/accelerators.c:1197
 #: ../src/gui/accelerators.c:1222 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1461 ../src/libs/import.c:518 ../src/libs/lib.c:319
-#: ../src/libs/lib.c:347 ../src/libs/lib.c:1176
+#: ../src/libs/lib.c:347 ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1433
+#: ../src/develop/imageop.c:1434
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1438 ../src/libs/lib.c:621
+#: ../src/develop/imageop.c:1439 ../src/libs/lib.c:621
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1439
+#: ../src/develop/imageop.c:1440
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1441 ../src/libs/lib.c:613
+#: ../src/develop/imageop.c:1442 ../src/libs/lib.c:613
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1442 ../src/libs/lib.c:617
+#: ../src/develop/imageop.c:1443 ../src/libs/lib.c:617
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1967
+#: ../src/develop/imageop.c:1968
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3398,17 +3398,17 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1978 ../src/libs/lib.c:1011
+#: ../src/develop/imageop.c:1979 ../src/libs/lib.c:1036
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1986 ../src/gui/preferences.c:484
-#: ../src/libs/lib.c:1020
+#: ../src/develop/imageop.c:1987 ../src/gui/preferences.c:484
+#: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:1988
+#: ../src/develop/imageop.c:1989
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -4135,7 +4135,7 @@ msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:269
-#: ../src/libs/geotagging.c:419 ../src/libs/metadata.c:428
+#: ../src/libs/geotagging.c:421 ../src/libs/metadata.c:428
 #: ../src/libs/tagging.c:1194 ../src/libs/tagging.c:1284
 #: ../src/libs/tagging.c:1365 ../src/libs/tagging.c:1538
 #: ../src/libs/tagging.c:1755
@@ -4777,8 +4777,8 @@ msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1179 ../src/gui/preferences.c:1261
-#: ../src/libs/collect.c:244 ../src/libs/copy_history.c:78
-#: ../src/libs/geotagging.c:474 ../src/libs/import.c:773
+#: ../src/libs/collect.c:242 ../src/libs/copy_history.c:78
+#: ../src/libs/geotagging.c:476 ../src/libs/import.c:773
 #: ../src/libs/import.c:880 ../src/libs/styles.c:324
 msgid "_open"
 msgstr "_ouvrir"
@@ -6168,7 +6168,7 @@ msgstr "préserver couleur"
 #: ../src/iop/colorreconstruction.c:1381 ../src/iop/lens.cc:2307
 #: ../src/iop/retouch.c:581 ../src/iop/rgbcurve.c:1613
 #: ../src/iop/rgblevels.c:1135 ../src/iop/tonecurve.c:1438
-#: ../src/libs/collect.c:1520 ../src/libs/export.c:527
+#: ../src/libs/collect.c:1518 ../src/libs/export.c:527
 #: ../src/libs/live_view.c:348 ../src/libs/live_view.c:373
 #: ../src/libs/live_view.c:382 ../src/libs/print_settings.c:1471
 msgid "none"
@@ -10424,7 +10424,7 @@ msgstr "niveaux invalides dans le fichier png %d %d"
 msgid "this darktable build is not compatible with compressed clut"
 msgstr "cette version de darktable n'a pas le support des lut compressées"
 
-#: ../src/iop/lut3d.c:539 ../src/iop/lut3d.c:783 ../src/iop/lut3d.c:870
+#: ../src/iop/lut3d.c:539 ../src/iop/lut3d.c:784 ../src/iop/lut3d.c:888
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
 msgstr "erreur - la taille 3D lut de %d dépasse le maximum supporté"
@@ -10442,83 +10442,98 @@ msgstr "erreur - impossible de lire l'image png « %s »"
 msgid "error - allocating buffer for png lut"
 msgstr "erreur - impossible d'allouer la mémoire pour le png lut"
 
-#: ../src/iop/lut3d.c:738
+#: ../src/iop/lut3d.c:739
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "erreur : fichier cube invalide « %s »"
 
-#: ../src/iop/lut3d.c:752
+#: ../src/iop/lut3d.c:753
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMAIN MIN <> 0.0 non supporté"
 
-#: ../src/iop/lut3d.c:763
+#: ../src/iop/lut3d.c:764
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 non supporté"
 
-#: ../src/iop/lut3d.c:772
+#: ../src/iop/lut3d.c:773
 msgid "[1D cube lut is not supported"
 msgstr "[1D lut cube non supporté"
 
-#: ../src/iop/lut3d.c:794 ../src/iop/lut3d.c:889
+#: ../src/iop/lut3d.c:795 ../src/iop/lut3d.c:907
 msgid "error - allocating buffer for cube lut"
 msgstr "erreur - impossible d'allouer la mémoire pour le cube lut"
 
-#: ../src/iop/lut3d.c:805 ../src/iop/lut3d.c:902
+#: ../src/iop/lut3d.c:806 ../src/iop/lut3d.c:920
 msgid "error - cube lut size is not defined"
 msgstr "erreur - taille lut cube non définie"
 
-#: ../src/iop/lut3d.c:821 ../src/iop/lut3d.c:928
-msgid "error - cube lut lines number is not correct"
-msgstr "erreur - nombre de lignes du lut cube non valide"
+#: ../src/iop/lut3d.c:817
+#, c-format
+msgid "error - cube lut invalid number line %d"
+msgstr "erreur - nombre de lignes du lut cube non valide %d"
 
-#: ../src/iop/lut3d.c:849
+#: ../src/iop/lut3d.c:833
+#, c-format
+msgid "error - cube lut lines number %d is not correct, should be %d"
+msgstr "erreur - nombre (%d) de lignes du lut cube non valide, devrait être %d"
+
+#: ../src/iop/lut3d.c:843
+#, c-format
+msgid "warning - cube lut %d out of range values [0,1]"
+msgstr "attention - lut cube %d valeurs hors de la plage [0,1]"
+
+#: ../src/iop/lut3d.c:867
 #, c-format
 msgid "error - invalid 3dl file: %s"
 msgstr "erreur : fichier 3dl invalide « %s »"
 
-#: ../src/iop/lut3d.c:878
+#: ../src/iop/lut3d.c:896
 #, c-format
 msgid "error - the maximum shaper lut value %d is too low"
 msgstr ""
 "erreur - la valeur maximum pour la table de transformation lut %d est trop "
 "petite"
 
-#: ../src/iop/lut3d.c:944
+#: ../src/iop/lut3d.c:946
+msgid "error - cube lut lines number is not correct"
+msgstr "erreur - nombre de lignes du lut cube non valide"
+
+#: ../src/iop/lut3d.c:962
 msgid "error - the maximum lut value does not match any valid bit depth"
 msgstr ""
 "erreur - la valeur lut maximum ne correspond à aucune taille de bit valide"
 
-#: ../src/iop/lut3d.c:1582
+#: ../src/iop/lut3d.c:1600
 msgid "Lut root folder not defined"
 msgstr "répertoire racine des fichiers lut non défini"
 
-#: ../src/iop/lut3d.c:1588
+#: ../src/iop/lut3d.c:1606
 msgid "select lut file"
 msgstr "sélectionner un fichier lut"
 
-#: ../src/iop/lut3d.c:1589
+#: ../src/iop/lut3d.c:1607
 msgid "_select"
 msgstr "sélection"
 
-#: ../src/iop/lut3d.c:1609
+#: ../src/iop/lut3d.c:1627
 msgid "hald cluts (png), 3D lut (cube or 3dl) or gmic compressed lut (gmz)"
 msgstr "hald cluts (png), 3D lut (cube ou 3dl) ou gmic lut compressée (gmz)"
 
-#: ../src/iop/lut3d.c:1611
+#: ../src/iop/lut3d.c:1629
 msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
-#: ../src/iop/lut3d.c:1620 ../src/libs/copy_history.c:92
-#: ../src/libs/geotagging.c:495 ../src/libs/import.c:803
+#: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
+#: ../src/libs/geotagging.c:497 ../src/libs/import.c:803
 #: ../src/libs/styles.c:341
 msgid "all files"
 msgstr "tous les fichiers"
 
-#: ../src/iop/lut3d.c:1635
+#: ../src/iop/lut3d.c:1653
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "sélection d'un fichier en dehors du répertoire racine non permise"
 
-#: ../src/iop/lut3d.c:1715
+#: ../src/iop/lut3d.c:1733
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
 "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
@@ -10528,7 +10543,7 @@ msgstr ""
 "ATTENTION: le répertoire lut doit être positionné depuis les préférences "
 "avant de choisir un fichier lut"
 
-#: ../src/iop/lut3d.c:1719
+#: ../src/iop/lut3d.c:1737
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/core options/miscellaneous before choosing the lut file"
@@ -10537,7 +10552,7 @@ msgstr ""
 "ATTENTION: le répertoire lut doit être positionné depuis les préférences "
 "avant de choisir un fichier lut"
 
-#: ../src/iop/lut3d.c:1730
+#: ../src/iop/lut3d.c:1748
 msgid ""
 "the file path (relative to lut folder) is saved with image along with the "
 "lut data if it's a compressed lut (gmz)"
@@ -10545,7 +10560,7 @@ msgstr ""
 "le chemin (relatif au répertoire lut) est sauvé avec l'image ainsi ques les "
 "données lut pour les lut compressées (gmz)"
 
-#: ../src/iop/lut3d.c:1733
+#: ../src/iop/lut3d.c:1751
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
@@ -10553,55 +10568,55 @@ msgstr ""
 "le chemin (relatif au répertoire lut) est sauvé avec l'image (et pas avec "
 "les données lut elles mêmes)"
 
-#: ../src/iop/lut3d.c:1742
+#: ../src/iop/lut3d.c:1760
 msgid "enter lut name"
 msgstr "entrer le nom lut"
 
-#: ../src/iop/lut3d.c:1764
+#: ../src/iop/lut3d.c:1782
 msgid "select the LUT"
 msgstr "sélectionner la lut"
 
-#: ../src/iop/lut3d.c:1777
+#: ../src/iop/lut3d.c:1795
 msgid "application color space"
 msgstr "espace couleur"
 
-#: ../src/iop/lut3d.c:1779
+#: ../src/iop/lut3d.c:1797
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/lut3d.c:1780
+#: ../src/iop/lut3d.c:1798
 msgid "gamma rec709 RGB"
 msgstr "RVB Rec709 gamma"
 
-#: ../src/iop/lut3d.c:1781
+#: ../src/iop/lut3d.c:1799
 msgid "linear rec709 RGB"
 msgstr "RVB Rec709 linéaire"
 
-#: ../src/iop/lut3d.c:1782
+#: ../src/iop/lut3d.c:1800
 msgid "linear rec2020 RGB"
 msgstr "RVB Rec2020 linéaire"
 
-#: ../src/iop/lut3d.c:1784
+#: ../src/iop/lut3d.c:1802
 msgid "select the color space in which the LUT has to be applied"
 msgstr "sélectionner l'espace couleur pour l'application lut"
 
-#: ../src/iop/lut3d.c:1788
+#: ../src/iop/lut3d.c:1806
 msgid "interpolation"
 msgstr "interpolation"
 
-#: ../src/iop/lut3d.c:1789
+#: ../src/iop/lut3d.c:1807
 msgid "tetrahedral"
 msgstr "tétraédrique"
 
-#: ../src/iop/lut3d.c:1790
+#: ../src/iop/lut3d.c:1808
 msgid "trilinear"
 msgstr "trilinéaire"
 
-#: ../src/iop/lut3d.c:1791
+#: ../src/iop/lut3d.c:1809
 msgid "pyramid"
 msgstr "pyramide"
 
-#: ../src/iop/lut3d.c:1793
+#: ../src/iop/lut3d.c:1811
 msgid "select the interpolation method"
 msgstr "sélectionner la méthode d'interpolation"
 
@@ -12556,60 +12571,60 @@ msgstr "vitesse d'obturation"
 msgid "WB"
 msgstr "BdB"
 
-#: ../src/libs/collect.c:118
+#: ../src/libs/collect.c:116
 msgid "collect images"
 msgstr "filtres de collection"
 
-#: ../src/libs/collect.c:243
+#: ../src/libs/collect.c:241
 msgid "search filmroll"
 msgstr "rechercher une pellicule"
 
-#: ../src/libs/collect.c:324
+#: ../src/libs/collect.c:322
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 "problème lors de la sélection d'un nouveau chemin pour la pellicule située "
 "dans %s"
 
-#: ../src/libs/collect.c:376
+#: ../src/libs/collect.c:374
 msgid "search filmroll..."
 msgstr "rechercher une pellicule"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/collect.c:380
+#: ../src/libs/collect.c:378
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:1012
+#: ../src/libs/collect.c:1010
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1381
+#: ../src/libs/collect.c:1379
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1393
+#: ../src/libs/collect.c:1391
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1495
+#: ../src/libs/collect.c:1493
 msgid "group followers"
 msgstr "membres du groupe"
 
-#: ../src/libs/collect.c:1748 ../src/libs/collect.c:1763
-#: ../src/libs/collect.c:2200
+#: ../src/libs/collect.c:1744 ../src/libs/collect.c:1759
+#: ../src/libs/collect.c:2182
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1752
+#: ../src/libs/collect.c:1748
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1807
+#: ../src/libs/collect.c:1801
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1812
+#: ../src/libs/collect.c:1806
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -12618,41 +12633,41 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:1818
+#: ../src/libs/collect.c:1812
 #, no-c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr ""
 "saisissez votre requête, utilisez « % » en caractère joker et « , » pour "
 "séparer les valeurs"
 
-#: ../src/libs/collect.c:1823 ../src/libs/collect.c:2307
+#: ../src/libs/collect.c:1817 ../src/libs/collect.c:2289
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:2206
+#: ../src/libs/collect.c:2188
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:2211
+#: ../src/libs/collect.c:2193
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:2216
+#: ../src/libs/collect.c:2198
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:2223
+#: ../src/libs/collect.c:2205
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:2228
+#: ../src/libs/collect.c:2210
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:2233
+#: ../src/libs/collect.c:2215
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
@@ -13223,7 +13238,7 @@ msgstr "ajoute une métadonnée à l'exportation"
 msgid "delete metadata tag"
 msgstr "supprime la métadonnée sélectionnée"
 
-#: ../src/libs/geotagging.c:411
+#: ../src/libs/geotagging.c:413
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
@@ -13231,23 +13246,23 @@ msgstr ""
 "entrer l'heure affichée sur les images sélectionnées\n"
 "format : hh:mm:ss"
 
-#: ../src/libs/geotagging.c:420
+#: ../src/libs/geotagging.c:422
 msgid "ok"
 msgstr "ok"
 
-#: ../src/libs/geotagging.c:473
+#: ../src/libs/geotagging.c:475
 msgid "open GPX file"
 msgstr "ouvrir un fichier GPX"
 
-#: ../src/libs/geotagging.c:490
+#: ../src/libs/geotagging.c:492
 msgid "GPS data exchange format"
 msgstr "GPS Data Exchange Format"
 
-#: ../src/libs/geotagging.c:500
+#: ../src/libs/geotagging.c:502
 msgid "camera time zone"
 msgstr "fuseau horaire du boîtier"
 
-#: ../src/libs/geotagging.c:501
+#: ../src/libs/geotagging.c:503
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -13256,7 +13271,7 @@ msgstr ""
 "données EXIF. en donnant le fuseau horaire correct, les données GPX pourront "
 "être recalées."
 
-#: ../src/libs/geotagging.c:792
+#: ../src/libs/geotagging.c:794
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -13264,20 +13279,20 @@ msgstr ""
 "décalage horaire\n"
 "format : [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:802
+#: ../src/libs/geotagging.c:804
 msgid "calculate the time offset from an image"
 msgstr "calcule le décalage horaire d'une image"
 
-#: ../src/libs/geotagging.c:807
+#: ../src/libs/geotagging.c:809
 msgid "apply time offset to selected images"
 msgstr "applique le décalage horaire aux images sélectionnées"
 
 #. gpx
-#: ../src/libs/geotagging.c:815
+#: ../src/libs/geotagging.c:817
 msgid "apply GPX track file..."
 msgstr "applique un ficher GPX..."
 
-#: ../src/libs/geotagging.c:816
+#: ../src/libs/geotagging.c:818
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "lit un fichier GPX et met à jour la localisation des images sélectionnées"
@@ -14024,7 +14039,7 @@ msgstr "mode : exclusion"
 msgid "cleanup unused shapes"
 msgstr "supprimer les formes non utilisées"
 
-#: ../src/libs/masks.c:1654
+#: ../src/libs/masks.c:1651
 msgid "created shapes"
 msgstr "formes existantes"
 
@@ -15275,7 +15290,7 @@ msgstr "passe de la vue liste / arbre"
 msgid "toggle list with / without suggestion"
 msgstr "active/désactive les suggestions"
 
-#: ../src/libs/tagging.c:2873
+#: ../src/libs/tagging.c:2875
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
