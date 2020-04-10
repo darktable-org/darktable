@@ -66,6 +66,7 @@ typedef struct
   GtkWidget *w_ext;  // GtkLabel -- thumbnail extension
 
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
+  GtkBorder *img_margin;     // in percentage of the main widget size
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
   gboolean img_surf_preview; // if TRUE, the image is originated from preview pipe
   gboolean img_surf_dirty;   // if TRUE, we need to recreate the surface on next drawing code
