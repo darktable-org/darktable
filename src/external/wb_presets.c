@@ -68,7 +68,6 @@ static const char HighTempMercuryVaporFluorescent[] = N_("high temp. mercury-vap
 static const char HTMercury[] = N_("high temp. mercury-vapor");
 // On Some Panasonic
 static const char D55[] = N_("D55");
-static const char ISO_Studio_Tungsten[] = N_("ISO Studio Tungsten");
 
 static const char Flash[] = N_("flash");
 // For Olympus with no real "Flash" preset:
@@ -6402,13 +6401,13 @@ const wb_data wb_preset[] =
 
   /* Panasonic DC-TZ96 Firmware Version 1.0 */
 
-  { "Panasonic", "DC-TZ96", Daylight, 0,            { 2.1328125,  1, 1.79296875, 0 } },
-  { "Panasonic", "DC-TZ96", Cloudy, 0,              { 2.30859375, 1, 1.65625,    0 } },
-  { "Panasonic", "DC-TZ96", Shade, 0,               { 2.4609375,  1, 1.54296875, 0 } },
-  { "Panasonic", "DC-TZ96", Incandescent, 0,        { 1.4765625,  1, 2.55859375, 0 } },
-  { "Panasonic", "DC-TZ96", Flash, 0,               { 2.3203125,  1, 1.56640625, 0 } },
-  { "Panasonic", "DC-TZ96", D55, 0,                 { 1.9765625,  1, 1.90234375, 0 } },
-  { "Panasonic", "DC-TZ96", ISO_Studio_Tungsten, 0, { 1.4765625,  1, 2.55859375, 0 } },
+  { "Panasonic", "DC-TZ96", Daylight    , 0, { 2.1328125,  1, 1.79296875, 0 } },
+  { "Panasonic", "DC-TZ96", Cloudy      , 0, { 2.30859375, 1, 1.65625,    0 } },
+  { "Panasonic", "DC-TZ96", Shade       , 0, { 2.4609375,  1, 1.54296875, 0 } },
+  { "Panasonic", "DC-TZ96", Incandescent, 0, { 1.4765625,  1, 2.55859375, 0 } },
+  { "Panasonic", "DC-TZ96", Flash       , 0, { 2.3203125,  1, 1.56640625, 0 } },
+  { "Panasonic", "DC-TZ96", D55         , 0, { 1.9765625,  1, 1.90234375, 0 } },
+  { "Panasonic", "DC-TZ96", Tungsten    , 0, { 1.4765625,  1, 2.55859375, 0 } },
 
   { "Panasonic", "DMC-FZ8", Daylight, 0,	{ 1.904943, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ8", Cloudy, 0,		{ 2.060836, 1, 1.498099, 0 } },
@@ -6986,7 +6985,7 @@ const wb_data wb_preset[] =
   { "Panasonic", "DC-GH5", Incandescent, 0, { 1.58203125, 1, 2.87109375, 0 } },
   { "Panasonic", "DC-GH5", Flash, 0, { 2.27734375, 1, 1.890625, 0 } },
   { "Panasonic", "DC-GH5", D55, 0, { 2.125, 1, 1.98828125, 0 } },
-  { "Panasonic", "DC-GH5", ISO_Studio_Tungsten, 0, { 1.58203125, 1, 2.87109375, 0 } },
+  { "Panasonic", "DC-GH5", Tungsten, 0, { 1.58203125, 1, 2.87109375, 0 } },
 
   /* Firmware version 1.1 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
@@ -7171,7 +7170,6 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX8", Cloudy             , 8, { 2.19921875, 1, 2.078125, 0 } },
   { "Panasonic", "DMC-GX8", Cloudy             , 9, { 2.171875, 1, 2.12109375, 0 } },
   { "Panasonic", "DMC-GX8", Tungsten           , 0, { 1.640625, 1, 2.828125, 0 } },
-  { "Panasonic", "DMC-GX8", ISO Studio Tungsten, 0, { 1.640625, 1, 2.828125, 0 } },
   { "Panasonic", "DMC-GX8", Incandescent       , -9, { 1.86328125, 1, 2.484375, 0 } },
   { "Panasonic", "DMC-GX8", Incandescent       , -8, { 1.83984375, 1, 2.5078125, 0 } },
   { "Panasonic", "DMC-GX8", Incandescent       , -7, { 1.8046875, 1, 2.55078125, 0 } },
