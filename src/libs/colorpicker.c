@@ -175,7 +175,10 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d   %02X%02X%02X",
+                 (int)round(rgb[0] * 255.f),
+                 (int)round(rgb[1] * 255.f),
+                 (int)round(rgb[2] * 255.f),
                  (int)round(rgb[0] * 255.f),
                  (int)round(rgb[1] * 255.f),
                  (int)round(rgb[2] * 255.f));
@@ -290,7 +293,10 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
-        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d   %02X%02X%02X",
+                 (int)round(rgb[0] * 255.f),
+                 (int)round(rgb[1] * 255.f),
+                 (int)round(rgb[2] * 255.f),
                  (int)round(rgb[0] * 255.f),
                  (int)round(rgb[1] * 255.f),
                  (int)round(rgb[2] * 255.f));
