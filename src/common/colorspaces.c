@@ -1060,15 +1060,16 @@ error:
 void rgb2hsl(const float rgb[3], float *h, float *s, float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  float pmax = fmax(r, fmax(g, b));
-  float pmin = fmin(r, fmin(g, b));
-  float delta = (pmax - pmin);
+  const float pmax = fmaxf(r, fmax(g, b));
+  const float pmin = fminf(r, fmin(g, b));
+  const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
 
-  if(pmax != pmin)
+  if(delta != 0.0f)
   {
-    sv = lv < 0.5 ? delta / (pmax + pmin) : delta / (2.0 - pmax - pmin);
+    sv = lv < 0.5 ? delta / fmaxf(pmax + pmin, 1.52587890625e-05f) 
+                  : delta / fmaxf(2.0 - pmax - pmin, 1.52587890625e-05f);
 
     if(pmax == r)
       hv = (g - b) / delta;
