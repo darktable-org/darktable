@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-10 09:21+0200\n"
-"PO-Revision-Date: 2020-04-10 09:53+0200\n"
+"POT-Creation-Date: 2020-04-10 09:59+0200\n"
+"PO-Revision-Date: 2020-04-10 10:00+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -15022,7 +15022,7 @@ msgid "tag %s removed"
 msgstr "mot-clé « %s » supprimé"
 
 #: ../src/libs/tagging.c:1283 ../src/libs/tagging.c:1956
-msgid "delete branch"
+msgid "delete path"
 msgstr "supprimer le chemin"
 
 #: ../src/libs/tagging.c:1297
@@ -15098,7 +15098,7 @@ msgid ""
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
-"pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
+"pour modifier une hiérarchie utiliser l'action renommer le chemin, annulation"
 
 #: ../src/libs/tagging.c:1651
 #, c-format
@@ -15107,7 +15107,7 @@ msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
 #: ../src/libs/tagging.c:1754
 msgid "rename path?"
-msgstr "renommer un chemin?"
+msgstr "renommer le chemin?"
 
 #: ../src/libs/tagging.c:1761
 #, c-format
@@ -15141,7 +15141,7 @@ msgstr "modifier le mot-clé..."
 
 #: ../src/libs/tagging.c:1975
 msgid "rename path..."
-msgstr "renommer un chemin..."
+msgstr "renommer le chemin..."
 
 #: ../src/libs/tagging.c:1982
 msgid "copy to entry"
@@ -16326,6 +16326,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2643
 msgid "Action"
 msgstr "action"
+
+#~ msgid "delete branch"
+#~ msgstr "supprimer le chemin"
 
 #, fuzzy
 #~ msgid "%s %s/%s: %s"
