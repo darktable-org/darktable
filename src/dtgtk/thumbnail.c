@@ -618,20 +618,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_ext, TRUE);
 
-    // the image drawing area
-    thumb->w_image = gtk_drawing_area_new();
-    gtk_widget_set_name(thumb->w_image, "thumb_image");
-    gtk_widget_set_size_request(thumb->w_image, thumb->width, thumb->height);
-    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_START);
-    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_START);
-    gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                              | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                              | GDK_POINTER_MOTION_MASK);
-    g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
-    gtk_widget_show(thumb->w_image);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
-
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
@@ -649,6 +635,20 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_label_set_ellipsize(GTK_LABEL(thumb->w_bottom), PANGO_ELLIPSIZE_MIDDLE);
     gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom_eb);
+
+    // the image drawing area
+    thumb->w_image = gtk_drawing_area_new();
+    gtk_widget_set_name(thumb->w_image, "thumb_image");
+    gtk_widget_set_size_request(thumb->w_image, thumb->width, thumb->height);
+    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_START);
+    gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                              | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                              | GDK_POINTER_MOTION_MASK);
+    g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
+    gtk_widget_show(thumb->w_image);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
