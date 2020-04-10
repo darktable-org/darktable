@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-04-10 09:21+0200\n"
-"PO-Revision-Date: 2020-04-10 09:25+0200\n"
+"PO-Revision-Date: 2020-04-10 09:53+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -880,7 +880,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3628
 msgid "store xmp tags in compressed format"
-msgstr "enregistre les tags xmp avec un format compressé"
+msgstr "enregistre les mots-clés xmp avec un format compressé"
 
 #: ../build/src/preferences_gen.h:3649 ../build/src/preferences_gen.h:3664
 msgctxt "preferences"
@@ -893,9 +893,9 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"les données des tags xmp peuvent être larges et dépasser la place disponible "
-"pour enregistrer les données de développement dans le fichier. cette option "
-"permet de compresser les tags xmp pour gagner de la place."
+"les données des mots-clés xmp peuvent être larges et dépasser la place "
+"disponible pour enregistrer les données de développement dans le fichier. "
+"cette option permet de compresser les mots-clés xmp pour gagner de la place."
 
 #: ../build/src/preferences_gen.h:3675
 msgid "look for updated xmp files on startup"
@@ -1133,7 +1133,7 @@ msgid ""
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"lors de le création des XMP les mot-clés hiérarchiques sont aussi ajoutés "
+"lors de le création des XMP les mots-clés hiérarchiques sont aussi ajoutés "
 "comme simple liste non hiérarchique pour les rendre visibles aux autres "
 "applications. lorsque cette option est sélectionnée darktable inclura "
 "seulement leur dernière partie et ignorera le reste: ainsi 'faune|insecte|"
@@ -1429,7 +1429,7 @@ msgstr "boîtier"
 
 #: ../src/common/collection.c:596 ../src/libs/export_metadata.c:184
 msgid "tag"
-msgstr "tag"
+msgstr "mot-clé"
 
 #: ../src/common/collection.c:597
 msgid "date"
@@ -12322,7 +12322,7 @@ msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"couleur du filigrane, tag:\n"
+"couleur du filigrane, variable:\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1495
@@ -12343,7 +12343,7 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"texte, tag:\n"
+"texte, variable:\n"
 "$(WATERMARK_TEXT)"
 
 #. Text font
@@ -12358,7 +12358,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"police de caractère, tags:\n"
+"police de caractère, variables:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -12759,10 +12759,10 @@ msgid_plural ""
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
 "l'historique d'1 image n'est pas compressé\n"
-"voir tag: darktable|problem|history-compress"
+"voir mot-clé: darktable|problem|history-compress"
 msgstr[1] ""
 "les historiques de %d images ne sont pas compressés\n"
-"voir tag: darktable|problem|history-compress"
+"voir mot-clé: darktable|problem|history-compress"
 
 #: ../src/libs/copy_history.c:158
 msgid "history compression warning"
@@ -14998,7 +14998,7 @@ msgstr "supprimer le mot-clé ?"
 #: ../src/libs/tagging.c:1544
 #, c-format
 msgid "tag: %s "
-msgstr "mot-clé sélectionné : « %s »"
+msgstr "mot-clé : « %s »"
 
 #: ../src/libs/tagging.c:1207
 #, c-format
@@ -15012,25 +15012,25 @@ msgstr[0] ""
 "voulez-vous réellement supprimer le mot-clé « %s » ?\n"
 "ce mot-clé est assigné à %d image"
 msgstr[1] ""
-"voulez-vous réellement supprimer le mot-clé « %s »?\n"
+"voulez-vous réellement supprimer le mot-clé « %s » ?\n"
 "ce mot-clé est assigné à %d images"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../src/libs/tagging.c:1243
 #, c-format
 msgid "tag %s removed"
-msgstr "mot-clé %s supprimé"
+msgstr "mot-clé « %s » supprimé"
 
 #: ../src/libs/tagging.c:1283 ../src/libs/tagging.c:1956
 msgid "delete branch"
-msgstr "supprimer la branche"
+msgstr "supprimer le chemin"
 
 #: ../src/libs/tagging.c:1297
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> mot-clé sera supprimé."
-msgstr[1] "<u>%d</u> mot-clé seront supprimés."
+msgstr[1] "<u>%d</u> mots-clés seront supprimés."
 
 #: ../src/libs/tagging.c:1302 ../src/libs/tagging.c:1556
 #: ../src/libs/tagging.c:1773
@@ -15056,11 +15056,11 @@ msgstr "nom"
 #: ../src/libs/tagging.c:1386
 #, c-format
 msgid "add to: \"%s\" "
-msgstr "ajouter à : \"%s\" "
+msgstr "ajouter à : « %s » "
 
 #: ../src/libs/tagging.c:1392 ../src/libs/tagging.c:1579
 msgid "category"
-msgstr "sans catégorie"
+msgstr "catégorie"
 
 #: ../src/libs/tagging.c:1401 ../src/libs/tagging.c:1588
 msgid "synonyms: "
@@ -15079,7 +15079,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:1431
 msgid "tag name already exists. aborting."
-msgstr "le mot clé existe déjà, annulation."
+msgstr "le mot-clé existe déjà, annulation."
 
 #: ../src/libs/tagging.c:1537
 msgid "edit tag"
@@ -15090,7 +15090,7 @@ msgstr "éditer le mot-clé"
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
-msgstr[1] "<u>%d</u> mot-clé seront mis à jour"
+msgstr[1] "<u>%d</u> mots-clés seront mis à jour"
 
 #: ../src/libs/tagging.c:1612
 msgid ""
@@ -15137,7 +15137,7 @@ msgstr "créer un mot-clé..."
 
 #: ../src/libs/tagging.c:1966
 msgid "edit tag..."
-msgstr "éditer le mot-clé..."
+msgstr "modifier le mot-clé..."
 
 #: ../src/libs/tagging.c:1975
 msgid "rename path..."
@@ -15169,7 +15169,7 @@ msgstr "_importer"
 
 #: ../src/libs/tagging.c:2164
 msgid "error importing tags"
-msgstr "erreur lors de l'import de mot-clé"
+msgstr "erreur lors de l'import de mots-clés"
 
 #: ../src/libs/tagging.c:2166
 #, c-format
@@ -15186,7 +15186,7 @@ msgstr "_exporter"
 
 #: ../src/libs/tagging.c:2206
 msgid "error exporting tags"
-msgstr "erreur lors de l'export de mot-clé"
+msgstr "erreur lors de l'export de mots-clés"
 
 #: ../src/libs/tagging.c:2208
 #, c-format
@@ -15280,7 +15280,7 @@ msgstr "exporter..."
 
 #: ../src/libs/tagging.c:2741
 msgid "export all tags to a Lightroom keyword file"
-msgstr "exporte tous les tags dans un fichier de mot-clé Lightroom"
+msgstr "exporte tous les mots-clés dans un fichier de mots-clés Lightroom"
 
 #: ../src/libs/tagging.c:2748
 msgid "toggle list / tree view"
@@ -15294,8 +15294,8 @@ msgstr "active/désactive les suggestions"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"le raccourci de tag n'est pas actif lorsque la vue est arborescente, changer "
-"pour la vue en liste"
+"le raccourci de mots-clés n'est pas actif lorsque la vue est arborescente, "
+"changer pour la vue en liste"
 
 #: ../src/libs/tools/battery_indicator.c:37
 #: ../src/libs/tools/battery_indicator.c:70
