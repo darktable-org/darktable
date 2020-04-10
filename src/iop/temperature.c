@@ -901,6 +901,10 @@ void gui_update(struct dt_iop_module_t *self)
         }
       }
     }
+
+    // Still not found after testing all sorts of presets? Then it must be a spot.
+    if(!found)
+      dt_bauhaus_combobox_set(g->presets, 2);
   }
 }
 
