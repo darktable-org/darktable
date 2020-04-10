@@ -228,7 +228,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
 
 int dt_film_import(const char *dirname)
 {
-  sqlite3_stmt *stmt;
   GError *error = NULL;
 
   /* initialize a film object*/
