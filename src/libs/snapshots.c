@@ -24,6 +24,7 @@
 #include "develop/develop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -139,20 +140,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_rectangle(cri, x, y, w, h);
     cairo_fill(cri);
 
-    /* draw the split line */
-    cairo_set_source_rgb(cri, .7, .7, .7);
+    //draw a rectangle surrounding the snapshot
+    //using the selected overlay color
+    dt_draw_set_color_overlay(cri, 0.8, 1.0);
     cairo_set_line_width(cri, 1.);
-
-    if(d->vertical)
-    {
-      cairo_move_to(cri, width * d->vp_xpointer, 0.0f);
-      cairo_line_to(cri, width * d->vp_xpointer, height);
-    }
-    else
-    {
-      cairo_move_to(cri, 0.0f, height * d->vp_ypointer);
-      cairo_line_to(cri, width, height * d->vp_ypointer);
-    }
+    cairo_rectangle(cri, x, y, w, h);
     cairo_stroke(cri);
 
     /* if mouse over control lets draw center rotate control, hide if split is dragged */
