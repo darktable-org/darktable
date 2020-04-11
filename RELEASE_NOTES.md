@@ -31,6 +31,8 @@ making a backup is strongly advised.
 
 - Allow larger vignette scale.
 
+- Add pseudo preset in whitebalance to keep user's modifications.
+
 ## Bug fixes
 
 - Fix color peaking mode in culling mode.
