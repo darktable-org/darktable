@@ -606,7 +606,7 @@ void expose(
   else
   {
     // masks
-    if(dev->form_visible && dev->gui_module->enabled)
+    if(dev->gui_module && dev->form_visible && dev->gui_module->enabled)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
