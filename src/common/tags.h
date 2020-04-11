@@ -92,7 +92,9 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created
  * if clear_on TRUE the image tags are cleared before attaching the new ones*/
-void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, const gboolean undo_on, const gboolean group_on);
+void dt_tag_set_tags(GList *tags, const gint imgid,
+                     const gboolean ignore_dt_tags, const gboolean clear_on,
+                     const gboolean undo_on, const gboolean group_on);
 
 /** attach a list of tags on list of images. \param[in] tags a comma separated string of tags. \param[in]
  * img the list of images to attach tag to. \note If tag not exists it's created.*/
@@ -133,8 +135,8 @@ GList *dt_tag_get_hierarchical(gint imgid);
  *  the difference to dt_tag_get_hierarchical() is that this one checks option for exportation */
 GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 
-/** get a flat list of tag id, without darktable tags*/
-GList *dt_tag_get_tags(gint imgid);
+/** get a flat list of tags id attached to image id*/
+GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags);
 
 /** get the subset of images from the given list that have a given tag attached */
 GList *dt_tag_get_images_from_list(const GList *img, gint tagid);

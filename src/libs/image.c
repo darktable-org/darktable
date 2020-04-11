@@ -244,12 +244,11 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   }
   if(dttag_flag)
   {
-    GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid);
-    dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
+    // affect only user tags (not dt tags)
+    GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
+    dt_tag_set_tags(tags, img, TRUE, action != DT_MA_MERGE, TRUE, TRUE);
     g_list_free(tags);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
-
   if(undo_type)
   {
     dt_undo_end_group(darktable.undo);

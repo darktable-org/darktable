@@ -146,42 +146,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
   }
 }
 
-static dt_undo_tags_t *_get_tags(const int imgid, const guint tagid, gboolean add)
-{
-  dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
-  undotags->imgid  = imgid;
-  undotags->before = dt_tag_get_tags(imgid);
-  undotags->after = g_list_copy(undotags->before);
-  GList *tag = g_list_find(undotags->after, GINT_TO_POINTER(tagid));
-  if(tag)
-  {
-    if(!add) undotags->after = g_list_remove(undotags->after, GINT_TO_POINTER(tagid));
-  }
-  else
-  {
-    if(add) undotags->after = g_list_prepend(undotags->after, GINT_TO_POINTER(tagid));
-  }
-  return undotags;
-}
-
-GList *_get_tags_selection(const guint tagid, const gboolean add)
-{
-  GList *result = NULL;
-
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int imgid = sqlite3_column_int(stmt, 0);
-    result = g_list_append(result, _get_tags(imgid, tagid, add));
-  }
-
-  sqlite3_finalize(stmt);
-
-  return result;
-}
-
 static void _undo_tags_free(gpointer data)
 {
   dt_undo_tags_t *undotags = (dt_undo_tags_t *)data;
@@ -388,9 +352,9 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
   return FALSE;
 }
 
-static void _tag_add_tags_to_list(GList **list, GList *tags)
+static void _tag_add_tags_to_list(GList **list, const GList *tags)
 {
-  GList *t = tags;
+  const GList *t = tags;
   while(t)
   {
     if(!g_list_find(*list, t->data))
@@ -401,35 +365,43 @@ static void _tag_add_tags_to_list(GList **list, GList *tags)
   }
 }
 
-static void _tag_remove_tags_from_list(GList **list, GList *tags)
+static void _tag_remove_tags_from_list(GList **list, const GList *tags)
 {
-  GList *t = tags;
+  const GList *t = tags;
   while(t)
   {
-    if(g_list_find(*list, t->data))
-    {
-      *list = g_list_remove(*list, t->data);
-    }
+    *list = g_list_remove(*list, t->data);
     t = g_list_next(t);
   }
 }
+
+typedef enum dt_tag_type_t
+{
+  DT_TAG_TYPE_DT,
+  DT_TAG_TYPE_USER,
+  DT_TAG_TYPE_ALL,
+} dt_tag_type_t;
 
 typedef enum dt_tag_actions_t
 {
   DT_TA_ATTACH = 0,
   DT_TA_DETACH,
-  DT_TA_SET
+  DT_TA_SET,
+  DT_TA_SET_ALL,
 } dt_tag_actions_t;
 
-static void _tag_execute(GList *tags, GList *imgs, GList **undo, const gboolean undo_on, const gint action)
+static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type);
+
+static void _tag_execute(const GList *tags, const GList *imgs,
+                         GList **undo, const gboolean undo_on, const gint action)
 {
-  GList *images = imgs;
+  const GList *images = imgs;
   while(images)
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
     undotags->imgid = image_id;
-    undotags->before = dt_tag_get_tags(image_id);
+    undotags->before = _tag_get_tags(image_id, DT_TAG_TYPE_ALL);
     switch(action)
     {
       case DT_TA_ATTACH:
@@ -441,7 +413,13 @@ static void _tag_execute(GList *tags, GList *imgs, GList **undo, const gboolean 
         _tag_remove_tags_from_list(&undotags->after, tags);
         break;
       case DT_TA_SET:
-        undotags->after = g_list_copy(tags);
+        undotags->after = g_list_copy((GList *)tags);
+        // preserve dt tags
+        GList *dttags = _tag_get_tags(image_id, DT_TAG_TYPE_DT);
+        if(dttags) undotags->after = g_list_concat(undotags->after, dttags);
+        break;
+      case DT_TA_SET_ALL:
+        undotags->after = g_list_copy((GList *)tags);
         break;
       default:
         undotags->after = g_list_copy(undotags->before);
@@ -507,11 +485,12 @@ void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean 
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
-void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
+void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean ignore_dt_tags,
+                     const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
+    imgs = dt_view_get_images_to_act_on();
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(imgs)
@@ -520,8 +499,9 @@ void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, con
     if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
-    _tag_execute(tags, imgs, &undo, undo_on, clear_on ? DT_TA_SET : DT_TA_ATTACH);
-
+    _tag_execute(tags, imgs, &undo, undo_on,
+                 clear_on ? ignore_dt_tags ? DT_TA_SET : DT_TA_SET_ALL
+                          : DT_TA_ATTACH);
     g_list_free(imgs);
     if(undo_on)
     {
@@ -620,6 +600,7 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
   g_list_free(imgs);
 }
 
+
 void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
 {
   dt_tag_detach(tagid, imgid, undo_on, group_on);
@@ -683,8 +664,8 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
               "SELECT DISTINCT I.tagid, T.name, T.flags, T.synonyms, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
-              "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
-              "LEFT JOIN data.tags AS T ON T.id = I.tagid "
+              "JOIN main.tagged_images AS I ON I.imgid = S.imgid "
+              "JOIN data.tags AS T ON T.id = I.tagid "
               "WHERE T.id NOT IN memory.darktable_tags "
               "GROUP BY I.tagid "
               "ORDER by T.name",
@@ -693,8 +674,8 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
               "SELECT DISTINCT I.tagid, T.name, T.flags, T.synonyms, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
-              "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
-              "LEFT JOIN data.tags AS T ON T.id = I.tagid "
+              "JOIN main.tagged_images AS I ON I.imgid = S.imgid "
+              "JOIN data.tags AS T ON T.id = I.tagid "
               "GROUP BY I.tagid "
               "ORDER by T.name",
               -1, &stmt, NULL);
@@ -899,7 +880,7 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
-GList *dt_tag_get_tags(gint imgid)
+static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
 {
   GList *tags = NULL;
   if(imgid < 0) return tags;
@@ -910,8 +891,10 @@ GList *dt_tag_get_tags(gint imgid)
   snprintf(query, sizeof(query), "SELECT DISTINCT T.id "
                                  "FROM main.tagged_images AS I "
                                  "JOIN data.tags T on T.id = I.tagid "
-                                 "WHERE I.imgid = %d "
-                                 "AND T.id NOT IN memory.darktable_tags", imgid);
+                                 "WHERE I.imgid = %d %s",
+           imgid, type == DT_TAG_TYPE_ALL ? "" :
+                  type == DT_TAG_TYPE_DT ? "AND T.id IN memory.darktable_tags" :
+                                           "AND NOT T.id IN memory.darktable_tags");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -922,6 +905,11 @@ GList *dt_tag_get_tags(gint imgid)
   sqlite3_finalize(stmt);
 
   return tags;
+}
+
+GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags)
+{
+  return _tag_get_tags(imgid, ignore_dt_tags ? DT_TAG_TYPE_USER : DT_TAG_TYPE_ALL);
 }
 
 static gint is_tag_a_category(gconstpointer a, gconstpointer b)
