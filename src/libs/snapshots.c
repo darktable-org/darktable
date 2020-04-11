@@ -136,7 +136,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
                            : (d->inverted ? (height * (1.0 - d->vp_ypointer)) : height * d->vp_ypointer);
 
     cairo_set_source_surface(cri, d->snapshot_image, 0, 0);
-    // cairo_rectangle(cri, 0, 0, width*d->vp_xpointer, height);
     cairo_rectangle(cri, x, y, w, h);
     cairo_fill(cri);
 
@@ -151,7 +150,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(!d->dragging)
     {
       cairo_set_line_width(cri, 0.5);
-      double s = width * HANDLE_SIZE;
+      const double s = width * HANDLE_SIZE;
       dtgtk_cairo_paint_refresh(cri, (d->vertical ? width * d->vp_xpointer : width * 0.5) - (s * 0.5),
                                 (d->vertical ? height * 0.5 : height * d->vp_ypointer) - (s * 0.5), s, s, 0, NULL);
     }
@@ -178,11 +177,11 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
   if(d->snapshot_image)
   {
-    double xp = x / d->vp_width;
-    double yp = y / d->vp_height;
+    const double xp = x / d->vp_width;
+    const double yp = y / d->vp_height;
 
     /* do the split rotating */
-    double hhs = HANDLE_SIZE * 0.5;
+    const double hhs = HANDLE_SIZE * 0.5;
     if(which == 1
        && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs) && yp > 0.5 - hhs
             && yp < 0.5 + hhs)
@@ -217,8 +216,8 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
 
   if(d->snapshot_image)
   {
-    double xp = x / d->vp_width;
-    double yp = y / d->vp_height;
+    const double xp = x / d->vp_width;
+    const double yp = y / d->vp_height;
 
     /* update x pointer */
     if(d->dragging)
