@@ -101,9 +101,7 @@ static GdkRGBA * default_color_assign()
 
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned)
 {
-  PangoLayout *layout;
-
-  layout = pango_cairo_create_layout(cr);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
 
   if(max_width > 0)
   {
@@ -111,9 +109,11 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
-  if(text) {
+  if(text)
+  {
     pango_layout_set_text(layout, text, -1);
-  } else {
+  } else
+  {
     // length of -1 is not allowed with NULL string (wtf)
     pango_layout_set_text(layout, NULL, 0);
   }
@@ -130,7 +130,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
 
   int pango_width, pango_height;
   pango_layout_get_size(layout, &pango_width, &pango_height);
-  float text_width = ((double)pango_width/PANGO_SCALE);
+  const float text_width = ((double)pango_width/PANGO_SCALE);
 
   if(right_aligned) x_pos -= text_width;
 
