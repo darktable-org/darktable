@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-10 09:59+0200\n"
-"PO-Revision-Date: 2020-04-10 10:00+0200\n"
+"POT-Creation-Date: 2020-04-11 10:42+0200\n"
+"PO-Revision-Date: 2020-04-11 10:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1524,13 +1524,13 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1330 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2534
-#: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1419
+#: ../src/iop/temperature.c:1387 ../src/libs/collect.c:1419
 #: ../src/views/darkroom.c:2300
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1332 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1419
+#: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1419
 #: ../src/views/darkroom.c:2302
 msgid "yellow"
 msgstr "jaune"
@@ -1538,7 +1538,7 @@ msgstr "jaune"
 #: ../src/common/collection.c:1334 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:374 ../src/iop/channelmixer.c:459
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2541
-#: ../src/iop/temperature.c:1368 ../src/iop/temperature.c:1381
+#: ../src/iop/temperature.c:1375 ../src/iop/temperature.c:1388
 #: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2301
 msgid "green"
 msgstr "vert"
@@ -1546,7 +1546,7 @@ msgstr "vert"
 #: ../src/common/collection.c:1336 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:375 ../src/iop/channelmixer.c:460
 #: ../src/iop/channelmixer.c:481 ../src/iop/colorbalance.c:2548
-#: ../src/iop/temperature.c:1382 ../src/libs/collect.c:1419
+#: ../src/iop/temperature.c:1389 ../src/libs/collect.c:1419
 msgid "blue"
 msgstr "bleu"
 
@@ -1597,143 +1597,143 @@ msgstr[0] "%d image sur %d sélectionnée dans la collection courante"
 msgstr[1] "%d images sur %d sélectionnées dans la collection courante"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-#: ../src/common/colorspaces.c:1379 ../src/common/colorspaces.c:1635
+#: ../src/common/colorspaces.c:1380 ../src/common/colorspaces.c:1636
 msgid "work profile"
 msgstr "profil de travail"
 
-#: ../src/common/colorspaces.c:1382 ../src/common/colorspaces.c:1631
+#: ../src/common/colorspaces.c:1383 ../src/common/colorspaces.c:1632
 #: ../src/iop/colorout.c:894
 msgid "export profile"
 msgstr "profil d'exportation"
 
-#: ../src/common/colorspaces.c:1386 ../src/common/colorspaces.c:1633
+#: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
 #: ../src/views/darkroom.c:2178
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/common/colorspaces.c:1392 ../src/common/colorspaces.c:1395
-#: ../src/common/colorspaces.c:1615 ../src/common/colorspaces.c:1637
+#: ../src/common/colorspaces.c:1393 ../src/common/colorspaces.c:1396
+#: ../src/common/colorspaces.c:1616 ../src/common/colorspaces.c:1638
 msgid "system display profile"
 msgstr "système"
 
-#: ../src/common/colorspaces.c:1401
+#: ../src/common/colorspaces.c:1402
 msgid "sRGB (e.g. JPG)"
 msgstr "sRVB (ex: JPG)"
 
-#: ../src/common/colorspaces.c:1405 ../src/libs/print_settings.c:1031
+#: ../src/common/colorspaces.c:1406 ../src/libs/print_settings.c:1031
 msgid "sRGB (web-safe)"
 msgstr "sRVB (web)"
 
-#: ../src/common/colorspaces.c:1410 ../src/common/colorspaces.c:1603
+#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1604
 #: ../src/iop/colorin.c:2154 ../src/libs/print_settings.c:1038
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RVB (compatible)"
 
-#: ../src/common/colorspaces.c:1415 ../src/common/colorspaces.c:1605
+#: ../src/common/colorspaces.c:1416 ../src/common/colorspaces.c:1606
 #: ../src/iop/colorin.c:2155
 msgid "linear Rec709 RGB"
 msgstr "RVB Rec709 linéaire"
 
-#: ../src/common/colorspaces.c:1419
+#: ../src/common/colorspaces.c:1420
 msgid "gamma Rec709 RGB"
 msgstr "RVB Rec709 gamma"
 
-#: ../src/common/colorspaces.c:1424 ../src/common/colorspaces.c:1607
+#: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1608
 #: ../src/iop/colorin.c:2156
 msgid "linear Rec2020 RGB"
 msgstr "RVB Rec2020 linéaire"
 
-#: ../src/common/colorspaces.c:1429
+#: ../src/common/colorspaces.c:1430
 msgid "PQ Rec2020 RGB"
 msgstr "RVB Rec2020 PQ"
 
-#: ../src/common/colorspaces.c:1434
+#: ../src/common/colorspaces.c:1435
 msgid "HLG Rec2020 RGB"
 msgstr "RVB Rec2020 HLG"
 
-#: ../src/common/colorspaces.c:1439
+#: ../src/common/colorspaces.c:1440
 msgid "PQ P3 RGB"
 msgstr "RVB P3 PQ"
 
-#: ../src/common/colorspaces.c:1444
+#: ../src/common/colorspaces.c:1445
 msgid "HLG P3 RGB"
 msgstr "RVB P3 HLG"
 
-#: ../src/common/colorspaces.c:1449
+#: ../src/common/colorspaces.c:1450
 msgid "linear prophoto RGB"
 msgstr "prophoto RVB linéaire"
 
-#: ../src/common/colorspaces.c:1454 ../src/common/colorspaces.c:1609
+#: ../src/common/colorspaces.c:1455 ../src/common/colorspaces.c:1610
 msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
-#: ../src/common/colorspaces.c:1458 ../src/common/colorspaces.c:1611
-#: ../src/libs/colorpicker.c:600 ../src/libs/colorpicker.c:638
+#: ../src/common/colorspaces.c:1459 ../src/common/colorspaces.c:1612
+#: ../src/libs/colorpicker.c:606 ../src/libs/colorpicker.c:644
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1463 ../src/common/colorspaces.c:1613
+#: ../src/common/colorspaces.c:1464 ../src/common/colorspaces.c:1614
 msgid "linear infrared BGR"
 msgstr "infrarouge linéaire BVR"
 
-#: ../src/common/colorspaces.c:1467
+#: ../src/common/colorspaces.c:1468
 msgid "BRG (for testing)"
 msgstr "BRV (pour test)"
 
-#: ../src/common/colorspaces.c:1601 ../src/iop/colorin.c:2153
+#: ../src/common/colorspaces.c:1602 ../src/iop/colorin.c:2153
 #: ../src/iop/lut3d.c:1796
 msgid "sRGB"
 msgstr "sRVB"
 
-#: ../src/common/colorspaces.c:1617
+#: ../src/common/colorspaces.c:1618
 msgid "embedded ICC profile"
 msgstr "profil ICC intégré"
 
-#: ../src/common/colorspaces.c:1619
+#: ../src/common/colorspaces.c:1620
 msgid "embedded matrix"
 msgstr "matrice intégrée"
 
-#: ../src/common/colorspaces.c:1621
+#: ../src/common/colorspaces.c:1622
 msgid "standard color matrix"
 msgstr "matrice standard"
 
-#: ../src/common/colorspaces.c:1623
+#: ../src/common/colorspaces.c:1624
 msgid "enhanced color matrix"
 msgstr "matrice améliorée"
 
-#: ../src/common/colorspaces.c:1625
+#: ../src/common/colorspaces.c:1626
 msgid "vendor color matrix"
 msgstr "matrice de couleur du vendeur"
 
-#: ../src/common/colorspaces.c:1627
+#: ../src/common/colorspaces.c:1628
 msgid "alternate color matrix"
 msgstr "alternative à la matrice de couleur"
 
-#: ../src/common/colorspaces.c:1629
+#: ../src/common/colorspaces.c:1630
 msgid "BRG (experimental)"
 msgstr "BRV (expérimental)"
 
-#: ../src/common/colorspaces.c:1639
+#: ../src/common/colorspaces.c:1640
 msgid "gamma22 Rec709"
 msgstr "Rec709 gamma22"
 
-#: ../src/common/colorspaces.c:1641
+#: ../src/common/colorspaces.c:1642
 msgid "ProPhoto RGB"
 msgstr "RVB ProPhoto"
 
-#: ../src/common/colorspaces.c:1643
+#: ../src/common/colorspaces.c:1644
 msgid "PQ Rec2020"
 msgstr "Rec2020 PQ"
 
-#: ../src/common/colorspaces.c:1645
+#: ../src/common/colorspaces.c:1646
 msgid "HLG Rec2020"
 msgstr "Rec2020 HLG"
 
-#: ../src/common/colorspaces.c:1647
+#: ../src/common/colorspaces.c:1648
 msgid "PQ P3"
 msgstr "P3 PQ"
 
-#: ../src/common/colorspaces.c:1649
+#: ../src/common/colorspaces.c:1650
 msgid "HLG P3"
 msgstr "P3 HLG"
 
@@ -1767,26 +1767,26 @@ msgstr "impression de l'image « %s » sur « %s »"
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:252
+#: ../src/common/darktable.c:250
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:275
+#: ../src/common/darktable.c:273
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:288 ../src/libs/import.c:838
+#: ../src/common/darktable.c:286 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:809
+#: ../src/common/darktable.c:807
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:810
+#: ../src/common/darktable.c:808
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1800,7 +1800,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:814 ../src/common/variables.c:387
+#: ../src/common/darktable.c:812 ../src/common/variables.c:387
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2096 ../src/iop/filmicrgb.c:1577
 #: ../src/iop/toneequal.c:3329 ../src/libs/export.c:636
@@ -1809,7 +1809,7 @@ msgstr ""
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:814 ../src/common/database.c:2736
+#: ../src/common/darktable.c:812 ../src/common/database.c:2742
 #: ../src/common/variables.c:385 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2097
 #: ../src/libs/export.c:637 ../src/libs/export.c:643 ../src/libs/export.c:650
@@ -1817,7 +1817,7 @@ msgstr "non"
 msgid "yes"
 msgstr "oui"
 
-#: ../src/common/database.c:2022
+#: ../src/common/database.c:2028
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1832,16 +1832,16 @@ msgstr ""
 "\n"
 "« %s »\n"
 
-#: ../src/common/database.c:2029
+#: ../src/common/database.c:2035
 msgid "darktable - error locking database"
 msgstr "darktable - erreur du verrouillage de la base de données"
 
-#: ../src/common/database.c:2029 ../src/common/database.c:2200
-#: ../src/common/database.c:2445 ../src/common/database.c:2527
+#: ../src/common/database.c:2035 ../src/common/database.c:2206
+#: ../src/common/database.c:2451 ../src/common/database.c:2533
 msgid "close darktable"
 msgstr "quitter darktable"
 
-#: ../src/common/database.c:2140
+#: ../src/common/database.c:2146
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1850,12 +1850,12 @@ msgstr ""
 "le fichier de verrouillage de la base contient un numéro de process actif "
 "sur votre système : « %d »"
 
-#: ../src/common/database.c:2146
+#: ../src/common/database.c:2152
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:2154
+#: ../src/common/database.c:2160
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
@@ -1863,7 +1863,7 @@ msgstr ""
 "de données: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2191
+#: ../src/common/database.c:2197
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1878,17 +1878,17 @@ msgstr ""
 "\n"
 "voulez-vous continuer ou quitter pour effectuer une sauvegarde\n"
 
-#: ../src/common/database.c:2199
+#: ../src/common/database.c:2205
 msgid "darktable - schema migration"
 msgstr "darktable - migration de la base"
 
-#: ../src/common/database.c:2200
+#: ../src/common/database.c:2206
 msgid "upgrade database"
 msgstr "mise à jour de base de données"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2434 ../src/common/database.c:2516
+#: ../src/common/database.c:2440 ../src/common/database.c:2522
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1908,27 +1908,27 @@ msgstr ""
 "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
 "base de données?"
 
-#: ../src/common/database.c:2444 ../src/common/database.c:2526
+#: ../src/common/database.c:2450 ../src/common/database.c:2532
 msgid "darktable - error opening database"
 msgstr "darktable - erreur lors de l'ouverture de la base de données"
 
-#: ../src/common/database.c:2445 ../src/common/database.c:2527
+#: ../src/common/database.c:2451 ../src/common/database.c:2533
 msgid "delete database"
 msgstr "effacer la base de données"
 
-#: ../src/common/database.c:2713
+#: ../src/common/database.c:2719
 msgid "click later to be asked on next startup"
 msgstr "sélectionner « plus tard » pour redemander au prochain démarrage"
 
-#: ../src/common/database.c:2717
+#: ../src/common/database.c:2723
 msgid "click later to be asked when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la fermeture"
 
-#: ../src/common/database.c:2721
+#: ../src/common/database.c:2727
 msgid "click later to be asked next time when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la prochaine fermeture"
 
-#: ../src/common/database.c:2725
+#: ../src/common/database.c:2731
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -1949,11 +1949,11 @@ msgstr ""
 "il est possible de changer les options de maintenance dans les préférences "
 "de fonctionnement"
 
-#: ../src/common/database.c:2735
+#: ../src/common/database.c:2741
 msgid "darktable - schema maintenance"
 msgstr "darktable - maintenance"
 
-#: ../src/common/database.c:2736
+#: ../src/common/database.c:2742
 msgid "later"
 msgstr "plus tard"
 
@@ -1963,24 +1963,24 @@ msgstr ""
 "le filtre guidé n'a pas assez de mémoire, vérifier la configuration de votre "
 "RAM"
 
-#: ../src/common/film.c:308
+#: ../src/common/film.c:281
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer ce répertoire vide ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer ces répertoires vides ?"
 
-#: ../src/common/film.c:315
+#: ../src/common/film.c:288
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:334 ../src/gui/preferences.c:503
+#: ../src/common/film.c:307 ../src/gui/preferences.c:503
 #: ../src/gui/styles_dialog.c:368
 msgid "name"
 msgstr "nom"
 
-#: ../src/common/film.c:432
+#: ../src/common/film.c:405
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -3359,7 +3359,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:982 ../src/gui/accelerators.c:1197
 #: ../src/gui/accelerators.c:1222 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1461 ../src/libs/import.c:518 ../src/libs/lib.c:319
+#: ../src/iop/temperature.c:1468 ../src/libs/import.c:518 ../src/libs/lib.c:319
 #: ../src/libs/lib.c:347 ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "pré-réglage"
@@ -3932,44 +3932,40 @@ msgstr "mercure, haute-température"
 msgid "D55"
 msgstr "D55"
 
-#: ../src/external/wb_presets.c:71
-msgid "ISO Studio Tungsten"
-msgstr "ISO tungstène studio"
-
-#: ../src/external/wb_presets.c:73
+#: ../src/external/wb_presets.c:72
 msgid "flash"
 msgstr "flash"
 
 #. For Olympus with no real "Flash" preset:
-#: ../src/external/wb_presets.c:75
+#: ../src/external/wb_presets.c:74
 msgid "flash (auto mode)"
 msgstr "flash (mode auto)"
 
-#: ../src/external/wb_presets.c:76
+#: ../src/external/wb_presets.c:75
 msgid "evening sun"
 msgstr "lumière du soir"
 
-#: ../src/external/wb_presets.c:77
+#: ../src/external/wb_presets.c:76
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:78 ../src/views/darkroom.c:2075
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2075
 msgid "black & white"
 msgstr "noir et blanc"
 
-#: ../src/external/wb_presets.c:80
+#: ../src/external/wb_presets.c:79
 msgid "spot WB"
 msgstr "BdB spot"
 
-#: ../src/external/wb_presets.c:81
+#: ../src/external/wb_presets.c:80
 msgid "manual WB"
 msgstr "BdB manuelle"
 
-#: ../src/external/wb_presets.c:82
+#: ../src/external/wb_presets.c:81
 msgid "camera WB"
 msgstr "BdB du boîtier"
 
-#: ../src/external/wb_presets.c:83
+#: ../src/external/wb_presets.c:82
 msgid "auto WB"
 msgstr "BdB automatique"
 
@@ -6550,19 +6546,19 @@ msgid "radius"
 msgstr "rayon"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:210
+#: ../src/iop/temperature.c:211
 msgctxt "accel"
 msgid "red"
 msgstr "rouge"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:133
-#: ../src/iop/temperature.c:211
+#: ../src/iop/temperature.c:212
 msgctxt "accel"
 msgid "green"
 msgstr "vert"
 
 #: ../src/iop/bilateral.cc:92 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:212
+#: ../src/iop/temperature.c:213
 msgctxt "accel"
 msgid "blue"
 msgstr "bleu"
@@ -8631,8 +8627,8 @@ msgstr "ondelettes"
 msgid "wavelets auto"
 msgstr "ondelettes auto"
 
-#: ../src/iop/denoiseprofile.c:4486 ../src/libs/colorpicker.c:599
-#: ../src/libs/colorpicker.c:637
+#: ../src/iop/denoiseprofile.c:4486 ../src/libs/colorpicker.c:605
+#: ../src/libs/colorpicker.c:643
 msgid "RGB"
 msgstr "RVB"
 
@@ -11541,104 +11537,109 @@ msgctxt "accel"
 msgid "spot show or hide"
 msgstr "montrer cacher masques de correction"
 
-#: ../src/iop/temperature.c:161
+#: ../src/iop/temperature.c:162
 msgctxt "modulename"
 msgid "white balance"
 msgstr "balance des blancs"
 
-#: ../src/iop/temperature.c:208
+#: ../src/iop/temperature.c:209
 msgctxt "accel"
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:209
+#: ../src/iop/temperature.c:210
 msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:213
+#: ../src/iop/temperature.c:214
 msgctxt "accel"
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/iop/temperature.c:215
+#: ../src/iop/temperature.c:216
 msgctxt "accel"
 msgid "preset/camera"
 msgstr "pré-réglage/appareil"
 
-#: ../src/iop/temperature.c:216
+#: ../src/iop/temperature.c:217
 msgctxt "accel"
 msgid "preset/camera neutral"
 msgstr "pré-réglage/neutre boîtier"
 
-#: ../src/iop/temperature.c:217
+#: ../src/iop/temperature.c:218
 msgctxt "accel"
 msgid "preset/spot"
 msgstr "pré-réglages/spot"
 
-#: ../src/iop/temperature.c:785
+#: ../src/iop/temperature.c:787
 msgctxt "white balance"
 msgid "camera"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:786
+#: ../src/iop/temperature.c:788
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:787
+#: ../src/iop/temperature.c:789
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:962
+#: ../src/iop/temperature.c:790
+msgctxt "white balance"
+msgid "user modified"
+msgstr "manuel"
+
+#: ../src/iop/temperature.c:967
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "matrice couleur « %s » non trouvée pour l'image!"
 
-#: ../src/iop/temperature.c:986
+#: ../src/iop/temperature.c:991
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "impossible de récupérer la balance des blancs du boîtier pour « %s » !"
 
-#: ../src/iop/temperature.c:1369 ../src/views/darkroom.c:2304
+#: ../src/iop/temperature.c:1376 ../src/views/darkroom.c:2304
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1370 ../src/views/darkroom.c:2303
+#: ../src/iop/temperature.c:1377 ../src/views/darkroom.c:2303
 msgid "cyan"
 msgstr "cyan"
 
-#: ../src/iop/temperature.c:1383
+#: ../src/iop/temperature.c:1390
 msgid "emerald"
 msgstr "émeraude"
 
-#: ../src/iop/temperature.c:1446
+#: ../src/iop/temperature.c:1453
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:1447
+#: ../src/iop/temperature.c:1454
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:1463
+#: ../src/iop/temperature.c:1470
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:1466
+#: ../src/iop/temperature.c:1473
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:1467
+#: ../src/iop/temperature.c:1474
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1471
+#: ../src/iop/temperature.c:1478
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
-#: ../src/iop/temperature.c:1476
+#: ../src/iop/temperature.c:1483
 msgid "white balance disabled for camera"
 msgstr "balance des blancs désactivée pour le boîtier"
 
@@ -12685,49 +12686,49 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "ajouter un échantillon"
 
-#: ../src/libs/colorpicker.c:396
+#: ../src/libs/colorpicker.c:402
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "survoler pour mettre en surbrillance dans l'image, cliquer pour verrouiller "
 "l'échantillon"
 
-#: ../src/libs/colorpicker.c:412
+#: ../src/libs/colorpicker.c:418
 msgid "X"
 msgstr "X"
 
-#: ../src/libs/colorpicker.c:518
+#: ../src/libs/colorpicker.c:524
 msgid "live samples"
 msgstr "échantillons en temps réel"
 
-#: ../src/libs/colorpicker.c:572
+#: ../src/libs/colorpicker.c:578
 msgid "point"
 msgstr "point"
 
-#: ../src/libs/colorpicker.c:573
+#: ../src/libs/colorpicker.c:579
 msgid "area"
 msgstr "zone"
 
-#: ../src/libs/colorpicker.c:588 ../src/libs/colorpicker.c:626
+#: ../src/libs/colorpicker.c:594 ../src/libs/colorpicker.c:632
 msgid "mean"
 msgstr "moyenne"
 
-#: ../src/libs/colorpicker.c:589 ../src/libs/colorpicker.c:627
+#: ../src/libs/colorpicker.c:595 ../src/libs/colorpicker.c:633
 msgid "min"
 msgstr "min"
 
-#: ../src/libs/colorpicker.c:590 ../src/libs/colorpicker.c:628
+#: ../src/libs/colorpicker.c:596 ../src/libs/colorpicker.c:634
 msgid "max"
 msgstr "max"
 
-#: ../src/libs/colorpicker.c:612
+#: ../src/libs/colorpicker.c:618
 msgid "restrict histogram to selection"
 msgstr "histogramme sur sélection"
 
-#: ../src/libs/colorpicker.c:645 ../src/libs/export_metadata.c:160
+#: ../src/libs/colorpicker.c:651 ../src/libs/export_metadata.c:160
 msgid "add"
 msgstr "ajouter"
 
-#: ../src/libs/colorpicker.c:654
+#: ../src/libs/colorpicker.c:660
 msgid "display sample areas on image"
 msgstr "afficher les zones sur l'image"
 
@@ -13891,7 +13892,7 @@ msgstr "numéro"
 
 #: ../src/libs/live_view.c:394
 msgid "enter image id of the overlay manually"
-msgstr "entre manuellement le numéro de l'image affichée en superposition"
+msgstr "entrer manuellement le numéro de l'image affichée en superposition"
 
 #: ../src/libs/live_view.c:405
 msgid "overlay mode"
@@ -13910,7 +13911,7 @@ msgstr "ajouter"
 #: ../src/libs/live_view.c:409
 msgctxt "blendmode"
 msgid "saturate"
-msgstr "saturation"
+msgstr "saturer"
 
 #: ../src/libs/live_view.c:416
 msgctxt "blendmode"
@@ -16327,6 +16328,9 @@ msgstr "raccourcis"
 msgid "Action"
 msgstr "action"
 
+#~ msgid "ISO Studio Tungsten"
+#~ msgstr "ISO tungstène studio"
+
 #~ msgid "delete branch"
 #~ msgstr "supprimer le chemin"
 
@@ -18571,9 +18575,6 @@ msgstr "action"
 
 #~ msgid "make images public"
 #~ msgstr "rendre les images publiques"
-
-#~ msgid "unmodified"
-#~ msgstr "original"
 
 #~ msgid "colorlabel"
 #~ msgstr "labels de couleur"
