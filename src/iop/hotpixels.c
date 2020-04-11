@@ -1,10 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Rostyslav Pidgornyi
-    copyright (c) 2012 Henrik Andersson
-
-    and the initial plugin `stuck pixels' was
-    copyright (c) 2011 bruce guenter
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -316,7 +312,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -357,7 +353,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT)
                  && (pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || p->strength == 0.0) piece->enabled = 0;
+  if(!(dt_image_is_raw(&pipe->image)) || p->strength == 0.0) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

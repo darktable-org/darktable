@@ -1,0 +1,47 @@
+--- science/gmic/Portfile.orig	2020-01-10 14:05:22.000000000 +0300
++++ science/gmic/Portfile	2020-01-10 22:57:48.000000000 +0300
+@@ -2,7 +2,6 @@
+ 
+ PortSystem          1.0
+ PortGroup           cxx11 1.1
+-PortGroup           qt5 1.0
+ 
+ name                gmic
+ version             2.8.1
+@@ -38,7 +37,6 @@
+ depends_lib         port:curl \
+                     path:lib/libavcodec.dylib:ffmpeg \
+                     port:fftw-3 \
+-                    port:gimp2 \
+                     port:GraphicsMagick \
+                     port:ilmbase \
+                     port:jpeg \
+@@ -46,7 +44,6 @@
+                     port:opencv \
+                     port:openexr \
+                     port:tiff \
+-                    port:xorg-libXext \
+                     port:zlib
+ 
+ patchfiles          patch-gmic-qt-gmic_qt.pro.diff \
+@@ -57,7 +54,10 @@
+         ${worksrcpath}/src/Makefile
+ 
+     #cli lib gimp krita gmic_qt libc zart
+-    set gmic_targets {cli lib gimp libc}
++    set gmic_targets {cli lib libc}
++    reinplace "/PLUGINDIR/ d" ${worksrcpath}/src/Makefile
++    reinplace "s/\$(X11_CFLAGS)//" ${worksrcpath}/src/Makefile
++    reinplace "s/\$(X11_LIBS)//" ${worksrcpath}/src/Makefile
+ 
+     reinplace "s|%TARGETS%|${gmic_targets}|" \
+         ${worksrcpath}/src/Makefile
+@@ -66,8 +66,6 @@
+ post-destroot {
+     xinstall -m 0644 ${worksrcpath}/src/libgmic.a  ${destroot}${prefix}/lib
+     xinstall -m 0644 ${worksrcpath}/src/libcgmic.a ${destroot}${prefix}/lib
+-    xinstall -m 0755 ${worksrcpath}/gmic-qt/gmic_gimp_qt.app/Contents/MacOS/gmic_gimp_qt \
+-                         ${destroot}${prefix}/lib/gimp/2.0/plug-ins
+ }
+ 
+ use_configure       no

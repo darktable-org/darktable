@@ -20,6 +20,7 @@ src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
 src/common/iop_order.c
+src/common/iop_profile.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.c
 src/common/opencl.c
@@ -47,6 +48,9 @@ src/develop/masks/masks.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
+src/dtgtk/thumbnail.c
+src/dtgtk/thumbnail_btn.c
+src/dtgtk/thumbtable.c
 src/external/wb_presets.c
 src/generate-cache/main.c
 src/gui/accelerators.c
@@ -70,10 +74,7 @@ src/imageio/format/tiff.c
 src/imageio/format/webp.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
-src/imageio/storage/facebook.c
-src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
-src/imageio/storage/googlephoto.c
 src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
 src/iop/amaze_demosaic_RT.cc

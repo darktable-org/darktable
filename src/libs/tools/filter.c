@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -291,10 +291,7 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
 
   /* updates query */
-  dt_collection_update_query(darktable.collection);
-
-  /* update film strip, jump to currently opened image, if any: */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image_storage.id, FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 }
 
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)

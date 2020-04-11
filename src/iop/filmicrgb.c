@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2018-2019 Aurélien Pierre, with guidance of Troy James Sobotka.
+   Copyright (C) 2019-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
@@ -39,7 +40,6 @@
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>
@@ -273,6 +273,11 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "latitude"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows highlights balance"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "extreme luminance saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target black luminance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target middle grey"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target white luminance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target power transfer function"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve chrominance"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -287,6 +292,11 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "latitude", GTK_WIDGET(g->latitude));
   dt_accel_connect_slider_iop(self, "shadows highlights balance", GTK_WIDGET(g->balance));
   dt_accel_connect_slider_iop(self, "extreme luminance saturation", GTK_WIDGET(g->saturation));
+  dt_accel_connect_slider_iop(self, "target black luminance", GTK_WIDGET(g->black_point_target));
+  dt_accel_connect_slider_iop(self, "target middle grey", GTK_WIDGET(g->grey_point_target));
+  dt_accel_connect_slider_iop(self, "target white luminance", GTK_WIDGET(g->white_point_target));
+  dt_accel_connect_slider_iop(self, "target power transfer function", GTK_WIDGET(g->output_power));
+  dt_accel_connect_combobox_iop(self, "preserve chrominance", GTK_WIDGET(g->preserve_color));
 }
 
 
@@ -305,6 +315,7 @@ static inline float clamp_simd(const float x)
 static inline float pixel_rgb_norm_power(const float pixel[4])
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
+  // the full norm is (R^3 + G^3 + B^3) / (R^2 + G^2 + B^2) and it should be in ]0; +infinity[
 
   float numerator = 0.0f;
   float denominator = 0.0f;
@@ -321,7 +332,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
     denominator += RGB_square;
   }
 
-  return numerator / denominator;
+  return numerator / fmaxf(denominator, 1e-12f);  // prevent from division-by-0 (note: (1e-6)^2 = 1e-12
 }
 
 
@@ -511,7 +522,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       // Get the desaturation value based on the log value
       const float desaturation = filmic_desaturate(norm, data->sigma_toe, data->sigma_shoulder, data->saturation);
-       
+
       for(int c = 0; c < 3; c++) ratios[c] *= norm;
 
       const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(ratios,
@@ -1614,6 +1625,8 @@ void gui_init(dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 

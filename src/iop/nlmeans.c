@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,6 +114,8 @@ int flags()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "chroma"));
 }
@@ -122,6 +124,8 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
 
+  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
   dt_accel_connect_slider_iop(self, "luma", GTK_WIDGET(g->luma));
   dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
 }

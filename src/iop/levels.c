@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2014-2016 Roman Lebedev.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +35,7 @@
 #include "gui/draw.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
@@ -129,6 +129,24 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gray"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->percentile_black));
+  dt_accel_connect_slider_iop(self, "gray", GTK_WIDGET(g->percentile_grey));
+  dt_accel_connect_slider_iop(self, "white", GTK_WIDGET(g->percentile_white));
+  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -840,10 +858,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
-  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
-    dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
+  dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
 
   // Drawing the vertical line indicators
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));

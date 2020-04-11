@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 johannes hanika.
-    copyright (c) 2019 pascal obry.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +24,7 @@
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -107,7 +107,8 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       const gboolean export_masks)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
 
@@ -211,7 +212,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   {
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-                                 high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
+                                 high_quality, TRUE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_DISPLAY,
                                  NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
 
     // lock to copy back into the slot the rendered buffer, not that this is done only if
@@ -444,7 +445,7 @@ void enter(dt_view_t *self)
 
   g_list_free(selected);
 
-  d->buf[S_CURRENT].rank = selrank == -1 ? dt_view_lighttable_get_position(darktable.view_manager) : selrank;
+  d->buf[S_CURRENT].rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
   d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
 
@@ -475,7 +476,7 @@ void leave(dt_view_t *self)
   // otherwise we will crash releasing lock and memory.
   while(d->exporting > 0) sleep(1);
 
-  dt_view_lighttable_set_position(darktable.view_manager, d->buf[S_CURRENT].rank);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), d->buf[S_CURRENT].rank, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -510,7 +511,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     surface = dt_cairo_image_surface_create_for_data((uint8_t *)slot->buf, CAIRO_FORMAT_RGB24, slot->width,
                                                      slot->height, stride);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
     cairo_rectangle(cr, 0, 0, slot->width/darktable.gui->ppd, slot->height/darktable.gui->ppd);
     cairo_fill(cr);
     cairo_surface_destroy(surface);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010--2014 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -409,7 +409,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = \"metadata\"", -1, &stmt,
+                              "SELECT name, op_params FROM data.presets WHERE operation = 'metadata'", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -530,7 +530,7 @@ static gboolean _camera_storage_image_filename_gui_thread(gpointer user_data)
   gtk_list_store_set(params->store, &iter, 0, params->thumb, 1, params->file_info, -1);
 
   if(params->thumb) g_object_ref(params->thumb);
-  free(params->file_info);
+  g_free(params->file_info);
   free(params);
   return FALSE;
 }

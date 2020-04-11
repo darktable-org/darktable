@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2016-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,19 +17,52 @@
  */
 
 #include "chart/common.h"
+#include "iop/gaussian_elimination.h"
 
-point_t transform_coords(point_t p, point_t *bb)
+// using SVD to solve the system with h[8] also being 0 would be better, but this seems to be good enough
+int get_homography(const point_t *source, const point_t *target, double *h)
 {
-  point_t result;
-  float e, f;
+  const float x1 = source[0].x;
+  const float y1 = source[0].y;
+  const float x2 = source[1].x;
+  const float y2 = source[1].y;
+  const float x3 = source[2].x;
+  const float y3 = source[2].y;
+  const float x4 = source[3].x;
+  const float y4 = source[3].y;
 
-  e = (bb[BOTTOM_LEFT].x - bb[TOP_LEFT].x) * p.y + bb[TOP_LEFT].x;
-  f = (bb[BOTTOM_RIGHT].x - bb[TOP_RIGHT].x) * p.y + bb[TOP_RIGHT].x;
-  result.x = (f - e) * p.x + e;
+  const float x_1 = target[0].x;
+  const float y_1 = target[0].y;
+  const float x_2 = target[1].x;
+  const float y_2 = target[1].y;
+  const float x_3 = target[2].x;
+  const float y_3 = target[2].y;
+  const float x_4 = target[3].x;
+  const float y_4 = target[3].y;
 
-  e = (bb[TOP_RIGHT].y - bb[TOP_LEFT].y) * p.x + bb[TOP_LEFT].y;
-  f = (bb[BOTTOM_RIGHT].y - bb[BOTTOM_LEFT].y) * p.x + bb[BOTTOM_LEFT].y;
-  result.y = (f - e) * p.y + e;
+  double P[9*9] = { -x1, -y1, -1.0, 0.0, 0.0,  0.0, x1 * x_1, y1 * x_1, x_1,
+                    0.0, 0.0,  0.0, -x1, -y1, -1.0, x1 * y_1, y1 * y_1, y_1,
+                    -x2, -y2, -1.0, 0.0, 0.0,  0.0, x2 * x_2, y2 * x_2, x_2,
+                    0.0, 0.0,  0.0, -x2, -y2, -1.0, x2 * y_2, y2 * y_2, y_2,
+                    -x3, -y3, -1.0, 0.0, 0.0,  0.0, x3 * x_3, y3 * x_3, x_3,
+                    0.0, 0.0,  0.0, -x3, -y3, -1.0, x3 * y_3, y3 * y_3, y_3,
+                    -x4, -y4, -1.0, 0.0, 0.0,  0.0, x4 * x_4, y4 * x_4, x_4,
+                    0.0, 0.0,  0.0, -x4, -y4, -1.0, x4 * y_4, y4 * y_4, y_4,
+                    0.0, 0.0,  0.0, 0.0, 0.0,  0.0,      0.0,      0.0, 1.0};
+
+  for(int i = 0; i < 8; i++) h[i] = 0.0;
+  h[8] = 1.0;
+
+  return gauss_solve(P, h, 9);
+}
+
+point_t apply_homography(point_t p, const double *h)
+{
+  const double s =  p.x * h[2 * 3 + 0] + p.y * h[2 * 3 + 1] + h[2 * 3 + 2];
+  const double x = (p.x * h[0 * 3 + 0] + p.y * h[0 * 3 + 1] + h[0 * 3 + 2]) / s;
+  const double y = (p.x * h[1 * 3 + 0] + p.y * h[1 * 3 + 1] + h[1 * 3 + 2]) / s;
+
+  const point_t result = {.x=x, .y=y};
 
   return result;
 }

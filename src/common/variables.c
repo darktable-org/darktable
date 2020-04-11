@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
-    copyright (c) 2010--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,6 +55,7 @@ typedef struct dt_variables_data_t
   struct tm exif_tm;
 
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_focal_length;
   float exif_focus_distance;
@@ -97,6 +97,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
+  params->data->exif_exposure_bias = NAN;
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
@@ -121,6 +122,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     if(params->data->stars == 6) params->data->stars = -1;
 
     params->data->exif_exposure = img->exif_exposure;
+    params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
     if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
@@ -187,6 +189,11 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
     result = g_strdup_printf("\n");
+  else if(has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
+  {
+    if(!isnan(params->data->exif_exposure_bias))
+      result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
+  }
   else if(has_prefix(variable, "EXIF_EXPOSURE"))
   {
     /* no special chars for all jobs except infos */
@@ -385,10 +392,10 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_height);
   else if (has_prefix(variable, "CATEGORY"))
   {
-    // TAG should be followed by n [0,3] and "(category)". category can contain 0 or more '|'
-    if (*variable[0] == '0' || *variable[0] == '1' || *variable[0] == '2' || *variable[0] == '3')
+    // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
+    if (g_ascii_isdigit(*variable[0]))
     {
-      const uint8_t level = (uint8_t)*variable[0] & 0b11;
+      const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
       if (*variable[0] == '(')
       {
@@ -454,7 +461,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(!base_value || !*base_value)
+        if(*base_value == '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -470,7 +477,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(*base_value)
+        if(*base_value != '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -493,15 +500,15 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
         expansion is the characters between offset and that result.
       */
       {
-        const size_t base_value_utf8_length = g_utf8_strlen(base_value, -1);
-        const int offset = strtol(*variable, variable, 10);
+        const glong base_value_utf8_length = g_utf8_strlen(base_value, -1);
+        const glong offset = strtol(*variable, variable, 10);
 
         // find where to start
         char *start; // from where to copy ...
         if(offset >= 0)
           start = g_utf8_offset_to_pointer(base_value, MIN(offset, base_value_utf8_length));
         else
-          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -1 * base_value_utf8_length));
+          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -base_value_utf8_length));
 
         // now find the end if there is a length provided
         char *end = base_value + base_value_length; // ... and until where
@@ -513,7 +520,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           if(length >= 0)
             end = g_utf8_offset_to_pointer(start, MIN(length, start_utf8_length));
           else
-            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -1 * start_utf8_length));
+            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -start_utf8_length));
         }
 
         char *_base_value = g_strndup(start, end - start);

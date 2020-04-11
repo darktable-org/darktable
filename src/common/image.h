@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,6 +74,8 @@ typedef enum
   DT_IMAGE_MONOCHROME = 32768,
   // image has usercrop information
   DT_IMAGE_HAS_USERCROP = 65536,
+  // image is an sraw
+  DT_IMAGE_S_RAW = 1 << 17,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -132,6 +134,7 @@ typedef enum dt_image_loader_t
   LOADER_GM = 8,
   LOADER_RAWSPEED = 9,
   LOADER_PNM = 10,
+  LOADER_AVIF = 11,
 } dt_image_loader_t;
 
 typedef struct dt_image_geoloc_t
@@ -148,6 +151,7 @@ typedef struct dt_image_t
   int32_t exif_inited;
   dt_image_orientation_t orientation;
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
@@ -171,6 +175,7 @@ typedef struct dt_image_t
   // to understand this, look at comment for dt_histogram_roi_t
   int32_t width, height, verified_size, final_width, final_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
+  float aspect_ratio;
 
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
@@ -219,6 +224,10 @@ int dt_image_is_raw(const dt_image_t *img);
 int dt_image_is_hdr(const dt_image_t *img);
 /** returns non-zero if this image was taken using a monochrome camera */
 int dt_image_is_monochrome(const dt_image_t *img);
+/** returns non-zero if the image supports a color correction matrix */
+int dt_image_is_matrix_correction_supported(const dt_image_t *img);
+/** returns non-zero if the image supports the rawprepare module */
+int dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
 void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);
@@ -234,8 +243,8 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
 void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
-/** look for duplicate's xmp files and read them. */
-void dt_image_read_duplicates(uint32_t id, const char *filename);
+/** finds all xmp duplicates for the given image in the database. */
+GList* dt_image_find_duplicates(const char* filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
@@ -256,19 +265,21 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 void dt_image_reset_final_size(const int32_t imgid);
 /** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on);
 /** get image location lon/lat */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
-/** set image location lon/lat/ele */
-void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
-int dt_image_altered(const uint32_t imgid);
+gboolean dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
-double dt_image_set_aspect_ratio(const int32_t imgid);
+double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
+/** set the image raw aspect ratio */
+void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise);
+/** set the image final/cropped aspect ratio if different from stored*/
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid);
+void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
@@ -323,9 +334,8 @@ void dt_image_local_copy_synch(void);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
+void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
-// return the iop-order-version used by imgid (0 if unknown iop-order-version)
-int dt_image_get_iop_order_version(const int32_t imgid);
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);

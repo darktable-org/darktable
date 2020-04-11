@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010--2012 Henrik Andersson.
-    copyright (c) 2012 Ulrich Pegelow.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,6 +77,11 @@ enum
   GRADIENT_SLIDER_MARGINS_BIG = 6
 };
 
+enum
+{
+  GRADIENT_SLIDER_SET = 1,
+  GRADIENT_SLIDER_GET = 2
+};
 
 typedef struct _GtkDarktableGradientSlider
 {
@@ -98,6 +102,7 @@ typedef struct _GtkDarktableGradientSlider
   gboolean do_reset;
   gboolean is_entered;
   guint timeout_handle;
+  float (*scale_callback)(GtkWidget*, float, int); // scale callback function
 } GtkDarktableGradientSlider;
 
 typedef struct _GtkDarktableGradientSliderClass
@@ -168,10 +173,13 @@ gboolean dtgtk_gradient_slider_multivalue_is_dragging(GtkDarktableGradientSlider
 void dtgtk_gradient_slider_multivalue_set_marker(GtkDarktableGradientSlider *gslider, gint mark, gint pos);
 void dtgtk_gradient_slider_multivalue_set_markers(GtkDarktableGradientSlider *gslider, gint *markers);
 
-/** Set the slider reset values for multivalue control */
+/** Set/get the slider reset values for multivalue control */
 void dtgtk_gradient_slider_multivalue_set_resetvalue(GtkDarktableGradientSlider *gslider, gdouble value,
                                                      gint pos);
 void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider *gslider, gdouble *values);
+gdouble dtgtk_gradient_slider_multivalue_get_resetvalue(GtkDarktableGradientSlider *gslider, gint pos);
+gdouble dtgtk_gradient_slider_multivalue_get_resetvalues(GtkDarktableGradientSlider *gslider);
+
 
 /** Set a picker for multivalue control */
 void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider, gdouble value);
@@ -184,6 +192,8 @@ void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gs
 /** set increment for scroll action */
 void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
 
+/** set scaling function callback */
+void dtgtk_gradient_slider_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir));
 
 G_END_DECLS
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 pascal obry
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ void dt_undo_end_group(dt_undo_t *self);
 
 // record a change that will be insered into the undo list
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs),
                     void (*free_data)(gpointer data));
 
 //  undo an element which correspond to filter. filter here is expected to be

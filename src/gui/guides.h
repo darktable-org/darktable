@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012-2015 tobias ellinghaus.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ typedef struct dt_guides_t
   dt_guides_widget_callback widget;
   void *user_data;
   GDestroyNotify free;
+  gboolean support_flip;
 } dt_guides_t;
 
 GList *dt_guides_init();

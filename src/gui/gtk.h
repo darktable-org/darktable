@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,9 @@ typedef struct dt_gui_widgets_t
   GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
   GtkGrid *panel_right;
 
+  /* resize of left/right panels */
+  gboolean panel_handle_dragging;
+  int panel_handle_x, panel_handle_y;
 } dt_gui_widgets_t;
 
 typedef struct dt_gui_scrollbars_t
@@ -60,6 +63,7 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_FONT,
   DT_GUI_COLOR_PRINT_BG,
   DT_GUI_COLOR_BRUSH_CURSOR,
   DT_GUI_COLOR_BRUSH_TRACE,
@@ -78,6 +82,8 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_CULLING_SELECTED_BORDER,
   DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER,
   DT_GUI_COLOR_PREVIEW_HOVER_BORDER,
+  DT_GUI_COLOR_LOG_BG,
+  DT_GUI_COLOR_LOG_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -103,6 +109,7 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   gboolean show_overlays;
+  gboolean show_focus_peaking;
 
   double dpi, dpi_factor, ppd;
 
@@ -113,6 +120,8 @@ typedef struct dt_gui_gtk_t
 
   gint scroll_mask;
   guint sidebar_scroll_mask;
+
+  cairo_filter_t filter_image;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
@@ -307,8 +316,13 @@ void dt_ui_notify_user();
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
+GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
 /** \brief get the main window widget */
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
+/** \brief get the thumb table */
+struct dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui);
+/** \brief get the log message widget */
+GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui);
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
 
@@ -334,7 +348,7 @@ static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
   for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
     gtk_container_child_set(GTK_CONTAINER(notebook),
                             gtk_notebook_get_nth_page(notebook, i),
-                            "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+                            "tab-expand", TRUE, "tab-fill", TRUE, (char *)NULL);
 }
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.

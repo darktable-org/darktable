@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_attach_from_gui(tagid, imgid);
+  dt_tag_attach_from_gui(tagid, imgid, TRUE, TRUE);
   dt_image_synch_xmp(imgid);
   return 0;
 }
@@ -209,7 +209,7 @@ int dt_lua_tag_detach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_detach(tagid, imgid);
+  dt_tag_detach(tagid, imgid, TRUE, TRUE);
   dt_image_synch_xmp(imgid);
   return 0;
 }

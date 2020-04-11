@@ -2,24 +2,25 @@ cmake_minimum_required(VERSION 3.10.0)
 
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
-cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
+cmake_policy(SET CMP0048 NEW)
 
-#
-# Avoid source tree pollution
-#
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+### Add defaults for cmake
+# These defaults need to be included before the project() call.
+include(DefineCMakeDefaults)
 
 If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
-project(darktable CXX C)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(DEFINED PROJECT_VERSION)
+  project(darktable VERSION ${PROJECT_VERSION} LANGUAGES CXX C)
+else()
+  # Actual version string will be generated from git later
+  project(darktable VERSION 0 LANGUAGES CXX C)
+endif()
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
@@ -42,19 +43,45 @@ include(DefineOptions.cmake)
 
 include(GNUInstallDirs)
 
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+if(${FORCE_COLORED_OUTPUT})
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-fdiagnostics-color=always)
+  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_compile_options(-fcolor-diagnostics)
+  endif()
+endif()
+
+# Whether to use relative paths for the build RPATH
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+else()
+    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif()
+
 if (USE_OPENMP)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
         # Clang has an option to specify the OpenMP standard to use. Specify it.
         # FIXME: Implement this in FindOpenMP.cmake
-        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=40")
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=45")
 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
     endif()
 
-    find_package(OpenMP 4.0 REQUIRED)
+    find_package(OpenMP 4.5 REQUIRED)
+endif()
+
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+
+# Fail if returned library is not pthread
+if (NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "POSIX threads: not found")
 endif()
 
 include(ConfigureChecks.cmake)
@@ -62,7 +89,7 @@ include(ConfigureChecks.cmake)
 include(CheckCCompilerFlag)
 
 # Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
   set(SOURCE_PACKAGE 1)
 else()
   set(SOURCE_PACKAGE 0)
@@ -141,11 +168,11 @@ function(generate_version_gen_c)
   )
 endfunction(generate_version_gen_c)
 
-if(DEFINED PROJECT_VERSION)
+if(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   #project version is defined by -D on the cmake command line
   # only use that value, do not update it at make time
   generate_version_gen_c(${PROJECT_VERSION} "version override")
-else(DEFINED PROJECT_VERSION)
+else(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
@@ -181,7 +208,7 @@ else(DEFINED PROJECT_VERSION)
       )
     endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
   endif(NOT SOURCE_PACKAGE)
-endif(DEFINED PROJECT_VERSION)
+endif(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
 
 # needed to make sure that version string is actually updated.
 add_custom_command(
@@ -210,17 +237,6 @@ endif()
 
 include(compiler-warnings)
 include(windows-macros)
-
-# Setting the runtime path works differently on OSX than on Linux or BSD.
-# Hence use a variable that maps those in the correct way for each OS.
-if(APPLE)
-    # The string "@loader_path" should end up in the executable as-is.
-    set(RPATH_DT "@loader_path")
-else(APPLE)
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
@@ -356,6 +372,15 @@ if(USE_XMLLINT)
   endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
 endif(USE_XMLLINT)
 
+find_program(exiftool_BIN exiftool)
+if(${exiftool_BIN} STREQUAL "exiftool_BIN-NOTFOUND")
+  message(STATUS "Missing exiftool")
+  set(HAVE_EXIFTOOL 0)
+else()
+  message(STATUS "Found exiftool")
+  set(HAVE_EXIFTOOL 1)
+endif()
+
 # done with looking for programs
 if(NOT EXTERNAL_PROGRAMS_FOUND)
   message(FATAL_ERROR "Some external programs couldn't be found")
@@ -419,6 +444,12 @@ if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_
     )
   endif()
 endif()
+
+if(BUILD_TESTING)
+  find_package(cmocka 1.1.0 CONFIG REQUIRED)
+  include(AddCMockaTest)
+  include(AddCMockaMockTest)
+endif(BUILD_TESTING)
 
 #
 # Test SSE level

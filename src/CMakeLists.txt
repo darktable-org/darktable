@@ -18,6 +18,7 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/splines.cpp"
   "common/curl_tools.c"
   "common/cpuid.c"
   "common/darktable.c"
@@ -77,6 +78,7 @@ FILE(GLOB SOURCE_FILES
   "common/usermanual_url.c"
   "common/iop_group.c"
   "common/iop_order.c"
+  "common/iop_profile.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -107,6 +109,9 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/thumbnail.c"
+  "dtgtk/thumbnail_btn.c"
+  "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
@@ -120,7 +125,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -146,6 +151,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/dtwin.c")
   list(APPEND HEADER_FILES "win/dtwin.h")
 
+  list(APPEND SOURCE_FILES "win/filepath.c")
+  list(APPEND HEADER_FILES "win/filepath.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
@@ -170,6 +178,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -217,13 +226,6 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES to_library)
 endif()
 
-# Check for base threading library
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
-# Fail if returned library is not pthread
-if(NOT CMAKE_USE_PTHREADS_INIT)
-  message(FATAL_ERROR "POSIX threads: not found")
-endif()
 # Append thread flags/libraries to LIBS
 list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 
@@ -319,6 +321,16 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
+if (USE_AVIF)
+    find_package(libavif 0.6.0 CONFIG)
+    if (TARGET avif)
+        list(APPEND LIBS avif)
+        add_definitions(-DHAVE_LIBAVIF=1)
+        list(APPEND SOURCES "common/imageio_avif.c")
+        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+    endif()
+endif()
+
 if(USE_LENSFUN)
   find_package(LensFun)
   if(LENSFUN_FOUND)
@@ -328,7 +340,18 @@ if(USE_LENSFUN)
   endif()
 endif()
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+find_package(Sqlite3 3.15 REQUIRED)
+if(NOT Sqlite3_VERSION VERSION_LESS 3.24)
+  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
+  message(STATUS "Sqlite3 version 3.24 or newer")
+else()
+  message(STATUS "Sqlite3 version older than 3.24, some features may be downgraded")
+endif()
+include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
+list(APPEND LIBS ${Sqlite3_LIBRARIES})
+add_definitions(${Sqlite3_DEFINITIONS})
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -340,15 +363,6 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
-
-if(USE_FLICKR)
-  find_package(FLICKCURL)
-  if(FLICKCURL_FOUND)
-    include_directories(SYSTEM ${FLICKCURL_INCLUDE_DIRS})
-    list(APPEND LIBS ${FLICKCURL_LIBRARIES})
-    add_definitions(${FLICKCURL_DEFINITIONS})
-  endif(FLICKCURL_FOUND)
-endif(USE_FLICKR)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -421,6 +435,15 @@ if(USE_GRAPHICSMAGICK)
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
+
+if(USE_GMIC)
+  find_package(GMIC)
+  if(GMIC_FOUND)
+    add_definitions(-DHAVE_GMIC)
+    include_directories(SYSTEM ${GMIC_INCLUDE_DIRS})
+    list(APPEND LIBS ${GMIC_LIBRARIES})
+  endif(GMIC_FOUND)
+endif(USE_GMIC)
 
 #
 # Add HAVE_xxx defines used by darktable
@@ -653,7 +676,7 @@ if(NOT SOURCE_PACKAGE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # do not error out on "loop not vectorized" clang OpenMP warnings 
+  # do not error out on "loop not vectorized" clang OpenMP warnings
   add_definitions("-Wno-error=pass-failed")
 endif()
 
@@ -728,6 +751,13 @@ else(BUILD_PRINT)
   message(STATUS "Print mode: disabled")
 endif(BUILD_PRINT)
 
+if(USE_GAME)
+  add_definitions("-DHAVE_GAME")
+  message(STATUS "Game: the good knight")
+else(USE_GAME)
+  message(STATUS "Game: no")
+endif(USE_GAME)
+
 #
 # set development flags for our code
 #
@@ -769,24 +799,9 @@ if(USE_XMLLINT)
 endif(USE_XMLLINT)
 
 #
-# Generate mapping of key strings to internal metadata id
-#
-add_custom_command(
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating metadata .c/.h"
-)
-add_custom_target(
-  generate_metadata ALL
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
-#
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
@@ -794,7 +809,6 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GEN
 
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
-add_dependencies(lib_darktable generate_metadata)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
@@ -860,9 +874,9 @@ endif(BUILD_CMSTEST)
 add_subdirectory(chart)
 
 # have some test programs for unit testing, ...
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
-endif(BUILD_TESTS)
+endif(BUILD_TESTING)
 
 #
 # build darktable executable
@@ -879,16 +893,9 @@ if (WIN32)
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 else()
-    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-    # The string "$ORIGIN" should end up in the executable as-is.
-    set(RPATH_DT "$ORIGIN")
-    if (APPLE)
-        # The string "@loader_path" should end up in the executable as-is.
-        set(RPATH_DT "@loader_path")
-    endif()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

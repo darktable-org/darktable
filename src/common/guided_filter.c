@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018-2019 Heiko Bauke.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,33 +83,43 @@ static inline int max_i(int a, int b)
   return a > b ? a : b;
 }
 
+// Kahan summation algorithm
+static inline float Kahan_sum(const float m, float *c, const float add)
+{
+   const float t1 = add - (*c);
+   const float t2 = m + t1;
+   *c = (t2 - m) - t1;
+   return t2;
+}
+
 // calculate the one-dimensional moving average over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
-  float m = 0.f, n_box = 0.f;
+  float m = 0.f, n_box = 0.f, c = 0.f;
   if(N > 2 * w)
   {
     for(int i = 0, i_end = w + 1; i < i_end; i++)
     {
-      m += x[i];
+      m = Kahan_sum(m, &c, x[i]);
       n_box++;
     }
     for(int i = 0, i_end = w; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m += x[i + w + 1];
+      m = Kahan_sum(m, &c, x[i + w + 1]);
       n_box++;
     }
     for(int i = w, i_end = N - w - 1; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m += x[i + w + 1] - x[i - w];
+      m = Kahan_sum(m, &c, x[i + w + 1]),
+      m = Kahan_sum(m, &c, -x[i - w]);
     }
     for(int i = N - w - 1, i_end = N; i < i_end; i++)
     {
       y[i * stride_y] = m / n_box;
-      m -= x[i - w];
+      m = Kahan_sum(m, &c, -x[i - w]);
       n_box--;
     }
   }
@@ -117,7 +127,7 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
   {
     for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
     {
-      m += x[i];
+      m = Kahan_sum(m, &c, x[i]);
       n_box++;
     }
     for(int i = 0; i < N; i++)
@@ -125,12 +135,12 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
       y[i * stride_y] = m / n_box;
       if(i - w >= 0)
       {
-        m -= x[i - w];
+        m = Kahan_sum(m, &c, -x[i - w]);
         n_box--;
       }
       if(i + w + 1 < N)
       {
-        m += x[i + w + 1];
+        m = Kahan_sum(m, &c, x[i + w + 1]);
         n_box++;
       }
     }
@@ -556,16 +566,15 @@ static int cl_generate_result(const int devid, const int width, const int height
 }
 
 
-static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width,
-                                  const int height, const int ch,
-                                  const int w,              // window size
-                                  const float sqrt_eps,     // regularization parameter
-                                  const float guide_weight, // to balance the amplitudes in the guiding image and
-                                                            // the input// image
-                                  const float min, const float max)
+static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
+                                 const int ch,
+                                 const int w,              // window size
+                                 const float sqrt_eps,     // regularization parameter
+                                 const float guide_weight, // to balance the amplitudes in the guiding image and
+                                                           // the input// image
+                                 const float min, const float max)
 {
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
-  int err = CL_SUCCESS;
 
   void *temp1 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *temp2 = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -586,6 +595,18 @@ static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out
   void *a_g = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *a_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *b = temp2;
+
+  int err = CL_SUCCESS;
+  if(temp1 == NULL || temp2 == NULL ||                                                        //
+     imgg_mean_r == NULL || imgg_mean_g == NULL || imgg_mean_b == NULL || img_mean == NULL || //
+     cov_imgg_img_r == NULL || cov_imgg_img_g == NULL || cov_imgg_img_b == NULL ||            //
+     var_imgg_rr == NULL || var_imgg_gg == NULL || var_imgg_bb == NULL ||                     //
+     var_imgg_rg == NULL || var_imgg_rb == NULL || var_imgg_gb == NULL ||                     //
+     a_r == NULL || a_g == NULL || a_b == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = cl_split_rgb(devid, width, height, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
   if(err != CL_SUCCESS) goto error;
@@ -661,8 +682,7 @@ static void guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out
   err = cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
 
 error:
-  if (err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
 
   dt_opencl_release_mem_object(a_r);
   dt_opencl_release_mem_object(a_g);
@@ -682,6 +702,8 @@ error:
   dt_opencl_release_mem_object(imgg_mean_b);
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
+
+  return err;
 }
 
 
@@ -726,12 +748,13 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
 
   const cl_ulong max_global_mem = dt_opencl_get_max_global_mem(devid);
   const size_t reserved_memory = (size_t)(dt_conf_get_float("opencl_memory_headroom") * 1024 * 1024);
-  // estimate required memory for OpenCL code path with an safety factor of 9/8
+  // estimate required memory for OpenCL code path with a safety factor of 5/4
   const size_t required_memory
-      = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 9 / 8;
+      = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 5 / 4;
+  int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(max_global_mem - reserved_memory > required_memory)
-    guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
-  else
+    err = guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+  if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[guided filter] fall back to cpu implementation due to insufficient gpu memory\n");
     guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);

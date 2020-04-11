@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2010-2012 Henrik Andersson.
+  Copyright (C) 2010-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -127,12 +127,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "destination"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -143,8 +143,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_red));
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_green));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_blue));
+  dt_accel_connect_combobox_iop(self, "destination", GTK_WIDGET(g->output_channel));
 }
-#endif
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)

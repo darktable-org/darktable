@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2018 pascal obry.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #include <cups/ppd.h>
 #include <glib.h>
 #include <stdio.h>
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 #include "common/file_location.h"
 #include "common/image.h"
@@ -28,6 +31,18 @@
 #include "common/pdf.h"
 #include "control/jobs/control_jobs.h"
 #include "cups_print.h"
+
+// enable weak linking in libcups on macOS
+#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8 && ((CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 6) || CUPS_VERSION_MAJOR > 1)
+extern int cupsEnumDests() __attribute__((weak_import));
+#endif
+#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9 && ((CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 7) || CUPS_VERSION_MAJOR > 1)
+extern http_t *cupsConnectDest() __attribute__((weak_import));
+extern cups_dinfo_t *cupsCopyDestInfo() __attribute__((weak_import));
+extern int cupsGetDestMediaCount() __attribute__((weak_import));
+extern int cupsGetDestMediaByIndex() __attribute__((weak_import));
+extern void cupsFreeDestInfo() __attribute__((weak_import));
+#endif
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 // some platforms are starting to provide CUPS 2.2.9 and there the

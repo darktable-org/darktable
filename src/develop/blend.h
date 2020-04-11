@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011--2012 henrik andersson.
-    copyright (c) 2012--2013 ulrich pegelow.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +18,7 @@
 
 #pragma once
 
+#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
@@ -29,7 +29,6 @@
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_MASK_FLAG = 0x80,
   DEVELOP_BLEND_DISABLED = 0x00,
   DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
@@ -393,6 +392,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkBox *raster_box;
   GtkDarktableGradientSlider *upper_slider;
   GtkDarktableGradientSlider *lower_slider;
+  GtkLabel *upper_head;
+  GtkLabel *lower_head;
   GtkLabel *upper_label[8];
   GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
@@ -418,6 +419,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *brightness_slider;
   int tab;
   int channels[8][2];
+  int altmode[8][2];
+  int (*altdisplay[8])(GtkWidget *, dt_iop_module_t *, int);
   dt_dev_pixelpipe_display_mask_t display_channel[8][2];
   dt_dev_pixelpipe_display_mask_t save_for_leave;
   int timeout_handle;
@@ -442,8 +445,6 @@ typedef struct dt_iop_gui_blend_data_t
 } dt_iop_gui_blend_data_t;
 
 
-
-//#define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
 
 /** global init of blendops */
 dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void);

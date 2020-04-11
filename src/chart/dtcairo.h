@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2019-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -27,17 +27,17 @@
 void draw_no_image(cairo_t *cr, GtkWidget *widget);
 void draw_line(cairo_t *cr, point_t start, point_t end);
 void draw_cross(cairo_t *cr, point_t center);
-void draw_box(cairo_t *cr, box_t box, point_t *bb);
+void draw_box(cairo_t *cr, box_t box, const double *homography);
 
 void clear_background(cairo_t *cr);
 void center_image(cairo_t *cr, image_t *image);
 void draw_image(cairo_t *cr, image_t *image);
 void draw_boundingbox(cairo_t *cr, point_t *bb);
-void draw_f_boxes(cairo_t *cr, point_t *bb, chart_t *chart);
-void draw_d_boxes(cairo_t *cr, point_t *bb, chart_t *chart);
-void draw_color_boxes_outline(cairo_t *cr, point_t *bb, chart_t *chart);
-void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float shrink, float line_width,
-                             gboolean colored);
+void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart);
+void draw_d_boxes(cairo_t *cr, const double *homography, chart_t *chart);
+void draw_color_boxes_outline(cairo_t *cr, const double *homography, chart_t *chart);
+void draw_color_boxes_inside(cairo_t *cr, const double *homography, chart_t *chart, float shrink, float line_width,
+                               gboolean colored);
 void stroke_boxes(cairo_t *cr, float line_width);
 
 void set_offset_and_scale(image_t *image, float width, float height);

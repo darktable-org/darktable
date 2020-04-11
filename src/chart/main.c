@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 tobias ellinghaus.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@
 #endif
 
 const double thrs = 200.0;
+
+static const point_t bb_ref[] = {{.x=.0, .y=.0}, {.x=1., .y=0.}, {.x=1., .y=1.}, {.x=0., .y=1.}};
 
 enum
 {
@@ -90,7 +92,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
 static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink);
-static void get_corners(point_t *bb, box_t *box, point_t *corners);
+static void get_corners(const double *homography, box_t *box, point_t *corners);
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
@@ -134,16 +136,20 @@ static gboolean draw_image_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   // draw overlay
   point_t bb[4];
+  double homography[9];
   map_boundingbox_to_view(image, bb);
+  // calculating the homography takes hardly any time, so we do it here instead of the move handler.
+  // the benefits are that the window size is taken into account and image->bb can't disagree with the cached homography
+  get_homography(bb_ref, bb, homography);
 
   draw_boundingbox(cr, bb);
-  draw_f_boxes(cr, bb, chart);
-  draw_d_boxes(cr, bb, chart);
-  draw_color_boxes_outline(cr, bb, chart);
+  draw_f_boxes(cr, homography, chart);
+  draw_d_boxes(cr, homography, chart);
+  draw_color_boxes_outline(cr, homography, chart);
 
   stroke_boxes(cr, 1.0);
 
-  draw_color_boxes_inside(cr, bb, chart, image->shrink, 2.0, image->draw_colored);
+  draw_color_boxes_inside(cr, homography, chart, image->shrink, 2.0, image->draw_colored);
 
   return FALSE;
 }
@@ -167,8 +173,11 @@ static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion 
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   gboolean res = handle_motion(widget, event, self, &self->source);
-  collect_source_patches(self);
-  update_table(self);
+  if(res)
+  {
+    collect_source_patches(self);
+    update_table(self);
+  }
   return res;
 }
 
@@ -176,8 +185,11 @@ static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMoti
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   gboolean res = handle_motion(widget, event, self, &self->reference);
-  collect_reference_patches(self);
-  update_table(self);
+  if(res)
+  {
+    collect_reference_patches(self);
+    update_table(self);
+  }
   return res;
 }
 
@@ -194,8 +206,29 @@ static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t
 
   update_corner(image, closest_corner, &x, &y);
 
-  image->bb[closest_corner].x = x;
-  image->bb[closest_corner].y = y;
+  // check if the shape would turn concave by testing if the new location
+  // is inside the triangle formed by the other three. google barycentric coordinates to see how it's done.
+  const int prev_corner = (closest_corner + 3) % 4;
+  const int opposite_corner = (closest_corner + 2) % 4;
+  const int next_corner = (closest_corner + 1) % 4;
+
+  const float x1 = image->bb[prev_corner].x;
+  const float y1 = image->bb[prev_corner].y;
+  const float x2 = image->bb[next_corner].x;
+  const float y2 = image->bb[next_corner].y;
+  const float x3 = image->bb[opposite_corner].x;
+  const float y3 = image->bb[opposite_corner].y;
+
+  const float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  const float l1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denom;
+  const float l2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denom;
+  const float l3 = 1.0 - l1 - l2;
+
+  if(l1 < 0.0 || l2 < 0.0 || l3 < 0.0)
+  {
+    image->bb[closest_corner].x = x;
+    image->bb[closest_corner].y = y;
+  }
 
   gtk_widget_queue_draw(widget);
 
@@ -292,7 +325,8 @@ static char *get_filename_base(const char *filename)
 
 static gboolean open_reference_image(dt_lut_t *self, const char *filename)
 {
-  gboolean res = open_image(&self->reference, filename);
+  const gboolean initial_loading = (self->reference.xyz == NULL);
+  const gboolean res = open_image(&self->reference, filename);
   gtk_widget_set_sensitive(self->process_button, res);
   gtk_widget_set_sensitive(self->export_button, FALSE);
   gtk_widget_set_sensitive(self->export_raw_button, FALSE);
@@ -300,6 +334,12 @@ static gboolean open_reference_image(dt_lut_t *self, const char *filename)
     gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(self->reference_image_button));
   else
   {
+    if(initial_loading)
+    {
+      // copy over the bounding box from the source image.
+      // when matching raw to jpeg this is in general what the user wants
+      memcpy(self->reference.bb, self->source.bb, sizeof(self->reference.bb));
+    }
     collect_reference_patches(self);
     update_table(self);
     free(self->reference_filename);
@@ -455,7 +495,8 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
   return res;
 }
 
-static char *get_export_filename(dt_lut_t *self, const char *extension, char **name, char **description)
+static char *get_export_filename(dt_lut_t *self, const char *extension, char **name, char **description,
+                                 gboolean *basecurve, gboolean *colorchecker, gboolean *colorin, gboolean *tonecurve)
 {
   GtkWidget *name_entry = NULL, *description_entry = NULL;
   GtkWidget *dialog
@@ -478,6 +519,7 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
   gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
 
   *name = g_strdup(self->reference_filename);
   *description = g_strdup_printf("fitted LUT style from %s", self->reference_filename);
@@ -494,10 +536,39 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   *name = NULL;
   *description = NULL;
 
-  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style name"), 0, 0, 1, 1);
+  GtkWidget *label;
+  label = gtk_label_new("style name");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), name_entry, 1, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style description"), 0, 1, 1, 1);
+  label = gtk_label_new("style description");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), description_entry, 1, 1, 1, 1);
+
+  // allow the user to decide what modules to include in the style
+  label = gtk_label_new("modules included in the style:");
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  g_object_set(label, "margin-left", 50, NULL);
+
+  GtkWidget *cb_basecurve = gtk_check_button_new_with_label("base curve");
+  GtkWidget *cb_colorchecker = gtk_check_button_new_with_label("color look up table");
+  GtkWidget *cb_colorin = gtk_check_button_new_with_label("input color profile");
+  GtkWidget *cb_tonecurve = gtk_check_button_new_with_label("tone curve");
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_basecurve), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_colorchecker), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_colorin), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_tonecurve), TRUE);
+
+  if(basecurve)
+  {
+    gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_basecurve, label, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_colorchecker, cb_basecurve, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_colorin, cb_colorchecker, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cb_tonecurve, cb_colorin, GTK_POS_BOTTOM, 1, 1);
+  }
 
   gtk_widget_show_all(grid);
 
@@ -510,6 +581,14 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
     *name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
     *description = g_strdup(gtk_entry_get_text(GTK_ENTRY(description_entry)));
+    if(basecurve)
+    {
+      // either request all of them or none ...
+      *basecurve = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_basecurve));
+      *colorchecker = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_colorchecker));
+      *colorin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_colorin));
+      *tonecurve = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_tonecurve));
+    }
   }
   gtk_widget_destroy(dialog);
 
@@ -557,7 +636,9 @@ static void print_xml_plugin(FILE *fd, int num, int op_version, const char *oper
   fprintf(fd, "  </plugin>\n");
 }
 
-static void export_style(dt_lut_t *self, const char *filename, const char *name, const char *description)
+static void export_style(dt_lut_t *self, const char *filename, const char *name, const char *description,
+                         gboolean include_basecurve, gboolean include_colorchecker, gboolean include_colorin,
+                         gboolean include_tonecurve)
 {
   int num = 0;
 
@@ -573,17 +654,29 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
   fprintf(fd, "<style>\n");
 
   // 0: disable basecurve
-  print_xml_plugin(fd, num++, 2, "basecurve",
-                   "gz09eJxjYIAAM6vnNnqyn22E9n235b6aa3cy6rVdRaK9/Y970fYf95bbMzA0QPEoGEqADYnNhMQGAO0WEJo=", FALSE);
+  if(include_basecurve)
+  {
+    print_xml_plugin(fd, num++, 2, "basecurve",
+                     "gz09eJxjYIAAM6vnNnqyn22E9n235b6aa3cy6rVdRaK9/Y970fYf95bbMzA0QPEoGEqADYnNhMQGAO0WEJo=", FALSE);
+  }
   // 1: set colorin to standard matrix
-  // print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE); // no gamut clipping
-  // and enable gamut clipping. the it8 knows nothing about colours outside
-  // rec2020 (only reflectances, no neon lights for instance)
-  print_xml_plugin(fd, num++, 4, "colorin", "gz09eJzjZqAfYIHSAAWQABA=", TRUE); // gamut clipping to rec2020
+  if(include_colorin)
+  {
+    // print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE); // no gamut clipping
+    // and enable gamut clipping. the it8 knows nothing about colours outside
+    // rec2020 (only reflectances, no neon lights for instance)
+    print_xml_plugin(fd, num++, 4, "colorin", "gz09eJzjZqAfYIHSAAWQABA=", TRUE); // gamut clipping to rec2020
+  }
   // 2: add tonecurve
-  print_xml_plugin(fd, num++, 4, "tonecurve", self->tonecurve_encoded, TRUE);
+  if(include_tonecurve)
+  {
+    print_xml_plugin(fd, num++, 4, "tonecurve", self->tonecurve_encoded, TRUE);
+  }
   // 3: add lut
-  print_xml_plugin(fd, num++, 2, "colorchecker", self->colorchecker_encoded, TRUE);
+  if(include_colorchecker)
+  {
+    print_xml_plugin(fd, num++, 2, "colorchecker", self->colorchecker_encoded, TRUE);
+  }
 
   fprintf(fd, "</style>\n");
   fprintf(fd, "</darktable_style>\n");
@@ -622,7 +715,7 @@ static void export_raw_button_clicked_callback(GtkButton *button, gpointer user_
   if(!self->chart) return;
 
   char *name = NULL, *description = NULL;
-  char *filename = get_export_filename(self, ".csv", &name, &description);
+  char *filename = get_export_filename(self, ".csv", &name, &description, NULL, NULL, NULL, NULL);
   if(filename) export_raw(self, filename, name, description);
   g_free(name);
   g_free(description);
@@ -635,8 +728,11 @@ static void export_button_clicked_callback(GtkButton *button, gpointer user_data
   if(!self->tonecurve_encoded || !self->colorchecker_encoded) return;
 
   char *name = NULL, *description = NULL;
-  char *filename = get_export_filename(self, ".dtstyle", &name, &description);
-  if(filename) export_style(self, filename, name, description);
+  gboolean include_basecurve, include_colorchecker, include_colorin, include_tonecurve;
+  char *filename = get_export_filename(self, ".dtstyle", &name, &description,
+                                       &include_basecurve, &include_colorchecker, &include_colorin, &include_tonecurve);
+  if(filename) export_style(self, filename, name, description,
+                            include_basecurve, include_colorchecker, include_colorin, include_tonecurve);
   g_free(name);
   g_free(description);
   g_free(filename);
@@ -1030,6 +1126,7 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
   gtk_widget_set_sensitive(self->export_button, TRUE);
+  gtk_widget_set_sensitive(self->export_raw_button, TRUE);
 
   free(target_L);
   free(target_a);
@@ -1405,6 +1502,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
 static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz)
 {
   point_t bb[4];
+  double homography[9];
   point_t corners[4];
   box_t inner_box;
   int x_start, y_start, x_end, y_end;
@@ -1414,8 +1512,9 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
   if(!box) return;
 
   get_boundingbox(image, bb);
+  get_homography(bb_ref, bb, homography);
   inner_box = get_sample_box(*(image->chart), box, shrink);
-  get_corners(bb, &inner_box, corners);
+  get_corners(homography, &inner_box, corners);
   get_pixel_region(image, corners, &x_start, &y_start, &x_end, &y_end);
 
   float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
@@ -1479,7 +1578,7 @@ static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink)
   return inner_box;
 }
 
-static void get_corners(point_t *bb, box_t *box, point_t *corners)
+static void get_corners(const double *homography, box_t *box, point_t *corners)
 {
   corners[TOP_LEFT] = corners[TOP_RIGHT] = corners[BOTTOM_RIGHT] = corners[BOTTOM_LEFT] = box->p;
   corners[TOP_RIGHT].x += box->w;
@@ -1487,7 +1586,7 @@ static void get_corners(point_t *bb, box_t *box, point_t *corners)
   corners[BOTTOM_RIGHT].y += box->h;
   corners[BOTTOM_LEFT].y += box->h;
 
-  for(int i = 0; i < 4; i++) corners[i] = transform_coords(corners[i], bb);
+  for(int i = 0; i < 4; i++) corners[i] = apply_homography(corners[i], homography);
 }
 
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
@@ -1626,6 +1725,9 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
     }
   }
 
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_focus_window();
+#endif
   gtk_main();
 
   return 0;
@@ -1770,7 +1872,8 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
   process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
-  export_style(self, filename_style, name, description);
+  // TODO: add command line options to control what modules to include
+  export_style(self, filename_style, name, description, TRUE, TRUE, TRUE, TRUE);
 
   free(target_L);
   free(target_a);

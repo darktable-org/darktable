@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2013 johannes hanika.
-    copyright (c) 2015 LebedevRI.
-    copyright (c) 2016 Pedro Côrte-Real
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,7 +55,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 #define DT_IOP_LOWEST_TINT 0.135
 #define DT_IOP_HIGHEST_TINT 2.326
 
-#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 4
 
 #define COLORED_SLIDERS 0
 
@@ -83,6 +81,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_cnt;
   int preset_num[50];
   double daylight_wb[4];
+  double mod_coeff[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
   dt_iop_color_picker_t color_picker;
 } dt_iop_temperature_gui_data_t;
@@ -212,10 +211,11 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "presets"));
 
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera neutral"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/spot"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/camera neutral"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "preset/spot"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -228,6 +228,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
   dt_accel_connect_slider_iop(self, "green2", GTK_WIDGET(g->scale_g2));
+  dt_accel_connect_combobox_iop(self, "presets", GTK_WIDGET(g->presets));
 
   GClosure *closure;
 
@@ -780,11 +781,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_tint, tint);
 
   gui_sliders_update(self);
+  for(int k = 0; k < 4; k++) g->mod_coeff[k] = p->coeffs[k];
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera neutral"));
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "spot"));
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
 
@@ -901,6 +904,8 @@ void gui_update(struct dt_iop_module_t *self)
         }
       }
     }
+    if (!found)
+      dt_bauhaus_combobox_set(g->presets, 3);
   }
 }
 
@@ -1025,7 +1030,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) goto end;
 
-  const int is_raw = dt_image_is_raw(&module->dev->image_storage);
+  const int is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
 
   module->default_enabled = 0;
   module->hide_enable_button = 0;
@@ -1033,7 +1038,7 @@ void reload_defaults(dt_iop_module_t *module)
   // White balance module doesn't need to be enabled for monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
-  if(is_raw && dt_image_is_monochrome(&(module->dev->image_storage)))
+  if(dt_image_is_monochrome(&(module->dev->image_storage)))
   {
     module->hide_enable_button = 1;
   }
@@ -1184,8 +1189,7 @@ static void temp_changed(dt_iop_module_t *self)
   coeffs[2] /= coeffs[1];
   coeffs[3] /= coeffs[1];
   coeffs[1] = 1.0;
-
-  for(int c = 0; c < 4; c++) p->coeffs[c] = coeffs[c];
+  for(int c = 0; c < 4; c++) p->coeffs[c] = g->mod_coeff[c] = coeffs[c];
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -1203,7 +1207,7 @@ static void tint_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   temp_changed(self);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, -1);
+  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void temp_callback(GtkWidget *slider, gpointer user_data)
@@ -1212,7 +1216,7 @@ static void temp_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   temp_changed(self);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, -1);
+  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void rgb_callback(GtkWidget *slider, gpointer user_data)
@@ -1224,17 +1228,17 @@ static void rgb_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_color_picker_reset(self, TRUE);
   const float value = dt_bauhaus_slider_get(slider);
   if(slider == g->scale_r)
-    p->coeffs[0] = value;
+    p->coeffs[0] = g->mod_coeff[0] = value;
   else if(slider == g->scale_g)
-    p->coeffs[1] = value;
+    p->coeffs[1] = g->mod_coeff[1] = value;
   else if(slider == g->scale_b)
-    p->coeffs[2] = value;
+    p->coeffs[2] = g->mod_coeff[2] = value;
   else if(slider == g->scale_g2)
-    p->coeffs[3] = value;
+    p->coeffs[3] = g->mod_coeff[3] = value;
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_bauhaus_combobox_set(g->presets, -1);
+  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void apply_preset(dt_iop_module_t *self)
@@ -1262,6 +1266,9 @@ static void apply_preset(dt_iop_module_t *self)
       for(int k = 0; k < 4; k++) old[k] = 0.0f;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), TRUE);
       break;
+    case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
+      for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
+      break;      
     default: // camera WB presets
     {
       gboolean found = FALSE;
@@ -1442,7 +1449,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
 #endif
 
-  dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
+  dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
 

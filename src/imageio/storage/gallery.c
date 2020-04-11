@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -220,8 +220,9 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
+          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+          dt_export_metadata_t *metadata)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
@@ -276,7 +277,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   }
 
   // store away dir.
-  snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
+  g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
   c = filename + strlen(filename);
   for(; c > filename && *c != '.' && *c != '/'; c--)
@@ -312,8 +313,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     ;
   if(*c == '/') c++;
   if(c <= filename) c = filename;
-  snprintf(relfilename, sizeof(relfilename), "%s", c);
-  snprintf(relthumbfilename, sizeof(relthumbfilename), "%s", relfilename);
+  g_strlcpy(relfilename, c, sizeof(relfilename));
+  g_strlcpy(relthumbfilename, relfilename, sizeof(relthumbfilename));
   c = relthumbfilename + strlen(relthumbfilename);
   for(; c > relthumbfilename && *c != '.'; c--)
     ;
@@ -321,7 +322,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   sprintf(c, "-thumb.%s", ext);
 
   char subfilename[PATH_MAX] = { 0 }, relsubfilename[PATH_MAX] = { 0 };
-  snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
+  g_strlcpy(subfilename, d->cached_dirname, sizeof(subfilename));
   char *sc = subfilename + strlen(subfilename);
   sprintf(sc, "/img_%d.html", num);
   snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
@@ -342,8 +343,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, metadata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
+                       icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -383,8 +384,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(c <= filename || *c == '/') c = filename + strlen(filename);
   ext = format->extension(fdata);
   sprintf(c, "-thumb.%s", ext);
-  if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, icc_type, icc_filename, icc_intent, self,
-                       sdata, num, total, NULL) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, export_masks, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total, NULL) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -432,7 +433,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
   char filename[PATH_MAX] = { 0 };
-  snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
+  g_strlcpy(filename, d->cached_dirname, sizeof(filename));
   char *c = filename + strlen(filename);
 
   // also create style/ subdir:
@@ -634,6 +635,7 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
     return 1;
   if(strcmp(mime, "image/webp") == 0)
     return 1;
+  if (strcmp(mime, "image/avif") == 0) return 1;
 
   return 0;
 }

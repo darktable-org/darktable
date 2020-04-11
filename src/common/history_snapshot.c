@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 pascal obry.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,9 +60,11 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
   // copy current state into undo_history
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.undo_history SELECT ?1, imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order "
-                              " FROM main.history WHERE imgid=?2", -1, &stmt, NULL);
+                              "INSERT INTO memory.undo_history"
+                              "  SELECT ?1, imgid, num, module, operation, op_params, enabled, "
+                              "         blendop_params, blendop_version, multi_priority, multi_name "
+                              "  FROM main.history"
+                              "  WHERE imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -71,8 +73,11 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
   // copy current state into undo_masks_history
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.undo_masks_history SELECT ?1, imgid, num, formid, form, name, version, "
-                              "points, points_count, source FROM main.masks_history WHERE imgid=?2", -1, &stmt, NULL);
+                              "INSERT INTO memory.undo_masks_history"
+                              "  SELECT ?1, imgid, num, formid, form, name, version, "
+                              "         points, points_count, source"
+                              "  FROM main.masks_history"
+                              "  WHERE imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -101,9 +106,11 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   // copy undo_history snapshot back as current history state
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order "
-                              " FROM memory.undo_history WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
+                              "INSERT INTO main.history"
+                              "  SELECT imgid, num, module, operation, op_params, enabled, "
+                              "         blendop_params, blendop_version, multi_priority, multi_name "
+                              "  FROM memory.undo_history"
+                              "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
@@ -112,8 +119,10 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   // copy undo_masks_history snapshot back as current masks_history state
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO main.masks_history SELECT imgid, num, formid, form, name, version, "
-                              "points, points_count, source FROM memory.undo_masks_history WHERE imgid=?2 AND id=?1",
+                              "INSERT INTO main.masks_history"
+                              "  SELECT imgid, num, formid, form, name, version, "
+                              "         points, points_count, source FROM memory.undo_masks_history"
+                              "  WHERE imgid=?2 AND id=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -169,7 +178,7 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data)
   g_free(hist);
 }
 
-void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_LT_HISTORY)
   {
@@ -183,5 +192,7 @@ void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_un
     {
       _history_snapshot_undo_restore(hist->imgid, hist->after, hist->after_history_end);
     }
+  // in principle undo() routine should add imgid to imgs list to make _undo_do_undo_redo() refresh XMP file for each of them
+  // in this case the update of XMP file is done by the normal image (re)development process.
   }
 }

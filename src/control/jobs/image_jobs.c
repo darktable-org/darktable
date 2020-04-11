@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 -- 2014 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,14 +34,15 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, params->imgid, params->mip, DT_MIPMAP_BLOCKING, 'r');
 
-  // drop read lock, as this is only speculative async loading.
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
   if (buf.buf && buf.height && buf.width)
   {
     const double aspect_ratio = (double)buf.width / (double)buf.height;
-    dt_image_set_aspect_ratio_to(params->imgid, aspect_ratio);
+    dt_image_set_aspect_ratio_if_different(params->imgid, aspect_ratio, FALSE);
   }
+
+  // drop read lock, as this is only speculative async loading.
+  // moved this after the if, because the if never worked because the cache was released.
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   return 0;
 }
 
@@ -78,7 +79,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   const int id = dt_image_import(params->film_id, params->filename, TRUE);
   if(id)
   {
-    dt_view_filmstrip_set_active_image(darktable.view_manager, id);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
     dt_control_queue_redraw();
   }
 

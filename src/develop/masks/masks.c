@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 aldric renaudin.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -228,6 +228,12 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("[GRADIENT] change curvature"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
     g_strlcpy(a->name, _("[GRADIENT] change compression"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
@@ -349,8 +355,11 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
-    if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("ctrl+scroll to set shape opacity (%d%%)"), opacity);
+    if(gui->creation)
+      g_snprintf(msg, sizeof(msg),
+                 _("shift+scroll to change compression\nctrl+scroll to set opacity (%d%%)"), opacity);
+    else if(gui->form_selected)
+      g_snprintf(msg, sizeof(msg), _("scroll to set curvature, shift+scroll to change compression\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->pivot_selected)
       g_strlcat(msg, _("move to rotate shape"), sizeof(msg));
   }
@@ -429,9 +438,9 @@ void dt_masks_form_gui_points_free(gpointer data)
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)data;
 
-  free(gpt->points);
-  free(gpt->border);
-  free(gpt->source);
+  dt_free_align(gpt->points);
+  dt_free_align(gpt->border);
+  dt_free_align(gpt->source);
   free(gpt);
 }
 
@@ -443,11 +452,11 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   if(gpt)
   {
     gpt->points_count = gpt->border_count = gpt->source_count = 0;
-    free(gpt->points);
+    dt_free_align(gpt->points);
     gpt->points = NULL;
-    free(gpt->border);
+    dt_free_align(gpt->border);
     gpt->border = NULL;
-    free(gpt->source);
+    dt_free_align(gpt->source);
     gpt->source = NULL;
   }
 }
@@ -731,12 +740,13 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
   else if(form->type & DT_MASKS_GRADIENT)
   {
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
-    if(dt_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, points,
-                              points_count))
+    if(dt_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, gradient->curvature,
+                              points, points_count))
     {
       if(border)
         return dt_gradient_get_points_border(dev, gradient->anchor[0], gradient->anchor[1],
-                                             gradient->rotation, gradient->compression, border, border_count);
+                                             gradient->rotation, gradient->compression, gradient->curvature,
+                                             border, border_count);
       else
         return 1;
     }
@@ -1145,6 +1155,57 @@ static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
 }
 
 
+static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting gradient
+   * up to v4: only linear gradient (relative to input image)
+   * after v5: curved gradients
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  GList *p = g_list_first(m->points);
+
+  if(!p) return 1;
+
+  if(m->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+    gradient->curvature = 0.0f;
+  }
+
+  m->version = 5;
+
+  return 0;
+}
+
+static int dt_masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting gradient
+   * up to v5: linear transition
+   * after v5: linear or sigmoidal transition
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  GList *p = g_list_first(m->points);
+
+  if(!p) return 1;
+
+  if(m->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+    gradient->state = DT_MASKS_GRADIENT_STATE_LINEAR;
+  }
+
+  m->version = 6;
+
+  return 0;
+}
+
+
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
   int res = 1;
@@ -1155,20 +1216,35 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   }
 #endif
 
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 6)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
     if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 6)
   {
     res = dt_masks_legacy_params_v2_to_v3(dev, params);
     if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 6)
   {
     res = dt_masks_legacy_params_v3_to_v4(dev, params);
+    if(!res) res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+  }
+  else if(old_version == 4 && new_version == 6)
+  {
+    res = dt_masks_legacy_params_v4_to_v5(dev, params);
+    if(!res) res = dt_masks_legacy_params_v5_to_v6(dev, params);
+  }
+  else if(old_version == 5 && new_version == 6)
+  {
+    res = dt_masks_legacy_params_v5_to_v6(dev, params);
   }
 
   return res;
@@ -1253,7 +1329,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     dt_masks_form_t *form = dt_masks_create(type);
     form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
-    snprintf(form->name, sizeof(form->name), "%s", name);
+    g_strlcpy(form->name, name, sizeof(form->name));
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
@@ -1640,17 +1716,21 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   else if(form->type & DT_MASKS_BRUSH)
     ret = dt_brush_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
 
-  if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  if(gui)
   {
-    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-    float amount = 0.05f;
-    if(!up) amount = -amount;
+    // for brush, the opacity is the density of the masks, do not update opacity here for the brush.
+    if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    {
+      float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+      float amount = 0.05f;
+      if(!up) amount = -amount;
 
-    opacity = CLAMP(opacity + amount, 0.0f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+      opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
+      dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+    }
+
+    _set_hinter_message(gui, form);
   }
-
-  if(gui) _set_hinter_message(gui, form);
 
   return ret;
 }
@@ -1722,7 +1802,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging
-      = dev->form_gui->form_rotating = dev->form_gui->border_toggling = FALSE;
+      = dev->form_gui->form_rotating = dev->form_gui->border_toggling = dev->form_gui->gradient_toggling = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
   dev->form_gui->pivot_selected = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected = dev->form_gui->point_selected
@@ -2253,7 +2333,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     dt_iop_module_t *m = (dt_iop_module_t *)iops->data;
     if(m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      int ok = 0;
       // is the form the base group of the iop ?
       if(id == m->blend_params->mask_id)
       {
@@ -2266,6 +2345,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
         dt_masks_form_t *iopgrp = dt_masks_get_from_id(darktable.develop, m->blend_params->mask_id);
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
+          int ok = 0;
           GList *forms = g_list_first(iopgrp->points);
           while(forms)
           {
@@ -2327,7 +2407,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     if(fpt->formid == id)
     {
-      const float opacity = CLAMP(fpt->opacity + amount, 0.0f, 1.0f);
+      const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
       fpt->opacity = opacity;
       dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
       dt_masks_update_image(darktable.develop);

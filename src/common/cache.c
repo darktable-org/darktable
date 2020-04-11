@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 johannes hanika.
-    copyright (c) 2015 LebedevRI
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "config.h"
 
 #include "common/cache.h"
 #include "common/darktable.h"
@@ -109,7 +110,6 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 {
   gpointer orig_key, value;
   gboolean res;
-  int result;
   double start = dt_get_wtime();
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(
@@ -118,8 +118,8 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
-    if(mode == 'w') result = dt_pthread_rwlock_trywrlock(&entry->lock);
-    else            result = dt_pthread_rwlock_tryrdlock(&entry->lock);
+    const int result
+        = (mode == 'w') ? dt_pthread_rwlock_trywrlock(&entry->lock) : dt_pthread_rwlock_tryrdlock(&entry->lock);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
@@ -367,10 +367,26 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #if((__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && 1)
   // yes, this is *HIGHLY* unportable and is accessing implementation details.
 #ifdef _DEBUG
-  if(entry->lock.lock.__data.__nr_readers <= 1)
-#else
+
+# if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
+  if (entry->lock.lock.__data.__readers <= 1)
+# elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
+  if (entry->lock.lock.__data.__nr_readers <= 1)
+# else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+#  error "No valid reader member"
+# endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+
+#else /* _DEBUG */
+
+# if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
+  if (entry->lock.__data.__readers <= 1)
+# elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
   if(entry->lock.__data.__nr_readers <= 1)
-#endif
+# else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+#  error "No valid reader member"
+# endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
+
+#endif /* _DEBUG */
   {
     // only if there are no other reades we may poison.
     assert(entry->data_size);

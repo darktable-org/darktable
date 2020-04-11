@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2013 Tobias Ellinghaus.
-    copyright (c) 2011-2012 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +25,7 @@
 #include <cairo.h>
 
 #include "common/opencl.h"
+#include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -169,7 +169,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     fprintf(stderr, "[overexposed process] can't alloc temp image\n");
     goto cleanup;
   }
-  
+
   const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
 

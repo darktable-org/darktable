@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2016 Ulrich Pegelow.
+  Copyright (C) 2016-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -520,6 +520,12 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (v)"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (h)"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shear"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "focal length"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop factor"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "aspect adjust"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guides"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "lens model"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -530,6 +536,12 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "lens shift (v)", GTK_WIDGET(g->lensshift_v));
   dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
   dt_accel_connect_slider_iop(self, "shear", GTK_WIDGET(g->shear));
+  dt_accel_connect_slider_iop(self, "focal length", GTK_WIDGET(g->f_length));
+  dt_accel_connect_slider_iop(self, "crop factor", GTK_WIDGET(g->crop_factor));
+  dt_accel_connect_slider_iop(self, "aspect adjust", GTK_WIDGET(g->aspect));
+  dt_accel_connect_combobox_iop(self, "guides", GTK_WIDGET(g->guide_lines));
+  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->cropmode));
+  dt_accel_connect_combobox_iop(self, "lens model", GTK_WIDGET(g->mode));
 }
 
 // multiply 3x3 matrix with 3x1 vector
@@ -4984,21 +4996,21 @@ void gui_init(struct dt_iop_module_t *self)
                                               "set to zero for the generic case"));
   gtk_widget_set_tooltip_text(g->aspect, _("adjust aspect ratio of image by horizontal and vertical scaling"));
   gtk_widget_set_tooltip_text(g->fit_v, _("automatically correct for vertical perspective distortion\n"
-                                          "ctrl-click to only fit rotation\n"
-                                          "shift-click to only fit lens shift"));
+                                          "ctrl+click to only fit rotation\n"
+                                          "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_h, _("automatically correct for horizontal perspective distortion\n"
-                                          "ctrl-click to only fit rotation\n"
-                                          "shift-click to only fit lens shift"));
+                                          "ctrl+click to only fit rotation\n"
+                                          "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
                                              "horizontal perspective distortions; fitting rotation,"
                                              "lens shift in both directions, and shear\n"
-                                             "ctrl-click to only fit rotation\n"
-                                             "shift-click to only fit lens shift\n"
-                                             "ctrl-shift-click to only fit rotation and lens shift"));
+                                             "ctrl+click to only fit rotation\n"
+                                             "shift+click to only fit lens shift\n"
+                                             "ctrl+shift+click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
-                                              "ctrl-click for an additional edge enhancement\n"
-                                              "shift-click for an additional detail enhancement\n"
-                                              "ctrl-shift-click for a combination of both methods"));
+                                              "ctrl+click for an additional edge enhancement\n"
+                                              "shift+click for an additional detail enhancement\n"
+                                              "ctrl+shift+click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 

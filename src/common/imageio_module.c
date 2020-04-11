@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,8 +162,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
+    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
     module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
@@ -300,8 +299,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
+    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
     module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))

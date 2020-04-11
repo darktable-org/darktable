@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010--2011 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 #pragma once
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <inttypes.h>
+#include "common/metadata.h"
 
 typedef enum dt_collection_query_t
 {
@@ -75,29 +77,33 @@ typedef enum dt_collection_sort_t
 
 typedef enum dt_collection_properties_t
 {
-  DT_COLLECTION_PROP_FILMROLL,
+  DT_COLLECTION_PROP_FILMROLL = 0,
   DT_COLLECTION_PROP_FOLDERS,
+  DT_COLLECTION_PROP_FILENAME,
+
   DT_COLLECTION_PROP_CAMERA,
-  DT_COLLECTION_PROP_TAG,
-  DT_COLLECTION_PROP_DAY,
-  DT_COLLECTION_PROP_TIME,
-  DT_COLLECTION_PROP_HISTORY,
-  DT_COLLECTION_PROP_COLORLABEL,
-  DT_COLLECTION_PROP_TITLE,
-  DT_COLLECTION_PROP_DESCRIPTION,
-  DT_COLLECTION_PROP_CREATOR,
-  DT_COLLECTION_PROP_PUBLISHER,
-  DT_COLLECTION_PROP_RIGHTS,
   DT_COLLECTION_PROP_LENS,
-  DT_COLLECTION_PROP_FOCAL_LENGTH,
-  DT_COLLECTION_PROP_ISO,
+
   DT_COLLECTION_PROP_APERTURE,
   DT_COLLECTION_PROP_EXPOSURE,
-  DT_COLLECTION_PROP_ASPECT_RATIO,
-  DT_COLLECTION_PROP_FILENAME,
+  DT_COLLECTION_PROP_FOCAL_LENGTH,
+  DT_COLLECTION_PROP_ISO,
+
+  DT_COLLECTION_PROP_DAY,
+  DT_COLLECTION_PROP_TIME,
   DT_COLLECTION_PROP_GEOTAGGING,
-  DT_COLLECTION_PROP_GROUPING,
-  DT_COLLECTION_PROP_LOCAL_COPY
+  DT_COLLECTION_PROP_ASPECT_RATIO,
+
+  DT_COLLECTION_PROP_TAG,
+  DT_COLLECTION_PROP_COLORLABEL,
+  DT_COLLECTION_PROP_METADATA,
+  DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER,
+  DT_COLLECTION_PROP_LOCAL_COPY,
+
+  DT_COLLECTION_PROP_HISTORY,
+  DT_COLLECTION_PROP_MODULE,
+  DT_COLLECTION_PROP_ORDER,
+  DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
@@ -110,6 +116,14 @@ typedef enum dt_collection_rating_comperator_t
   DT_COLLECTION_RATING_COMP_NE = 5,
   DT_COLLECTION_RATING_N_COMPS = 6
 } dt_collection_rating_comperator_t;
+
+typedef enum dt_collection_change_t
+{
+  DT_COLLECTION_CHANGE_NONE = 0,
+  DT_COLLECTION_CHANGE_NEW_QUERY = 1, // a completly different query
+  DT_COLLECTION_CHANGE_FILTER = 2,    // base query has been finetuned (filter, ...)
+  DT_COLLECTION_CHANGE_RELOAD = 3 // we have just reload the collection after images changes (query is identical)
+} dt_collection_change_t;
 
 typedef struct dt_collection_params_t
 {
@@ -143,6 +157,8 @@ typedef struct dt_collection_t
   dt_collection_params_t store;
 } dt_collection_t;
 
+/* returns the name for the given collection property */
+const char *dt_collection_name(dt_collection_properties_t prop);
 
 /** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
@@ -214,7 +230,8 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit);
 uint32_t dt_collection_get_selected_count(const dt_collection_t *collection);
 
 /** update query by conf vars */
-void dt_collection_update_query(const dt_collection_t *collection);
+void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change,
+                                GList *list);
 
 /** updates the hint message for collection */
 void dt_collection_hint_message(const dt_collection_t *collection);
@@ -236,6 +253,9 @@ void dt_collection_shift_image_positions(const unsigned int length, const int64_
 
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);
+
+/* initialize memory table */
+void dt_collection_memory_update();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

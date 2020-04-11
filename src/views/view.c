@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011-2014 henrik andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +21,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/history.h"
+#include "common/focus_peaking.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/module.h"
@@ -34,6 +32,7 @@
 #include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -377,6 +376,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* change current view to the new view */
   vm->current_view = new_view;
 
+  /* update thumbtable accels */
+  dt_thumbtable_update_accels_connection(dt_ui_thumbtable(darktable.gui->ui), new_view->view(new_view));
+
   /* restore visible stat of panels for the new view */
   dt_ui_restore_panels(darktable.gui->ui);
 
@@ -458,6 +460,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
+
+  // update log visibility
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 
   return 0;
 }
@@ -634,19 +639,15 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
-  int film_strip_result = 0;
   if(!vm->current_view) return 0;
-  if(vm->current_view->key_pressed)
-    return vm->current_view->key_pressed(vm->current_view, key, state) || film_strip_result;
+  if(vm->current_view->key_pressed) return vm->current_view->key_pressed(vm->current_view, key, state);
   return 0;
 }
 
 int dt_view_manager_key_released(dt_view_manager_t *vm, guint key, guint state)
 {
-  int film_strip_result = 0;
   if(!vm->current_view) return 0;
-  if(vm->current_view->key_released)
-    return vm->current_view->key_released(vm->current_view, key, state) || film_strip_result;
+  if(vm->current_view->key_released) return vm->current_view->key_released(vm->current_view, key, state);
   return 0;
 }
 
@@ -674,8 +675,8 @@ void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y
   if(vm->current_view->scrollbar_changed) vm->current_view->scrollbar_changed(vm->current_view, x, y);
 }
 
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize,
-                           float vpos, float vlower, float vsize,float vwinsize)
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize, float vpos,
+                           float vlower, float vsize, float vwinsize)
 {
   if (view->vscroll_pos == vpos && view->vscroll_lower == vlower && view->vscroll_size == vsize &&
       view->vscroll_viewport_size == vwinsize && view->hscroll_pos == hpos && view->hscroll_lower == hlower &&
@@ -784,6 +785,139 @@ int32_t dt_view_get_image_to_act_on()
     else
       return mouse_over_id;
   }
+}
+// get the list of images to act on during global changes (libs, accels)
+// TODO : grouped images
+GList *dt_view_get_images_to_act_on()
+{
+  /** Here's how it works
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   **/
+
+  GList *l = NULL;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover > 0)
+  {
+    // collumn 1,2,3
+    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    {
+      // collumn 1,2
+      sqlite3_stmt *stmt;
+      gboolean inside_sel = FALSE;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        inside_sel = TRUE;
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      if(inside_sel)
+      {
+        // collumn 1
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                    &stmt, NULL);
+        while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        }
+        if(stmt) sqlite3_finalize(stmt);
+      }
+      else
+      {
+        // collumn 2
+        l = g_list_append(l, GINT_TO_POINTER(mouseover));
+      }
+    }
+    else
+    {
+      // collumn 3
+      l = g_list_append(l, GINT_TO_POINTER(mouseover));
+    }
+  }
+  else
+  {
+    // collumn 4,5
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      // collumn 5
+      GSList *ll = darktable.view_manager->active_images;
+      while(ll)
+      {
+        const int id = GPOINTER_TO_INT(ll->data);
+        l = g_list_append(l, GINT_TO_POINTER(id));
+        ll = g_slist_next(ll);
+      }
+    }
+    else
+    {
+      // collumn 4
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                  &stmt, NULL);
+      while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return l;
+}
+
+// get the main image to act on during global changes (libs, accels)
+int dt_view_get_image_to_act_on2()
+{
+  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
+   *
+   *             mouse over| x |   |   |
+   *          active images| ? |   | x |
+   *                       |   |   |   |
+   *                       | O | S | A |
+   *  First image of ...
+   *  S = selection ; O = mouseover ; A = active images
+   **/
+
+  int ret = -1;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover > 0)
+  {
+    ret = mouseover;
+  }
+  else
+  {
+    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT s.imgid FROM main.selected_images as s, memory.collected_images as c "
+                                  "WHERE s.imgid=c.imgid ORDER BY c.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        ret = sqlite3_column_int(stmt, 0);
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  return ret;
 }
 
 // Draw one of the controls that overlay thumbnails (e.g. stars) and check if the pointer is hovering it.
@@ -935,7 +1069,8 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
         cairo_restore(cr);
       }
 
-      if(active && fabs(px - x - .5 * r1) <= .8 * r1 && fabs(py - y - .5 * r1) <= .8 * r1) ret = 1;
+      // mouse is over the audio icon
+      if(active && fabs(px - x - r1) <= .9 * r1 && fabs(py - y - r1) <= .9 * r1) ret = 1;
 
       break;
     }
@@ -1003,6 +1138,162 @@ dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int
   }
 
   return DT_VIEW_DESERT;
+}
+
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface)
+{
+  // if surface not null, clean it up
+  if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
+  *surface = NULL;
+
+  // get mipmap cahe image
+  dt_mipmap_cache_t *cache = darktable.mipmap_cache;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width, height);
+
+  // if needed, we load the mimap buffer
+  dt_mipmap_buffer_t buf;
+  gboolean buf_ok = TRUE;
+  int buf_wd = 0;
+  int buf_ht = 0;
+
+  dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  buf_wd = buf.width;
+  buf_ht = buf.height;
+  if(!buf.buf)
+    buf_ok = FALSE;
+  else if(mip != buf.size)
+    buf_ok = FALSE;
+
+  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
+  // this thumbnail as missing (to trigger re-exposure)
+  if(!buf_ok && buf_wd != 8 && buf_ht != 8)
+  {
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    return 1;
+  }
+
+  // so we create a new image surface to return
+  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht);
+  const int img_width = buf_wd * scale;
+  const int img_height = buf_ht * scale;
+  *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+
+  // we transfer cahed image on a cairo_surface (with colorspace transform if needed)
+  cairo_surface_t *tmp_surface = NULL;
+  uint8_t *rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
+  if(rgbbuf)
+  {
+    gboolean have_lock = FALSE;
+    cmsHTRANSFORM transform = NULL;
+
+    if(dt_conf_get_bool("cache_color_managed"))
+    {
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      have_lock = TRUE;
+
+      // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the
+      // screen
+      if(buf.color_space == DT_COLORSPACE_SRGB && darktable.color_profiles->transform_srgb_to_display)
+      {
+        transform = darktable.color_profiles->transform_srgb_to_display;
+      }
+      else if(buf.color_space == DT_COLORSPACE_ADOBERGB && darktable.color_profiles->transform_adobe_rgb_to_display)
+      {
+        transform = darktable.color_profiles->transform_adobe_rgb_to_display;
+      }
+      else
+      {
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+        have_lock = FALSE;
+        if(buf.color_space == DT_COLORSPACE_NONE)
+        {
+          fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+        }
+        else if(buf.color_space != DT_COLORSPACE_DISPLAY && buf.color_space != DT_COLORSPACE_DISPLAY2)
+        {
+          fprintf(stderr,
+                  "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
+                  dt_colorspaces_get_name(buf.color_space, "from file"));
+        }
+      }
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
+#endif
+    for(int i = 0; i < buf.height; i++)
+    {
+      const uint8_t *in = buf.buf + i * buf.width * 4;
+      uint8_t *out = rgbbuf + i * buf.width * 4;
+
+      if(transform)
+      {
+        cmsDoTransform(transform, in, out, buf.width);
+      }
+      else
+      {
+        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        {
+          out[0] = in[2];
+          out[1] = in[1];
+          out[2] = in[0];
+        }
+      }
+    }
+    if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+    const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
+    tmp_surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, stride);
+  }
+
+  // draw the image scaled:
+  if(tmp_surface)
+  {
+    cairo_t *cr = cairo_create(*surface);
+    cairo_scale(cr, scale, scale);
+
+    cairo_set_source_surface(cr, tmp_surface, 0, 0);
+    // set filter no nearest:
+    // in skull mode, we want to see big pixels.
+    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+    // in between, filtering just makes stuff go unsharp.
+    if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    else
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
+
+    cairo_paint(cr);
+
+    if(darktable.gui->show_focus_peaking)
+      dt_focuspeaking(cr, img_width, img_height, cairo_image_surface_get_data(*surface),
+                      cairo_image_surface_get_width(*surface), cairo_image_surface_get_height(*surface));
+
+    cairo_surface_destroy(tmp_surface);
+    cairo_destroy(cr);
+  }
+
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  if(rgbbuf) free(rgbbuf);
+  return 0;
+}
+
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw)
+{
+  char* upcase = g_ascii_strup(name, -1);  // extension in capital letters to avoid character descenders
+
+  if(is_hdr)
+  {
+    gchar* fullname = g_strdup_printf("%s HDR",upcase);
+    g_free(upcase);
+    upcase = fullname;
+  }
+  if(is_bw)
+  {
+    gchar* fullname = g_strdup_printf("%s B&W",upcase);
+    g_free(upcase);
+    upcase = fullname;
+  }
+  return upcase;
 }
 
 int dt_view_image_expose(dt_view_image_expose_t *vals)
@@ -1192,7 +1483,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       ext++;
       dt_gui_gtk_set_source_rgb(cr, fontcol);
 
-      char* upcase_ext = g_ascii_strup(ext, -1);  // extension in capital letters to avoid character descenders
+      char* upcase_ext = dt_view_extend_modes_str(ext, dt_image_is_hdr(img), dt_image_is_monochrome(img));
 
       if(buf_ht > buf_wd)
       {
@@ -1333,7 +1624,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       if(zoom == 1 && !image_only)
       {
-        const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+        const int32_t tb = darktable.develop->border_size;
         scale = fminf((width - 2 * tb) / (float)buf_wd, (height - 2 * tb) / (float)buf_ht) * fz;
       }
       else
@@ -1370,7 +1661,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         int h = height;
         if(zoom == 1 && !image_only)
         {
-          const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+          const int32_t tb = darktable.develop->border_size;
           w -= 2 * tb;
           h -= 2 * tb;
         }
@@ -1412,6 +1703,16 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_rectangle(cr, rectx, recty, rectw, recth);
       cairo_fill(cr);
 
+      if(darktable.gui->show_focus_peaking)
+      {
+        cairo_save(cr);
+        cairo_rectangle(cr, rectx, recty, rectw, recth);
+        cairo_clip(cr);
+        dt_focuspeaking(cr, width, height, cairo_image_surface_get_data(surface),
+                                           cairo_image_surface_get_width(surface),
+                                           cairo_image_surface_get_height(surface));
+        cairo_restore(cr);
+      }
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
     }
 
@@ -1900,95 +2201,23 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
 }
 
-void dt_view_filmstrip_scroll_relative(const int diff, int offset)
+void dt_view_active_images_reset(gboolean raise)
 {
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  if(qin)
-  {
-    sqlite3_stmt *stmt;
+  if(g_slist_length(darktable.view_manager->active_images) < 1) return;
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-
-      if(!darktable.develop->image_loading)
-      {
-        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
-      }
-    }
-    sqlite3_finalize(stmt);
-  }
+  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
-
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate)
+void dt_view_active_images_add(int imgid, gboolean raise)
 {
-  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happen here for debugging
-  // g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
-
-  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
-    vm->proxy.filmstrip.scroll_to_image(vm->proxy.filmstrip.module, imgid, activate);
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
-
-int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
+GSList *dt_view_active_images_get()
 {
-  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happen here for debugging
-  // g_return_val_if_fail(vm->proxy.filmstrip.activated_image!=NULL, 0);
-
-  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.activated_image)
-    return vm->proxy.filmstrip.activated_image(vm->proxy.filmstrip.module);
-
-  return 0;
-}
-
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid)
-{
-  /* First off clear all selected images... */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-
-  /* clear and reset statement */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
-
-  /* setup statement and execute */
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, iid);
-  sqlite3_step(darktable.view_manager->statements.make_selected);
-
-  dt_view_filmstrip_scroll_to_image(vm, iid, TRUE);
-}
-
-void dt_view_filmstrip_prefetch()
-{
-  const gchar *qin = dt_collection_get_query(darktable.collection);
-  if(!qin) return;
-
-  int offset = 0;
-  if(qin)
-  {
-    int imgid = -1;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    offset = dt_collection_image_offset(imgid);
-  }
-
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-  // only get one more image:
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + 1);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offset + 2);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const uint32_t prefetchid = sqlite3_column_int(stmt, 0);
-    // dt_control_log("prefetching image %u", prefetchid);
-    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH, 'r');
-  }
-  sqlite3_finalize(stmt);
+  return darktable.view_manager->active_images;
 }
 
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t views)
@@ -1999,6 +2228,14 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t views)
 {
   if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
+}
+
+dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm)
+{
+  if(vm->proxy.darkroom.view)
+    return vm->proxy.darkroom.get_layout(vm->proxy.darkroom.view);
+  else
+    return DT_DARKROOM_LAYOUT_EDITING;
 }
 
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
@@ -2052,18 +2289,9 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return FALSE;
 }
 
-void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos)
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)
 {
-  if(vm->proxy.lighttable.view) vm->proxy.lighttable.set_position(vm->proxy.lighttable.view, pos);
-
-  // ugh. but will go away once module guis are persistent between views:
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", pos);
-}
-
-uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.view) return vm->proxy.lighttable.get_position(vm->proxy.lighttable.view);
-  return 0;
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.change_offset(vm->proxy.lighttable.view, reset, imgid);
 }
 
 void dt_view_collection_update(const dt_view_manager_t *vm)
@@ -2183,9 +2411,6 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
 
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(GTK_WIDGET(win));
-#endif
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
   gtk_style_context_add_class(context, "accels_window");
   gtk_window_set_title(win, _("darktable - accels window"));
@@ -2267,6 +2492,9 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
                                GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
+  // needed on macOS to avoid fullscreening the popup with newer GTK
+  gtk_window_set_type_hint(GTK_WINDOW(vm->accels_window.window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+
   gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(vm->accels_window.window);
@@ -2426,6 +2654,62 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   g_list_free_full(blocs, free);
 
   gtk_widget_show_all(vm->accels_window.flow_box);
+}
+
+static void _audio_child_watch(GPid pid, gint status, gpointer data)
+{
+  dt_view_manager_t *vm = (dt_view_manager_t *)data;
+  vm->audio.audio_player_id = -1;
+  g_spawn_close_pid(pid);
+}
+
+void dt_view_audio_start(dt_view_manager_t *vm, int imgid)
+{
+  char *player = dt_conf_get_string("plugins/lighttable/audio_player");
+  if(player && *player)
+  {
+    char *filename = dt_image_get_audio_path(imgid);
+    if(filename)
+    {
+      char *argv[] = { player, filename, NULL };
+      gboolean ret = g_spawn_async(NULL, argv, NULL,
+                                   G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL
+                                       | G_SPAWN_STDERR_TO_DEV_NULL,
+                                   NULL, NULL, &vm->audio.audio_player_pid, NULL);
+
+      if(ret)
+      {
+        vm->audio.audio_player_id = imgid;
+        vm->audio.audio_player_event_source
+            = g_child_watch_add(vm->audio.audio_player_pid, (GChildWatchFunc)_audio_child_watch, vm);
+      }
+      else
+        vm->audio.audio_player_id = -1;
+
+      g_free(filename);
+    }
+  }
+  g_free(player);
+}
+void dt_view_audio_stop(dt_view_manager_t *vm)
+{
+  // make sure that the process didn't finish yet and that _audio_child_watch() hasn't run
+  if(vm->audio.audio_player_id == -1) return;
+  // we don't want to trigger the callback due to a possible race condition
+  g_source_remove(vm->audio.audio_player_event_source);
+#ifdef _WIN32
+// TODO: add Windows code to actually kill the process
+#else  // _WIN32
+  if(vm->audio.audio_player_id != -1)
+  {
+    if(getpgid(0) != getpgid(vm->audio.audio_player_pid))
+      kill(-vm->audio.audio_player_pid, SIGKILL);
+    else
+      kill(vm->audio.audio_player_pid, SIGKILL);
+  }
+#endif // _WIN32
+  g_spawn_close_pid(vm->audio.audio_player_pid);
+  vm->audio.audio_player_id = -1;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

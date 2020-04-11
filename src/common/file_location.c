@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-static gchar *dt_loc_init_generic(const char *value, const char *default_value)
+gchar *dt_loc_init_generic(const char *value, const char *default_value)
 {
   const gchar *path = value ? value : default_value;
   gchar *result = dt_util_fix_path(path);
@@ -195,29 +195,29 @@ void dt_loc_init_datadir(const char *datadir)
 
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
 {
-  snprintf(plugindir, bufsize, "%s", darktable.plugindir);
+  g_strlcpy(plugindir, darktable.plugindir, bufsize);
 }
 
 void dt_loc_get_localedir(char *localedir, size_t bufsize)
 {
-  snprintf(localedir, bufsize, "%s", darktable.localedir);
+  g_strlcpy(localedir, darktable.localedir, bufsize);
 }
 
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)
 {
-  snprintf(configdir, bufsize, "%s", darktable.configdir);
+  g_strlcpy(configdir, darktable.configdir, bufsize);
 }
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize)
 {
-  snprintf(cachedir, bufsize, "%s", darktable.cachedir);
+  g_strlcpy(cachedir, darktable.cachedir, bufsize);
 }
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize)
 {
-  snprintf(tmpdir, bufsize, "%s", darktable.tmpdir);
+  g_strlcpy(tmpdir, darktable.tmpdir, bufsize);
 }
 void dt_loc_get_datadir(char *datadir, size_t bufsize)
 {
-  snprintf(datadir, bufsize, "%s", darktable.datadir);
+  g_strlcpy(datadir, darktable.datadir, bufsize);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

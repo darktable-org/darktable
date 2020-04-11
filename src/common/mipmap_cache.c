@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -374,7 +374,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
-      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+      snprintf(filename, sizeof(filename), "%s.d/%d/%" PRIu32 ".jpg", cache->cachedir, (int)mip,
+               get_imgid(entry->key));
       FILE *f = g_fopen(filename, "rb");
       if(f)
       {
@@ -394,7 +395,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
            || ((color_space = dt_imageio_jpeg_read_color_space(&jpg)) == DT_COLORSPACE_NONE) // pointless test to keep it in the if clause
            || dt_imageio_jpeg_decompress(&jpg, entry->data + sizeof(*dsc)))
         {
-          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d from `%s'!\n", get_imgid(entry->key), filename);
+          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %" PRIu32 " from `%s'!\n",
+                  get_imgid(entry->key), filename);
           goto read_error;
         }
         dsc->width = jpg.width;
@@ -465,7 +467,8 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         const int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
-          snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+          snprintf(filename, sizeof(filename), "%s.d/%d/%" PRIu32 ".jpg", cache->cachedir, (int)mip,
+                   get_imgid(entry->key));
           // Don't write existing files as both performance and quality (lossy jpg) suffer
           FILE *f = NULL;
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = g_fopen(filename, "wb")))
@@ -657,7 +660,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 
 static gboolean _raise_signal_mipmap_updated(gpointer user_data)
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, GPOINTER_TO_INT(user_data));
   return FALSE; // only call once
 }
 
@@ -852,7 +855,7 @@ void dt_mipmap_cache_get_with_caller(
     if(mipmap_generated)
     {
       /* raise signal that mipmaps has been flushed to cache */
-      g_idle_add(_raise_signal_mipmap_updated, 0);
+      g_idle_add(_raise_signal_mipmap_updated, GINT_TO_POINTER(imgid));
     }
 
     buf->width = dsc->width;
@@ -1130,7 +1133,8 @@ static int _bpp(dt_imageio_module_data_t *data)
 
 static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                        const gboolean export_masks)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
   memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
@@ -1156,7 +1160,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     return;
   }
 
-  const int altered = dt_image_altered(imgid);
+  const gboolean altered = dt_image_altered(imgid);
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1253,8 +1257,8 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
     // no upscaling and signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                       FALSE, TRUE, NULL, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
-                                       1, 1, NULL);
+                                       FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                       NULL, 1, 1, NULL);
     if(!res)
     {
       // might be smaller, or have a different aspect than what we got as input.

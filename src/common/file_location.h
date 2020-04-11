@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ int dt_loc_init_tmp_dir(const char *tmpdir);
 void dt_loc_init_user_config_dir(const char *configdir);
 /** get user cache dir */
 void dt_loc_init_user_cache_dir(const char *cachedir);
+/** get specific dir */
+gchar *dt_loc_init_generic(const char *value, const char *default_value);
 
 /* temporary backward_compatibility*/
 void dt_loc_get_datadir(char *datadir, size_t bufsize);

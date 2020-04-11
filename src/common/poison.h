@@ -14,8 +14,8 @@
 
 //#pragma GCC poison sprintf  // use snprintf
 #pragma GCC poison vsprintf // use vsnprintf
-#pragma GCC poison strcpy   // use g_strncpy
-//#pragma GCC poison strncpy  // use g_strncpy
+#pragma GCC poison strcpy   // use g_strlcpy
+//#pragma GCC poison strncpy  // use g_strlcpy
 #pragma GCC poison strcat  // use g_strncat
 #pragma GCC poison strncat // use g_strncat
 #pragma GCC poison pthread_create // use dt_pthread_create, musl issues

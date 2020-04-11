@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012--2013 Ulrich Pegelow.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,6 +119,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_HDR;
+  img->flags &= ~DT_IMAGE_S_RAW;
   img->flags |= DT_IMAGE_LDR;
 
   return DT_IMAGEIO_OK;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/tags.h"
+#include "common/variables.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -46,7 +47,7 @@
 #include "common/utility.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-DT_MODULE_INTROSPECTION(4, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -74,7 +75,7 @@ typedef struct dt_iop_watermark_params_t
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
   /* simple text */
-  char text[64];
+  char text[512];
   /* text color */
   float color[3];
   /* text font */
@@ -91,7 +92,7 @@ typedef struct dt_iop_watermark_data_t
   float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
-  char text[64];
+  char text[512];
   float color[3];
   char font[64];
 } dt_iop_watermark_data_t;
@@ -115,7 +116,7 @@ typedef struct dt_iop_watermark_gui_data_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -151,7 +152,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -188,7 +189,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_watermark_params_v3_t
     {
@@ -225,6 +226,53 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+    return 0;
+  }
+  else if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_watermark_params_v4_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      /** Rotation **/
+      float rotate;
+      dt_iop_watermark_base_scale_t sizeto;
+      char filename[64];
+      /* simple text */
+      char text[64];
+      /* text color */
+      float color[3];
+      /* text font */
+      char font[64];
+    } dt_iop_watermark_params_v4_t;
+
+    dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->sizeto = o->sizeto;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, o->text, sizeof(n->text));
+    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->color[0] = o->color[0];
+    n->color[1] = o->color[1];
+    n->color[2] = o->color[2];
     return 0;
   }
   return 1;
@@ -264,6 +312,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "marker"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale on"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -276,6 +326,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
   dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
   dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
+  dt_accel_connect_combobox_iop(self, "marker", GTK_WIDGET(g->watermarks));
+  dt_accel_connect_combobox_iop(self, "scale on", GTK_WIDGET(g->sizeto));
 }
 
 static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
@@ -380,7 +432,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     if (data->font[0] && data->text[0])
     {
-      g_snprintf(buffer, sizeof(buffer), "%s", data->text);
+      g_strlcpy(buffer, data->text, sizeof(buffer));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
       if(svgdoc != svgdata)
       {
@@ -392,7 +444,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       const PangoStyle font_style = pango_font_description_get_style(font);
       const int font_weight = (int)pango_font_description_get_weight(font);
 
-      g_snprintf(buffer, sizeof(buffer), "%s", pango_font_description_get_family(font));
+      g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
       if(svgdoc != svgdata)
       {
@@ -432,7 +484,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     // watermark color
     GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
-    g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
+    g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
     if(svgdoc != svgdata)
     {
@@ -810,6 +862,22 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_free(location);
 
   }
+
+  // standard calculation on the remaining variables
+  const int32_t flags = dt_lib_export_metadata_get_conf_flags();
+  dt_variables_params_t *params;
+  dt_variables_params_init(&params);
+  params->filename = image->filename;
+  params->jobcode = "infos";
+  params->sequence = 0;
+  params->imgid = image->id;
+  dt_variables_set_tags_flags(params, flags);
+  svgdoc = dt_variables_expand(params, svgdata, FALSE);
+  if(svgdoc != svgdata)
+  {
+    g_free(svgdata);
+    svgdata = svgdoc;
+  }
   return svgdoc;
 }
 
@@ -831,22 +899,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   /* setup stride for performance */
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
-  /* create cairo memory surface */
+  /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
                                                                  roi_out->height, stride);
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+  if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
-
-  /* create cairo context and setup transformation/scale */
-  cairo_t *cr = cairo_create(surface);
 
   // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -857,6 +922,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   g_free(svgdoc);
   if(!svg || error)
   {
+    cairo_surface_destroy(surface);
     g_free(image);
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -868,6 +934,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions(svg, &dimension);
+  // if no text is given dimensions are null
+  if(!dimension.width) dimension.width = 1;
+  if(!dimension.height) dimension.height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
@@ -947,6 +1016,39 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
+  /* For the rotation we need an extra cairo image as rotations are buggy  via rsvg_handle_render_cairo.
+     distortions and blurred images are obvious but you also can easily have crashes.
+  */
+
+  /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
+  const float svg_offset_x = ceilf(3.0f * scale);
+  const float svg_offset_y = ceilf(3.0f * scale);
+
+  const int watermark_width =  (int)((dimension.width  * scale) + 3* svg_offset_x);
+  const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
+
+  const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
+  guint8 *image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
+
+  cairo_surface_t *surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
+                                                                 watermark_height, stride_two);
+  if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
+  {
+    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface_two)));
+    cairo_surface_destroy(surface);
+    g_object_unref(svg);
+    g_free(image);
+    g_free(image_two);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    return;
+  }
+
+  /* create cairo context and setup transformation/scale */
+  cairo_t *cr = cairo_create(surface);
+  /* create cairo context for the scaled watermark */
+  cairo_t *cr_two = cairo_create(surface_two);
+
   // compute bounding box of rotated watermark
   const float bb_width = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
   const float bb_height = fabsf(svg_width * sinf(angle)) + fabsf(svg_height * cosf(angle));
@@ -987,16 +1089,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_rotate(cr, angle);
   cairo_translate(cr, -cX, -cY);
 
-  // now set proper scale for the watermark itself
-  cairo_scale(cr, scale, scale);
-
+  // now set proper scale and translationfor the watermark itself
+  cairo_translate(cr_two, svg_offset_x,svg_offset_y);
+  cairo_scale(cr_two, scale, scale);
   /* render svg into surface*/
-  rsvg_handle_render_cairo(svg, cr);
+  rsvg_handle_render_cairo(svg, cr_two);
+  cairo_surface_flush(surface_two);
+
+  cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);
+  cairo_paint(cr);
 
   // no more non-thread safe rsvg usage
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   cairo_destroy(cr);
+  cairo_destroy(cr_two);
 
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
@@ -1027,8 +1134,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* clean up */
   cairo_surface_destroy(surface);
+  cairo_surface_destroy(surface_two);
   g_object_unref(svg);
   g_free(image);
+  g_free(image_two);
 }
 
 static void watermark_callback(GtkWidget *tb, gpointer user_data)
@@ -1040,7 +1149,7 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename, 0, sizeof(p->filename));
   int n = dt_bauhaus_combobox_get(g->watermarks);
-  snprintf(p->filename, sizeof(p->filename), "%s", (char *)g_list_nth_data(g->watermarks_filenames, n));
+  g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1178,7 +1287,7 @@ static void text_callback(GtkWidget *entry, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  snprintf(p->text, sizeof(p->text), "%s", gtk_entry_get_text(GTK_ENTRY(entry)));
+  g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1207,7 +1316,7 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  snprintf(p->font, sizeof(p->font), "%s", gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)));
+  g_strlcpy(p->font, gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)), sizeof(p->font));
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1272,13 +1381,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->alignment = p->alignment;
   d->sizeto = p->sizeto;
   memset(d->filename, 0, sizeof(d->filename));
-  snprintf(d->filename, sizeof(d->filename), "%s", p->filename);
+  g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   memset(d->text, 0, sizeof(d->text));
-  snprintf(d->text, sizeof(d->text), "%s", p->text);
+  g_strlcpy(d->text, p->text, sizeof(d->text));
   for (int k=0; k<3; k++)
     d->color[k] = p->color[k];
   memset(d->font, 0, sizeof(d->font));
-  snprintf(d->font, sizeof(d->font), "%s", p->font);
+  g_strlcpy(d->font, p->font, sizeof(d->font));
 
 // fprintf(stderr,"Commit params: %s...\n",d->filename);
 }

@@ -17,13 +17,15 @@
   <title>Overview</title>
 
   <para>
-    darktable is an open source photography workflow application and raw developer, a virtual
+    darktable is an open source photography workflow application, image editor and raw developer, a virtual
     lighttable and darkroom for photographers.
   </para>
 
   <para>
-    It manages your digital negatives in a database, lets you view them through a zoomable
-    lighttable and enables you to develop raw images and enhance them.
+    It manages your database of digital negatives imported from various sources (including tethered shooting),
+    lets you view them through a zoomable lighttable, provides a rich collection of modules for developing
+    images, allows exporting the results to standard physical and/or digital media or demonstrating them
+    as slides on a screen. All these operations are performed via fully color-managed workflows.
   </para>
 
   <itemizedlist>
@@ -31,7 +33,7 @@
     <title>General Features</title>
 
     <listitem><para>
-      darktable runs on GNU/Linux / GTK3, Mac OS X / macports and Solaris 11 / GTK3.
+      darktable runs on GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows and Solaris 11 / GTK3.
     </para></listitem>
 
     <listitem><para>
@@ -54,8 +56,8 @@
     </para></listitem>
 
     <listitem><para>
-      Most image processing is done in CIELab color space, which is much larger than the gamut
-      of modern displays, printers or even human vision.
+      Image processing modules operate in CIELab and several popular RGB model-based color spaces,
+      which are much larger than the gamut of modern displays, printers or even human vision.
     </para></listitem>
 
     <listitem><para>
@@ -71,8 +73,8 @@
     </para></listitem>
 
     <listitem><para>
-      Import a variety of standard, raw and high dynamic range image formats (e.g. JPEG, CR2,
-      DNG, OpenEXR, PFM, ...).
+      Import a variety of standard raw, low and high dynamic range image formats (e.g. CR2,
+      DNG, JPEG, OpenEXR, PFM).
     </para></listitem>
 
     <listitem><para>
@@ -85,10 +87,9 @@
     </para></listitem>
 
     <listitem><para>
-      The powerful export system supports Google+ webalbum, flickr upload, disk storage, 1:1
-      copy, email attachments and can generate a simple html-based web gallery. darktable allows
-      you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF),
-      or linear high dynamic range (PFM, EXR) images.
+      darktable can export developed images as low or high dynamic range files (JPEG, PNG, TIFF,
+      PDF, PFM, EXR) to local disk storage, web albums, LaTeX book template,
+      email attachments, and can generate a simple html-based web gallery.
     </para></listitem>
 
     <listitem><para>
@@ -97,30 +98,29 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 60 image operation modules which cover everything from
-      basic operations, tonal value changes, color manipulation, correction of common image
-      defects to artistic effects.
+      darktable comes with more than 60 image processing modules which cover correction of
+      digital image imperfections and common defects, basic adjustments, tonal value
+      changes, color manipulation, as well as enhancements and artistic effects.
     </para></listitem>
 
     <listitem><para>
-      Many darktable modules can be combined with blending operators for even more development
-      options.
+      You can instantiate most modules multiple times and control the order in which they get applied.
     </para></listitem>
 
     <listitem><para>
-      A powerful mask feature gives you fine control on module's effect to different parts of an
-      image. You can at your choice draw a mask using various shapes or define a parametric mask
-      based on pixel values.
+      A powerful mask feature gives you fine control over how the module affects complete image
+      or its specific areas. You can select image areas by drawing a mask using various shapes,
+      or by defining a parametric mask based on pixel values.
     </para></listitem>
 
     <listitem><para>
-      Most modules can exist as multiple instances. Together with the mask feature, you can let
-      an operation have different effects on different parts of the image.
+      Flexibility of masks is further extended by the possibility to apply them in different blending
+      modes and reuse the same mask in several modules.
     </para></listitem>
 
     <listitem><para>
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
-      that always just works&trade;. It's designed as a module where the denoising performance
+      that always just works. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
       well above 200 popular camera models.
     </para></listitem>
@@ -1046,6 +1046,10 @@
         Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
       </para>
 
+      <para>
+        Left, right and bottom panels can be resized by dragging their borders.
+        Sizes and visibility of panels are stored per views.
+      </para>
     </sect2>
 
     <sect2 status="final" id="filmstrip_overview">
@@ -1057,12 +1061,11 @@
       </indexterm>
 
       <para>
-        The filmstrip along the bottom shows the same images as lighttable, with respect to
+        The filmstrip along the bottom shows the same images as lighttable filemanager, with respect to
         filters and sort order. It is turned on/off with key accelerator
         <emphasis>Ctrl+F</emphasis>. You can navigate along the filmstrip by scrolling with the
-        mouse wheel and change the height of the filmstrip panel by dragging its top. The
-        filmstrip allows you to interact with images while you are not in lighttable mode. For
-        example, you can, while developing an image in darkroom mode, switch to another image to
+        mouse wheel. The filmstrip allows you to interact with images while you are not in lighttable filemanager mode.
+        For example, you can, while developing an image in darkroom mode, switch to another image to
         develop, by double clicking the thumbnail in the filmstrip. You can also rate the images
         as you do in lighttable, copy/paste history stack, etc.
       </para>

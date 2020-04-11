@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c)2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,9 +48,6 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 
   /* update paint flags depending of states */
   int flags = DTGTK_BUTTON(widget)->icon_flags;
-
-  /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 4 : 6);
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
@@ -103,19 +100,15 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    int icon_width = text ? height - (border * 2) : width - (border * 2);
-    int icon_height = height - (border * 2);
-    void *icon_data = DTGTK_BUTTON(widget)->icon_data;
+    /* set inner border and icon size */
+    float f_border = (1 + 0.66 * (darktable.gui->dpi_factor-1)) * ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
+    int border = round(f_border);
+    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
+    int icon_height = round(height - (f_border * 2));
 
+    void *icon_data = DTGTK_BUTTON(widget)->icon_data;
     if(icon_width > 0 && icon_height > 0)
-    {
-      if(text)
-        DTGTK_BUTTON(widget)
-            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags, icon_data);
-      else
-        DTGTK_BUTTON(widget)
-            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags, icon_data);
-    }
+      DTGTK_BUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
   }
 
   /* draw label */

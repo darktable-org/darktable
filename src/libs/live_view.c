@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2012 tobias ellinghaus.
-    copyright (c) 2014 henrik andersson.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -164,7 +162,7 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_KEY_v, 0);
-  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_z, 0);
+  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_w, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);

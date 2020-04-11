@@ -193,7 +193,7 @@ if(can_build_usermanual)
     if(${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
       set(dtorg_languages en)
     else()
-      set(dtorg_languages en fr it es)
+      set(dtorg_languages en fr it es de pl)
     endif()
 
     string(REPLACE ";" " " dtorg_languages_string "${dtorg_languages}")

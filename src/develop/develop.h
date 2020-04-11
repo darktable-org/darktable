@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ typedef struct dt_dev_history_item_t
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
-  double iop_order;
+  int iop_order;
   int multi_priority;
   char multi_name[128];
   GList *forms; // snapshot of dt_develop_t->forms
@@ -52,6 +52,16 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_REDBLUE = 1,
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
+
+typedef enum dt_dev_overlay_colors_t
+{
+  DT_DEV_OVERLAY_GRAY = 0,
+  DT_DEV_OVERLAY_RED = 1,
+  DT_DEV_OVERLAY_GREEN = 2,
+  DT_DEV_OVERLAY_YELLOW = 3,
+  DT_DEV_OVERLAY_CYAN = 4,
+  DT_DEV_OVERLAY_MAGENTA = 5
+} dt_dev_overlay_colors_t;
 
 typedef enum dt_dev_rawoverexposed_mode_t {
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
@@ -109,7 +119,8 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
 extern const gchar *dt_dev_histogram_type_names[];
@@ -179,11 +190,8 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
-      histogram_waveform_stride;
-  // we should process the waveform histogram in the correct size to make it not look like crap. since this
-  // requires gui knowledge we need this mutex
-  //   dt_pthread_mutex_t histogram_waveform_mutex;
+  uint8_t *histogram_waveform;
+  uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
@@ -199,6 +207,10 @@ typedef struct dt_develop_t
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
+
+  // darkroom border size
+  int32_t border_size;
+  int32_t orig_width, orig_height;
 
   /* proxy for communication between plugins and develop/darkroom */
   struct
@@ -269,6 +281,23 @@ typedef struct dt_develop_t
     dt_dev_rawoverexposed_colorscheme_t colorscheme;
     float threshold;
   } rawoverexposed;
+
+  // for the overlay color indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button, *colors; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_overlay_colors_t color;
+  } overlay_color;
+
+  // ISO 12646-compliant colour assessment conditions
+  struct
+  {
+    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
+    gboolean enabled;
+  } iso_12646;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
@@ -414,8 +443,6 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
-/* returns the iop-module found in list with the given name */
-struct dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op);
 
 /*
  * distort functions

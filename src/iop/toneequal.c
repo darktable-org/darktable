@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018-2019 Aurélien Pierre.
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,6 @@
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 #include "iop/choleski.h"
-#include "libs/colorpicker.h"
 #include "common/iop_group.h"
 
 #ifdef _OPENMP
@@ -324,6 +323,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "luminance estimator"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve details"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -345,7 +346,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
   dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
   dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
-
+  dt_accel_connect_combobox_iop(self, "luminance estimator", GTK_WIDGET(g->method));
+  dt_accel_connect_combobox_iop(self, "preserve details", GTK_WIDGET(g->details));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -549,7 +551,7 @@ static int sanity_check(dt_iop_module_t *self)
   // so the interactive editing will fail. Disable the module and issue a warning then.
 
   const double position_self = self->iop_order;
-  const double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip");
+  const double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip", 0);
 
   if(position_self < position_min && self->enabled)
   {
@@ -752,7 +754,8 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
  **/
 
 __DT_CLONE_TARGETS__
-static inline void display_luminance_mask(const float *const restrict luminance,
+static inline void display_luminance_mask(const float *const restrict in,
+                                          const float *const restrict luminance,
                                           float *const restrict out,
                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                           const size_t ch)
@@ -769,13 +772,14 @@ static inline void display_luminance_mask(const float *const restrict luminance,
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luminance, out, in_width, out_width, out_height, offset_x, offset_y, ch) \
-schedule(static) aligned(luminance, out:64) collapse(3)
+dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
+schedule(static) aligned(luminance, out, in:64) collapse(3)
 #endif
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
       for(size_t c = 0; c < ch; ++c)
-        out[(i * out_width + j) * ch + c] = luminance[(i + offset_y) * in_width  + (j + offset_x)];
+        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
+                                                     : luminance[(i + offset_y) * in_width  + (j + offset_x)];
 }
 
 
@@ -803,8 +807,9 @@ static inline void apply_exposure(const float *const restrict in, float *const r
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
       for(size_t c = 0; c < ch; ++c)
-        out[(i * out_width + j) * ch + c] = in[((i + offset_y) * in_width + (j + offset_x)) * ch + c] *
-                                            correction[(i + offset_y) * in_width + (j + offset_x)];
+        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]  // pass-through alpha mask
+                                                     : in[((i + offset_y) * in_width + (j + offset_x)) * ch + c] *
+                                                       correction[(i + offset_y) * in_width + (j + offset_x)];
 }
 
 
@@ -1010,7 +1015,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     if(g->mask_display)
-      display_luminance_mask(luminance, out, roi_in, roi_out, ch);
+      display_luminance_mask(in, luminance, out, roi_in, roi_out, ch);
     else
       apply_toneequalizer(in, luminance, out, roi_in, roi_out, ch, d);
   }
@@ -1021,8 +1026,6 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   if(!cached) dt_free_align(luminance);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(in, out, roi_out->width, roi_out->height);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1254,35 +1257,31 @@ static inline void compute_log_histogram(const float *const restrict luminance,
                                           const size_t num_elem,
                                           int *max_histogram)
 {
-  // Compute an histogram of exposures, in log
-  int temp_max_histogram = 0;
-
   // (Re)init the histogram
-#ifdef _OPENMP
-#pragma omp for simd schedule(simd:static) aligned(histogram:64)
-#endif
-  for(int k = 0; k < UI_SAMPLES; k++)
-    histogram[k] = 0;
+  memset(histogram, 0, sizeof(int) * UI_SAMPLES);
 
   // Split exposure in bins
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(simd:static) \
   dt_omp_firstprivate(luminance, num_elem) \
-  shared(temp_max_histogram, histogram)
+  reduction(+:histogram[:UI_SAMPLES])
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
     // the histogram shows bins between [-14; +2] EV remapped between [0 ; UI_SAMPLES[
     const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
     histogram[index] += 1;
-
-    // store the max numbers of elements in bins for later normalization
-    temp_max_histogram = (histogram[index] > temp_max_histogram) ? histogram[index] : temp_max_histogram;
   }
 
-  *max_histogram = temp_max_histogram;
-}
+  *max_histogram = 0;
 
+  for(int k = 0; k < UI_SAMPLES; k++)
+  {
+    // store the max numbers of elements in bins for later normalization
+    if(histogram[k] > *max_histogram)
+      *max_histogram = histogram[k];
+  }
+}
 
 
 static inline void histogram_deciles(const int histogram[UI_SAMPLES], size_t hist_bins, size_t num_elem,
@@ -2054,7 +2053,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
 
   // check if module is enabled and shown in UI
   dt_pthread_mutex_lock(&g->lock);
-  g->has_focus = (dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) && self->enabled);
+  g->has_focus = (self->expanded && self->enabled);
   dt_pthread_mutex_unlock(&g->lock);
 
   if(!g->has_focus)
@@ -3146,7 +3145,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(g == NULL) return;
   switch_cursors(self);
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled)
+  if(!self->expanded || !self->enabled)
   {
     // if module is not active, disable mask preview
     dt_pthread_mutex_lock(&g->lock);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 johannes hanika.
+    Copyright (C) 2013-2020 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -278,7 +278,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
     dt_dev_cleanup(&dev);
   }
 
-  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = darktable.develop->border_size;
   const float scale = fminf((width - 2 * tb) / (float)wd, (height - 2 * tb) / (float)ht) * full_zoom;
   cairo_scale(cr, scale, scale);
   float fx = 0.0f;

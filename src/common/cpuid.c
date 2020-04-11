@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,122 +25,56 @@
         Anders Kvist <akv@lnxbx.dk> and Klaus Post <klauspost@gmail.com>
  */
 
+#include "config.h"
 #include "cpuid.h"
 #include "common/darktable.h"
-#include "config.h"
 #include <glib.h>
 
-#if defined(__i386__) || defined(__x86_64__)
-
-#ifdef __x86_64__
-#define R_AX "rax"
-#define R_BX "rbx"
-#define R_CX "rcx"
-#define R_DX "rdx"
-#else
-#define R_AX "eax"
-#define R_BX "ebx"
-#define R_CX "ecx"
-#define R_DX "edx"
+#ifdef HAVE_CPUID_H
+#include <cpuid.h>
 #endif
 
+#if defined(HAVE___GET_GPUID)
 dt_cpu_flags_t dt_detect_cpu_features()
 {
-#define cpuid(cmd) \
-  __asm volatile("push %%" R_BX "\n"                                                                         \
-                 "cpuid\n"                                                                                   \
-                 "pop %%" R_BX "\n"                                                                          \
-                 : "=a"(ax), "=c"(cx), "=d"(dx)                                                              \
-                 : "0"(cmd))
-
-#ifdef __x86_64__
-  guint64 ax, cx, dx, tmp;
-#else
-  guint32 ax, cx, dx, tmp;
-#endif
-
-  static dt_cpu_flags_t cpuflags = -1;
+  guint32 ax, bx, cx, dx;
+  static dt_cpu_flags_t cpuflags = 0;
   static GMutex lock;
 
   g_mutex_lock(&lock);
-  if(cpuflags == (dt_cpu_flags_t)-1)
+  if(__get_cpuid(0x00000000,&ax,&bx,&cx,&dx))
   {
-    cpuflags = 0;
-
-    /* Test cpuid presence by checking bit 21 of eflags */
-    __asm volatile("pushf\n"
-                   "pop     %0\n"
-                   "mov     %0, %1\n"
-                   "xor     $0x00200000, %0\n"
-                   "push    %0\n"
-                   "popf\n"
-                   "pushf\n"
-                   "pop     %0\n"
-                   "cmp     %0, %1\n"
-                   "setne   %%al\n"
-                   "movzb   %%al, %0\n"
-                   : "=r"(ax), "=r"(tmp));
-
-    if(ax)
+    /* Request for standard features */
+    if(__get_cpuid(0x00000001,&ax,&bx,&cx,&dx))
     {
-      /* Get the standard level */
-      cpuid(0x00000000);
+      if(dx & 0x00800000) cpuflags |= CPU_FLAG_MMX;
+      if(dx & 0x02000000) cpuflags |= CPU_FLAG_SSE;
+      if(dx & 0x04000000) cpuflags |= CPU_FLAG_SSE2;
+      if(dx & 0x00008000) cpuflags |= CPU_FLAG_CMOV;
 
-      if(ax)
+      if(cx & 0x00000001) cpuflags |= CPU_FLAG_SSE3;
+      if(cx & 0x00000200) cpuflags |= CPU_FLAG_SSSE3;
+      if(cx & 0x00040000) cpuflags |= CPU_FLAG_SSE4_1;
+      if(cx & 0x00080000) cpuflags |= CPU_FLAG_SSE4_2;
+
+      if(cx & 0x08000000) cpuflags |= CPU_FLAG_AVX;
+    }
+
+    /* Are there extensions? */
+    if (__get_cpuid(0x80000000,&ax,&bx,&cx,&dx))
+    {
+      /* Ask extensions */
+      if (__get_cpuid(0x80000001,&ax,&bx,&cx,&dx))
       {
-        /* Request for standard features */
-        cpuid(0x00000001);
-
-        if(dx & 0x00800000) cpuflags |= CPU_FLAG_MMX;
-        if(dx & 0x02000000) cpuflags |= CPU_FLAG_SSE;
-        if(dx & 0x04000000) cpuflags |= CPU_FLAG_SSE2;
-        if(dx & 0x00008000) cpuflags |= CPU_FLAG_CMOV;
-
-        if(cx & 0x00000001) cpuflags |= CPU_FLAG_SSE3;
-        if(cx & 0x00000200) cpuflags |= CPU_FLAG_SSSE3;
-        if(cx & 0x00040000) cpuflags |= CPU_FLAG_SSE4_1;
-        if(cx & 0x00080000) cpuflags |= CPU_FLAG_SSE4_2;
-      }
-
-      /* Are there extensions? */
-      cpuid(0x80000000);
-
-      if(ax)
-      {
-        /* Ask extensions */
-        cpuid(0x80000001);
-
         if(dx & 0x80000000) cpuflags |= CPU_FLAG_3DNOW;
         if(dx & 0x40000000) cpuflags |= CPU_FLAG_3DNOW_EXT;
         if(dx & 0x00400000) cpuflags |= CPU_FLAG_AMD_ISSE;
       }
     }
+    fprintf(stderr,"\nfound cpuid instruction, dtflags %x",cpuflags);
   }
   g_mutex_unlock(&lock);
-
-#if 0
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-#define report(a, x) dt_print(DT_DEBUG_PERF, "CPU Feature: " a " = %d\n", !!(cpuflags & x));
-    report("MMX", CPU_FLAG_MMX);
-    report("SSE", CPU_FLAG_SSE);
-    report("CMOV", CPU_FLAG_CMOV);
-    report("3DNOW", CPU_FLAG_3DNOW);
-    report("3DNOW_EXT", CPU_FLAG_3DNOW_EXT);
-    report("Integer SSE", CPU_FLAG_AMD_ISSE);
-    report("SSE2", CPU_FLAG_SSE2);
-    report("SSE3", CPU_FLAG_SSE3);
-    report("SSSE3", CPU_FLAG_SSSE3);
-    report("SSE4.1", CPU_FLAG_SSE4_1);
-    report("SSE4.2", CPU_FLAG_SSE4_2);
-    report("AVX", CPU_FLAG_AVX);
-#undef report
-  }
-#endif
-
   return cpuflags;
-
-#undef cpuid
 }
 #else
 dt_cpu_flags_t dt_detect_cpu_features()

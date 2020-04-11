@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2019 philippe weyland
+ *    Copyright (C) 2019-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  *    You should have received a copy of the GNU General Public License
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "common/iop_profile.h"
 
  typedef enum dt_iop_rgb_norms_t
  {

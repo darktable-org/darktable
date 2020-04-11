@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2017 pascal obry.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,7 +147,8 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       const gboolean export_masks)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
@@ -238,13 +239,14 @@ static int _print_job_run(dt_job_t *job)
 
   const gboolean high_quality = TRUE;
   const gboolean upscale = TRUE;
+  const gboolean export_masks = FALSE;
   const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid,
                                                                                         params->buf_icc_type,
                                                                                         params->buf_icc_profile);
 
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
-                               high_quality, upscale, FALSE, NULL, FALSE, params->buf_icc_type, params->buf_icc_profile,
-                               params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
+                               high_quality, upscale, FALSE, NULL, FALSE, export_masks, params->buf_icc_type,
+                               params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -358,7 +360,7 @@ static int _print_job_run(dt_job_t *job)
   guint tagid = 0;
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach_from_gui(tagid, params->imgid);
+  dt_tag_attach_from_gui(tagid, params->imgid, FALSE, FALSE);
 
   return 0;
 }
@@ -383,7 +385,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  int imgid = -1;
+  if(g_slist_length(dt_view_active_images_get()) > 0)
+    imgid = GPOINTER_TO_INT(g_slist_nth_data(dt_view_active_images_get(), 0));
 
   if (imgid == -1)
   {
@@ -1007,12 +1011,12 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-static void _print_settings_activate_or_update_callback(gpointer instance,gpointer user_data)
+static void _print_settings_activate_or_update_callback(gpointer instance, int imgid, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  ps->image_id = imgid;
   ps->iwidth = ps->iheight = 0;
   _set_orientation (ps);
 }
@@ -1082,10 +1086,8 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 {
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_activate_or_update_callback),
-                            self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_print_settings_activate_or_update_callback), self);
 
   // when an updated mipmap, we may have new orientation information
   // about the current image. This updates the image_id as well and

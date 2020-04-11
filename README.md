@@ -53,6 +53,7 @@ There is a [comprehensive list](https://redmine.darktable.org/projects/darktable
 Wiki
 ----
 
+* [GitHub wiki](https://github.com/darktable-org/darktable/wiki "github wiki")
 * [User wiki](https://www.darktable.org/redmine/projects/users/wiki "darktable user wiki")
 * [Developer wiki](https://www.darktable.org/redmine/projects/darktable/wiki "darktable developer wiki")
 

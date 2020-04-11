@@ -1,6 +1,6 @@
 /*
  *   This file is part of darktable,
- *   copyright (c) 2014 tobias ellinghaus.
+ *   Copyright (C) 2014-2020 darktable developers.
  * 
  *   darktable is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ void dt_osx_disallow_fullscreen(GtkWidget *widget);
 gboolean dt_osx_file_trash(const char *filename, GError **error);
 char* dt_osx_get_bundle_res_path();
 void dt_osx_prepare_environment();
+void dt_osx_focus_window();
 
 #ifdef __cplusplus
 }

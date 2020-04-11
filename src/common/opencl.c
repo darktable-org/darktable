@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2011--2017 Ulrich Pegelow.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,7 +125,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 error:
   free(*param_value);
   *param_value = NULL;
-  param_value_size = 0;
+  *param_value_size = 0;
   return err;
 }
 
@@ -578,6 +577,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
+  str = dt_conf_get_string("opencl_scheduling_profile");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_scheduling_profile: '%s'\n", str);
+  g_free(str);
   str = dt_conf_get_string("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
   g_free(str);
@@ -764,7 +766,7 @@ finally:
     char *oldchecksum = dt_conf_get_string("opencl_checksum");
 
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
-    if(strcmp(oldchecksum, checksum) != 0)
+    if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
     {
       // store new checksum value in config
       dt_conf_set_string("opencl_checksum", checksum);
@@ -1375,12 +1377,12 @@ static void dt_opencl_update_priorities(const char *configstr)
   dt_opencl_priorities_parse(cl, configstr);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] these are your device priorities:\n");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\tpreview2\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbs\tpreview2\n");
   for(int i = 0; i < cl->num_devs; i++)
     dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
              cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i], cl->dev_priority_preview2[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] show if opencl use is mandatory for a given pixelpipe:\n");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\tpreview2\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbs\tpreview2\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
              cl->mandatory[1], cl->mandatory[2], cl->mandatory[3], cl->mandatory[4]);
 }
@@ -1607,19 +1609,19 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
 
-  len = snprintf(start, end - start, "%s", cl->dev[dev].options);
+  len = g_strlcpy(start, cl->dev[dev].options, end - start);
   start += len;
 
   /* make sure that the md5sums of all the includes are applied as well */
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
   {
     if(!includemd5[n]) continue;
-    len = snprintf(start, end - start, "%s", includemd5[n]);
+    len = g_strlcpy(start, includemd5[n], end - start);
     start += len;
   }
 
   char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
-  strncpy(md5sum, source_md5, 33);
+  g_strlcpy(md5sum, source_md5, 33);
   g_free(source_md5);
 
   file[filesize] = '\0';
@@ -1980,8 +1982,9 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   int err;
   char buf[256];
   buf[0] = '\0';
-  (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf,
-                                           NULL);
+  if(darktable.unmuted & DT_DEBUG_OPENCL)
+    (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf,
+                                            NULL);
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
@@ -2410,6 +2413,9 @@ int dt_opencl_get_image_element_size(cl_mem mem)
 
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
 {
+  if(!((darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL)))
+    return;
+
   if(devid < 0)
     devid = dt_opencl_get_mem_context_id(mem);
 
@@ -2601,11 +2607,11 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
   switch(profile)
   {
     case OPENCL_PROFILE_MULTIPLE_GPUS:
-      dt_opencl_update_priorities("*/*/*/*");
+      dt_opencl_update_priorities("*/*/*/*/*");
       dt_opencl_set_synchronization_timeout(20);
       break;
     case OPENCL_PROFILE_VERYFAST_GPU:
-      dt_opencl_update_priorities("+*/+*/+*/+*");
+      dt_opencl_update_priorities("+*/+*/+*/+*/+*");
       dt_opencl_set_synchronization_timeout(0);
       break;
     case OPENCL_PROFILE_DEFAULT:

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Robert Bieber, Johannes Hanika, Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ static void _update_picker_output(dt_lib_module_t *self)
   dt_lib_colorpicker_t *data = self->data;
   char text[128] = { 0 };
   char tooltip[128] = { 0 };
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
     const int reset = darktable.gui->reset;
@@ -175,10 +175,13 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d   (0x%02X%02X%02X)",
                  (int)round(rgb[0] * 255.f),
                  (int)round(rgb[1] * 255.f),
-                 (int)round(rgb[2] * 255.f));
+                 (int)round(rgb[2] * 255.f),
+                 (int)round(data->rgb.red   * 255.f),
+                 (int)round(data->rgb.green * 255.f),
+                 (int)round(data->rgb.blue  * 255.f));
         snprintf(text, sizeof(text), "%3d %3d %3d",
                  (int)round(data->rgb.red   * 255.f),
                  (int)round(data->rgb.green * 255.f),
@@ -201,7 +204,7 @@ static void _picker_button_toggled(GtkToggleButton *button, gpointer p)
   dt_lib_colorpicker_t *data = ((dt_lib_module_t *)p)->data;
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
   if(darktable.gui->reset) return;
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
     dt_iop_request_focus(module);
@@ -290,10 +293,13 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
-        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d",
+        snprintf(tooltip, sizeof(tooltip), "%3d   %3d   %3d   (0x%02X%02X%02X)",
                  (int)round(rgb[0] * 255.f),
                  (int)round(rgb[1] * 255.f),
-                 (int)round(rgb[2] * 255.f));
+                 (int)round(rgb[2] * 255.f),
+                 (int)round(sample->rgb.red   * 255.f),
+                 (int)round(sample->rgb.green * 255.f),
+                 (int)round(sample->rgb.blue  * 255.f));
         snprintf(text, sizeof(text), "%3d %3d %3d",
                  (int)round(sample->rgb.red   * 255.f),
                  (int)round(sample->rgb.green * 255.f),
@@ -375,7 +381,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
   darktable.lib->proxy.colorpicker.live_samples
       = g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
-  dt_iop_module_t *module = get_colorout_module();
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
   int i;
 
   sample->locked = 0;

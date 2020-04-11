@@ -66,7 +66,14 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
+#cmakedefine HAVE_CPUID_H 1
+#cmakedefine HAVE___GET_CPUID 1
+
 #cmakedefine HAVE_OMP_FIRSTPRIVATE_WITH_CONST 1
+
+#cmakedefine HAVE_THREAD_RWLOCK_ARCH_T_READERS 1
+
+#cmakedefine HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS 1
 
 /******************************************************************************
  * OpenCL target settings

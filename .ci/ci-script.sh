@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #    This file is part of darktable.
 #    copyright (c) 2016 Roman Lebedev.
@@ -27,15 +27,31 @@
 
 set -ex
 
-PARALLEL="-j2"
+CMAKE_BUILD_TYPE="RelWithDebInfo"
+GENERATOR="Ninja"
+VERBOSE="-v"
+KEEPGOING="-k0"
+
+if [ "$GENERATOR" = "Unix Makefiles" ];
+then
+  VERBOSE="VERBOSE=1";
+  KEEPGOING="-k"
+fi;
+
+if [ -z "${MAKEFLAGS+x}" ];
+then
+  MAKEFLAGS="-j2 $VERBOSE"
+fi
 
 target_build()
 {
   # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $PARALLEL -v || cmake --build "$BUILD_DIR" -- -j1 -v -k0
+  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+
+  ctest --output-on-failure || ctest --rerun-failed -V -VV
 
   # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $PARALLEL -v || cmake --build "$BUILD_DIR" --target install -- -j1 -v -k0
+  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
 }
 
 target_usermanual()
@@ -48,25 +64,29 @@ target_usermanual()
   # ls -lah doc/usermanual/darktable-usermanual.pdf
 }
 
-du -hcs "$SRC_DIR"
-du -hcs "$BUILD_DIR"
-du -hcs "$INSTALL_PREFIX"
+diskspace()
+{
+  df
+  du -hcs "$SRC_DIR"
+  du -hcs "$BUILD_DIR"
+  du -hcs "$INSTALL_PREFIX"
+}
+
+diskspace
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo $ECO -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" -DVALIDATE_APPDATA_FILE=ON -DBUILD_TESTING=ON "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
 case "$TARGET" in
-  "usermanual")
-    target_usermanual
-    ;;
   "build")
     target_build
+    ;;
+  "usermanual")
+    target_usermanual
     ;;
   *)
     exit 1
     ;;
 esac
 
-du -hcs "$SRC_DIR"
-du -hcs "$BUILD_DIR"
-du -hcs "$INSTALL_PREFIX"
+diskspace

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017-2019 Heiko Bauke.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
 #ifdef HAVE_OPENCL
@@ -115,6 +116,19 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "distance"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
+  dt_accel_connect_slider_iop(self, "distance", GTK_WIDGET(g->distance));
+}
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -743,7 +757,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   const float *const c_A0 = A0;
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
@@ -994,7 +1008,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
 
   dt_opencl_release_mem_object(trans_map);

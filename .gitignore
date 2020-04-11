@@ -11,4 +11,10 @@ tools/iop_deps.pdf
 cscope.out
 .*.swp
 .vscode/
-
+.clangd/
+tags
+cscope.*
+compile_commands.json
+.cproject
+.project
+.settings/

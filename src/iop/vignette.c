@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -457,10 +457,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                       -vignette_fy, zoom_scale);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
-  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  dt_draw_set_color_overlay(cr, 0.3, 0.8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  dt_draw_set_color_overlay(cr, 0.8, 0.8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
 }
 
@@ -560,7 +560,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     else if(grab == 2) // change the width
     {
       float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
-      float new_vignette_w = MIN(bigger_side * 0.5, MAX(0.1, pzx * wd - vignette_x));
+      float new_vignette_w = MIN(bigger_side, MAX(0.1, pzx * wd - vignette_x));
       float ratio = new_vignette_w / vignette_h;
       float new_scale = 100.0 * new_vignette_w / max;
       // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly
@@ -590,7 +590,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     }
     else if(grab == 4) // change the height
     {
-      float new_vignette_h = MIN(bigger_side * 0.5, MAX(0.1, vignette_y - pzy * ht));
+      float new_vignette_h = MIN(bigger_side, MAX(0.1, vignette_y - pzy * ht));
       float ratio = new_vignette_h / vignette_w;
       float max = 0.5 * ((ratio <= 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
       // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly
@@ -1138,7 +1138,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
-  g->scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->scale, 2);
+  g->scale = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.5, p->scale, 2);
   g->falloff_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->falloff_scale, 2);
   g->brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->brightness, 3);
   g->saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->saturation, 3);

@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +73,11 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_DISPLAY2 = 19,
   DT_COLORSPACE_REC709 = 20,
   DT_COLORSPACE_PROPHOTO_RGB = 21,
-  DT_COLORSPACE_LAST = 22
+  DT_COLORSPACE_PQ_REC2020 = 22,
+  DT_COLORSPACE_HLG_REC2020 = 23,
+  DT_COLORSPACE_PQ_P3 = 24,
+  DT_COLORSPACE_HLG_P3 = 25,
+  DT_COLORSPACE_LAST = 26
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t

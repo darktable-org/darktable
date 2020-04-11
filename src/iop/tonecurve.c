@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2014 johannes hanika.
-    copyright (c) 2014 Ulrich Pegelow.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
@@ -203,6 +203,26 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "base of the logarithm"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation method"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color space"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "base of the logarithm", GTK_WIDGET(g->logbase));
+  dt_accel_connect_combobox_iop(self, "interpolation method", GTK_WIDGET(g->interpolator));
+  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->preserve_colors));
+  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
+  dt_accel_connect_combobox_iop(self, "color space", GTK_WIDGET(g->autoscale_ab));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
