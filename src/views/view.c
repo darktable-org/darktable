@@ -87,6 +87,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   }
 
   vm->current_view = NULL;
+  vm->audio.audio_player_id = -1;
 }
 
 void dt_view_manager_gui_init(dt_view_manager_t *vm)
