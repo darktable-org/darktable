@@ -989,9 +989,9 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
   //we consider dalight wb to be "reference white"
   const double white[3] = {
-    1/g->daylight_wb[0],
-    1/g->daylight_wb[1],
-    1/g->daylight_wb[2],
+    1.0/g->daylight_wb[0],
+    1.0/g->daylight_wb[1],
+    1.0/g->daylight_wb[2],
   };
   // reflect actual black body colors for the temperature slider (or not)
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -1005,7 +1005,15 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       // TODO: this SHOULD take tint into account!
       const cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
       float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
-      dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
+      //dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
+      dt_XYZ_to_sRGB(XYZ, sRGB);
+
+      const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
+
+      for(int ch=0; ch<3; ch++){
+        sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+      }
+
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
     }
     else
@@ -1019,7 +1027,14 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       coeffs[3] /= coeffs[1];
       coeffs[1] = 1.0;
 
-      dt_bauhaus_slider_set_stop(g->scale_k, stop, white[0]*coeffs[0], white[1]*coeffs[1], white[2]*coeffs[2]);
+      float sRGB[3] = { white[0]*coeffs[0], white[1]*coeffs[1], white[2]*coeffs[2] };
+      const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
+
+      for(int ch=0; ch<3; ch++){
+        sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+      }
+
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
     }
   }
 
