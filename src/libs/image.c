@@ -260,9 +260,16 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   }
   if(dttag_flag)
   {
-    GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid);
-    dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
-    g_list_free(tags);
+    if(action == DT_MA_CLEAR)
+    {
+      dt_tag_clear(img, TRUE, TRUE);
+    }
+    else
+    {
+      GList *tags = dt_tag_get_tags(imageid, FALSE);
+      dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
+      g_list_free(tags);
+    }
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 
