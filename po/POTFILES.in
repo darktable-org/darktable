@@ -130,6 +130,7 @@ src/iop/lowpass.c
 src/iop/lut3d.c
 src/iop/mask_manager.c
 src/iop/monochrome.c
+src/iop/negadoctor.c
 src/iop/nlmeans.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
