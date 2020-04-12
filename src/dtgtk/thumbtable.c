@@ -1013,6 +1013,7 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 
   if(g_slist_length(darktable.view_manager->active_images) == 0) return;
   int activeid = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+  printf("change offset\n");
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
 
