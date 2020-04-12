@@ -274,7 +274,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     if(which == 1
        && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs) && yp > 0.5 - hhs
             && yp < 0.5 + hhs)
-           || ((yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs) && xp > 0.5 - hhs && xp < 0.5 + hhs)))
+           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs) && xp > 0.5 - hhs && xp < 0.5 + hhs)))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
