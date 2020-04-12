@@ -117,7 +117,7 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_culling_t *table)
   g_free(query);
   sqlite3_finalize(stmt);
   return id;
-}
+}*/
 // get rowid from imgid
 static int _thumb_get_rowid(int imgid)
 {
@@ -132,7 +132,7 @@ static int _thumb_get_rowid(int imgid)
   g_free(query);
   sqlite3_finalize(stmt);
   return id;
-}*/
+}
 
 // compute thumb_size, thumbs_per_row and rows for the current widget size
 // return TRUE if something as changed (or forced) FALSE otherwise
@@ -816,6 +816,15 @@ else
 }*/
 }
 
+static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_data)
+{
+  if(!user_data || imgid <= 0) return;
+  dt_culling_t *table = (dt_culling_t *)user_data;
+
+  table->offset = _thumb_get_rowid(imgid);
+  dt_culling_full_redraw(table, TRUE);
+}
+
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
   dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
@@ -862,6 +871,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                             G_CALLBACK(_dt_profile_change_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
                             table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_dt_filmstrip_change), table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -943,7 +954,7 @@ void dt_culling_init(dt_culling_t *table)
      && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
   {
     table->selection_sync = TRUE;
-    table->offset = first_id;
+    table->offset = _thumb_get_rowid(first_id);
     return;
   }
 
@@ -993,31 +1004,23 @@ void dt_culling_init(dt_culling_t *table)
     }
   }
 
-  table->offset = first_id;
+  table->offset = _thumb_get_rowid(first_id);
 }
 
-static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_first_image)
+static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 {
   gchar *query = NULL;
   sqlite3_stmt *stmt;
-  gchar *rowid_txt = NULL;
-  if(display_first_image >= 0)
-  {
-    rowid_txt = dt_util_dstrcat(NULL, "(SELECT rowid FROM memory.collected_images WHERE imgid = %d)",
-                                display_first_image);
-  }
-  else
-    rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
 
   if(table->navigate_inside_selection)
   {
     query = dt_util_dstrcat(NULL,
                             "SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
-                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s "
+                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %d "
                             "ORDER BY m.rowid "
                             "LIMIT %d",
-                            rowid_txt, table->thumbs_count);
+                            offset, table->thumbs_count);
   }
   else
   {
@@ -1025,13 +1028,13 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_
                             "SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM (SELECT rowid, imgid "
                             "FROM memory.collected_images "
-                            "WHERE rowid < %s + %d "
+                            "WHERE rowid < %d + %d "
                             "ORDER BY rowid DESC "
                             "LIMIT %d) AS m, "
                             "images AS b "
                             "WHERE m.imgid = b.id "
                             "ORDER BY m.rowid",
-                            rowid_txt, table->thumbs_count, table->thumbs_count);
+                            offset, table->thumbs_count, table->thumbs_count);
   }
 
   GList *newlist = NULL;
@@ -1079,10 +1082,10 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_
     query = dt_util_dstrcat(NULL,
                             "SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
-                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %s "
+                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %d "
                             "ORDER BY m.rowid DESC "
                             "LIMIT %d",
-                            rowid_txt, nb);
+                            offset, nb);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
     {
@@ -1122,8 +1125,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int display_
     }
     g_free(query);
   }
-
-  g_free(rowid_txt);
 
   // now we cleanup all remaining thumbs from old table->list and set it again
   g_list_free_full(table->list, _list_remove_thumb);
@@ -1319,34 +1320,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     l = g_list_next(l);
   }
 
-  // we want to be sure the filmstrip stay in synch
-  if(g_list_length(table->list) > 0)
-  {
-    // if the selection should follow active images
-    if(table->navigate_inside_selection)
-    {
-      // deactivate selection_change event
-      table->select_desactivate = TRUE;
-      // deselect all
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-      // select all active images
-      GList *ls = NULL;
-      l = table->list;
-      while(l)
-      {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-        ls = g_list_append(ls, GINT_TO_POINTER(thumb->imgid));
-        l = g_list_next(l);
-      }
-      dt_selection_select_list(darktable.selection, ls);
-      g_list_free(ls);
-      // reactivate selection_change event
-      table->select_desactivate = FALSE;
-    }
-    // move filmstrip
-    // TODO dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), table->offset, TRUE);
-  }
-
   // we save the current first id
   dt_conf_set_int("plugins/lighttable/culling_last_id", table->offset_imgid);
 
@@ -1366,6 +1339,10 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // we compute the sizes and positions of thumbs
   _thumbs_compute_positions(table);
 
+  // we erase the list of active images
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+
   // and we effectively move and resize thumbs
   GList *l = table->list;
   while(l)
@@ -1382,7 +1359,36 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     }
     // and we resize the thumb
     dt_thumbnail_resize(thumb, thumb->width, thumb->height);
+
+    // we update the active images list
+    darktable.view_manager->active_images
+        = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(thumb->imgid));
+
     l = g_list_next(l);
+  }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+
+  // if the selection should follow active images
+  if(table->selection_sync)
+  {
+    // deactivate selection_change event
+    table->select_desactivate = TRUE;
+    // deselect all
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+    // select all active images
+    GList *ls = NULL;
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      ls = g_list_append(ls, GINT_TO_POINTER(thumb->imgid));
+      l = g_list_next(l);
+    }
+    dt_selection_select_list(darktable.selection, ls);
+    g_list_free(ls);
+    // reactivate selection_change event
+    table->select_desactivate = FALSE;
   }
 
   // be sure the focus is in the right widget (needed for accels)

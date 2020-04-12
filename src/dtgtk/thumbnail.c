@@ -596,6 +596,7 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   // if there's a change, update the thumb
   if(active != thumb->active)
   {
+    printf("activate %d\n", thumb->imgid);
     thumb->active = active;
     _thumb_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
