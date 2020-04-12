@@ -66,7 +66,7 @@ typedef struct dt_lib_snapshots_t
 
   /* change snapshot overlay controls */
   gboolean dragging, vertical, inverted;
-  double vp_width, vp_height, vp_xpointer, vp_ypointer;
+  double vp_width, vp_height, vp_xpointer, vp_ypointer, vp_xrotate, vp_yrotate;
   gboolean on_going;
 
   GtkWidget *take_button;
@@ -274,7 +274,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     if(which == 1
        && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs) && yp > 0.5 - hhs
             && yp < 0.5 + hhs)
-           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs) && xp > 0.5 - hhs && xp < 0.5 + hhs)))
+           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs) && xp > 0.5 - hhs && xp < 0.5 + hhs)
+           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs && d->vp_yrotate <= yp + hhs )))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -284,6 +285,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
+      d->vp_xrotate = xp;
+      d->vp_yrotate = yp;
       d->on_going = TRUE;
       dt_control_queue_redraw_center();
     }
@@ -293,6 +296,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       d->dragging = TRUE;
       d->vp_ypointer = yp;
       d->vp_xpointer = xp;
+      d->vp_xrotate = 0.0;
+      d->vp_yrotate = 0.0;
       dt_control_queue_redraw_center();
     }
     return 1;
@@ -348,6 +353,8 @@ void gui_init(dt_lib_module_t *self)
   d->snapshot = (dt_lib_snapshot_t *)g_malloc0_n(d->size, sizeof(dt_lib_snapshot_t));
   d->vp_xpointer = 0.5;
   d->vp_ypointer = 0.5;
+  d->vp_xrotate = 0.0;
+  d->vp_yrotate = 0.0;
   d->vertical = TRUE;
   d->on_going = FALSE;
 
