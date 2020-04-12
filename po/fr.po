@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-11 10:42+0200\n"
-"PO-Revision-Date: 2020-04-11 10:43+0200\n"
+"POT-Creation-Date: 2020-04-12 18:39+0200\n"
+"PO-Revision-Date: 2020-04-12 18:39+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -13395,7 +13395,7 @@ msgstr "module activé par défaut"
 msgid "deprecated module"
 msgstr "module déprécié"
 
-#: ../src/libs/history.c:677 ../src/libs/snapshots.c:353
+#: ../src/libs/history.c:677 ../src/libs/snapshots.c:435
 msgid "original"
 msgstr "original"
 
@@ -14313,7 +14313,7 @@ msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:403 ../src/libs/snapshots.c:361
+#: ../src/libs/metadata_view.c:403 ../src/libs/snapshots.c:443
 msgid "unknown"
 msgstr "inconnu"
 
@@ -14838,26 +14838,31 @@ msgstr "session"
 msgid "create"
 msgstr "créer"
 
-#: ../src/libs/snapshots.c:82
+#: ../src/libs/snapshots.c:84
 msgid "snapshots"
 msgstr "instantanés"
 
-#: ../src/libs/snapshots.c:103
+#: ../src/libs/snapshots.c:105
 msgctxt "accel"
 msgid "take snapshot"
 msgstr "prendre un instantané"
 
-#: ../src/libs/snapshots.c:104
+#: ../src/libs/snapshots.c:106
 msgctxt "accel"
 msgid "toggle last snapshot"
 msgstr "activer/désactiver le dernier instantané"
 
+#: ../src/libs/snapshots.c:131
+msgctxt "snapshot sign"
+msgid "S"
+msgstr "S"
+
 #. create take snapshot button
-#: ../src/libs/snapshots.c:278
+#: ../src/libs/snapshots.c:360
 msgid "take snapshot"
 msgstr "prendre un instantané"
 
-#: ../src/libs/snapshots.c:281
+#: ../src/libs/snapshots.c:363
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -15298,8 +15303,8 @@ msgstr ""
 "le raccourci de mots-clés n'est pas actif lorsque la vue est arborescente, "
 "changer pour la vue en liste"
 
-#: ../src/libs/tools/battery_indicator.c:37
-#: ../src/libs/tools/battery_indicator.c:70
+#: ../src/libs/tools/battery_indicator.c:38
+#: ../src/libs/tools/battery_indicator.c:71
 msgid "battery indicator"
 msgstr "indicateur de batterie"
 
@@ -16268,63 +16273,63 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/views/view.c:2371
+#: ../src/views/view.c:2372
 msgid "Left click"
 msgstr "clic gauche"
 
-#: ../src/views/view.c:2374
+#: ../src/views/view.c:2375
 msgid "Right click"
 msgstr "clic-droit"
 
-#: ../src/views/view.c:2377
+#: ../src/views/view.c:2378
 msgid "Middle click"
 msgstr "clic-milieu"
 
-#: ../src/views/view.c:2380
+#: ../src/views/view.c:2381
 msgid "Scroll"
 msgstr "molette"
 
-#: ../src/views/view.c:2383
+#: ../src/views/view.c:2384
 msgid "Left double-click"
 msgstr "double-clic gauche"
 
-#: ../src/views/view.c:2386
+#: ../src/views/view.c:2387
 msgid "Right double-click"
 msgstr "double-clic droit"
 
-#: ../src/views/view.c:2389
+#: ../src/views/view.c:2390
 msgid "Drag and drop"
 msgstr "déplacer & déposer"
 
-#: ../src/views/view.c:2392
+#: ../src/views/view.c:2393
 msgid "Left click+Drag"
 msgstr "clic-gauche + déplacer"
 
-#: ../src/views/view.c:2395
+#: ../src/views/view.c:2396
 msgid "Right click+Drag"
 msgstr "clic-droit + déplacer"
 
-#: ../src/views/view.c:2416
+#: ../src/views/view.c:2417
 msgid "darktable - accels window"
 msgstr "darktable - fenêtre des raccourcis"
 
-#: ../src/views/view.c:2472
+#: ../src/views/view.c:2473
 msgid "switch to a classic window which will stay open after key release."
 msgstr "créer un fenêtre flottante persistante"
 
-#: ../src/views/view.c:2588
+#: ../src/views/view.c:2589
 msgid "+Scroll"
 msgstr "+molette"
 
-#: ../src/views/view.c:2603
+#: ../src/views/view.c:2604
 msgid "mouse actions"
 msgstr "actions souris"
 
-#: ../src/views/view.c:2641
+#: ../src/views/view.c:2642
 msgid "Accel"
 msgstr "raccourcis"
 
-#: ../src/views/view.c:2643
+#: ../src/views/view.c:2644
 msgid "Action"
 msgstr "action"
 
