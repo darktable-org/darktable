@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-12 18:39+0200\n"
-"PO-Revision-Date: 2020-04-12 18:39+0200\n"
+"POT-Creation-Date: 2020-04-12 20:57+0200\n"
+"PO-Revision-Date: 2020-04-12 23:15+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -9836,7 +9836,7 @@ msgstr "luminance du film"
 msgid "select color of film material"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/invert.c:639
+#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1105
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
@@ -9976,7 +9976,7 @@ msgstr "boîtier"
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.cc:2414
+#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1082
 msgid "corrections"
 msgstr "corrections"
 
@@ -10639,6 +10639,254 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
+#: ../src/iop/negadoctor.c:206
+msgid "negadoctor"
+msgstr "docteurnéga"
+
+#: ../src/iop/negadoctor.c:383
+msgid "color film"
+msgstr "film couleur"
+
+#: ../src/iop/negadoctor.c:397
+msgid "black and white film"
+msgstr "film noir & blanc"
+
+#: ../src/iop/negadoctor.c:457
+msgid "D min"
+msgstr "D min"
+
+#: ../src/iop/negadoctor.c:463 ../src/iop/negadoctor.c:1113
+msgid "D min red component"
+msgstr "D min composant rouge"
+
+#: ../src/iop/negadoctor.c:1069
+msgid "film stock"
+msgstr "film"
+
+#: ../src/iop/negadoctor.c:1070
+msgid "black and white"
+msgstr "noir et blanc"
+
+#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2876
+#: ../src/iop/watermark.c:1491
+msgid "color"
+msgstr "couleur"
+
+#: ../src/iop/negadoctor.c:1074
+msgid "toogle on or off the color controls"
+msgstr "activer/désactiver les contrôles des couleurs"
+
+#: ../src/iop/negadoctor.c:1081
+msgid "film properties"
+msgstr "film"
+
+#: ../src/iop/negadoctor.c:1083
+msgid "print properties"
+msgstr "impression"
+
+#. Dmin
+#: ../src/iop/negadoctor.c:1092
+msgid "color of the film base"
+msgstr "couleur du film"
+
+#: ../src/iop/negadoctor.c:1100
+msgid "select color of film material from a swatch"
+msgstr "sélectionne la couleur du film"
+
+#: ../src/iop/negadoctor.c:1114 ../src/iop/negadoctor.c:1124
+#: ../src/iop/negadoctor.c:1134
+msgid ""
+"adjust the color and shade of the film transparent base.\n"
+"this value depends on the film material, \n"
+"the chemical fog produced while developing the film,\n"
+"and the scanner white balance."
+msgstr ""
+"ajuste la couleur et les ombres du support du film.\n"
+"cette valeur dépend du matériau du film,\n"
+"les fumées chimiques produites pendant le développement du film,\n"
+"et la balance des blancs du scanner."
+
+#: ../src/iop/negadoctor.c:1123
+msgid "D min green component"
+msgstr "D min composant vert"
+
+#: ../src/iop/negadoctor.c:1133
+msgid "D min blue component"
+msgstr "D min composant bleu"
+
+#. D max and scanner bias
+#: ../src/iop/negadoctor.c:1143
+msgid "dynamic range of the film"
+msgstr "plage dynamique du film"
+
+#: ../src/iop/negadoctor.c:1147
+msgid "D max"
+msgstr "D max"
+
+#: ../src/iop/negadoctor.c:1151
+msgid ""
+"maximum density of the film, corresponding to white after inversion.\n"
+"this value depends on the film specifications, the developing process,\n"
+"the dynamic range of the scene and the scanner exposure settings."
+msgstr ""
+"densité maximum du film, correspondant au blanc après inversion.\n"
+"cette valeur dépend des spécifications du films, du processus de "
+"développement,\n"
+"de l'étendue dynamique de la scène et du paramètre d'exposition du scanner."
+
+#: ../src/iop/negadoctor.c:1157
+msgid "scanner exposure settings"
+msgstr "paramètres de l'exposition du scanner"
+
+#: ../src/iop/negadoctor.c:1161
+msgid "scan exposure bias"
+msgstr "biais d'exposition du scan"
+
+#: ../src/iop/negadoctor.c:1165
+msgid ""
+"correct the exposure of the scanner, for all RGB channels,\n"
+"before the inversion, so blacks are neither clipped or too pale."
+msgstr ""
+"correction de l'exposition du scanner, pour tous les canaux RGB,\n"
+"avant l'inversion, pour des noirs ni tronqués, ni trop pales."
+
+#. WB shadows
+#: ../src/iop/negadoctor.c:1171
+msgid "shadows color cast"
+msgstr "dérive couleur des ombres"
+
+#: ../src/iop/negadoctor.c:1180
+msgid "select color of shadows from a swatch"
+msgstr "sélectionne la couleur des ombres"
+
+#: ../src/iop/negadoctor.c:1185
+msgid "pick shadows color from image"
+msgstr "choisir la couleur des ombres depuis l'image"
+
+#: ../src/iop/negadoctor.c:1192
+msgid "shadows red offset"
+msgstr "offset rouge des ombres"
+
+#: ../src/iop/negadoctor.c:1193 ../src/iop/negadoctor.c:1202
+#: ../src/iop/negadoctor.c:1211
+msgid ""
+"correct the color cast in shadows so blacks are\n"
+"truly achromatic. Setting this value before\n"
+"the highlights illuminant white balance will help\n"
+"recovering the global white balance in difficult cases."
+msgstr ""
+"corrige la dérive de couleur dans les ombres pour que les noirs soient\n"
+"vraiment sans dérive colorée. positionner cette valeur avant\n"
+"la balance des blancs des hautes lumières de l'illuminant aidera à\n"
+"récupérer la balance des blancs globales dans les cas difficiles."
+
+#: ../src/iop/negadoctor.c:1201
+msgid "shadows green offset"
+msgstr "offset vert des ombres"
+
+#: ../src/iop/negadoctor.c:1210
+msgid "shadows blue offset"
+msgstr "offset bleu des ombres"
+
+#. WB highlights
+#: ../src/iop/negadoctor.c:1219
+msgid "highlights white balance"
+msgstr "balance des blancs des hautes lumières"
+
+#: ../src/iop/negadoctor.c:1228
+msgid "select color of illuminant from a swatch"
+msgstr "sélectionne la couleur de l'illuminant"
+
+#: ../src/iop/negadoctor.c:1233
+msgid "pick illuminant color from image"
+msgstr "choisir la couleur de l'illuminant depuis l'image"
+
+#: ../src/iop/negadoctor.c:1240
+msgid "illuminant red gain"
+msgstr "gain rouge l'illuminant"
+
+#: ../src/iop/negadoctor.c:1241 ../src/iop/negadoctor.c:1250
+#: ../src/iop/negadoctor.c:1259
+msgid ""
+"correct the color of the illuminant so whites are\n"
+"truly achromatic. Setting this value after\n"
+"the shadows color cast will help\n"
+"recovering the global white balance in difficult cases."
+msgstr ""
+"corrige la dérive de couleur de l'illuminant pour que les blancs soient\n"
+"vraiment sans dérive colorée. positionner cette valeur après\n"
+"la dérive colorée des ombres aidera à\n"
+"récupérer la balance des blancs globales dans les cas difficiles."
+
+#: ../src/iop/negadoctor.c:1249
+msgid "illuminant green gain"
+msgstr "gain vert de l'illuminant"
+
+#: ../src/iop/negadoctor.c:1258
+msgid "illuminant blue gain"
+msgstr "gain bleu de l'illuminant"
+
+#. print corrections
+#: ../src/iop/negadoctor.c:1267
+msgid "virtual paper properties"
+msgstr "paramètres papier virtuel"
+
+#: ../src/iop/negadoctor.c:1271
+msgid "paper black (density correction)"
+msgstr "noir (correction densité)"
+
+#: ../src/iop/negadoctor.c:1275
+msgid ""
+"correct the density of black after the inversion,\n"
+"to adjust the global contrast while avoiding clipping shadows."
+msgstr ""
+"corrige la densité des noirs après l'inversion,\n"
+"pour ajuster le contraste global tout en évitant de tronquer les ombres. "
+
+#: ../src/iop/negadoctor.c:1281
+msgid "paper grade (gamma)"
+msgstr "grade (gamma)"
+
+#: ../src/iop/negadoctor.c:1283
+msgid ""
+"select the grade of the virtual paper, which is actually\n"
+"equivalent to applying a gamma. it compensates the film D max\n"
+"and recovers the contrast. use a high grade for high D max."
+msgstr ""
+"sélectionne le grade du papier virtuel, ce qui est actuellement\n"
+"équivalent à appliquer un gamme. cela compense le D max du film\n"
+"et récupère le contraste. utiliser un grade élevé pour une D max important."
+
+#: ../src/iop/negadoctor.c:1290
+msgid "paper gloss (specular highlights)"
+msgstr "brillance (lumières spéculaires)"
+
+#: ../src/iop/negadoctor.c:1292
+msgid ""
+"gradually compress specular highlights past this value\n"
+"to avoid clipping while pushing the exposure for midtones.\n"
+"this somewhat reproduces the behaviour of matte paper."
+msgstr ""
+"compresse les hautes lumières progressivement au delà de cette valuer\n"
+"pour éviter de tronquer tout en augmentant l'exposition des tons moyens.\n"
+"cela reproduit en quelque sorte le comportement d'un papier mat."
+
+#: ../src/iop/negadoctor.c:1297
+msgid "virtual print emulation"
+msgstr "simulation impression virtuelle"
+
+#: ../src/iop/negadoctor.c:1301
+msgid "print exposure adjustment"
+msgstr "ajustement exposition"
+
+#: ../src/iop/negadoctor.c:1305
+msgid ""
+"correct the printing exposure after inversion to adjust\n"
+"the global contrast and avoid clipping highlights."
+msgstr ""
+"corrige l'exposition d'impression après l'inversion pour ajuster\n"
+"le contraste global et éviter de tronquer les hautes lumières."
+
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
 msgstr "réduction bruit (moy. non-locales)"
@@ -11037,10 +11285,6 @@ msgstr "mode de remplissage"
 #: ../src/iop/retouch.c:2875
 msgid "erase"
 msgstr "effacer"
-
-#: ../src/iop/retouch.c:2876 ../src/iop/watermark.c:1491
-msgid "color"
-msgstr "couleur"
 
 #: ../src/iop/retouch.c:2877
 msgid "erase the detail or fills with chosen color"
