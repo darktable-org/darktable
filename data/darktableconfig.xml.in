@@ -453,7 +453,7 @@
     <default>true</default>
     <shortdescription>sort collection recent to older</shortdescription>
     <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
-  </dtconfig> 
+  </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_mean</name>
     <type>int</type>
@@ -1462,6 +1462,19 @@
     <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" section="quality">
+    <name>preview_downsampling</name>
+    <type>
+      <enum>
+        <option>1.0 (none)</option>
+        <option>0.5</option>
+        <option>0.25</option>
+      </enum>
+    </type>
+    <default>1.0 (none)</default>
+    <shortdescription>reduce resolution of preview image</shortdescription>
+    <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core" section="quality">                                                                                                   
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
       <enum>

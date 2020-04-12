@@ -2097,30 +2097,36 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // in creation mode
   if(gui->creation)
   {
-    const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;
-
+    const float preview_scale = MIN(darktable.develop->preview_pipe->iwidth,
+            darktable.develop->preview_pipe->iheight);
+    float radius[2] = { 0.f, 0.f };  
+    float radius_hardness = 0.f, radius_border = 0.f;
     if(gui->guipoints_count == 0)
     {
+      float masks_border = 0.f, masks_hardness = 0.f;
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
-
-      float masks_border;
+                               
+                         
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
       else
         masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
-
-      float masks_hardness;
+                           
+                           
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
       else
         masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), HARDNESS_MAX);
 
       const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-
-      const float radius1 = masks_border * masks_hardness * MIN(wd, ht);
-      const float radius2 = masks_border * MIN(wd, ht);
+      
+      radius[0] = masks_border * masks_hardness;
+      radius[1] = masks_border;
+      
+      dt_dev_distort_backtransform(darktable.develop, radius, 1);
+      radius_hardness = radius[0] * preview_scale / darktable.develop->preview_pipe->iwidth;
+      radius_border = radius[1] * preview_scale / darktable.develop->preview_pipe->iheight;
 
       float xpos, ypos;
       if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
@@ -2137,12 +2143,12 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_save(cr);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
       cairo_set_line_width(cr, 3.0 / zoom_scale);
-      cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
+      cairo_arc(cr, xpos, ypos, radius_hardness, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
-      cairo_arc(cr, xpos, ypos, radius2, 0, 2.0 * M_PI);
+      cairo_arc(cr, xpos, ypos, radius_border, 0, 2.0 * M_PI);
       cairo_stroke(cr);
 
       if(form->type & DT_MASKS_CLONE)
@@ -2156,8 +2162,9 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     }
     else
     {
-      float masks_border, masks_hardness, masks_density;
-      float radius, oldradius, opacity, oldopacity, pressure;
+      float masks_border = 0.0, masks_hardness = 0.0, masks_density = 0.0;
+      float opacity = 0.0, oldopacity = 0.0, pressure = 0.0;
+      float oldradius_hardness = 0;                          
       int stroked = 1;
 
       const float *guipoints = dt_masks_dynbuf_buffer(gui->guipoints);
@@ -2193,11 +2200,17 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           // ignore pressure value
           break;
       }
-
-      radius = oldradius = masks_border * masks_hardness * MIN(wd, ht);
+      
+      radius[0] = masks_border * masks_hardness; 
+      radius[1] = masks_border;
+      dt_dev_distort_backtransform(darktable.develop, radius, 1);
+      radius_hardness = oldradius_hardness = radius[0] * preview_scale 
+            / darktable.develop->preview_pipe->iwidth;
+      radius_border = radius[1] * preview_scale 
+            / darktable.develop->preview_pipe->iwidth;
       opacity = oldopacity = masks_density;
 
-      cairo_set_line_width(cr, 2 * radius);
+      cairo_set_line_width(cr, 2 * radius_hardness);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
 
       cairo_move_to(cr, guipoints[0], guipoints[1]);
@@ -2233,16 +2246,19 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
             break;
         }
 
-        radius = masks_border * masks_hardness * MIN(wd, ht);
+        radius[0] = masks_border * masks_hardness; 
+        radius[1] = masks_border;
+        dt_dev_distort_backtransform(darktable.develop, radius, 1);
+        radius_hardness = radius[0] * preview_scale / darktable.develop->preview_pipe->iwidth;
         opacity = masks_density;
 
-        if(radius != oldradius || opacity != oldopacity)
+        if(radius_hardness != oldradius_hardness || opacity != oldopacity)
         {
           cairo_stroke(cr);
           stroked = 1;
-          cairo_set_line_width(cr, 2 * radius);
+          cairo_set_line_width(cr, 2 * radius_hardness);
           dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
-          oldradius = radius;
+          oldradius_hardness = radius_hardness;
           oldopacity = opacity;
           cairo_move_to(cr, guipoints[i * 2], guipoints[i * 2 + 1]);
         }
@@ -2252,13 +2268,13 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 3.0 / zoom_scale);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
-                guipoints[2 * (gui->guipoints_count - 1) + 1], radius, 0, 2.0 * M_PI);
+                guipoints[2 * (gui->guipoints_count - 1) + 1], radius_hardness, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
-                guipoints[2 * (gui->guipoints_count - 1) + 1], masks_border * MIN(wd, ht), 0,
+                guipoints[2 * (gui->guipoints_count - 1) + 1], radius_border, 0,
                 2.0 * M_PI);
       cairo_stroke(cr);
 

@@ -53,7 +53,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
-  dev->preview_downsampling = 1.0f;
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
@@ -90,7 +89,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   else if(g_strcmp0(mode, "waveform") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
   g_free(mode);
-
+  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
+  dev->preview_downsampling = (g_strcmp0(preview_downsample, "1.0 (none)") == 0) ? 1.0f : 
+      (g_strcmp0(preview_downsample, "0.5")==0) ? 0.5f : 0.25f;
+  g_free(preview_downsampe);                                                                                                            
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -685,6 +687,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
+  if (preview) zoom_scale /= dev->preview_downsampling;
+  
   return zoom_scale;
 }
 
@@ -2411,11 +2415,24 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
     pieces = g_list_next(pieces);
   }
   dt_pthread_mutex_unlock(&dev->history_mutex);
+  if (transf_direction == DT_DEV_TRANSFORM_DIR_ALL 
+                        || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+                        || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL)
+  {
+    for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] *= dev->preview_downsampling;
+  }
   return 1;
 }
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count)
 {
+  if (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL) 
+  {
+    for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] /= dev->preview_downsampling;
+  }
+  
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
