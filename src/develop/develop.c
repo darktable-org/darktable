@@ -92,7 +92,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
   dev->preview_downsampling = (g_strcmp0(preview_downsample, "1.0 (none)") == 0) ? 1.0f : 
       (g_strcmp0(preview_downsample, "0.5")==0) ? 0.5f : 0.25f;
-  g_free(preview_downsampe);                                                                                                            
+  g_free(preview_downsample);                                                                                                            
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
