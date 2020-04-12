@@ -49,13 +49,36 @@ making a backup is strongly advised.
 
 - Fix issues on some Lut 3D files.
 
+### Base Support
+
+- Fujifilm GFX 100 (compressed)
+- Fujifilm X-Pro3 (compressed)
+- Fujifilm X100V (compressed)
+- Nikon COOLPIX P950 (12bit-uncompressed)
+- Nikon Z 50 (12bit-compressed, 14bit-compressed)
+- Olympus E-M1MarkIII
+- Panasonic DC-S1 (3:2)
+- Panasonic DC-S1R (3:2)
+- Panasonic DC-TZ91 (4:3)
+- Panasonic DC-TZ95 (4:3)
+- Panasonic DC-TZ96 (4:3)
+- Panasonic DC-ZS80 (4:3)
+- Sony ILCE-6100
+
 ### White Balance Presets
 
 - Canon EOS 77D
 - Canon EOS 9000D
 - Nikon COOLPIX P1000
 - Panasonic DC-GH5
+- Olympus E-M1MarkIII
+- Olympus E-PL6
+- Olympus TG-5
 - Samsung NX1
+
+### Noise Profiles
+
+- Olympus E-M1MarkIII
 
 ## Translations
 
