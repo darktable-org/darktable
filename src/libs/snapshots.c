@@ -122,21 +122,19 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
 {
   const double inv = inverted ? -0.1 : 1.0;
 
-  PangoLayout *layout;
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
-  layout = pango_cairo_create_layout(cr);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
-  pango_layout_set_text(layout, _("S"), -1);
+  pango_layout_set_text(layout, NC_("snapshot sign", "S"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
   if(vertical)
     cairo_move_to(cr, x - (inv * ink.width * 1.2f), y - (ink.height / 2.0f) - DT_PIXEL_APPLY_DPI(3));
   else
     cairo_move_to(cr, x - (ink.width / 2.0), y + (-inv * (ink.height * 1.2f) - DT_PIXEL_APPLY_DPI(2)));
-  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, .9);
 
   dt_draw_set_color_overlay(cr, 0.3, 0.9);
   pango_cairo_show_layout(cr, layout);
