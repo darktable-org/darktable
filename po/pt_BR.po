@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-11 13:16-0300\n"
-"PO-Revision-Date: 2020-04-11 13:16-0300\n"
+"POT-Creation-Date: 2020-04-12 11:17-0300\n"
+"PO-Revision-Date: 2020-04-12 11:18-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -857,7 +857,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3579
 #, fuzzy
 msgid "auto-apply sharpen"
-msgstr "auto-aplicar sharpen"
+msgstr "auto-aplicar nitidez"
 
 #: ../build/src/preferences_gen.h:3591
 msgid ""
@@ -865,6 +865,9 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
+"esta nitidez adicionada não é recomendada em câmeras sem um filtro passa-"
+"baixas. o default é não fazer melhoria de nitidez automaticamente já que a "
+"maioria das câmeras recentes não tem filtro passa-baixas. (precisa reiniciar)"
 
 #: ../build/src/preferences_gen.h:3599
 msgid "xmp"
@@ -1159,6 +1162,9 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
+"o autocompletar de texto é útil para quem só entra etiquetas pelo teclado. "
+"para outros o autocompletar pode ser constrangedor. precisa reiniciar o "
+"darktable."
 
 #: ../build/src/preferences_gen.h:4081
 msgid "password storage backend to use"
@@ -2885,6 +2891,10 @@ msgid ""
 "double click to reset. press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data. press 'm' to toggle mask view."
 msgstr ""
+"clique duplo para resetar. pressione 'a' para alternar os modos disponíveis "
+"de controle deslizante.\n"
+"pressione 'c' para alternar visão de dados de canal. pressione 'm' para "
+"alternar visão de máscara"
 
 #: ../src/develop/blend_gui.c:1828 ../src/develop/blend_gui.c:2545
 msgid "parametric mask"
@@ -6316,12 +6326,18 @@ msgid "black level correction"
 msgstr "correção de nível de preto"
 
 #: ../src/iop/basicadj.c:761
+#, fuzzy
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives"
 msgstr ""
+"ajusta o nível de preto para remover os valores RGB negativos.\n"
+"você nunca deve usar para adicionar mais densidade nos pretos!\n"
+"se mal ajustado, forçará os valores das cores que estão próximas do preto "
+"para fora da escala\n"
+"tornando valores RGB negativos"
 
 #: ../src/iop/basicadj.c:772 ../src/iop/exposure.c:807
 #: ../src/iop/exposure.c:886 ../src/iop/exposure.c:925
@@ -6415,7 +6431,7 @@ msgstr "recortar"
 
 #: ../src/iop/basicadj.c:858
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr ""
+msgstr "ajusta o valor de corte para cálculo da exposição automática"
 
 #: ../src/iop/bilat.c:92 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -7039,7 +7055,7 @@ msgstr "correção aplicada"
 
 #: ../src/iop/clipping.c:2030
 msgid "main"
-msgstr ""
+msgstr "principal"
 
 #: ../src/iop/clipping.c:2031
 msgid "margins"
@@ -8437,7 +8453,7 @@ msgstr "raio para busca"
 #: ../src/iop/denoiseprofile.c:600
 msgctxt "accel"
 msgid "scattering"
-msgstr ""
+msgstr "dispersão"
 
 #: ../src/iop/denoiseprofile.c:601
 msgctxt "accel"
@@ -8464,6 +8480,9 @@ msgid ""
 "uniform image if you want to\n"
 "estimate the noise variance."
 msgstr ""
+"use somente com uma imagem perfeitamente\n"
+"uniforme se você quiser\n"
+"estimar a variância de ruído"
 
 #: ../src/iop/denoiseprofile.c:4341
 msgid "variance red: "
@@ -8526,12 +8545,19 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
+"adaptar remoção de ruído aos\n"
+"coeficientes de balanço de branco.\n"
+"deve ser habilitado em uma primeira instância\n"
+"para melhor remoção de ruído.\n"
+"deve ser desabilitado se uma instância anteior\n"
+"foi usada com um modo de fusão de cor."
 
 #: ../src/iop/denoiseprofile.c:4443
 msgid "fix various bugs in algorithm"
 msgstr "conserto de vários bugs no algoritmo"
 
 #: ../src/iop/denoiseprofile.c:4445
+#, fuzzy
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -8543,10 +8569,20 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
+"corrige bugs na transformação de anscombe que\n"
+"resultu em pouca suavização no canal verde no modo\n"
+"wavelet, combinado com uma manipulação sub-ótima\n"
+"dos coeficientes de balanço de brancos, e um\n"
+"bug na normalização de médias não locais, que\n"
+"resulta em pouca suavização quando o tamanho do segmento é aumentado.\n"
+"ativar esta opção muda a remoção de ruído.\n"
+"uma vez ativado,não será mais possível\n"
+"reverter para o algoritmo antigo."
 
 #: ../src/iop/denoiseprofile.c:4456
+#, fuzzy
 msgid "upgrade profiled transform"
-msgstr ""
+msgstr "atualização do modelo"
 
 #: ../src/iop/denoiseprofile.c:4458
 msgid ""
@@ -8555,6 +8591,10 @@ msgid ""
 "it is more flexible but could give small\n"
 "differences in the images already processed."
 msgstr ""
+"atualiza o algoritmo estabilizador de variância.\n"
+"o novo algoritmo extende o atual.\n"
+"é mais flexível, mas pode dar pequenas\n"
+"diferenças nas imagens já processadas."
 
 #: ../src/iop/denoiseprofile.c:4469 ../src/libs/export.c:662
 #: ../src/libs/print_settings.c:1185 ../src/libs/print_settings.c:1405
@@ -8575,8 +8615,9 @@ msgid "search radius"
 msgstr "raio para busca"
 
 #: ../src/iop/denoiseprofile.c:4476
+#, fuzzy
 msgid "scattering (coarse-grain noise)"
-msgstr ""
+msgstr "difusão (ruído grosseiro)"
 
 #: ../src/iop/denoiseprofile.c:4477
 msgid "central pixel weight (details)"
@@ -8642,8 +8683,13 @@ msgid ""
 "while Y0U0V0 combine the channels to\n"
 "denoise chroma and luma separately."
 msgstr ""
+"representação de cores usada no algoritmo.\n"
+"RGB mantém os canais RGB separados,\n"
+"enquanto Y0U0V0 combina os canais para\n"
+"remoção de ruído de croma e luma separadamente."
 
 #: ../src/iop/denoiseprofile.c:4501
+#, fuzzy
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -8651,6 +8697,12 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"raio dos segmentos a comparar.\n"
+"aumente para maior nitidez nas bordas fortes, e melhor redução de ruído nas "
+"áreas\n"
+"lisas.\n"
+"se detalhes são suavizados demais, reduza este valor ou aumente o controle\n"
+"deslizante de detalhes."
 
 #: ../src/iop/denoiseprofile.c:4504
 msgid ""
@@ -8678,7 +8730,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4512
 msgid "finetune denoising strength"
-msgstr "ajuste fino intensidade redução de ruido"
+msgstr "ajuste fino da intensidade redução de ruido"
 
 #: ../src/iop/denoiseprofile.c:4513
 msgid ""
@@ -8694,8 +8746,12 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image.\n"
 msgstr ""
+"ajuste fino da remoção de ruído de sombras\n"
+"diminua para remover ruído mais agressivamente\n"
+"em áreas escuras da imagem.\n"
 
 #: ../src/iop/denoiseprofile.c:4520
+#, fuzzy
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -8841,6 +8897,11 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
+"ajusta o nível de preto para remover os valores RGB negativos.\n"
+"você nunca deve usar para adicionar mais densidade nos pretos!\n"
+"se mal ajustado, forçará os valores das cores que estão próximas do preto "
+"para fora da escala\n"
+"tornando valores RGB negativos"
 
 #: ../src/iop/exposure.c:902
 msgid ""
@@ -9054,11 +9115,15 @@ msgid "global saturation"
 msgstr "saturação global"
 
 #: ../src/iop/filmic.c:1785
+#, fuzzy
 msgid ""
 "desaturates the input of the module globally.\n"
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
+"desatura a entrada do módulo globalmente.\n"
+"você precisa determinar um valor abaixo de 100%\n"
+"se a preservação de crominância está habilitada."
 
 #: ../src/iop/filmic.c:1791 ../src/iop/filmicrgb.c:1564
 msgid "extreme luminance saturation"
@@ -9070,6 +9135,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
+"desatura a saída do módulo\n"
+"especificamente em luminâncias extremas\n"
+"diminua se sombras e/ou destaques estão saturados demais."
 
 #: ../src/iop/filmic.c:1805 ../src/libs/export.c:684
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1453
@@ -9252,9 +9320,10 @@ msgid "target white luminance"
 msgstr "luminância de branco"
 
 #: ../src/iop/filmicrgb.c:279
+#, fuzzy
 msgctxt "accel"
 msgid "target power transfer function"
-msgstr ""
+msgstr "define a função de transferência de energia"
 
 #: ../src/iop/filmicrgb.c:280
 msgctxt "accel"
@@ -9262,11 +9331,15 @@ msgid "preserve chrominance"
 msgstr "preservar a crominância"
 
 #: ../src/iop/filmicrgb.c:1441
+#, fuzzy
 msgid ""
 "read-only graph, use the parameters below to set the nodes\n"
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve\n"
 msgstr ""
+"gráfico não modificável, use os parâmetros abaixo para determinar os nós\n"
+"a curva clara é a de mapeamento de tuns fílmicos\n"
+"a curva escura é a de desaturação"
 
 #: ../src/iop/filmicrgb.c:1453
 msgid "scene"
@@ -9287,6 +9360,9 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"ajuste para coincidir com a luminância média do objeto ra imagem.\n"
+"o valor entrado aqui será reajustado para corresponder a 18.45%.\n"
+"diminua o valor para aumentar o brilho geral."
 
 #: ../src/iop/filmicrgb.c:1480 ../src/iop/filmicrgb.c:1494
 #: ../src/iop/toneequal.c:3228 ../src/iop/toneequal.c:3234
@@ -9320,6 +9396,12 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
+"tenta otimizar as configurações com algumas suposições estatísticas.\n"
+"isso ajustará a faixa de luminância dentro dos limites do histograma.\n"
+"funciona melhor para paisagens e imagens com iluminação uniforme,\n"
+"mas falha em imagens de high key, low key, e ISO alto.\n"
+"isso não é inteligência artificial, mas um cálculo simples.\n"
+"certifique-se de entender suas suposições antes de usá-lo."
 
 #: ../src/iop/filmicrgb.c:1544
 #, fuzzy
@@ -10459,11 +10541,11 @@ msgstr "_selecionar"
 
 #: ../src/iop/lut3d.c:1627
 msgid "hald cluts (png), 3D lut (cube or 3dl) or gmic compressed lut (gmz)"
-msgstr ""
+msgstr "hald cluts (png), 3D lut (cubo ou 3dl) ou LUT comprimido de gmic (gmz)"
 
 #: ../src/iop/lut3d.c:1629
 msgid "hald cluts (png) or 3D lut (cube or 3dl)"
-msgstr ""
+msgstr "hald cluts (png) ou 3D lut (cubo ou 3dl)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
 #: ../src/libs/geotagging.c:497 ../src/libs/import.c:803
@@ -10481,24 +10563,37 @@ msgid ""
 "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"selecione um arquivo png (haldclut), um cubo, uma 3dl ou um gmz (LUT "
+"comprimido)\n"
+"ATENÇÃO: a pasta de LUT 3d deve ser configurada em preferências/opções de "
+"cor/miscelânea\n"
+"antes de escolher o arquivo LUT"
 
 #: ../src/iop/lut3d.c:1737
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/core options/miscellaneous before choosing the lut file"
 msgstr ""
+"selecione um arquivo png (haldclut), um cubo, uma 3dl ATENÇÃO: a pasta de "
+"LUT 3d deve ser configurada em preferências/opções de cor/miscelânea antes "
+"de escolher o arquivo LUT"
 
 #: ../src/iop/lut3d.c:1748
 msgid ""
 "the file path (relative to lut folder) is saved with image along with the "
 "lut data if it's a compressed lut (gmz)"
 msgstr ""
+"o caminho do arquivo (relativo à pasta LUT) é gravado com a imagem junto "
+"com\n"
+"os dados LUT se é um LUT comprimido (gmz)"
 
 #: ../src/iop/lut3d.c:1751
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
 msgstr ""
+"o caminho do arquivo (relativo à pasta LUT) é gravado com a imagem (e não\n"
+"os próprios dados LUT)"
 
 #: ../src/iop/lut3d.c:1760
 msgid "enter lut name"
@@ -11187,6 +11282,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"aplicar níveis automáticos baseado em região definida pelo usuário\n"
+"clique e arraste para desenhar a área\n"
+"clique direito cancela"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -11440,6 +11538,8 @@ msgstr "remoção de mancha"
 #: ../src/iop/spots.c:178
 msgid "spot module is limited to 64 shapes. please add a new instance !"
 msgstr ""
+"o módulo de eliminação de manchas é limitado a 64 formas. por favor, "
+"adicione uma nova instância !"
 
 #: ../src/iop/spots.c:672
 msgid "number of strokes:"
@@ -11700,7 +11800,7 @@ msgstr "especulares"
 #: ../src/iop/toneequal.c:320
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "difusão do filtro"
 
 #: ../src/iop/toneequal.c:321
 #, fuzzy
@@ -11711,7 +11811,7 @@ msgstr "filtro de resfriamento"
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
 msgid "edges refinement or feathering"
-msgstr ""
+msgstr "afinar ou desfocar bordas"
 
 #: ../src/iop/toneequal.c:323
 msgctxt "accel"
@@ -16111,64 +16211,64 @@ msgstr "nova sessão iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
-#: ../src/views/view.c:2371
+#: ../src/views/view.c:2372
 msgid "Left click"
 msgstr "Clique esquerdo"
 
-#: ../src/views/view.c:2374
+#: ../src/views/view.c:2375
 msgid "Right click"
 msgstr "Clique direito"
 
-#: ../src/views/view.c:2377
+#: ../src/views/view.c:2378
 msgid "Middle click"
 msgstr "Clique do meio"
 
-#: ../src/views/view.c:2380
+#: ../src/views/view.c:2381
 msgid "Scroll"
 msgstr "Rolar"
 
-#: ../src/views/view.c:2383
+#: ../src/views/view.c:2384
 msgid "Left double-click"
 msgstr "clique esquerdo duplo"
 
-#: ../src/views/view.c:2386
+#: ../src/views/view.c:2387
 msgid "Right double-click"
 msgstr "clique direito duplo"
 
-#: ../src/views/view.c:2389
+#: ../src/views/view.c:2390
 msgid "Drag and drop"
 msgstr "Arrastar e soltar"
 
-#: ../src/views/view.c:2392
+#: ../src/views/view.c:2393
 msgid "Left click+Drag"
 msgstr "Clique Esquerdo+Arrastar"
 
-#: ../src/views/view.c:2395
+#: ../src/views/view.c:2396
 msgid "Right click+Drag"
 msgstr "Clique direito+Arrastar"
 
-#: ../src/views/view.c:2416
+#: ../src/views/view.c:2417
 msgid "darktable - accels window"
 msgstr "darktable - janela de atalhos"
 
-#: ../src/views/view.c:2472
+#: ../src/views/view.c:2473
 msgid "switch to a classic window which will stay open after key release."
 msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla."
 
-#: ../src/views/view.c:2588
+#: ../src/views/view.c:2589
 #, fuzzy
 msgid "+Scroll"
 msgstr "rolar para cima"
 
-#: ../src/views/view.c:2603
+#: ../src/views/view.c:2604
 msgid "mouse actions"
 msgstr "ações com mouse"
 
-#: ../src/views/view.c:2641
+#: ../src/views/view.c:2642
 msgid "Accel"
 msgstr "atalhos"
 
-#: ../src/views/view.c:2643
+#: ../src/views/view.c:2644
 msgid "Action"
 msgstr "Ação"
 
