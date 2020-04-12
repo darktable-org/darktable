@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "paint.h"
+#include "bauhaus/bauhaus.h"
+#include "dtgtk/paint.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include <math.h>
@@ -1606,7 +1607,10 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
   float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
   const gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
   cairo_scale(cr, s / grow, s / grow);
@@ -1615,6 +1619,7 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
   pango_cairo_show_layout(cr, layout);
+  pango_font_description_free(desc);
   g_object_unref(layout);
 }
 
@@ -1626,7 +1631,10 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
   float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
   const gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
   cairo_scale(cr, s / grow, s / grow);
@@ -1635,6 +1643,7 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
   pango_cairo_show_layout(cr, layout);
+  pango_font_description_free(desc);
   g_object_unref(layout);
 }
 
