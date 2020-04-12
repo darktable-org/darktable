@@ -67,6 +67,7 @@ typedef struct dt_lib_snapshots_t
   /* change snapshot overlay controls */
   gboolean dragging, vertical, inverted;
   double vp_width, vp_height, vp_xpointer, vp_ypointer;
+  gboolean on_going;
 
   GtkWidget *take_button;
 } dt_lib_snapshots_t;
@@ -240,6 +241,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       cairo_set_line_width(cri, 0.5);
       dtgtk_cairo_paint_refresh(cri, rx, ry, s, s, 0, NULL);
     }
+
+    d->on_going = FALSE;
   }
 }
 
@@ -263,6 +266,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
   if(d->snapshot_image)
   {
+    if(d->on_going) return 1;
+
     const double xp = x / d->vp_width;
     const double yp = y / d->vp_height;
 
@@ -281,6 +286,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
+      d->on_going = TRUE;
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
@@ -345,6 +351,7 @@ void gui_init(dt_lib_module_t *self)
   d->vp_xpointer = 0.5;
   d->vp_ypointer = 0.5;
   d->vertical = TRUE;
+  d->on_going = FALSE;
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
