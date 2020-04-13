@@ -5,12 +5,14 @@
 #        -p  do the purge, otherwise only display non existing images
 #
 
-if ! command -v sqlite3 > /dev/null; then
+if ! command -v sqlite3 >/dev/null
+then
     echo "error: please install sqlite3 binary".
     exit 1
 fi
 
-if pgrep -x "darktable" > /dev/null ; then
+if pgrep -x "darktable" >/dev/null
+then
     echo "error: darktable is running, please exit first"
     exit 1
 fi
@@ -24,46 +26,49 @@ library=""
 commandline="$0 $*"
 
 # handle command line arguments
-while [ "$#" -ge 1 ] ; do
-  option="$1"
-  case ${option} in
-  -h|--help)
-    echo "Delete non existing images from darktable's database"
-    echo "Usage:   $0 [options]"
-    echo ""
-    echo "Options:"
-    echo "  -c|--configdir <path>    path to the darktable config directory"
-    echo "                           (default: '${configdir}')"
-    echo "  -l|--library <path>      path to the library.db"
-    echo "                           (default: '${DBFILE}')"
-    echo "  -p|--purge               actually delete the tags instead of just finding them"
-    exit 0
-    ;;
-  -l|--library)
-    library="$2"
-    shift
-    ;;
-  -c|--configdir)
-    configdir="$2"
-    shift
-    ;;
-  -p|--purge)
-    dryrun=0
-    ;;
-  *)
-    echo "warning: ignoring unknown option $option"
-    ;;
-  esac
+while [ "$#" -ge 1 ]
+do
+    option="$1"
+    case ${option} in
+    -h | --help)
+        echo "Delete non existing images from darktable's database"
+        echo "Usage:   $0 [options]"
+        echo ""
+        echo "Options:"
+        echo "  -c|--configdir <path>    path to the darktable config directory"
+        echo "                           (default: '${configdir}')"
+        echo "  -l|--library <path>      path to the library.db"
+        echo "                           (default: '${DBFILE}')"
+        echo "  -p|--purge               actually delete the tags instead of just finding them"
+        exit 0
+        ;;
+    -l | --library)
+        library="$2"
+        shift
+        ;;
+    -c | --configdir)
+        configdir="$2"
+        shift
+        ;;
+    -p | --purge)
+        dryrun=0
+        ;;
+    *)
+        echo "warning: ignoring unknown option $option"
+        ;;
+    esac
     shift
 done
 
 DBFILE="$configdir/library.db"
 
-if [ "$library" != "" ]; then
+if [ "$library" != "" ]
+then
     DBFILE="$library"
 fi
 
-if [ ! -f "$DBFILE" ]; then
+if [ ! -f "$DBFILE" ]
+then
     echo "error: library db '${DBFILE}' doesn't exist"
     exit 1
 fi
@@ -74,27 +79,30 @@ echo "Removing the following non existent file(s):"
 
 sqlite3 "$DBFILE" "$QUERY" | while read -r result
 do
-  ID=$(echo "$result" | cut -f1 -d"|")
-  FD=$(echo "$result" | cut -f2 -d"|")
-  FL=$(echo "$result" | cut -f3 -d"|")
-  if ! [ -f "$FD/$FL" ];
-  then
-    echo "  $FD/$FL with ID = $ID"
+    ID=$(echo "$result" | cut -f1 -d"|")
+    FD=$(echo "$result" | cut -f2 -d"|")
+    FL=$(echo "$result" | cut -f3 -d"|")
+    if ! [ -f "$FD/$FL" ]
+    then
+        echo "  $FD/$FL with ID = $ID"
 
-    if [ $dryrun -eq 0 ]; then
-        for table in images meta_data; do
-            sqlite3 "$DBFILE" "DELETE FROM $table WHERE id=$ID"
-        done
+        if [ $dryrun -eq 0 ]
+        then
+            for table in images meta_data
+            do
+                sqlite3 "$DBFILE" "DELETE FROM $table WHERE id=$ID"
+            done
 
-        for table in color_labels history masks_history selected_images tagged_images history_hash module_order; do
-            sqlite3 "$DBFILE" "DELETE FROM $table WHERE imgid=$ID"
-        done
+            for table in color_labels history masks_history selected_images tagged_images history_hash module_order
+            do
+                sqlite3 "$DBFILE" "DELETE FROM $table WHERE imgid=$ID"
+            done
+        fi
     fi
-  fi
 done
 
-
-if [ $dryrun -eq 0 ]; then
+if [ $dryrun -eq 0 ]
+then
     # delete now-empty filmrolls
     sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
     sqlite3 "$DBFILE" "VACUUM; ANALYZE"
