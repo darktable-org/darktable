@@ -5,7 +5,7 @@
 #        -p  do the purge, otherwise only display non existing images
 #
 
-if ! which sqlite3 > /dev/null; then
+if ! command -v sqlite3 > /dev/null; then
     echo "error: please install sqlite3 binary".
     exit 1
 fi
