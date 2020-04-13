@@ -226,8 +226,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
     gtk_widget_set_size_request(widget, thumb->img_width, thumb->img_height);
     // and we set the position of the image
-    const int posx = MAX(thumb->width * thumb->img_margin->left / 100, (thumb->width - thumb->img_width) / 2);
-    const int posy = MAX(thumb->height * thumb->img_margin->top / 100, (thumb->height - thumb->img_height) / 2);
+    const int posx
+        = thumb->width * thumb->img_margin->left / 100 + (thumb->width * ratio_w - thumb->img_width) / 2;
+    const int posy
+        = thumb->height * thumb->img_margin->top / 100 + (thumb->height * ratio_h - thumb->img_height) / 2;
     gtk_widget_set_margin_start(thumb->w_image, posx);
     gtk_widget_set_margin_top(thumb->w_image, posy);
 
