@@ -1933,6 +1933,49 @@ static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acc
   return TRUE;
 }
 
+static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  dt_develop_t *dev = (dt_develop_t *)data;
+  dt_iop_module_t *mod = dev->gui_module; 
+
+  //retouch and spot removal module use masks differently and have different buttons associated
+  //keep the shortcuts independent
+  if(mod && strcmp(mod->so->op, "spots") != 0 && strcmp(mod->so->op, "retouch") != 0)
+  {
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)mod->blend_data;
+
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+
+    dt_iop_color_picker_reset(mod, TRUE);
+
+    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, mod->blend_params->mask_id);
+    if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+    {
+      if(bd->masks_shown == DT_MASKS_EDIT_OFF)
+        bd->masks_shown = DT_MASKS_EDIT_FULL;
+      else
+        bd->masks_shown = DT_MASKS_EDIT_OFF;
+
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+      dt_masks_set_edit_mode(mod, bd->masks_shown);
+
+      // set all add shape buttons to inactive
+      for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
+    }
+
+    darktable.gui->reset = reset;
+
+    return TRUE;
+  }
+  else
+    return FALSE;
+}
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3506,6 +3549,9 @@ void init_key_accels(dt_view_t *self)
   // toggle gamut check
   dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
 
+  // toggle visability of drawn masks for current gui module
+  dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
+
   // brush size +/-
   dt_accel_register_view(self, NC_("accel", "increase brush size"), GDK_KEY_bracketright, 0);
   dt_accel_register_view(self, NC_("accel", "decrease brush size"), GDK_KEY_bracketleft, 0);
@@ -3587,6 +3633,10 @@ void connect_key_accels(dt_view_t *self)
   // cycle through overlay colors
   closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "cycle overlay colors", closure);
+
+  // toggle visability of drawn masks for current gui module
+  closure = g_cclosure_new(G_CALLBACK(_toggle_mask_visibility_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "show drawn masks", closure);
 
   // toggle softproof indication
   closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.softproof_button, NULL);
