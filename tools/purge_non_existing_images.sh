@@ -99,12 +99,12 @@ then
     done
 
     # delete now-empty film rolls
-    sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
+    sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE NOT EXISTS (SELECT 1 FROM images WHERE images.film_id = film_rolls.id)"
     sqlite3 "$DBFILE" "VACUUM; ANALYZE"
 else
     echo
     echo Remove following now-empty filmrolls:
-    sqlite3 "$DBFILE" "SELECT folder FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
+    sqlite3 "$DBFILE" "SELECT folder FROM film_rolls WHERE NOT EXISTS (SELECT 1 FROM images WHERE images.film_id = film_rolls.id)"
 
     echo
     echo to really remove non existing images from the database call:
