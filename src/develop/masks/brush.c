@@ -968,7 +968,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
 static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
                                       int *points_count, float **border, int *border_count, int source)
 {
-  return _brush_get_points_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
+  return _brush_get_points_border(dev, form, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
                                   border_count, NULL, NULL, source);
 }
 
@@ -2099,21 +2099,19 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   {
     const float preview_scale = MIN(darktable.develop->preview_pipe->iwidth,
             darktable.develop->preview_pipe->iheight);
-    float radius[2] = { 0.f, 0.f };  
-    float radius_hardness = 0.f, radius_border = 0.f;
+    float radius[2] = { 0.0f, 0.0f };  
+    float radius_hardness = 0.0f, radius_border = 0.0f;
     if(gui->guipoints_count == 0)
     {
-      float masks_border = 0.f, masks_hardness = 0.f;
+      float masks_border = 0.0f, masks_hardness = 0.0f;
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
-                               
-                         
+                                                
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
       else
         masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
-                           
-                           
+                                               
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
       else
@@ -2128,8 +2126,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       radius_hardness = radius[0] * preview_scale / darktable.develop->preview_pipe->iwidth;
       radius_border = radius[1] * preview_scale / darktable.develop->preview_pipe->iheight;
 
-      float xpos, ypos;
-      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+      float xpos = 0.0f, ypos = 0.0f;
+      if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
       {
         xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->backbuf_width;
         ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->backbuf_height;
@@ -2153,7 +2151,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos, xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
@@ -2162,11 +2160,10 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     }
     else
     {
-      float masks_border = 0.0, masks_hardness = 0.0, masks_density = 0.0;
-      float opacity = 0.0, oldopacity = 0.0, pressure = 0.0;
-      float oldradius_hardness = 0;                          
+      float masks_border = 0.0f, masks_hardness = 0.0f, masks_density = 0.0f;
+      float opacity = 0.0f, oldopacity = 0.0f, pressure = 0.0f;
+      float oldradius_hardness = 0.0f;                          
       int stroked = 1;
-
       const float *guipoints = dt_masks_dynbuf_buffer(gui->guipoints);
       const float *guipoints_payload = dt_masks_dynbuf_buffer(gui->guipoints_payload);
 
@@ -2212,7 +2209,6 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       cairo_set_line_width(cr, 2 * radius_hardness);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
-
       cairo_move_to(cr, guipoints[0], guipoints[1]);
       for(int i = 1; i < gui->guipoints_count; i++)
       {
@@ -2281,7 +2277,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(darktable.develop->form_visible && (darktable.develop->form_visible->type & DT_MASKS_CLONE))
       {
         const int i = gui->guipoints_count - 1;
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, guipoints[0], guipoints[1], guipoints[i * 2],
                                             guipoints[i * 2 + 1], &x, &y, TRUE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);

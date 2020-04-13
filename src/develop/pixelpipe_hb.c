@@ -154,9 +154,9 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
-  pipe->backbuf_scale = 0.f;
-  pipe->backbuf_zoom_x = 0.f;
-  pipe->backbuf_zoom_y = 0.f;
+  pipe->backbuf_scale = 0.0f;
+  pipe->backbuf_zoom_x = 0.0f;
+  pipe->backbuf_zoom_y = 0.0f;
 
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
@@ -2562,8 +2562,8 @@ post_process_collect_info:
         const int imgsize = roi_out->height * roi_out->width * 4;
         for(int i = 0; i < imgsize; i += 4)
         {
-          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.f / 255.f);
-          input_tmp[i + 3] = 0.f;
+          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
+          input_tmp[i + 3] = 0.0f;
         }
 
         _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);

@@ -500,7 +500,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float radius[2] = { 0.f, 0.f };
+      float radius[2] = { 0.0f, 0.0f };
       float preview_scale = MIN(darktable.develop->preview_pipe->iwidth,
             darktable.develop->preview_pipe->iheight);
 
@@ -514,18 +514,14 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
         radius[0] = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
         radius[1] = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
       }
-                         
-                             
-                             
 
       radius[1] += radius[0];
-      
       dt_dev_distort_backtransform(darktable.develop, radius, 1);
       float inner_radius = radius[0] * preview_scale / darktable.develop->preview_pipe->iwidth;
       float outer_radius = radius[1] * preview_scale / darktable.develop->preview_pipe->iheight;
       float pzx = gui->posx;
       float pzy = gui->posy;
-      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
+      if((pzx == -1.0f && pzy == -1.0f) || gui->mouse_leaved_center)
       {
         const float zoom_x = dt_control_get_dev_zoom_x();
         const float zoom_y = dt_control_get_dev_zoom_y();
@@ -548,9 +544,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_dash(cr, dashed, 0, 0);
       cairo_set_line_width(cr, 3.0 / zoom_scale);
       dt_draw_set_color_overlay(cr, 0.3, 0.8);
-
       cairo_arc(cr, xt, yt, inner_radius, 0, 2.0 * M_PI);
-
       cairo_stroke_preserve(cr);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
       dt_draw_set_color_overlay(cr, 0.8, 0.8);
@@ -572,7 +566,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       // draw a cross where the source will be created
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, pzx, pzy, pzx, pzy, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
