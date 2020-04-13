@@ -846,14 +846,23 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     if(!g->blackbody_is_confusing) {
       //realistic
       const double neutral[3] = {
-          0.5 / wb_preset[preset->no_ft_pos].channel[0],
-          0.5 / wb_preset[preset->no_ft_pos].channel[1],
-          0.5 / wb_preset[preset->no_ft_pos].channel[2],
+          1 / wb_preset[preset->no_ft_pos].channel[0],
+          1 / wb_preset[preset->no_ft_pos].channel[1],
+          1 / wb_preset[preset->no_ft_pos].channel[2],
       };
       for(int ch=0; ch<3; ch++) {
         min_tune[ch] = neutral[ch] * wb_preset[preset->min_ft_pos].channel[ch];
         no_tune[ch]  = neutral[ch] * wb_preset[preset->no_ft_pos].channel[ch];
         max_tune[ch] = neutral[ch] * wb_preset[preset->max_ft_pos].channel[ch];
+      }
+
+      const float maxsRGBmin_tune = MAX(MAX(min_tune[0], min_tune[1]), min_tune[2]);
+      const float maxsRGBmax_tune = MAX(MAX(max_tune[0], max_tune[1]), max_tune[2]);
+
+      for(int ch=0; ch<3; ch++) {
+        min_tune[ch] = min_tune[ch] / maxsRGBmin_tune;
+        no_tune[ch]  = 1.0;
+        max_tune[ch] = max_tune[ch] / maxsRGBmax_tune;
       }
     } else {
       //exagerated
@@ -1010,8 +1019,10 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
       const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
 
-      for(int ch=0; ch<3; ch++){
-        sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+      if(maxsRGB > 0.99999999) {
+        for(int ch=0; ch<3; ch++){
+          sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+        }
       }
 
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
@@ -1030,10 +1041,11 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       float sRGB[3] = { white[0]*coeffs[0], white[1]*coeffs[1], white[2]*coeffs[2] };
       const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
 
-      for(int ch=0; ch<3; ch++){
-        sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+      if(maxsRGB > 0.99999999) {
+        for(int ch=0; ch<3; ch++){
+          sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+        }
       }
-
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
     }
   }
