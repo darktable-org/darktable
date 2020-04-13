@@ -207,55 +207,58 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  const int img = dt_view_get_image_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on();
+  if(imgs)
+  {
+    const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
+                                    (colors_flag ? DT_UNDO_COLORLABELS : 0) |
+                                    (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
+                                    (geotag_flag ? DT_UNDO_LT_GEOTAG : 0) |
+                                    (dttag_flag ? DT_UNDO_TAGS : 0);
+    if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
 
-  const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
-                                  (colors_flag ? DT_UNDO_COLORLABELS : 0) |
-                                  (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
-                                  (geotag_flag ? DT_UNDO_LT_GEOTAG : 0) |
-                                  (dttag_flag ? DT_UNDO_TAGS : 0);
-  if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
+    if(rating_flag)
+    {
+      const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
+      dt_ratings_apply_on_list(imgs, stars, TRUE, TRUE);
+    }
+    if(colors_flag)
+    {
+      const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
+      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE, TRUE);
+    }
+    if(dtmetadata_flag)
+    {
+      GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
+      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE, TRUE);
+      g_list_free_full(metadata, g_free);
+    }
+    if(geotag_flag)
+    {
+      dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
+      if(action == DT_MA_CLEAR)
+        geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
+      else
+        dt_image_get_location(imageid, geoloc);
+      dt_image_set_locations(imgs, geoloc, TRUE, TRUE);
+      g_free(geoloc);
+    }
+    if(dttag_flag)
+    {
+      // affect only user tags (not dt tags)
+      GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
+      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE, TRUE);
+      g_list_free(tags);
+    }
 
-  if(rating_flag)
-  {
-    const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
-    dt_ratings_apply_on_image(img, stars, FALSE, TRUE, TRUE);
-  }
-  if(colors_flag)
-  {
-    const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
-    dt_colorlabels_set_labels(img, colors, action != DT_MA_MERGE, TRUE, TRUE);
-  }
-  if(dtmetadata_flag)
-  {
-    GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
-    dt_metadata_set_list_id(img, metadata, action != DT_MA_MERGE, TRUE, TRUE);
-    g_list_free_full(metadata, g_free);
-  }
-  if(geotag_flag)
-  {
-    dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
-    if(action == DT_MA_CLEAR)
-      geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
-    else
-      dt_image_get_location(imageid, geoloc);
-    dt_image_set_location(img, geoloc, TRUE, TRUE);
-    g_free(geoloc);
-  }
-  if(dttag_flag)
-  {
-    GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid);
-    dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
-    g_list_free(tags);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  }
-
-  if(undo_type)
-  {
-    dt_undo_end_group(darktable.undo);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-    dt_control_queue_redraw_center();
-    dt_image_synch_xmp(img);
+    if(undo_type)
+    {
+      dt_undo_end_group(darktable.undo);
+      dt_image_synch_xmps(imgs);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_control_queue_redraw_center();
+    }
+    else g_list_free(imgs);
   }
 }
 

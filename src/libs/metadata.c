@@ -165,6 +165,7 @@ static void _update(dt_lib_module_t *self, gboolean early_bark_out)
     imgs_count++;
     imgs = g_list_next(imgs);
   }
+  g_list_free(imgs);
   if(images)
   {
     images[strlen(images) - 1] = '\0';

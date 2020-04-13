@@ -172,13 +172,10 @@ static void _colorlabels_execute(GList *imgs, const int labels, GList **undo, co
   }
 }
 
-void dt_colorlabels_set_labels(const int imgid, const int labels, const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
+void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
+                               const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
