@@ -418,9 +418,9 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   return result;
 }
 
-static void _metadata_add_metadata_to_list(GList **list, GList *metadata)
+static void _metadata_add_metadata_to_list(GList **list, const GList *metadata)
 {
-  GList *m = metadata;
+  const GList *m = metadata;
   while(m)
   {
     GList *m2 = g_list_next(m);
@@ -445,10 +445,10 @@ static void _metadata_add_metadata_to_list(GList **list, GList *metadata)
   }
 }
 
-static void _metadata_remove_metadata_from_list(GList **list, GList *metadata)
+static void _metadata_remove_metadata_from_list(GList **list, const GList *metadata)
 {
   // caution: metadata is a simple list here
-  GList *m = metadata;
+  const GList *m = metadata;
   while(m)
   {
     GList *same_key = g_list_find_custom(*list, m->data, _compare_metadata);
@@ -474,9 +474,10 @@ typedef enum dt_tag_actions_t
   DT_MA_REMOVE
 } dt_tag_actions_t;
 
-static void _metadata_execute(GList *imgs, GList *metadata, GList **undo, const gboolean undo_on, const gint action)
+static void _metadata_execute(const GList *imgs, const GList *metadata, GList **undo,
+                              const gboolean undo_on, const gint action)
 {
-  GList *images = imgs;
+  const GList *images = imgs;
   while(images)
   {
     const int image_id = GPOINTER_TO_INT(images->data);
@@ -487,7 +488,7 @@ static void _metadata_execute(GList *imgs, GList *metadata, GList **undo, const 
     switch(action)
     {
       case DT_MA_SET:
-        undometadata->after = metadata ? g_list_copy_deep(metadata, (GCopyFunc)g_strdup, NULL) : NULL;
+        undometadata->after = metadata ? g_list_copy_deep((GList *)metadata, (GCopyFunc)g_strdup, NULL) : NULL;
         break;
       case DT_MA_ADD:
         undometadata->after = g_list_copy_deep(undometadata->before, (GCopyFunc)g_strdup, NULL);
@@ -694,13 +695,10 @@ void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean g
   }
 }
 
-void dt_metadata_set_list_id(const int imgid, GList *metadata, const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
+void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
+                             const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
