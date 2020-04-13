@@ -71,7 +71,7 @@ fi
 TMPFILE=$(mktemp -t tmp.XXXXXXXXXX)
 QUERY="SELECT A.id,B.folder,A.filename FROM images AS A JOIN film_rolls AS B ON A.film_id = B.id"
 
-sqlite3 $DBFILE "$QUERY" > "$TMPFILE"
+sqlite3 "$DBFILE" "$QUERY" > "$TMPFILE"
 
 echo "Removing the following non existent file(s):"
 
