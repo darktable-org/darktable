@@ -100,7 +100,7 @@ done
 
 if [ "$dryrun" -eq 0 ]
 then
-    # delete now-empty filmrolls
+    # delete now-empty film rolls
     sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
     sqlite3 "$DBFILE" "VACUUM; ANALYZE"
 else
