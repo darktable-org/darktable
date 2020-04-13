@@ -1751,6 +1751,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
+    //used to take focus away from module search text input box when module selected
+    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), TRUE);
+    gtk_widget_grab_focus(dt_iop_gui_get_pluginui(module));
+    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), FALSE);
+
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_connect_locals_iop(module);
