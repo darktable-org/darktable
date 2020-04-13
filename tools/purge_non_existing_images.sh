@@ -73,18 +73,15 @@ then
     exit 1
 fi
 
-QUERY="SELECT A.id,B.folder,A.filename FROM images AS A JOIN film_rolls AS B ON A.film_id = B.id"
+QUERY="SELECT images.id, film_rolls.folder || '/' || images.filename FROM images JOIN film_rolls ON images.film_id = film_rolls.id"
 
 echo "Removing the following non existent file(s):"
 
-sqlite3 "$DBFILE" "$QUERY" | while read -r result
+sqlite3 -separator $'\t' "$DBFILE" "$QUERY" | while read -r id path
 do
-    ID=$(echo "$result" | cut -f1 -d"|")
-    FD=$(echo "$result" | cut -f2 -d"|")
-    FL=$(echo "$result" | cut -f3 -d"|")
-    if ! [ -f "$FD/$FL" ]
+    if ! [ -f "$path" ]
     then
-        echo "  $FD/$FL with ID = $ID"
+        echo "  ${path} with ID = ${id}"
 
         if [ "$dryrun" -eq 0 ]
         then
