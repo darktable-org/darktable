@@ -624,7 +624,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     {
       float new_vignette_fx = pzx * wd - vignette_x;
       float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
-      float delta_x = MIN(max, MAX(0.0, new_vignette_fx - vignette_w));
+      float delta_x = MIN(2.0f * max, MAX(0.0, new_vignette_fx - vignette_w));
       float new_falloff = 100.0 * delta_x / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
@@ -632,7 +632,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     {
       float new_vignette_fy = vignette_y - pzy * ht;
       float max = 0.5 * ((p->whratio > 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
-      float delta_y = MIN(max, MAX(0.0, new_vignette_fy - vignette_h));
+      float delta_y = MIN(2.0f * max, MAX(0.0, new_vignette_fy - vignette_h));
       float new_falloff = 100.0 * delta_y / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
@@ -1139,7 +1139,7 @@ void gui_init(struct dt_iop_module_t *self)
   label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
   g->scale = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.5, p->scale, 2);
-  g->falloff_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->falloff_scale, 2);
+  g->falloff_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, p->falloff_scale, 2);
   g->brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->brightness, 3);
   g->saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->saturation, 3);
   g->center_x = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->center.x, 3);
