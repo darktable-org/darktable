@@ -17,8 +17,8 @@ then
     exit 1
 fi
 
-configdir="$HOME/.config/darktable"
-DBFILE="$configdir/library.db"
+configdir="${HOME}/.config/darktable"
+DBFILE="${configdir}/library.db"
 dryrun=1
 library=""
 
@@ -32,7 +32,7 @@ do
     case "$option" in
     -h | --help)
         echo "Delete non existing images from darktable's database"
-        echo "Usage:   $0 [options]"
+        echo "Usage:   ${0} [options]"
         echo ""
         echo "Options:"
         echo "  -c|--configdir <path>    path to the darktable config directory"
@@ -54,7 +54,7 @@ do
         dryrun=0
         ;;
     *)
-        echo "warning: ignoring unknown option $option"
+        echo "warning: ignoring unknown option ${option}"
         ;;
     esac
     shift
@@ -90,12 +90,12 @@ do
         then
             for table in images meta_data
             do
-                sqlite3 "$DBFILE" "DELETE FROM $table WHERE id=$ID"
+                sqlite3 "$DBFILE" "DELETE FROM ${table} WHERE id=${id}"
             done
 
             for table in color_labels history masks_history selected_images tagged_images history_hash module_order
             do
-                sqlite3 "$DBFILE" "DELETE FROM $table WHERE imgid=$ID"
+                sqlite3 "$DBFILE" "DELETE FROM ${table} WHERE imgid=${id}"
             done
         fi
     fi
