@@ -77,29 +77,27 @@ QUERY="SELECT images.id, film_rolls.folder || '/' || images.filename FROM images
 
 echo "Removing the following non existent file(s):"
 
-sqlite3 -separator $'\t' "$DBFILE" "$QUERY" | while read -r id path
+while read -r -u 9 id path
 do
     if ! [ -f "$path" ]
     then
         echo "  ${path} with ID = ${id}"
-
-        if [ "$dryrun" -eq 0 ]
-        then
-            for table in images meta_data
-            do
-                sqlite3 "$DBFILE" "DELETE FROM ${table} WHERE id=${id}"
-            done
-
-            for table in color_labels history masks_history selected_images tagged_images history_hash module_order
-            do
-                sqlite3 "$DBFILE" "DELETE FROM ${table} WHERE imgid=${id}"
-            done
-        fi
+        ids="${ids+${ids},}${id}"
     fi
-done
+done 9< <(sqlite3 -separator $'\t' "$DBFILE" "$QUERY")
 
 if [ "$dryrun" -eq 0 ]
 then
+    for table in images meta_data
+    do
+        sqlite3 "$DBFILE" <<< "DELETE FROM ${table} WHERE id IN ($ids)"
+    done
+
+    for table in color_labels history masks_history selected_images tagged_images history_hash module_order
+    do
+        sqlite3 "$DBFILE" <<< "DELETE FROM ${table} WHERE imgid in ($ids)"
+    done
+
     # delete now-empty film rolls
     sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
     sqlite3 "$DBFILE" "VACUUM; ANALYZE"
