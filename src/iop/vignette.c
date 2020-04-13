@@ -263,7 +263,7 @@ static void encrypt_tea(unsigned int *arg)
   const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
   unsigned int v0 = arg[0], v1 = arg[1];
   unsigned int sum = 0;
-  unsigned int delta = 0x9e3779b9;
+  const unsigned int delta = 0x9e3779b9;
   for(int i = 0; i < TEA_ROUNDS; i++)
   {
     sum += delta;
@@ -298,8 +298,8 @@ static int get_grab(float pointerx, float pointery, float startx, float starty, 
 static void draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
 {
   // half width/height of the crosshair
-  float crosshair_w = DT_PIXEL_APPLY_DPI(10.0) / zoom_scale;
-  float crosshair_h = DT_PIXEL_APPLY_DPI(10.0) / zoom_scale;
+  const float crosshair_w = DT_PIXEL_APPLY_DPI(10.0) / zoom_scale;
+  const float crosshair_h = DT_PIXEL_APPLY_DPI(10.0) / zoom_scale;
 
   // center crosshair
   cairo_move_to(cr, -crosshair_w, 0.0);
@@ -559,10 +559,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     }
     else if(grab == 2) // change the width
     {
-      float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
-      float new_vignette_w = MIN(bigger_side, MAX(0.1, pzx * wd - vignette_x));
-      float ratio = new_vignette_w / vignette_h;
-      float new_scale = 100.0 * new_vignette_w / max;
+      const float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
+      const float new_vignette_w = MIN(bigger_side, MAX(0.1, pzx * wd - vignette_x));
+      const float ratio = new_vignette_w / vignette_h;
+      const float new_scale = 100.0 * new_vignette_w / max;
       // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly
       // changes, depending on speed.
       //        I guess we have to split the computation.
@@ -590,9 +590,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     }
     else if(grab == 4) // change the height
     {
-      float new_vignette_h = MIN(bigger_side, MAX(0.1, vignette_y - pzy * ht));
-      float ratio = new_vignette_h / vignette_w;
-      float max = 0.5 * ((ratio <= 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
+      const float new_vignette_h = MIN(bigger_side, MAX(0.1, vignette_y - pzy * ht));
+      const float ratio = new_vignette_h / vignette_w;
+      const float max = 0.5 * ((ratio <= 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
       // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly
       // changes, depending on speed.
       //        I guess we have to split the computation.
@@ -600,7 +600,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = 100.0 * new_vignette_h / max;
+          const float new_scale = 100.0 * new_vignette_h / max;
           dt_bauhaus_slider_set(g->scale, new_scale);
         }
         else
@@ -610,30 +610,30 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       else
       {
-        float new_scale = 100.0 * new_vignette_h / max;
+        const float new_scale = 100.0 * new_vignette_h / max;
         dt_bauhaus_slider_set(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
         {
-          float new_whratio = 1.0 / ratio;
+          const float new_whratio = 1.0 / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
         }
       }
     }
     else if(grab == 8) // change the falloff on the right
     {
-      float new_vignette_fx = pzx * wd - vignette_x;
-      float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
-      float delta_x = MIN(2.0f * max, MAX(0.0, new_vignette_fx - vignette_w));
-      float new_falloff = 100.0 * delta_x / max;
+      const float new_vignette_fx = pzx * wd - vignette_x;
+      const float max = 0.5 * ((p->whratio <= 1.0) ? bigger_side * p->whratio : bigger_side);
+      const float delta_x = MIN(2.0f * max, MAX(0.0, new_vignette_fx - vignette_w));
+      const float new_falloff = 100.0 * delta_x / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     else if(grab == 16) // change the falloff on the top
     {
-      float new_vignette_fy = vignette_y - pzy * ht;
-      float max = 0.5 * ((p->whratio > 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
-      float delta_y = MIN(2.0f * max, MAX(0.0, new_vignette_fy - vignette_h));
-      float new_falloff = 100.0 * delta_y / max;
+      const float new_vignette_fy = vignette_y - pzy * ht;
+      const float max = 0.5 * ((p->whratio > 1.0) ? bigger_side * (2.0 - p->whratio) : bigger_side);
+      const float delta_y = MIN(2.0f * max, MAX(0.0, new_vignette_fy - vignette_h));
+      const float new_falloff = 100.0 * delta_y / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     dt_control_queue_redraw_center();
@@ -897,9 +897,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float scale[2] = { xscale, yscale };
   float roi_center_scaled_f[2] = { roi_center_scaled.x, roi_center_scaled.y };
   float expt[2] = { exp1, exp2 };
-  float brightness = data->brightness;
-  float saturation = data->saturation;
-  int unbound = data->unbound;
+  const float brightness = data->brightness;
+  const float saturation = data->saturation;
+  const int unbound = data->unbound;
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
