@@ -235,7 +235,9 @@ typedef struct dt_iop_clipping_gui_data_t
   int k_selected, k_show, k_selected_segment;
   gboolean k_drag;
 
-  int cropping, straightening, applied, center_lock;
+  int cropping, straightening, applied;
+  gboolean shift_hold;
+  gboolean ctrl_hold;
   int old_width, old_height;
 } dt_iop_clipping_gui_data_t;
 
@@ -2015,7 +2017,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropping = 0;
   g->straightening = 0;
   g->applied = 1;
-  g->center_lock = 0;
+  g->shift_hold = FALSE;
+  g->ctrl_hold = FALSE;
   g->k_drag = FALSE;
   g->k_show = -1;
   g->k_selected = -1;
@@ -2938,15 +2941,18 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       if(grab == GRAB_ALL)
       {
         /* moving the crop window */
-        g->clip_x
-            = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
-        g->clip_y
-            = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+        if(!g->shift_hold)
+          g->clip_x
+              = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+
+        if(!g->ctrl_hold)
+          g->clip_y
+              = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
       }
       else
       {
         /* changing the crop window */
-        if(g->center_lock)
+        if(g->shift_hold)
         {
           /* the center is locked, scale crop radial with locked ratio */
           gboolean flag = FALSE;
@@ -3173,7 +3179,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(g->k_drag) g->k_drag = FALSE;
 
   /* reset internal ui states*/
-  g->center_lock = g->straightening = g->cropping = 0;
+  g->straightening = g->cropping = 0;
+  g->shift_hold = FALSE;
+  g->ctrl_hold = FALSE;
   return 1;
 }
 
@@ -3335,7 +3343,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->prev_clip_h = g->clip_h;
 
       /* if shift is pressed, then lock crop on center */
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) g->center_lock = 1;
+      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) g->shift_hold = TRUE;
+      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) g->ctrl_hold = TRUE;
     }
 
     return 1;
