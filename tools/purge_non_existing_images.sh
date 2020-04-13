@@ -68,14 +68,11 @@ if [ ! -f "$DBFILE" ]; then
     exit 1
 fi
 
-TMPFILE=$(mktemp -t tmp.XXXXXXXXXX)
 QUERY="SELECT A.id,B.folder,A.filename FROM images AS A JOIN film_rolls AS B ON A.film_id = B.id"
-
-sqlite3 "$DBFILE" "$QUERY" > "$TMPFILE"
 
 echo "Removing the following non existent file(s):"
 
-cat "$TMPFILE" | while read -r result
+sqlite3 "$DBFILE" "$QUERY" | while read -r result
 do
   ID=$(echo "$result" | cut -f1 -d"|")
   FD=$(echo "$result" | cut -f2 -d"|")
@@ -95,7 +92,6 @@ do
     fi
   fi
 done
-rm "$TMPFILE"
 
 
 if [ $dryrun -eq 0 ]; then
