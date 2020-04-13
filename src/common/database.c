@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 26
+#define CURRENT_DATABASE_VERSION_LIBRARY 27
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1537,6 +1537,37 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 26;
   }
+  else if(version == 26)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+ 
+    TRY_EXEC("CREATE TABLE main.new_film_rolls "
+             "(id INTEGER PRIMARY KEY, "
+             "access_timestamp INTEGER, "
+             "folder VARCHAR(1024) NOT NULL)",
+             "[init] can't create new_film_rolls table\n");
+
+    TRY_EXEC("INSERT INTO main.new_film_rolls"
+             "(id, access_timestamp, folder) "
+             "SELECT id, "
+             "strftime('%s', replace(substr(datetime_accessed, 1, 10), ':', '-') || substr(datetime_accessed, 11), 'utc'), "
+             "folder "
+             "FROM film_rolls "
+             "WHERE folder IS NOT NULL",
+             "[init] can't populate new_film_rolls table from film_rolls\n");
+
+    TRY_EXEC("DROP TABLE film_rolls",
+             "[init] can't delete table film_rolls\n");
+
+    TRY_EXEC("ALTER TABLE main.new_film_rolls RENAME TO film_rolls",
+             "[init] can't rename table new_film_rolls to film_rolls\n");
+
+    TRY_EXEC("CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)",
+             "[init] can't create index `film_rolls_folder_index' on table `film_rolls'\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 27;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1783,7 +1814,7 @@ static void _create_library_schema(dt_database_t *db)
   ////////////////////////////// film_rolls
   sqlite3_exec(db->handle,
                "CREATE TABLE main.film_rolls "
-               "(id INTEGER PRIMARY KEY, datetime_accessed CHAR(20), "
+               "(id INTEGER PRIMARY KEY, access_timestamp INTEGER, "
                //                        "folder VARCHAR(1024), external_drive VARCHAR(1024))", //
                //                        FIXME: make sure to bump CURRENT_DATABASE_VERSION_LIBRARY and add a
                //                        case to _upgrade_library_schema_step when adding this!
