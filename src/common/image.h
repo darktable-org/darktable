@@ -264,9 +264,13 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 void dt_image_reset_final_size(const int32_t imgid);
-/** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on);
-/** get image location lon/lat */
+/** set image location lon/lat/ele */
+void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
+                           const gboolean undo_on, const gboolean group_on);
+/** set images location lon/lat/ele */
+void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
+                           const gboolean undo_on, const gboolean group_on);
+/** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 gboolean dt_image_altered(const uint32_t imgid);

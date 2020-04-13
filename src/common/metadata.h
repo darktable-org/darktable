@@ -90,11 +90,11 @@ void dt_metadata_set_import(int id, const char *key, const char *value); // exif
 /** list is a set of key, value */
 void dt_metadata_set_list(int id, GList *key_value, const gboolean undo_on, const gboolean group_on); // libs/metadata.c
 
-/** Set metadata (id keys) for a specific image, or all selected for id == -1.
+/** Set metadata (id keys) for a list of images.
     list is a set of keyid, value
     if clear_on TRUE the image metadata are cleared before attaching the new ones*/
-void dt_metadata_set_list_id(const int id, GList *key_value, const gboolean clear_on, const gboolean undo_on, const gboolean group_on); // libs/image.c
-
+void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
+                             const gboolean undo_on, const gboolean group_on);
 /** Get metadata (named keys) for a specific image, or all selected for id == -1.
     For keys which return a string, the caller has to make sure that it
     is freed after usage. */
