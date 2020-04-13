@@ -415,13 +415,9 @@ void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **u
   }
 }
 
-void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on)
+void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_collection_get_selected(darktable.collection, -1);
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
@@ -439,6 +435,17 @@ void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const
     g_list_free(imgs);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
+}
+
+void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on)
+{
+  GList *imgs = NULL;
+  if(imgid == -1)
+    imgs = dt_view_get_images_to_act_on();
+  else
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  dt_image_set_locations(imgs, geoloc, undo_on, group_on);
+  g_list_free(imgs);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)
