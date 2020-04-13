@@ -99,14 +99,11 @@ int dt_film_open2(dt_film_t *film)
     /* fill out the film dirname */
     g_strlcpy(film->dirname, (gchar *)sqlite3_column_text(stmt, 1), sizeof(film->dirname));
     sqlite3_finalize(stmt);
-    char datetime[20];
-    dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, film->id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film->id);
     sqlite3_step(stmt);
 
     sqlite3_finalize(stmt);
@@ -131,14 +128,11 @@ int dt_film_open(const int32_t id)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
-    char datetime[20];
-    dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
@@ -154,7 +148,7 @@ int dt_film_open_recent(const int num)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.film_rolls ORDER BY datetime_accessed DESC LIMIT ?1,1", -1,
+                              "SELECT id FROM main.film_rolls ORDER BY access_timestamp DESC LIMIT ?1,1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, num);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -162,13 +156,10 @@ int dt_film_open_recent(const int num)
     int id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
     if(dt_film_open(id)) return 1;
-    char datetime[20];
-    dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
@@ -199,15 +190,12 @@ int dt_film_new(dt_film_t *film, const char *directory)
   if(film->id <= 0)
   {
     // create a new filmroll
-    char datetime[20];
-    dt_gettime(datetime, sizeof(datetime));
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.film_rolls (id, datetime_accessed, folder) "
-                                "VALUES (NULL, ?1, ?2)",
+                                "INSERT INTO main.film_rolls (id, access_timestamp, folder) "
+                                "VALUES (NULL, strftime('%s', 'now'), ?1)",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, film->dirname, -1, SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, film->dirname, -1, SQLITE_STATIC);
     const int rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
