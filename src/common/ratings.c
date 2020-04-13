@@ -106,24 +106,30 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
   }
 }
 
-void dt_ratings_apply_on_list(GList *list, const int rating, const gboolean undo_on)
+void dt_ratings_apply_on_list(const GList *img, const int rating,
+                              const gboolean undo_on, const gboolean group_on)
 {
-  if(g_list_length(list) < 1) return;
-
-  GList *undo = NULL;
-  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-  _ratings_apply(list, rating, &undo, undo_on);
-
-  if(undo_on)
+  GList *imgs = g_list_copy((GList *)img);
+  if(imgs)
   {
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
-    dt_undo_end_group(darktable.undo);
+    GList *undo = NULL;
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+    if(group_on) dt_grouping_add_grouped_images(&imgs);
+
+    _ratings_apply(imgs, rating, &undo, undo_on);
+
+    g_list_free(imgs);
+    if(undo_on)
+    {
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+      dt_undo_end_group(darktable.undo);
+    }
+    dt_collection_hint_message(darktable.collection);
   }
-  dt_collection_hint_message(darktable.collection);
 }
 
-void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on, const gboolean undo_on,
-                               const gboolean group_on)
+void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,
+                               const gboolean undo_on, const gboolean group_on)
 {
   GList *imgs = NULL;
   int new_rating = rating;
@@ -145,7 +151,10 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
       new_rating = DT_VIEW_DESERT;
     }
 
+    GList *undo = NULL;
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     if(group_on) dt_grouping_add_grouped_images(&imgs);
+
     const guint count = g_list_length(imgs);
     if(count > 1)
     {
@@ -156,7 +165,13 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
                        new_rating, count);
     }
 
-    dt_ratings_apply_on_list(imgs, new_rating, undo_on);
+    _ratings_apply(imgs, rating, &undo, undo_on);
+
+    if(undo_on)
+    {
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
+      dt_undo_end_group(darktable.undo);
+    }
     g_list_free(imgs);
   }
   else
