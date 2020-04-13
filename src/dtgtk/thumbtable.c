@@ -43,6 +43,98 @@ static void _list_remove_thumb(gpointer user_data)
   dt_thumbnail_destroy(thumb);
 }
 
+// get the class name associated with the overlays mode
+gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
+{
+  switch(over)
+  {
+    case DT_THUMBNAIL_OVERLAYS_NONE:
+      return dt_util_dstrcat(NULL, "dt_overlays_none");
+    case DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover_extended");
+    case DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL:
+      return dt_util_dstrcat(NULL, "dt_overlays_always");
+    case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
+      return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+    default:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover");
+  }
+}
+
+// get the size categorie, depending on the thumb size
+static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
+{
+  // we get the size delimitations to differentiate sizes categories
+  // one we set as many categories as we want (this can be usefull if we want to finetune very precisely css)
+  gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+  gchar **ts = g_strsplit(txt, "|", -1);
+  int i = 0;
+  while(ts[i])
+  {
+    const int s = g_ascii_strtoll(ts[i], NULL, 10);
+    if(table->thumb_size < s) break;
+    i++;
+  }
+  table->prefs_size = i;
+  g_strfreev(ts);
+  g_free(txt);
+  return table->prefs_size;
+}
+
+// update thumbtable class and overlays mode, depending on size categorie
+static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
+{
+  int ns = _thumbs_get_prefs_size(table);
+
+  // we change the class that indicate the thumb size
+  gchar *c0 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", table->prefs_size);
+  gchar *c1 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", ns);
+  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
+  gtk_style_context_remove_class(context, c0);
+  gtk_style_context_add_class(context, c1);
+  g_free(c0);
+  g_free(c1);
+  table->prefs_size = ns;
+
+  // we change the overlay mode
+  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, ns);
+  dt_thumbnail_overlay_t over = dt_conf_get_int(txt);
+  dt_thumbtable_set_overlays_mode(table, over);
+
+  g_free(txt);
+}
+
+// change the type of overlays that should be shown
+void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over)
+{
+  if(over == table->overlays) return;
+  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
+  dt_conf_set_int(txt, over);
+  g_free(txt);
+  gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
+  gchar *cl1 = _thumbs_get_overlays_class(over);
+
+  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
+  gtk_style_context_remove_class(context, cl0);
+  gtk_style_context_add_class(context, cl1);
+
+  // we need to change the overlay content if we pass from normal to extended overlays
+  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_set_extended_overlay(th, over);
+    // and we resize the bottom area
+    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    l = g_list_next(l);
+  }
+
+  table->overlays = over;
+  g_free(cl0);
+  g_free(cl1);
+}
+
 // get the thumb at specific position
 static dt_thumbnail_t *_thumb_get_at_pos(dt_thumbtable_t *table, int x, int y)
 {
@@ -193,6 +285,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
     return FALSE;
   }
 
+  int old_size = table->thumb_size;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
     const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
@@ -240,6 +333,12 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       table->center_offset = 0;
       ret = TRUE;
     }
+  }
+
+  // if the thumb size has changed, we nee to set overlays, etc... correctly
+  if(table->thumb_size != old_size)
+  {
+    _thumbs_update_overlays_mode(table);
   }
   return ret;
 }
@@ -356,7 +455,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       if(posy < table->view_height) // we don't load invisible thumbs
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0));
+                                                 sqlite3_column_int(stmt, 0), table->overlays);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -398,7 +497,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
       if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
       {
         dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0));
+                                                 sqlite3_column_int(stmt, 0), table->overlays);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -605,7 +704,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
     gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
-    dt_thumbnail_resize(th, new_size, new_size);
+    dt_thumbnail_resize(th, new_size, new_size, FALSE);
     l = g_list_next(l);
   }
 
@@ -1344,6 +1443,13 @@ dt_thumbtable_t *dt_thumbtable_new()
   gtk_style_context_add_class(context, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
+  // overlays mode
+  table->overlays
+      = DT_THUMBNAIL_OVERLAYS_NONE; //(dt_thumbnail_overlay_t)dt_conf_get_int("lighttable/ui/overlays_mode");
+  gchar *cl = _thumbs_get_overlays_class(table->overlays);
+  gtk_style_context_add_class(context, cl);
+  g_free(cl);
+
   table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
 
   // set widget signals
@@ -1519,7 +1625,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
           thumb->y = posy;
           gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         }
-        dt_thumbnail_resize(thumb, table->thumb_size, table->thumb_size);
+        dt_thumbnail_resize(thumb, table->thumb_size, table->thumb_size, FALSE);
         newlist = g_list_append(newlist, thumb);
         // and we remove the thumb from the old list
         table->list = g_list_remove(table->list, thumb);
@@ -1527,7 +1633,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       else
       {
         // we create a completly new thumb
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow);
+        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -1653,6 +1759,9 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     }
 
     table->mode = mode;
+
+    // we force overlays update as the size may not change in certain cases
+    _thumbs_update_overlays_mode(table);
   }
 
   // do we show scrollbars ?
@@ -2172,6 +2281,7 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
   dt_thumbtable_set_offset(table, table->offset + offset, TRUE);
   return TRUE;
 }
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
