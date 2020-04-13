@@ -1703,7 +1703,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
                             GdkModifierType modifier, gpointer data)
 {
   GList *imgs = dt_view_get_images_to_act_on();
-  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }

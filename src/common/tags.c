@@ -485,14 +485,10 @@ void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean 
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
-void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean ignore_dt_tags,
+void dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ignore_dt_tags,
                      const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
-  if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
-  else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;

@@ -92,7 +92,7 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created
  * if clear_on TRUE the image tags are cleared before attaching the new ones*/
-void dt_tag_set_tags(GList *tags, const gint imgid,
+void dt_tag_set_tags(const GList *tags, const GList *img,
                      const gboolean ignore_dt_tags, const gboolean clear_on,
                      const gboolean undo_on, const gboolean group_on);
 
