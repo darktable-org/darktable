@@ -572,6 +572,8 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
+  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -580,6 +582,8 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
+    if(mode == DT_STYLE_HISTORY_OVERWRITE)
+      dt_history_delete_on_image_ext(imgid, FALSE);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
   }
