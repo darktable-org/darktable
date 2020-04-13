@@ -33,6 +33,10 @@ making a backup is strongly advised.
 
 - Add pseudo preset in whitebalance to keep user's modifications.
 
+- In crop&rotate module it is possible to allow only vertical
+  composition change using the <kbd>Shift</kbd> modifier when dragging
+  the crop area and horizontal one using the <kbd>Ctrl</kbd> modifier.
+
 ## Bug fixes
 
 - Fix color peaking mode in culling mode.
