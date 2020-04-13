@@ -159,12 +159,18 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     d->vp_height = height;
 
     /* set x,y,w,h of surface depending on split align and invert */
-    const double x = d->vertical ? (d->inverted ? width * d->vp_xpointer : 0) : 0;
-    const double y = d->vertical ? 0 : (d->inverted ? height * d->vp_ypointer : 0);
-    const double w = d->vertical ? (d->inverted ? (width * (1.0 - d->vp_xpointer)) : width * d->vp_xpointer)
-                                 : width;
-    const double h = d->vertical ? height
-                                 : (d->inverted ? (height * (1.0 - d->vp_ypointer)) : height * d->vp_ypointer);
+    const double x = d->vertical
+      ? (d->inverted ? width * d->vp_xpointer : 0)
+      : 0;
+    const double y = d->vertical
+      ? 0
+      : (d->inverted ? height * d->vp_ypointer : 0);
+    const double w = d->vertical
+      ? (d->inverted ? (width * (1.0 - d->vp_xpointer)) : width * d->vp_xpointer)
+      : width;
+    const double h = d->vertical
+      ? height
+      : (d->inverted ? (height * (1.0 - d->vp_ypointer)) : height * d->vp_ypointer);
 
     const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
 
@@ -272,10 +278,12 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     /* do the split rotating */
     const double hhs = HANDLE_SIZE * 0.5;
     if(which == 1
-       && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs) && yp > 0.5 - hhs
-            && yp < 0.5 + hhs)
-           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs) && xp > 0.5 - hhs && xp < 0.5 + hhs)
-           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs && d->vp_yrotate <= yp + hhs )))
+       && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
+            && yp > 0.5 - hhs && yp < 0.5 + hhs)
+           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
+               && xp > 0.5 - hhs && xp < 0.5 + hhs)
+           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
+               && d->vp_yrotate <= yp + hhs )))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -366,7 +374,8 @@ void gui_init(dt_lib_module_t *self)
   /* create take snapshot button */
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
   d->take_button = button;
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
   gtk_widget_set_tooltip_text(button, _("take snapshot to compare with another image "
                                         "or the same image at another stage of development"));
   dt_gui_add_help_link(button, "snapshots.html#snapshots");
@@ -383,15 +392,15 @@ void gui_init(dt_lib_module_t *self)
     /* create snapshot button */
     d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
     gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button)), GTK_ALIGN_START);
-    g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked", G_CALLBACK(_lib_snapshots_toggled_callback),
-                     self);
+    g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked",
+                     G_CALLBACK(_lib_snapshots_toggled_callback), self);
 
     /* assign snapshot number to widget */
     g_object_set_data(G_OBJECT(d->snapshot[k].button), "snapshot", GINT_TO_POINTER(k + 1));
 
     /* setup filename for snapshot */
-    snprintf(d->snapshot[k].filename, sizeof(d->snapshot[k].filename), "%s/dt_snapshot_%d.png", localtmpdir,
-             k);
+    snprintf(d->snapshot[k].filename, sizeof(d->snapshot[k].filename),
+             "%s/dt_snapshot_%d.png", localtmpdir, k);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, TRUE, TRUE, 0);
