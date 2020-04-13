@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/styles.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -40,7 +41,7 @@ typedef struct dt_lib_styles_t
   GtkEntry *entry;
   GtkWidget *duplicate;
   GtkTreeView *tree;
-  GtkWidget *delete_button, *import_button, *export_button, *edit_button;
+  GtkWidget *delete_button, *import_button, *export_button, *edit_button, *applymode;
 } dt_lib_styles_t;
 
 
@@ -384,6 +385,12 @@ static void _styles_changed_callback(gpointer instance, gpointer user_data)
   _gui_styles_update_view(d);
 }
 
+static void applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const int mode = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/lighttable/style/applymode", mode);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
@@ -436,6 +443,14 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
+  d->applymode = dt_bauhaus_combobox_new(NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
+  dt_bauhaus_widget_set_label(d->applymode, NULL, _("mode"));
+  dt_bauhaus_combobox_add(d->applymode, _("append"));
+  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
+  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
+  dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
+
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
@@ -486,6 +501,7 @@ void gui_init(dt_lib_module_t *self)
   _gui_styles_update_view(d);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED, G_CALLBACK(_styles_changed_callback), d);
+  g_signal_connect(G_OBJECT(d->applymode), "value-changed", G_CALLBACK(applymode_combobox_changed), (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
