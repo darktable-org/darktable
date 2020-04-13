@@ -310,7 +310,7 @@ found_presets.each do |maker, model, preset, finetune, red, green, blue|
   min_padding = preset.size if preset.size > min_padding
 end
 
- #dealing with Nikon half-steps
+# dealing with Nikon half-steps
 (found_presets.length - 1).times do |index|
   if found_presets[index][0] == "Nikon" && #case now translated
       found_presets[index+1][0] == found_presets[index][0] && ##
@@ -334,13 +334,21 @@ end
   if found_presets[index][0] == "Nikon" && #case now translated
       found_presets[index+1][0] == found_presets[index][0] && ##
       found_presets[index+1][1] == found_presets[index][1] &&
-      found_presets[index+1][2] == found_presets[index][2] &&
-      found_presets[index+1][3].to_i.even? && found_presets[index][3].to_i.even? &&
+      found_presets[index+1][2] == found_presets[index][2]
+    if found_presets[index+1][3].to_i.even? && found_presets[index][3].to_i.even? &&
       (found_presets[index+1][3].to_i) == (found_presets[index][3].to_i + 2)
     
-    #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
-    found_presets[index][3] = (found_presets[index][3].to_i / 2).to_s
-    found_presets[index+1][3] = (found_presets[index+1][3].to_i / 2).to_s
+      #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
+      found_presets[index][3] = (found_presets[index][3].to_i / 2).to_s
+      found_presets[index+1][3] = (found_presets[index+1][3].to_i / 2).to_s
+    elsif found_presets[index+1][3].to_i.even? && found_presets[index][3].to_i.odd? &&
+      (found_presets[index+1][3].to_i) == ((found_presets[index][3].to_i + 1)*2) &&
+      ((index + 2 == found_presets.length) ||
+      found_presets[index+2][2] != found_presets[index+1][2] )
+
+      #dealing with corner case of last-halfstep not being dealth with earlier
+      found_presets[index+1][3] = (found_presets[index+1][3].to_i / 2).to_s
+    end
   end
 end
 # $stderr.puts found_presets.inspect.gsub("], ", "],\n") # debug content
