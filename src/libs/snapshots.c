@@ -147,9 +147,13 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
                      int32_t pointery)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
   if(d->snapshot_image)
   {
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(darktable.develop, 0, 0, &pzx, &pzy);
     pzx += 0.5f;
@@ -183,11 +187,14 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
     cairo_set_line_width(cri, 1.);
 
+    const float iwidth = dev->preview_pipe->backbuf_width * zoom_scale;
+    const float iheight = dev->preview_pipe->backbuf_height * zoom_scale;
+
     if(d->vertical)
     {
       const double lx = width * d->vp_xpointer;
-      const double offset = (double)(height * (-pzy));
-      const double center = height * 0.05f + offset;
+      const double offset = (double)(iheight * (-pzy));
+      const double center = (fabs(size) * 2.0) + offset;
 
       // line
       cairo_move_to(cri, lx, 0.0f);
@@ -210,8 +217,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     else
     {
       const double ly = height * d->vp_ypointer;
-      const double offset = (double)(width * (-pzx));
-      const double center = width * 0.05f + offset;
+      const double offset = (double)(iwidth * (-pzx));
+      const double center = (fabs(size) * 2.0) + offset;
 
       // line
       cairo_move_to(cri, 0.0f, ly);
