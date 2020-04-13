@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-12 20:25+0200\n"
-"PO-Revision-Date: 2020-04-12 20:36+0200\n"
+"POT-Creation-Date: 2020-04-13 09:52+0200\n"
+"PO-Revision-Date: 2020-04-13 10:53+0200\n"
 "Last-Translator: Tomasz Golinski <tomaszg@math.uwb.edu.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -9778,7 +9778,7 @@ msgstr "jasność materiału filmu"
 msgid "select color of film material"
 msgstr "wybierz kolor materiału filmu"
 
-#: ../src/iop/invert.c:639
+#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1105
 msgid "pick color of film material from image"
 msgstr "pobierz kursorem kolor materiału filmu z obrazu"
 
@@ -9918,7 +9918,7 @@ msgstr "znajdź aparat"
 msgid "find lens"
 msgstr "znajdź obiektyw"
 
-#: ../src/iop/lens.cc:2414
+#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1082
 msgid "corrections"
 msgstr "korekcje"
 
@@ -10579,6 +10579,254 @@ msgstr "przeciągaj i przewijaj, aby ustawić wirtualny filtr koloru"
 msgid "how much to keep highlights"
 msgstr "ilość pozostawionych świateł"
 
+#: ../src/iop/negadoctor.c:206
+msgid "negadoctor"
+msgstr "doktor negatywów"
+
+#: ../src/iop/negadoctor.c:383
+msgid "color film"
+msgstr "film kolorowy"
+
+#: ../src/iop/negadoctor.c:397
+msgid "black and white film"
+msgstr "film czarno-biały"
+
+#: ../src/iop/negadoctor.c:457
+msgid "D min"
+msgstr "D min"
+
+#: ../src/iop/negadoctor.c:463 ../src/iop/negadoctor.c:1113
+msgid "D min red component"
+msgstr "D min (czerwony)"
+
+#: ../src/iop/negadoctor.c:1069
+msgid "film stock"
+msgstr "film"
+
+#: ../src/iop/negadoctor.c:1070
+msgid "black and white"
+msgstr "czarno-biały"
+
+#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2876
+#: ../src/iop/watermark.c:1491
+msgid "color"
+msgstr "kolorowy"
+
+#: ../src/iop/negadoctor.c:1074
+msgid "toogle on or off the color controls"
+msgstr "włącz/wyłącz kontrolki koloru"
+
+#: ../src/iop/negadoctor.c:1081
+msgid "film properties"
+msgstr "film"
+
+#: ../src/iop/negadoctor.c:1083
+msgid "print properties"
+msgstr "odbitka"
+
+#. Dmin
+#: ../src/iop/negadoctor.c:1092
+msgid "color of the film base"
+msgstr "kolor materiału filmu"
+
+#: ../src/iop/negadoctor.c:1100
+msgid "select color of film material from a swatch"
+msgstr "wybierz kolor materiału filmu"
+
+#: ../src/iop/negadoctor.c:1114 ../src/iop/negadoctor.c:1124
+#: ../src/iop/negadoctor.c:1134
+msgid ""
+"adjust the color and shade of the film transparent base.\n"
+"this value depends on the film material, \n"
+"the chemical fog produced while developing the film,\n"
+"and the scanner white balance."
+msgstr ""
+"dostosuj kolor materiału bazowego filmu.\n"
+"ta wartość zależy od rodzaju materiału,\n"
+"zamglenia powstałego w procesie wywoływania,\n"
+"oraz balansu bieli skanera."
+
+#: ../src/iop/negadoctor.c:1123
+msgid "D min green component"
+msgstr "D min (zielony)"
+
+#: ../src/iop/negadoctor.c:1133
+msgid "D min blue component"
+msgstr "D min (niebieski)"
+
+#. D max and scanner bias
+#: ../src/iop/negadoctor.c:1143
+msgid "dynamic range of the film"
+msgstr "rozpiętość tonalna filmu"
+
+#: ../src/iop/negadoctor.c:1147
+msgid "D max"
+msgstr "D max"
+
+#: ../src/iop/negadoctor.c:1151
+msgid ""
+"maximum density of the film, corresponding to white after inversion.\n"
+"this value depends on the film specifications, the developing process,\n"
+"the dynamic range of the scene and the scanner exposure settings."
+msgstr ""
+"największe zaczernienie filmu, odpowiadające bieli po odwróceniu negatywu.\n"
+"ta wartość zależy od specyfikacji filmu, procesu wywoływania,\n"
+"rozpiętości dynamicznej sceny oraz ustawień skanera."
+
+#: ../src/iop/negadoctor.c:1157
+msgid "scanner exposure settings"
+msgstr "ustawienia ekspozycji skanera"
+
+#: ../src/iop/negadoctor.c:1161
+msgid "scan exposure bias"
+msgstr "korekta ekspozycji skanera"
+
+#: ../src/iop/negadoctor.c:1165
+msgid ""
+"correct the exposure of the scanner, for all RGB channels,\n"
+"before the inversion, so blacks are neither clipped or too pale."
+msgstr ""
+"skoryguj ustawienia ekspozycji skanera dla wszystkich kanałów RGB\n"
+"przed inwersją, tak, aby czernie nie były ani wypalone, ani zbyt jasne."
+
+#. WB shadows
+#: ../src/iop/negadoctor.c:1171
+msgid "shadows color cast"
+msgstr "przesunięcie koloru cieni"
+
+#: ../src/iop/negadoctor.c:1180
+msgid "select color of shadows from a swatch"
+msgstr "wybierz kolor cieni z palety"
+
+#: ../src/iop/negadoctor.c:1185
+msgid "pick shadows color from image"
+msgstr "wybierz kolor cieni ze zdjęcia"
+
+#: ../src/iop/negadoctor.c:1192
+msgid "shadows red offset"
+msgstr "czerwony"
+
+#: ../src/iop/negadoctor.c:1193 ../src/iop/negadoctor.c:1202
+#: ../src/iop/negadoctor.c:1211
+msgid ""
+"correct the color cast in shadows so blacks are\n"
+"truly achromatic. Setting this value before\n"
+"the highlights illuminant white balance will help\n"
+"recovering the global white balance in difficult cases."
+msgstr ""
+"skoryguj kolor cieni tak, aby czernie\n"
+"nie były zabarwione. ustawienie tej wartości przed\n"
+"korekcją świateł ułatwi przywrócenie globalnego balansu\n"
+"bieli w trudnych przypadkach."
+
+#: ../src/iop/negadoctor.c:1201
+msgid "shadows green offset"
+msgstr "zielony"
+
+#: ../src/iop/negadoctor.c:1210
+msgid "shadows blue offset"
+msgstr "niebieski"
+
+#. WB highlights
+#: ../src/iop/negadoctor.c:1219
+msgid "highlights white balance"
+msgstr "balans bieli świateł"
+
+#: ../src/iop/negadoctor.c:1228
+msgid "select color of illuminant from a swatch"
+msgstr "wybierz kolor świateł z palety"
+
+#: ../src/iop/negadoctor.c:1233
+msgid "pick illuminant color from image"
+msgstr "wybierz kolor świateł ze zdjęcia"
+
+#: ../src/iop/negadoctor.c:1240
+msgid "illuminant red gain"
+msgstr "czerwony"
+
+#: ../src/iop/negadoctor.c:1241 ../src/iop/negadoctor.c:1250
+#: ../src/iop/negadoctor.c:1259
+msgid ""
+"correct the color of the illuminant so whites are\n"
+"truly achromatic. Setting this value after\n"
+"the shadows color cast will help\n"
+"recovering the global white balance in difficult cases."
+msgstr ""
+"skoryguj kolor świateł tak, aby biel\n"
+"nie była zabarwione. ustawienie tej wartości po\n"
+"korekcją cieni ułatwi przywrócenie globalnego balansu\n"
+"bieli w trudnych przypadkach."
+
+#: ../src/iop/negadoctor.c:1249
+msgid "illuminant green gain"
+msgstr "zielony"
+
+#: ../src/iop/negadoctor.c:1258
+msgid "illuminant blue gain"
+msgstr "niebieski"
+
+#. print corrections
+#: ../src/iop/negadoctor.c:1267
+msgid "virtual paper properties"
+msgstr "właściwości papieru"
+
+#: ../src/iop/negadoctor.c:1271
+msgid "paper black (density correction)"
+msgstr "poziom czerni"
+
+#: ../src/iop/negadoctor.c:1275
+msgid ""
+"correct the density of black after the inversion,\n"
+"to adjust the global contrast while avoiding clipping shadows."
+msgstr ""
+"skoryguj poziom czerni po inwersji, aby dostosować\n"
+"kontrast globalny, unikając jednocześnie utraty detali w cieniach."
+
+#: ../src/iop/negadoctor.c:1281
+msgid "paper grade (gamma)"
+msgstr "gradacja papieru (gamma)"
+
+#: ../src/iop/negadoctor.c:1283
+msgid ""
+"select the grade of the virtual paper, which is actually\n"
+"equivalent to applying a gamma. it compensates the film D max\n"
+"and recovers the contrast. use a high grade for high D max."
+msgstr ""
+"wybierz gradację (klasę) papieru, która jest\n"
+"odpowiednikiem współczynnika gamma. Pozwoli ona\n"
+"skompensować maksymalną gęstość (D max) filmu\n"
+"i przywrócić kontrast. użyj wyższej gradacji dla wyższych D max."
+
+#: ../src/iop/negadoctor.c:1290
+msgid "paper gloss (specular highlights)"
+msgstr "połysk papieru"
+
+#: ../src/iop/negadoctor.c:1292
+msgid ""
+"gradually compress specular highlights past this value\n"
+"to avoid clipping while pushing the exposure for midtones.\n"
+"this somewhat reproduces the behaviour of matte paper."
+msgstr ""
+"stopniowo kompresuje rozświetlenia powyżej zadanej wartości.\n"
+"pozwala to uniknąć prześwietleń podczas podnoszenia ekspozycji\n"
+"tonów średnich. symuluje zachowanie matowego papieru."
+
+#: ../src/iop/negadoctor.c:1297
+msgid "virtual print emulation"
+msgstr "emulacja odbitki"
+
+#: ../src/iop/negadoctor.c:1301
+msgid "print exposure adjustment"
+msgstr "korekta ekspozycji odbitki"
+
+#: ../src/iop/negadoctor.c:1305
+msgid ""
+"correct the printing exposure after inversion to adjust\n"
+"the global contrast and avoid clipping highlights."
+msgstr ""
+"skoryguj ekspozycję odbitki po inwersji, aby dostosować\n"
+"globalny kontrast i uniknąć prześwietleń."
+
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
 msgstr "odszumianie (średnie nielokalne)"
@@ -10972,10 +11220,6 @@ msgstr "tryb wypełniania"
 #: ../src/iop/retouch.c:2875
 msgid "erase"
 msgstr "usuń"
-
-#: ../src/iop/retouch.c:2876 ../src/iop/watermark.c:1491
-msgid "color"
-msgstr "kolor"
 
 #: ../src/iop/retouch.c:2877
 msgid "erase the detail or fills with chosen color"
