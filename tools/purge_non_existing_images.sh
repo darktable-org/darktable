@@ -29,7 +29,7 @@ commandline="$0 $*"
 while [ "$#" -ge 1 ]
 do
     option="$1"
-    case ${option} in
+    case "$option" in
     -h | --help)
         echo "Delete non existing images from darktable's database"
         echo "Usage:   $0 [options]"
@@ -86,7 +86,7 @@ do
     then
         echo "  $FD/$FL with ID = $ID"
 
-        if [ $dryrun -eq 0 ]
+        if [ "$dryrun" -eq 0 ]
         then
             for table in images meta_data
             do
@@ -101,7 +101,7 @@ do
     fi
 done
 
-if [ $dryrun -eq 0 ]
+if [ "$dryrun" -eq 0 ]
 then
     # delete now-empty filmrolls
     sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
