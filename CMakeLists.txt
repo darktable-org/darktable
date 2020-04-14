@@ -260,6 +260,11 @@ else(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
   message(STATUS "Found intltool-merge")
 endif(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
 
+if(WIN32)
+  set(intltool_merge_BIN ${perl_BIN} ${intltool_merge_BIN})
+endif(WIN32)
+
+
 # we need desktop-file-validate to check darktable.desktop
 find_program(desktop_file_validate_BIN desktop-file-validate)
 if(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
