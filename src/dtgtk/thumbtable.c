@@ -1162,10 +1162,20 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
   {
     case DND_TARGET_IMGID:
     {
-      // TODO multiple ids
-      int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
-      gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _DWORD, (guchar *)&id,
-                             sizeof(id));
+      const int imgs_nb = g_list_length(table->drag_list);
+      if(imgs_nb)
+      {
+        uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+        GList *l = table->drag_list;
+        for(int i = 0; i < imgs_nb; i++)
+        {
+          imgs[i] = GPOINTER_TO_INT(l->data);
+          l = g_list_next(l);
+        }
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
+                               _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
+        free(imgs);
+      }
       break;
     }
     default: // return the location of the file as a last resort
@@ -1179,8 +1189,8 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
         const int id = GPOINTER_TO_INT(g_list_nth_data(l, 0));
         dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
         gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
-        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar *)uri,
-                               strlen(uri));
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
+                               _BYTE, (guchar *)uri, strlen(uri));
         g_free(uri);
       }
       else
