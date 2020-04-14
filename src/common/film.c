@@ -101,7 +101,7 @@ int dt_film_open2(dt_film_t *film)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime('%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film->id);
     sqlite3_step(stmt);
@@ -130,7 +130,7 @@ int dt_film_open(const int32_t id)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime('%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -157,7 +157,7 @@ int dt_film_open_recent(const int num)
     sqlite3_finalize(stmt);
     if(dt_film_open(id)) return 1;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.film_rolls SET access_timestamp = strftime(%s', 'now') WHERE id = ?1", -1, &stmt,
+                                "UPDATE main.film_rolls SET access_timestamp = strftime('%s', 'now') WHERE id = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
