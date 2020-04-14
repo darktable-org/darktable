@@ -366,7 +366,7 @@ static void _set_location(const int imgid, const dt_image_geoloc_t *geoloc)
 
 void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
-  if(type == DT_UNDO_LT_GEOTAG)
+  if(type == DT_UNDO_GEOTAG)
   {
     GList *list = (GList *)data;
 
@@ -422,13 +422,13 @@ void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, c
   {
     GList *undo = NULL;
     if(group_on) dt_grouping_add_grouped_images(&imgs);
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
 
     _image_set_location(imgs, geoloc, &undo, undo_on);
 
     if(undo_on)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_GEOTAG, undo, _pop_undo, _geotag_undo_data_free);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_GEOTAG, undo, _pop_undo, _geotag_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
 

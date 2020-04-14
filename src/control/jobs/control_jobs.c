@@ -1041,7 +1041,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(!tz_camera) goto bail_out;
   GTimeZone *tz_utc = g_time_zone_new_utc();
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
+  dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
 
   /* go thru each selected image and lookup location in gpx */
   do
