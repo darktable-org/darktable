@@ -213,7 +213,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
                                     (colors_flag ? DT_UNDO_COLORLABELS : 0) |
                                     (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
-                                    (geotag_flag ? DT_UNDO_LT_GEOTAG : 0) |
+                                    (geotag_flag ? DT_UNDO_GEOTAG : 0) |
                                     (dttag_flag ? DT_UNDO_TAGS : 0);
     if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
 
