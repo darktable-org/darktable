@@ -43,6 +43,16 @@ making a backup is strongly advised.
   makes it possible to denoise the chroma and luma noise in a single
   instance.
 
+- A full rewrite of of lighttable has been done. This gives again a
+  big performance jump and will allow smooth interaction for any
+  screen resolution. At the same time the filmstrip has been reworked.
+
+  It is important to note that this speed improvement is really
+  noticeable in the zoomable lighttable view.
+
+- The new module negadoctor has been added to help inverting negative
+  films.
+
 ## New Features And Changes
 
 - Add darkroom loading screen.
@@ -119,6 +129,35 @@ making a backup is strongly advised.
   will be the ground for proposing different strategies when applying
   styles.
 
+- The retouch module has a new accel "show or hide shapes" which can
+  be mapped to a key for quickly show or hide shapes.
+
+- The crop&rotate module accel to show-hide shapes has been renamed
+  to "show or hide shapes" for clarity and to be consistent with
+  the new accel in the retouch module.
+
+- It is possible to change the color of all overlays (shapes, guides,
+  etc). This may come handy on some images where the gray guides where
+  barely visible.
+
+- In crop & rotate module, the pan movements can be restricted
+  vertically or horizontally using the <kbd>Shift</kbd> or
+  <kbd>Control</kbd> respectively.
+
+- When using a snapshot view, a flag to clearly show the position of the
+  snapshot has been added.
+
+- Improve the falloff and radius of the vignette to 200% for better
+  control.
+
+- Add a user-defined mode in the white-balance module to keep the last
+  modification of the module. It is then possible to go back to the
+  last modified setting after selecting another mode like spot.
+
+- Dynamic accelerators have been added for combo-boxes making it
+  possible to select next and previous values directly from the
+  keyboard.
+
 ## Bug fixes
 
 - All valid Lut files are displayed in file selector.
@@ -179,6 +218,8 @@ making a backup is strongly advised.
 - Fix time-line display reporting 61 minutes per hour.
 
 - Smoother transition for gradient shapes.
+
+- Fix the snapshot rotation which could go 180° in a single click.
 
 ## Lua
 
