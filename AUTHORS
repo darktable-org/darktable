@@ -1,104 +1,37 @@
 * developers:
 Pascal Obry
 Aldric Renaudin
-Roman Lebedev
-Tobias Ellinghaus
 Ulrich Pegelow
 parafin
-Pascal de Bruijn
-Stefan Schöfegger
-Peter Budai
-johannes hanika
-Edouard Gomez
+Roman Lebedev
+Tobias Ellinghaus
 
 * translators:
 Pascal Obry
 EdgarLux
-Ger Siemerink
-Timur I. Davletshin
-Michel Leblond
-Nicolas Auffray
-Timur Davletshin
-Jakub Filipowicz
-Matjaž Jeran
-Josep V. Moragues
-mepi0011
-Heiko Bauke
-Maurizio Paglia
-Milan Knížek
-Novy Sawai
-Tomasz Golinski
-maruncz
-Báthory Péter
-Jacques Le Clerc
-Ragnar Wisloff
-Thomas Pryds
-Timur Irikovich Davletshin
-Tobias Ellinghaus
-shlomi braitbart
-Denis Dyakov
-Edgar De la Luz
-Shlomi Alon-Braitbart
-Simon Raffeiner
-Tomasz Goliński
 Ulrich Pegelow
-archont00
-chri
 igmerti
-johannes hanika
-lkarcz
 
 * contributors (at least 4 commits):
-Aurélien PIERRE
-Andreas Schneider
-edgardoh
-rawfiner
 Philippe Weyland
-Heiko Bauke
-Nicolas Auffray
-EdgarLux
-Ger Siemerink
-hanno@schwalm-bremen.de
-Jakub Filipowicz
 Dan Torop
-Jacques Le Clerc
-Timur I. Davletshin
-phweyland
-Bill Ferguson
+rawfiner
+Hubert Kowalski
+Aurélien PIERRE
+Heiko Bauke
+hanno@schwalm-bremen.de
 Diederik ter Rahe
-Michel Leblond
-Sam Smith
-Timur Davletshin
 U-DESKTOP-HQME86Jmarco
-mepi0011
-Alexis Mousset
-Matjaž Jeran
-Matthieu Moy
-Rikard Öxler
-junkyardsparkle
-Hanno Schwalm
-Denis Dyakov
-luzpaz
-Josep V. Moragues
-Marcello Mamino
+Bill Ferguson
+Nicolas Auffray
+Chris.Elston
 Mark-64
-Wolfgang Goetz
-Robert Bridge
-maruncz
-mondoman712
+Sam Smith
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-Robert Bridge
-bobobo1618
-luz.paz
-parafin
-Bastian Bechtold
-Martijn Courteaux
-Pascal de Bruijn
-chrunchyjesus
-dllu
+David-Tillmann Schaefer
+Martin Straeten
 hanno@schwalm-bremen.de
-junkyardsparkle
 
 And all those of you that made previous releases possible
