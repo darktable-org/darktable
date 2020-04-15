@@ -45,6 +45,34 @@ static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
   gtk_widget_set_state_flags(w, flags, TRUE);
 }
 
+// create a new extended infos line from strach
+static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
+{
+  gchar *pattern = dt_conf_get_string("plugins/lighttable/extended_pattern");
+  // we compute the info line (we reuse the function used in export to disk)
+  char input_dir[1024] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
+
+  dt_variables_params_t *vp;
+  dt_variables_params_init(&vp);
+
+  vp->filename = input_dir;
+  vp->jobcode = "infos";
+  vp->imgid = thumb->imgid;
+  vp->sequence = 0;
+
+  gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+
+  dt_variables_params_destroy(vp);
+
+  // we change the label
+  g_snprintf(thumb->info_line, sizeof(thumb->info_line), "%s", msg);
+
+  g_free(msg);
+  g_free(pattern);
+}
+
 static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(thumb->imgid <= 0) return;
@@ -675,7 +703,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_bottom_eb);
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
     {
-      gchar *lb = dt_util_dstrcat(NULL, "%s\n%s", thumb->filename, thumb->info_line);
+      gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
       thumb->w_bottom = gtk_label_new(lb);
       g_free(lb);
     }
@@ -779,14 +807,13 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
     thumb->filename = g_strdup(img->filename);
     if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
     {
-      if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
-         || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
-        dt_image_print_exif(img, thumb->info_line, sizeof(thumb->info_line));
       thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+    _thumb_update_extended_infos_line(thumb);
 
   // we read all other infos
   _image_get_infos(thumb);
@@ -998,10 +1025,12 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
       thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     }
-    if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
-      dt_image_print_exif(img, thumb->info_line, sizeof(thumb->info_line));
 
     dt_image_cache_read_release(darktable.image_cache, img);
+  }
+  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+  {
+    _thumb_update_extended_infos_line(thumb);
   }
 
   // we read all other infos
@@ -1013,7 +1042,7 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
 
   // extended overlay text
   if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
-    lb = dt_util_dstrcat(NULL, "%s\n%s", thumb->filename, thumb->info_line);
+    lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
 
   // we set the text
   gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
