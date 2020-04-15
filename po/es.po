@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-04-14 13:19-0500\n"
-"PO-Revision-Date: 2020-04-15 03:16-0500\n"
+"PO-Revision-Date: 2020-04-15 12:48-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1355,20 +1355,19 @@ msgstr ""
 
 #: ../src/cli/main.c:141
 msgid "unknown option for --hq"
-msgstr "opción desconocida para --hq"
+msgstr "Opción desconocida para --hq"
 
 #: ../src/cli/main.c:157
-#, fuzzy
 msgid "unknown option for --export_masks"
-msgstr "opción desconocida para --upscale"
+msgstr "Opción desconocida para --export_masks"
 
 #: ../src/cli/main.c:173
 msgid "unknown option for --upscale"
-msgstr "opción desconocida para --upscale"
+msgstr "Opción desconocida para --upscale"
 
 #: ../src/cli/main.c:198
 msgid "unknown option for --apply-custom-presets"
-msgstr "opción desconocida para --apply-custom-presets"
+msgstr "Opción desconocida para --apply-custom-presets"
 
 #: ../src/cli/main.c:253
 #, c-format
@@ -10649,9 +10648,8 @@ msgid "how much to keep highlights"
 msgstr "cantidad de las luces a mantener"
 
 #: ../src/iop/negadoctor.c:206
-#, fuzzy
 msgid "negadoctor"
-msgstr "factor"
+msgstr "negatidóctor"
 
 #: ../src/iop/negadoctor.c:383
 msgid "color film"
@@ -10662,18 +10660,16 @@ msgid "black and white film"
 msgstr "película blanco y negro"
 
 #: ../src/iop/negadoctor.c:457
-#, fuzzy
 msgid "D min"
-msgstr "zoom mínimo"
+msgstr "D. mín."
 
 #: ../src/iop/negadoctor.c:463 ../src/iop/negadoctor.c:1113
 msgid "D min red component"
-msgstr ""
+msgstr "D. mín. componente rojo"
 
 #: ../src/iop/negadoctor.c:1069
-#, fuzzy
 msgid "film stock"
-msgstr "tira de imagenes"
+msgstr "película celuloide"
 
 #: ../src/iop/negadoctor.c:1070
 msgid "black and white"
@@ -10685,9 +10681,8 @@ msgid "color"
 msgstr "color"
 
 #: ../src/iop/negadoctor.c:1074
-#, fuzzy
 msgid "toogle on or off the color controls"
-msgstr "activar controles de pliegue de panel"
+msgstr "activar o desactivar los controles de color"
 
 #: ../src/iop/negadoctor.c:1081
 msgid "film properties"
@@ -10703,9 +10698,8 @@ msgid "color of the film base"
 msgstr "color de la película base"
 
 #: ../src/iop/negadoctor.c:1100
-#, fuzzy
 msgid "select color of film material from a swatch"
-msgstr "seleccionar color de la película"
+msgstr "seleccionar el color del material de la película desde una muestra"
 
 #: ../src/iop/negadoctor.c:1114 ../src/iop/negadoctor.c:1124
 #: ../src/iop/negadoctor.c:1134
@@ -10715,14 +10709,18 @@ msgid ""
 "the chemical fog produced while developing the film,\n"
 "and the scanner white balance."
 msgstr ""
+"Ajusta el color y la sombra de la base transparente de la película.\n"
+"Este valor depende del material de la película, \n"
+"los vapores químicos producidos durante el revelado de la película,\n"
+"y el balance de blancos del escáner."
 
 #: ../src/iop/negadoctor.c:1123
 msgid "D min green component"
-msgstr ""
+msgstr "D. mín. componente verde"
 
 #: ../src/iop/negadoctor.c:1133
 msgid "D min blue component"
-msgstr ""
+msgstr "D. mín. componente azul"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:1143
@@ -10730,9 +10728,8 @@ msgid "dynamic range of the film"
 msgstr "rango dinámico de la película"
 
 #: ../src/iop/negadoctor.c:1147
-#, fuzzy
 msgid "D max"
-msgstr "zoom máximo"
+msgstr "D. máx."
 
 #: ../src/iop/negadoctor.c:1151
 msgid ""
@@ -10740,43 +10737,45 @@ msgid ""
 "this value depends on the film specifications, the developing process,\n"
 "the dynamic range of the scene and the scanner exposure settings."
 msgstr ""
+"Densidad máxima de la película, correspondiente al blanco después de la "
+"inversión.\n"
+"Este valor depende de las especificaciones de la película, el proceso de "
+"revelado,\n"
+"el rango dinámico de la escena y los ajustes de exposición del escáner."
 
 #: ../src/iop/negadoctor.c:1157
-#, fuzzy
 msgid "scanner exposure settings"
-msgstr "configuración de cámara"
+msgstr "ajustes de exposición del escáner"
 
 #: ../src/iop/negadoctor.c:1161
-#, fuzzy
 msgid "scan exposure bias"
-msgstr "desviación de exposición"
+msgstr "sesgo de exposición al escanear"
 
 #: ../src/iop/negadoctor.c:1165
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
 msgstr ""
+"Corrige la exposición del escáner, para todos los canales RGB,\n"
+"antes de la inversión, por lo que los negros no están ni recortados ni "
+"pálidos."
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:1171
-#, fuzzy
 msgid "shadows color cast"
-msgstr "reconstrucción de sombras"
+msgstr "dominante de color de las sombras"
 
 #: ../src/iop/negadoctor.c:1180
-#, fuzzy
 msgid "select color of shadows from a swatch"
-msgstr "seleccionar color de la película"
+msgstr "seleccionar el color de las sombras desde una muestra"
 
 #: ../src/iop/negadoctor.c:1185
-#, fuzzy
 msgid "pick shadows color from image"
-msgstr "Seleccionar un color de la imagen"
+msgstr "Elegir el color de las sombras desde una imagen"
 
 #: ../src/iop/negadoctor.c:1192
-#, fuzzy
 msgid "shadows red offset"
-msgstr "sombras: realzar / atenuar"
+msgstr "equilibrio de rojo en sombras"
 
 #: ../src/iop/negadoctor.c:1193 ../src/iop/negadoctor.c:1202
 #: ../src/iop/negadoctor.c:1211
@@ -10786,37 +10785,35 @@ msgid ""
 "the highlights illuminant white balance will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
+"Corrige la dominante de color de las sombras para que los negros\n"
+"sean realmente acromáticos. Fijar este valor antes del\n"
+"balance de blancos del iluminante de las luces ayudará\n"
+"a recuperar el balance de blancos general en casos difíciles\"."
 
 #: ../src/iop/negadoctor.c:1201
-#, fuzzy
 msgid "shadows green offset"
-msgstr "sombras: realzar / atenuar"
+msgstr "equilibrio de verde en sombras"
 
 #: ../src/iop/negadoctor.c:1210
-#, fuzzy
 msgid "shadows blue offset"
-msgstr "sombras: realzar / atenuar"
+msgstr "equilibrio de azul en sombras"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:1219
-#, fuzzy
 msgid "highlights white balance"
-msgstr "equilibrio entre sombras y luces"
+msgstr "balance de blancos de las luces"
 
 #: ../src/iop/negadoctor.c:1228
-#, fuzzy
 msgid "select color of illuminant from a swatch"
-msgstr "seleccionar color de la película"
+msgstr "seleccionar el color del iluminante desde una muestra"
 
 #: ../src/iop/negadoctor.c:1233
-#, fuzzy
 msgid "pick illuminant color from image"
-msgstr "elegir color de relleno de la imagen"
+msgstr "Elegir el color del iluminante desde la imagen"
 
 #: ../src/iop/negadoctor.c:1240
-#, fuzzy
 msgid "illuminant red gain"
-msgstr "luminancia Y"
+msgstr "incremento del iluminante rojo"
 
 #: ../src/iop/negadoctor.c:1241 ../src/iop/negadoctor.c:1250
 #: ../src/iop/negadoctor.c:1259
@@ -10826,36 +10823,39 @@ msgid ""
 "the shadows color cast will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
+"Corrige el color del iluminante para que los blancos sean\n"
+"verdaderamente acromáticos. Fijar el valor después del\n"
+"dominante de color de las sombras ayudará a\n"
+"recuperar el balance de blancos general en casos difíciles."
 
 #: ../src/iop/negadoctor.c:1249
 msgid "illuminant green gain"
-msgstr ""
+msgstr "incremento del iluminante verde"
 
 #: ../src/iop/negadoctor.c:1258
 msgid "illuminant blue gain"
-msgstr ""
+msgstr "incremento del iluminante azul"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1267
-#, fuzzy
 msgid "virtual paper properties"
-msgstr "propiedades adicionales"
+msgstr "propiedades del papel virtual"
 
 #: ../src/iop/negadoctor.c:1271
-#, fuzzy
 msgid "paper black (density correction)"
-msgstr "corrección de nivel de negro"
+msgstr "papel negro (corrección de densidad)"
 
 #: ../src/iop/negadoctor.c:1275
 msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
+"Corrige la densidad del negro después de la inversión,\n"
+"para adecuar el contraste global mientras se evitan recortes en las sombras."
 
 #: ../src/iop/negadoctor.c:1281
-#, fuzzy
 msgid "paper grade (gamma)"
-msgstr "gamma destino"
+msgstr "gramaje de papel (gamma)"
 
 #: ../src/iop/negadoctor.c:1283
 msgid ""
@@ -10863,10 +10863,13 @@ msgid ""
 "equivalent to applying a gamma. it compensates the film D max\n"
 "and recovers the contrast. use a high grade for high D max."
 msgstr ""
+"Selecciona el grado del papel virtual, que en realidad es\n"
+"equivalente a la aplicación de gamma. Compensa la D. máx. de la película\n"
+"y recupera el contraste. Usa un gramaje alto para una alto valor en D. máx."
 
 #: ../src/iop/negadoctor.c:1290
 msgid "paper gloss (specular highlights)"
-msgstr ""
+msgstr "papel brillante (reflectante)"
 
 #: ../src/iop/negadoctor.c:1292
 msgid ""
@@ -10874,22 +10877,26 @@ msgid ""
 "to avoid clipping while pushing the exposure for midtones.\n"
 "this somewhat reproduces the behaviour of matte paper."
 msgstr ""
+"Comprime gradualmente las luces reflectantes más allá de este valor\n"
+"para evitar el recorte mientras se mueve la exposición hacia los tonos "
+"medios.\n"
+"Reproduce de alguna manera el comportamiento del papel mate."
 
 #: ../src/iop/negadoctor.c:1297
-#, fuzzy
 msgid "virtual print emulation"
-msgstr "Emulación de Fuji Provia"
+msgstr "emulación de impresión virtual"
 
 #: ../src/iop/negadoctor.c:1301
-#, fuzzy
 msgid "print exposure adjustment"
-msgstr "ajuste de brillo"
+msgstr "ajuste de exposición de la impresión"
 
 #: ../src/iop/negadoctor.c:1305
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
 msgstr ""
+"Corregir la exposición de la impresión después de la inversión para ajustar\n"
+"el contraste general y evitar recortar las luces."
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
@@ -13242,6 +13249,8 @@ msgstr "guardar máscaras"
 #: ../src/libs/export.c:651
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
+"Almacena las máscaras como capas en las imágenes exportadas. Sólo funciona "
+"con algunos formatos."
 
 #: ../src/libs/export.c:664 ../src/libs/export.c:685
 #: ../src/libs/print_settings.c:1408 ../src/libs/print_settings.c:1455
@@ -13960,6 +13969,8 @@ msgstr "para ser importado"
 msgid ""
 "selected metadata are imported from image and override the default value"
 msgstr ""
+"Los metadatos seleccionados se importan desde la imagen anulando el valor "
+"predeterminado"
 
 #: ../src/libs/import.c:798
 msgid "supported images"
@@ -14281,6 +14292,10 @@ msgid ""
 "import module\n"
 "neither will it be exported"
 msgstr ""
+"Marque la casilla si los metadatos correspondientes no le interesan\n"
+"Se ocultarán del editor de metadatos, la colección, la información de la "
+"imagen\n"
+"y el módulo de importación tampoco los exportará"
 
 #: ../src/libs/metadata.c:442 ../src/libs/tagging.c:1395
 #: ../src/libs/tagging.c:1582
@@ -14291,6 +14306,8 @@ msgstr "privado"
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
+"Marque la casilla si desea mantener esta información en privado (no se "
+"exporta con las imágenes)"
 
 #: ../src/libs/metadata.c:519
 msgctxt "accel"
@@ -15978,6 +15995,8 @@ msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
 msgstr ""
+"Establece el color de las líneas que se superponen a la imagen (máscaras "
+"trazadas, guías de recorte y rotación, etc.)"
 
 #: ../src/views/darkroom.c:2341
 msgid "overlay color"
