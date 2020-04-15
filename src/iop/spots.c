@@ -719,7 +719,7 @@ void init_key_accels (dt_iop_module_so_t *module)
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot ellipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "show or hide shapes"),  0, 0);
 }
 
 static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -774,7 +774,7 @@ void connect_key_accels (dt_iop_module_t *module)
   dt_accel_connect_iop (module, "spot path tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_show_hide_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot show or hide", closure);
+  dt_accel_connect_iop (module, "show or hide shapes", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
