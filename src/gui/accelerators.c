@@ -1295,7 +1295,7 @@ static gint _dynamic_accel_find(gconstpointer a, gconstpointer b)
 dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods)
 {
   GtkAccelKey ak = { 0 };
-  ak.accel_key = accel_key;
+  ak.accel_key = gdk_keyval_to_lower(accel_key);
   ak.accel_mods = mods;
   GSList *da = g_slist_find_custom(darktable.control->dynamic_accelerator_valid, &ak, _dynamic_accel_find);
   if(da && da->data) return (dt_accel_dynamic_t *)da->data;
