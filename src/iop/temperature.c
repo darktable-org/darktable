@@ -988,25 +988,36 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   dt_bauhaus_slider_clear_stops(g->scale_tint);
 
   const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+  const double tint_step = (double)(DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
   const int blackbody_is_confusing = g->blackbody_is_confusing;
 
   //const float def_temp = dt_bauhaus_slider_get_default(g->scale_k);
   const float def_tint = dt_bauhaus_slider_get_default(g->scale_tint);
 
-  //const float cur_temp = dt_bauhaus_slider_get(g->scale_k);
+  const float cur_temp = dt_bauhaus_slider_get(g->scale_k);
   const float cur_tint = dt_bauhaus_slider_get(g->scale_tint);
 
   //we consider dalight wb to be "reference white"
-  const double white[3] = {
+  const double dayligh_white[3] = {
     1.0/g->daylight_wb[0],
     1.0/g->daylight_wb[1],
     1.0/g->daylight_wb[2],
   };
+
+  double cur_coeffs[4] = {0.0};
+  temp2mul(self, cur_temp, 1.0, cur_coeffs);
+  const double cur_white[3] = {
+    1.0/cur_coeffs[0],
+    1.0/cur_coeffs[1],
+    1.0/cur_coeffs[2],
+  };
+
   // reflect actual black body colors for the temperature slider (or not)
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
     const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+    const double tint = DT_IOP_LOWEST_TINT + i * tint_step;
 
     if(!blackbody_is_confusing)
     {
@@ -1017,7 +1028,7 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       //dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
       dt_XYZ_to_sRGB(XYZ, sRGB);
 
-      const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
+      const float maxsRGB = MAX(MAX(sRGB[0], sRGB[1]), sRGB[2]);
 
       if(maxsRGB > 0.99999999) {
         for(int ch=0; ch<3; ch++){
@@ -1031,32 +1042,50 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
     {
       // i think lightroom-ish look is ok-ish
       //dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[2], sRGB[1], sRGB[0]);
-      double coeffs[4];
-      temp2mul(self, K, cur_tint, coeffs);
-      coeffs[0] /= coeffs[1];
-      coeffs[2] /= coeffs[1];
-      coeffs[3] /= coeffs[1];
-      coeffs[1] = 1.0;
+      double coeffs_K[4];
+      double coeffs_tint[4];
+      temp2mul(self, K, cur_tint, coeffs_K);
+      temp2mul(self, cur_temp, tint, coeffs_tint);
+      coeffs_K[0] /= coeffs_K[1];
+      coeffs_K[2] /= coeffs_K[1];
+      coeffs_K[3] /= coeffs_K[1];
+      coeffs_K[1] = 1.0;
+      coeffs_tint[0] /= coeffs_tint[1];
+      coeffs_tint[2] /= coeffs_tint[1];
+      coeffs_tint[3] /= coeffs_tint[1];
+      coeffs_tint[1] = 1.0;
 
-      float sRGB[3] = { white[0]*coeffs[0], white[1]*coeffs[1], white[2]*coeffs[2] };
-      const float maxsRGB = sRGB[0] > sRGB[1] ? (sRGB[0] > sRGB[2] ? sRGB[0]:sRGB[2]) : (sRGB[1]>sRGB[2]?sRGB[1]:sRGB[2]);
+      float sRGB_K[3] = { dayligh_white[0]*coeffs_K[0], dayligh_white[1]*coeffs_K[1], dayligh_white[2]*coeffs_K[2] };
+      float sRGB_tint[3] = {cur_white[0]*coeffs_tint[0], cur_white[1]*coeffs_tint[1], cur_white[2]*coeffs_tint[2]};
+      const float maxsRGB_K = MAX(MAX(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
+      const float maxsRGB_tint = MAX(MAX(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
 
-      if(maxsRGB > 0.99999999) {
+      if(maxsRGB_K > 0.99999999) {
         for(int ch=0; ch<3; ch++){
-          sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+          sRGB_K[ch] = sRGB_K[ch] > 0? sRGB_K[ch] / maxsRGB_K : 0.0;
         }
       }
-      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
+      if(maxsRGB_tint > 0.99999999) {
+        for(int ch=0; ch<3; ch++){
+          sRGB_tint[ch] = sRGB_tint[ch] > 0? sRGB_tint[ch] / maxsRGB_tint : 0.0;
+        }
+      }
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_K[0], sRGB_K[1], sRGB_K[2]);
+      dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
     }
   }
 
-  const float neutral_stop_tint = (def_tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
+  if(!blackbody_is_confusing)
+  {
+    const float neutral_stop_tint = (def_tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
 
-  dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
-  dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
-  dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+  }
 
-  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_k))) {
+  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_k))) 
+  {
     gtk_widget_queue_draw(GTK_WIDGET(g->scale_k));
     gtk_widget_queue_draw(GTK_WIDGET(g->scale_tint));
   }
