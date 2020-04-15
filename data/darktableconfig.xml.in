@@ -719,6 +719,13 @@
     <longdescription>sizes categories are used to be able to set different overlays and css values depending of the size of the thumbnail.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui" section="lighttable">
+    <name>plugins/lighttable/extended_pattern</name>
+    <type>string</type>
+    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)</default>
+    <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
+    <longdescription>see manual to know all the tags you can use.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui" section="lighttable">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>string</type>
     <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
