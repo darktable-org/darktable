@@ -132,7 +132,7 @@ making a backup is strongly advised.
 - The retouch module has a new accel "show or hide shapes" which can
   be mapped to a key for quickly show or hide shapes.
 
-- The crop&rotate module accel to show-hide shapes has been renamed
+- The spot removal module accel to show-hide shapes has been renamed
   to "show or hide shapes" for clarity and to be consistent with
   the new accel in the retouch module.
 
