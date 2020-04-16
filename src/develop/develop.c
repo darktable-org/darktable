@@ -71,7 +71,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->image_loading = dev->preview_loading = dev->preview2_loading = 0;
+  dev->image_loading = dev->preview_loading = dev->preview2_loading = dev->history_updating = 0;
   dev->image_force_reload = 0;
   dev->preview_input_changed = dev->preview2_input_changed = 0;
 
@@ -1199,6 +1199,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
   dt_dev_pop_history_items_ext(dev, cnt);
 
+  darktable.develop->history_updating = 1;
+
   // update all gui modules
   GList *modules = dev->iop;
   while(modules)
@@ -1207,6 +1209,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     dt_iop_gui_update(module);
     modules = g_list_next(modules);
   }
+
+  darktable.develop->history_updating = 0;
 
   // check if the order of modules has changed
   int dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
