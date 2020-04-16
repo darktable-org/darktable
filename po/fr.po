@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-15 19:42+0200\n"
-"PO-Revision-Date: 2020-04-15 19:45+0200\n"
+"POT-Creation-Date: 2020-04-16 22:58+0200\n"
+"PO-Revision-Date: 2020-04-16 22:59+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1287,16 +1287,6 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/bauhaus/bauhaus.c:2279
-#, c-format
-msgid "%s/%s: %s"
-msgstr "%s/%s: %s"
-
-#: ../src/bauhaus/bauhaus.c:2281
-#, c-format
-msgid "%s: %s"
-msgstr "%s: %s"
-
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1551
 #: ../src/control/jobs/control_jobs.c:1611 ../src/gui/hist_dialog.c:187
 #: ../src/gui/preferences.c:1153 ../src/gui/preferences.c:1179
@@ -1996,7 +1986,7 @@ msgstr ""
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2789
-#: ../src/develop/develop.c:1986 ../src/iop/ashift.c:4870
+#: ../src/develop/develop.c:1990 ../src/iop/ashift.c:4870
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -2004,7 +1994,7 @@ msgstr "activé(e)"
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2521
-#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:1986
+#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:1990
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4869 ../src/iop/ashift.c:4875 ../src/iop/colorin.c:2152
 #: ../src/iop/demosaic.c:5159 ../src/iop/vignette.c:1152
@@ -2286,6 +2276,37 @@ msgstr "sous le niveau de la mer"
 #: ../src/libs/metadata_view.c:594
 msgid "m"
 msgstr "m"
+
+#. clang-format off
+#: ../src/common/metadata.c:45 ../src/gui/camera_import_dialog.c:450
+msgid "creator"
+msgstr "auteur"
+
+#: ../src/common/metadata.c:46 ../src/gui/camera_import_dialog.c:455
+msgid "publisher"
+msgstr "diffuseur"
+
+#. title
+#. DT_COLLECTION_SORT_CUSTOM_ORDER
+#: ../src/common/metadata.c:47 ../src/imageio/format/pdf.c:584
+#: ../src/imageio/storage/gallery.c:185 ../src/imageio/storage/latex.c:185
+#: ../src/imageio/storage/piwigo.c:857 ../src/libs/tools/filter.c:155
+msgid "title"
+msgstr "titre"
+
+#. DT_COLLECTION_SORT_TITLE
+#: ../src/common/metadata.c:48 ../src/gui/styles_dialog.c:372
+#: ../src/libs/tools/filter.c:156
+msgid "description"
+msgstr "description"
+
+#: ../src/common/metadata.c:49 ../src/gui/camera_import_dialog.c:460
+msgid "rights"
+msgstr "droits"
+
+#: ../src/common/metadata.c:50
+msgid "notes"
+msgstr "notes"
 
 #: ../src/control/control.c:262
 msgid "working..."
@@ -2946,25 +2967,25 @@ msgstr "inverser la polarité du masque dessiné"
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
-#: ../src/develop/blend_gui.c:1957 ../src/iop/retouch.c:2672
-#: ../src/iop/spots.c:680 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
+#: ../src/develop/blend_gui.c:1957 ../src/iop/retouch.c:2674
+#: ../src/iop/spots.c:808 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
 #: ../src/libs/masks.c:1663
 msgid "add path"
 msgstr "ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:1966 ../src/iop/retouch.c:2679
-#: ../src/iop/spots.c:687 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
+#: ../src/develop/blend_gui.c:1966 ../src/iop/retouch.c:2681
+#: ../src/iop/spots.c:815 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
 #: ../src/libs/masks.c:1670
 msgid "add ellipse"
 msgstr "ajouter une ellipse"
 
-#: ../src/develop/blend_gui.c:1975 ../src/iop/retouch.c:2686
-#: ../src/iop/spots.c:694 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
+#: ../src/develop/blend_gui.c:1975 ../src/iop/retouch.c:2688
+#: ../src/iop/spots.c:822 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
 #: ../src/libs/masks.c:1677
 msgid "add circle"
 msgstr "ajouter un cercle"
 
-#: ../src/develop/blend_gui.c:1984 ../src/iop/retouch.c:2666
+#: ../src/develop/blend_gui.c:1984 ../src/iop/retouch.c:2668
 #: ../src/libs/masks.c:1033 ../src/libs/masks.c:1683
 msgid "add brush"
 msgstr "ajouter une forme au pinceau"
@@ -3271,7 +3292,7 @@ msgstr "floutage du masque"
 msgid "radius for gaussian blur of blend mask"
 msgstr "rayon du flou gaussien du masque de fusion"
 
-#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2948
+#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2950
 msgid "mask opacity"
 msgstr "opacité du masque"
 
@@ -3313,7 +3334,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1754
+#: ../src/develop/develop.c:1758
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -4194,18 +4215,6 @@ msgstr ""
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
-#: ../src/gui/camera_import_dialog.c:450
-msgid "creator"
-msgstr "auteur"
-
-#: ../src/gui/camera_import_dialog.c:455
-msgid "publisher"
-msgstr "diffuseur"
-
-#: ../src/gui/camera_import_dialog.c:460
-msgid "rights"
-msgstr "droits"
-
 #: ../src/gui/camera_import_dialog.c:489
 msgid "override today's date"
 msgstr "surcharger la date actuelle"
@@ -4971,11 +4980,6 @@ msgstr "nouveau style"
 msgid "enter a name for the new style"
 msgstr "entrer un nom pour le style"
 
-#. DT_COLLECTION_SORT_TITLE
-#: ../src/gui/styles_dialog.c:372 ../src/libs/tools/filter.c:156
-msgid "description"
-msgstr "description"
-
 #: ../src/gui/styles_dialog.c:374
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
@@ -5100,14 +5104,6 @@ msgstr "impossible d'exporter le fichier « %s » !"
 #: ../src/imageio/format/pdf.c:413
 msgid "PDF"
 msgstr "PDF"
-
-#. title
-#. DT_COLLECTION_SORT_CUSTOM_ORDER
-#: ../src/imageio/format/pdf.c:584 ../src/imageio/storage/gallery.c:185
-#: ../src/imageio/storage/latex.c:185 ../src/imageio/storage/piwigo.c:857
-#: ../src/libs/tools/filter.c:155
-msgid "title"
-msgstr "titre"
 
 #: ../src/imageio/format/pdf.c:594
 msgid "enter the title of the pdf"
@@ -6364,7 +6360,7 @@ msgstr "gris moyen"
 msgid "middle grey adjustment"
 msgstr "ajustement gris moyen"
 
-#: ../src/iop/basicadj.c:819 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2915
+#: ../src/iop/basicadj.c:819 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2917
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
 msgid "brightness"
 msgstr "luminosité"
@@ -10356,7 +10352,7 @@ msgstr "luminosité"
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2932 ../src/iop/shadhi.c:838
+#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2934 ../src/iop/shadhi.c:838
 msgid "gaussian"
 msgstr "gaussien"
 
@@ -10668,7 +10664,7 @@ msgstr "film"
 msgid "black and white"
 msgstr "noir et blanc"
 
-#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2888
+#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2890
 #: ../src/iop/watermark.c:1491
 msgid "color"
 msgstr "couleur"
@@ -11174,11 +11170,11 @@ msgstr ""
 "impossible d'afficher les échelles de décomposition en ondelette lorsque les "
 "masques de fusion sont affichés"
 
-#: ../src/iop/retouch.c:2646
+#: ../src/iop/retouch.c:2648
 msgid "# shapes:"
 msgstr "# formes:"
 
-#: ../src/iop/retouch.c:2651
+#: ../src/iop/retouch.c:2653
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -11187,43 +11183,43 @@ msgstr ""
 "cliquer sur l'image\n"
 "les formes sont ajoutées que l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2658
+#: ../src/iop/retouch.c:2660
 msgid "show and edit shapes on the current scale"
 msgstr "montre et édite les formes de l'échelle actuelle"
 
-#: ../src/iop/retouch.c:2693
+#: ../src/iop/retouch.c:2695
 msgid "algorithms:"
 msgstr "algorithmes:"
 
-#: ../src/iop/retouch.c:2698
+#: ../src/iop/retouch.c:2700
 msgid "activates fill tool"
 msgstr "activer outil de remplissage"
 
-#: ../src/iop/retouch.c:2705
+#: ../src/iop/retouch.c:2707
 msgid "activates blur tool"
 msgstr "activer l'outil de flou"
 
-#: ../src/iop/retouch.c:2712
+#: ../src/iop/retouch.c:2714
 msgid "activates healing tool"
 msgstr "activer l'outil de correction"
 
-#: ../src/iop/retouch.c:2719
+#: ../src/iop/retouch.c:2721
 msgid "activates cloning tool"
 msgstr "activer l'outil de copie"
 
-#: ../src/iop/retouch.c:2733
+#: ../src/iop/retouch.c:2735
 msgid "# scales:"
 msgstr "# échelles:"
 
-#: ../src/iop/retouch.c:2742
+#: ../src/iop/retouch.c:2744
 msgid "current:"
 msgstr "actuelle:"
 
-#: ../src/iop/retouch.c:2751
+#: ../src/iop/retouch.c:2753
 msgid "merge from:"
 msgstr "fusion depuis:"
 
-#: ../src/iop/retouch.c:2764
+#: ../src/iop/retouch.c:2766
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -11235,43 +11231,43 @@ msgstr ""
 "l'échelle actuelle est sélectionné par un cadre rouge\n"
 "les échelles comportant des formes sont sur-lignées en vert"
 
-#: ../src/iop/retouch.c:2786
+#: ../src/iop/retouch.c:2788
 msgid "display masks"
 msgstr "affiche les masques"
 
-#: ../src/iop/retouch.c:2792
+#: ../src/iop/retouch.c:2794
 msgid "temporarily switch off shapes"
 msgstr "désactive les formes temporairement"
 
-#: ../src/iop/retouch.c:2799
+#: ../src/iop/retouch.c:2801
 msgid "display wavelet scale"
 msgstr "affiche une seule échelle de la décomposition"
 
-#: ../src/iop/retouch.c:2807
+#: ../src/iop/retouch.c:2809
 msgid "cut shapes from current scale"
 msgstr "couper les formes de l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2813
+#: ../src/iop/retouch.c:2815
 msgid "paste cut shapes to current scale"
 msgstr "coller les formes sur l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2837
+#: ../src/iop/retouch.c:2839
 msgid "preview single scale"
 msgstr "pré-visualisation d'une seule échelle"
 
-#: ../src/iop/retouch.c:2844
+#: ../src/iop/retouch.c:2846
 msgid "adjust preview levels"
 msgstr "ajuste les niveaux de pré-visualisation"
 
-#: ../src/iop/retouch.c:2863
+#: ../src/iop/retouch.c:2865
 msgid "auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/retouch.c:2875
+#: ../src/iop/retouch.c:2877
 msgid "shape selected:"
 msgstr "forme sélectionnée:"
 
-#: ../src/iop/retouch.c:2879
+#: ../src/iop/retouch.c:2881
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -11279,120 +11275,120 @@ msgstr ""
 "cliquer sur la forme pour la sélectionner\n"
 "pour déselectionner cliquer en dehors d'une forme"
 
-#: ../src/iop/retouch.c:2886
+#: ../src/iop/retouch.c:2888
 msgid "fill mode"
 msgstr "mode de remplissage"
 
-#: ../src/iop/retouch.c:2887
+#: ../src/iop/retouch.c:2889
 msgid "erase"
 msgstr "effacer"
 
-#: ../src/iop/retouch.c:2889
+#: ../src/iop/retouch.c:2891
 msgid "erase the detail or fills with chosen color"
 msgstr "efface les détails ou rempli avec la couleur choisie"
 
-#: ../src/iop/retouch.c:2901 ../src/iop/retouch.c:2902
+#: ../src/iop/retouch.c:2903 ../src/iop/retouch.c:2904
 msgid "select fill color"
 msgstr "sélectionner la couleur de remplissage"
 
-#: ../src/iop/retouch.c:2908
+#: ../src/iop/retouch.c:2910
 msgid "pick fill color from image"
 msgstr "choisir une couleur dans l'image"
 
-#: ../src/iop/retouch.c:2912
+#: ../src/iop/retouch.c:2914
 msgid "fill color: "
 msgstr "couleur"
 
-#: ../src/iop/retouch.c:2917
+#: ../src/iop/retouch.c:2919
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr ""
 "ajuste la luminosité de la couleur. marche aussi avec le mode d'effacement"
 
-#: ../src/iop/retouch.c:2931
+#: ../src/iop/retouch.c:2933
 msgid "blur type"
 msgstr "flou"
 
-#: ../src/iop/retouch.c:2933
+#: ../src/iop/retouch.c:2935
 msgid "bilateral"
 msgstr "bilatéral"
 
-#: ../src/iop/retouch.c:2934
+#: ../src/iop/retouch.c:2936
 msgid "type for the blur algorithm"
 msgstr "type d'algorithme de flou"
 
-#: ../src/iop/retouch.c:2940
+#: ../src/iop/retouch.c:2942
 msgid "blur radius"
 msgstr "rayon"
 
-#: ../src/iop/retouch.c:2941
+#: ../src/iop/retouch.c:2943
 msgid "radius of the selected blur type"
 msgstr "rayon du flou sélectionné"
 
-#: ../src/iop/retouch.c:2949
+#: ../src/iop/retouch.c:2951
 msgid "set the opacity on the selected shape"
 msgstr "fixer l'opacité de la forme sélectionnée"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2953
+#: ../src/iop/retouch.c:2955
 msgid "retouch tools"
 msgstr "outils de retouche"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2962
+#: ../src/iop/retouch.c:2964
 msgid "wavelet decompose"
 msgstr "décomposition en ondelettes"
 
 #. shapes
-#: ../src/iop/retouch.c:2976
+#: ../src/iop/retouch.c:2978
 msgid "shapes"
 msgstr "formes"
 
-#: ../src/iop/retouch.c:3330
+#: ../src/iop/retouch.c:3332
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "cercle de l'outil retouche"
 
-#: ../src/iop/retouch.c:3331
+#: ../src/iop/retouch.c:3333
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "ellipse de l'outil retouche"
 
-#: ../src/iop/retouch.c:3332
+#: ../src/iop/retouch.c:3334
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "chemin de l'outil retouche"
 
-#: ../src/iop/retouch.c:3333
+#: ../src/iop/retouch.c:3335
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "pinceau de l'outil retouche"
 
-#: ../src/iop/retouch.c:3335
+#: ../src/iop/retouch.c:3337 ../src/iop/spots.c:850
 msgctxt "accel"
 msgid "continuous add circle"
 msgstr "ajouter en continu un cercle"
 
-#: ../src/iop/retouch.c:3336
+#: ../src/iop/retouch.c:3338 ../src/iop/spots.c:851
 msgctxt "accel"
 msgid "continuous add ellipse"
 msgstr "ajouter en continu une ellipse"
 
-#: ../src/iop/retouch.c:3337
+#: ../src/iop/retouch.c:3339 ../src/iop/spots.c:852
 msgctxt "accel"
 msgid "continuous add path"
 msgstr "ajouter en continu un chemin"
 
-#: ../src/iop/retouch.c:3338
+#: ../src/iop/retouch.c:3340
 msgctxt "accel"
 msgid "continuous add brush"
 msgstr "ajouter en continu une forme au pinceau"
 
-#: ../src/iop/retouch.c:3340 ../src/iop/spots.c:722
+#: ../src/iop/retouch.c:3342 ../src/iop/spots.c:853
 msgctxt "accel"
 msgid "show or hide shapes"
 msgstr "montrer cacher les formes"
 
-#: ../src/iop/retouch.c:4491 ../src/iop/retouch.c:5347
+#: ../src/iop/retouch.c:4493 ../src/iop/retouch.c:5349
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "l'échelle maximum est %i pour la taille de cette image"
@@ -11753,11 +11749,11 @@ msgstr ""
 "le module correction des tâches est limité à 64 formes, merci d'utiliser une "
 "nouvelle instance!"
 
-#: ../src/iop/spots.c:672
+#: ../src/iop/spots.c:792
 msgid "number of strokes:"
 msgstr "nombre de corrections :"
 
-#: ../src/iop/spots.c:675
+#: ../src/iop/spots.c:795
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
@@ -11767,17 +11763,21 @@ msgstr ""
 "défiler à la souris pour ajuster la taille.\n"
 "clic-droit pour supprimer."
 
-#: ../src/iop/spots.c:719
+#: ../src/iop/spots.c:801
+msgid "show and edit shapes"
+msgstr "montre et édite les formes"
+
+#: ../src/iop/spots.c:847
 msgctxt "accel"
 msgid "spot circle tool"
 msgstr "cercle de correction des taches"
 
-#: ../src/iop/spots.c:720
+#: ../src/iop/spots.c:848
 msgctxt "accel"
 msgid "spot ellipse tool"
 msgstr "ellipse de correction des taches"
 
-#: ../src/iop/spots.c:721
+#: ../src/iop/spots.c:849
 msgctxt "accel"
 msgid "spot path tool"
 msgstr "chemin de correction des taches"
@@ -16583,6 +16583,12 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2644
 msgid "Action"
 msgstr "action"
+
+#~ msgid "%s/%s: %s"
+#~ msgstr "%s/%s: %s"
+
+#~ msgid "%s: %s"
+#~ msgstr "%s: %s"
 
 #~ msgid "ISO Studio Tungsten"
 #~ msgstr "ISO tungstène studio"
