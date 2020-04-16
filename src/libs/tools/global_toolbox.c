@@ -75,6 +75,13 @@ int position()
   return 1001;
 }
 
+static void _overlays_accels_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier, gpointer data)
+{
+  dt_thumbnail_overlay_t over = (dt_thumbnail_overlay_t)GPOINTER_TO_INT(data);
+  dt_thumbtable_set_overlays_mode(dt_ui_thumbtable(darktable.gui->ui), over);
+}
+
 static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 {
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))) return;
@@ -393,7 +400,12 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "grouping"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "preferences"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "show overlays"), 0, 0);
+
+  dt_accel_register_lib(self, NC_("accel", "no overlays"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "overlays on mouse hover"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "extended overlays on mouse hover"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "permanent overlays"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "permanent extended overlays"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -402,7 +414,22 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "grouping", d->grouping_button);
   dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
-  dt_accel_connect_button_lib(self, "show overlays", d->overlays_button);
+
+  dt_accel_connect_lib(
+      self, "no overlays",
+      g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_NONE), NULL));
+  dt_accel_connect_lib(self, "overlays on mouse hover",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL), NULL));
+  dt_accel_connect_lib(self, "extended overlays on mouse hover",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED), NULL));
+  dt_accel_connect_lib(self, "permanent overlays",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL), NULL));
+  dt_accel_connect_lib(self, "permanent extended overlays",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED), NULL));
 }
 
 #ifdef USE_LUA
