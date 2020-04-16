@@ -30,6 +30,15 @@ typedef enum dt_thumbnail_border_t
   DT_THUMBNAIL_BORDER_BOTTOM = 1 << 3,
 } dt_thumbnail_border_t;
 
+typedef enum dt_thumbnail_overlay_t
+{
+  DT_THUMBNAIL_OVERLAYS_NONE,
+  DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL,
+  DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED,
+  DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
+  DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+} dt_thumbnail_overlay_t;
+
 typedef enum dt_thumbnail_selection_mode_t
 {
   DT_THUMBNAIL_SEL_MODE_NORMAL = 0, // user can change selection with normal mouse click (+CTRL or +SHIFT)
@@ -51,7 +60,7 @@ typedef struct
   int rating;
   int colorlabels;
   gchar *filename;
-  gchar info_line[50];
+  gchar info_line[256];
   gboolean is_altered;
   gboolean has_audio;
   gboolean is_grouped;
@@ -89,12 +98,14 @@ typedef struct
   dt_thumbnail_selection_mode_t sel_mode; // do we allow to change selection with mouse ?
   gboolean single_click;                  // do we activate on single or double click ?
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
+
+  dt_thumbnail_overlay_t over; // type of overlays
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
-void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height);
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
 void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 
@@ -108,6 +119,8 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
 // force image recomputing
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
+// do we need to display simple overlays or extended ?
+void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
