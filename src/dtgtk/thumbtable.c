@@ -1787,16 +1787,6 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
   table->code_scrolling = FALSE;
 }
 
-// define if overlays should always be shown or just on mouse-over
-void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show)
-{
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  if(show)
-    gtk_style_context_add_class(context, "dt_show_overlays");
-  else
-    gtk_style_context_remove_class(context, "dt_show_overlays");
-}
-
 // get current offset
 int dt_thumbtable_get_offset(dt_thumbtable_t *table)
 {

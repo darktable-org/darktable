@@ -44,8 +44,6 @@ typedef struct dt_lib_tool_preferences_t
 static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for preference button */
 static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data);
-/* callback for overlays button */
-// static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for help button */
 static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data);
 
@@ -102,6 +100,12 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
   dt_thumbtable_set_overlays_mode(dt_ui_thumbtable(darktable.gui->ui), over);
 
   gtk_widget_hide(d->over_popup);
+
+#ifdef USE_LUA
+  gboolean show = (over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED);
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper, 0, NULL, NULL, LUA_ASYNC_TYPENAME, "const char*",
+                          "global_toolbox-overlay_toggle", LUA_ASYNC_TYPENAME, "bool", show, LUA_ASYNC_DONE);
+#endif // USE_LUA
 }
 
 static void _overlays_show_popup(dt_lib_module_t *self)
@@ -112,6 +116,7 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   gchar *txt = dt_util_dstrcat(NULL, "%s %d", _("overlay mode for size"),
                                dt_ui_thumbtable(darktable.gui->ui)->prefs_size);
   gtk_label_set_text(GTK_LABEL(d->over_label), txt);
+  g_free(txt);
 
   // we get and set the current value
   dt_thumbnail_overlay_t mode = dt_ui_thumbtable(darktable.gui->ui)->overlays;
