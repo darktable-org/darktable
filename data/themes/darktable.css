@@ -1428,10 +1428,12 @@ Hierachy :
 Details :
 
   #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
-    class = .dt_thumbtable           present for all thumbtable types
-    class = .dt_show_overlays       if user has choosed to always show overlay
+    class = .dt_thumbtable          present for all thumbtable types
     class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
-    class = .dt_extended_overlay    for extended overlay mode (filename + exif)
+    Classes to determine how are shown overlays on/under the image :
+    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended
+    Classes to determine the category of size of the thumbnails (cat sizes limits are defined in dartablerc key=plugins/lighttable/thumbnail_sizes
+    class = .dt_thumbnails_?? where ?? is the cat number
   #thumb_main
     state = :selected  if the thumb is in current selection
     state = :active    if the thumb correspond to one of the images worked on (filmstrip)
@@ -1536,6 +1538,16 @@ Details :
 {
   border: 2px solid @plugin_bg_color;
 }
+.dt_thumbnails_2 #thumb_image
+{
+  margin : 2px;
+}
+.dt_overlays_always #thumb_image,
+.dt_overlays_always_extended #thumb_image
+{
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
 
 /* bottom area */
 #thumb_bottom
@@ -1548,22 +1560,8 @@ Details :
   color: transparent;
   font-weight: bold;
 }
-#thumb_main:hover #thumb_bottom,
-.dt_show_overlays #thumb_bottom
-{
-  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
-}
-#thumb_main:hover #thumb_bottom:hover
-{
-  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.5) 75%,rgba(127,127,127,0) 100%);
-}
-.dt_extended_overlay#thumb_main:hover #thumb_bottom,
-.dt_extended_overlay.dt_show_overlays #thumb_bottom
-{
-  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
-}
-.dt_extended_overlay#thumb_main:hover #thumb_bottom_label,
-.dt_extended_overlay.dt_show_overlays #thumb_bottom_label
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_bottom_label
 {
   color: @thumbnail_hover_font_color;
 }
@@ -1579,29 +1577,43 @@ Details :
 {
   border-right-width: 2px;
 }
+/* uncomment to see gradient under the stars. This may enhance visibility in certain cases, esp. bright images
+.dt_overlays_hover #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
+}*/
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
+}
 
 /* thumbnails buttons */
-.dt_thumb_btn
+.dt_overlays_none .dt_thumb_btn,
+.dt_overlays_hover .dt_thumb_btn,
+.dt_overlays_hover_extended .dt_thumb_btn
 {
   color: transparent;
   background-color: transparent;
 }
 #thumb_main:hover .dt_thumb_btn,
-.dt_show_overlays .dt_thumb_btn
+.dt_overlays_always .dt_thumb_btn,
+.dt_overlays_always_extended .dt_thumb_btn
 {
   color: @thumbnail_hover_outline_color;
 }
 
 /* reject */
 #thumb_main:hover #thumb_reject:active,
-.dt_show_overlays #thumb_reject:active
+.dt_overlays_always #thumb_reject:active,
+.dt_overlays_always_extended #thumb_reject:active
 {
   color: red;
 }
 
 /* stars */
 #thumb_main:hover #thumb_star:active,
-.dt_show_overlays #thumb_star:active
+.dt_overlays_always #thumb_star:active,
+.dt_overlays_always_extended #thumb_star:active
 {
   color: @bauhaus_fg_hover;
   background-color: @thumbnail_hover_outline_color;
@@ -1627,7 +1639,8 @@ Details :
   border-top: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 #thumb_main:hover #thumb_localcopy,
-.dt_show_overlays #thumb_localcopy
+.dt_overlays_always #thumb_localcopy,
+.dt_overlays_always_extended #thumb_localcopy
 {
   color: white;
   background-color: white;
@@ -1637,20 +1650,51 @@ Details :
 #thumb_main:hover #thumb_altered,
 #thumb_main:hover #thumb_group,
 #thumb_main:hover #thumb_audio,
-.dt_show_overlays #thumb_altered,
-.dt_show_overlays #thumb_group,
-.dt_show_overlays #thumb_audio
+.dt_overlays_always #thumb_altered,
+.dt_overlays_always #thumb_group,
+.dt_overlays_always #thumb_audio,
+.dt_overlays_always_extended #thumb_altered,
+.dt_overlays_always_extended #thumb_group,
+.dt_overlays_always_extended #thumb_audio
 {
   color: @thumbnail_outline_color;
 }
 #thumb_main:hover #thumb_group:hover,
 #thumb_main:hover #thumb_group:active,
 #thumb_main:hover #thumb_audio:hover,
-.dt_show_overlays #thumb_group:hover,
-.dt_show_overlays #thumb_group:active,
-.dt_show_overlays #thumb_audio:hover
+.dt_overlays_always #thumb_group:hover,
+.dt_overlays_always #thumb_group:active,
+.dt_overlays_always #thumb_audio:hover,
+.dt_overlays_always_extended #thumb_group:hover,
+.dt_overlays_always_extended #thumb_group:active,
+.dt_overlays_always_extended #thumb_audio:hover
 {
   color: @thumbnail_hover_fg_color;
+}
+.dt_overlays_none #thumb_reject,
+.dt_overlays_none #thumb_star,
+.dt_overlays_none #thumb_colorlabels,
+.dt_overlays_none #thumb_localcopy,
+.dt_overlays_none #thumb_altered,
+.dt_overlays_none #thumb_group,
+.dt_overlays_none #thumb_audio,
+.dt_overlays_none #thumb_main:hover #thumb_reject,
+.dt_overlays_none #thumb_main:hover #thumb_star,
+.dt_overlays_none #thumb_main:hover #thumb_colorlabels,
+.dt_overlays_none #thumb_main:hover #thumb_localcopy,
+.dt_overlays_none #thumb_main:hover #thumb_altered,
+.dt_overlays_none #thumb_main:hover #thumb_group,
+.dt_overlays_none #thumb_main:hover #thumb_audio,
+.dt_overlays_none #thumb_reject:active,
+.dt_overlays_none #thumb_star:active,
+.dt_overlays_none #thumb_colorlabels:active,
+.dt_overlays_none #thumb_localcopy:active,
+.dt_overlays_none #thumb_altered:active,
+.dt_overlays_none #thumb_group:active,
+.dt_overlays_none #thumb_audio:active
+{
+  background-color: transparent;
+  color: transparent;
 }
 
 #log-msg
