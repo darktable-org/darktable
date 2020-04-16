@@ -901,44 +901,43 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   // bottom background
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
   {
-    const int fsize2 = MIN(DT_PIXEL_APPLY_DPI(16.0), 0.67 * 0.91 * width / 10.0);
     attrlist = pango_attr_list_new();
-    attr = pango_attr_size_new_absolute(fsize2 * PANGO_SCALE);
+    attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
     pango_attr_list_unref(attrlist);
-    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 4.0 * r1 + 1.5 * fsize2);
+    gtk_widget_set_size_request(thumb->w_bottom, width, 8.0 * r1);
   }
   else
-    gtk_widget_set_size_request(thumb->w_bottom, width, 0.09 * width + 3.0 * r1);
+    gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
   // reject icon
   gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
   gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
-  gtk_widget_set_margin_bottom(thumb->w_reject, 0.045 * width - r1 * 0.75);
+  gtk_widget_set_margin_bottom(thumb->w_reject, 0.5 * r1);
   // stars
   for(int i = 0; i < MAX_STARS; i++)
   {
     gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
-    gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.045 * width - r1 * 0.75);
+    gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.5 * r1);
     gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
   }
   // the color labels
   gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
-  gtk_widget_set_margin_bottom(thumb->w_color, 0.045 * width);
+  gtk_widget_set_margin_bottom(thumb->w_color, 0.5 * r1);
   gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
   // the local copy indicator
   gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
   // the altered icon
   gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_altered, 0.045 * width);
+  gtk_widget_set_margin_top(thumb->w_altered, 0.5 * r1);
   gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
   // the group bouton
   gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_group, 0.045 * width);
+  gtk_widget_set_margin_top(thumb->w_group, 0.5 * r1);
   gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
   // the sound icon
   gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_audio, 0.045 * width);
+  gtk_widget_set_margin_top(thumb->w_audio, 0.5 * r1);
   gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
 
   // update values
