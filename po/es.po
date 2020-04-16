@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-14 13:19-0500\n"
-"PO-Revision-Date: 2020-04-15 12:48-0500\n"
+"POT-Creation-Date: 2020-04-15 16:43-0500\n"
+"PO-Revision-Date: 2020-04-15 17:12-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -87,9 +87,9 @@ msgstr "Doble clic para restablecer a `%s'"
 #: ../build/src/preferences_gen.h:2788 ../build/src/preferences_gen.h:2864
 #: ../build/src/preferences_gen.h:3040 ../build/src/preferences_gen.h:3201
 #: ../build/src/preferences_gen.h:3221 ../build/src/preferences_gen.h:3409
-#: ../build/src/preferences_gen.h:3568 ../build/src/preferences_gen.h:3588
-#: ../build/src/preferences_gen.h:3684 ../build/src/preferences_gen.h:3761
-#: ../build/src/preferences_gen.h:4050 ../build/src/preferences_gen.h:4070
+#: ../build/src/preferences_gen.h:3568 ../build/src/preferences_gen.h:3684
+#: ../build/src/preferences_gen.h:3761 ../build/src/preferences_gen.h:4050
+#: ../build/src/preferences_gen.h:4070
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSO"
@@ -448,8 +448,8 @@ msgstr "Desplegar solo un módulo a la vez en el cuarto oscuro"
 #: ../build/src/preferences_gen.h:3133 ../build/src/preferences_gen.h:3181
 #: ../build/src/preferences_gen.h:3288 ../build/src/preferences_gen.h:3389
 #: ../build/src/preferences_gen.h:3429 ../build/src/preferences_gen.h:3548
-#: ../build/src/preferences_gen.h:3617 ../build/src/preferences_gen.h:3741
-#: ../build/src/preferences_gen.h:3864
+#: ../build/src/preferences_gen.h:3588 ../build/src/preferences_gen.h:3617
+#: ../build/src/preferences_gen.h:3741 ../build/src/preferences_gen.h:3864
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "VERDADERO"
@@ -871,14 +871,16 @@ msgid "auto-apply sharpen"
 msgstr "Establecer enfoque automáticamente"
 
 #: ../build/src/preferences_gen.h:3591
+#, fuzzy
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
-"the default is to not add any sharpening automatically as most recent "
-"cameras have no low-pass filter. (need a restart)"
+"you should disable this option if you use one of those more recent cameras "
+"or sharpen your images with other means. (need a restart)"
 msgstr ""
-"Se recomienda desactivar el enfoque con cámaras sin filtro de paso bajo. Se "
-"desactiva el enfoque por defecto, dado que las cámaras más recientes no "
-"incluyen el filtro de paso bajo (requiere reiniciar)"
+"Este aumento de la nitidez no se recomienda en las cámaras sin filtro de "
+"paso bajo. Desactive esta opción si utiliza ese tipo de cámaras más "
+"recientes o si añade nitidez a sus imágenes mediante otras formas (requiere "
+"reiniciar)."
 
 #: ../build/src/preferences_gen.h:3599
 msgid "xmp"
@@ -2950,25 +2952,25 @@ msgstr "Alternar la polaridad de la máscara trazada"
 msgid "add gradient"
 msgstr "Añadir gradiente"
 
-#: ../src/develop/blend_gui.c:1957 ../src/iop/retouch.c:2660
+#: ../src/develop/blend_gui.c:1957 ../src/iop/retouch.c:2672
 #: ../src/iop/spots.c:680 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
 #: ../src/libs/masks.c:1663
 msgid "add path"
 msgstr "Trazar ruta"
 
-#: ../src/develop/blend_gui.c:1966 ../src/iop/retouch.c:2667
+#: ../src/develop/blend_gui.c:1966 ../src/iop/retouch.c:2679
 #: ../src/iop/spots.c:687 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
 #: ../src/libs/masks.c:1670
 msgid "add ellipse"
 msgstr "Añadir elipse"
 
-#: ../src/develop/blend_gui.c:1975 ../src/iop/retouch.c:2674
+#: ../src/develop/blend_gui.c:1975 ../src/iop/retouch.c:2686
 #: ../src/iop/spots.c:694 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
 #: ../src/libs/masks.c:1677
 msgid "add circle"
 msgstr "Añadir círculo"
 
-#: ../src/develop/blend_gui.c:1984 ../src/iop/retouch.c:2654
+#: ../src/develop/blend_gui.c:1984 ../src/iop/retouch.c:2666
 #: ../src/libs/masks.c:1033 ../src/libs/masks.c:1683
 msgid "add brush"
 msgstr "Trazar con pincel"
@@ -3275,7 +3277,7 @@ msgstr "máscara de desenfoque"
 msgid "radius for gaussian blur of blend mask"
 msgstr "Radio del desenfoque gaussiano de la máscara de fusión"
 
-#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2936
+#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2948
 msgid "mask opacity"
 msgstr "opacidad de la máscara"
 
@@ -3715,130 +3717,130 @@ msgid "double-click to reset"
 msgstr "Pulsación doble para reiniciar"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:1804
+#: ../src/dtgtk/thumbtable.c:1814
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vistas/miniaturas/sin estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1805
+#: ../src/dtgtk/thumbtable.c:1815
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vistas/miniaturas/1 estrella"
 
-#: ../src/dtgtk/thumbtable.c:1806
+#: ../src/dtgtk/thumbtable.c:1816
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vistas/miniaturas/2 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1807
+#: ../src/dtgtk/thumbtable.c:1817
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vistas/miniaturas/3 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1808
+#: ../src/dtgtk/thumbtable.c:1818
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vistas/miniaturas/4 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1809
+#: ../src/dtgtk/thumbtable.c:1819
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vistas/miniaturas/5 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1810
+#: ../src/dtgtk/thumbtable.c:1820
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vistas/miniaturas/rechazar"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:1813
+#: ../src/dtgtk/thumbtable.c:1823
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vistas/miniaturas/copiar historial"
 
-#: ../src/dtgtk/thumbtable.c:1814
+#: ../src/dtgtk/thumbtable.c:1824
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vistas/miniaturas/copiar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1816
+#: ../src/dtgtk/thumbtable.c:1826
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vistas/miniaturas/pegar historial"
 
-#: ../src/dtgtk/thumbtable.c:1817
+#: ../src/dtgtk/thumbtable.c:1827
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vistas/miniaturas/pegar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1819
+#: ../src/dtgtk/thumbtable.c:1829
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vistas/miniaturas/descartar historial de acciones"
 
-#: ../src/dtgtk/thumbtable.c:1821
+#: ../src/dtgtk/thumbtable.c:1831
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vistas/miniaturas/duplicar imagen"
 
-#: ../src/dtgtk/thumbtable.c:1822
+#: ../src/dtgtk/thumbtable.c:1832
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vistas/miniaturas/duplicar imagen virgen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:1826
+#: ../src/dtgtk/thumbtable.c:1836
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vistas/miniaturas/color rojo"
 
-#: ../src/dtgtk/thumbtable.c:1827
+#: ../src/dtgtk/thumbtable.c:1837
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vistas/miniaturas/color amarillo"
 
-#: ../src/dtgtk/thumbtable.c:1828
+#: ../src/dtgtk/thumbtable.c:1838
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vistas/miniaturas/color verde"
 
-#: ../src/dtgtk/thumbtable.c:1829
+#: ../src/dtgtk/thumbtable.c:1839
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vistas/miniaturas/color azul"
 
-#: ../src/dtgtk/thumbtable.c:1830
+#: ../src/dtgtk/thumbtable.c:1840
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vistas/miniaturas/color púrpura"
 
-#: ../src/dtgtk/thumbtable.c:1831
+#: ../src/dtgtk/thumbtable.c:1841
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vistas/miniaturas/remover marcas de color"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:1834
+#: ../src/dtgtk/thumbtable.c:1844
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vistas/miniaturas/seleccionar todas"
 
-#: ../src/dtgtk/thumbtable.c:1835
+#: ../src/dtgtk/thumbtable.c:1845
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vistas/miniaturas/deseleccionar"
 
-#: ../src/dtgtk/thumbtable.c:1837
+#: ../src/dtgtk/thumbtable.c:1847
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vistas/miniaturas/invertir selección"
 
-#: ../src/dtgtk/thumbtable.c:1838
+#: ../src/dtgtk/thumbtable.c:1848
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vistas/miniaturas/seleccionar carrete"
 
-#: ../src/dtgtk/thumbtable.c:1839
+#: ../src/dtgtk/thumbtable.c:1849
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vistas/miniaturas/seleccionar no editadas"
@@ -6365,7 +6367,7 @@ msgstr "gris medio"
 msgid "middle grey adjustment"
 msgstr "ajuste de gris medio"
 
-#: ../src/iop/basicadj.c:819 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2903
+#: ../src/iop/basicadj.c:819 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2915
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
 msgid "brightness"
 msgstr "brillo"
@@ -8100,7 +8102,7 @@ msgstr "tonos de piel naturales"
 msgid "black & white film"
 msgstr "película blanco y negro"
 
-#: ../src/iop/colorzones.c:2234 ../src/iop/retouch.c:2240
+#: ../src/iop/colorzones.c:2234 ../src/iop/retouch.c:2249
 #: ../src/iop/toneequal.c:2016
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "No se pueden mostrar máscaras cuando se muestra la de fusión"
@@ -10364,7 +10366,7 @@ msgstr "brillo"
 msgid "soften with"
 msgstr "suavizar con"
 
-#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2920 ../src/iop/shadhi.c:838
+#: ../src/iop/lowpass.c:693 ../src/iop/retouch.c:2932 ../src/iop/shadhi.c:838
 msgid "gaussian"
 msgstr "gaussiano"
 
@@ -10675,7 +10677,7 @@ msgstr "película celuloide"
 msgid "black and white"
 msgstr "blanco y negro"
 
-#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2876
+#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2888
 #: ../src/iop/watermark.c:1491
 msgid "color"
 msgstr "color"
@@ -11176,15 +11178,15 @@ msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 msgid "retouch"
 msgstr "retoque"
 
-#: ../src/iop/retouch.c:1929
+#: ../src/iop/retouch.c:1936
 msgid "cannot display scales when the blending mask is displayed"
 msgstr "No se puede mostrar las escalas cuando se muestra la máscara de fusión"
 
-#: ../src/iop/retouch.c:2634
+#: ../src/iop/retouch.c:2646
 msgid "# shapes:"
 msgstr "# figuras:"
 
-#: ../src/iop/retouch.c:2639
+#: ../src/iop/retouch.c:2651
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -11193,43 +11195,43 @@ msgstr ""
 "clic en la imagen.\n"
 "Las formas se añaden a la escala actual"
 
-#: ../src/iop/retouch.c:2646
+#: ../src/iop/retouch.c:2658
 msgid "show and edit shapes on the current scale"
 msgstr "Muestra y edita las figuras en la escala actual"
 
-#: ../src/iop/retouch.c:2681
+#: ../src/iop/retouch.c:2693
 msgid "algorithms:"
 msgstr "algoritmos:"
 
-#: ../src/iop/retouch.c:2686
+#: ../src/iop/retouch.c:2698
 msgid "activates fill tool"
 msgstr "Activar la herramienta de llenado"
 
-#: ../src/iop/retouch.c:2693
+#: ../src/iop/retouch.c:2705
 msgid "activates blur tool"
 msgstr "Activar la herramienta de desenfoque"
 
-#: ../src/iop/retouch.c:2700
+#: ../src/iop/retouch.c:2712
 msgid "activates healing tool"
 msgstr "Activar la herramienta de saneado"
 
-#: ../src/iop/retouch.c:2707
+#: ../src/iop/retouch.c:2719
 msgid "activates cloning tool"
 msgstr "Activar la herramienta de clonado"
 
-#: ../src/iop/retouch.c:2721
+#: ../src/iop/retouch.c:2733
 msgid "# scales:"
 msgstr "# escalas:"
 
-#: ../src/iop/retouch.c:2730
+#: ../src/iop/retouch.c:2742
 msgid "current:"
 msgstr "actual:"
 
-#: ../src/iop/retouch.c:2739
+#: ../src/iop/retouch.c:2751
 msgid "merge from:"
 msgstr "fusionar desde:"
 
-#: ../src/iop/retouch.c:2752
+#: ../src/iop/retouch.c:2764
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -11241,43 +11243,43 @@ msgstr ""
 "El recuadro rojo indica la escala actual.\n"
 "La línea verde indica que la escala tiene figuras"
 
-#: ../src/iop/retouch.c:2774
+#: ../src/iop/retouch.c:2786
 msgid "display masks"
 msgstr "mostrar máscaras"
 
-#: ../src/iop/retouch.c:2780
+#: ../src/iop/retouch.c:2792
 msgid "temporarily switch off shapes"
 msgstr "Desactivar temporalmente las figuras"
 
-#: ../src/iop/retouch.c:2787
+#: ../src/iop/retouch.c:2799
 msgid "display wavelet scale"
 msgstr "Mostrar la escala de la ondícula"
 
-#: ../src/iop/retouch.c:2795
+#: ../src/iop/retouch.c:2807
 msgid "cut shapes from current scale"
 msgstr "Cortar figuras desde la escala actual"
 
-#: ../src/iop/retouch.c:2801
+#: ../src/iop/retouch.c:2813
 msgid "paste cut shapes to current scale"
 msgstr "Pegar las figuras cortadas en la escala actual"
 
-#: ../src/iop/retouch.c:2825
+#: ../src/iop/retouch.c:2837
 msgid "preview single scale"
 msgstr "vista previa de una escala"
 
-#: ../src/iop/retouch.c:2832
+#: ../src/iop/retouch.c:2844
 msgid "adjust preview levels"
 msgstr "ajustar los niveles de vista previa"
 
-#: ../src/iop/retouch.c:2851
+#: ../src/iop/retouch.c:2863
 msgid "auto levels"
 msgstr "niveles automáticos"
 
-#: ../src/iop/retouch.c:2863
+#: ../src/iop/retouch.c:2875
 msgid "shape selected:"
 msgstr "figura seleccionada: "
 
-#: ../src/iop/retouch.c:2867
+#: ../src/iop/retouch.c:2879
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -11285,115 +11287,120 @@ msgstr ""
 "Pulse en una figura para seleccionarla.\n"
 "Para deseleccionar, pulse en un espacio vacío"
 
-#: ../src/iop/retouch.c:2874
+#: ../src/iop/retouch.c:2886
 msgid "fill mode"
 msgstr "modo de relleno"
 
-#: ../src/iop/retouch.c:2875
+#: ../src/iop/retouch.c:2887
 msgid "erase"
 msgstr "borrar"
 
-#: ../src/iop/retouch.c:2877
+#: ../src/iop/retouch.c:2889
 msgid "erase the detail or fills with chosen color"
 msgstr "borrar el detalle o rellenar con el color elegido"
 
-#: ../src/iop/retouch.c:2889 ../src/iop/retouch.c:2890
+#: ../src/iop/retouch.c:2901 ../src/iop/retouch.c:2902
 msgid "select fill color"
 msgstr "seleccione el color de relleno"
 
-#: ../src/iop/retouch.c:2896
+#: ../src/iop/retouch.c:2908
 msgid "pick fill color from image"
 msgstr "elegir color de relleno de la imagen"
 
-#: ../src/iop/retouch.c:2900
+#: ../src/iop/retouch.c:2912
 msgid "fill color: "
 msgstr "color de relleno "
 
-#: ../src/iop/retouch.c:2905
+#: ../src/iop/retouch.c:2917
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr ""
 "ajustes del brillo del color para afinarlo. funciona también con borrado"
 
-#: ../src/iop/retouch.c:2919
+#: ../src/iop/retouch.c:2931
 msgid "blur type"
 msgstr "tipo de desenfoque"
 
-#: ../src/iop/retouch.c:2921
+#: ../src/iop/retouch.c:2933
 msgid "bilateral"
 msgstr "rejilla bilateral"
 
-#: ../src/iop/retouch.c:2922
+#: ../src/iop/retouch.c:2934
 msgid "type for the blur algorithm"
 msgstr "tipo de algoritmo de desenfoque"
 
-#: ../src/iop/retouch.c:2928
+#: ../src/iop/retouch.c:2940
 msgid "blur radius"
 msgstr "radio de desenfoque"
 
-#: ../src/iop/retouch.c:2929
+#: ../src/iop/retouch.c:2941
 msgid "radius of the selected blur type"
 msgstr "Radio del tipo de desenfoque seleccionado"
 
-#: ../src/iop/retouch.c:2937
+#: ../src/iop/retouch.c:2949
 msgid "set the opacity on the selected shape"
 msgstr "seleccionar la opacidad en la figura seleccionada"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2941
+#: ../src/iop/retouch.c:2953
 msgid "retouch tools"
 msgstr "herramienta de retoque"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2950
+#: ../src/iop/retouch.c:2962
 msgid "wavelet decompose"
 msgstr "descomponer en ondículas"
 
 #. shapes
-#: ../src/iop/retouch.c:2964
+#: ../src/iop/retouch.c:2976
 msgid "shapes"
 msgstr "figuras"
 
-#: ../src/iop/retouch.c:3318
+#: ../src/iop/retouch.c:3330
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "herramienta de retoque círculo"
 
-#: ../src/iop/retouch.c:3319
+#: ../src/iop/retouch.c:3331
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "herramienta de retoque elipse"
 
-#: ../src/iop/retouch.c:3320
+#: ../src/iop/retouch.c:3332
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "herramienta de retoque ruta"
 
-#: ../src/iop/retouch.c:3321
+#: ../src/iop/retouch.c:3333
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "herramienta de retoque pincel"
 
-#: ../src/iop/retouch.c:3323
+#: ../src/iop/retouch.c:3335
 msgctxt "accel"
 msgid "continuous add circle"
 msgstr "agregar círculo"
 
-#: ../src/iop/retouch.c:3324
+#: ../src/iop/retouch.c:3336
 msgctxt "accel"
 msgid "continuous add ellipse"
 msgstr "agregar elipse"
 
-#: ../src/iop/retouch.c:3325
+#: ../src/iop/retouch.c:3337
 msgctxt "accel"
 msgid "continuous add path"
 msgstr "agregar ruta"
 
-#: ../src/iop/retouch.c:3326
+#: ../src/iop/retouch.c:3338
 msgctxt "accel"
 msgid "continuous add brush"
 msgstr "agregar pincel"
 
-#: ../src/iop/retouch.c:4417 ../src/iop/retouch.c:5273
+#: ../src/iop/retouch.c:3340 ../src/iop/spots.c:722
+msgctxt "accel"
+msgid "show or hide shapes"
+msgstr "mostrar u ocultar figuras"
+
+#: ../src/iop/retouch.c:4491 ../src/iop/retouch.c:5347
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "La escala máxima es %i para este tamaño de imagen"
@@ -11783,11 +11790,6 @@ msgstr "herramienta ovalada"
 msgctxt "accel"
 msgid "spot path tool"
 msgstr "herramienta de rutas"
-
-#: ../src/iop/spots.c:722
-msgctxt "accel"
-msgid "spot show or hide"
-msgstr "mostrar u ocultar punto"
 
 #: ../src/iop/temperature.c:162
 msgctxt "modulename"
@@ -16116,13 +16118,13 @@ msgstr "vista previa completa"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3571 ../src/views/lighttable.c:2997
-#: ../src/views/map.c:900
+#: ../src/views/map.c:920
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
 #: ../src/views/darkroom.c:3572 ../src/views/lighttable.c:2998
-#: ../src/views/map.c:901
+#: ../src/views/map.c:921
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
@@ -16401,19 +16403,19 @@ msgstr "desplazarse por el área de la vista principal"
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
-#: ../src/views/map.c:134
+#: ../src/views/map.c:132
 msgid "map"
 msgstr "mapa"
 
-#: ../src/views/map.c:1399
+#: ../src/views/map.c:1378
 msgid "[on image] open in darkroom"
 msgstr "[en la imagen] abrir en el cuarto oscuro"
 
-#: ../src/views/map.c:1404
+#: ../src/views/map.c:1383
 msgid "[on map] zoom map"
 msgstr "[en el mapa] mapa de zoom"
 
-#: ../src/views/map.c:1409
+#: ../src/views/map.c:1388
 msgid "move image location"
 msgstr "cambiar la ubicación de la imagen"
 
