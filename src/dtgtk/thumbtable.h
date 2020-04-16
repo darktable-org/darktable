@@ -44,6 +44,7 @@ typedef enum dt_thumbtable_move_t
 typedef struct dt_thumbtable_t
 {
   dt_thumbtable_mode_t mode;
+  dt_thumbnail_overlay_t overlays;
 
   GtkWidget *widget; // GtkLayout -- main widget
 
@@ -61,6 +62,7 @@ typedef struct dt_thumbtable_t
   int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
   int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
+  int prefs_size;              // size value to dertermine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
@@ -98,8 +100,6 @@ dt_thumbtable_t *dt_thumbtable_new();
 void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force);
 // change thumbtable parent widget
 void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_thumbtable_mode_t mode);
-// define if overlays should always be shown or just on mouse-over
-void dt_thumbtable_set_overlays(dt_thumbtable_t *table, gboolean show);
 // get/set offset (and redraw if needed)
 int dt_thumbtable_get_offset(dt_thumbtable_t *table);
 gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
@@ -127,6 +127,9 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table);
 // connect all accels if thumbtable is active in the view and they are not loaded
 // disconnect them if not
 void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
+
+// change the type of overlays that should be shown (over or under the image)
+void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
