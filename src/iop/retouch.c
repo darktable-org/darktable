@@ -2589,6 +2589,8 @@ void gui_update(dt_iop_module_t *self)
 
   // update edit shapes status
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+  if(darktable.develop->history_updating) bd->masks_shown = DT_MASKS_EDIT_OFF;
+
   //only toggle shape show button if shapes exist
   if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
   {
