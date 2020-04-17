@@ -64,6 +64,7 @@ typedef struct
   gchar info_line[256];
   gboolean is_altered;
   gboolean has_audio;
+  gboolean has_txt;
   gboolean is_grouped;
   gboolean is_bw;
   gboolean is_hdr;
@@ -71,9 +72,11 @@ typedef struct
   int groupid;
 
   // all widget components
-  GtkWidget *w_main; // GtkOverlay -- contains all others widgets
-  GtkWidget *w_back; // GtkEventBox -- thumbnail background
-  GtkWidget *w_ext;  // GtkLabel -- thumbnail extension
+  GtkWidget *w_main;               // GtkOverlay -- contains all others widgets
+  GtkWidget *w_back;               // GtkEventBox -- thumbnail background
+  GtkWidget *w_ext;                // GtkLabel -- thumbnail extension
+  GtkWidget *w_custom_metadata_eb; // GtkEventBox -- container for label to make it draw properly
+  GtkWidget *w_custom_metadata;    // GtkLabel -- overlay of .txt file
 
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
   GtkBorder *img_margin;     // in percentage of the main widget size

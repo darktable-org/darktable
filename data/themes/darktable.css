@@ -139,6 +139,8 @@
 @define-color thumbnail_hover_bg_color @grey_80;
 @define-color thumbnail_hover_fg_color @grey_70;
 @define-color thumbnail_hover_outline_color @grey_50;
+@define-color thumbnail_custom_metadata_bg_color alpha(black, 0.4);
+@define-color thumbnail_custom_metadata_fg_color @grey_80;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color culling_selected_border_color @grey_10;
 @define-color culling_filmstrip_selected_border_color @grey_10;
@@ -1550,6 +1552,20 @@ Details :
   margin-bottom: 1px;
 }
 
+/* custom metadata */
+#thumb_main:hover #thumb_custom_metadata_eb
+{
+  background-color: @thumbnail_custom_metadata_bg_color;
+}
+#thumb_custom_metadata
+{
+  color: transparent;
+}
+#thumb_main:hover #thumb_custom_metadata
+{
+  color: @thumbnail_custom_metadata_fg_color;
+}
+
 /* bottom area */
 #thumb_bottom
 {
@@ -1691,6 +1707,8 @@ Details :
 .dt_overlays_none #thumb_altered,
 .dt_overlays_none #thumb_group,
 .dt_overlays_none #thumb_audio,
+.dt_overlays_none #thumb_custom_metadata,
+.dt_overlays_none #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_main:hover #thumb_reject,
 .dt_overlays_none #thumb_main:hover #thumb_star,
 .dt_overlays_none #thumb_main:hover #thumb_colorlabels,
@@ -1698,13 +1716,17 @@ Details :
 .dt_overlays_none #thumb_main:hover #thumb_altered,
 .dt_overlays_none #thumb_main:hover #thumb_group,
 .dt_overlays_none #thumb_main:hover #thumb_audio,
+.dt_overlays_none #thumb_main:hover #thumb_custom_metadata,
+.dt_overlays_none #thumb_main:hover #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_reject:active,
 .dt_overlays_none #thumb_star:active,
 .dt_overlays_none #thumb_colorlabels:active,
 .dt_overlays_none #thumb_localcopy:active,
 .dt_overlays_none #thumb_altered:active,
 .dt_overlays_none #thumb_group:active,
-.dt_overlays_none #thumb_audio:active
+.dt_overlays_none #thumb_audio:active,
+.dt_overlays_none #thumb_custom_metadata:active,
+.dt_overlays_none #thumb_custom_metadata_eb:active
 {
   background-color: transparent;
   color: transparent;
