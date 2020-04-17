@@ -212,7 +212,7 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
     <default>false</default>
@@ -692,7 +692,7 @@
     <shortdescription>low quality thumbnails</shortdescription>
     <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
     <type>
       <enum>
@@ -711,28 +711,28 @@
     <shortdescription>high quality thumb processing from size</shortdescription>
     <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/thumbnail_sizes</name>
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for sizes categories</shortdescription>
     <longdescription>sizes categories are used to be able to set different overlays and css values depending of the size of the thumbnail.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/extended_pattern</name>
     <type>string</type>
     <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>string</type>
     <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>pressure_sensitivity</name>
     <type>
       <enum>
@@ -748,7 +748,7 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>brush_smoothing</name>
     <type>
       <enum>
@@ -761,7 +761,7 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>channel_display</name>
     <type>
       <enum>
@@ -773,14 +773,14 @@
     <shortdescription>display of individual color channels</shortdescription>
     <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>string</type>
     <default>$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
     <shortdescription>pattern for the image infos line</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>plugins/darkroom/image_infos_position</name>
     <type>
       <enum>
@@ -795,7 +795,7 @@
     <shortdescription>position of the image infos line</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>plugins/darkroom/search_iop_by_text</name>
     <type>
       <enum>
@@ -973,7 +973,7 @@
     <shortdescription>append or replace history stack if pasted</shortdescription>
     <longdescription>0 -- append on top of stack, 1 -- replace it.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/collect/single-click</name>
     <type>bool</type>
     <default>false</default>
@@ -1267,7 +1267,7 @@
     <shortdescription>overlay txt sidecar over zoomed images</shortdescription>
     <longdescription>when there is a txt file next to an image it can be shown as an overlay over zoomed images on the lighttable. the txt file either has to be there at import time or the crawler has to be enabled</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
     <default>false</default>
@@ -1281,21 +1281,21 @@
     <shortdescription>always show thumbnail overlays</shortdescription>
     <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>darkroom/ui/single_module</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>expand a single darkroom module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>darkroom/ui/activate_expand</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>expand the module when it is activated, and collapse it when disabled</shortdescription>
     <longdescription>this option allows to expand or collapse automatically the module when it is enabled or disabled.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="lighttable">
+  <dtconfig prefs="lighttable" section="lighttable">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
     <default>false</default>
@@ -1358,7 +1358,7 @@
     <shortdescription>panels collapsing state in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
@@ -1372,7 +1372,7 @@
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
     <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="darkroom">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
     <default>10</default>
@@ -1455,7 +1455,7 @@
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
- <dtconfig prefs="gui" section="lighttable">
+ <dtconfig prefs="lighttable" section="lighttable">
     <name>rating_one_double_tap</name>
     <type>bool</type>
     <default>false</default>

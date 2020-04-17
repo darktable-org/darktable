@@ -27,7 +27,7 @@
 
   <xsl:variable name="tab_end">
   gtk_widget_show_all(tab);
-  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(tab));
+     <!--dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(tab));-->
 }
 </xsl:variable>
 
@@ -78,7 +78,7 @@
   <!-- preferences tabs -->
   <!-- gui -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("GUI options")));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(tab), scroll, "GUI options", "GUI options");&#xA;</xsl:text>
 
 <xsl:text>
    {
@@ -92,21 +92,6 @@
 </xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='import']">
-    <xsl:apply-templates select="." mode="tab_block"/>
-  </xsl:for-each>
-
-<xsl:text>
-   {
-      GtkWidget *seclabel = gtk_label_new(_("lighttable"));
-      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
-      gtk_widget_set_name(lbox, "pref_section");
-      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
-   }
-</xsl:text>
-
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='lighttable']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
 
@@ -171,9 +156,48 @@
   </xsl:for-each>
   <xsl:value-of select="$tab_end" />
 
+  <!-- lighttable -->
+
+  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(tab), scroll, "lighttable", "lighttable");&#xA;</xsl:text>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("lighttable"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='lighttable' and @section='lighttable']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$tab_end" />
+
+  <!-- darkroom -->
+
+  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(tab), scroll, "darkroom", "darkroom");&#xA;</xsl:text>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("darkroom"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='darkroom' and @section='darkroom']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$tab_end" />
   <!-- core -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_core</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("core options")));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_core</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(tab), scroll, "core options", "core options");&#xA;</xsl:text>
 
 <xsl:text>
    {
@@ -240,7 +264,7 @@
   <xsl:value-of select="$tab_end" />
 
         <!-- session -->
-  <xsl:text>&#xA;static void&#xA;init_tab_session</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("session options")));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_session</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(tab), scroll, "session options", "session options");&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='session']">
           <xsl:apply-templates select="." mode="tab_block"/>
