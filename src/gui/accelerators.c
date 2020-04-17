@@ -544,7 +544,7 @@ void dt_accel_widget_toast(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
-  if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label && !darktable.gui->reset)
+  if(!gtk_widget_is_visible(GTK_WIDGET(w)) && !darktable.gui->reset)
   {
     char *text = NULL;
     int show = 1;
@@ -567,13 +567,26 @@ void dt_accel_widget_toast(GtkWidget *widget)
         break;
     }
 
-    if (show) {
-      if(w->module && w->module->multi_name[0] != '\0')
-        dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
-      else if(w->module)
-        dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, text);
+    if (show)
+    {
+      if(w->label[0] != '\0')
+      { // label is not empty
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
+        else if(w->module && !strstr(w->module->name(), w->label))
+          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, text);
+        else
+          dt_control_log(_("%s: %s"), w->label, text);
+      }
       else
-        dt_control_log(_("%s"), text);
+      { //label is empty
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s"), w->module->name(), w->module->multi_name, text);
+        else if(w->module)
+          dt_control_log(_("%s / %s"), w->module->name(), text);
+        else
+          dt_control_log(_("%s"), text);
+      }
     }
 
     g_free(text);
