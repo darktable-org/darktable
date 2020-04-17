@@ -110,8 +110,8 @@ enum
   P_N_COLUMNS
 };
 
-static void init_tab_presets(GtkWidget *book);
-static void init_tab_accels(GtkWidget *book);
+static void init_tab_presets(GtkWidget *stack);
+static void init_tab_accels(GtkWidget *stack);
 static void tree_insert_accel(gpointer accel_struct, gpointer model_link);
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gchar *accel_path,
                             const gchar *translated_path, guint accel_key, GdkModifierType accel_mods);
@@ -288,34 +288,51 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(800), DT_PIXEL_APPLY_DPI(800));
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1200), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
-  GtkWidget *notebook = gtk_notebook_new();
-  gtk_widget_set_size_request(notebook, DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(500));
-  gtk_widget_set_name(notebook, "preferences_notebook");
-  gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  gtk_box_pack_start(GTK_BOX(content), box, TRUE, TRUE, 0);
+  GtkWidget *stack = gtk_stack_new();
+  GtkWidget *stacksidebar = gtk_stack_sidebar_new();
+  gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
+  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(1000), DT_PIXEL_APPLY_DPI(700));
+  gtk_widget_set_name(stack, "preferences_notebook");
+  gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
   // Make sure remap mode is off initially
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_gui(_preferences_dialog, notebook, &hardcoded_gui);
-  init_tab_core(_preferences_dialog, notebook, NULL);
-  init_tab_session(_preferences_dialog, notebook, NULL);
-  init_tab_accels(notebook);
-  init_tab_presets(notebook);
+  init_tab_lighttable(_preferences_dialog, stack, NULL);
+  init_tab_darkroom(_preferences_dialog, stack, NULL);
+  init_tab_gui(_preferences_dialog, stack, &hardcoded_gui);
+  init_tab_core(_preferences_dialog, stack, NULL);
+  init_tab_session(_preferences_dialog, stack, NULL);
+  init_tab_accels(stack);
+  init_tab_presets(stack);
+
+  //open in the appropriate tab if currently in darkroom or lighttable view
+  const gchar *current_view = darktable.view_manager->current_view->name(darktable.view_manager->current_view);
+  if(strcmp(current_view, "darkroom") == 0 || strcmp(current_view, "lighttable") == 0)
+  {
+    gtk_stack_set_visible_child(GTK_STACK(stack), gtk_stack_get_child_by_name(GTK_STACK(stack), current_view));
+  }
+
 #ifdef USE_LUA
-  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, notebook);
+  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
   gtk_widget_show_all(_preferences_dialog);
   (void)gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
+
 #ifdef USE_LUA
   destroy_tab_lua(lua_grid);
 #endif
+
   gtk_widget_destroy(_preferences_dialog);
 
   // Cleaning up any memory still allocated for remapping
@@ -467,7 +484,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   cairo_surface_destroy(check_cst);
 }
 
-static void init_tab_presets(GtkWidget *book)
+static void init_tab_presets(GtkWidget *stack)
 {
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
@@ -481,8 +498,9 @@ static void init_tab_presets(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
-  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(book));
+  //gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
+  //dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(book));
+  gtk_stack_add_titled(GTK_STACK(stack), container, "presets", "presets");
 
   tree_insert_presets(model);
 
@@ -570,7 +588,7 @@ static void init_tab_presets(GtkWidget *book)
   g_object_unref(G_OBJECT(model));
 }
 
-static void init_tab_accels(GtkWidget *book)
+static void init_tab_accels(GtkWidget *stack)
 {
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
@@ -582,7 +600,8 @@ static void init_tab_accels(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("shortcuts")));
+  //gtk_notebook_append_page(GTK_NOTEBOOK(stack), container, gtk_label_new(_("shortcuts")));
+  gtk_stack_add_titled(GTK_STACK(stack), container, "accels", "shortcuts");
 
   // Building the accelerator tree
   g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
