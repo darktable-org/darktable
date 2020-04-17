@@ -56,6 +56,8 @@ gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
       return dt_util_dstrcat(NULL, "dt_overlays_always");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
       return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+    case DT_THUMBNAIL_OVERLAYS_MIXED:
+      return dt_util_dstrcat(NULL, "dt_overlays_mixed");
     default:
       return dt_util_dstrcat(NULL, "dt_overlays_hover");
   }
@@ -1444,8 +1446,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
   // overlays mode
-  table->overlays
-      = DT_THUMBNAIL_OVERLAYS_NONE; //(dt_thumbnail_overlay_t)dt_conf_get_int("lighttable/ui/overlays_mode");
+  table->overlays = DT_THUMBNAIL_OVERLAYS_NONE;
   gchar *cl = _thumbs_get_overlays_class(table->overlays);
   gtk_style_context_add_class(context, cl);
   g_free(cl);
