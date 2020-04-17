@@ -1888,7 +1888,9 @@ void reload_defaults(dt_iop_module_t *module)
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     tmp.type = DT_COLORSPACE_LIN_REC709;
@@ -1900,8 +1902,6 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
