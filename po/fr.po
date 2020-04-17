@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 23:06+0200\n"
-"PO-Revision-Date: 2020-04-16 23:18+0200\n"
+"POT-Creation-Date: 2020-04-17 19:15+0200\n"
+"PO-Revision-Date: 2020-04-17 19:21+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3737,130 +3737,130 @@ msgid "double-click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:1913
+#: ../src/dtgtk/thumbtable.c:1914
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vues/miniature/pas d'étoile"
 
-#: ../src/dtgtk/thumbtable.c:1914
+#: ../src/dtgtk/thumbtable.c:1915
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vues/miniature/1 étoile"
 
-#: ../src/dtgtk/thumbtable.c:1915
+#: ../src/dtgtk/thumbtable.c:1916
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vues/miniature/2 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1916
+#: ../src/dtgtk/thumbtable.c:1917
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vues/miniature/3 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1917
+#: ../src/dtgtk/thumbtable.c:1918
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vues/miniature/4 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1918
+#: ../src/dtgtk/thumbtable.c:1919
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vues/miniature/5 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1919
+#: ../src/dtgtk/thumbtable.c:1920
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vues/miniature/rejeter"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:1922
+#: ../src/dtgtk/thumbtable.c:1923
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vues/miniature/copie historique"
 
-#: ../src/dtgtk/thumbtable.c:1923
+#: ../src/dtgtk/thumbtable.c:1924
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vues/miniature/copier une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:1925
+#: ../src/dtgtk/thumbtable.c:1926
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vues/miniature/coller le développement"
 
-#: ../src/dtgtk/thumbtable.c:1926
+#: ../src/dtgtk/thumbtable.c:1927
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vues/miniature/coller une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:1928
+#: ../src/dtgtk/thumbtable.c:1929
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vues/miniature/supprimer historique"
 
-#: ../src/dtgtk/thumbtable.c:1930
+#: ../src/dtgtk/thumbtable.c:1931
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vues/miniature/cloner l'image"
 
-#: ../src/dtgtk/thumbtable.c:1931
+#: ../src/dtgtk/thumbtable.c:1932
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vues/miniature/dupliquer image vierge"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:1935
+#: ../src/dtgtk/thumbtable.c:1936
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vues/miniature/couleur rouge"
 
-#: ../src/dtgtk/thumbtable.c:1936
+#: ../src/dtgtk/thumbtable.c:1937
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vues/miniature/couleur jaune"
 
-#: ../src/dtgtk/thumbtable.c:1937
+#: ../src/dtgtk/thumbtable.c:1938
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vues/miniature/couleur vert"
 
-#: ../src/dtgtk/thumbtable.c:1938
+#: ../src/dtgtk/thumbtable.c:1939
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vues/miniature/couleur bleue"
 
-#: ../src/dtgtk/thumbtable.c:1939
+#: ../src/dtgtk/thumbtable.c:1940
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vues/miniature/couleur violette"
 
-#: ../src/dtgtk/thumbtable.c:1940
+#: ../src/dtgtk/thumbtable.c:1941
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vues/miniature/aucun label couleur"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:1943
+#: ../src/dtgtk/thumbtable.c:1944
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vues/miniature/tout sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:1944
+#: ../src/dtgtk/thumbtable.c:1945
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vues/miniature/ne rien sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:1946
+#: ../src/dtgtk/thumbtable.c:1947
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vues/miniature/inverser sélection"
 
-#: ../src/dtgtk/thumbtable.c:1947
+#: ../src/dtgtk/thumbtable.c:1948
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vues/miniature/sélectionner film"
 
-#: ../src/dtgtk/thumbtable.c:1948
+#: ../src/dtgtk/thumbtable.c:1949
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vues/miniature/non développées"
@@ -15679,105 +15679,114 @@ msgid "preferences"
 msgstr "préférences"
 
 #. we write the label with the size categorie
-#: ../src/libs/tools/global_toolbox.c:116
-#: ../src/libs/tools/global_toolbox.c:172
+#: ../src/libs/tools/global_toolbox.c:118
+#: ../src/libs/tools/global_toolbox.c:176
 msgid "overlay mode for size"
 msgstr "mode surimpression pour la taille"
 
-#: ../src/libs/tools/global_toolbox.c:150
-#: ../src/libs/tools/global_toolbox.c:228
+#: ../src/libs/tools/global_toolbox.c:154
+#: ../src/libs/tools/global_toolbox.c:236
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:152
-#: ../src/libs/tools/global_toolbox.c:230
+#: ../src/libs/tools/global_toolbox.c:156
+#: ../src/libs/tools/global_toolbox.c:238
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:174
+#: ../src/libs/tools/global_toolbox.c:178
 msgid "no overlays"
 msgstr "pas de surimpression"
 
-#: ../src/libs/tools/global_toolbox.c:178
-msgid "overlays on mouse hover"
-msgstr "surimpressions lors du survol souris"
-
 #: ../src/libs/tools/global_toolbox.c:182
+msgid "overlays on mouse hover"
+msgstr "surimpression lors du survol souris"
+
+#: ../src/libs/tools/global_toolbox.c:186
 msgid "extended overlays on mouse hover"
 msgstr "surimpression étendue lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:185
+#: ../src/libs/tools/global_toolbox.c:189
 msgid "permanent overlays"
 msgstr "surimpressions permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:189
+#: ../src/libs/tools/global_toolbox.c:193
 msgid "permanent extended overlays"
 msgstr "surimpressions étendues permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:196
+#: ../src/libs/tools/global_toolbox.c:197
+msgid "permanent overlays extended on mouse hover"
+msgstr "surimpressions permanentes et étendues lors du survol souris"
+
+#: ../src/libs/tools/global_toolbox.c:204
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
 "une fois activé, cliquer sur l’élément de contrôle pour visualiser l’aide en "
 "ligne correspondante"
 
-#: ../src/libs/tools/global_toolbox.c:206
+#: ../src/libs/tools/global_toolbox.c:214
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/libs/tools/global_toolbox.c:301
+#: ../src/libs/tools/global_toolbox.c:309
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
 msgstr "voulez-vous accéder à  https://darktable.gitlab.io/doc/?"
 
-#: ../src/libs/tools/global_toolbox.c:306
+#: ../src/libs/tools/global_toolbox.c:314
 msgid "access the online usermanual?"
 msgstr "accéder au manuel utilisateur en ligne?"
 
-#: ../src/libs/tools/global_toolbox.c:349
+#: ../src/libs/tools/global_toolbox.c:357
 msgid "help url opened in web browser"
 msgstr "aide ouverte dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:353
+#: ../src/libs/tools/global_toolbox.c:361
 msgid "error while opening help url in web browser"
 msgstr "erreur lors de l'ouverture de l'aide dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:364
+#: ../src/libs/tools/global_toolbox.c:372
 msgid "there is no help available for this element"
 msgstr "aucune aide disponible pour cet élément"
 
-#: ../src/libs/tools/global_toolbox.c:406
+#: ../src/libs/tools/global_toolbox.c:414
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:407
+#: ../src/libs/tools/global_toolbox.c:415
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:409
+#: ../src/libs/tools/global_toolbox.c:417
 msgctxt "accel"
 msgid "no overlays"
 msgstr "pas de surimpression"
 
-#: ../src/libs/tools/global_toolbox.c:410
+#: ../src/libs/tools/global_toolbox.c:418
 msgctxt "accel"
 msgid "overlays on mouse hover"
-msgstr "surimpressions lors du survol souris"
+msgstr "surimpression lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:411
+#: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
 msgid "extended overlays on mouse hover"
 msgstr "surimpression étendue lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:412
+#: ../src/libs/tools/global_toolbox.c:420
 msgctxt "accel"
 msgid "permanent overlays"
 msgstr "surimpressions permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:413
+#: ../src/libs/tools/global_toolbox.c:421
 msgctxt "accel"
 msgid "permanent extended overlays"
 msgstr "surimpressions étendues permanentes"
+
+#: ../src/libs/tools/global_toolbox.c:422
+msgctxt "accel"
+msgid "permanent overlays extended on mouse hover"
+msgstr "surimpressions permanentes et étendues lors du survol souris"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
