@@ -129,6 +129,7 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
+  LIST(APPEND CMAKE_PREFIX_PATH /mingw64/x86_64-w64-mingw32)
   set(USE_COLORD OFF)
   set(USE_KWALLET OFF)
   set(BUILD_CMSTEST OFF)
