@@ -1431,7 +1431,7 @@ Details :
     class = .dt_thumbtable          present for all thumbtable types
     class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
     Classes to determine how are shown overlays on/under the image :
-    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended
+    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended / .dt_overlays_mixed
     Classes to determine the category of size of the thumbnails (cat sizes limits are defined in dartablerc key=plugins/lighttable/thumbnail_sizes
     class = .dt_thumbnails_?? where ?? is the cat number
   #thumb_main
@@ -1543,7 +1543,8 @@ Details :
   margin : 2px;
 }
 .dt_overlays_always #thumb_image,
-.dt_overlays_always_extended #thumb_image
+.dt_overlays_always_extended #thumb_image,
+.dt_overlays_mixed #thumb_image
 {
   margin-top: 1px;
   margin-bottom: 1px;
@@ -1561,7 +1562,8 @@ Details :
   font-weight: bold;
 }
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
-.dt_overlays_always_extended #thumb_bottom_label
+.dt_overlays_always_extended #thumb_bottom_label,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
 {
   color: @thumbnail_hover_font_color;
 }
@@ -1582,7 +1584,8 @@ Details :
 {
   background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
 }*/
-.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
@@ -1597,7 +1600,8 @@ Details :
 }
 #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_always .dt_thumb_btn,
-.dt_overlays_always_extended .dt_thumb_btn
+.dt_overlays_always_extended .dt_thumb_btn,
+.dt_overlays_mixed .dt_thumb_btn
 {
   color: @thumbnail_hover_outline_color;
 }
@@ -1605,7 +1609,8 @@ Details :
 /* reject */
 #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always #thumb_reject:active,
-.dt_overlays_always_extended #thumb_reject:active
+.dt_overlays_always_extended #thumb_reject:active,
+.dt_overlays_mixed #thumb_reject:active
 {
   color: red;
 }
@@ -1613,7 +1618,8 @@ Details :
 /* stars */
 #thumb_main:hover #thumb_star:active,
 .dt_overlays_always #thumb_star:active,
-.dt_overlays_always_extended #thumb_star:active
+.dt_overlays_always_extended #thumb_star:active,
+.dt_overlays_mixed #thumb_star:active
 {
   color: @bauhaus_fg_hover;
   background-color: @thumbnail_hover_outline_color;
@@ -1640,7 +1646,8 @@ Details :
 }
 #thumb_main:hover #thumb_localcopy,
 .dt_overlays_always #thumb_localcopy,
-.dt_overlays_always_extended #thumb_localcopy
+.dt_overlays_always_extended #thumb_localcopy,
+.dt_overlays_mixed #thumb_localcopy
 {
   color: white;
   background-color: white;
@@ -1655,7 +1662,10 @@ Details :
 .dt_overlays_always #thumb_audio,
 .dt_overlays_always_extended #thumb_altered,
 .dt_overlays_always_extended #thumb_group,
-.dt_overlays_always_extended #thumb_audio
+.dt_overlays_always_extended #thumb_audio,
+.dt_overlays_mixed #thumb_altered,
+.dt_overlays_mixed #thumb_group,
+.dt_overlays_mixed #thumb_audio
 {
   color: @thumbnail_outline_color;
 }
@@ -1667,7 +1677,10 @@ Details :
 .dt_overlays_always #thumb_audio:hover,
 .dt_overlays_always_extended #thumb_group:hover,
 .dt_overlays_always_extended #thumb_group:active,
-.dt_overlays_always_extended #thumb_audio:hover
+.dt_overlays_always_extended #thumb_audio:hover,
+.dt_overlays_mixed #thumb_group:hover,
+.dt_overlays_mixed #thumb_group:active,
+.dt_overlays_mixed #thumb_audio:hover
 {
   color: @thumbnail_hover_fg_color;
 }

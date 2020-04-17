@@ -192,6 +192,17 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
       image_h *= ratio_h;
     }
+    else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+    {
+      image_w = thumb->width * ratio_w;
+      int w = 0;
+      int h = 0;
+      gtk_widget_get_size_request(thumb->w_reject, &w, &h);
+      image_h = thumb->height - (h + 2 * gtk_widget_get_margin_bottom(thumb->w_reject));
+      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
+      image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
+      image_h *= ratio_h;
+    }
     else
     {
       image_w = thumb->width * ratio_w;
@@ -281,6 +292,19 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
       gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
       posy += (thumb->height - posy - h) * thumb->img_margin->top / 100 + (image_h - thumb->img_height) / 2;
+    }
+    else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+    {
+      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - thumb->img_width) / 2;
+      int w = 0;
+      int h = 0;
+      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
+      posy = h + gtk_widget_get_margin_top(thumb->w_altered);
+
+      gtk_widget_get_size_request(thumb->w_reject, &w, &h);
+      posy += (thumb->height - posy - h - 2 * gtk_widget_get_margin_bottom(thumb->w_reject))
+                  * thumb->img_margin->top / 100
+              + (image_h - thumb->img_height) / 2;
     }
     else
     {
@@ -812,7 +836,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
     _thumb_update_extended_infos_line(thumb);
 
   // we read all other infos
@@ -899,7 +924,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
   pango_attr_list_unref(attrlist);
   // bottom background
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
   {
     attrlist = pango_attr_list_new();
     attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
@@ -1027,7 +1053,8 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
   {
     _thumb_update_extended_infos_line(thumb);
   }
@@ -1040,7 +1067,8 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
   }
 
   // extended overlay text
-  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
     lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
 
   // we set the text
