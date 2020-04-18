@@ -33,7 +33,7 @@
 #endif
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef struct dt_lib_metadata_t
 {
@@ -839,6 +839,17 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     *new_size = new_params_size;
     *new_version = 2;
+    return new_params;
+  }
+  else if(old_version == 2)
+  {
+    size_t new_params_size = old_params_size + 1;
+    char *new_params = calloc(sizeof(char), new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+
+    *new_size = new_params_size;
+    *new_version = 3;
     return new_params;
   }
   return NULL;
