@@ -725,7 +725,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
       gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
       thumb->w_bottom = gtk_label_new(lb);
