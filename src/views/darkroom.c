@@ -3241,18 +3241,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         dt_bauhaus_combobox_set(widget, prevval);
       }
 
-      if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
-      {
-        if(w->module && w->module->multi_name[0] != '\0')
-          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(widget));
-        else if(w->module)
-          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(widget));
-        else
-          dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(widget));
-      }
-
     }
     g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
+    dt_accel_widget_toast(self->dynamic_accel_current->widget);
     return;
   }
   // masks
