@@ -1552,20 +1552,6 @@ Details :
   margin-bottom: 1px;
 }
 
-/* custom metadata */
-#thumb_main:hover #thumb_custom_metadata_eb
-{
-  background-color: @thumbnail_custom_metadata_bg_color;
-}
-#thumb_custom_metadata
-{
-  color: transparent;
-}
-#thumb_main:hover #thumb_custom_metadata
-{
-  color: @thumbnail_custom_metadata_fg_color;
-}
-
 /* bottom area */
 #thumb_bottom
 {
@@ -1716,17 +1702,13 @@ Details :
 .dt_overlays_none #thumb_main:hover #thumb_altered,
 .dt_overlays_none #thumb_main:hover #thumb_group,
 .dt_overlays_none #thumb_main:hover #thumb_audio,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_reject:active,
 .dt_overlays_none #thumb_star:active,
 .dt_overlays_none #thumb_colorlabels:active,
 .dt_overlays_none #thumb_localcopy:active,
 .dt_overlays_none #thumb_altered:active,
 .dt_overlays_none #thumb_group:active,
-.dt_overlays_none #thumb_audio:active,
-.dt_overlays_none #thumb_custom_metadata:active,
-.dt_overlays_none #thumb_custom_metadata_eb:active
+.dt_overlays_none #thumb_audio:active
 {
   background-color: transparent;
   color: transparent;
