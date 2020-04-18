@@ -85,17 +85,12 @@
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_65;
+@define-color thumbnail_font_color @grey_30;
 @define-color thumbnail_bg_color @grey_55;
-@define-color thumbnail_outline_color @grey_65;
-@define-color thumbnail_selected_font_color @grey_65;
-@define-color thumbnail_selected_bg_color @grey_75;
-@define-color thumbnail_selected_outline_color @grey_65;
-@define-color thumbnail_hover_font_color @grey_60;
-@define-color thumbnail_hover_bg_color @grey_90;
+@define-color thumbnail_infos_color @grey_75;
+@define-color thumbnail_selected_bg_color @grey_85;
+@define-color thumbnail_hover_bg_color @grey_95;
 @define-color thumbnail_hover_fg_color @grey_75;
-@define-color thumbnail_hover_outline_color @grey_65;
-@define-color filmstrip_bg_color @darkroom_bg_color;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_25;
