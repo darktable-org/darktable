@@ -135,8 +135,6 @@
 @define-color thumbnail_selected_bg_color @grey_75;
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_70;
-@define-color thumbnail_custom_metadata_bg_color alpha(black, 0.4);
-@define-color thumbnail_custom_metadata_fg_color @grey_80;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color culling_selected_border_color @grey_10;
 @define-color culling_filmstrip_selected_border_color @grey_10;
@@ -1523,6 +1521,11 @@ Details :
   margin : 3px; /* not real pixels, but percentage of the thumb size */
 }
 
+.dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown) */
+{
+  margin : 2px;
+}
+
 #thumb_main:active #thumb_image
 {
   border: 2px solid @plugin_bg_color;
@@ -1534,20 +1537,6 @@ Details :
 {
   margin-top: 1px;
   margin-bottom: 1px;
-}
-
-/* Custom metadata */
-#thumb_main:hover #thumb_custom_metadata_eb
-{
-  background-color: @thumbnail_custom_metadata_bg_color;
-}
-#thumb_custom_metadata
-{
-  color: transparent;
-}
-#thumb_main:hover #thumb_custom_metadata
-{
-  color: @thumbnail_custom_metadata_fg_color;
 }
 
 /* Popover overlays options from star icon */
@@ -1704,8 +1693,6 @@ radiobutton
 .dt_overlays_none #thumb_altered,
 .dt_overlays_none #thumb_group,
 .dt_overlays_none #thumb_audio,
-.dt_overlays_none #thumb_custom_metadata,
-.dt_overlays_none #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_main:hover #thumb_reject,
 .dt_overlays_none #thumb_main:hover #thumb_star,
 .dt_overlays_none #thumb_main:hover #thumb_colorlabels,
@@ -1713,17 +1700,13 @@ radiobutton
 .dt_overlays_none #thumb_main:hover #thumb_altered,
 .dt_overlays_none #thumb_main:hover #thumb_group,
 .dt_overlays_none #thumb_main:hover #thumb_audio,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_reject:active,
 .dt_overlays_none #thumb_star:active,
 .dt_overlays_none #thumb_colorlabels:active,
 .dt_overlays_none #thumb_localcopy:active,
 .dt_overlays_none #thumb_altered:active,
 .dt_overlays_none #thumb_group:active,
-.dt_overlays_none #thumb_audio:active,
-.dt_overlays_none #thumb_custom_metadata:active,
-.dt_overlays_none #thumb_custom_metadata_eb:active
+.dt_overlays_none #thumb_audio:active
 {
   background-color: transparent;
   color: transparent;
