@@ -36,6 +36,7 @@
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
+#include "dtgtk/expander.h"
 #include "external/wb_presets.c"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -77,6 +78,8 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *box_enabled;
   GtkWidget *label_disabled;
   GtkWidget *stack;
+  GtkWidget *coeffs_expander;
+  GtkWidget *coeffs_toggle;
   int preset_cnt;
   int preset_num[50];
   double daylight_wb[4];
@@ -220,7 +223,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "presets"));
 
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/as shot"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/neutral daylight"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera standard D65"), 0, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/from image area"), 0, 0);
 }
 
@@ -242,7 +245,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "preset/as shot", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "preset/neutral daylight", closure);
+  dt_accel_connect_iop(self, "preset/camera standard D65", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
   dt_accel_connect_iop(self, "preset/from image area", closure);
@@ -1077,6 +1080,8 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
   if(!blackbody_is_confusing)
   {
+    // TODO: this is weird kind of "wrong" - it shows theoretically desired effect
+    // instead of showing blackbody tint.
     const float neutral_stop_tint = (def_tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
 
     dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
@@ -1122,7 +1127,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-  dt_bauhaus_combobox_add(g->presets, C_("white balance", "neutral daylight")); // old "camera neutral", reason: better matches intent
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera standard D65")); // old "camera neutral", reason: better matches intent
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
 
@@ -1244,6 +1249,9 @@ void gui_update(struct dt_iop_module_t *self)
     if (!found)
       dt_bauhaus_combobox_set(g->presets, 3);
   }
+
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander),
+                              gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle)));
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
   color_temptint_sliders(self);
@@ -1736,6 +1744,17 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   color_temptint_sliders(self);
 }
 
+static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  fprintf(stderr, "temperature.c _coeffs_button_changed\n");
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+}
+
 static void gui_sliders_update(struct dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
@@ -1778,6 +1797,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  fprintf(stderr, "temperature.c gui_init\n");
   self->gui_data = calloc(1, sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
@@ -1797,18 +1817,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
 
+  // TODO section off temp/tint sliders, label: "scene illuminant temp"
+  //gtk_grid_attach(grid, dt_ui_section_label_new(_("properties")), 0, line++, 2, 1);
+
+  GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), temp_label, TRUE, TRUE, 0);
+
   //Match UI order: temp first, then tint (like every other app ever)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                   10., 5000.0, 0, feedback);
   g->scale_tint
       = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3, feedback);
-
-
-  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  g->scale_r = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[0], 3, feedback);
-  g->scale_g = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[1], 3, feedback);
-  g->scale_b = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[2], 3, feedback);
-  g->scale_g2 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[3], 3, feedback);
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
@@ -1820,14 +1840,47 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
 
+  // TODO: section off RGB coeffs (and hide by default), label: "rgb coefficients"
+  // collapsible section for coeffs that are generally not to be used
+  fprintf(stderr, "temperature.c gui_init - pre rgb\n");
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *destdisp = dt_ui_section_label_new(_("rgb coefficients"));
+  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+
+  gtk_widget_set_name(GTK_WIDGET(g->coeffs_toggle), "control-button");
+
+  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), g->coeffs_toggle, FALSE, FALSE, 0);
+  gtk_widget_set_visible(g->coeff_widgets, FALSE);
+  g->coeffs_expander = dtgtk_expander_new(destdisp_head, g->coeff_widgets);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), TRUE);
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeffs_expander, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(g->coeffs_toggle), "toggled", G_CALLBACK(_coeffs_button_changed),  (gpointer)self);
+
+  g->scale_r = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[0], 3, feedback);
+  g->scale_g = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[1], 3, feedback);
+  g->scale_b = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[2], 3, feedback);
+  g->scale_g2 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[3], 3, feedback);
+
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeff_widgets, TRUE, TRUE, 0);
+
+  //gtk_container_add(GTK_CONTAINER(coeffs_expander), g->coeff_widgets);
+
+  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeff_widgets, TRUE, TRUE, 0);
+  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeffs_expander, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
   gui_sliders_update(self);
+  fprintf(stderr, "temperature.c gui_init post rgb\n");
+  // TODO: section off camera presets, label: "camera presets"
+
+  GtkWidget *cam_preset_label = dt_ui_section_label_new(_("camera presets"));
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), cam_preset_label, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
@@ -1875,9 +1928,17 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
+  fprintf(stderr, "temperature.c gui_reset\n");
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), FALSE);
+
   gui_sliders_update(self);
 
+  color_finetuning_slider(self);
   color_rgb_sliders(self);
   color_temptint_sliders(self);
 }
