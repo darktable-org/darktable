@@ -140,10 +140,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // Hardcoded hack: histogram widget will probably be either 175 or
     // 350 pixels high depending on hidpi
     dev->histogram_waveform_height = 175;
-    // NOTE: this should be cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width),
-    // but as mipmap widths are already reasonable, don't enforce UI things here
-    dev->histogram_waveform_stride = dev->histogram_waveform_width;
-    dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
+    // making the stride work for cairo muddles UI and underlying
+    // data, and mipmap widths should already reasonable, but better
+    // to be safe, and the histogram is for the sake of UI, after all
+    dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width);
+    dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
