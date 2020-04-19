@@ -129,6 +129,7 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})
   set(USE_COLORD OFF)
   set(USE_KWALLET OFF)
   set(BUILD_CMSTEST OFF)
