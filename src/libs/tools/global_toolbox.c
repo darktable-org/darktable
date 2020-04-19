@@ -160,6 +160,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 0);
   d->over_popup = gtk_popover_new(d->overlays_button);
   gtk_widget_set_size_request(d->over_popup, 350, -1);
