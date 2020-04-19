@@ -77,10 +77,9 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
     if(table->thumb_size < s) break;
     i++;
   }
-  table->prefs_size = i;
   g_strfreev(ts);
   g_free(txt);
-  return table->prefs_size;
+  return i;
 }
 
 // update thumbtable class and overlays mode, depending on size categorie
