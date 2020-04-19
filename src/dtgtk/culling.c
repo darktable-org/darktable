@@ -836,6 +836,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gtk_widget_set_name(table->widget, "culling");
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
   gtk_style_context_add_class(context, "dt_culling");
+  gtk_style_context_add_class(context, "dt_overlays_hover_extended");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
   // set widget signals
@@ -1057,7 +1058,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, TRUE);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
       double aspect_ratio = sqlite3_column_double(stmt, 2);
       if(!aspect_ratio || aspect_ratio < 0.0001)
       {
@@ -1106,7 +1107,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, TRUE);
+          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
           double aspect_ratio = sqlite3_column_double(stmt, 2);
           if(!aspect_ratio || aspect_ratio < 0.0001)
           {
@@ -1358,7 +1359,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
     }
     // and we resize the thumb
-    dt_thumbnail_resize(thumb, thumb->width, thumb->height);
+    dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
 
     // we update the active images list
     darktable.view_manager->active_images
