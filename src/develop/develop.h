@@ -76,11 +76,17 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
 
+typedef enum dt_dev_scope_type_t
+{
+  DT_DEV_SCOPE_HISTOGRAM = 0,
+  DT_DEV_SCOPE_WAVEFORM,
+  DT_DEV_SCOPE_N // needs to be the last one
+} dt_dev_scope_type_t;
+
 typedef enum dt_dev_histogram_type_t
 {
   DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
   DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_WAVEFORM,
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
 
@@ -123,7 +129,7 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
-extern const gchar *dt_dev_histogram_type_names[];
+extern const gchar *dt_dev_scope_type_names[];
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -192,6 +198,7 @@ typedef struct dt_develop_t
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint8_t *histogram_waveform;
   uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
+  dt_dev_scope_type_t scope_type;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
