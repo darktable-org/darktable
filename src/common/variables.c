@@ -66,6 +66,8 @@ typedef struct dt_variables_data_t
 
   uint32_t tags_flags;
 
+  int flags;
+
 } dt_variables_data_t;
 
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop);
@@ -131,6 +133,8 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     if(!isnan(img->geoloc.longitude)) params->data->longitude = img->geoloc.longitude;
     if(!isnan(img->geoloc.latitude)) params->data->latitude = img->geoloc.latitude;
     if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
+
+    params->data->flags = img->flags;
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
@@ -346,6 +350,33 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   else if(has_prefix(variable, "STARS"))
     result = g_strdup_printf("%d", params->data->stars);
+  else if(has_prefix(variable, "RATING_ICONS"))
+  {
+    switch(params->data->stars)
+    {
+      case -1:
+        result = g_strdup("X");
+        break;
+      case 1:
+        result = g_strdup("★");
+        break;
+      case 2:
+        result = g_strdup("★★");
+        break;
+      case 3:
+        result = g_strdup("★★★");
+        break;
+      case 4:
+        result = g_strdup("★★★★");
+        break;
+      case 5:
+        result = g_strdup("★★★★★");
+        break;
+      default:
+        result = g_strdup("");
+        break;
+    }
+  }
   else if(has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
@@ -459,6 +490,21 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     g_list_free_full(tags_list, g_free);
     result = g_strdup(tags);
     g_free(tags);
+  }
+  else if(has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
+          && (params->data->flags & DT_IMAGE_HAS_TXT))
+  {
+    char *path = dt_image_get_text_path(params->imgid);
+    if(path)
+    {
+      gchar *txt = NULL;
+      if(g_file_get_contents(path, &txt, NULL, NULL))
+      {
+        result = g_strdup_printf("\n%s", txt);
+      }
+      g_free(txt);
+      g_free(path);
+    }
   }
   else
   {
