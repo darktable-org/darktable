@@ -97,6 +97,8 @@ void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a directory icon */
 void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a cube icon */
+void dtgtk_cairo_paint_cube(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a refresh/reload icon */
 void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a perspective correction icon */
