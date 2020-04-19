@@ -47,7 +47,7 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
+const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
@@ -83,13 +83,29 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
   gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  if(g_strcmp0(mode, "histogram") == 0)
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
   else if(g_strcmp0(mode, "waveform") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
+    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+  else if(g_strcmp0(mode, "linear") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
+  }
+  else if(g_strcmp0(mode, "logarithmic") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
+  }
   g_free(mode);
+  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  if(g_strcmp0(histogram_type, "linear") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  g_free(histogram_type);
 
   dev->forms = NULL;
   dev->form_visible = NULL;
@@ -124,8 +140,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // Hardcoded hack: histogram widget will probably be either 175 or
     // 350 pixels high depending on hidpi
     dev->histogram_waveform_height = 175;
-    dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
-    dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
+    // making the stride work for cairo muddles UI and underlying
+    // data, and mipmap widths should already reasonable, but better
+    // to be safe, and the histogram is for the sake of UI, after all
+    dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width);
+    dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
