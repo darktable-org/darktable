@@ -1250,13 +1250,18 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->presets, 3);
   }
 
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander),
-                              gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle)));
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
+
   color_temptint_sliders(self);
   color_rgb_sliders(self);
   color_finetuning_slider(self);
+
+  gtk_widget_queue_draw(self->widget);
 }
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
@@ -1746,7 +1751,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
 {
-  fprintf(stderr, "temperature.c _coeffs_button_changed\n");
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
@@ -1797,7 +1801,6 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  fprintf(stderr, "temperature.c gui_init\n");
   self->gui_data = calloc(1, sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
@@ -1816,9 +1819,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
-
-  // TODO section off temp/tint sliders, label: "scene illuminant temp"
-  //gtk_grid_attach(grid, dt_ui_section_label_new(_("properties")), 0, line++, 2, 1);
 
   GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
 
@@ -1840,9 +1840,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
 
-  // TODO: section off RGB coeffs (and hide by default), label: "rgb coefficients"
   // collapsible section for coeffs that are generally not to be used
-  fprintf(stderr, "temperature.c gui_init - pre rgb\n");
+
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("rgb coefficients"));
   g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
@@ -1852,7 +1851,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(destdisp_head), g->coeffs_toggle, FALSE, FALSE, 0);
-  gtk_widget_set_visible(g->coeff_widgets, FALSE);
+
   g->coeffs_expander = dtgtk_expander_new(destdisp_head, g->coeff_widgets);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), TRUE);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeffs_expander, FALSE, FALSE, 0);
@@ -1869,15 +1868,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
 
-  //gtk_container_add(GTK_CONTAINER(coeffs_expander), g->coeff_widgets);
-
-  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeff_widgets, TRUE, TRUE, 0);
-  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeffs_expander, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
   gui_sliders_update(self);
-  fprintf(stderr, "temperature.c gui_init post rgb\n");
-  // TODO: section off camera presets, label: "camera presets"
 
   GtkWidget *cam_preset_label = dt_ui_section_label_new(_("camera presets"));
   gtk_box_pack_start(GTK_BOX(g->box_enabled), cam_preset_label, TRUE, TRUE, 0);
@@ -1908,8 +1901,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->label_disabled, "disabled");
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
-  
-  self->gui_update(self);
+
+  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  gtk_widget_show_all(g->colorpicker);
+
+  dt_iop_init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->colorpicker),
+                     DT_COLOR_PICKER_AREA,
+                     _iop_color_picker_apply);
+
+  //call to gui_update in gui_init is NOT needed.
+  //self->gui_update(self);
 
   g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_callback), self);
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);
@@ -1921,16 +1927,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
-
-  color_rgb_sliders(self);
-  color_temptint_sliders(self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  fprintf(stderr, "temperature.c gui_reset\n");
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
+
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
                                CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
