@@ -1716,6 +1716,11 @@ radiobutton
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
+.dt_culling #thumb_main:hover #thumb_bottom
+{
+  background-image: none;
+  background-color: rgba(220, 220, 220, 0.8);
+}
 
 /* Thumbnails buttons */
 

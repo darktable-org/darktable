@@ -837,7 +837,6 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
   gtk_style_context_add_class(context, "dt_culling");
   gtk_style_context_add_class(context, "dt_overlays_hover_extended");
-  if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
 
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK

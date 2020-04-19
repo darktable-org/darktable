@@ -34,6 +34,8 @@
 #include "gui/drag_and_drop.h"
 #include "views/view.h"
 
+static void _thumb_resize_overlays(dt_thumbnail_t *thumb);
+
 static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
 {
   int flags = gtk_widget_get_state_flags(w);
@@ -270,8 +272,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       if(thumb->zoomable)
       {
         const float z = thumb->zoom_glob - thumb->zoom_delta;
-        res = dt_view_image_get_surface(thumb->imgid, thumb->width * 0.97 * z, thumb->height * 0.97 * z,
-                                        &thumb->img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w * z, image_h * z, &thumb->img_surf);
       }
       else
       {
@@ -290,23 +291,25 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-    gtk_widget_set_size_request(thumb->w_image_box, thumb->img_width, thumb->img_height);
+    const int imgbox_w = MIN(image_w, thumb->img_width);
+    const int imgbox_h = MIN(image_h, thumb->img_height);
+    gtk_widget_set_size_request(thumb->w_image_box, imgbox_w, imgbox_h);
     // and we set the position of the image
     int posx, posy;
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - thumb->img_width) / 2;
+      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
       int w = 0;
       int h = 0;
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
       posy = h + gtk_widget_get_margin_top(thumb->w_altered);
 
       gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
-      posy += (thumb->height - posy - h) * thumb->img_margin->top / 100 + (image_h - thumb->img_height) / 2;
+      posy += (thumb->height - posy - h) * thumb->img_margin->top / 100 + (image_h - imgbox_h) / 2;
     }
     else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - thumb->img_width) / 2;
+      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
       int w = 0;
       int h = 0;
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
@@ -315,15 +318,18 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       gtk_widget_get_size_request(thumb->w_reject, &w, &h);
       posy += (thumb->height - posy - h - 2 * gtk_widget_get_margin_bottom(thumb->w_reject))
                   * thumb->img_margin->top / 100
-              + (image_h - thumb->img_height) / 2;
+              + (image_h - imgbox_h) / 2;
     }
     else
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - thumb->img_width) / 2;
-      posy = thumb->height * thumb->img_margin->top / 100 + (image_h - thumb->img_height) / 2;
+      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
+      posy = thumb->height * thumb->img_margin->top / 100 + (image_h - imgbox_h) / 2;
     }
     gtk_widget_set_margin_start(thumb->w_image_box, posx);
     gtk_widget_set_margin_top(thumb->w_image_box, posy);
+
+    // for zoomable, we need to resize the overlays
+    if(thumb->zoomable) _thumb_resize_overlays(thumb);
 
     // now that we know image ratio, we can fill the extension label
     const char *ext = thumb->filename + strlen(thumb->filename);
@@ -356,8 +362,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
   // and eventually the image border
   GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
-  gtk_render_frame(context, cr, 0, 0, MIN(thumb->img_width, thumb->width * 0.97),
-                   MIN(thumb->img_height, thumb->height * 0.97));
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
+  gtk_render_frame(context, cr, 0, 0, w, h);
 
   return TRUE;
 }
@@ -715,13 +723,13 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_ext, TRUE);
 
+    // the image drawing area
     thumb->w_image_box = gtk_overlay_new();
     gtk_widget_set_name(thumb->w_image_box, "thumb_image");
     gtk_widget_set_size_request(thumb->w_image_box, thumb->width, thumb->height);
     gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_image_box);
-    // the image drawing area
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_FILL);
@@ -734,6 +742,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
+
+    // determine the overlays parents
+    GtkWidget *overlays_parent = thumb->w_main;
+    if(thumb->zoomable) overlays_parent = thumb->w_image_box;
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
@@ -759,7 +771,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
     gtk_label_set_ellipsize(GTK_LABEL(thumb->w_bottom), PANGO_ELLIPSIZE_MIDDLE);
     gtk_container_add(GTK_CONTAINER(thumb->w_bottom_eb), thumb->w_bottom);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_bottom_eb);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_bottom_eb);
 
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
@@ -768,7 +780,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_reject);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_reject);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_reject);
 
     // the stars
     for(int i = 0; i < MAX_STARS; i++)
@@ -783,7 +795,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
       gtk_widget_show(thumb->w_stars[i]);
-      gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_stars[i]);
+      gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_stars[i]);
     }
 
     // the color labels
@@ -793,7 +805,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_color, TRUE);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_color);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_color);
 
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
@@ -801,7 +813,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_local_copy, TRUE);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_local_copy);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_local_copy);
 
     // the altered icon
     thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, CPF_DO_NOT_USE_BORDER, NULL);
@@ -809,7 +821,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_altered, TRUE);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_altered);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_altered);
 
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
@@ -818,7 +830,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_group, TRUE);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_group);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_group);
 
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
@@ -827,7 +839,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_audio, TRUE);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_audio);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_audio);
 
     dt_thumbnail_resize(thumb, thumb->width, thumb->height, TRUE);
   }
@@ -913,6 +925,158 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
   _thumb_update_icons(thumb);
 }
 
+static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
+{
+  PangoAttrList *attrlist;
+  PangoAttribute *attr;
+  int width = 0;
+  int height = 0;
+  if(!thumb->zoomable)
+  {
+    gtk_widget_get_size_request(thumb->w_main, &width, &height);
+
+    // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
+    // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
+    // colorlabels => 3 * r1 + space r1
+    // inner margins are 0.045 * width
+    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
+
+    // bottom background
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+    {
+      attrlist = pango_attr_list_new();
+      attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
+      pango_attr_list_insert(attrlist, attr);
+      gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
+      pango_attr_list_unref(attrlist);
+      int w = 0;
+      int h = 0;
+      pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1 + h);
+    }
+    else
+      gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
+    // reject icon
+    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0.5 * r1);
+    // stars
+    for(int i = 0; i < MAX_STARS; i++)
+    {
+      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.5 * r1);
+      gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
+    }
+    // the color labels
+    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_margin_bottom(thumb->w_color, 0.5 * r1);
+    gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
+    // the local copy indicator
+    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    // the altered icon
+    gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_altered, 0.5 * r1);
+    gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
+    // the group bouton
+    gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_group, 0.5 * r1);
+    gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
+    // the sound icon
+    gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_audio, 0.5 * r1);
+    gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
+  }
+  else
+  {
+    gtk_widget_get_size_request(thumb->w_image_box, &width, &height);
+
+    // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
+    // all icons having a width of 3.0 * r1 => 21 * r1
+    // we want r1 spaces at extremities, after reject, before colorlables => 4 * r1
+    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, width / 25.0f);
+
+    int line2 = 0;
+    int line3 = 0;
+    int over_w = 0;
+    // bottom background
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+    {
+      attrlist = pango_attr_list_new();
+      attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
+      pango_attr_list_insert(attrlist, attr);
+      gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
+      pango_attr_list_unref(attrlist);
+      int w = 0;
+      int h = 0;
+      pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
+      over_w = CLAMP(w, width / 2, width);
+      gtk_widget_set_size_request(thumb->w_bottom, over_w, 6.5 * r1 + h);
+      line2 = 4.0 * r1 + h + r1;
+      line3 = 4.0 * r1 + h + 4.0 * r1;
+    }
+    else
+    {
+      gtk_widget_set_size_request(thumb->w_bottom, width, 7.0 * r1);
+      over_w = width;
+      line2 = 4.0 * r1;
+      line3 = 4.0 * r1 + 4.0 * r1;
+    }
+    gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
+    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
+    gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, 4.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_bottom_eb, 0);
+
+    // reject icon
+    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_START);
+    gtk_widget_set_margin_start(thumb->w_reject, r1);
+    gtk_widget_set_margin_top(thumb->w_reject, line2);
+    // stars
+    for(int i = 0; i < MAX_STARS; i++)
+    {
+      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+      gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_START);
+      gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
+      gtk_widget_set_margin_top(thumb->w_stars[i], line2);
+      gtk_widget_set_margin_start(thumb->w_stars[i], 2.0 * r1 + (i + 1) * 3.0 * r1);
+    }
+    // the color labels
+    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_color, line2);
+    gtk_widget_set_margin_start(thumb->w_color, 3.0 * r1 + (MAX_STARS + 1) * 3.0 * r1);
+    // the local copy indicator
+    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_altered, line3);
+    gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1);
+    // the altered icon
+    gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_altered, line3);
+    gtk_widget_set_margin_start(thumb->w_altered, 7.0 * r1);
+    // the group bouton
+    gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_group, line3);
+    gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1);
+    // the sound icon
+    gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(thumb->w_audio, line3);
+    gtk_widget_set_margin_start(thumb->w_audio, r1);
+  }
+}
+
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force)
 {
   // first, we verify that there's something to change
@@ -923,12 +1087,6 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
     gtk_widget_get_size_request(thumb->w_main, &w, &h);
     if(w == width && h == height) return;
   }
-
-  // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
-  // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
-  // colorlabels => 3 * r1 + space r1
-  // inner margins are 0.045 * width
-  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
 
   // widget resizing
   thumb->width = width;
@@ -947,55 +1105,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
   pango_attr_list_unref(attrlist);
 
-  // bottom background
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
-  {
-    attrlist = pango_attr_list_new();
-    attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
-    pango_attr_list_insert(attrlist, attr);
-    gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
-    pango_attr_list_unref(attrlist);
-    int w = 0;
-    int h = 0;
-    pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-    gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1 + h);
-  }
-  else
-    gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
-  // reject icon
-  gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
-  gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
-  gtk_widget_set_margin_bottom(thumb->w_reject, 0.5 * r1);
-  // stars
-  for(int i = 0; i < MAX_STARS; i++)
-  {
-    gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
-    gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.5 * r1);
-    gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
-  }
-  // the color labels
-  gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
-  gtk_widget_set_margin_bottom(thumb->w_color, 0.5 * r1);
-  gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
-  // the local copy indicator
-  gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
-  // the altered icon
-  gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_altered, 0.5 * r1);
-  gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
-  // the group bouton
-  gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_group, 0.5 * r1);
-  gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
-  // the sound icon
-  gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
-  gtk_widget_set_margin_top(thumb->w_audio, 0.5 * r1);
-  gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
-
-  // update values
-  thumb->width = width;
-  thumb->height = height;
+  // and the overlays
+  _thumb_resize_overlays(thumb);
 
   // reset surface
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
