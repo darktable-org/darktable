@@ -19,7 +19,6 @@
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/paint.h"
 #include "gui/draw.h"
-#include "gui/gtk.h"
 #include <math.h>
 
 #ifndef M_PI
@@ -1606,7 +1605,7 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   PangoRectangle ink;
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
-  float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
+  static const float grow = 12.0;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
@@ -1630,7 +1629,7 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   PangoRectangle ink;
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
-  float grow = 12.0 * (1 + 0.5 * (darktable.gui->dpi_factor - 1));
+  static const float grow = 12.0;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
