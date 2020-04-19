@@ -290,8 +290,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-<<<<<<< HEAD
-    gtk_widget_set_size_request(widget, thumb->img_width, thumb->img_height);
+    gtk_widget_set_size_request(thumb->w_image_box, thumb->img_width, thumb->img_height);
     // and we set the position of the image
     int posx, posy;
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
@@ -323,12 +322,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       posx = thumb->width * thumb->img_margin->left / 100 + (image_w - thumb->img_width) / 2;
       posy = thumb->height * thumb->img_margin->top / 100 + (image_h - thumb->img_height) / 2;
     }
-    gtk_widget_set_margin_start(thumb->w_image, posx);
-    gtk_widget_set_margin_top(thumb->w_image, posy);
-=======
-    gtk_widget_set_size_request(thumb->w_image_box, MIN(thumb->img_width, thumb->width * 0.97),
-                                MIN(thumb->img_height, thumb->height * 0.97));
->>>>>>> culling : fix panning and image borders
+    gtk_widget_set_margin_start(thumb->w_image_box, posx);
+    gtk_widget_set_margin_top(thumb->w_image_box, posy);
 
     // now that we know image ratio, we can fill the extension label
     const char *ext = thumb->filename + strlen(thumb->filename);
@@ -723,15 +718,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     thumb->w_image_box = gtk_overlay_new();
     gtk_widget_set_name(thumb->w_image_box, "thumb_image");
     gtk_widget_set_size_request(thumb->w_image_box, thumb->width, thumb->height);
-    gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_CENTER);
-    gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_image_box);
     // the image drawing area
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
-    gtk_widget_set_size_request(thumb->w_image, thumb->width, thumb->height);
-    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_START);
-    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_START);
+    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_FILL);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_HINT_MASK
                                               | GDK_POINTER_MOTION_MASK);
