@@ -526,10 +526,10 @@ public:
         neighbor1[j] = key[j] - D;
         neighbor2[j] = key[j] + D; // keys to the neighbors along the given axis.
 
-        float *oldVal = oldValue + i * VD;
+        const float *oldVal = oldValue + i * VD;
         float *newVal = newValue + i * VD;
 
-        float *vm1, *vp1;
+        const float *vm1, *vp1;
 
         vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
         if(vm1)
