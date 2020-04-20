@@ -357,7 +357,7 @@ public:
     elevated[0] = elevated[1] + 2 * position[0] * scaleFactor[0];
 
     // prepare to find the closest lattice points
-    float scale = 1.0f / (D + 1);
+    constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
     int sum = 0;
@@ -483,7 +483,7 @@ public:
    */
   void slice(float *col, size_t replay_index)
   {
-    float *base = hashTables[0].getValues();
+    const float *base = hashTables[0].getValues();
     for(int j = 0; j < VD; j++) col[j] = 0;
     for(int i = 0; i <= D; i++)
     {
@@ -501,7 +501,7 @@ public:
     // Prepare arrays
     float *newValue = new float[VD * hashTables[0].size()];
     float *oldValue = hashTables[0].getValues();
-    float *hashTableBase = oldValue;
+    const float *hashTableBase = oldValue;
 
     float zero[VD];
     for(int k = 0; k < VD; k++) zero[k] = 0;
