@@ -100,12 +100,6 @@ public:
   int lookupOffset(const short *key, size_t h, bool create = true)
   {
 
-    // Double hash table size if necessary
-    if(filled >= (capacity / 2) - 1)
-    {
-      grow();
-    }
-
     // Find the entry with the given key
     while(1)
     {
@@ -114,6 +108,11 @@ public:
       if(e.keyIdx == -1)
       {
         if(!create) return -1; // Return not found.
+	// Double hash table size if necessary
+	if(filled >= (capacity / 2) - 1)
+	   {
+	   grow();
+	   }
         // need to create an entry. Store the given key.
         for(int i = 0; i < KD; i++) keys[filled * KD + i] = key[i];
         e.keyIdx = filled * KD;
@@ -199,6 +198,58 @@ private:
     entries = newEntries;
   }
 
+public:
+  // Struct for a key
+  struct Key
+  {
+    Key()
+    {
+    }
+    Key(const Key& origin, int dim, int direction)  // construct neighbor in dimension 'dim'
+    {
+       for (int i = 0 ; i < KD; i++) key[i] = origin.key[i] + direction;
+       key[dim] = origin.key[dim] - direction * KD;
+    }
+    Key(const Key&) = default; // let the compiler write the copy constructor
+    Key& operator= (const Key&) = default;
+    void setKey(int idx, short val) { key[idx] = val ; }
+
+    bool operator== (const Key& other) const
+    {
+      for (int i = 0; i < KD; i++) { if (key[i] != other.key[i]) return false ; }
+      return true;
+    }
+    unsigned hash;      // cache the hash value for this key
+    short key[KD];      // key is a KD-dimensional vector
+  };
+
+public:
+  // Struct for an associated value
+  struct Value
+  {
+    Value()
+    {
+    }
+    Value(int init) { for (int i = 0 ; i < VD; i++) { value[i] = init ; } }
+    Value(const Value&) = default; // let the compiler write the copy constructor
+    Value& operator= (const Value&) = default;
+    void setValue(int idx, short val) { value[idx] = val ; }
+    void addValue(int idx, short val) { value[idx] += val ; }
+    void addTo(float* dest) { for (int i = 0; i < VD; i++) { dest[i] += value[i] ; } }
+    void addTo(float* dest, float weight) { for (int i = 0; i < VD; i++) { dest[i] += weight * value[i] ; } }
+    void mix(const Value& left, const Value& center, const Value& right)
+    {
+      for (int i = 0; i < VD; i++) { value[i] = (0.25f * left[i] + 0.5f * center[i] + 0.25f * right[i]) ; }
+    }
+    Value& operator+= (const Value& other)
+    {
+      for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
+      return *this;
+    }
+    float value[VD];
+  };
+
+private:
   // Private struct for the hash table entries.
   struct Entry
   {
@@ -224,6 +275,11 @@ private:
  ******************************************************************/
 template <int D, int VD> class PermutohedralLattice
 {
+private:
+   // short-hand for types we use
+   typedef HashTablePermutohedral<D,VD> HashTable;
+   typedef typename HashTable::Key Key;
+   typedef typename HashTable::Value Value;
 public:
   /* Constructor
    *     d_ : dimensionality of key vectors
@@ -271,7 +327,7 @@ public:
     }
     scaleFactor = scaleFactorTmp;
 
-    hashTables = new HashTablePermutohedral<D, VD>[nThreads];
+    hashTables = new HashTable[nThreads];
   }
 
 
@@ -522,7 +578,7 @@ private:
     float weight;
   } *replay;
 
-  HashTablePermutohedral<D, VD> *hashTables;
+  HashTable *hashTables;
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
