@@ -593,7 +593,7 @@ static void init_tab_accels(GtkWidget *stack)
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
-  GtkWidget *button;
+  GtkWidget *button, *searchlabel, *searchentry;
   GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(A_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkCellRenderer *renderer;
@@ -644,7 +644,18 @@ static void init_tab_accels(GtkWidget *stack)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
+  // Adding toolbar at bottom of treeview
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  
+  // Adding search box
+  searchlabel = gtk_label_new(C_("preferences", "search"));
+
+  searchentry = gtk_entry_new();
+  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search keyboard shortcut groups"));
+  gtk_tree_view_set_search_entry(GTK_TREE_VIEW(tree), GTK_ENTRY(searchentry));
+
+  gtk_box_pack_start(GTK_BOX(hbox), searchlabel, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), searchentry, FALSE, TRUE, 10);
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(C_("preferences", "default"));
@@ -655,12 +666,12 @@ static void init_tab_accels(GtkWidget *stack)
   // Adding the import/export buttons
 
   button = gtk_button_new_with_label(C_("preferences", "import..."));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(update_accels_model), (gpointer)model);
 
   button = gtk_button_new_with_label(_("export..."));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)1);
 
   gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
@@ -1315,6 +1326,8 @@ static void import_preset(GtkButton *button, gpointer data)
 static gboolean prefix_search(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter,
                               gpointer d)
 {
+  gchar *row_data;
+
   //expand the first level of each tree node for easier searching
   GtkTreeView *tv = (GtkTreeView *)d;
   GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
@@ -1324,14 +1337,19 @@ static gboolean prefix_search(GtkTreeModel *model, gint column, const gchar *key
   for(int i = 0; i < siblings; i++)
   {
     gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &childiter, NULL, i);
-    GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, &childiter);
-    gtk_tree_view_expand_to_path(tv, childpath);
+    gtk_tree_model_get(tvmodel, &childiter, A_TRANS_COLUMN, &row_data, -1);
+
+    //don't expand global
+    if(strcmp(row_data, "global"))
+    {
+      GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, &childiter);
+      gtk_tree_view_expand_to_path(tv, childpath);
+    }
   }
 
   //now do the search
-  gchar *row_data;
-
   gtk_tree_model_get(model, iter, A_TRANS_COLUMN, &row_data, -1);
+
   while(*key != '\0')
   {
     if(*row_data != *key) return TRUE;
