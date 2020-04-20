@@ -501,7 +501,7 @@ public:
     // Prepare arrays
     float *newValue = new float[VD * hashTables[0].size()];
     float *oldValue = hashTables[0].getValues();
-    const float *hashTableBase = oldValue;
+    float *hashTableBase = oldValue;
 
     float zero[VD];
     for(int k = 0; k < VD; k++) zero[k] = 0;
