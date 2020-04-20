@@ -79,6 +79,7 @@ public:
     }
     bool operator== (const Key& other) const
     {
+      if (hash != other.hash) return false;
       for (int i = 0; i < KD; i++) { if (key[i] != other.key[i]) return false; }
       return true;
     }
@@ -103,15 +104,10 @@ public:
     {
       for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
     }
-    void add(const Value &other, float weight)
-    {
-      for (int i = 0; i < VD; i++) { value[i] += weight * other.value[i]; }
-    }
     void add(const float *other, float weight)
     {
       for (int i = 0; i < VD; i++) { value[i] += weight * other[i]; }
     }
-    void addTo(float* dest) const { for (int i = 0; i < VD; i++) { dest[i] += value[i]; } }
     void addTo(float* dest, float weight) const { for (int i = 0; i < VD; i++) { dest[i] += weight * value[i]; } }
     void mix(const Value* left, const Value* center, const Value* right)
     {
@@ -499,15 +495,15 @@ public:
     // Prepare arrays
     Value *newValue = new Value[hashTables[0].size()];
     Value *oldValue = hashTables[0].getValues();
-    Value *hashTableBase = oldValue;
+    const Value *hashTableBase = oldValue;
 
-    Value zero { 0 };
+    const Value zero { 0 };
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
 #ifdef _OPENMP
-#pragma omp parallel for shared(j, oldValue, newValue, hashTableBase, zero)
+#pragma omp parallel for shared(j, oldValue, newValue)
 #endif
       // For each vertex in the lattice,
       for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
@@ -518,35 +514,24 @@ public:
 	Key neighbor2(*key,j,-1);
 
         const Value *oldVal = oldValue + i;
-        Value *newVal = newValue + i;
 
-        const Value *vm1, *vp1;
+        const Value *vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
+	vm1 = vm1 ? vm1 - hashTableBase + oldValue : &zero;
 
-        vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
-        if(vm1)
-          vm1 = vm1 - hashTableBase + oldValue;
-        else
-          vm1 = &zero;
-
-        vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
-        if(vp1)
-          vp1 = vp1 - hashTableBase + oldValue;
-        else
-          vp1 = &zero;
+        const Value *vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
+	vp1 = vp1 ? vp1 - hashTableBase + oldValue  : &zero;
 
         // Mix values of the three vertices
-	newVal->mix(vm1,oldVal,vp1);
+	newValue[i].mix(vm1,oldVal,vp1);
       }
-      Value *tmp = newValue;
-      newValue = oldValue;
-      oldValue = tmp;
+      std::swap(newValue,oldValue);
       // the freshest data is now in oldValue, and newValue is ready to be written over
     }
 
     // depending where we ended up, we may have to copy data
     if(oldValue != hashTableBase)
     {
-      std::copy(oldValue, oldValue+hashTables[0].size(), hashTableBase);
+      std::copy(oldValue, oldValue+hashTables[0].size(), hashTables[0].getValues());
       delete[] oldValue;
     }
     else
