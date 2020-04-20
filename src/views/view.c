@@ -1133,8 +1133,7 @@ dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int
 
   if(draw_metadata && width > DECORATION_SIZE_LIMIT)
   {
-    dt_view_image_over_t i;
-    for(i = DT_VIEW_ERR; i < DT_VIEW_END; i++)
+    for(dt_view_image_over_t i = DT_VIEW_ERR; i < DT_VIEW_END; i++)
       if(dt_view_process_image_over(i, 1, NULL, NULL, width, height, zoom, px, py, 0, 0)) return i;
   }
 
