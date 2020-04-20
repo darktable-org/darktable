@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-18 17:29-0500\n"
-"PO-Revision-Date: 2020-04-18 22:26-0500\n"
+"POT-Creation-Date: 2020-04-19 23:29-0500\n"
+"PO-Revision-Date: 2020-04-20 00:37-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1006,7 +1006,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3851
 msgid "host memory limit (in MB) for tiling"
-msgstr "Límite de memoria (en MB) para el proceso de bandas"
+msgstr "Límite de memoria (en MB) para el proceso por bandas"
 
 #: ../build/src/preferences_gen.h:3870
 msgid ""
@@ -1816,7 +1816,7 @@ msgstr ""
 "personalizados.\n"
 "¿Acepta ejecutar la actualización de la configuración de rendimiento?\n"
 
-#: ../src/common/darktable.c:812 ../src/common/variables.c:422
+#: ../src/common/darktable.c:812 ../src/common/variables.c:453
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2099 ../src/iop/filmicrgb.c:1577
 #: ../src/iop/toneequal.c:3329 ../src/libs/export.c:636
@@ -1826,7 +1826,7 @@ msgid "no"
 msgstr "no"
 
 #: ../src/common/darktable.c:812 ../src/common/database.c:2773
-#: ../src/common/variables.c:420 ../src/imageio/format/pdf.c:671
+#: ../src/common/variables.c:451 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2100
 #: ../src/libs/export.c:637 ../src/libs/export.c:643 ../src/libs/export.c:650
 #: ../src/libs/metadata_view.c:283
@@ -2009,7 +2009,7 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2789
-#: ../src/develop/develop.c:1990 ../src/iop/ashift.c:4870
+#: ../src/develop/develop.c:2009 ../src/iop/ashift.c:4870
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activo"
@@ -2017,7 +2017,7 @@ msgstr "activo"
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2521
-#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:1990
+#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:2009
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4869 ../src/iop/ashift.c:4875 ../src/iop/colorin.c:2153
 #: ../src/iop/demosaic.c:5159 ../src/iop/vignette.c:1152
@@ -3349,7 +3349,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "afinar máscara"
 
-#: ../src/develop/develop.c:1758
+#: ../src/develop/develop.c:1777
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo '%s' versión incoincidente: %d != %d"
@@ -3726,7 +3726,7 @@ msgstr "usar la misma figura como"
 msgid "masks can not contain themselves"
 msgstr "Las máscaras no pueden contenerse a sí mismas"
 
-#: ../src/develop/pixelpipe_hb.c:2768
+#: ../src/develop/pixelpipe_hb.c:2764
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3738,7 +3738,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"El proceso por bandas ha fallado para el módulo '%s'. la salida podría ser "
+"El proceso por bandas ha fallado para el módulo '%s'. La salida podría ser "
 "ilegible."
 
 #: ../src/dtgtk/resetlabel.c:58
@@ -3746,130 +3746,130 @@ msgid "double-click to reset"
 msgstr "Pulsación doble para reiniciar"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:1914
+#: ../src/dtgtk/thumbtable.c:1913
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vistas/miniaturas/sin estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1915
+#: ../src/dtgtk/thumbtable.c:1914
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vistas/miniaturas/1 estrella"
 
-#: ../src/dtgtk/thumbtable.c:1916
+#: ../src/dtgtk/thumbtable.c:1915
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vistas/miniaturas/2 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1917
+#: ../src/dtgtk/thumbtable.c:1916
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vistas/miniaturas/3 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1918
+#: ../src/dtgtk/thumbtable.c:1917
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vistas/miniaturas/4 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1919
+#: ../src/dtgtk/thumbtable.c:1918
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vistas/miniaturas/5 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1920
+#: ../src/dtgtk/thumbtable.c:1919
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vistas/miniaturas/rechazar"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:1923
+#: ../src/dtgtk/thumbtable.c:1922
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vistas/miniaturas/copiar historial"
 
-#: ../src/dtgtk/thumbtable.c:1924
+#: ../src/dtgtk/thumbtable.c:1923
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vistas/miniaturas/copiar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1926
+#: ../src/dtgtk/thumbtable.c:1925
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vistas/miniaturas/pegar historial"
 
-#: ../src/dtgtk/thumbtable.c:1927
+#: ../src/dtgtk/thumbtable.c:1926
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vistas/miniaturas/pegar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1929
+#: ../src/dtgtk/thumbtable.c:1928
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vistas/miniaturas/descartar historial de acciones"
 
-#: ../src/dtgtk/thumbtable.c:1931
+#: ../src/dtgtk/thumbtable.c:1930
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vistas/miniaturas/duplicar imagen"
 
-#: ../src/dtgtk/thumbtable.c:1932
+#: ../src/dtgtk/thumbtable.c:1931
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vistas/miniaturas/duplicar imagen virgen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:1936
+#: ../src/dtgtk/thumbtable.c:1935
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vistas/miniaturas/color rojo"
 
-#: ../src/dtgtk/thumbtable.c:1937
+#: ../src/dtgtk/thumbtable.c:1936
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vistas/miniaturas/color amarillo"
 
-#: ../src/dtgtk/thumbtable.c:1938
+#: ../src/dtgtk/thumbtable.c:1937
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vistas/miniaturas/color verde"
 
-#: ../src/dtgtk/thumbtable.c:1939
+#: ../src/dtgtk/thumbtable.c:1938
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vistas/miniaturas/color azul"
 
-#: ../src/dtgtk/thumbtable.c:1940
+#: ../src/dtgtk/thumbtable.c:1939
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vistas/miniaturas/color púrpura"
 
-#: ../src/dtgtk/thumbtable.c:1941
+#: ../src/dtgtk/thumbtable.c:1940
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vistas/miniaturas/remover marcas de color"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:1944
+#: ../src/dtgtk/thumbtable.c:1943
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vistas/miniaturas/seleccionar todas"
 
-#: ../src/dtgtk/thumbtable.c:1945
+#: ../src/dtgtk/thumbtable.c:1944
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vistas/miniaturas/deseleccionar"
 
-#: ../src/dtgtk/thumbtable.c:1947
+#: ../src/dtgtk/thumbtable.c:1946
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vistas/miniaturas/invertir selección"
 
-#: ../src/dtgtk/thumbtable.c:1948
+#: ../src/dtgtk/thumbtable.c:1947
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vistas/miniaturas/seleccionar carrete"
 
-#: ../src/dtgtk/thumbtable.c:1949
+#: ../src/dtgtk/thumbtable.c:1948
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vistas/miniaturas/seleccionar no editadas"
@@ -11924,7 +11924,9 @@ msgstr "%.0f mired"
 
 #: ../src/iop/temperature.c:1478
 msgid "fine tune white balance preset"
-msgstr "ajuste fino del balance de blancos predefinido"
+msgstr ""
+"Ajustar la precisión del balance de blancos predeterminado en\n"
+"grados de densidad de color microrrecíprocos (MIRED)"
 
 #: ../src/iop/temperature.c:1483
 msgid "white balance disabled for camera"
@@ -13574,47 +13576,55 @@ msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "Abrir archivo GPX y actualizar la ubicación de las imágenes seleccionadas"
 
-#: ../src/libs/histogram.c:48
+#: ../src/libs/histogram.c:71
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:374
-msgid "set histogram mode to linear"
-msgstr "seleccionar histograma a modo lineal"
+#: ../src/libs/histogram.c:512 ../src/libs/histogram.c:546
+msgid "set mode to waveform"
+msgstr "Cambiar histograma a modo de onda"
 
-#: ../src/libs/histogram.c:377
-msgid "set histogram mode to waveform"
-msgstr "seleccionar histograma a modo de onda"
+#: ../src/libs/histogram.c:515
+msgid "set mode to histogram"
+msgstr "Establecer el modo del histograma"
 
-#: ../src/libs/histogram.c:380
-msgid "set histogram mode to logarithmic"
-msgstr "establecer histograma a modo logarítmico"
+#: ../src/libs/histogram.c:530
+msgid "set mode to linear"
+msgstr "Cambiar histograma a modo lineal"
 
-#: ../src/libs/histogram.c:389
+#: ../src/libs/histogram.c:533
+msgid "set mode to logarithmic"
+msgstr "Cambiar histograma a modo logarítmico"
+
+#: ../src/libs/histogram.c:543
+msgid "set mode to RGB parade"
+msgstr "Establecer el modo de canales en paralelo RGB"
+
+#: ../src/libs/histogram.c:559
 msgid "click to hide red channel"
-msgstr "pulse para ocultar canal rojo"
+msgstr "Pulse para ocultar canal rojo"
 
-#: ../src/libs/histogram.c:389
+#: ../src/libs/histogram.c:559
 msgid "click to show red channel"
-msgstr "pulse para mostrar canal rojo"
+msgstr "Pulse para mostrar canal rojo"
 
-#: ../src/libs/histogram.c:394
+#: ../src/libs/histogram.c:564
 msgid "click to hide green channel"
-msgstr "pulse para ocultar canal verde"
+msgstr "Pulse para ocultar canal verde"
 
-#: ../src/libs/histogram.c:395
+#: ../src/libs/histogram.c:565
 msgid "click to show green channel"
-msgstr "pulse para mostrar canal verde"
+msgstr "Pulse para mostrar canal verde"
 
-#: ../src/libs/histogram.c:400
+#: ../src/libs/histogram.c:570
 msgid "click to hide blue channel"
-msgstr "pulse para ocultar canal azul"
+msgstr "Pulse para ocultar canal azul"
 
-#: ../src/libs/histogram.c:400
+#: ../src/libs/histogram.c:570
 msgid "click to show blue channel"
-msgstr "pulse para mostrar canal azul"
+msgstr "Pulse para mostrar canal azul"
 
-#: ../src/libs/histogram.c:406
+#: ../src/libs/histogram.c:576
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -13623,7 +13633,7 @@ msgstr ""
 "Para reiniciar, pulse dos veces"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:411 ../src/libs/histogram.c:579
+#: ../src/libs/histogram.c:581 ../src/libs/histogram.c:783
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -13631,7 +13641,7 @@ msgstr ""
 "Para cambiar la exposición, arrástrelo.\n"
 "Para reiniciar, pulse dos veces."
 
-#: ../src/libs/histogram.c:614
+#: ../src/libs/histogram.c:818
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "ocultar histograma"
@@ -15660,110 +15670,115 @@ msgstr "preferencias"
 
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:118
-#: ../src/libs/tools/global_toolbox.c:176
+#: ../src/libs/tools/global_toolbox.c:177
 msgid "overlay mode for size"
 msgstr "modo de superposición para el tamaño"
 
 #: ../src/libs/tools/global_toolbox.c:154
-#: ../src/libs/tools/global_toolbox.c:236
+#: ../src/libs/tools/global_toolbox.c:237
 msgid "expand grouped images"
 msgstr "Desplegar imágenes agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:156
-#: ../src/libs/tools/global_toolbox.c:238
+#: ../src/libs/tools/global_toolbox.c:239
 msgid "collapse grouped images"
 msgstr "Plegar imágenes agrupadas"
 
-#: ../src/libs/tools/global_toolbox.c:178
+#: ../src/libs/tools/global_toolbox.c:163
+msgid "click to change the type of overlays shown on thumbnails"
+msgstr ""
+"Pulse para cambiar el tipo de superposición que se muestra en las miniaturas"
+
+#: ../src/libs/tools/global_toolbox.c:179
 msgid "no overlays"
 msgstr "sin superposición"
 
-#: ../src/libs/tools/global_toolbox.c:182
+#: ../src/libs/tools/global_toolbox.c:183
 msgid "overlays on mouse hover"
 msgstr "superposición al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:186
+#: ../src/libs/tools/global_toolbox.c:187
 msgid "extended overlays on mouse hover"
 msgstr "superposición ampliada al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:189
+#: ../src/libs/tools/global_toolbox.c:190
 msgid "permanent overlays"
 msgstr "superposición permanente"
 
-#: ../src/libs/tools/global_toolbox.c:193
+#: ../src/libs/tools/global_toolbox.c:194
 msgid "permanent extended overlays"
 msgstr "superposición permanente ampliada"
 
-#: ../src/libs/tools/global_toolbox.c:197
+#: ../src/libs/tools/global_toolbox.c:198
 msgid "permanent overlays extended on mouse hover"
 msgstr "superposición ampliada permanente al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:204
+#: ../src/libs/tools/global_toolbox.c:205
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
 "Activar, luego pulsar sobre un elemento de control para visitar la ayuda en "
 "línea"
 
-#: ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/tools/global_toolbox.c:215
 msgid "show global preferences"
 msgstr "Mostrar preferencias globales"
 
-#: ../src/libs/tools/global_toolbox.c:309
+#: ../src/libs/tools/global_toolbox.c:310
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
 msgstr "¿Desea acceder a https://darktable.gitlab.io/doc/?"
 
-#: ../src/libs/tools/global_toolbox.c:314
+#: ../src/libs/tools/global_toolbox.c:315
 msgid "access the online usermanual?"
 msgstr "¿Desea acceder al manual de usuario en línea?"
 
-#: ../src/libs/tools/global_toolbox.c:357
+#: ../src/libs/tools/global_toolbox.c:358
 msgid "help url opened in web browser"
 msgstr "URL de ayuda abierta en el navegador"
 
-#: ../src/libs/tools/global_toolbox.c:361
+#: ../src/libs/tools/global_toolbox.c:362
 msgid "error while opening help url in web browser"
 msgstr "Error al abrir el enlace de ayuda en el navegador"
 
-#: ../src/libs/tools/global_toolbox.c:372
+#: ../src/libs/tools/global_toolbox.c:373
 msgid "there is no help available for this element"
 msgstr "Sin ayuda disponible para este elemento"
 
-#: ../src/libs/tools/global_toolbox.c:414
+#: ../src/libs/tools/global_toolbox.c:415
 msgctxt "accel"
 msgid "grouping"
 msgstr "agrupar"
 
-#: ../src/libs/tools/global_toolbox.c:415
+#: ../src/libs/tools/global_toolbox.c:416
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferencias"
 
-#: ../src/libs/tools/global_toolbox.c:417
+#: ../src/libs/tools/global_toolbox.c:418
 msgctxt "accel"
 msgid "no overlays"
 msgstr "sin superposiciones"
 
-#: ../src/libs/tools/global_toolbox.c:418
+#: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
 msgid "overlays on mouse hover"
 msgstr "superposición al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:419
+#: ../src/libs/tools/global_toolbox.c:420
 msgctxt "accel"
 msgid "extended overlays on mouse hover"
 msgstr "superposición ampliada al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:420
+#: ../src/libs/tools/global_toolbox.c:421
 msgctxt "accel"
 msgid "permanent overlays"
 msgstr "superposición permanente"
 
-#: ../src/libs/tools/global_toolbox.c:421
+#: ../src/libs/tools/global_toolbox.c:422
 msgctxt "accel"
 msgid "permanent extended overlays"
 msgstr "superposición permanente ampliada"
 
-#: ../src/libs/tools/global_toolbox.c:422
+#: ../src/libs/tools/global_toolbox.c:423
 msgctxt "accel"
 msgid "permanent overlays extended on mouse hover"
 msgstr "superposición ampliada permanente al pasar el ratón"
