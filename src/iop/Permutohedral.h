@@ -127,7 +127,7 @@ public:
     capacity_bits = 0x7fff;
     filled = 0;
     entries = new Entry[capacity];
-    keys = new short[KD * capacity / 2];
+    keys = new Key[capacity / 2];
     values = new Value[capacity / 2] { 0 };
   }
 
@@ -145,7 +145,7 @@ public:
   }
 
   // Returns a pointer to the keys array.
-  const short *getKeys()
+  const Key *getKeys()
   {
     return keys;
   }
@@ -162,7 +162,7 @@ public:
    *  create: a flag specifying whether an entry should be created,
    *          should an entry with the given key not found.
    */
-  int lookupOffset(const short *key, size_t h, bool create = true)
+  int lookupOffset(const Key &key, size_t h, bool create = true)
   {
 
     // Find the entry with the given key
@@ -179,18 +179,14 @@ public:
 	   grow();
 	   }
         // need to create an entry. Store the given key.
-        for(int i = 0; i < KD; i++) keys[filled * KD + i] = key[i];
-        e.keyIdx = filled * KD;
-        e.valueIdx = filled;
-        entries[h] = e;
-        filled++;
-        return e.valueIdx;
+	keys[filled] = key;
+        entries[h].keyIdx = filled;
+        return filled++;
       }
 
       // check if the cell has a matching key
-      bool match = true;
-      for(int i = 0; i < KD && match; i++) match = keys[e.keyIdx + i] == key[i];
-      if(match) return e.valueIdx;
+      if (keys[e.keyIdx] == key)
+	 return e.keyIdx;
 
       // increment the bucket with wraparound
       h++;
@@ -202,7 +198,7 @@ public:
    *        k : pointer to the key vector to be looked up.
    *   create : true if a non-existing key should be created.
    */
-  HashTablePermutohedral::Value *lookup(const short *k, bool create = true)
+  HashTablePermutohedral::Value *lookup(const Key &k, bool create = true)
   {
     size_t h = hash(k) & capacity_bits;
     int offset = lookupOffset(k, h, create);
@@ -224,6 +220,18 @@ public:
     return k;
   }
 
+  /* Hash function used in this implementation. A simple base conversion. */
+  size_t hash(const Key &key)
+  {
+    size_t k = 0;
+    for(int i = 0; i < KD; i++)
+    {
+      k += key.key[i];
+      k *= 2531011;
+    }
+    return k;
+  }
+
 private:
   /* Grows the size of the hash table */
   void grow()
@@ -240,8 +248,8 @@ private:
     values = newValues;
 
     // Migrate the key vectors.
-    short *newKeys = new short[KD * capacity / 2];
-    memcpy(newKeys, keys, sizeof(short) * KD * filled);
+    Key *newKeys = new Key[capacity / 2];
+    std::copy(keys, keys + filled, newKeys);
     delete[] keys;
     keys = newKeys;
 
@@ -251,7 +259,7 @@ private:
     for(size_t i = 0; i < oldCapacity; i++)
     {
       if(entries[i].keyIdx == -1) continue;
-      size_t h = hash(keys + entries[i].keyIdx) & capacity_bits;
+      size_t h = hash(keys[entries[i].keyIdx]) & capacity_bits;
       while(newEntries[h].keyIdx != -1)
       {
         h++;
@@ -267,14 +275,13 @@ private:
   // Private struct for the hash table entries.
   struct Entry
   {
-    Entry() : keyIdx(-1), valueIdx(-1)
+    Entry() : keyIdx(-1)
     {
     }
     int keyIdx;
-    int valueIdx;
   };
 
-  short *keys;
+  Key *keys;
   Value *values;
   Entry *entries;
   size_t capacity, filled;
@@ -361,7 +368,7 @@ public:
     int greedy[D + 1];
     int rank[D + 1];
     float barycentric[D + 2];
-    short key[D];
+    Key key;
 
     // first rotate position into the (d+1)-dimensional hyperplane
     elevated[D] = -D * position[D - 1] * scaleFactor[D - 1];
@@ -445,7 +452,7 @@ public:
     {
       // Compute the location of the lattice point explicitly (all but the last coordinate - it's redundant
       // because they sum to zero)
-      for(int i = 0; i < D; i++) key[i] = greedy[i] + canonical[remainder * (D + 1) + rank[i]];
+      for(int i = 0; i < D; i++) key.key[i] = greedy[i] + canonical[remainder * (D + 1) + rank[i]];
 
       // Retrieve pointer to the value at this vertex.
       Value *val = hashTables[thread_index].lookup(key, true);
@@ -469,13 +476,13 @@ public:
     int **offset_remap = new int *[nThreads];
     for(int i = 1; i < nThreads; i++)
     {
-      const short *oldKeys = hashTables[i].getKeys();
+      const Key *oldKeys = hashTables[i].getKeys();
       const Value *oldVals = hashTables[i].getValues();
       const int filled = hashTables[i].size();
       offset_remap[i] = new int[filled];
       for(int j = 0; j < filled; j++)
       {
-        Value *val = hashTables[0].lookup(oldKeys + j * D, true);
+        Value *val = hashTables[0].lookup(oldKeys[j], true);
 	val->add(oldVals+j);
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
@@ -524,16 +531,10 @@ public:
       // For each vertex in the lattice,
       for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {
-        const short *key = hashTables[0].getKeys() + i * (D); // keys to current vertex
-        short neighbor1[D + 1];
-        short neighbor2[D + 1];
-        for(int k = 0; k < D; k++)
-        {
-          neighbor1[k] = key[k] + 1;
-          neighbor2[k] = key[k] - 1;
-        }
-        neighbor1[j] = key[j] - D;
-        neighbor2[j] = key[j] + D; // keys to the neighbors along the given axis.
+        const Key *key = hashTables[0].getKeys() + i; // keys to current vertex
+	// construct keys to the neighbors along the given axis.
+	Key neighbor1(*key,j,+1);
+	Key neighbor2(*key,j,-1);
 
         const Value *oldVal = oldValue + i;
         Value *newVal = newValue + i;
