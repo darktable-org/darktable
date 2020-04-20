@@ -556,7 +556,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 {
   if(!key || !imgid || imgid == -1) return;
 
-  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE || TRUE)
   {
     int keyid = dt_metadata_get_keyid(key);
     if(keyid != -1) // known key
@@ -570,7 +570,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
         imported = !(flag & DT_METADATA_FLAG_HIDDEN) && (flag & DT_METADATA_FLAG_IMPORTED);
         g_free(setting);
       }
-      if(imported)
+      if(imported || TRUE)
       {
         GList *imgs = NULL;
         imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
