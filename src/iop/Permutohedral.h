@@ -131,8 +131,8 @@ public:
     capacity_bits = 0x7fff;
     filled = 0;
     entries = new Entry[capacity];
-    keys = new Key[capacity / 2];
-    values = new Value[capacity / 2] { 0 };
+    keys = new Key[maxFill()];
+    values = new Value[maxFill()] { 0 };
   }
 
   ~HashTablePermutohedral()
@@ -143,19 +143,24 @@ public:
   }
 
   // Returns the number of vectors stored.
-  int size()
+  int size() const
   {
     return filled;
   }
 
+  size_t maxFill() const
+  {
+    return capacity/2 ;
+  }
+
   // Returns a pointer to the keys array.
-  const Key *getKeys()
+  const Key *getKeys() const
   {
     return keys;
   }
 
   // Returns a pointer to the values array.
-  Value *getValues()
+  Value *getValues() const
   {
     return values;
   }
@@ -177,7 +182,7 @@ public:
       {
         if(!create) return -1; // Return not found.
 	// Double hash table size if necessary
-	if(filled >= (capacity / 2) - 1)
+	if(filled >= maxFill())
 	   {
 	   grow();
 	   }
@@ -206,10 +211,7 @@ public:
     return (offset < 0) ? nullptr : values + offset;
   };
 
-private:
   /* Grows the size of the hash table */
-public:
-  int maxFill() const { return capacity/2 ; }
   void grow(int order = 1)
   {
     size_t oldCapacity = capacity;
@@ -220,13 +222,13 @@ public:
     }
 
     // Migrate the value vectors.
-    Value *newValues = new Value[capacity / 2];
+    Value *newValues = new Value[maxFill()];
     std::copy(values, values + filled, newValues);
     delete[] values;
     values = newValues;
 
     // Migrate the key vectors.
-    Key *newKeys = new Key[capacity / 2];
+    Key *newKeys = new Key[maxFill()];
     std::copy(keys, keys + filled, newKeys);
     delete[] keys;
     keys = newKeys;
@@ -268,7 +270,8 @@ private:
 /******************************************************************
  * The algorithm class that performs the filter                   *
  *                                                                *
- * PermutohedralLattice::filter(...) does all the work.           *
+ * PermutohedralLattice::splat(...) and                           *
+ * PermutohedralLattic::slice() do almost all the work.           *
  *                                                                *
  ******************************************************************/
 template <int D, int VD> class PermutohedralLattice
@@ -455,7 +458,7 @@ public:
      * won't waste much space if we simply grow the destination table enough to hold the sum of the
      * entries in the individual tables
      */
-    int total_entries = hashTables[0].size();
+    size_t total_entries = hashTables[0].size();
     for(int i = 1; i < nThreads; i++)
       total_entries += hashTables[i].size();
     int order = 0;
