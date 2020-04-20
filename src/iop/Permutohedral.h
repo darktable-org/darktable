@@ -55,9 +55,7 @@ public:
   // Struct for a key
   struct Key
   {
-    Key()
-    {
-    }
+    Key() = default;
     Key(const Key& origin, int dim, int direction)  // construct neighbor in dimension 'dim'
     {
        for (int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
@@ -91,9 +89,7 @@ public:
   // Struct for an associated value
   struct Value
   {
-    Value()
-    {
-    }
+    Value() = default;
     Value(int init) { for (int i = 0; i < VD; i++) { value[i] = init; } }
     Value(const Value&) = default; // let the compiler write the copy constructor
     Value& operator= (const Value&) = default;
@@ -163,8 +159,7 @@ public:
   }
 
   /* Returns the index into the hash table for a given key.
-   *     key: a pointer to the position vector.
-   *       h: hash of the position vector.
+   *     key: a reference to the position vector.
    *  create: a flag specifying whether an entry should be created,
    *          should an entry with the given key not found.
    */
@@ -200,7 +195,7 @@ public:
   }
 
   /* Looks up the value vector associated with a given key vector.
-   *        k : pointer to the key vector to be looked up.
+   *        k : reference to the key vector to be looked up.
    *   create : true if a non-existing key should be created.
    */
   Value *lookup(const Key &k, bool create = true)
