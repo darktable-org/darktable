@@ -633,7 +633,7 @@ static void init_tab_accels(GtkWidget *stack)
 
   // Setting up the search functionality
   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), A_TRANS_COLUMN);
-  gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search, NULL, NULL);
+  gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search, tree, NULL);
   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
 
   // Attaching the model to the treeview
@@ -1315,6 +1315,20 @@ static void import_preset(GtkButton *button, gpointer data)
 static gboolean prefix_search(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter,
                               gpointer d)
 {
+  //expand the first level of each tree node for easier searching
+  GtkTreeView *tv = (GtkTreeView *)d;
+  GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
+  GtkTreeIter childiter;
+
+  int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), NULL);
+  for(int i = 0; i < siblings; i++)
+  {
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &childiter, NULL, i);
+    GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, &childiter);
+    gtk_tree_view_expand_to_path(tv, childpath);
+  }
+
+  //now do the search
   gchar *row_data;
 
   gtk_tree_model_get(model, iter, A_TRANS_COLUMN, &row_data, -1);
