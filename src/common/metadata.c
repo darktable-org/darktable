@@ -312,7 +312,7 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   sqlite3_stmt *stmt;
   uint32_t local_count = 0;
 
-  int keyid = dt_metadata_get_keyid(key);
+  const int keyid = dt_metadata_get_keyid(key);
   // key not found in db. Maybe it's one of our "special" keys (rating, tags and colorlabels)?
   if(keyid == -1)
   {
