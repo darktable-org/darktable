@@ -87,11 +87,9 @@
 @define-color lighttable_bg_font_color @grey_95;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_35;
 @define-color thumbnail_bg_color @grey_70;
 @define-color thumbnail_infos_color @grey_45;
-@define-color thumbnail_selected_bg_color @grey_80;
-@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_selected_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_70;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
@@ -124,3 +122,12 @@ menuitem arrow
 {
   color: shade(@plugin_fg_color, 0.8);
 }
+
+.dt_overlays_always #thumb_main:selected #thumb_star:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_star:active
+{
+  color: @bauhaus_fg_hover;
+  background-color: @thumbnail_hover_fg_color;
+}
+

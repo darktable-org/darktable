@@ -128,13 +128,13 @@
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_50; /* overlay and extension name hover text color */
+@define-color thumbnail_font_color @grey_35; /* overlay and extension name hover text color */
 @define-color thumbnail_bg_color @grey_40;
 @define-color thumbnail_bg50_color @grey_100;
-@define-color thumbnail_infos_color @grey_60; /* buttons and metadata text color on thumbnails */
-@define-color thumbnail_selected_bg_color @grey_75;
-@define-color thumbnail_hover_bg_color @grey_85;
-@define-color thumbnail_hover_fg_color @grey_70;
+@define-color thumbnail_infos_color @grey_70; /* buttons and metadata text color on thumbnails */
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_90;
+@define-color thumbnail_hover_fg_color @grey_75;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color culling_selected_border_color @grey_10;
 @define-color culling_filmstrip_selected_border_color @grey_10;
@@ -1502,7 +1502,6 @@ Details :
 /* Image extension name */
 #thumb_ext
 {
-  font-weight: bold;
   color: @thumbnail_infos_color;
 }
 #thumb_main:selected #thumb_ext
@@ -1565,6 +1564,8 @@ radiobutton
 }
 
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:selected #thumb_bottom_label,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
 {
   color: @thumbnail_font_color;
@@ -1600,12 +1601,20 @@ radiobutton
   background-color: transparent;
 }
 
-#thumb_main:hover .dt_thumb_btn,
 .dt_overlays_always .dt_thumb_btn,
 .dt_overlays_always_extended .dt_thumb_btn,
 .dt_overlays_mixed .dt_thumb_btn
 {
   color: @thumbnail_infos_color;
+}
+
+#thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_mixed #thumb_main:selected .dt_thumb_btn
+{
+  color: @thumbnail_font_color;
 }
 
 /* reject */
@@ -1621,11 +1630,15 @@ radiobutton
 #thumb_main:hover #thumb_star:active,
 .dt_overlays_always #thumb_star:active,
 .dt_overlays_always_extended #thumb_star:active,
-.dt_overlays_mixed #thumb_star:active
+.dt_overlays_mixed #thumb_star:active,
+.dt_overlays_always #thumb_main:selected #thumb_star:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_star:active
 {
   color: @thumbnail_hover_bg_color;
   background-color: @thumbnail_infos_color;
 }
+
 #thumb_main:hover #thumb_star:hover
 {
   color: @bauhaus_fg_hover;
