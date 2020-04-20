@@ -62,11 +62,21 @@ public:
     {
        for (int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
        key[dim] = origin.key[dim] - direction * KD;
+       setHash();
     }
     Key(const Key&) = default; // let the compiler write the copy constructor
     Key& operator= (const Key&) = default;
     void setKey(int idx, short val) { key[idx] = val; }
-
+    void setHash()
+    {
+      size_t k = 0;
+      for(int i = 0; i < KD; i++)
+      {
+        k += key[i];
+	k *= 2531011;
+      }
+      hash = (unsigned)k;
+    }
     bool operator== (const Key& other) const
     {
       for (int i = 0; i < KD; i++) { if (key[i] != other.key[i]) return false; }
@@ -89,11 +99,11 @@ public:
     static void clear(float *val) { for (int i = 0; i < VD; i++) val[i] = 0; }
     void setValue(int idx, short val) { value[idx] = val; }
     void addValue(int idx, short val) { value[idx] += val; }
-    void add(const Value* other)
+    void add(const Value &other)
     {
-      for (int i = 0; i < VD; i++) { value[i] += other->value[i]; }
+      for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
     }
-    void add(const Value& other, float weight)
+    void add(const Value &other, float weight)
     {
       for (int i = 0; i < VD; i++) { value[i] += weight * other.value[i]; }
     }
@@ -162,9 +172,9 @@ public:
    *  create: a flag specifying whether an entry should be created,
    *          should an entry with the given key not found.
    */
-  int lookupOffset(const Key &key, size_t h, bool create = true)
+  int lookupOffset(const Key &key, bool create = true)
   {
-
+    size_t h = key.hash & capacity_bits;
     // Find the entry with the given key
     while(1)
     {
@@ -189,8 +199,7 @@ public:
 	 return e.keyIdx;
 
       // increment the bucket with wraparound
-      h++;
-      if(h == capacity) h = 0;
+      h = (h + 1) & capacity_bits;
     }
   }
 
@@ -198,27 +207,11 @@ public:
    *        k : pointer to the key vector to be looked up.
    *   create : true if a non-existing key should be created.
    */
-  HashTablePermutohedral::Value *lookup(const Key &k, bool create = true)
+  Value *lookup(const Key &k, bool create = true)
   {
-    size_t h = hash(k) & capacity_bits;
-    int offset = lookupOffset(k, h, create);
-    if(offset < 0)
-      return NULL;
-    else
-      return values + offset;
+    int offset = lookupOffset(k, create);
+    return (offset < 0) ? nullptr : values + offset;
   };
-
-  /* Hash function used in this implementation. A simple base conversion. */
-  size_t hash(const Key &key)
-  {
-    size_t k = 0;
-    for(int i = 0; i < KD; i++)
-    {
-      k += key.key[i];
-      k *= 2531011;
-    }
-    return k;
-  }
 
 private:
   /* Grows the size of the hash table */
@@ -247,11 +240,10 @@ private:
     for(size_t i = 0; i < oldCapacity; i++)
     {
       if(entries[i].keyIdx == -1) continue;
-      size_t h = hash(keys[entries[i].keyIdx]) & capacity_bits;
+      size_t h = keys[entries[i].keyIdx].hash & capacity_bits;
       while(newEntries[h].keyIdx != -1)
       {
-        h++;
-        if(h == capacity) h = 0;
+        h = (h+1) & capacity_bits;
       }
       newEntries[h] = entries[i];
     }
@@ -441,6 +433,7 @@ public:
       // Compute the location of the lattice point explicitly (all but the last coordinate - it's redundant
       // because they sum to zero)
       for(int i = 0; i < D; i++) key.key[i] = greedy[i] + canonical[remainder * (D + 1) + rank[i]];
+      key.setHash();
 
       // Retrieve pointer to the value at this vertex.
       Value *val = hashTables[thread_index].lookup(key, true);
@@ -471,7 +464,7 @@ public:
       for(int j = 0; j < filled; j++)
       {
         Value *val = hashTables[0].lookup(oldKeys[j], true);
-	val->add(oldVals+j);
+	val->add(oldVals[j]);
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
