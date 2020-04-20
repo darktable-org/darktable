@@ -457,7 +457,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       const double x = 0; // TODO
       const double y = 0;
       // zooming
-      if(delta > 0)
+      if(delta < 0)
       {
         _thumbs_zoom_add(table, 0.5f, x, y, e->state);
       }
@@ -829,6 +829,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
   dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
   table->mode = mode;
+  table->full_zoom = 1.0;
   table->widget = gtk_layout_new(NULL, NULL);
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
