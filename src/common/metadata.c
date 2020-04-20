@@ -547,7 +547,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
         dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
         dt_undo_end_group(darktable.undo);
       }
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+//       dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     }
   }
 }
@@ -588,7 +588,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 
           g_list_free_full(metadata, g_free);
           g_list_free(imgs);
-          dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+//           dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
         }
       }
     }
