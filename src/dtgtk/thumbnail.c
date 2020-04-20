@@ -357,14 +357,16 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return TRUE;
 
   // we draw the image
-  cairo_set_source_surface(cr, thumb->img_surf, thumb->zx_glob + thumb->zx_delta, thumb->zy_glob + thumb->zy_delta);
-  cairo_paint(cr);
-
-  // and eventually the image border
   GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
   int w = 0;
   int h = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
+  const int dx = CLAMP(thumb->zx_glob + thumb->zx_delta, w - thumb->img_width, 0);
+  const int dy = CLAMP(thumb->zy_glob + thumb->zy_delta, h - thumb->img_height, 0);
+  cairo_set_source_surface(cr, thumb->img_surf, dx, dy);
+  cairo_paint(cr);
+
+  // and eventually the image border
   gtk_render_frame(context, cr, 0, 0, w, h);
 
   return TRUE;
