@@ -209,18 +209,6 @@ public:
   };
 
   /* Hash function used in this implementation. A simple base conversion. */
-  size_t hash(const short *key)
-  {
-    size_t k = 0;
-    for(int i = 0; i < KD; i++)
-    {
-      k += key[i];
-      k *= 2531011;
-    }
-    return k;
-  }
-
-  /* Hash function used in this implementation. A simple base conversion. */
   size_t hash(const Key &key)
   {
     size_t k = 0;
