@@ -347,7 +347,25 @@ static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
 static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *grid = GTK_WIDGET(user_data);
-  gtk_widget_set_sensitive(grid, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  // get the number of lines of the grid - the last one is for tags
+  int i = 0;
+  GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(grid), 0, i);
+  while(w)
+  {
+    i++;
+    w = gtk_grid_get_child_at(GTK_GRID(grid), 0, i);
+  }
+  // activate widgets as needed
+  const gboolean default_metadata = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  for(int j = 0; j < i; j++)
+  {
+    w = gtk_grid_get_child_at(GTK_GRID(grid), 1, j);
+    gtk_widget_set_sensitive(w, default_metadata);
+  }
+  w = gtk_grid_get_child_at(GTK_GRID(grid), 0, 0);
+  gtk_widget_set_sensitive(w, default_metadata);
+  w = gtk_grid_get_child_at(GTK_GRID(grid), 0, i - 1);
+  gtk_widget_set_sensitive(w, default_metadata);
 }
 
 static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadata_t *data)
