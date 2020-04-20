@@ -215,7 +215,6 @@ private:
     // Migrate the value vectors.
     Value *newValues = new Value[capacity / 2];
     std::copy(values, values + filled, newValues);
-    std::fill(newValues + filled, newValues + capacity/2, 0);
     delete[] values;
     values = newValues;
 
