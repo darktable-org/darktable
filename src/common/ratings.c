@@ -165,7 +165,7 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
                        new_rating, count);
     }
 
-    _ratings_apply(imgs, rating, &undo, undo_on);
+    _ratings_apply(imgs, new_rating, &undo, undo_on);
 
     if(undo_on)
     {
