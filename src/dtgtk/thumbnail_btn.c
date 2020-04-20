@@ -80,7 +80,12 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
     if(flags & CPF_DO_NOT_USE_BORDER)
     {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags, bg_color);
+      float f_border = (darktable.gui->dpi_factor - 1.0) * 6.0;
+      int border = round(f_border);
+      int icon_width = round(allocation.width - (f_border * 2.0));
+      int icon_height = round(allocation.height - (f_border * 2.0));
+
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, border, border, icon_width, icon_height, flags, bg_color);
     }
     else
     {
