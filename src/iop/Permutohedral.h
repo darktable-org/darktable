@@ -41,6 +41,8 @@ DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
+#include <iostream>
+
 /*******************************************************************
  * Hash table implementation for permutohedral lattice             *
  *                                                                 *
@@ -206,11 +208,16 @@ public:
 
 private:
   /* Grows the size of the hash table */
-  void grow()
+public:
+  int maxFill() const { return capacity/2 ; }
+  void grow(int order = 1)
   {
     size_t oldCapacity = capacity;
-    capacity *= 2;
-    capacity_bits = (capacity_bits << 1) | 1;
+    while (order-- > 0)
+    {
+      capacity *= 2;
+      capacity_bits = (capacity_bits << 1) | 1;
+    }
 
     // Migrate the value vectors.
     Value *newValues = new Value[capacity / 2];
@@ -443,6 +450,22 @@ public:
   {
     if(nThreads <= 1) return;
 
+    /* Because growing the hash table is expensive, we want to avoid having to do it multiple times.
+     * Only a small percentage of entries in the individual hash tables have the same key, so we
+     * won't waste much space if we simply grow the destination table enough to hold the sum of the
+     * entries in the individual tables
+     */
+    int total_entries = hashTables[0].size();
+    for(int i = 1; i < nThreads; i++)
+      total_entries += hashTables[i].size();
+    int order = 0;
+    while (total_entries > hashTables[0].maxFill())
+    {
+      order++;
+      total_entries /= 2;
+    }
+    if (order > 0)
+       hashTables[0].grow(order);
     /* Merge the multiple hash tables into one, creating an offset remap table. */
     int **offset_remap = new int *[nThreads];
     for(int i = 1; i < nThreads; i++)
