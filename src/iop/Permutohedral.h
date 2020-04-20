@@ -284,7 +284,7 @@ public:
     float *scaleFactorTmp = new float[D];
     int *canonicalTmp = new int[(D + 1) * (D + 1)];
 
-    replay = new ReplayEntry[nData * (D + 1)];
+    replay = new ReplayEntry[nData];
 
     // compute the coordinates of the canonical simplex, in which
     // the difference between a contained point and the zero
@@ -418,6 +418,7 @@ public:
     barycentric[0] += 1.0f + barycentric[D + 1];
 
     // Splat the value into each vertex of the simplex, with barycentric weights.
+    replay[replay_index].table = thread_index;
     for(int remainder = 0; remainder <= D; remainder++)
     {
       // Compute the location of the lattice point explicitly (all but the last coordinate - it's redundant
@@ -432,9 +433,8 @@ public:
       val->add(value,barycentric[remainder]);
 
       // Record this interaction to use later when slicing
-      replay[replay_index * (D + 1) + remainder].table = thread_index;
-      replay[replay_index * (D + 1) + remainder].offset = val - hashTables[thread_index].getValues();
-      replay[replay_index * (D + 1) + remainder].weight = barycentric[remainder];
+      replay[replay_index].offset[remainder] = val - hashTables[thread_index].getValues();
+      replay[replay_index].weight[remainder] = barycentric[remainder];
     }
   }
 
@@ -460,11 +460,16 @@ public:
     }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-    for(int i = 0; i < nData * (D + 1); i++)
-      if(replay[i].table > 0) replay[i].offset = offset_remap[replay[i].table][replay[i].offset];
+    for(int i = 0; i < nData; i++)
+    {
+      if(replay[i].table > 0)
+      {
+        for (int dim = 0; dim <= D; dim++)
+	  replay[i].offset[dim] = offset_remap[replay[i].table][replay[i].offset[dim]];
+      }
+    }
 
     for(int i = 1; i < nThreads; i++) delete[] offset_remap[i];
-
     delete[] offset_remap;
   }
 
@@ -476,10 +481,10 @@ public:
   {
     const Value *base = hashTables[0].getValues();
     Value::clear(col);
+    ReplayEntry &r = replay[replay_index];
     for(int i = 0; i <= D; i++)
     {
-      ReplayEntry r = replay[replay_index * (D + 1) + i];
-      base[r.offset].addTo(col,r.weight);
+      base[r.offset[i]].addTo(col,r.weight[i]);
     }
   }
 
@@ -544,9 +549,11 @@ private:
   // slicing is done by replaying splatting (ie storing the sparse matrix)
   struct ReplayEntry
   {
+    // since every dimension of a lattice point gets handled by the same thread,
+    // we only need to store the id of the hash table once, instead of for each dimension
     int table;
-    int offset;
-    float weight;
+    int offset[D+1];
+    float weight[D+1];
   } *replay;
 
   HashTable *hashTables;
