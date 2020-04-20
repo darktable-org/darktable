@@ -490,6 +490,7 @@ public:
     Value *newValue = new Value[hashTables[0].size()];
     Value *oldValue = hashTables[0].getValues();
     const Value *hashTableBase = oldValue;
+    const Key *keyBase = hashTables[0].getKeys();
 
     const Value zero { 0 };
 
@@ -502,10 +503,10 @@ public:
       // For each vertex in the lattice,
       for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {
-        const Key *key = hashTables[0].getKeys() + i; // keys to current vertex
+        const Key &key = keyBase[i]; // keys to current vertex
 	// construct keys to the neighbors along the given axis.
-	Key neighbor1(*key,j,+1);
-	Key neighbor2(*key,j,-1);
+	Key neighbor1(key,j,+1);
+	Key neighbor2(key,j,-1);
 
         const Value *oldVal = oldValue + i;
 
