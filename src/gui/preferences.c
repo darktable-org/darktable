@@ -288,7 +288,7 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1200), DT_PIXEL_APPLY_DPI(700));
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1200), DT_PIXEL_APPLY_DPI(800));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
@@ -299,8 +299,8 @@ void dt_gui_preferences_show()
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
-  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(1000), DT_PIXEL_APPLY_DPI(700));
-  gtk_widget_set_name(stack, "preferences_notebook");
+  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(1000), DT_PIXEL_APPLY_DPI(800));
+  gtk_widget_set_name(box, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
