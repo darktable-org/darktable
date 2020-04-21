@@ -128,19 +128,13 @@
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_50;
+@define-color thumbnail_font_color @grey_35; /* overlay and extension name hover text color */
 @define-color thumbnail_bg_color @grey_40;
 @define-color thumbnail_bg50_color @grey_100;
-@define-color thumbnail_outline_color @grey_50;
-@define-color thumbnail_selected_font_color @grey_50;
-@define-color thumbnail_selected_bg_color @grey_60;
-@define-color thumbnail_selected_outline_color @grey_50;
-@define-color thumbnail_hover_font_color @grey_50;
-@define-color thumbnail_hover_bg_color @grey_80;
-@define-color thumbnail_hover_fg_color @grey_70;
-@define-color thumbnail_hover_outline_color @grey_50;
-@define-color thumbnail_custom_metadata_bg_color alpha(black, 0.4);
-@define-color thumbnail_custom_metadata_fg_color @grey_80;
+@define-color thumbnail_infos_color @grey_70; /* buttons and metadata text color on thumbnails */
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_90;
+@define-color thumbnail_hover_fg_color @grey_75;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color culling_selected_border_color @grey_10;
 @define-color culling_filmstrip_selected_border_color @grey_10;
@@ -288,9 +282,8 @@ box *
   padding: 0.75em;
 }
 
-#module-header
+#module-header  /* module name */
 {
-  /* module name */
   padding: 0.5em 0.5em 0.25em 0.5em;
 }
 
@@ -491,11 +484,7 @@ textview
   margin: 12pt 0 6pt 0;
 }
 
-/* Special modules */
-
-#lib-modulelist
-{
-}
+/* Special modules: search and image infos ones */
 
 #search-box
 {
@@ -661,7 +650,7 @@ menuitem check
   margin-right: 5px;
 }
 
-/* header and footer combobox */
+/* Header and footer combobox */
 #header-toolbar combobox,
 #footer-toolbar combobox
 {
@@ -845,7 +834,7 @@ notebook header /* add space between notebook tabs and options below */
   color: @bauhaus_fg;
 }
 
-/* separator */
+/* Separator */
 
 separator
 {
@@ -861,7 +850,7 @@ separator:hover
   color: @button_border;
 }
 
-/* empty space at top/bottom of sidepanels when scrolled */
+/* Empty space at top/bottom of sidepanels when scrolled */
 undershoot,
 undershoot.top,
 undershoot.bottom,
@@ -877,16 +866,7 @@ overshoot.right
   border:none;
 }
 
-
-/* Rating stars in lighttable */
-#lib-rating-stars
-{
-  min-height: 1em;
-  min-width: 9em;
-  margin-right: 1em;
-}
-
-/* Special modules */
+/* Special modules: navigation one */
 #navigation-module
 {
   background-color: @graph_bg;
@@ -901,13 +881,13 @@ overshoot.right
   margin: 2px 0;
 }
 
-/* entries options */
+/* Entries options */
 entry
 {
   margin: 2px 0;
 }
 
-#left #lib-plugin-ui entry /* This will avoid have too much height on entry items in filter collections modules */
+#left #lib-plugin-ui entry /* This will avoid having too much height on entry items in filter collections modules */
 {
   padding: 0px;
   margin: 8px 0px;
@@ -925,7 +905,7 @@ entry
   padding: 1px;
 }
 
-/* checkbutton check state */
+/* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
 checkbutton:not(#import_metadata) check
@@ -933,19 +913,19 @@ checkbutton:not(#import_metadata) check
   margin: 5px 8px 5px 0;
 }
 
-/* arrow size of dropdown button arrow on filter collection */
+/* Arrow size of dropdown button arrow on filter collection */
 #left #lib-plugin-ui #dt-button
 {
   padding: 0px;
 }
 
-/* arrow size of some buttons on darkroom modules */
+/* Arrow size of some buttons on darkroom modules */
 #iop-plugin-ui #dt-button
 {
   padding: 2px;
 }
 
-/* choose below spacing between history items in darkroom */
+/* Choose below spacing between history items in darkroom */
 #left #history-button,
 #left #history-button-enabled,
 #left #history-switch,
@@ -961,7 +941,7 @@ checkbutton:not(#import_metadata) check
   margin: 0px 1px 1px 1px;
 }
 
-/* then font size */
+/* Then font size */
 #left #history-switch-always-enabled,
 #left #history-switch-default-enabled,
 #left #history-switch,
@@ -975,7 +955,7 @@ checkbutton:not(#import_metadata) check
   font-size: 0.5em;
 }
 
-/* other stuff */
+/* Other stuff */
 #iop-bottom-bar
 {
     min-height: 1.2em;
@@ -988,7 +968,7 @@ combobox label
 
 /* STUFF TO MERGE WITH ABOVE RULES */
 
-/* about darktable dialog popup */
+/* About darktable dialog popup */
 aboutdialog,
 aboutdialog box,
 aboutdialog box *
@@ -1001,7 +981,7 @@ aboutdialog headerbar
   padding: 2px;
 }
 
-/* progress bar on bottom left side when exporting, importing, etc... */
+/* Progress bar on bottom left side when exporting, importing, etc... */
 progressbar *
 {
   background-color: @text_color;
@@ -1017,7 +997,7 @@ progressbar progress
   background-color: @fg_color;
 }
 
-/* filechooser sidebar options */
+/* Filechooser sidebar options */
 filechooser sidebar-icon
 {
   padding: 0px 5px 0px 10px;
@@ -1028,7 +1008,7 @@ filechooser sidebar-row
   padding-top: 3px;
 }
 
-/* other stuff */
+/* Other stuff */
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
@@ -1127,7 +1107,7 @@ cell:selected
 /* Pseudo-classes : need to be defined last to not be overwritten */
 /* All states options are designed below, active, hover, selected, disabled and check states */
 
-/* main states */
+/* Main states */
 * button:selected,
 * button:active,
 * button:checked,
@@ -1197,6 +1177,7 @@ combobox window *:hover,
 #lib-plugin-ui #control-button:hover,
 #right #iop-plugin-ui #control-button:hover,
 #control-button:hover,
+radiobutton:hover label,
 #view_label:hover,
 #view_dropdown menuitem:hover,
 #view_dropdown:hover
@@ -1314,7 +1295,7 @@ filechooser checkbutton:checked
   color: @disabled_fg_color;
 }
 
-/* sliders states */
+/* Sliders states */
 #bauhaus-popup:hover,
 #bauhaus-combobox:hover,
 #bauhaus-slider:hover
@@ -1334,7 +1315,7 @@ filechooser checkbutton:checked
   color: @plugin_bg;
 }
 
-/* notebooks states */
+/* Notebooks states */
 notebook tab:hover
 {
   border-bottom: 2px solid @button_hover_fg;
@@ -1358,7 +1339,7 @@ notebook tab:checked label
   color: @button_checked_fg;
 }
 
-/* entries states */
+/* Entries states */
 entry:hover
 {
   color: @field_hover_fg;
@@ -1380,7 +1361,7 @@ textview text selection
   background-color: @field_selected_bg;
 }
 
-/* scrollbars hover state */
+/* Scrollbars hover state */
 scrollbar.horizontal slider:hover,
 scrollbar.vertical slider:hover,
 #iop-plugin-ui scrollbar slider:hover,
@@ -1391,7 +1372,7 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
-/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+/* Color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
 
 #picker-black
 {
@@ -1408,7 +1389,7 @@ scale contents trough slider:hover
   color: @grey_100;
 }
 
-/* thumbtable css
+/* Thumbtable css part
 
 Hierachy :
 
@@ -1458,7 +1439,7 @@ Details :
     state = :active : the image is the group leader
 */
 
-/* thumbtable */
+/* Thumbtable */
 .dt_thumbtable
 {
   background-color: @lighttable_bg_color;
@@ -1471,15 +1452,18 @@ Details :
   50% {border-color: @thumbnail_bg50_color; border-width : 6px;}
   100% {border-color: @lighttable_bg_color; border-width : 2px;}
 }
+
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
   border: 1px solid @lighttable_bg_color;
 }
+
 #thumb_main:selected #thumb_back
 {
   background-color: @thumbnail_selected_bg_color;
 }
+
 #thumb_main:hover #thumb_back
 {
   background-color: @thumbnail_hover_bg_color;
@@ -1515,35 +1499,37 @@ Details :
   animation-iteration-count: 3;
 }
 
-/* extension */
+/* Image extension name */
 #thumb_ext
 {
-  font-weight: bold;
-  color: @thumbnail_font_color;
+  color: @thumbnail_infos_color;
 }
 #thumb_main:selected #thumb_ext
 {
-  color: @thumbnail_selected_font_color;
+  color: @thumbnail_infos_color;
 }
 #thumb_main:hover #thumb_ext
 {
-  color: @thumbnail_hover_font_color;
+  color: @thumbnail_font_color;
 }
 
-/* image */
+/* Image */
 #thumb_image
 {
   border: none;
-  margin : 4px; /* not real pixels, but percentage of the thumb size */
+  margin : 3px; /* not real pixels, but percentage of the thumb size */
 }
+
+.dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown) */
+{
+  margin : 2px;
+}
+
 #thumb_main:active #thumb_image
 {
   border: 2px solid @plugin_bg_color;
 }
-.dt_thumbnails_2 #thumb_image
-{
-  margin : 2px;
-}
+
 .dt_overlays_always #thumb_image,
 .dt_overlays_always_extended #thumb_image,
 .dt_overlays_mixed #thumb_image
@@ -1552,37 +1538,39 @@ Details :
   margin-bottom: 1px;
 }
 
-/* custom metadata */
-#thumb_main:hover #thumb_custom_metadata_eb
+/* Popover overlays options from star icon */
+
+radiobutton
 {
-  background-color: @thumbnail_custom_metadata_bg_color;
-}
-#thumb_custom_metadata
-{
-  color: transparent;
-}
-#thumb_main:hover #thumb_custom_metadata
-{
-  color: @thumbnail_custom_metadata_fg_color;
+  padding: 2px;
 }
 
-/* bottom area */
+/* Bottom area */
 #thumb_bottom
 {
   border : 1px solid transparent; /* to not overlay thumb borders */
 }
+
 #thumb_bottom_label
 {
   border : 5px solid transparent; /* act as text margins */
   color: transparent;
-  font-weight: bold;
 }
+
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
-.dt_overlays_always_extended #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_bottom_label
+{
+  color: @thumbnail_infos_color;
+}
+
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:selected #thumb_bottom_label,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
 {
-  color: @thumbnail_hover_font_color;
+  color: @thumbnail_font_color;
 }
+
 .dt_group_left #thumb_bottom
 {
   border-left-width: 2px;
@@ -1595,18 +1583,16 @@ Details :
 {
   border-right-width: 2px;
 }
-/* uncomment to see gradient under the stars. This may enhance visibility in certain cases, esp. bright images
-.dt_overlays_hover #thumb_main:hover #thumb_bottom
-{
-  background-image: linear-gradient(0deg, rgb(101, 101, 101) 0%, rgba(107, 107, 107, 0.25) 75%,rgba(127,127,127,0) 100%);
-}*/
+
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
 
-/* thumbnails buttons */
+/* Thumbnails buttons */
+
+/* rating stars in lighttable */
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_hover .dt_thumb_btn,
 .dt_overlays_hover_extended .dt_thumb_btn
@@ -1614,12 +1600,21 @@ Details :
   color: transparent;
   background-color: transparent;
 }
-#thumb_main:hover .dt_thumb_btn,
+
 .dt_overlays_always .dt_thumb_btn,
 .dt_overlays_always_extended .dt_thumb_btn,
 .dt_overlays_mixed .dt_thumb_btn
 {
-  color: @thumbnail_hover_outline_color;
+  color: @thumbnail_infos_color;
+}
+
+#thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_mixed #thumb_main:selected .dt_thumb_btn
+{
+  color: @thumbnail_font_color;
 }
 
 /* reject */
@@ -1635,11 +1630,15 @@ Details :
 #thumb_main:hover #thumb_star:active,
 .dt_overlays_always #thumb_star:active,
 .dt_overlays_always_extended #thumb_star:active,
-.dt_overlays_mixed #thumb_star:active
+.dt_overlays_mixed #thumb_star:active,
+.dt_overlays_always #thumb_main:selected #thumb_star:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_star:active
 {
-  color: @bauhaus_fg_hover;
-  background-color: @thumbnail_hover_outline_color;
+  color: @thumbnail_hover_bg_color;
+  background-color: @thumbnail_infos_color;
 }
+
 #thumb_main:hover #thumb_star:hover
 {
   color: @bauhaus_fg_hover;
@@ -1683,7 +1682,7 @@ Details :
 .dt_overlays_mixed #thumb_group,
 .dt_overlays_mixed #thumb_audio
 {
-  color: @thumbnail_outline_color;
+  color: @thumbnail_infos_color;
 }
 #thumb_main:hover #thumb_group:hover,
 #thumb_main:hover #thumb_group:active,
@@ -1707,8 +1706,6 @@ Details :
 .dt_overlays_none #thumb_altered,
 .dt_overlays_none #thumb_group,
 .dt_overlays_none #thumb_audio,
-.dt_overlays_none #thumb_custom_metadata,
-.dt_overlays_none #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_main:hover #thumb_reject,
 .dt_overlays_none #thumb_main:hover #thumb_star,
 .dt_overlays_none #thumb_main:hover #thumb_colorlabels,
@@ -1716,22 +1713,19 @@ Details :
 .dt_overlays_none #thumb_main:hover #thumb_altered,
 .dt_overlays_none #thumb_main:hover #thumb_group,
 .dt_overlays_none #thumb_main:hover #thumb_audio,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata,
-.dt_overlays_none #thumb_main:hover #thumb_custom_metadata_eb,
 .dt_overlays_none #thumb_reject:active,
 .dt_overlays_none #thumb_star:active,
 .dt_overlays_none #thumb_colorlabels:active,
 .dt_overlays_none #thumb_localcopy:active,
 .dt_overlays_none #thumb_altered:active,
 .dt_overlays_none #thumb_group:active,
-.dt_overlays_none #thumb_audio:active,
-.dt_overlays_none #thumb_custom_metadata:active,
-.dt_overlays_none #thumb_custom_metadata_eb:active
+.dt_overlays_none #thumb_audio:active
 {
   background-color: transparent;
   color: transparent;
 }
 
+/* Messages shown on bottom middle of the UI. For example "loading image..." or "working on..." ones */
 #log-msg
 {
   color: @log_fg_color;

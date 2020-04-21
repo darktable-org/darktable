@@ -87,24 +87,17 @@
 @define-color lighttable_bg_font_color @grey_95;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_80;
 @define-color thumbnail_bg_color @grey_70;
-@define-color thumbnail_outline_color @grey_80;
-@define-color thumbnail_selected_font_color @grey_80;
-@define-color thumbnail_selected_bg_color @grey_90;
-@define-color thumbnail_selected_outline_color @grey_60;
-@define-color thumbnail_hover_font_color @grey_55;
-@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_infos_color @grey_45;
+@define-color thumbnail_selected_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_70;
-@define-color thumbnail_hover_outline_color @grey_60;
-@define-color filmstrip_bg_color @darkroom_bg_color;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
 @define-color graph_border @grey_15;
 @define-color graph_fg @grey_100;
 @define-color graph_fg_active @grey_95;
-@define-color graph_grid @grey_35;
+@define-color graph_grid @grey_30;
 @define-color inset_histogram alpha(@grey_95, 0.50);
 
 menu,
@@ -129,3 +122,12 @@ menuitem arrow
 {
   color: shade(@plugin_fg_color, 0.8);
 }
+
+.dt_overlays_always #thumb_main:selected #thumb_star:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_star:active
+{
+  color: @bauhaus_fg_hover;
+  background-color: @thumbnail_hover_fg_color;
+}
+

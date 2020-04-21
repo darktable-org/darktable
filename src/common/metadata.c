@@ -47,7 +47,8 @@ static const struct
   {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
-  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5}
+  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
+  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6}
   // clang-format on
 };
 
@@ -311,7 +312,7 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   sqlite3_stmt *stmt;
   uint32_t local_count = 0;
 
-  int keyid = dt_metadata_get_keyid(key);
+  const int keyid = dt_metadata_get_keyid(key);
   // key not found in db. Maybe it's one of our "special" keys (rating, tags and colorlabels)?
   if(keyid == -1)
   {
@@ -546,7 +547,6 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
         dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
         dt_undo_end_group(darktable.undo);
       }
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     }
   }
 }
@@ -555,40 +555,36 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 {
   if(!key || !imgid || imgid == -1) return;
 
-  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  int keyid = dt_metadata_get_keyid(key);
+  if(keyid != -1) // known key
   {
-    int keyid = dt_metadata_get_keyid(key);
-    if(keyid != -1) // known key
+    gboolean imported = TRUE;
+    if(dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
     {
-      gboolean imported = TRUE;
-      if(dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
+      const gchar *name = dt_metadata_get_name(keyid);
+      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      const uint32_t flag = dt_conf_get_int(setting);
+      imported = !(flag & DT_METADATA_FLAG_HIDDEN) && (flag & DT_METADATA_FLAG_IMPORTED);
+      g_free(setting);
+    }
+    if(imported)
+    {
+      GList *imgs = NULL;
+      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+      if(imgs)
       {
-        const gchar *name = dt_metadata_get_name(keyid);
-        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
-        const uint32_t flag = dt_conf_get_int(setting);
-        imported = !(flag & DT_METADATA_FLAG_HIDDEN) && (flag & DT_METADATA_FLAG_IMPORTED);
-        g_free(setting);
-      }
-      if(imported)
-      {
-        GList *imgs = NULL;
-        imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-        if(imgs)
-        {
-          GList *undo = NULL;
+        GList *undo = NULL;
 
-          const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
-          const gchar *cvalue = _cleanup_metadata_value(value);
-          GList *metadata = NULL;
-          metadata = g_list_append(metadata, (gpointer)ckey);
-          metadata = g_list_append(metadata, (gpointer)cvalue);
+        const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+        const gchar *cvalue = _cleanup_metadata_value(value);
+        GList *metadata = NULL;
+        metadata = g_list_append(metadata, (gpointer)ckey);
+        metadata = g_list_append(metadata, (gpointer)cvalue);
 
-          _metadata_execute(imgs, metadata, &undo, FALSE, DT_MA_ADD);
+        _metadata_execute(imgs, metadata, &undo, FALSE, DT_MA_ADD);
 
-          g_list_free_full(metadata, g_free);
-          g_list_free(imgs);
-          dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-        }
+        g_list_free_full(metadata, g_free);
+        g_list_free(imgs);
       }
     }
   }

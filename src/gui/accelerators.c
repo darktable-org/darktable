@@ -540,6 +540,60 @@ static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group, GObject
   return TRUE;
 }
 
+void dt_accel_widget_toast(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(!gtk_widget_is_visible(GTK_WIDGET(w)) && !darktable.gui->reset)
+  {
+    char *text = NULL;
+    int show = 1;
+
+    switch(w->type){
+      case DT_BAUHAUS_SLIDER:
+      {
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+        const float f = d->min + d->pos * (d->max - d->min);
+        const float fc = d->callback(GTK_WIDGET(w), f, DT_BAUHAUS_GET);
+        show = !d->is_dragging;
+        text = g_strdup_printf(d->format, fc);
+        break;
+      }
+      case DT_BAUHAUS_COMBOBOX:
+        text = g_strdup(dt_bauhaus_combobox_get_text(widget));
+        break;
+      default: //literally impossible but hey
+        return;
+        break;
+    }
+
+    if (show)
+    {
+      if(w->label[0] != '\0')
+      { // label is not empty
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
+        else if(w->module && !strstr(w->module->name(), w->label))
+          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, text);
+        else
+          dt_control_log(_("%s: %s"), w->label, text);
+      }
+      else
+      { //label is empty
+        if(w->module && w->module->multi_name[0] != '\0')
+          dt_control_log(_("%s %s / %s"), w->module->name(), w->module->multi_name, text);
+        else if(w->module)
+          dt_control_log(_("%s / %s"), w->module->name(), text);
+        else
+          dt_control_log(_("%s"), text);
+      }
+    }
+
+    g_free(text);
+  }
+
+}
+
 static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                  guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -551,6 +605,8 @@ static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GOb
   dt_bauhaus_slider_set(slider, value + step);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
+
+  dt_accel_widget_toast(slider);
   return TRUE;
 }
 
@@ -565,6 +621,8 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group, GOb
   dt_bauhaus_slider_set(slider, value - step);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
+
+  dt_accel_widget_toast(slider);
   return TRUE;
 }
 
@@ -576,6 +634,8 @@ static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group, GObjec
   dt_bauhaus_slider_reset(slider);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
+
+  dt_accel_widget_toast(slider);
   return TRUE;
 }
 
@@ -588,17 +648,7 @@ static gboolean bauhaus_combobox_next_callback(GtkAccelGroup *accel_group, GObje
   const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
   dt_bauhaus_combobox_set(combobox, nextval);
 
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
-
-  if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
-  {
-    if(w->module && w->module->multi_name[0] != '\0')
-      dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(combobox));
-    else if(w->module)
-      dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(combobox));
-    else
-      dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(combobox));
-  }
+  dt_accel_widget_toast(combobox);
 
   return TRUE;
 }
@@ -612,17 +662,7 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
   const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(combobox) : currentval - 1;
   dt_bauhaus_combobox_set(combobox, prevval);
 
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(combobox);
-
-  if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
-  {
-    if(w->module && w->module->multi_name[0] != '\0')
-      dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, dt_bauhaus_combobox_get_text(combobox));
-    else if(w->module)
-      dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, dt_bauhaus_combobox_get_text(combobox));
-    else
-      dt_control_log(_("%s"), dt_bauhaus_combobox_get_text(combobox));
-  }
+  dt_accel_widget_toast(combobox);
 
   return TRUE;
 }

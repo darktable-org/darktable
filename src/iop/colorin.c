@@ -1894,6 +1894,7 @@ void reload_defaults(dt_iop_module_t *module)
       use_eprofile = (img->profile_size > 0);
     }
 #endif
+    // the ldr test just checks for magics in the file header
     else if((!strcmp(ext, "tif") || !strcmp(ext, "tiff")) && dt_imageio_is_ldr(filename))
     {
       img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
@@ -1927,9 +1928,11 @@ void reload_defaults(dt_iop_module_t *module)
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if (color_profile != DT_COLORSPACE_NONE) {
+  if (color_profile != DT_COLORSPACE_NONE)
     tmp.type = color_profile;
-  } else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  else if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     tmp.type = DT_COLORSPACE_LIN_REC709;
@@ -1941,8 +1944,6 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 

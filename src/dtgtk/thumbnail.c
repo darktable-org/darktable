@@ -715,50 +715,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image);
 
-    // custom metadata overlay from a .txt file
-    thumb->w_custom_metadata_eb = gtk_event_box_new();
-    gtk_widget_set_name(thumb->w_custom_metadata_eb, "thumb_custom_metadata_eb");
-    gtk_widget_set_valign(thumb->w_custom_metadata_eb, GTK_ALIGN_START);
-    gtk_widget_set_halign(thumb->w_custom_metadata_eb, GTK_ALIGN_START);
-    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_custom_metadata_eb);
-    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_custom_metadata_eb, TRUE);
-    g_signal_connect(G_OBJECT(thumb->w_custom_metadata_eb), "enter-notify-event", G_CALLBACK(_event_box_enter_leave),
-                     thumb);
-    g_signal_connect(G_OBJECT(thumb->w_custom_metadata_eb), "leave-notify-event", G_CALLBACK(_event_box_enter_leave),
-                     thumb);
-
-    thumb->w_custom_metadata = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_custom_metadata, "thumb_custom_metadata");
-    gtk_widget_set_valign(thumb->w_custom_metadata, GTK_ALIGN_START);
-    gtk_widget_set_halign(thumb->w_custom_metadata, GTK_ALIGN_START);
-    gtk_label_set_xalign(GTK_LABEL(thumb->w_custom_metadata), 0.0);
-    gtk_container_add(GTK_CONTAINER(thumb->w_custom_metadata_eb), thumb->w_custom_metadata);
-
-    if(thumb->has_txt)
-    {
-      char *path = dt_image_get_text_path(thumb->imgid);
-      if(path)
-      {
-        FILE *fd = g_fopen(path, "rb");
-        if(fd)
-        {
-          fseek(fd, 0, SEEK_END);
-          const size_t filesize = ftell(fd);
-          fseek(fd, 0, SEEK_SET);
-          char *txt = malloc(filesize);
-          if(fread(txt, 1, filesize, fd) == filesize)
-          {
-            gtk_label_set_text(GTK_LABEL(thumb->w_custom_metadata), txt);
-            gtk_widget_show(thumb->w_custom_metadata_eb);
-            gtk_widget_show(thumb->w_custom_metadata);
-          }
-          free(txt);
-          fclose(fd);
-        }
-        g_free(path);
-      }
-    }
-
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
     gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
@@ -769,7 +725,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
       gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
       thumb->w_bottom = gtk_label_new(lb);
@@ -877,7 +834,6 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
     {
       thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
-      thumb->has_txt = (img->flags & DT_IMAGE_HAS_TXT) && dt_conf_get_bool("plugins/lighttable/draw_custom_metadata");
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
@@ -969,16 +925,6 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
   pango_attr_list_unref(attrlist);
 
-  // custom metadata
-  gtk_widget_set_size_request(thumb->w_custom_metadata_eb, width, -1);
-  gtk_widget_set_margin_start(thumb->w_custom_metadata_eb, 0);
-  gtk_widget_set_margin_top(thumb->w_custom_metadata_eb, 0.045 * width + 3 * fsize);
-
-  gtk_widget_set_margin_start(thumb->w_custom_metadata, 0.045 * width);
-  gtk_widget_set_margin_top(thumb->w_custom_metadata, fsize);
-  gtk_widget_set_margin_bottom(thumb->w_custom_metadata, fsize);
-  gtk_widget_set_size_request(thumb->w_custom_metadata, (1.0 - 2.0 * 0.045) * width, -1);
-
   // bottom background
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
      || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
@@ -988,7 +934,10 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
     pango_attr_list_unref(attrlist);
-    gtk_widget_set_size_request(thumb->w_bottom, width, 8.0 * r1);
+    int w = 0;
+    int h = 0;
+    pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
+    gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1 + h);
   }
   else
     gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
@@ -1065,7 +1014,6 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
   if(!thumb->mouse_over)
   {
     _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
-    _set_flag(thumb->w_custom_metadata_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
   }
   gtk_widget_queue_draw(thumb->w_main);
 }
