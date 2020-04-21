@@ -143,13 +143,13 @@ add_iop(toneequal "toneequal.c" DEFAULT_VISIBLE)
 add_iop(filmicrgb "filmicrgb.c")
 add_iop(negadoctor "negadoctor.c")
 
-if(RSVG2_FOUND)
+if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
-endif(RSVG2_FOUND)
+endif(Rsvg2_FOUND)
 
-if(LENSFUN_FOUND)
+if(LensFun_FOUND)
   add_iop(lens "lens.cc" DEFAULT_VISIBLE)
-endif(LENSFUN_FOUND)
+endif(LensFun_FOUND)
 
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)
