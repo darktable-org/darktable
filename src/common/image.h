@@ -47,6 +47,8 @@ typedef enum
   //  DT_VIEW_STAR_3 = 3,
   //  DT_VIEW_STAR_4 = 4,
   //  DT_VIEW_STAR_5 = 5,
+  DT_IMAGE_REJECTED = 8,
+
   // next field unused, but it used to be.
   // old DB entries might have it set.
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
