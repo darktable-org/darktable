@@ -721,7 +721,7 @@
   <dtconfig prefs="lighttable" section="lighttable">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
-    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)</default>
+    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)$(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -1843,12 +1843,35 @@
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
-        <option>linear</option>
-        <option>logarithmic</option>
+	<option>histogram</option>
         <option>waveform</option>
       </enum>
     </type>
+    <default>histogram</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/histogram</name>
+    <type>
+      <enum>
+	<option>logarithmic</option>
+        <option>linear</option>
+      </enum>
+    </type>
     <default>logarithmic</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/waveform</name>
+    <type>
+      <enum>
+	<option>overlaid</option>
+        <option>parade</option>
+      </enum>
+    </type>
+    <default>overlaid</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
