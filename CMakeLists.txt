@@ -42,6 +42,7 @@ include(DefineOptions.cmake)
 # Some defaults are set for OpenBSD as well (info and man pages).
 
 include(GNUInstallDirs)
+include(FeatureSummary)
 
 # https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 if(${FORCE_COLORED_OUTPUT})
@@ -523,3 +524,5 @@ configure_file(
 
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+feature_summary(WHAT ALL)

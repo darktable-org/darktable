@@ -29,8 +29,8 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 #define WANTED_STACK_SIZE (@WANTED_STACK_SIZE@)
 #define WANTED_THREADS_STACK_SIZE (@WANTED_THREADS_STACK_SIZE@)
 
-#define ISO_CODES_LOCATION "@ISO_CODES_LOCATION@"
-#define ISO_CODES_LOCALEDIR "@ISO_CODES_LOCALEDIR@"
+#define ISO_CODES_LOCATION "@IsoCodes_LOCATION@"
+#define ISO_CODES_LOCALEDIR "@IsoCodes_LOCALEDIR@"
 
 // clang-format on
 
