@@ -612,7 +612,7 @@ void local_laplacian_internal(
     output[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
-#if defined(__SSE2__)
+#if defined(__SSE2__) && !defined(_OPENMP)
   if(use_sse2)
   {
     for(int l=1;l<last_level;l++)
@@ -651,7 +651,7 @@ void local_laplacian_internal(
 
     // create gaussian pyramids
     for(int l=1;l<=last_level;l++)
-#if defined(__SSE2__)
+#if defined(__SSE2__) && !defined(_OPENMP)
       if(use_sse2)
         gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
       else
