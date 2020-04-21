@@ -900,7 +900,7 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
 GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean selected)
 {
   GList *list = NULL;
-  const gchar *query = dt_collection_get_query(collection);
+  const gchar *query = dt_collection_get_query_no_group(collection);
   if(query)
   {
     sqlite3_stmt *stmt = NULL;
