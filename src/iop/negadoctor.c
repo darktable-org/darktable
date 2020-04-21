@@ -125,7 +125,7 @@ static inline float v_minf(const float vector[3])
 }
 
 
-DT_MODULE_INTROSPECTION(1, dt_iop_negadoctor_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_negadoctor_params_t)
 
 
 typedef enum dt_iop_negadoctor_filmstock_t
@@ -153,15 +153,15 @@ typedef enum dt_iop_negadoctor_pickcolor_type_t
 typedef struct dt_iop_negadoctor_params_t
 {
   dt_iop_negadoctor_filmstock_t film_stock;
-  float DT_ALIGNED_PIXEL Dmin[4];         // color of film substrate
-  float DT_ALIGNED_PIXEL wb_high[4];      // white balance RGB coeffs (illuminant)
-  float DT_ALIGNED_PIXEL wb_low[4];       // white balance RGB offsets (base light)
-  float D_max;                            // max density of film
-  float offset;                           // inversion offset
-  float black;                            // display black level
-  float gamma;                            // display gamma
-  float soft_clip;                        // highlights roll-off
-  float exposure;                         // extra exposure
+  float Dmin[4];                            // color of film substrate
+  float wb_high[4];                         // white balance RGB coeffs (illuminant)
+  float wb_low[4];                          // white balance RGB offsets (base light)
+  float D_max;                              // max density of film
+  float offset;                             // inversion offset
+  float black;                              // display black level
+  float gamma;                              // display gamma
+  float soft_clip;                          // highlights roll-off
+  float exposure;                           // extra exposure
 } dt_iop_negadoctor_params_t;
 
 
@@ -224,6 +224,58 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_negadoctor_params_v1_t
+    {
+      dt_iop_negadoctor_filmstock_t film_stock;
+      float DT_ALIGNED_PIXEL Dmin[4];         // color of film substrate
+      float DT_ALIGNED_PIXEL wb_high[4];      // white balance RGB coeffs (illuminant)
+      float DT_ALIGNED_PIXEL wb_low[4];       // white balance RGB offsets (base light)
+      float D_max;                            // max density of film
+      float offset;                           // inversion offset
+      float black;                            // display black level
+      float gamma;                            // display gamma
+      float soft_clip;                        // highlights roll-off
+      float exposure;                         // extra exposure
+    } dt_iop_negadoctor_params_v1_t;
+
+    dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
+    dt_iop_negadoctor_params_t *n = (dt_iop_negadoctor_params_t *)new_params;
+    dt_iop_negadoctor_params_t *d = (dt_iop_negadoctor_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    // WARNING: when copying the arrays in a for loop, gcc wrongly assumed
+    //          that n and o were aligned and used AVX instructions for me,
+    //          which segfaulted. let's hope this doesn't get optimized too much.
+    n->film_stock = o->film_stock;
+    n->Dmin[0] = o->Dmin[0];
+    n->Dmin[1] = o->Dmin[1];
+    n->Dmin[2] = o->Dmin[2];
+    n->Dmin[3] = o->Dmin[3];
+    n->wb_high[0] = o->wb_high[0];
+    n->wb_high[1] = o->wb_high[1];
+    n->wb_high[2] = o->wb_high[2];
+    n->wb_high[3] = o->wb_high[3];
+    n->wb_low[0] = o->wb_low[0];
+    n->wb_low[1] = o->wb_low[1];
+    n->wb_low[2] = o->wb_low[2];
+    n->wb_low[3] = o->wb_low[3];
+    n->D_max = o->D_max;
+    n->offset = o->offset;
+    n->black = o->black;
+    n->gamma = o->gamma;
+    n->soft_clip = o->soft_clip;
+    n->exposure = o->exposure;
+
+    return 0;
+  }
+  return 1;
+}
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
