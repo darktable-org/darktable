@@ -40,10 +40,13 @@ typedef enum dt_imageio_retval_t
 typedef enum
 {
   // the first 0x7 in flags are reserved for star ratings.
-  DT_IMAGE_DELETE = 1,
-  DT_IMAGE_OKAY = 2,
-  DT_IMAGE_NICE = 3,
-  DT_IMAGE_EXCELLENT = 4,
+  // see view.h:
+  //  DT_VIEW_DESERT = 0,
+  //  DT_VIEW_STAR_1 = 1,
+  //  DT_VIEW_STAR_2 = 2,
+  //  DT_VIEW_STAR_3 = 3,
+  //  DT_VIEW_STAR_4 = 4,
+  //  DT_VIEW_STAR_5 = 5,
   // next field unused, but it used to be.
   // old DB entries might have it set.
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
