@@ -40,19 +40,32 @@ const int dt_ratings_get(const int imgid)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(image)
   {
-    stars = 0x7 & image->flags;
+    if(image->flags & DT_IMAGE_REJECTED)
+      stars = DT_VIEW_REJECT;
+    else
+      stars = DT_VIEW_RATINGS_MASK & image->flags;
     dt_image_cache_read_release(darktable.image_cache, image);
   }
   return stars;
 }
 
-static void _ratings_apply_to_image(int imgid, int rating)
+static void _ratings_apply_to_image(const int imgid, const int rating)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   if(image)
   {
-    image->flags = (image->flags & ~0x7) | (0x7 & rating);
+    if(rating == DT_VIEW_REJECT)
+    {
+      // this is a toggle, we invert the DT_IMAGE_REJECTED flag
+      if(image->flags & DT_IMAGE_REJECTED)
+        image->flags = (image->flags & ~DT_IMAGE_REJECTED);
+      else
+        image->flags = (image->flags | DT_IMAGE_REJECTED);
+    }
+    else
+      image->flags = (image->flags & ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK))
+        | (DT_VIEW_RATINGS_MASK & rating);
     // synch through:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   }
@@ -143,10 +156,6 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
     // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
     if(toggle_on && !dt_conf_get_bool("rating_one_double_tap") &&
       (previous_rating == DT_VIEW_STAR_1) && (new_rating == DT_VIEW_STAR_1))
-    {
-      new_rating = DT_VIEW_DESERT;
-    }
-    else if((previous_rating == DT_VIEW_REJECT) && (new_rating == DT_VIEW_REJECT))
     {
       new_rating = DT_VIEW_DESERT;
     }
