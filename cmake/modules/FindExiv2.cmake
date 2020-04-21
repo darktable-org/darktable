@@ -13,43 +13,41 @@
 
 include(LibFindMacros)
 
-SET(EXIV2_FIND_REQUIRED ${Exiv2_FIND_REQUIRED})
+libfind_pkg_check_modules(Exiv2_PKGCONF exiv2)
 
-libfind_pkg_check_modules(Exiv2 exiv2)
-
-find_path(EXIV2_INCLUDE_DIR
+find_path(Exiv2_INCLUDE_DIR
     NAMES
         exiv2/image.hpp
     HINTS
-        ${Exiv2_INCLUDEDIR}
-        ${Exiv2_INCLUDE_DIRS}
+        ${Exiv2_PKGCONF_INCLUDEDIR}
+        ${Exiv2_PKGCONF_INCLUDE_DIRS}
 )
-mark_as_advanced(EXIV2_INCLUDE_DIR)
+mark_as_advanced(Exiv2_INCLUDE_DIR)
 
-set(EXIV2_NAMES ${EXIV2_NAMES} exiv2 libexiv2)
-find_library(EXIV2_LIBRARY
+set(Exiv2_NAMES ${Exiv2_NAMES} exiv2 libexiv2)
+find_library(Exiv2_LIBRARY
     NAMES
-        ${EXIV2_NAMES}
+        ${Exiv2_NAMES}
     HINTS
-        ${Exiv2_LIBDIR}
-        ${Exiv2_LIBRARY_DIRS}
+        ${Exiv2_PKGCONF_LIBDIR}
+        ${Exiv2_PKGCONF_LIBRARY_DIRS}
 )
-mark_as_advanced(EXIV2_LIBRARY)
+mark_as_advanced(Exiv2_LIBRARY)
 
 if(WIN32)
   find_library(EXPAT_LIBRARY NAMES expat )
   find_library(ICONV_LIBRARY NAMES iconv )
-  list(APPEND EXIV2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
+  list(APPEND Exiv2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
 endif(WIN32)
 
-if(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
-  message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
-endif(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
+if(Exiv2_PKGCONF_VERSION VERSION_LESS Exiv2_FIND_VERSION)
+  message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_PKGCONF_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
+endif(Exiv2_PKGCONF_VERSION VERSION_LESS Exiv2_FIND_VERSION)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(EXIV2 DEFAULT_MSG EXIV2_LIBRARY EXIV2_INCLUDE_DIR)
+find_package_handle_standard_args(Exiv2 DEFAULT_MSG Exiv2_LIBRARY Exiv2_INCLUDE_DIR)
 
-IF(EXIV2_FOUND)
-  SET(Exiv2_LIBRARIES ${EXIV2_LIBRARY})
-  SET(Exiv2_INCLUDE_DIRS ${EXIV2_INCLUDE_DIR})
-ENDIF(EXIV2_FOUND)
+IF(Exiv2_FOUND)
+  set(Exiv2_LIBRARIES ${Exiv2_LIBRARY})
+  set(Exiv2_INCLUDE_DIRS ${Exiv2_INCLUDE_DIR})
+ENDIF(Exiv2_FOUND)
