@@ -25,6 +25,19 @@ typedef enum dt_culling_mode_t
   DT_CULLING_MODE_PREVIEW      // full preview mode
 } dt_culling_mode_t;
 
+typedef enum dt_culling_move_t
+{
+  DT_CULLING_MOVE_NONE,
+  DT_CULLING_MOVE_LEFT,
+  DT_CULLING_MOVE_UP,
+  DT_CULLING_MOVE_RIGHT,
+  DT_CULLING_MOVE_DOWN,
+  DT_CULLING_MOVE_PAGEUP,
+  DT_CULLING_MOVE_PAGEDOWN,
+  DT_CULLING_MOVE_START,
+  DT_CULLING_MOVE_END
+} dt_culling_move_t;
+
 typedef struct dt_culling_t
 {
   dt_culling_mode_t mode;
@@ -83,11 +96,11 @@ void dt_thumbtable_zoom_changed(dt_culling_t *table, int oldzoom, int newzoom);
 
 // ensure that the mentionned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_culling_t *table, int imgid);
-
+*/
 // move by key actions.
 // this key accels are not managed here but inside view
-gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
-
+gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
+/*
 // ensure the first image in collection as no offset (is positionned on top-left)
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 

@@ -2921,6 +2921,31 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    dt_culling_move_t move = DT_CULLING_MOVE_NONE;
+    if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+      move = DT_CULLING_MOVE_LEFT;
+    else if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+      move = DT_CULLING_MOVE_UP;
+    else if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+      move = DT_CULLING_MOVE_RIGHT;
+    else if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+      move = DT_CULLING_MOVE_DOWN;
+    else if(key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods)
+      move = DT_CULLING_MOVE_PAGEUP;
+    else if(key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods)
+      move = DT_CULLING_MOVE_PAGEDOWN;
+    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
+      move = DT_CULLING_MOVE_START;
+    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
+      move = DT_CULLING_MOVE_END;
+
+    if(move != DT_CULLING_MOVE_NONE)
+    {
+      // for this layout navigation keys are managed directly by thumbtable
+      dt_culling_key_move(lib->culling, move);
+      return TRUE;
+    }
+    return FALSE;
     if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
        || (key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods))
     {
