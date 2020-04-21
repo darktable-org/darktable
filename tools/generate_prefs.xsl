@@ -43,6 +43,18 @@
 #include <gtk/gtk.h>
 #include "control/conf.h"
 
+static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+  guint keyval;
+
+  gdk_event_get_keyval ((GdkEvent*)event, &keyval);
+
+  if (keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter)
+  {
+     return TRUE;
+  }
+  return FALSE;
+}
 ]]></xsl:text>
 
   <!-- reset callbacks -->
@@ -328,6 +340,13 @@
     <xsl:text>    gtk_entry_set_text(GTK_ENTRY(widget), "</xsl:text><xsl:value-of select="default"/><xsl:text>");</xsl:text>
   </xsl:template>
 
+  <xsl:template match="dtconfig[type='longstring']" mode="reset">
+     <xsl:text>
+        const gchar *def= g_strdup("</xsl:text><xsl:value-of select="default"/><xsl:text>");
+        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget)), def, strlen(def));
+     </xsl:text>
+  </xsl:template>
+
   <xsl:template match="dtconfig[type='int']" mode="reset">
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
@@ -370,6 +389,16 @@
     <xsl:text>  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_entry_get_text(GTK_ENTRY(widget)));</xsl:text>
   </xsl:template>
 
+  <xsl:template match="dtconfig[type='longstring']" mode="change">
+     <xsl:text>  
+        GtkTextIter start, end;
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+        gtk_text_buffer_get_start_iter(buffer, &amp;start);
+        gtk_text_buffer_get_end_iter(buffer, &amp;end);
+        dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_text_buffer_get_text(buffer, &amp;start, &amp;end, FALSE));
+     </xsl:text>
+  </xsl:template>
+
   <xsl:template match="dtconfig[type='int']" mode="change">
     <xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>  dt_conf_set_int("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
@@ -410,6 +439,23 @@
   </xsl:template>
 
 <!-- TAB -->
+  <xsl:template match="dtconfig[type='longstring']" mode="tab">
+  <xsl:text>    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+    widget = gtk_text_view_new_with_buffer(buffer);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(widget), GTK_WRAP_WORD);
+    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(widget), FALSE);
+    gtk_widget_set_hexpand(widget, TRUE);
+    gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+    gtk_text_buffer_set_text(buffer, setting, strlen(setting));
+    g_free(setting);
+    g_signal_connect(G_OBJECT(widget), "preedit-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(handle_enter_key), NULL);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
+</xsl:text>
+  </xsl:template>
   <xsl:template match="dtconfig[type='string']" mode="tab">
     <xsl:text>    widget = gtk_entry_new();
     gtk_widget_set_hexpand(widget, TRUE);
