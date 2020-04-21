@@ -807,10 +807,21 @@ notebook header /* add space between notebook tabs and options below */
 
 #preferences_notebook scrolledwindow label,
 #preferences_notebook scrolledwindow entry,
-#preferences_notebook scrolledwindow button
+#preferences_notebook scrolledwindow button,
+#preferences_notebook scrolledwindow textview
 {
   padding: 0px;
   margin: 3px 0;
+}
+
+#preferences_notebook .sidebar
+{
+   font-size: 1.1em;
+}
+
+#preferences_notebook .sidebar :selected
+{
+   font-weight: bold;
 }
 
 /* Bauhaus controls (sliders and comboboxes in modules) */
@@ -1165,6 +1176,7 @@ combobox window *:active,
 button:hover,
 menuitem:hover,
 menuitem:hover arrow,
+.sidebar :hover,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
@@ -1193,7 +1205,7 @@ notebook tab:hover label,
 #header-toolbar menuitem:hover *,
 #footer-toolbar menuitem:hover *,
 #lib-plugin-ui menuitem:hover *,
-#preferences_notebook menuitem:hover *,
+#preferences_notebook .sidebar :hover *,
 #recent-collection-button:hover,
 #history-button:hover *,
 #history-button-enabled:hover *,
