@@ -343,6 +343,134 @@ static int _thumbs_load_needed(dt_culling_t *table)
   return NULL;
 }*/
 
+static void _thumbs_move(dt_culling_t *table, int move)
+{
+  if(move == 0) return;
+  int new_offset = table->offset;
+  // we sanintize the values to be sure to stay in the allowed collection
+  if(move < 0)
+  {
+    if(table->navigate_inside_selection)
+    {
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL,
+                                     "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+                                     "WHERE m.imgid=s.imgid AND m.rowid<=%d "
+                                     "ORDER BY m.rowid DESC LIMIT 1 OFFSET %d",
+                                     table->offset, -1 * move);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        new_offset = sqlite3_column_int(stmt, 0);
+      }
+      else
+      {
+        // if we are here, that means we don't have enought space to move as wanted. So we move to first position
+        g_free(query);
+        sqlite3_finalize(stmt);
+        query
+            = dt_util_dstrcat(NULL, "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+                                    "WHERE m.imgid=s.imgid "
+                                    "ORDER BY m.rowid LIMIT 1");
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          new_offset = sqlite3_column_int(stmt, 0);
+        }
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+      if(new_offset == table->offset)
+      {
+        dt_control_log(_("you have reached the start of your selection"));
+        return;
+      }
+    }
+    else
+    {
+      new_offset = MAX(1, table->offset + move);
+      if(new_offset == table->offset)
+      {
+        dt_control_log(_("you have reached the start of your collection"));
+        return;
+      }
+    }
+  }
+  else
+  {
+    if(table->navigate_inside_selection)
+    {
+      sqlite3_stmt *stmt;
+      gchar *query
+          = dt_util_dstrcat(NULL,
+                            "SELECT COUNT(m.rowid) FROM memory.collected_images as m, main.selected_images as s "
+                            "WHERE m.imgid=s.imgid AND m.rowid>%d",
+                            table->offset);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      int nb_after = 0;
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        nb_after = sqlite3_column_int(stmt, 0);
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+
+      if(nb_after >= table->thumbs_count)
+      {
+        const int delta = MIN(nb_after + 1 - table->thumbs_count, move);
+        query = dt_util_dstrcat(NULL,
+                                "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+                                "WHERE m.imgid=s.imgid AND m.rowid>=%d "
+                                "ORDER BY m.rowid LIMIT 1 OFFSET %d",
+                                table->offset, delta);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          new_offset = sqlite3_column_int(stmt, 0);
+        }
+        g_free(query);
+        sqlite3_finalize(stmt);
+      }
+
+      if(new_offset == table->offset)
+      {
+        dt_control_log(_("you have reached the end of your selection"));
+        return;
+      }
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL,
+                                     "SELECT COUNT(m.rowid) FROM memory.collected_images as m "
+                                     "WHERE m.rowid>%d",
+                                     table->offset);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int nb = sqlite3_column_int(stmt, 0);
+        if(nb >= table->thumbs_count)
+        {
+          new_offset = table->offset + MIN(nb + 1 - table->thumbs_count, move);
+        }
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+      if(new_offset == table->offset)
+      {
+        dt_control_log(_("you have reached the end of your collection"));
+        return;
+      }
+    }
+  }
+
+  if(new_offset != table->offset)
+  {
+    table->offset = new_offset;
+    dt_culling_full_redraw(table, TRUE);
+  }
+}
+
 static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, double posy, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
@@ -465,6 +593,13 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       {
         _thumbs_zoom_add(table, -0.5f, x, y, e->state);
       }
+    }
+    else
+    {
+      if(delta < 0)
+        _thumbs_move(table, -1);
+      else
+        _thumbs_move(table, 1);
     }
   }
   return TRUE;
@@ -1400,6 +1535,38 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 }
 
+gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
+{
+  int val = 0;
+  switch(move)
+  {
+    case DT_CULLING_MOVE_LEFT:
+    case DT_CULLING_MOVE_UP:
+      val = -1;
+      break;
+    case DT_CULLING_MOVE_RIGHT:
+    case DT_CULLING_MOVE_DOWN:
+      val = 1;
+      break;
+    case DT_CULLING_MOVE_PAGEUP:
+      val = -1 * table->thumbs_count;
+      break;
+    case DT_CULLING_MOVE_PAGEDOWN:
+      val = table->thumbs_count;
+      break;
+    case DT_CULLING_MOVE_START:
+      val = -1 * INT_MAX;
+      break;
+    case DT_CULLING_MOVE_END:
+      val = INT_MAX;
+      break;
+    default:
+      val = 0;
+      break;
+  }
+  _thumbs_move(table, val);
+  return TRUE;
+}
 // define if overlays should always be shown or just on mouse-over
 /*void dt_thumbtable_set_overlays(dt_culling_t *table, gboolean show)
 {
