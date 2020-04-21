@@ -264,7 +264,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ht, input, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // fill regular pixels:
     for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
@@ -293,7 +293,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, max_supp, out, wd, stride) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // left border
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
@@ -302,7 +302,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, max_supp, out, stride, wd) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // right border
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
@@ -311,7 +311,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(max_supp, out) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // top border
     for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
@@ -320,7 +320,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ht, max_supp, out) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // bottom border
     for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
@@ -333,7 +333,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, ht, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
-    schedule(dynamic)
+    schedule(static)
 #endif
     for(int j=0;j<ht;j++)
     {
@@ -348,13 +348,13 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(max_supp, out) \
     shared(wd2, ht2) \
-    schedule(dynamic)
+    schedule(static)
 #endif
     for(int j=0;j<max_supp;j++)
       memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    schedule(dynamic) \
+    schedule(static) \
     dt_omp_firstprivate(ht, max_supp, out) \
     shared(wd2, ht2)
 #endif
@@ -493,7 +493,7 @@ void apply_curve_sse2(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, shadows, sigma, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(uint32_t j=padding;j<h-padding;j++)
   {
@@ -521,13 +521,13 @@ void apply_curve_sse2(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(out, padding, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, out, padding, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
 }
@@ -549,7 +549,7 @@ void apply_curve(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, sigma, shadows, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(uint32_t j=padding;j<h-padding;j++)
   {
@@ -564,13 +564,13 @@ void apply_curve(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(out, padding, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, out, padding, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
 }
@@ -782,7 +782,7 @@ void local_laplacian_internal(
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, max_supp, out, wd) \
   shared(w,output,buf) \
-  schedule(dynamic) \
+  schedule(static) \
   collapse(2)
 #endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
