@@ -70,7 +70,7 @@ typedef struct dt_slideshow_t
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
 
-  uint32_t auto_advance;
+  gboolean auto_advance;
   int exporting;
   int delay;
 
@@ -451,7 +451,7 @@ void enter(dt_view_t *self)
 
   d->col_count = dt_collection_get_count(darktable.collection);
 
-  d->auto_advance = 0;
+  d->auto_advance = FALSE;
   d->delay = dt_conf_get_int("slideshow_delay");
   // restart from beginning, will first increment counter by step and then prefetch
   dt_pthread_mutex_unlock(&d->lock);
@@ -470,7 +470,7 @@ void leave(dt_view_t *self)
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   d->mouse_timeout = 0;
   dt_control_change_cursor(GDK_LEFT_PTR);
-  d->auto_advance = 0;
+  d->auto_advance = FALSE;
 
   // exporting could be in action, just wait for the last to finish
   // otherwise we will crash releasing lock and memory.
@@ -578,12 +578,12 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     if(!d->auto_advance)
     {
-      d->auto_advance = 1;
+      d->auto_advance = TRUE;
       _step_state(d, S_REQUEST_STEP);
     }
     else
     {
-      d->auto_advance = 0;
+      d->auto_advance = FALSE;
       dt_control_log(_("slideshow paused"));
     }
     return 0;
@@ -601,19 +601,19 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP_BACK);
   }
   else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP);
   }
   else
   {
     // go back to lt mode
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     dt_ctl_switch_mode_to("lighttable");
   }
 
