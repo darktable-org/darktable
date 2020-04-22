@@ -1031,8 +1031,8 @@ void dt_culling_init(dt_culling_t *table)
    *  otherwise                                  => OFF
    *
    * For the selection following :
-   *  culling dynamic mode         => OFF
-   *  first image(s) == selection  => ON
+   *  culling dynamic mode                                    => OFF
+   *  first image(s) == selection && selection is continuous  => ON
    */
 
   // init values
@@ -1089,7 +1089,7 @@ void dt_culling_init(dt_culling_t *table)
   if(table->mode == DT_CULLING_MODE_CULLING
      && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
   {
-    table->selection_sync = TRUE;
+    table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
     return;
   }
@@ -1123,21 +1123,30 @@ void dt_culling_init(dt_culling_t *table)
   else if(table->mode == DT_CULLING_MODE_CULLING)
   {
     const int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
-    table->navigate_inside_selection = (sel_count > zoom && inside);
-    if(sel_count <= zoom && inside)
-    {
+    // we first determine if we synchronize the selection with culling images
+    table->selection_sync = FALSE;
+    if(sel_count == 1 && inside)
       table->selection_sync = TRUE;
-      // ensure that first_id is the first selected
+    else if(sel_count == zoom && inside)
+    {
+      // we ensure that the selection is continuous
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT col.imgid "
+                                  "SELECT MIN(rowid), MAX(rowid) "
                                   "FROM memory.collected_images AS col, main.selected_images as sel "
-                                  "WHERE col.imgid=sel.imgid "
-                                  "ORDER BY col.rowid "
-                                  "LIMIT 1",
+                                  "WHERE col.imgid=sel.imgid ",
                                   -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        if(sqlite3_column_int(stmt, 0) + sel_count - 1 == sqlite3_column_int(stmt, 1))
+        {
+          table->selection_sync = TRUE;
+        }
+      }
       sqlite3_finalize(stmt);
     }
+
+    // we now determine if we limit culling images to the selection
+    table->navigate_inside_selection = (!table->selection_sync && inside);
   }
 
   table->offset = _thumb_get_rowid(first_id);
