@@ -115,7 +115,7 @@ for filename in argv[1:]:
     proc = subprocess.check_output(command, universal_newlines=True)
     for io in proc.splitlines():
         lineparts = io.split(':')
-        tag = lineparts[0]
+        tag = lineparts[0].strip()
         values = lineparts[1].strip().split(' ')
         if 'Make' in tag.split():
             maker = lineparts[1].strip()
@@ -129,10 +129,11 @@ for filename in argv[1:]:
         elif tag == "WB RB Levels":
             red = float(values[0])
             blue = float(values[1])
-            if values.size == 4 and values[2] == "256" and values[3] == "256":
+            if len(values) == 4 and values[2] == "256" and values[3] == "256":
                 red /= 256.0
                 blue /= 256.0
             green = 1
+            print("red:",red, "green:", green, "blue:", blue, sep=' ')
         elif tag == "WB GRB Levels":
             green = float(values[0])
             red = float(values[1])/green
@@ -143,7 +144,7 @@ for filename in argv[1:]:
         #  red = float(values[1])/green
         #  blue = float(values[2])/green
         #  green = 1
-        elif tag == "White Point" and values.length > 3:
+        elif tag == "White Point" and len(values) > 3:
             green = (float(values[1])+float(values[2]))/2.0
             red = float(values[0])/green
             blue = float(values[3])/green
@@ -191,17 +192,17 @@ for filename in argv[1:]:
         elif tag == "WB Shift AB": # canon - positive is towards amber, panasonic/leica/pentax - positive is towards blue?
             finetune = values[0]
         elif tag == "WB Shift GM": # detect GM shift and warn about it
-            gm_skew = gm_skew or (values[0].to_i != 0)
+            gm_skew = gm_skew or (int(values[0]) != 0)
         elif tag == "WB Shift AB GM": # sony
             finetune = values[0]
-            gm_skew = gm_skew or (values[1].to_i != 0)
+            gm_skew = gm_skew or (int(values[1]) != 0)
         elif tag == "White Balance Fine Tune" and maker.startswith("NIKON"): # nikon
-            finetune = 0-(values[0].to_i * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
-            gm_skew = gm_skew or (values[1].to_i != 0)
+            finetune = 0-(int(values[0]) * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
+            gm_skew = gm_skew or (int(values[1]) != 0)
         elif tag == "White Balance Fine Tune" and maker == "FUJIFILM": # fuji
             eprint("Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)")
-            finetune = values[3].to_i / 20 # Fuji has -180..180 but steps are every 20
-            gm_skew = gm_skew or (values[1].to_i != 0)
+            finetune = int(values[3]) / 20 # Fuji has -180..180 but steps are every 20
+            gm_skew = gm_skew or (int(values[1]) != 0)
         elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "CoolWhiteFluorescent":
             # Sony's Fluorescent Fun
             if values[0] == "-1":
@@ -216,9 +217,9 @@ for filename in argv[1:]:
                 eprint("Warning: Unknown Sony Fluorescent WB Preset!")
         elif tag == "White Balance Bracket": # olympus
             finetune = values[0]
-            gm_skew = gm_skew or (values[1].to_i != 0)
+            gm_skew = gm_skew or (int(values[1]) != 0)
         elif tag == "Color Compensation Filter": # minolta?
-            gm_skew = gm_skew or (values[0].to_i != 0)
+            gm_skew = gm_skew or (int(values[0]) != 0)
 
         if rlevel > 0 and glevel > 0 and blevel > 0:
             red = rlevel/glevel
@@ -227,6 +228,8 @@ for filename in argv[1:]:
 
     if gm_skew:
         eprint('WARNING: {0} has finetuning over GM axis! Data is skewed!'.format(filename))
+    else:
+        eprint("no skew")
 
     # Adjust the maker/model we found with the map we generated before
     if exif_name_map[maker,model]:
@@ -236,6 +239,11 @@ for filename in argv[1:]:
         model = enm[1]
     else:
         eprint("WARNING: Couldn't find model in cameras.xml ('{0}', '{1}')".format(maker, model))
+
+    print("found:")
+    print(found_presets)
+    print("listed:")
+    print(listed_presets)
 
     for preset_arr in listed_presets:
         # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
@@ -248,16 +256,23 @@ for filename in argv[1:]:
     
     # Print out the WB value that was used in the file
     if not preset:
+        eprint("empty prest!")
         preset = filename
     if red and green and blue and preset not in IGNORED_PRESETS:
+        eprint("not empty preset!")
         found_presets.append(tuple([maker, model, preset, finetune, red, green, blue]))
     
+    print("after loopend:")
+    print(found_presets)
 # what's wrong with this code? found_presets[:]=[preset_arrt in found_presets if preset_arrt[2] not in IGNORED_PRESETS]
 
+print("before getting rid of duplicates")
+print(found_presets)
 # get rid of duplicate presets
 
 found_presets = list(set(found_presets))
 
+print("after getting rid")
 print(found_presets)
 
 
