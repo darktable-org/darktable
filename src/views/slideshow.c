@@ -115,6 +115,7 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
   memcpy(data->buf.buf, in, sizeof(uint32_t) * datai->width * datai->height);
   data->buf.width = datai->width;
   data->buf.height = datai->height;
+  data->buf.invalidated = FALSE;
 
   return 0;
 }
@@ -221,10 +222,10 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
     dt_pthread_mutex_lock(&d->lock);
     if(dat.rank == d->buf[slot].rank)
     {
-      d->buf[slot].invalidated = FALSE;
       memcpy(d->buf[slot].buf, dat.buf.buf, sizeof(uint32_t) * dat.buf.width * dat.buf.height);
       d->buf[slot].width = dat.buf.width;
       d->buf[slot].height = dat.buf.height;
+      d->buf[slot].invalidated = FALSE;
     }
     d->exporting--;
     dt_pthread_mutex_unlock(&d->lock);
@@ -240,7 +241,9 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
 static gboolean _is_idle(dt_slideshow_t *d)
 {
-  return !(d->buf[S_LEFT].invalidated || d->buf[S_CURRENT].invalidated || d->buf[S_RIGHT].invalidated);
+  return !((d->buf[S_LEFT].invalidated && d->buf[S_LEFT].rank <= d->col_count)
+           || (d->buf[S_CURRENT].invalidated && d->buf[S_CURRENT].rank <= d->col_count)
+           || (d->buf[S_RIGHT].invalidated && d->buf[S_RIGHT].rank <= d->col_count));
 }
 
 static gboolean auto_advance(gpointer user_data)
@@ -256,16 +259,16 @@ static int32_t process_job_run(dt_job_t *job)
 {
   dt_slideshow_t *d = dt_control_job_get_params(job);
 
-  if(d->buf[S_CURRENT].invalidated)
+  if(d->buf[S_CURRENT].invalidated && d->buf[S_CURRENT].rank <= d->col_count)
   {
     process_image(d, S_CURRENT);
     dt_control_queue_redraw_center();
   }
-  else if(d->buf[S_RIGHT].invalidated)
+  else if(d->buf[S_RIGHT].invalidated && d->buf[S_RIGHT].rank <= d->col_count)
   {
     process_image(d, S_RIGHT);
   }
-  else if(d->buf[S_LEFT].invalidated)
+  else if(d->buf[S_LEFT].invalidated && d->buf[S_LEFT].rank >= 0)
   {
     process_image(d, S_LEFT);
   }
@@ -301,8 +304,8 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank < d->col_count - 1)
     {
       shift_left(d);
-      d->buf[S_RIGHT].invalidated = TRUE;
       d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
+      d->buf[S_RIGHT].invalidated = d->buf[S_RIGHT].rank < d->col_count;
       _refresh_display(d);
       requeue_job(d);
     }
@@ -317,8 +320,8 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank > 0)
     {
       shift_right(d);
-      d->buf[S_LEFT].invalidated = TRUE;
       d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
+      d->buf[S_LEFT].invalidated = d->buf[S_LEFT].rank >= 0;
       _refresh_display(d);
       requeue_job(d);
     }
