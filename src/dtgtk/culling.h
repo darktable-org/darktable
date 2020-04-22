@@ -82,7 +82,7 @@ typedef struct dt_culling_t
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
 // reload all thumbs from scratch.
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
-void dt_culling_init(dt_culling_t *table);
+void dt_culling_init(dt_culling_t *table, int offset);
 // define if overlays should always be shown or just on mouse-over
 /*void dt_culling_set_overlays(dt_culling_t *table, gboolean show);
 // get/set offset (and redraw if needed)

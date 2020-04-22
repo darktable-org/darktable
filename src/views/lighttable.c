@@ -416,7 +416,11 @@ static void check_layout(dt_view_t *self)
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
 
-    dt_culling_init(lib->culling);
+    if(!lib->already_started)
+      dt_culling_init(lib->culling, lib->thumbtable_offset);
+    else
+      dt_culling_init(lib->culling, -1);
+
 
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
@@ -426,6 +430,8 @@ static void check_layout(dt_view_t *self)
     //_culling_recreate_slots_at(self, _culling_preview_init_values(self, TRUE, FALSE));
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling_use_selection;
   }
+
+  lib->already_started = TRUE;
 
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
   {
