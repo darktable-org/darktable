@@ -563,8 +563,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
     {
       const gchar *name = dt_metadata_get_name(keyid);
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
-      const uint32_t flag = dt_conf_get_int(setting);
-      imported = !(flag & DT_METADATA_FLAG_HIDDEN) && (flag & DT_METADATA_FLAG_IMPORTED);
+      imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
       g_free(setting);
     }
     if(imported)
