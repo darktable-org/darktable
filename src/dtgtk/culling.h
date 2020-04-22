@@ -82,36 +82,12 @@ typedef struct dt_culling_t
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
 // reload all thumbs from scratch.
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
+// intialise culling offset/naviagtion mode, etc before entering.
+// if offset is > 0 it'll be used as offset, otherwise offset wil be determined by other means
 void dt_culling_init(dt_culling_t *table, int offset);
-// define if overlays should always be shown or just on mouse-over
-/*void dt_culling_set_overlays(dt_culling_t *table, gboolean show);
-// get/set offset (and redraw if needed)
-int dt_thumbtable_get_offset(dt_culling_t *table);
-gboolean dt_thumbtable_set_offset(dt_culling_t *table, int offset, gboolean redraw);
-// set offset at specific imageid (and redraw if needed)
-gboolean dt_thumbtable_set_offset_image(dt_culling_t *table, int imgid, gboolean redraw);
-
-// fired when the zoom level change
-void dt_thumbtable_zoom_changed(dt_culling_t *table, int oldzoom, int newzoom);
-
-// ensure that the mentionned image is visible by moving the view if needed
-gboolean dt_thumbtable_ensure_imgid_visibility(dt_culling_t *table, int imgid);
-*/
 // move by key actions.
 // this key accels are not managed here but inside view
 gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
-/*
-// ensure the first image in collection as no offset (is positionned on top-left)
-gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
-
-// scrollbar change
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y);
-
-// init all accels
-void dt_thumbtable_init_accels(dt_thumbtable_t *table);
-// connect all accels if thumbtable is active in the view and they are not loaded
-// disconnect them if not
-void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);*/
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
