@@ -211,16 +211,23 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void hardcoded_gui(GtkWidget *grid, int *line)
+static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
 {
 
-  GtkWidget *seclabel = gtk_label_new(_("general"));
-  GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-  gtk_widget_set_hexpand(lbox, TRUE);
-  gtk_widget_set_name(lbox, "pref_section");
-  gtk_grid_attach(GTK_GRID(grid), lbox, 0, (*line)++, 2, 1);
+  GtkWidget *viewport;
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  int line = 0;
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  viewport = gtk_viewport_new(NULL, NULL);
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
+  gtk_container_add(GTK_CONTAINER(scroll), viewport);
+  gtk_container_add(GTK_CONTAINER(viewport), grid);
 
+  gtk_stack_add_titled(GTK_STACK(stack), scroll, "interface", "interface");
 
   // language
 
@@ -242,7 +249,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   gtk_widget_set_tooltip_text(labelev,  _("double click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
   gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * (needs a restart)"));
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, (*line)++, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
 
@@ -275,7 +282,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
-  gtk_grid_attach(GTK_GRID(grid), label, 0, (*line)++, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 }
 
@@ -288,7 +295,7 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1200), DT_PIXEL_APPLY_DPI(800));
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
@@ -299,7 +306,7 @@ void dt_gui_preferences_show()
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
-  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(1000), DT_PIXEL_APPLY_DPI(800));
+  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(700));
   gtk_widget_set_name(box, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
@@ -308,11 +315,16 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_lighttable(_preferences_dialog, stack, NULL);
-  init_tab_darkroom(_preferences_dialog, stack, NULL);
-  init_tab_gui(_preferences_dialog, stack, &hardcoded_gui);
-  init_tab_core(_preferences_dialog, stack, NULL);
-  init_tab_session(_preferences_dialog, stack, NULL);
+  init_tab_interface(_preferences_dialog, stack);
+  init_tab_import(_preferences_dialog, stack);
+  init_tab_lighttable(_preferences_dialog, stack);
+  init_tab_darkroom(_preferences_dialog, stack);
+  init_tab_other_views(_preferences_dialog, stack);
+  init_tab_processing(_preferences_dialog, stack);
+  init_tab_security(_preferences_dialog, stack);
+  init_tab_cpugpu(_preferences_dialog, stack);
+  init_tab_storage(_preferences_dialog, stack);
+  init_tab_misc(_preferences_dialog, stack);
   init_tab_accels(stack);
   init_tab_presets(stack);
 
