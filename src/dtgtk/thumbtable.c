@@ -966,21 +966,16 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
 {
   table->scrollbars = FALSE;
 
-  char *scrollbars_conf = dt_conf_get_string("scrollbars");
-  if(scrollbars_conf)
+  if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
   {
-    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
-    {
-      if(!strcmp(scrollbars_conf, "lighttable + darkroom")) table->scrollbars = TRUE;
-    }
-
-    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-    {
-      if(strcmp(scrollbars_conf, "no scrollbars")) table->scrollbars = TRUE;
-    }
-
-    g_free(scrollbars_conf);
+    table->scrollbars = dt_conf_get_bool("darkroom/ui/scrollbars");
   }
+
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  {
+    table->scrollbars = dt_conf_get_bool("lighttable/ui/scrollbars");
+  }
+
   dt_ui_scrollbars_show(darktable.gui->ui, table->scrollbars);
 }
 

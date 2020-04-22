@@ -1379,18 +1379,12 @@
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui">
-    <name>scrollbars</name>
-    <type>
-      <enum>
-        <option>no scrollbars</option>
-        <option>lighttable</option>
-        <option>lighttable + darkroom</option>
-      </enum>
-    </type>
-    <default>lighttable</default>
-    <shortdescription>show scrollbars for center view</shortdescription>
-    <longdescription>defines where scrollbars should be displayed</longdescription>
+ <dtconfig prefs="darkroom" section="darkroom">
+    <name>darkroom/ui/scrollbars</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show scrollbars for central view</shortdescription>
+    <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>panel_scrollbars_always_visible</name>
@@ -1461,6 +1455,13 @@
     <default>false</default>
     <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
     <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
+  </dtconfig>
+ <dtconfig prefs="lighttable" section="lighttable">
+    <name>lighttable/ui/scrollbars</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show scrollbars for central view</shortdescription>
+    <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
