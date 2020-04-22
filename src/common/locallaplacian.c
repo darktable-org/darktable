@@ -125,7 +125,7 @@ static inline void gauss_expand(
   ll_fill_boundary2(fine, wd, ht);
 }
 
-#if defined(__SSE2__)
+#if defined(__SSE2__) && !defined(_OPENMP)
 static inline void gauss_reduce_sse2(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
