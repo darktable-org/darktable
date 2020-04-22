@@ -104,7 +104,7 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_culling_t *table)
 }*/
 
 // get imgid from rowid
-/*static int _thumb_get_imgid(int rowid)
+static int _thumb_get_imgid(int rowid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
@@ -117,7 +117,7 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_culling_t *table)
   g_free(query);
   sqlite3_finalize(stmt);
   return id;
-}*/
+}
 // get rowid from imgid
 static int _thumb_get_rowid(int imgid)
 {
@@ -1018,7 +1018,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 
 // initialize offset, ... values
 // to be used when reentering culling
-void dt_culling_init(dt_culling_t *table)
+void dt_culling_init(dt_culling_t *table, int offset)
 {
   /** HOW it works :
    *
@@ -1043,23 +1043,10 @@ void dt_culling_init(dt_culling_t *table)
   sqlite3_stmt *stmt;
   int first_id = -1;
 
-  /* TODO : get offset from thumbtable ?
-  if(!lib->already_started)
-  {
-    // first start, we retrieve the registered offset
-    const int offset = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
-    gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", offset);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      first_id = sqlite3_column_int(stmt, 0);
-    }
-    g_free(query);
-    sqlite3_finalize(stmt);
-    lib->already_started = TRUE;
-  }
-  else*/
-  first_id = dt_control_get_mouse_over_id();
+  if(offset > 0)
+    first_id = _thumb_get_imgid(offset);
+  else
+    first_id = dt_control_get_mouse_over_id();
 
   if(first_id < 1)
   {
