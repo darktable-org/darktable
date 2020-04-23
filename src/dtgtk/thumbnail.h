@@ -126,6 +126,8 @@ typedef struct
 
   float w_fit;
   float h_fit;
+
+  gboolean display_focus;
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable);

@@ -843,6 +843,9 @@ void dt_culling_init(dt_culling_t *table, int offset)
   // init values
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
+  table->full_zoom = 1.0;
+  table->full_x = 0;
+  table->full_y = 0;
 
   // get first id
   sqlite3_stmt *stmt;

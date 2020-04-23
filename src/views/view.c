@@ -762,13 +762,13 @@ int32_t dt_view_get_image_to_act_on()
   const int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row(
       darktable.view_manager->proxy.lighttable.view);
 
-  const int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id(
+  const gboolean full_preview_mode = darktable.view_manager->proxy.lighttable.get_full_preview_mode(
       darktable.view_manager->proxy.lighttable.view);
 
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
 
-  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(zoom == 1 || full_preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -2284,7 +2284,7 @@ gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
-    return (vm->proxy.lighttable.get_full_preview_id(vm->proxy.lighttable.view) != -1);
+    return vm->proxy.lighttable.get_full_preview_mode(vm->proxy.lighttable.view);
   else
     return FALSE;
 }

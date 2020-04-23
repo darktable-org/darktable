@@ -77,6 +77,8 @@ typedef struct dt_culling_t
   gboolean panning; // are we moving zoomed images ?
   int pan_x;        // last position during panning
   int pan_y;        //
+
+  gboolean focus; // do we show focus rectangles on images ?
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
@@ -92,8 +94,13 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 // change the offset imgid. This will recompute everything even if offset doesn't change
 // because this may means that other images have changed
 void dt_culling_change_offset_image(dt_culling_t *table, int offset);
+
 // TODO
 // prefetching
+// selection changed
+// preview zooming key accels
+/*dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);*/
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
