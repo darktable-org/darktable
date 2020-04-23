@@ -1368,6 +1368,11 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
   return TRUE;
 }
 
+void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
+{
+  table->offset = _thumb_get_rowid(imgid);
+  dt_culling_full_redraw(table, TRUE);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
