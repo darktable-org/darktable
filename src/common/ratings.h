@@ -21,8 +21,11 @@
 #include "common/darktable.h"
 #include <gtk/gtk.h>
 
+#define DT_VIEW_RATINGS_MASK 0x7
+// first three bits of dt_view_image_over_t
+
 /** get rating tfor the specified image */
-int dt_ratings_get(const int imgid);
+const int dt_ratings_get(const int imgid);
 
 /** apply rating to the specified image */
 void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,

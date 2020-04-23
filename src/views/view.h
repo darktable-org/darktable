@@ -173,18 +173,18 @@ typedef struct dt_view_t
 
 typedef enum dt_view_image_over_t
 {
-  DT_VIEW_ERR = -1,
-  DT_VIEW_DESERT = 0,
-  DT_VIEW_STAR_1 = 1,
-  DT_VIEW_STAR_2 = 2,
-  DT_VIEW_STAR_3 = 3,
-  DT_VIEW_STAR_4 = 4,
-  DT_VIEW_STAR_5 = 5,
-  DT_VIEW_REJECT = 6,
-  DT_VIEW_GROUP = 7,
-  DT_VIEW_AUDIO = 8,
-  DT_VIEW_ALTERED = 9,
-  DT_VIEW_END = 10 // placeholder for the end of the list
+  DT_VIEW_ERR     = -1,
+  DT_VIEW_DESERT  =  0,
+  DT_VIEW_STAR_1  =  1,
+  DT_VIEW_STAR_2  =  2,
+  DT_VIEW_STAR_3  =  3,
+  DT_VIEW_STAR_4  =  4,
+  DT_VIEW_STAR_5  =  5,
+  DT_VIEW_REJECT  =  6,
+  DT_VIEW_GROUP   =  7,
+  DT_VIEW_AUDIO   =  8,
+  DT_VIEW_ALTERED =  9,
+  DT_VIEW_END     = 10, // placeholder for the end of the list
 } dt_view_image_over_t;
 
 /** returns -1 if the action has to be applied to the selection,
