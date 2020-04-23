@@ -205,7 +205,7 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
   const gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
   //write to file
-  GError *error;
+  GError *error = NULL;
   if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
   {
     fprintf(stderr, "%s: error saving css to %s: %s\n", G_STRFUNC, usercsspath, error->message);
@@ -245,12 +245,12 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
+static void init_tab_interface(GtkWidget *stack)
 {
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
@@ -316,19 +316,19 @@ static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 
   //checkbox to allow user to modify theme with user.css
-  label = gtk_label_new(_("modify selected theme with user.css"));
+  label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkToggleButton *cssbutton = GTK_TOGGLE_BUTTON(gtk_check_button_new());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(cssbutton), _("load user.css from the user config directory to modify selected theme"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(cssbutton), _("modify theme with CSS keyed below (saved to user.css)"));
   gtk_toggle_button_set_active(cssbutton, dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(cssbutton), label, GTK_POS_RIGHT, 1, 1);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
-  label = gtk_label_new(_("user.css:"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(container), usercssbox, TRUE, TRUE, 0);
+  gtk_widget_set_name(usercssbox, "usercss_box");
 
   GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
   GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
@@ -339,13 +339,13 @@ static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(scroll), textview);
-  gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *button = gtk_button_new_with_label(C_("usercss", "save user.css"));
+  GtkWidget *button = gtk_button_new_with_label(C_("usercss", "save theme tweaks"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_usercss_callback), buffer);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
 
   //set textarea text from file or default
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
@@ -370,7 +370,7 @@ static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
   else
   {
     //load default text 
-    gtk_text_buffer_set_text(buffer, "/* Enter css tweaks here */", -1);
+    gtk_text_buffer_set_text(buffer, "/* Enter CSS theme tweaks here */", -1);
   }
 
 }
@@ -382,21 +382,31 @@ void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
-                                                    GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                                    GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
                                                     NULL, NULL);
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_set_name(_preferences_dialog, "preferences_notebook");
+
+  //grab the content area of the dialog
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  gtk_widget_set_name(content, "preferences_content");
+  gtk_container_set_border_width(GTK_CONTAINER(content), 0);
+
+  //place a box in the content area
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(box, "preferences_box");
+  gtk_container_set_border_width(GTK_CONTAINER(box), 0);
   gtk_box_pack_start(GTK_BOX(content), box, TRUE, TRUE, 0);
+
+  //create stack and sidebar and pack into the box
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
   gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(700));
-  gtk_widget_set_name(_preferences_dialog, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
@@ -404,7 +414,8 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_interface(_preferences_dialog, stack);
+  //setup tabs
+  init_tab_interface(stack);
   init_tab_import(_preferences_dialog, stack);
   init_tab_lighttable(_preferences_dialog, stack);
   init_tab_darkroom(_preferences_dialog, stack);
@@ -599,8 +610,6 @@ static void init_tab_presets(GtkWidget *stack)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  //gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
-  //dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(book));
   gtk_stack_add_titled(GTK_STACK(stack), container, "presets", "presets");
 
   tree_insert_presets(model);
@@ -701,7 +710,6 @@ static void init_tab_accels(GtkWidget *stack)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  //gtk_notebook_append_page(GTK_NOTEBOOK(stack), container, gtk_label_new(_("shortcuts")));
   gtk_stack_add_titled(GTK_STACK(stack), container, "accels", "shortcuts");
 
   // Building the accelerator tree
@@ -1566,7 +1574,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   int line = 0;
   g->details = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(3));
   gtk_grid_set_column_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
 
