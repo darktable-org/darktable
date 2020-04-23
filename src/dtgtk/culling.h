@@ -89,6 +89,9 @@ void dt_culling_init(dt_culling_t *table, int offset);
 // this key accels are not managed here but inside view
 gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 
+// change the offset imgid. This will recompute everything even if offset doesn't change
+// because this may means that other images have changed
+void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 // TODO
 // prefetching
 

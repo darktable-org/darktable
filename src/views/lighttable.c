@@ -522,13 +522,7 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   // culling change (note that full_preview can be combined with culling)
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    _culling_recreate_slots_at(self, imgid);
-    dt_control_queue_redraw_center();
-  }
-  // for filmanager and zoomable, we just test for empty collection
-  else if(lib->collection_count == 0)
-  {
-    dt_control_queue_redraw_center();
+    dt_culling_change_offset_image(lib->culling, imgid);
   }
 }
 
