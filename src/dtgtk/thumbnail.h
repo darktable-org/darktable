@@ -65,7 +65,7 @@ typedef struct
   int rating;
   int colorlabels;
   gchar *filename;
-  gchar info_line[256];
+  gchar *info_line;
   gboolean is_altered;
   gboolean has_audio;
   gboolean is_grouped;
