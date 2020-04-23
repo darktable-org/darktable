@@ -2634,7 +2634,7 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
-  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 }, usercsspath[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
@@ -2663,8 +2663,34 @@ void dt_gui_load_theme(const char *theme)
 
   if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
   {
-    printf("%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
+    fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
     g_clear_error(&error);
+  }
+
+  if(dt_conf_get_bool("themes/usercss"))
+  {
+    g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+
+    if(g_file_test(usercsspath, G_FILE_TEST_EXISTS))
+    {
+      //need to append currently loaded theme with user tweaks
+      const gchar *themecsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
+
+      if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), usercsspath, &error))
+      {
+        fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, usercsspath, error->message);
+        g_clear_error(&error);
+      }
+
+      const gchar *usercsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
+      const gchar *combinedcsscontent = g_strjoin(" ", themecsscontent, usercsscontent, NULL);
+
+      if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
+      {
+        fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
+        g_clear_error(&error);
+      }
+    }
   }
 
   g_object_unref(themes_style_provider);

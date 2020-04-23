@@ -183,6 +183,40 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
+static void usercss_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_bool("themes/usercss", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
+static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
+{
+  //get file locations
+  char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+
+  //read text buffer into gchar
+  GtkTextBuffer *buffer = (GtkTextBuffer *)user_data;
+  GtkTextIter start, end;
+  gtk_text_buffer_get_start_iter(buffer, &start);
+  gtk_text_buffer_get_end_iter(buffer, &end);
+  const gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+
+  //write to file
+  GError *error;
+  if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
+  {
+    fprintf(stderr, "%s: error saving css to %s: %s\n", G_STRFUNC, usercsspath, error->message);
+    g_clear_error(&error);
+  }
+
+  //reload the theme
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
 ///////////// gui language and theme selection
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
@@ -214,20 +248,16 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
 static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
 {
 
-  GtkWidget *viewport;
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  viewport = gtk_viewport_new(NULL, NULL);
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
-  gtk_container_add(GTK_CONTAINER(scroll), viewport);
-  gtk_container_add(GTK_CONTAINER(viewport), grid);
 
-  gtk_stack_add_titled(GTK_STACK(stack), scroll, "interface", "interface");
+  gtk_box_pack_start(GTK_BOX(container), grid, FALSE, FALSE, 0);
+
+  gtk_stack_add_titled(GTK_STACK(stack), container, "interface", "interface");
 
   // language
 
@@ -284,6 +314,65 @@ static void init_tab_interface(GtkWidget *dialog, GtkWidget *stack)
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
+
+  //checkbox to allow user to modify theme with user.css
+  label = gtk_label_new(_("modify selected theme with user.css"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  GtkToggleButton *cssbutton = GTK_TOGGLE_BUTTON(gtk_check_button_new());
+  gtk_widget_set_tooltip_text(GTK_WIDGET(cssbutton), _("load user.css from the user config directory to modify selected theme"));
+  gtk_toggle_button_set_active(cssbutton, dt_conf_get_bool("themes/usercss"));
+  g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(cssbutton), label, GTK_POS_RIGHT, 1, 1);
+
+  //scrollable textarea with save button to allow user to directly modify user.css file
+  label = gtk_label_new(_("user.css:"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+
+  GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+  GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+  gtk_widget_set_hexpand(textview, TRUE);
+  gtk_widget_set_halign(textview, GTK_ALIGN_FILL);
+
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_container_add(GTK_CONTAINER(scroll), textview);
+  gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
+
+  GtkWidget *button = gtk_button_new_with_label(C_("usercss", "save user.css"));
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_usercss_callback), buffer);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
+
+  //set textarea text from file or default
+  char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+  
+  if(g_file_test(usercsspath, G_FILE_TEST_EXISTS))
+  {
+    gchar *usercsscontent = NULL;
+    //load file into buffer
+    if(g_file_get_contents(usercsspath, &usercsscontent, NULL, NULL))
+    {
+      gtk_text_buffer_set_text(buffer, usercsscontent, -1);
+    }
+    else
+    {
+      //load default text with some pointers
+      gtk_text_buffer_set_text(buffer, "/* ERROR Loading user.css */", -1);
+    }
+    g_free(usercsscontent);
+  }
+  else
+  {
+    //load default text 
+    gtk_text_buffer_set_text(buffer, "/* Enter css tweaks here */", -1);
+  }
+
 }
 
 ///////////// end of gui and theme language selection
@@ -294,7 +383,7 @@ void dt_gui_preferences_show()
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                                    _("close"), GTK_RESPONSE_ACCEPT, NULL);
+                                                    NULL, NULL);
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
@@ -307,7 +396,7 @@ void dt_gui_preferences_show()
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
   gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(700));
-  gtk_widget_set_name(box, "preferences_notebook");
+  gtk_widget_set_name(_preferences_dialog, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
@@ -660,10 +749,10 @@ static void init_tab_accels(GtkWidget *stack)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   
   // Adding search box
-  searchlabel = gtk_label_new(C_("preferences", "search"));
+  searchlabel = gtk_label_new(C_("preferences", "search shortcut groups"));
 
   searchentry = gtk_entry_new();
-  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search keyboard shortcut groups"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search keyboard shortcut groups (e.g. module names)"));
   gtk_tree_view_set_search_entry(GTK_TREE_VIEW(tree), GTK_ENTRY(searchentry));
 
   gtk_box_pack_start(GTK_BOX(hbox), searchlabel, FALSE, TRUE, 0);
