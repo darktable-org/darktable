@@ -372,7 +372,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
         cairo_paint(cr);
         cairo_surface_destroy(source);
-        free(wf);
+        dt_free_align(wf);
       }
       else
       { // RGB parade
@@ -455,7 +455,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_paint(crf);
   cairo_surface_destroy(cst);
 
-  free(buf);
+  dt_free_align(buf);
 
   return TRUE;
 }

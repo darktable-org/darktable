@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-17 19:15+0200\n"
-"PO-Revision-Date: 2020-04-17 19:21+0200\n"
+"POT-Creation-Date: 2020-04-22 22:46+0200\n"
+"PO-Revision-Date: 2020-04-22 22:57+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1045,7 +1045,7 @@ msgstr "profil de planification OpenCL"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3946 ../build/src/preferences_gen.h:3971
-#: ../src/gui/preferences.c:631
+#: ../src/gui/preferences.c:648
 msgctxt "preferences"
 msgid "default"
 msgstr "défaut"
@@ -1208,7 +1208,7 @@ msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
 #: ../build/src/preferences_gen.h:4216 ../src/control/jobs/control_jobs.c:1551
-#: ../src/control/jobs/control_jobs.c:1611 ../src/gui/preferences.c:1611
+#: ../src/control/jobs/control_jobs.c:1611 ../src/gui/preferences.c:1628
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
@@ -1296,21 +1296,21 @@ msgstr "Imprimer vos images"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1551
 #: ../src/control/jobs/control_jobs.c:1611 ../src/gui/hist_dialog.c:187
-#: ../src/gui/preferences.c:1153 ../src/gui/preferences.c:1179
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences.c:1382
-#: ../src/gui/preferences.c:1611 ../src/gui/presets.c:387
+#: ../src/gui/preferences.c:1170 ../src/gui/preferences.c:1196
+#: ../src/gui/preferences.c:1278 ../src/gui/preferences.c:1399
+#: ../src/gui/preferences.c:1628 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:340 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
-#: ../src/libs/import.c:772 ../src/libs/import.c:879 ../src/libs/lib.c:227
+#: ../src/libs/import.c:790 ../src/libs/import.c:897 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:301 ../src/libs/styles.c:324 ../src/libs/tagging.c:2149
 #: ../src/libs/tagging.c:2190
 msgid "_cancel"
 msgstr "_annuler"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1153
-#: ../src/gui/preferences.c:1383 ../src/gui/styles_dialog.c:343
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1170
+#: ../src/gui/preferences.c:1400 ../src/gui/styles_dialog.c:343
 #: ../src/libs/styles.c:302
 msgid "_save"
 msgstr "_enregistrer"
@@ -1447,38 +1447,38 @@ msgstr "historique"
 msgid "color label"
 msgstr "labels couleur"
 
-#: ../src/common/collection.c:601 ../src/gui/preferences.c:515
-#: ../src/gui/preferences.c:1441 ../src/gui/presets.c:445
+#: ../src/common/collection.c:601 ../src/gui/preferences.c:532
+#: ../src/gui/preferences.c:1458 ../src/gui/presets.c:445
 #: ../src/libs/metadata_view.c:112
 msgid "lens"
 msgstr "objectif"
 
 #. focal length
-#: ../src/common/collection.c:602 ../src/gui/preferences.c:531
-#: ../src/gui/preferences.c:1490 ../src/gui/presets.c:494
+#: ../src/common/collection.c:602 ../src/gui/preferences.c:548
+#: ../src/gui/preferences.c:1507 ../src/gui/presets.c:494
 #: ../src/iop/ashift.c:4887 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:116
 msgid "focal length"
 msgstr "focale"
 
 #. iso
-#: ../src/common/collection.c:603 ../src/gui/preferences.c:519
-#: ../src/gui/preferences.c:1447 ../src/gui/presets.c:451
+#: ../src/common/collection.c:603 ../src/gui/preferences.c:536
+#: ../src/gui/preferences.c:1464 ../src/gui/presets.c:451
 #: ../src/libs/camera.c:586 ../src/libs/metadata_view.c:118
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:604 ../src/gui/preferences.c:527
-#: ../src/gui/preferences.c:1475 ../src/gui/presets.c:479
+#: ../src/common/collection.c:604 ../src/gui/preferences.c:544
+#: ../src/gui/preferences.c:1492 ../src/gui/presets.c:479
 #: ../src/libs/camera.c:573 ../src/libs/camera.c:575
 #: ../src/libs/metadata_view.c:113
 msgid "aperture"
 msgstr "ouverture"
 
 #. exposure
-#: ../src/common/collection.c:605 ../src/gui/preferences.c:523
-#: ../src/gui/preferences.c:1460 ../src/gui/presets.c:464
+#: ../src/common/collection.c:605 ../src/gui/preferences.c:540
+#: ../src/gui/preferences.c:1477 ../src/gui/presets.c:464
 #: ../src/iop/basicadj.c:771 ../src/iop/exposure.c:106
 #: ../src/iop/exposure.c:887 ../src/iop/relight.c:360
 #: ../src/libs/metadata_view.c:114
@@ -1510,7 +1510,7 @@ msgstr "groupe"
 msgid "local copy"
 msgstr "copie locale"
 
-#: ../src/common/collection.c:611 ../src/gui/preferences.c:495
+#: ../src/common/collection.c:611 ../src/gui/preferences.c:512
 msgid "module"
 msgstr "module"
 
@@ -1622,12 +1622,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRVB (web)"
 
 #: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1604
-#: ../src/iop/colorin.c:2154 ../src/libs/print_settings.c:1038
+#: ../src/iop/colorin.c:2155 ../src/libs/print_settings.c:1038
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RVB (compatible)"
 
 #: ../src/common/colorspaces.c:1416 ../src/common/colorspaces.c:1606
-#: ../src/iop/colorin.c:2155
+#: ../src/iop/colorin.c:2156
 msgid "linear Rec709 RGB"
 msgstr "RVB Rec709 linéaire"
 
@@ -1636,7 +1636,7 @@ msgid "gamma Rec709 RGB"
 msgstr "RVB Rec709 gamma"
 
 #: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1608
-#: ../src/iop/colorin.c:2156
+#: ../src/iop/colorin.c:2157
 msgid "linear Rec2020 RGB"
 msgstr "RVB Rec2020 linéaire"
 
@@ -1677,7 +1677,7 @@ msgstr "infrarouge linéaire BVR"
 msgid "BRG (for testing)"
 msgstr "BRV (pour test)"
 
-#: ../src/common/colorspaces.c:1602 ../src/iop/colorin.c:2153
+#: ../src/common/colorspaces.c:1602 ../src/iop/colorin.c:2154
 #: ../src/iop/lut3d.c:1796
 msgid "sRGB"
 msgstr "sRVB"
@@ -1774,7 +1774,7 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:286 ../src/libs/import.c:838
+#: ../src/common/darktable.c:286 ../src/libs/import.c:856
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -1797,7 +1797,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:812 ../src/common/variables.c:387
+#: ../src/common/darktable.c:812 ../src/common/variables.c:453
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2099 ../src/iop/filmicrgb.c:1577
 #: ../src/iop/toneequal.c:3329 ../src/libs/export.c:636
@@ -1807,7 +1807,7 @@ msgid "no"
 msgstr "non"
 
 #: ../src/common/darktable.c:812 ../src/common/database.c:2773
-#: ../src/common/variables.c:385 ../src/imageio/format/pdf.c:671
+#: ../src/common/variables.c:451 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2100
 #: ../src/libs/export.c:637 ../src/libs/export.c:643 ../src/libs/export.c:650
 #: ../src/libs/metadata_view.c:283
@@ -1972,7 +1972,7 @@ msgid_plural "remove empty directories?"
 msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:295 ../src/gui/preferences.c:503
+#: ../src/common/film.c:295 ../src/gui/preferences.c:520
 #: ../src/gui/styles_dialog.c:368
 msgid "name"
 msgstr "nom"
@@ -1993,7 +1993,7 @@ msgstr ""
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2789
-#: ../src/develop/develop.c:1990 ../src/iop/ashift.c:4870
+#: ../src/develop/develop.c:2009 ../src/iop/ashift.c:4870
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -2001,9 +2001,9 @@ msgstr "activé(e)"
 #: ../src/common/history.c:831 ../src/common/history.c:834
 #: ../src/common/history.c:850 ../src/common/styles.c:995
 #: ../src/common/styles.c:999 ../src/develop/blend_gui.c:2521
-#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:1990
+#: ../src/develop/blend_gui.c:2786 ../src/develop/develop.c:2009
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
-#: ../src/iop/ashift.c:4869 ../src/iop/ashift.c:4875 ../src/iop/colorin.c:2152
+#: ../src/iop/ashift.c:4869 ../src/iop/ashift.c:4875 ../src/iop/colorin.c:2153
 #: ../src/iop/demosaic.c:5159 ../src/iop/vignette.c:1152
 #: ../src/libs/live_view.c:434
 msgid "off"
@@ -2314,6 +2314,10 @@ msgstr "droits"
 #: ../src/common/metadata.c:50
 msgid "notes"
 msgstr "notes"
+
+#: ../src/common/metadata.c:51
+msgid "version name"
+msgstr "nom de version"
 
 #: ../src/control/control.c:262
 msgid "working..."
@@ -2758,7 +2762,7 @@ msgstr[1] "importation de %d images"
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:772
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:790
 msgid "import image"
 msgstr "importer une image"
 
@@ -3341,7 +3345,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1758
+#: ../src/develop/develop.c:1777
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -3383,11 +3387,11 @@ msgstr "%s est activé"
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1414 ../src/gui/accelerators.c:898
-#: ../src/gui/accelerators.c:982 ../src/gui/accelerators.c:1197
-#: ../src/gui/accelerators.c:1222 ../src/gui/camera_import_dialog.c:445
+#: ../src/develop/imageop.c:1414 ../src/gui/accelerators.c:938
+#: ../src/gui/accelerators.c:1022 ../src/gui/accelerators.c:1237
+#: ../src/gui/accelerators.c:1262 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1468 ../src/libs/import.c:518 ../src/libs/lib.c:319
+#: ../src/iop/temperature.c:1468 ../src/libs/import.c:536 ../src/libs/lib.c:319
 #: ../src/libs/lib.c:347 ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "pré-réglage"
@@ -3431,7 +3435,7 @@ msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:501
 #: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "pré-réglages"
@@ -3457,7 +3461,7 @@ msgstr "« %s » n'est pas un XMP de Lightroom !"
 #. tags
 #: ../src/develop/lightroom.c:1508 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:310 ../src/libs/image.c:465
-#: ../src/libs/import.c:573 ../src/libs/metadata_view.c:140
+#: ../src/libs/import.c:591 ../src/libs/metadata_view.c:140
 msgid "tags"
 msgstr "mots-clés"
 
@@ -3717,7 +3721,7 @@ msgstr "utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
-#: ../src/develop/pixelpipe_hb.c:2768
+#: ../src/develop/pixelpipe_hb.c:2764
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3737,130 +3741,130 @@ msgid "double-click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:1914
+#: ../src/dtgtk/thumbtable.c:1913
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vues/miniature/pas d'étoile"
 
-#: ../src/dtgtk/thumbtable.c:1915
+#: ../src/dtgtk/thumbtable.c:1914
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vues/miniature/1 étoile"
 
-#: ../src/dtgtk/thumbtable.c:1916
+#: ../src/dtgtk/thumbtable.c:1915
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vues/miniature/2 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1917
+#: ../src/dtgtk/thumbtable.c:1916
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vues/miniature/3 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1918
+#: ../src/dtgtk/thumbtable.c:1917
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vues/miniature/4 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1919
+#: ../src/dtgtk/thumbtable.c:1918
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vues/miniature/5 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:1920
+#: ../src/dtgtk/thumbtable.c:1919
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vues/miniature/rejeter"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:1923
+#: ../src/dtgtk/thumbtable.c:1922
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vues/miniature/copie historique"
 
-#: ../src/dtgtk/thumbtable.c:1924
+#: ../src/dtgtk/thumbtable.c:1923
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vues/miniature/copier une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:1926
+#: ../src/dtgtk/thumbtable.c:1925
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vues/miniature/coller le développement"
 
-#: ../src/dtgtk/thumbtable.c:1927
+#: ../src/dtgtk/thumbtable.c:1926
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vues/miniature/coller une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:1929
+#: ../src/dtgtk/thumbtable.c:1928
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vues/miniature/supprimer historique"
 
-#: ../src/dtgtk/thumbtable.c:1931
+#: ../src/dtgtk/thumbtable.c:1930
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vues/miniature/cloner l'image"
 
-#: ../src/dtgtk/thumbtable.c:1932
+#: ../src/dtgtk/thumbtable.c:1931
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vues/miniature/dupliquer image vierge"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:1936
+#: ../src/dtgtk/thumbtable.c:1935
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vues/miniature/couleur rouge"
 
-#: ../src/dtgtk/thumbtable.c:1937
+#: ../src/dtgtk/thumbtable.c:1936
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vues/miniature/couleur jaune"
 
-#: ../src/dtgtk/thumbtable.c:1938
+#: ../src/dtgtk/thumbtable.c:1937
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vues/miniature/couleur vert"
 
-#: ../src/dtgtk/thumbtable.c:1939
+#: ../src/dtgtk/thumbtable.c:1938
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vues/miniature/couleur bleue"
 
-#: ../src/dtgtk/thumbtable.c:1940
+#: ../src/dtgtk/thumbtable.c:1939
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vues/miniature/couleur violette"
 
-#: ../src/dtgtk/thumbtable.c:1941
+#: ../src/dtgtk/thumbtable.c:1940
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vues/miniature/aucun label couleur"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:1944
+#: ../src/dtgtk/thumbtable.c:1943
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vues/miniature/tout sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:1945
+#: ../src/dtgtk/thumbtable.c:1944
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vues/miniature/ne rien sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:1947
+#: ../src/dtgtk/thumbtable.c:1946
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vues/miniature/inverser sélection"
 
-#: ../src/dtgtk/thumbtable.c:1948
+#: ../src/dtgtk/thumbtable.c:1947
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vues/miniature/sélectionner film"
 
-#: ../src/dtgtk/thumbtable.c:1949
+#: ../src/dtgtk/thumbtable.c:1948
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vues/miniature/non développées"
@@ -4072,8 +4076,8 @@ msgstr "vues"
 #: ../src/gui/accelerators.c:246 ../src/gui/accelerators.c:248
 #: ../src/gui/accelerators.c:259 ../src/gui/accelerators.c:261
 #: ../src/gui/accelerators.c:272 ../src/gui/accelerators.c:274
-#: ../src/gui/accelerators.c:641 ../src/gui/accelerators.c:650
-#: ../src/gui/accelerators.c:659
+#: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:690
+#: ../src/gui/accelerators.c:699
 msgctxt "accel"
 msgid "image operations"
 msgstr "chambre noire"
@@ -4106,7 +4110,7 @@ msgstr "modifier"
 
 #: ../src/gui/accelerators.c:62 ../src/gui/accelerators.c:113
 #: ../src/gui/accelerators.c:273 ../src/gui/accelerators.c:275
-#: ../src/gui/accelerators.c:660
+#: ../src/gui/accelerators.c:700
 msgctxt "accel"
 msgid "dynamic"
 msgstr "dynamique"
@@ -4117,36 +4121,48 @@ msgid "lua"
 msgstr "lua"
 
 #: ../src/gui/accelerators.c:247 ../src/gui/accelerators.c:249
-#: ../src/gui/accelerators.c:642
+#: ../src/gui/accelerators.c:682
 msgctxt "accel"
 msgid "next"
 msgstr "suivant"
 
 #: ../src/gui/accelerators.c:260 ../src/gui/accelerators.c:262
-#: ../src/gui/accelerators.c:651
+#: ../src/gui/accelerators.c:691
 msgctxt "accel"
 msgid "previous"
 msgstr "précédent"
 
-#: ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:620
-#: ../src/views/darkroom.c:3247
+#: ../src/gui/accelerators.c:575
 #, c-format
 msgid "%s %s / %s: %s"
 msgstr "%s %s / %s: %s"
 
-#: ../src/gui/accelerators.c:598 ../src/gui/accelerators.c:622
-#: ../src/views/darkroom.c:3249
+#: ../src/gui/accelerators.c:577
 #, c-format
 msgid "%s / %s: %s"
 msgstr "%s / %s: %s"
 
-#: ../src/gui/accelerators.c:600 ../src/gui/accelerators.c:624
-#: ../src/libs/tagging.c:2120 ../src/views/darkroom.c:3251
+#: ../src/gui/accelerators.c:579
+#, c-format
+msgid "%s: %s"
+msgstr "%s: %s"
+
+#: ../src/gui/accelerators.c:584
+#, c-format
+msgid "%s %s / %s"
+msgstr "%s %s / %s"
+
+#: ../src/gui/accelerators.c:586
+#, c-format
+msgid "%s / %s"
+msgstr "%s / %s"
+
+#: ../src/gui/accelerators.c:588 ../src/libs/tagging.c:2120
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:965 ../src/libs/lib.c:402
+#: ../src/gui/accelerators.c:1005 ../src/libs/lib.c:402
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -4190,16 +4206,16 @@ msgid "storage file"
 msgstr "fichier de stockage"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:217
+#: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:224
 msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:437
+#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:438
+#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -4208,17 +4224,17 @@ msgstr ""
 "cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
 #. default metadata
-#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:448
+#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:466
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
-#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:449
+#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:467
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
-#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:580
+#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:598
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
@@ -4418,127 +4434,139 @@ msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - version copie virtuelle"
 
 #: ../src/gui/gtkentry.c:189
+msgid ""
+"$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one version "
+"exists"
+msgstr ""
+"$(VERSION_IF_MULTI) - comme $(VERSION) mais égal à chaîne vide si une seule "
+"version existe"
+
+#: ../src/gui/gtkentry.c:190
+msgid "$(VERSION_NAME) - version name from metadata"
+msgstr "$(VERSION_NAME) - nom de version dans metadonnées"
+
+#: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - nombre séquentiel"
 
-#: ../src/gui/gtkentry.c:190
+#: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
 msgstr "$(MAX_WIDTH) - largeur maximum de l'image exportée"
 
-#: ../src/gui/gtkentry.c:191
+#: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
 msgstr "$(MAX_HEIGHT) - hauteur maximum de l'image exportée"
 
-#: ../src/gui/gtkentry.c:192
+#: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - année"
 
-#: ../src/gui/gtkentry.c:193
+#: ../src/gui/gtkentry.c:195
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - mois"
 
-#: ../src/gui/gtkentry.c:194
+#: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
 msgstr "$(DAY) - jour"
 
-#: ../src/gui/gtkentry.c:195
+#: ../src/gui/gtkentry.c:197
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - heure"
 
-#: ../src/gui/gtkentry.c:196
+#: ../src/gui/gtkentry.c:198
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minutes"
 
-#: ../src/gui/gtkentry.c:197
+#: ../src/gui/gtkentry.c:199
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - secondes"
 
-#: ../src/gui/gtkentry.c:198
+#: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - année EXIF"
 
-#: ../src/gui/gtkentry.c:199
+#: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - mois EXIF"
 
-#: ../src/gui/gtkentry.c:200
+#: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - jour EXIF"
 
-#: ../src/gui/gtkentry.c:201
+#: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - heure EXIF"
 
-#: ../src/gui/gtkentry.c:202
+#: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - minutes EXIF"
 
-#: ../src/gui/gtkentry.c:203
+#: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - secondes EXIF"
 
-#: ../src/gui/gtkentry.c:204
+#: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - valeur ISO"
 
-#: ../src/gui/gtkentry.c:205
+#: ../src/gui/gtkentry.c:207
 msgid "$(MAKER) - camera maker"
 msgstr "$(MAKER) - fabriquant du boîtier"
 
-#: ../src/gui/gtkentry.c:206
+#: ../src/gui/gtkentry.c:208
 msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) - modèle de boîtier"
 
-#: ../src/gui/gtkentry.c:207
+#: ../src/gui/gtkentry.c:209
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) - étoiles"
 
-#: ../src/gui/gtkentry.c:208
+#: ../src/gui/gtkentry.c:210
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) - labels de couleur"
 
-#: ../src/gui/gtkentry.c:209
+#: ../src/gui/gtkentry.c:211
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - fichier images"
 
-#: ../src/gui/gtkentry.c:210
+#: ../src/gui/gtkentry.c:212
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - dossier personnel"
 
-#: ../src/gui/gtkentry.c:211
+#: ../src/gui/gtkentry.c:213
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - dossier bureau"
 
-#: ../src/gui/gtkentry.c:212
+#: ../src/gui/gtkentry.c:214
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titre des metadonnées"
 
-#: ../src/gui/gtkentry.c:213
+#: ../src/gui/gtkentry.c:215
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - description des metadonnées"
 
-#: ../src/gui/gtkentry.c:214
+#: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - auteur des metadonnées"
 
-#: ../src/gui/gtkentry.c:215
+#: ../src/gui/gtkentry.c:217
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) - diffuseur des metadonnées"
 
-#: ../src/gui/gtkentry.c:216
+#: ../src/gui/gtkentry.c:218
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - droits des metadonnées"
 
-#: ../src/gui/gtkentry.c:217
+#: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL_ACTIVATED) - indique si OpenCL est activé"
 
-#: ../src/gui/gtkentry.c:218
+#: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr ""
 "$(CATEGORY(category)) - sous mot-clé de niveau 0 de mots-clés hiérarchiques"
 
-#: ../src/gui/gtkentry.c:219
+#: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - mots-clés des métadonnées"
 
@@ -4637,7 +4665,7 @@ msgstr "tout"
 msgid "select _none"
 msgstr "aucu_ne"
 
-#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1384
+#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1401
 #: ../src/gui/presets.c:387 ../src/libs/lib.c:227
 msgid "_ok"
 msgstr "_ok"
@@ -4676,15 +4704,15 @@ msgid "HDR"
 msgstr "HDR"
 
 #. language
-#: ../src/gui/preferences.c:227
+#: ../src/gui/preferences.c:234
 msgid "interface language"
 msgstr "langue pour l'interface"
 
-#: ../src/gui/preferences.c:242
+#: ../src/gui/preferences.c:249
 msgid "double click to reset to the system language"
 msgstr "double-cliquer pour réinitialiser à la langue du système"
 
-#: ../src/gui/preferences.c:244
+#: ../src/gui/preferences.c:251
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
@@ -4692,69 +4720,79 @@ msgstr ""
 "règle la langue pour l'interface utilisateur, la langue système par défaut "
 "est marquée avec un * (nécessite un redémarrage)"
 
-#: ../src/gui/preferences.c:253
+#: ../src/gui/preferences.c:260
 msgid "theme"
 msgstr "thème"
 
-#: ../src/gui/preferences.c:277
+#: ../src/gui/preferences.c:284
 msgid "set the theme for the user interface"
 msgstr "choisir le thème de l'interface utilisateur"
 
 #: ../src/gui/preferences.c:288
+msgid "modify selected theme with user.css"
+msgstr "modifier le thème via user.css"
+
+#: ../src/gui/preferences.c:291
+msgid "load user.css from the user config directory to modify selected theme"
+msgstr ""
+"modifie le thème en chargeant user.css depuis le répertoire de configuration "
+"de l'utilisateur"
+
+#: ../src/gui/preferences.c:305
 msgid "darktable preferences"
 msgstr "préférences"
 
-#: ../src/gui/preferences.c:290
+#: ../src/gui/preferences.c:307
 msgid "close"
 msgstr "fermer"
 
 #. exif
-#: ../src/gui/preferences.c:507 ../src/gui/preferences.c:1425
+#: ../src/gui/preferences.c:524 ../src/gui/preferences.c:1442
 #: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
 msgid "model"
 msgstr "modèle"
 
-#: ../src/gui/preferences.c:511 ../src/gui/preferences.c:1433
+#: ../src/gui/preferences.c:528 ../src/gui/preferences.c:1450
 #: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
 msgid "maker"
 msgstr "fabricant"
 
-#: ../src/gui/preferences.c:536 ../src/iop/basicadj.c:838
+#: ../src/gui/preferences.c:553 ../src/iop/basicadj.c:838
 #: ../src/iop/borders.c:1038 ../src/iop/levels.c:725
 #: ../src/iop/rgblevels.c:1107
 msgid "auto"
 msgstr "auto"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:545 ../src/gui/preferences.c:638
+#: ../src/gui/preferences.c:562 ../src/gui/preferences.c:655
 msgctxt "preferences"
 msgid "import..."
 msgstr "importer..."
 
 #. Adding the outer container
-#: ../src/gui/preferences.c:585
+#: ../src/gui/preferences.c:602
 msgid "shortcuts"
 msgstr "raccourcis"
 
-#: ../src/gui/preferences.c:596
+#: ../src/gui/preferences.c:613
 msgid "shortcut"
 msgstr "raccourcis"
 
-#: ../src/gui/preferences.c:600
+#: ../src/gui/preferences.c:617
 msgid "binding"
 msgstr "lien"
 
 #. export button
-#: ../src/gui/preferences.c:643 ../src/libs/styles.c:487
+#: ../src/gui/preferences.c:660 ../src/libs/styles.c:487
 msgid "export..."
 msgstr "exporter..."
 
 #. Setting the notification text
-#: ../src/gui/preferences.c:917
+#: ../src/gui/preferences.c:934
 msgid "press key combination to remap..."
 msgstr "entrer la nouvelle combinaison de touches"
 
-#: ../src/gui/preferences.c:1017
+#: ../src/gui/preferences.c:1034
 #, c-format
 msgid ""
 "%s accel is already mapped to\n"
@@ -4765,37 +4803,37 @@ msgstr ""
 "« %s »\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/preferences.c:1023
+#: ../src/gui/preferences.c:1040
 msgid "accel conflict"
 msgstr "conflit de raccourcis"
 
-#: ../src/gui/preferences.c:1112 ../src/gui/presets.c:182 ../src/libs/lib.c:339
+#: ../src/gui/preferences.c:1129 ../src/gui/presets.c:182 ../src/libs/lib.c:339
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le pré-réglage « %s » ?"
 
-#: ../src/gui/preferences.c:1116 ../src/gui/presets.c:186 ../src/libs/lib.c:343
+#: ../src/gui/preferences.c:1133 ../src/gui/presets.c:186 ../src/libs/lib.c:343
 msgid "delete preset?"
 msgstr "supprimer ce pré-réglage ?"
 
 #. Non-zero value indicates export
-#: ../src/gui/preferences.c:1152
+#: ../src/gui/preferences.c:1169
 msgid "select file to export"
 msgstr "sélectionne le fichier à exporter"
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1178
+#: ../src/gui/preferences.c:1195
 msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
-#: ../src/gui/preferences.c:1179 ../src/gui/preferences.c:1261
+#: ../src/gui/preferences.c:1196 ../src/gui/preferences.c:1278
 #: ../src/libs/collect.c:242 ../src/libs/copy_history.c:78
-#: ../src/libs/geotagging.c:476 ../src/libs/import.c:773
-#: ../src/libs/import.c:880 ../src/libs/styles.c:325
+#: ../src/libs/geotagging.c:476 ../src/libs/import.c:791
+#: ../src/libs/import.c:898 ../src/libs/styles.c:325
 msgid "_open"
 msgstr "_ouvrir"
 
-#: ../src/gui/preferences.c:1220
+#: ../src/gui/preferences.c:1237
 msgid ""
 "are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
@@ -4804,32 +4842,32 @@ msgstr ""
 "les modifications que vous avez faites."
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1260
+#: ../src/gui/preferences.c:1277
 msgid "select preset to import"
 msgstr "sélectionne le pré-réglage à importer"
 
-#: ../src/gui/preferences.c:1279
+#: ../src/gui/preferences.c:1296
 msgid "failed to import preset"
 msgstr "échec d'importation du pré-réglage"
 
-#: ../src/gui/preferences.c:1379 ../src/gui/presets.c:385
+#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:385
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer « %s » pour le module « %s »"
 
-#: ../src/gui/preferences.c:1402 ../src/gui/presets.c:408 ../src/libs/lib.c:251
+#: ../src/gui/preferences.c:1419 ../src/gui/presets.c:408 ../src/libs/lib.c:251
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
-#: ../src/gui/preferences.c:1405 ../src/gui/presets.c:411
+#: ../src/gui/preferences.c:1422 ../src/gui/presets.c:411
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
 
-#: ../src/gui/preferences.c:1408 ../src/gui/presets.c:414
+#: ../src/gui/preferences.c:1425 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
 msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
 
-#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:415
+#: ../src/gui/preferences.c:1427 ../src/gui/presets.c:415
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -4837,65 +4875,65 @@ msgstr ""
 "soyez vigilants avec cette option, ce pourrait être la dernière fois que "
 "vous voyez votre pré-réglage"
 
-#: ../src/gui/preferences.c:1424 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1441 ../src/gui/presets.c:430
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1432 ../src/gui/presets.c:437
+#: ../src/gui/preferences.c:1449 ../src/gui/presets.c:437
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1440 ../src/gui/presets.c:444
+#: ../src/gui/preferences.c:1457 ../src/gui/presets.c:444
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1450 ../src/gui/presets.c:454
+#: ../src/gui/preferences.c:1467 ../src/gui/presets.c:454
 msgid "minimum ISO value"
 msgstr "valeur d'ISO minimale"
 
-#: ../src/gui/preferences.c:1453 ../src/gui/presets.c:457
+#: ../src/gui/preferences.c:1470 ../src/gui/presets.c:457
 msgid "maximum ISO value"
 msgstr "valeur d'ISO maximale"
 
-#: ../src/gui/preferences.c:1464 ../src/gui/presets.c:468
+#: ../src/gui/preferences.c:1481 ../src/gui/presets.c:468
 msgid "minimum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1465 ../src/gui/presets.c:469
+#: ../src/gui/preferences.c:1482 ../src/gui/presets.c:469
 msgid "maximum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1479 ../src/gui/presets.c:483
+#: ../src/gui/preferences.c:1496 ../src/gui/presets.c:483
 msgid "minimum aperture value"
 msgstr "valeur d'ouverture minimale"
 
-#: ../src/gui/preferences.c:1480 ../src/gui/presets.c:484
+#: ../src/gui/preferences.c:1497 ../src/gui/presets.c:484
 msgid "maximum aperture value"
 msgstr "valeur d'ouverture maximale"
 
-#: ../src/gui/preferences.c:1495 ../src/gui/presets.c:500
+#: ../src/gui/preferences.c:1512 ../src/gui/presets.c:500
 msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
-#: ../src/gui/preferences.c:1496 ../src/gui/presets.c:501
+#: ../src/gui/preferences.c:1513 ../src/gui/presets.c:501
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
 #. raw/hdr/ldr
-#: ../src/gui/preferences.c:1505 ../src/gui/presets.c:507
+#: ../src/gui/preferences.c:1522 ../src/gui/presets.c:507
 #: ../src/imageio/format/j2k.c:645
 msgid "format"
 msgstr "format"
 
-#: ../src/gui/preferences.c:1612 ../src/imageio/storage/disk.c:122
+#: ../src/gui/preferences.c:1629 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
 msgid "_select as output destination"
 msgstr "_sélectionner comme destination de sortie"
 
-#: ../src/gui/preferences.c:1623
+#: ../src/gui/preferences.c:1640
 #, c-format
 msgid "preset %s was successfully saved"
 msgstr "le pré-réglage « %s » a été sauvegardé"
@@ -7749,25 +7787,25 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
-#: ../src/iop/colorin.c:2114
+#: ../src/iop/colorin.c:2115
 msgid "input profile"
 msgstr "profil d'entrée"
 
-#: ../src/iop/colorin.c:2118
+#: ../src/iop/colorin.c:2119
 msgid "working profile"
 msgstr "profil de travail"
 
-#: ../src/iop/colorin.c:2128 ../src/iop/colorin.c:2139
+#: ../src/iop/colorin.c:2129 ../src/iop/colorin.c:2140
 #: ../src/iop/colorout.c:905
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "profils ICC dans « %s » ou « %s »"
 
-#: ../src/iop/colorin.c:2150
+#: ../src/iop/colorin.c:2151
 msgid "gamut clipping"
 msgstr "troncature gamut"
 
-#: ../src/iop/colorin.c:2158
+#: ../src/iop/colorin.c:2159
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "cantonne les valeurs Lab au gamut de l'espace RVB"
 
@@ -9840,7 +9878,7 @@ msgstr "luminance du film"
 msgid "select color of film material"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1105
+#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1157
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
@@ -9980,7 +10018,7 @@ msgstr "boîtier"
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1082
+#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1134
 msgid "corrections"
 msgstr "corrections"
 
@@ -10524,7 +10562,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
-#: ../src/libs/geotagging.c:497 ../src/libs/import.c:803
+#: ../src/libs/geotagging.c:497 ../src/libs/import.c:821
 #: ../src/libs/styles.c:342
 msgid "all files"
 msgstr "tous les fichiers"
@@ -10647,58 +10685,58 @@ msgstr "conserver les hautes lumières"
 msgid "negadoctor"
 msgstr "docteurnéga"
 
-#: ../src/iop/negadoctor.c:383
+#: ../src/iop/negadoctor.c:435
 msgid "color film"
 msgstr "film couleur"
 
-#: ../src/iop/negadoctor.c:397
+#: ../src/iop/negadoctor.c:449
 msgid "black and white film"
 msgstr "film noir & blanc"
 
-#: ../src/iop/negadoctor.c:457
+#: ../src/iop/negadoctor.c:509
 msgid "D min"
 msgstr "D min"
 
-#: ../src/iop/negadoctor.c:463 ../src/iop/negadoctor.c:1113
+#: ../src/iop/negadoctor.c:515 ../src/iop/negadoctor.c:1165
 msgid "D min red component"
 msgstr "D min composant rouge"
 
-#: ../src/iop/negadoctor.c:1069
+#: ../src/iop/negadoctor.c:1121
 msgid "film stock"
 msgstr "film"
 
-#: ../src/iop/negadoctor.c:1070
+#: ../src/iop/negadoctor.c:1122
 msgid "black and white"
 msgstr "noir et blanc"
 
-#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2890
+#: ../src/iop/negadoctor.c:1123 ../src/iop/retouch.c:2890
 #: ../src/iop/watermark.c:1491
 msgid "color"
 msgstr "couleur"
 
-#: ../src/iop/negadoctor.c:1074
+#: ../src/iop/negadoctor.c:1126
 msgid "toogle on or off the color controls"
 msgstr "activer/désactiver les contrôles des couleurs"
 
-#: ../src/iop/negadoctor.c:1081
+#: ../src/iop/negadoctor.c:1133
 msgid "film properties"
 msgstr "film"
 
-#: ../src/iop/negadoctor.c:1083
+#: ../src/iop/negadoctor.c:1135
 msgid "print properties"
 msgstr "impression"
 
 #. Dmin
-#: ../src/iop/negadoctor.c:1092
+#: ../src/iop/negadoctor.c:1144
 msgid "color of the film base"
 msgstr "couleur du film"
 
-#: ../src/iop/negadoctor.c:1100
+#: ../src/iop/negadoctor.c:1152
 msgid "select color of film material from a swatch"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/negadoctor.c:1114 ../src/iop/negadoctor.c:1124
-#: ../src/iop/negadoctor.c:1134
+#: ../src/iop/negadoctor.c:1166 ../src/iop/negadoctor.c:1176
+#: ../src/iop/negadoctor.c:1186
 msgid ""
 "adjust the color and shade of the film transparent base.\n"
 "this value depends on the film material, \n"
@@ -10710,24 +10748,24 @@ msgstr ""
 "les fumées chimiques produites pendant le développement du film,\n"
 "et la balance des blancs du scanner."
 
-#: ../src/iop/negadoctor.c:1123
+#: ../src/iop/negadoctor.c:1175
 msgid "D min green component"
 msgstr "D min composant vert"
 
-#: ../src/iop/negadoctor.c:1133
+#: ../src/iop/negadoctor.c:1185
 msgid "D min blue component"
 msgstr "D min composant bleu"
 
 #. D max and scanner bias
-#: ../src/iop/negadoctor.c:1143
+#: ../src/iop/negadoctor.c:1195
 msgid "dynamic range of the film"
 msgstr "plage dynamique du film"
 
-#: ../src/iop/negadoctor.c:1147
+#: ../src/iop/negadoctor.c:1199
 msgid "D max"
 msgstr "D max"
 
-#: ../src/iop/negadoctor.c:1151
+#: ../src/iop/negadoctor.c:1203
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
 "this value depends on the film specifications, the developing process,\n"
@@ -10738,15 +10776,15 @@ msgstr ""
 "développement,\n"
 "de l'étendue dynamique de la scène et du paramètre d'exposition du scanner."
 
-#: ../src/iop/negadoctor.c:1157
+#: ../src/iop/negadoctor.c:1209
 msgid "scanner exposure settings"
 msgstr "paramètres de l'exposition du scanner"
 
-#: ../src/iop/negadoctor.c:1161
+#: ../src/iop/negadoctor.c:1213
 msgid "scan exposure bias"
 msgstr "biais d'exposition du scan"
 
-#: ../src/iop/negadoctor.c:1165
+#: ../src/iop/negadoctor.c:1217
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
@@ -10755,24 +10793,24 @@ msgstr ""
 "avant l'inversion, pour des noirs ni tronqués, ni trop pales."
 
 #. WB shadows
-#: ../src/iop/negadoctor.c:1171
+#: ../src/iop/negadoctor.c:1223
 msgid "shadows color cast"
 msgstr "dérive couleur des ombres"
 
-#: ../src/iop/negadoctor.c:1180
+#: ../src/iop/negadoctor.c:1232
 msgid "select color of shadows from a swatch"
 msgstr "sélectionne la couleur des ombres"
 
-#: ../src/iop/negadoctor.c:1185
+#: ../src/iop/negadoctor.c:1237
 msgid "pick shadows color from image"
 msgstr "choisir la couleur des ombres depuis l'image"
 
-#: ../src/iop/negadoctor.c:1192
+#: ../src/iop/negadoctor.c:1244
 msgid "shadows red offset"
 msgstr "offset rouge des ombres"
 
-#: ../src/iop/negadoctor.c:1193 ../src/iop/negadoctor.c:1202
-#: ../src/iop/negadoctor.c:1211
+#: ../src/iop/negadoctor.c:1245 ../src/iop/negadoctor.c:1254
+#: ../src/iop/negadoctor.c:1263
 msgid ""
 "correct the color cast in shadows so blacks are\n"
 "truly achromatic. Setting this value before\n"
@@ -10784,33 +10822,33 @@ msgstr ""
 "la balance des blancs des hautes lumières de l'illuminant aidera à\n"
 "récupérer la balance des blancs globales dans les cas difficiles."
 
-#: ../src/iop/negadoctor.c:1201
+#: ../src/iop/negadoctor.c:1253
 msgid "shadows green offset"
 msgstr "offset vert des ombres"
 
-#: ../src/iop/negadoctor.c:1210
+#: ../src/iop/negadoctor.c:1262
 msgid "shadows blue offset"
 msgstr "offset bleu des ombres"
 
 #. WB highlights
-#: ../src/iop/negadoctor.c:1219
+#: ../src/iop/negadoctor.c:1271
 msgid "highlights white balance"
 msgstr "balance des blancs des hautes lumières"
 
-#: ../src/iop/negadoctor.c:1228
+#: ../src/iop/negadoctor.c:1280
 msgid "select color of illuminant from a swatch"
 msgstr "sélectionne la couleur de l'illuminant"
 
-#: ../src/iop/negadoctor.c:1233
+#: ../src/iop/negadoctor.c:1285
 msgid "pick illuminant color from image"
 msgstr "choisir la couleur de l'illuminant depuis l'image"
 
-#: ../src/iop/negadoctor.c:1240
+#: ../src/iop/negadoctor.c:1292
 msgid "illuminant red gain"
 msgstr "gain rouge l'illuminant"
 
-#: ../src/iop/negadoctor.c:1241 ../src/iop/negadoctor.c:1250
-#: ../src/iop/negadoctor.c:1259
+#: ../src/iop/negadoctor.c:1293 ../src/iop/negadoctor.c:1302
+#: ../src/iop/negadoctor.c:1311
 msgid ""
 "correct the color of the illuminant so whites are\n"
 "truly achromatic. Setting this value after\n"
@@ -10822,24 +10860,24 @@ msgstr ""
 "la dérive colorée des ombres aidera à\n"
 "récupérer la balance des blancs globales dans les cas difficiles."
 
-#: ../src/iop/negadoctor.c:1249
+#: ../src/iop/negadoctor.c:1301
 msgid "illuminant green gain"
 msgstr "gain vert de l'illuminant"
 
-#: ../src/iop/negadoctor.c:1258
+#: ../src/iop/negadoctor.c:1310
 msgid "illuminant blue gain"
 msgstr "gain bleu de l'illuminant"
 
 #. print corrections
-#: ../src/iop/negadoctor.c:1267
+#: ../src/iop/negadoctor.c:1319
 msgid "virtual paper properties"
 msgstr "paramètres papier virtuel"
 
-#: ../src/iop/negadoctor.c:1271
+#: ../src/iop/negadoctor.c:1323
 msgid "paper black (density correction)"
 msgstr "noir (correction densité)"
 
-#: ../src/iop/negadoctor.c:1275
+#: ../src/iop/negadoctor.c:1327
 msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
@@ -10847,11 +10885,11 @@ msgstr ""
 "corrige la densité des noirs après l'inversion,\n"
 "pour ajuster le contraste global tout en évitant de tronquer les ombres. "
 
-#: ../src/iop/negadoctor.c:1281
+#: ../src/iop/negadoctor.c:1333
 msgid "paper grade (gamma)"
 msgstr "grade (gamma)"
 
-#: ../src/iop/negadoctor.c:1283
+#: ../src/iop/negadoctor.c:1335
 msgid ""
 "select the grade of the virtual paper, which is actually\n"
 "equivalent to applying a gamma. it compensates the film D max\n"
@@ -10861,11 +10899,11 @@ msgstr ""
 "équivalent à appliquer un gamme. cela compense le D max du film\n"
 "et récupère le contraste. utiliser un grade élevé pour une D max important."
 
-#: ../src/iop/negadoctor.c:1290
+#: ../src/iop/negadoctor.c:1342
 msgid "paper gloss (specular highlights)"
 msgstr "brillance (lumières spéculaires)"
 
-#: ../src/iop/negadoctor.c:1292
+#: ../src/iop/negadoctor.c:1344
 msgid ""
 "gradually compress specular highlights past this value\n"
 "to avoid clipping while pushing the exposure for midtones.\n"
@@ -10875,15 +10913,15 @@ msgstr ""
 "pour éviter de tronquer tout en augmentant l'exposition des tons moyens.\n"
 "cela reproduit en quelque sorte le comportement d'un papier mat."
 
-#: ../src/iop/negadoctor.c:1297
+#: ../src/iop/negadoctor.c:1349
 msgid "virtual print emulation"
 msgstr "simulation impression virtuelle"
 
-#: ../src/iop/negadoctor.c:1301
+#: ../src/iop/negadoctor.c:1353
 msgid "print exposure adjustment"
 msgstr "ajustement exposition"
 
-#: ../src/iop/negadoctor.c:1305
+#: ../src/iop/negadoctor.c:1357
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
@@ -13308,7 +13346,7 @@ msgstr "modification de l'exportation des métadonnées"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1368 ../src/libs/styles.c:72
-#: ../src/views/darkroom.c:3528
+#: ../src/views/darkroom.c:3519
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -13550,47 +13588,55 @@ msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "lit un fichier GPX et met à jour la localisation des images sélectionnées"
 
-#: ../src/libs/histogram.c:48
+#: ../src/libs/histogram.c:71
 msgid "histogram"
 msgstr "histogramme"
 
-#: ../src/libs/histogram.c:374
-msgid "set histogram mode to linear"
-msgstr "afficher l'histogramme en mode linéaire"
+#: ../src/libs/histogram.c:512 ../src/libs/histogram.c:546
+msgid "set mode to waveform"
+msgstr "afficher en mode forme d'onde"
 
-#: ../src/libs/histogram.c:377
-msgid "set histogram mode to waveform"
-msgstr "afficher l'histogramme en mode forme d'onde"
+#: ../src/libs/histogram.c:515
+msgid "set mode to histogram"
+msgstr "afficher en mode histogramme"
 
-#: ../src/libs/histogram.c:380
-msgid "set histogram mode to logarithmic"
-msgstr "afficher l'histogramme en mode logarithmique"
+#: ../src/libs/histogram.c:530
+msgid "set mode to linear"
+msgstr "afficher en mode linéaire"
 
-#: ../src/libs/histogram.c:389
+#: ../src/libs/histogram.c:533
+msgid "set mode to logarithmic"
+msgstr "afficher en mode logarithmique"
+
+#: ../src/libs/histogram.c:543
+msgid "set mode to RGB parade"
+msgstr "afficher le mode parade RVB"
+
+#: ../src/libs/histogram.c:559
 msgid "click to hide red channel"
 msgstr "cacher le canal rouge"
 
-#: ../src/libs/histogram.c:389
+#: ../src/libs/histogram.c:559
 msgid "click to show red channel"
 msgstr "afficher le canal rouge"
 
-#: ../src/libs/histogram.c:394
+#: ../src/libs/histogram.c:564
 msgid "click to hide green channel"
 msgstr "cacher le canal vert"
 
-#: ../src/libs/histogram.c:395
+#: ../src/libs/histogram.c:565
 msgid "click to show green channel"
 msgstr "afficher le canal vert"
 
-#: ../src/libs/histogram.c:400
+#: ../src/libs/histogram.c:570
 msgid "click to hide blue channel"
 msgstr "cacher le canal bleu"
 
-#: ../src/libs/histogram.c:400
+#: ../src/libs/histogram.c:570
 msgid "click to show blue channel"
 msgstr "afficher le canal bleu"
 
-#: ../src/libs/histogram.c:406
+#: ../src/libs/histogram.c:576
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -13599,7 +13645,7 @@ msgstr ""
 "le double-clic réinitialise"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:411 ../src/libs/histogram.c:579
+#: ../src/libs/histogram.c:581 ../src/libs/histogram.c:783
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -13607,7 +13653,7 @@ msgstr ""
 "glisser pour changer l'exposition,\n"
 "le double-clic ré-initialise"
 
-#: ../src/libs/histogram.c:614
+#: ../src/libs/histogram.c:818
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
@@ -13964,72 +14010,72 @@ msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:415
+#: ../src/libs/import.c:433
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:430
+#: ../src/libs/import.c:448
 msgid "import folders recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:432
+#: ../src/libs/import.c:450
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "importe les dossiers de manière récursive. chaque dossier est placé dans une "
 "nouvelle pellicule."
 
-#: ../src/libs/import.c:521
+#: ../src/libs/import.c:539
 msgid "metadata to be applied per default"
 msgstr "métadonnées à appliquer par défaut"
 
-#: ../src/libs/import.c:530
+#: ../src/libs/import.c:548
 msgid "to be imported"
 msgstr "à importer"
 
-#: ../src/libs/import.c:532
+#: ../src/libs/import.c:550
 msgid ""
 "selected metadata are imported from image and override the default value"
 msgstr ""
 "les métadonnées sélectionnées sont importées depuis l'image et remplacent "
 "celles par défaut"
 
-#: ../src/libs/import.c:798
+#: ../src/libs/import.c:816
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:854
+#: ../src/libs/import.c:872
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:879
+#: ../src/libs/import.c:897
 msgid "import folder"
 msgstr "importer un dossier"
 
 #. add import single image buttons
-#: ../src/libs/import.c:995
+#: ../src/libs/import.c:1013
 msgid "image..."
 msgstr "image..."
 
-#: ../src/libs/import.c:999
+#: ../src/libs/import.c:1017
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:1006
+#: ../src/libs/import.c:1024
 msgid "folder..."
 msgstr "dossier..."
 
-#: ../src/libs/import.c:1010
+#: ../src/libs/import.c:1028
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
 #. add the rescan button
-#: ../src/libs/import.c:1019
+#: ../src/libs/import.c:1037
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:1023
+#: ../src/libs/import.c:1041
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
@@ -15680,110 +15726,114 @@ msgstr "préférences"
 
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:118
-#: ../src/libs/tools/global_toolbox.c:176
+#: ../src/libs/tools/global_toolbox.c:177
 msgid "overlay mode for size"
 msgstr "mode surimpression pour la taille"
 
 #: ../src/libs/tools/global_toolbox.c:154
-#: ../src/libs/tools/global_toolbox.c:236
+#: ../src/libs/tools/global_toolbox.c:237
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:156
-#: ../src/libs/tools/global_toolbox.c:238
+#: ../src/libs/tools/global_toolbox.c:239
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:178
+#: ../src/libs/tools/global_toolbox.c:163
+msgid "click to change the type of overlays shown on thumbnails"
+msgstr "cliquer pour changer le type de surimpression des miniatures"
+
+#: ../src/libs/tools/global_toolbox.c:179
 msgid "no overlays"
 msgstr "pas de surimpression"
 
-#: ../src/libs/tools/global_toolbox.c:182
+#: ../src/libs/tools/global_toolbox.c:183
 msgid "overlays on mouse hover"
 msgstr "surimpression lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:186
+#: ../src/libs/tools/global_toolbox.c:187
 msgid "extended overlays on mouse hover"
 msgstr "surimpression étendue lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:189
+#: ../src/libs/tools/global_toolbox.c:190
 msgid "permanent overlays"
 msgstr "surimpressions permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:193
+#: ../src/libs/tools/global_toolbox.c:194
 msgid "permanent extended overlays"
 msgstr "surimpressions étendues permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:197
+#: ../src/libs/tools/global_toolbox.c:198
 msgid "permanent overlays extended on mouse hover"
 msgstr "surimpressions permanentes et étendues lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:204
+#: ../src/libs/tools/global_toolbox.c:205
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
 "une fois activé, cliquer sur l’élément de contrôle pour visualiser l’aide en "
 "ligne correspondante"
 
-#: ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/tools/global_toolbox.c:215
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/libs/tools/global_toolbox.c:309
+#: ../src/libs/tools/global_toolbox.c:310
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
 msgstr "voulez-vous accéder à  https://darktable.gitlab.io/doc/?"
 
-#: ../src/libs/tools/global_toolbox.c:314
+#: ../src/libs/tools/global_toolbox.c:315
 msgid "access the online usermanual?"
 msgstr "accéder au manuel utilisateur en ligne?"
 
-#: ../src/libs/tools/global_toolbox.c:357
+#: ../src/libs/tools/global_toolbox.c:358
 msgid "help url opened in web browser"
 msgstr "aide ouverte dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:361
+#: ../src/libs/tools/global_toolbox.c:362
 msgid "error while opening help url in web browser"
 msgstr "erreur lors de l'ouverture de l'aide dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:372
+#: ../src/libs/tools/global_toolbox.c:373
 msgid "there is no help available for this element"
 msgstr "aucune aide disponible pour cet élément"
 
-#: ../src/libs/tools/global_toolbox.c:414
+#: ../src/libs/tools/global_toolbox.c:415
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:415
+#: ../src/libs/tools/global_toolbox.c:416
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:417
+#: ../src/libs/tools/global_toolbox.c:418
 msgctxt "accel"
 msgid "no overlays"
 msgstr "pas de surimpression"
 
-#: ../src/libs/tools/global_toolbox.c:418
+#: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
 msgid "overlays on mouse hover"
 msgstr "surimpression lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:419
+#: ../src/libs/tools/global_toolbox.c:420
 msgctxt "accel"
 msgid "extended overlays on mouse hover"
 msgstr "surimpression étendue lors du survol souris"
 
-#: ../src/libs/tools/global_toolbox.c:420
+#: ../src/libs/tools/global_toolbox.c:421
 msgctxt "accel"
 msgid "permanent overlays"
 msgstr "surimpressions permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:421
+#: ../src/libs/tools/global_toolbox.c:422
 msgctxt "accel"
 msgid "permanent extended overlays"
 msgstr "surimpressions étendues permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:422
+#: ../src/libs/tools/global_toolbox.c:423
 msgctxt "accel"
 msgid "permanent overlays extended on mouse hover"
 msgstr "surimpressions permanentes et étendues lors du survol souris"
@@ -16109,164 +16159,164 @@ msgid "set overlay color"
 msgstr "sélectionne la couleur pour les superpositions"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3523
+#: ../src/views/darkroom.c:3514
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3524
+#: ../src/views/darkroom.c:3515
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3525
+#: ../src/views/darkroom.c:3516
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3531
+#: ../src/views/darkroom.c:3522
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3532
+#: ../src/views/darkroom.c:3523
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3535
+#: ../src/views/darkroom.c:3526
 msgctxt "accel"
 msgid "color assessment"
 msgstr "évaluation des couleurs"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3538
+#: ../src/views/darkroom.c:3529
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3541
+#: ../src/views/darkroom.c:3532
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3544
+#: ../src/views/darkroom.c:3535
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "changer la couleur des superpositions"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3547
+#: ../src/views/darkroom.c:3538
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3550
+#: ../src/views/darkroom.c:3541
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3553
+#: ../src/views/darkroom.c:3544
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "afficher les masques dessinés"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3556
+#: ../src/views/darkroom.c:3547
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3557
+#: ../src/views/darkroom.c:3548
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3560
+#: ../src/views/darkroom.c:3551
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3561
+#: ../src/views/darkroom.c:3552
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3564
+#: ../src/views/darkroom.c:3555
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3565
+#: ../src/views/darkroom.c:3556
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3568
+#: ../src/views/darkroom.c:3559
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3571 ../src/views/lighttable.c:2997
+#: ../src/views/darkroom.c:3562 ../src/views/lighttable.c:2997
 #: ../src/views/map.c:920
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3572 ../src/views/lighttable.c:2998
+#: ../src/views/darkroom.c:3563 ../src/views/lighttable.c:2998
 #: ../src/views/map.c:921
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3575
+#: ../src/views/darkroom.c:3566
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3578
+#: ../src/views/darkroom.c:3569
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
-#: ../src/views/darkroom.c:3685
+#: ../src/views/darkroom.c:3676
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3690 ../src/views/lighttable.c:3141
+#: ../src/views/darkroom.c:3681 ../src/views/lighttable.c:3141
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:3696
+#: ../src/views/darkroom.c:3687
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:3701
+#: ../src/views/darkroom.c:3692
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:3707
+#: ../src/views/darkroom.c:3698
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:3713
+#: ../src/views/darkroom.c:3704
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4427 ../src/views/darkroom.c:4445
+#: ../src/views/darkroom.c:4418 ../src/views/darkroom.c:4436
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
@@ -16274,7 +16324,7 @@ msgstr "darktable - pré-visualisation chambre noire"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:850 ../src/views/slideshow.c:373
+#: ../src/views/lighttable.c:850 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
@@ -16527,41 +16577,41 @@ msgctxt "view"
 msgid "print"
 msgstr "impression"
 
-#: ../src/views/slideshow.c:311 ../src/views/slideshow.c:327
+#: ../src/views/slideshow.c:314 ../src/views/slideshow.c:330
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "fin des images, appuyez sur une touche pour revenir à la table lumineuse"
 
-#: ../src/views/slideshow.c:341
+#: ../src/views/slideshow.c:344
 msgid "slideshow"
 msgstr "diaporama"
 
-#: ../src/views/slideshow.c:463
+#: ../src/views/slideshow.c:466
 msgid "waiting to start slideshow"
 msgstr "le diaporama est prêt à être lancé"
 
-#: ../src/views/slideshow.c:587 ../src/views/slideshow.c:603
-#: ../src/views/slideshow.c:609
+#: ../src/views/slideshow.c:590 ../src/views/slideshow.c:606
+#: ../src/views/slideshow.c:612
 msgid "slideshow paused"
 msgstr "diaporama en pause"
 
-#: ../src/views/slideshow.c:594 ../src/views/slideshow.c:599
+#: ../src/views/slideshow.c:597 ../src/views/slideshow.c:602
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "temporisation du diaporama ajustée à %d seconde"
 msgstr[1] "temporisation du diaporama ajustée à %d secondes"
 
-#: ../src/views/slideshow.c:625
+#: ../src/views/slideshow.c:628
 msgctxt "accel"
 msgid "start and stop"
 msgstr "marche et arrêt"
 
-#: ../src/views/slideshow.c:639
+#: ../src/views/slideshow.c:642
 msgid "go to next image"
 msgstr "passe au fichier suivant"
 
-#: ../src/views/slideshow.c:644
+#: ../src/views/slideshow.c:647
 msgid "go to previous image"
 msgstr "passer à l'image précédente"
 
@@ -16578,63 +16628,63 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/views/view.c:2372
+#: ../src/views/view.c:2371
 msgid "Left click"
 msgstr "clic gauche"
 
-#: ../src/views/view.c:2375
+#: ../src/views/view.c:2374
 msgid "Right click"
 msgstr "clic-droit"
 
-#: ../src/views/view.c:2378
+#: ../src/views/view.c:2377
 msgid "Middle click"
 msgstr "clic-milieu"
 
-#: ../src/views/view.c:2381
+#: ../src/views/view.c:2380
 msgid "Scroll"
 msgstr "molette"
 
-#: ../src/views/view.c:2384
+#: ../src/views/view.c:2383
 msgid "Left double-click"
 msgstr "double-clic gauche"
 
-#: ../src/views/view.c:2387
+#: ../src/views/view.c:2386
 msgid "Right double-click"
 msgstr "double-clic droit"
 
-#: ../src/views/view.c:2390
+#: ../src/views/view.c:2389
 msgid "Drag and drop"
 msgstr "déplacer & déposer"
 
-#: ../src/views/view.c:2393
+#: ../src/views/view.c:2392
 msgid "Left click+Drag"
 msgstr "clic-gauche + déplacer"
 
-#: ../src/views/view.c:2396
+#: ../src/views/view.c:2395
 msgid "Right click+Drag"
 msgstr "clic-droit + déplacer"
 
-#: ../src/views/view.c:2417
+#: ../src/views/view.c:2416
 msgid "darktable - accels window"
 msgstr "darktable - fenêtre des raccourcis"
 
-#: ../src/views/view.c:2473
+#: ../src/views/view.c:2472
 msgid "switch to a classic window which will stay open after key release."
 msgstr "créer un fenêtre flottante persistante"
 
-#: ../src/views/view.c:2589
+#: ../src/views/view.c:2588
 msgid "+Scroll"
 msgstr "+molette"
 
-#: ../src/views/view.c:2604
+#: ../src/views/view.c:2603
 msgid "mouse actions"
 msgstr "actions souris"
 
-#: ../src/views/view.c:2642
+#: ../src/views/view.c:2641
 msgid "Accel"
 msgstr "raccourcis"
 
-#: ../src/views/view.c:2644
+#: ../src/views/view.c:2643
 msgid "Action"
 msgstr "action"
 
@@ -16648,9 +16698,6 @@ msgstr "action"
 
 #~ msgid "%s/%s: %s"
 #~ msgstr "%s/%s: %s"
-
-#~ msgid "%s: %s"
-#~ msgstr "%s: %s"
 
 #~ msgid "ISO Studio Tungsten"
 #~ msgstr "ISO tungstène studio"
