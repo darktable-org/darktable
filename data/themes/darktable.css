@@ -1729,7 +1729,7 @@ radiobutton
 #log-msg
 {
   color: @log_fg_color;
-  font-size: 14px;
+  font-size: 1em;
   font-weight: bold;
   background-color: @log_bg_color;
   padding: 8px 20px 4px 20px;
