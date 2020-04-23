@@ -1620,8 +1620,11 @@ radiobutton
 /* reject */
 #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always #thumb_reject:active,
+.dt_overlays_always #thumb_main:selected #thumb_reject:active,
 .dt_overlays_always_extended #thumb_reject:active,
-.dt_overlays_mixed #thumb_reject:active
+.dt_overlays_always_extended #thumb_main:selected #thumb_reject:active,
+.dt_overlays_mixed #thumb_reject:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_reject:active
 {
   color: red;
 }
