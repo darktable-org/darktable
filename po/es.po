@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-19 23:29-0500\n"
-"PO-Revision-Date: 2020-04-20 00:37-0500\n"
+"POT-Creation-Date: 2020-04-23 10:24-0500\n"
+"PO-Revision-Date: 2020-04-23 11:45-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1063,7 +1063,7 @@ msgstr "Perfil de programación de OpenCL"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3946 ../build/src/preferences_gen.h:3971
-#: ../src/gui/preferences.c:631
+#: ../src/gui/preferences.c:648
 msgctxt "preferences"
 msgid "default"
 msgstr "por defecto"
@@ -1227,7 +1227,7 @@ msgid "3D lut root folder"
 msgstr "Carpeta raíz de LUT 3D"
 
 #: ../build/src/preferences_gen.h:4216 ../src/control/jobs/control_jobs.c:1551
-#: ../src/control/jobs/control_jobs.c:1611 ../src/gui/preferences.c:1611
+#: ../src/control/jobs/control_jobs.c:1611 ../src/gui/preferences.c:1628
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
@@ -1315,21 +1315,21 @@ msgstr "Imprimir tus imagenes"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1551
 #: ../src/control/jobs/control_jobs.c:1611 ../src/gui/hist_dialog.c:187
-#: ../src/gui/preferences.c:1153 ../src/gui/preferences.c:1179
-#: ../src/gui/preferences.c:1261 ../src/gui/preferences.c:1382
-#: ../src/gui/preferences.c:1611 ../src/gui/presets.c:387
+#: ../src/gui/preferences.c:1170 ../src/gui/preferences.c:1196
+#: ../src/gui/preferences.c:1278 ../src/gui/preferences.c:1399
+#: ../src/gui/preferences.c:1628 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:340 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
-#: ../src/libs/import.c:772 ../src/libs/import.c:879 ../src/libs/lib.c:227
+#: ../src/libs/import.c:790 ../src/libs/import.c:897 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:301 ../src/libs/styles.c:324 ../src/libs/tagging.c:2149
 #: ../src/libs/tagging.c:2190
 msgid "_cancel"
 msgstr "_cancelar"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1153
-#: ../src/gui/preferences.c:1383 ../src/gui/styles_dialog.c:343
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1170
+#: ../src/gui/preferences.c:1400 ../src/gui/styles_dialog.c:343
 #: ../src/libs/styles.c:302
 msgid "_save"
 msgstr "_guardar"
@@ -1465,38 +1465,38 @@ msgstr "historial"
 msgid "color label"
 msgstr "marcas de color"
 
-#: ../src/common/collection.c:601 ../src/gui/preferences.c:515
-#: ../src/gui/preferences.c:1441 ../src/gui/presets.c:445
+#: ../src/common/collection.c:601 ../src/gui/preferences.c:532
+#: ../src/gui/preferences.c:1458 ../src/gui/presets.c:445
 #: ../src/libs/metadata_view.c:112
 msgid "lens"
 msgstr "lente"
 
 #. focal length
-#: ../src/common/collection.c:602 ../src/gui/preferences.c:531
-#: ../src/gui/preferences.c:1490 ../src/gui/presets.c:494
+#: ../src/common/collection.c:602 ../src/gui/preferences.c:548
+#: ../src/gui/preferences.c:1507 ../src/gui/presets.c:494
 #: ../src/iop/ashift.c:4887 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:116
 msgid "focal length"
 msgstr "longitud focal"
 
 #. iso
-#: ../src/common/collection.c:603 ../src/gui/preferences.c:519
-#: ../src/gui/preferences.c:1447 ../src/gui/presets.c:451
+#: ../src/common/collection.c:603 ../src/gui/preferences.c:536
+#: ../src/gui/preferences.c:1464 ../src/gui/presets.c:451
 #: ../src/libs/camera.c:586 ../src/libs/metadata_view.c:118
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:604 ../src/gui/preferences.c:527
-#: ../src/gui/preferences.c:1475 ../src/gui/presets.c:479
+#: ../src/common/collection.c:604 ../src/gui/preferences.c:544
+#: ../src/gui/preferences.c:1492 ../src/gui/presets.c:479
 #: ../src/libs/camera.c:573 ../src/libs/camera.c:575
 #: ../src/libs/metadata_view.c:113
 msgid "aperture"
 msgstr "apertura"
 
 #. exposure
-#: ../src/common/collection.c:605 ../src/gui/preferences.c:523
-#: ../src/gui/preferences.c:1460 ../src/gui/presets.c:464
+#: ../src/common/collection.c:605 ../src/gui/preferences.c:540
+#: ../src/gui/preferences.c:1477 ../src/gui/presets.c:464
 #: ../src/iop/basicadj.c:771 ../src/iop/exposure.c:106
 #: ../src/iop/exposure.c:887 ../src/iop/relight.c:360
 #: ../src/libs/metadata_view.c:114
@@ -1528,7 +1528,7 @@ msgstr "grupos"
 msgid "local copy"
 msgstr "copia local"
 
-#: ../src/common/collection.c:611 ../src/gui/preferences.c:495
+#: ../src/common/collection.c:611 ../src/gui/preferences.c:512
 msgid "module"
 msgstr "módulo"
 
@@ -1792,7 +1792,7 @@ msgstr "Error al cargar el directorio '%s'"
 msgid "file `%s' has unknown format!"
 msgstr "El archivo `%s' tiene un formato desconocido"
 
-#: ../src/common/darktable.c:286 ../src/libs/import.c:838
+#: ../src/common/darktable.c:286 ../src/libs/import.c:856
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Error al cargar el archivo '%s'"
@@ -1990,7 +1990,7 @@ msgid_plural "remove empty directories?"
 msgstr[0] "¿Eliminar directorio vacío?"
 msgstr[1] "¿Eliminar directorios vacíos?"
 
-#: ../src/common/film.c:295 ../src/gui/preferences.c:503
+#: ../src/common/film.c:295 ../src/gui/preferences.c:520
 #: ../src/gui/styles_dialog.c:368
 msgid "name"
 msgstr "nombre"
@@ -2227,21 +2227,21 @@ msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
 "El sistema de claves de GNOME ya no tiene soporte. Configure uno diferente."
 
-#: ../src/common/ratings.c:162
+#: ../src/common/ratings.c:171
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "Rechazando %d imagen"
 msgstr[1] "Rechazando %d imágenes"
 
-#: ../src/common/ratings.c:164
+#: ../src/common/ratings.c:173
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "Estableciendo la puntuación de %d en %d imagen"
 msgstr[1] "Estableciendo la puntuación de %d en %d imágenes"
 
-#: ../src/common/ratings.c:178
+#: ../src/common/ratings.c:187
 msgid "no images selected to apply rating"
 msgstr "No se ha seleccionado ninguna imagen para puntuar"
 
@@ -2768,7 +2768,7 @@ msgstr[1] "Importando %d imágenes"
 msgid "importing image %s"
 msgstr "Importando imagen %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:772
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:790
 msgid "import image"
 msgstr "importar imagen"
 
@@ -3393,7 +3393,7 @@ msgstr "%s está desactivado"
 #: ../src/gui/accelerators.c:1022 ../src/gui/accelerators.c:1237
 #: ../src/gui/accelerators.c:1262 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1468 ../src/libs/import.c:518 ../src/libs/lib.c:319
+#: ../src/iop/temperature.c:1468 ../src/libs/import.c:536 ../src/libs/lib.c:319
 #: ../src/libs/lib.c:347 ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "predefinido"
@@ -3437,7 +3437,7 @@ msgid "reset parameters"
 msgstr "reiniciar parámetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:501
 #: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "Preajustes"
@@ -3464,7 +3464,7 @@ msgstr "`%s' no es una mesa de luz XMP"
 #. tags
 #: ../src/develop/lightroom.c:1508 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:310 ../src/libs/image.c:465
-#: ../src/libs/import.c:573 ../src/libs/metadata_view.c:140
+#: ../src/libs/import.c:591 ../src/libs/metadata_view.c:140
 msgid "tags"
 msgstr "etiquetas"
 
@@ -4210,16 +4210,16 @@ msgid "storage file"
 msgstr "archivo de almacenamiento"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:217
+#: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:224
 msgid "general"
 msgstr "general"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:437
+#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
 msgstr "Ignorar archivos JPEG"
 
-#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:438
+#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -4228,15 +4228,15 @@ msgstr ""
 "directorio existen RAW+JPEG."
 
 #. default metadata
-#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:448
+#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:466
 msgid "apply metadata on import"
 msgstr "establecer los metadatos al importar"
 
-#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:449
+#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:467
 msgid "apply some metadata to all newly imported images."
 msgstr "Establecer ciertos metadatos a todas las imágenes importadas."
 
-#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:580
+#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:598
 msgid "comma separated list of tags"
 msgstr "Lista de etiquetas separadas por coma"
 
@@ -4667,7 +4667,7 @@ msgstr "incluir _todos"
 msgid "select _none"
 msgstr "excluir _todos"
 
-#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1384
+#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1401
 #: ../src/gui/presets.c:387 ../src/libs/lib.c:227
 msgid "_ok"
 msgstr "_aceptar"
@@ -4706,15 +4706,15 @@ msgid "HDR"
 msgstr "HDR"
 
 #. language
-#: ../src/gui/preferences.c:227
+#: ../src/gui/preferences.c:234
 msgid "interface language"
 msgstr "Idioma de la interfaz"
 
-#: ../src/gui/preferences.c:242
+#: ../src/gui/preferences.c:249
 msgid "double click to reset to the system language"
 msgstr "Doble clic para restablecer al idioma del sistema"
 
-#: ../src/gui/preferences.c:244
+#: ../src/gui/preferences.c:251
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
@@ -4722,69 +4722,79 @@ msgstr ""
 "Configurar el idioma de la interfaz de usuario. El predeterminado está "
 "marcado con un * (necesita reiniciarse)"
 
-#: ../src/gui/preferences.c:253
+#: ../src/gui/preferences.c:260
 msgid "theme"
 msgstr "Tema"
 
-#: ../src/gui/preferences.c:277
+#: ../src/gui/preferences.c:284
 msgid "set the theme for the user interface"
 msgstr "Establezca el tema de la interfaz de usuario"
 
 #: ../src/gui/preferences.c:288
+msgid "modify selected theme with user.css"
+msgstr "Modificar el tema seleccionado con el archivo usuario.css"
+
+#: ../src/gui/preferences.c:291
+msgid "load user.css from the user config directory to modify selected theme"
+msgstr ""
+"Cargar el archivo usuario.css desde la carpeta de configuración del usuario "
+"para modificar el tema seleccionado"
+
+#: ../src/gui/preferences.c:305
 msgid "darktable preferences"
 msgstr "preferencias de darktable"
 
-#: ../src/gui/preferences.c:290
+#: ../src/gui/preferences.c:307
 msgid "close"
 msgstr "cerrar"
 
 #. exif
-#: ../src/gui/preferences.c:507 ../src/gui/preferences.c:1425
+#: ../src/gui/preferences.c:524 ../src/gui/preferences.c:1442
 #: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
 msgid "model"
 msgstr "modelo"
 
-#: ../src/gui/preferences.c:511 ../src/gui/preferences.c:1433
+#: ../src/gui/preferences.c:528 ../src/gui/preferences.c:1450
 #: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
 msgid "maker"
 msgstr "fabricante"
 
-#: ../src/gui/preferences.c:536 ../src/iop/basicadj.c:838
+#: ../src/gui/preferences.c:553 ../src/iop/basicadj.c:838
 #: ../src/iop/borders.c:1038 ../src/iop/levels.c:725
 #: ../src/iop/rgblevels.c:1107
 msgid "auto"
 msgstr "auto"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:545 ../src/gui/preferences.c:638
+#: ../src/gui/preferences.c:562 ../src/gui/preferences.c:655
 msgctxt "preferences"
 msgid "import..."
 msgstr "importar..."
 
 #. Adding the outer container
-#: ../src/gui/preferences.c:585
+#: ../src/gui/preferences.c:602
 msgid "shortcuts"
 msgstr "Atajos de teclado"
 
-#: ../src/gui/preferences.c:596
+#: ../src/gui/preferences.c:613
 msgid "shortcut"
 msgstr "atajo de teclado"
 
-#: ../src/gui/preferences.c:600
+#: ../src/gui/preferences.c:617
 msgid "binding"
 msgstr "combinación"
 
 #. export button
-#: ../src/gui/preferences.c:643 ../src/libs/styles.c:487
+#: ../src/gui/preferences.c:660 ../src/libs/styles.c:487
 msgid "export..."
 msgstr "exportar..."
 
 #. Setting the notification text
-#: ../src/gui/preferences.c:917
+#: ../src/gui/preferences.c:934
 msgid "press key combination to remap..."
 msgstr "pulse nueva combinación de teclas..."
 
-#: ../src/gui/preferences.c:1017
+#: ../src/gui/preferences.c:1034
 #, c-format
 msgid ""
 "%s accel is already mapped to\n"
@@ -4795,37 +4805,37 @@ msgstr ""
 "%s.\n"
 "¿Quiere reemplazarlo?"
 
-#: ../src/gui/preferences.c:1023
+#: ../src/gui/preferences.c:1040
 msgid "accel conflict"
 msgstr "Atajo en conflicto"
 
-#: ../src/gui/preferences.c:1112 ../src/gui/presets.c:182 ../src/libs/lib.c:339
+#: ../src/gui/preferences.c:1129 ../src/gui/presets.c:182 ../src/libs/lib.c:339
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "¿Desea borrar el ajuste predefinido `%s'?"
 
-#: ../src/gui/preferences.c:1116 ../src/gui/presets.c:186 ../src/libs/lib.c:343
+#: ../src/gui/preferences.c:1133 ../src/gui/presets.c:186 ../src/libs/lib.c:343
 msgid "delete preset?"
 msgstr "¿Borrar este ajuste predefinido?"
 
 #. Non-zero value indicates export
-#: ../src/gui/preferences.c:1152
+#: ../src/gui/preferences.c:1169
 msgid "select file to export"
 msgstr "Seleccione el archivo a exportar"
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1178
+#: ../src/gui/preferences.c:1195
 msgid "select file to import"
 msgstr "Seleccionar el archivo a importar"
 
-#: ../src/gui/preferences.c:1179 ../src/gui/preferences.c:1261
+#: ../src/gui/preferences.c:1196 ../src/gui/preferences.c:1278
 #: ../src/libs/collect.c:242 ../src/libs/copy_history.c:78
-#: ../src/libs/geotagging.c:476 ../src/libs/import.c:773
-#: ../src/libs/import.c:880 ../src/libs/styles.c:325
+#: ../src/libs/geotagging.c:476 ../src/libs/import.c:791
+#: ../src/libs/import.c:898 ../src/libs/styles.c:325
 msgid "_open"
 msgstr "_abrir"
 
-#: ../src/gui/preferences.c:1220
+#: ../src/gui/preferences.c:1237
 msgid ""
 "are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
@@ -4834,32 +4844,32 @@ msgstr ""
 "Borrará cualquier modificación previamente hecha."
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1260
+#: ../src/gui/preferences.c:1277
 msgid "select preset to import"
 msgstr "Seleccionar el preajuste al importar"
 
-#: ../src/gui/preferences.c:1279
+#: ../src/gui/preferences.c:1296
 msgid "failed to import preset"
 msgstr "No se pudo importar el preajuste"
 
-#: ../src/gui/preferences.c:1379 ../src/gui/presets.c:385
+#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:385
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "Editar `%s' para el módulo `%s'"
 
-#: ../src/gui/preferences.c:1402 ../src/gui/presets.c:408 ../src/libs/lib.c:251
+#: ../src/gui/preferences.c:1419 ../src/gui/presets.c:408 ../src/libs/lib.c:251
 msgid "description or further information"
 msgstr "Descripción o información adicional"
 
-#: ../src/gui/preferences.c:1405 ../src/gui/presets.c:411
+#: ../src/gui/preferences.c:1422 ../src/gui/presets.c:411
 msgid "auto apply this preset to matching images"
 msgstr "Establecer automáticamente este preajuste en imágenes coincidentes"
 
-#: ../src/gui/preferences.c:1408 ../src/gui/presets.c:414
+#: ../src/gui/preferences.c:1425 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
 msgstr "Mostrar este preajuste sólo para imágenes coincidentes"
 
-#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:415
+#: ../src/gui/preferences.c:1427 ../src/gui/presets.c:415
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -4867,65 +4877,65 @@ msgstr ""
 "Especial cuidado con esta opción. Puediera ser la última vez que vea el "
 "preajuste."
 
-#: ../src/gui/preferences.c:1424 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1441 ../src/gui/presets.c:430
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "cadena para coincidencia con modelo (use % como comodín)"
 
-#: ../src/gui/preferences.c:1432 ../src/gui/presets.c:437
+#: ../src/gui/preferences.c:1449 ../src/gui/presets.c:437
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "cadena para coincidencia con fabricante (use % como comodín)"
 
-#: ../src/gui/preferences.c:1440 ../src/gui/presets.c:444
+#: ../src/gui/preferences.c:1457 ../src/gui/presets.c:444
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "cadena para coincidencia de lente (use % as wildcard)"
 
-#: ../src/gui/preferences.c:1450 ../src/gui/presets.c:454
+#: ../src/gui/preferences.c:1467 ../src/gui/presets.c:454
 msgid "minimum ISO value"
 msgstr "valor Exif mínimo"
 
-#: ../src/gui/preferences.c:1453 ../src/gui/presets.c:457
+#: ../src/gui/preferences.c:1470 ../src/gui/presets.c:457
 msgid "maximum ISO value"
 msgstr "valor ISO máximo"
 
-#: ../src/gui/preferences.c:1464 ../src/gui/presets.c:468
+#: ../src/gui/preferences.c:1481 ../src/gui/presets.c:468
 msgid "minimum exposure time"
 msgstr "tiempo mínimo de exposición"
 
-#: ../src/gui/preferences.c:1465 ../src/gui/presets.c:469
+#: ../src/gui/preferences.c:1482 ../src/gui/presets.c:469
 msgid "maximum exposure time"
 msgstr "tiempo máximo de exposición"
 
-#: ../src/gui/preferences.c:1479 ../src/gui/presets.c:483
+#: ../src/gui/preferences.c:1496 ../src/gui/presets.c:483
 msgid "minimum aperture value"
 msgstr "valor de apertura mínimo"
 
-#: ../src/gui/preferences.c:1480 ../src/gui/presets.c:484
+#: ../src/gui/preferences.c:1497 ../src/gui/presets.c:484
 msgid "maximum aperture value"
 msgstr "valor de apertura máximo"
 
-#: ../src/gui/preferences.c:1495 ../src/gui/presets.c:500
+#: ../src/gui/preferences.c:1512 ../src/gui/presets.c:500
 msgid "minimum focal length"
 msgstr "mínima longitud focal"
 
-#: ../src/gui/preferences.c:1496 ../src/gui/presets.c:501
+#: ../src/gui/preferences.c:1513 ../src/gui/presets.c:501
 msgid "maximum focal length"
 msgstr "máxima longitud focal"
 
 #. raw/hdr/ldr
-#: ../src/gui/preferences.c:1505 ../src/gui/presets.c:507
+#: ../src/gui/preferences.c:1522 ../src/gui/presets.c:507
 #: ../src/imageio/format/j2k.c:645
 msgid "format"
 msgstr "formato"
 
-#: ../src/gui/preferences.c:1612 ../src/imageio/storage/disk.c:122
+#: ../src/gui/preferences.c:1629 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
 msgid "_select as output destination"
 msgstr "_seleccionar como destino de salida"
 
-#: ../src/gui/preferences.c:1623
+#: ../src/gui/preferences.c:1640
 #, c-format
 msgid "preset %s was successfully saved"
 msgstr "El ajuste preestablecido %s fue  guardado correctamente"
@@ -9870,7 +9880,7 @@ msgstr "brillo del material de la película"
 msgid "select color of film material"
 msgstr "seleccionar color de la película"
 
-#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1105
+#: ../src/iop/invert.c:639 ../src/iop/negadoctor.c:1157
 msgid "pick color of film material from image"
 msgstr "seleccionar color de la película desde la imagen"
 
@@ -10013,7 +10023,7 @@ msgstr "encontrar cámara"
 msgid "find lens"
 msgstr "encontrar lente"
 
-#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1082
+#: ../src/iop/lens.cc:2414 ../src/iop/negadoctor.c:1134
 msgid "corrections"
 msgstr "correcciones"
 
@@ -10560,7 +10570,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "Hald CLUT (png) o LUT 3D (cube)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
-#: ../src/libs/geotagging.c:497 ../src/libs/import.c:803
+#: ../src/libs/geotagging.c:497 ../src/libs/import.c:821
 #: ../src/libs/styles.c:342
 msgid "all files"
 msgstr "todos los archivos"
@@ -10681,58 +10691,58 @@ msgstr "cantidad de las luces a mantener"
 msgid "negadoctor"
 msgstr "negatidóctor"
 
-#: ../src/iop/negadoctor.c:383
+#: ../src/iop/negadoctor.c:435
 msgid "color film"
 msgstr "película de color"
 
-#: ../src/iop/negadoctor.c:397
+#: ../src/iop/negadoctor.c:449
 msgid "black and white film"
 msgstr "película blanco y negro"
 
-#: ../src/iop/negadoctor.c:457
+#: ../src/iop/negadoctor.c:509
 msgid "D min"
 msgstr "D. mín."
 
-#: ../src/iop/negadoctor.c:463 ../src/iop/negadoctor.c:1113
+#: ../src/iop/negadoctor.c:515 ../src/iop/negadoctor.c:1165
 msgid "D min red component"
 msgstr "D. mín. componente rojo"
 
-#: ../src/iop/negadoctor.c:1069
+#: ../src/iop/negadoctor.c:1121
 msgid "film stock"
 msgstr "película celuloide"
 
-#: ../src/iop/negadoctor.c:1070
+#: ../src/iop/negadoctor.c:1122
 msgid "black and white"
 msgstr "blanco y negro"
 
-#: ../src/iop/negadoctor.c:1071 ../src/iop/retouch.c:2890
+#: ../src/iop/negadoctor.c:1123 ../src/iop/retouch.c:2890
 #: ../src/iop/watermark.c:1491
 msgid "color"
 msgstr "color"
 
-#: ../src/iop/negadoctor.c:1074
+#: ../src/iop/negadoctor.c:1126
 msgid "toogle on or off the color controls"
 msgstr "activar o desactivar los controles de color"
 
-#: ../src/iop/negadoctor.c:1081
+#: ../src/iop/negadoctor.c:1133
 msgid "film properties"
 msgstr "propiedades de la película"
 
-#: ../src/iop/negadoctor.c:1083
+#: ../src/iop/negadoctor.c:1135
 msgid "print properties"
 msgstr "propiedades de la impresión"
 
 #. Dmin
-#: ../src/iop/negadoctor.c:1092
+#: ../src/iop/negadoctor.c:1144
 msgid "color of the film base"
 msgstr "color de la película base"
 
-#: ../src/iop/negadoctor.c:1100
+#: ../src/iop/negadoctor.c:1152
 msgid "select color of film material from a swatch"
 msgstr "seleccionar el color del material de la película desde una muestra"
 
-#: ../src/iop/negadoctor.c:1114 ../src/iop/negadoctor.c:1124
-#: ../src/iop/negadoctor.c:1134
+#: ../src/iop/negadoctor.c:1166 ../src/iop/negadoctor.c:1176
+#: ../src/iop/negadoctor.c:1186
 msgid ""
 "adjust the color and shade of the film transparent base.\n"
 "this value depends on the film material, \n"
@@ -10744,24 +10754,24 @@ msgstr ""
 "los vapores químicos producidos durante el revelado de la película,\n"
 "y el balance de blancos del escáner."
 
-#: ../src/iop/negadoctor.c:1123
+#: ../src/iop/negadoctor.c:1175
 msgid "D min green component"
 msgstr "D. mín. componente verde"
 
-#: ../src/iop/negadoctor.c:1133
+#: ../src/iop/negadoctor.c:1185
 msgid "D min blue component"
 msgstr "D. mín. componente azul"
 
 #. D max and scanner bias
-#: ../src/iop/negadoctor.c:1143
+#: ../src/iop/negadoctor.c:1195
 msgid "dynamic range of the film"
 msgstr "rango dinámico de la película"
 
-#: ../src/iop/negadoctor.c:1147
+#: ../src/iop/negadoctor.c:1199
 msgid "D max"
 msgstr "D. máx."
 
-#: ../src/iop/negadoctor.c:1151
+#: ../src/iop/negadoctor.c:1203
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
 "this value depends on the film specifications, the developing process,\n"
@@ -10773,15 +10783,15 @@ msgstr ""
 "revelado,\n"
 "el rango dinámico de la escena y los ajustes de exposición del escáner."
 
-#: ../src/iop/negadoctor.c:1157
+#: ../src/iop/negadoctor.c:1209
 msgid "scanner exposure settings"
 msgstr "ajustes de exposición del escáner"
 
-#: ../src/iop/negadoctor.c:1161
+#: ../src/iop/negadoctor.c:1213
 msgid "scan exposure bias"
 msgstr "sesgo de exposición al escanear"
 
-#: ../src/iop/negadoctor.c:1165
+#: ../src/iop/negadoctor.c:1217
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
@@ -10791,24 +10801,24 @@ msgstr ""
 "pálidos."
 
 #. WB shadows
-#: ../src/iop/negadoctor.c:1171
+#: ../src/iop/negadoctor.c:1223
 msgid "shadows color cast"
 msgstr "dominante de color de las sombras"
 
-#: ../src/iop/negadoctor.c:1180
+#: ../src/iop/negadoctor.c:1232
 msgid "select color of shadows from a swatch"
 msgstr "seleccionar el color de las sombras desde una muestra"
 
-#: ../src/iop/negadoctor.c:1185
+#: ../src/iop/negadoctor.c:1237
 msgid "pick shadows color from image"
 msgstr "Elegir el color de las sombras desde una imagen"
 
-#: ../src/iop/negadoctor.c:1192
+#: ../src/iop/negadoctor.c:1244
 msgid "shadows red offset"
 msgstr "equilibrio de rojo en sombras"
 
-#: ../src/iop/negadoctor.c:1193 ../src/iop/negadoctor.c:1202
-#: ../src/iop/negadoctor.c:1211
+#: ../src/iop/negadoctor.c:1245 ../src/iop/negadoctor.c:1254
+#: ../src/iop/negadoctor.c:1263
 msgid ""
 "correct the color cast in shadows so blacks are\n"
 "truly achromatic. Setting this value before\n"
@@ -10820,33 +10830,33 @@ msgstr ""
 "balance de blancos del iluminante de las luces ayudará\n"
 "a recuperar el balance de blancos general en casos difíciles\"."
 
-#: ../src/iop/negadoctor.c:1201
+#: ../src/iop/negadoctor.c:1253
 msgid "shadows green offset"
 msgstr "equilibrio de verde en sombras"
 
-#: ../src/iop/negadoctor.c:1210
+#: ../src/iop/negadoctor.c:1262
 msgid "shadows blue offset"
 msgstr "equilibrio de azul en sombras"
 
 #. WB highlights
-#: ../src/iop/negadoctor.c:1219
+#: ../src/iop/negadoctor.c:1271
 msgid "highlights white balance"
 msgstr "balance de blancos de las luces"
 
-#: ../src/iop/negadoctor.c:1228
+#: ../src/iop/negadoctor.c:1280
 msgid "select color of illuminant from a swatch"
 msgstr "seleccionar el color del iluminante desde una muestra"
 
-#: ../src/iop/negadoctor.c:1233
+#: ../src/iop/negadoctor.c:1285
 msgid "pick illuminant color from image"
 msgstr "Elegir el color del iluminante desde la imagen"
 
-#: ../src/iop/negadoctor.c:1240
+#: ../src/iop/negadoctor.c:1292
 msgid "illuminant red gain"
 msgstr "incremento del iluminante rojo"
 
-#: ../src/iop/negadoctor.c:1241 ../src/iop/negadoctor.c:1250
-#: ../src/iop/negadoctor.c:1259
+#: ../src/iop/negadoctor.c:1293 ../src/iop/negadoctor.c:1302
+#: ../src/iop/negadoctor.c:1311
 msgid ""
 "correct the color of the illuminant so whites are\n"
 "truly achromatic. Setting this value after\n"
@@ -10858,24 +10868,24 @@ msgstr ""
 "dominante de color de las sombras ayudará a\n"
 "recuperar el balance de blancos general en casos difíciles."
 
-#: ../src/iop/negadoctor.c:1249
+#: ../src/iop/negadoctor.c:1301
 msgid "illuminant green gain"
 msgstr "incremento del iluminante verde"
 
-#: ../src/iop/negadoctor.c:1258
+#: ../src/iop/negadoctor.c:1310
 msgid "illuminant blue gain"
 msgstr "incremento del iluminante azul"
 
 #. print corrections
-#: ../src/iop/negadoctor.c:1267
+#: ../src/iop/negadoctor.c:1319
 msgid "virtual paper properties"
 msgstr "propiedades del papel virtual"
 
-#: ../src/iop/negadoctor.c:1271
+#: ../src/iop/negadoctor.c:1323
 msgid "paper black (density correction)"
 msgstr "papel negro (corrección de densidad)"
 
-#: ../src/iop/negadoctor.c:1275
+#: ../src/iop/negadoctor.c:1327
 msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
@@ -10883,11 +10893,11 @@ msgstr ""
 "Corrige la densidad del negro después de la inversión,\n"
 "para adecuar el contraste global mientras se evitan recortes en las sombras."
 
-#: ../src/iop/negadoctor.c:1281
+#: ../src/iop/negadoctor.c:1333
 msgid "paper grade (gamma)"
 msgstr "gramaje de papel (gamma)"
 
-#: ../src/iop/negadoctor.c:1283
+#: ../src/iop/negadoctor.c:1335
 msgid ""
 "select the grade of the virtual paper, which is actually\n"
 "equivalent to applying a gamma. it compensates the film D max\n"
@@ -10897,11 +10907,11 @@ msgstr ""
 "equivalente a la aplicación de gamma. Compensa la D. máx. de la película\n"
 "y recupera el contraste. Usa un gramaje alto para una alto valor en D. máx."
 
-#: ../src/iop/negadoctor.c:1290
+#: ../src/iop/negadoctor.c:1342
 msgid "paper gloss (specular highlights)"
 msgstr "papel brillante (reflectante)"
 
-#: ../src/iop/negadoctor.c:1292
+#: ../src/iop/negadoctor.c:1344
 msgid ""
 "gradually compress specular highlights past this value\n"
 "to avoid clipping while pushing the exposure for midtones.\n"
@@ -10912,15 +10922,15 @@ msgstr ""
 "medios.\n"
 "Reproduce de alguna manera el comportamiento del papel mate."
 
-#: ../src/iop/negadoctor.c:1297
+#: ../src/iop/negadoctor.c:1349
 msgid "virtual print emulation"
 msgstr "emulación de impresión virtual"
 
-#: ../src/iop/negadoctor.c:1301
+#: ../src/iop/negadoctor.c:1353
 msgid "print exposure adjustment"
 msgstr "ajuste de exposición de la impresión"
 
-#: ../src/iop/negadoctor.c:1305
+#: ../src/iop/negadoctor.c:1357
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
@@ -13987,71 +13997,71 @@ msgid "no supported devices found"
 msgstr "no se encontraron dispositivos compatibles"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:415
+#: ../src/libs/import.c:433
 msgid "import options"
 msgstr "opciones al importar"
 
 #. recursive opening.
-#: ../src/libs/import.c:430
+#: ../src/libs/import.c:448
 msgid "import folders recursively"
 msgstr "Importar carpetas recursivamente"
 
-#: ../src/libs/import.c:432
+#: ../src/libs/import.c:450
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "Importar carpetas de manera recursiva. Cada carpeta forma un carrete nuevo."
 
-#: ../src/libs/import.c:521
+#: ../src/libs/import.c:539
 msgid "metadata to be applied per default"
 msgstr "Metadatos que se aplicarán por defecto"
 
-#: ../src/libs/import.c:530
+#: ../src/libs/import.c:548
 msgid "to be imported"
 msgstr "para ser importado"
 
-#: ../src/libs/import.c:532
+#: ../src/libs/import.c:550
 msgid ""
 "selected metadata are imported from image and override the default value"
 msgstr ""
 "Los metadatos seleccionados se importan desde la imagen anulando el valor "
 "predeterminado"
 
-#: ../src/libs/import.c:798
+#: ../src/libs/import.c:816
 msgid "supported images"
 msgstr "imágenes admitidas"
 
-#: ../src/libs/import.c:854
+#: ../src/libs/import.c:872
 msgid "file has unknown format!"
 msgstr "El archivo tiene un formato desconocido"
 
-#: ../src/libs/import.c:879
+#: ../src/libs/import.c:897
 msgid "import folder"
 msgstr "Importar carpeta"
 
 #. add import single image buttons
-#: ../src/libs/import.c:995
+#: ../src/libs/import.c:1013
 msgid "image..."
 msgstr "imagen..."
 
-#: ../src/libs/import.c:999
+#: ../src/libs/import.c:1017
 msgid "select one or more images to import"
 msgstr "Seleccionar una o más imágenes para importar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:1006
+#: ../src/libs/import.c:1024
 msgid "folder..."
 msgstr "carpeta..."
 
-#: ../src/libs/import.c:1010
+#: ../src/libs/import.c:1028
 msgid "select a folder to import as film roll"
 msgstr "Seleccionar una carpeta para importar como carrete"
 
 #. add the rescan button
-#: ../src/libs/import.c:1019
+#: ../src/libs/import.c:1037
 msgid "scan for devices"
 msgstr "buscar dispositivos"
 
-#: ../src/libs/import.c:1023
+#: ../src/libs/import.c:1041
 msgid "scan for newly attached devices"
 msgstr "Buscar nuevos dispositivos conectados"
 
@@ -15126,8 +15136,8 @@ msgstr "estilos"
 
 #: ../src/libs/styles.c:71
 msgctxt "accel"
-msgid "delete"
-msgstr "borrar"
+msgid "remove"
+msgstr "eliminar"
 
 #: ../src/libs/styles.c:73
 msgctxt "accel"
@@ -15136,12 +15146,12 @@ msgstr "importar"
 
 #: ../src/libs/styles.c:275
 #, c-format
-msgid "do you really want to delete style '%s'?"
-msgstr "¿Desea remover realmente el estilo `%s'?"
+msgid "do you really want to remove style '%s'?"
+msgstr "¿Realmente desea eliminar el estilo '%s'?"
 
 #: ../src/libs/styles.c:280
-msgid "delete style?"
-msgstr "¿Remover estilo?"
+msgid "remove style?"
+msgstr "¿Quitar el estilo?"
 
 #: ../src/libs/styles.c:324
 msgid "select style"
@@ -15192,8 +15202,8 @@ msgid "edit the selected style in list above"
 msgstr "Editar el estilo seleccionado en la lista inferior"
 
 #: ../src/libs/styles.c:476
-msgid "deletes the selected style in list above"
-msgstr "Remover el estilo seleccionado de la lista anterior"
+msgid "removes the selected style in list above"
+msgstr "Elimina el estilo seleccionado en la lista anterior"
 
 #. import button
 #: ../src/libs/styles.c:480 ../src/libs/tagging.c:2730
@@ -16268,7 +16278,7 @@ msgstr "darktable: vista previa del cuarto oscuro"
 msgid "good knight"
 msgstr "buen caballero"
 
-#: ../src/views/lighttable.c:850 ../src/views/slideshow.c:373
+#: ../src/views/lighttable.c:850 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "sin imágenes en la colección presente"
 
@@ -16518,42 +16528,42 @@ msgctxt "view"
 msgid "print"
 msgstr "imprimir"
 
-#: ../src/views/slideshow.c:311 ../src/views/slideshow.c:327
+#: ../src/views/slideshow.c:314 ../src/views/slideshow.c:330
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Ha llegado al final. Presione cualquier tecla para volver al modo de mesa de "
 "luz"
 
-#: ../src/views/slideshow.c:341
+#: ../src/views/slideshow.c:344
 msgid "slideshow"
 msgstr "diapositivas"
 
-#: ../src/views/slideshow.c:463
+#: ../src/views/slideshow.c:466
 msgid "waiting to start slideshow"
 msgstr "Esperando para empezar la presentación de diapositivas"
 
-#: ../src/views/slideshow.c:587 ../src/views/slideshow.c:603
-#: ../src/views/slideshow.c:609
+#: ../src/views/slideshow.c:590 ../src/views/slideshow.c:606
+#: ../src/views/slideshow.c:612
 msgid "slideshow paused"
 msgstr "Presentación de diapositivas pausado"
 
-#: ../src/views/slideshow.c:594 ../src/views/slideshow.c:599
+#: ../src/views/slideshow.c:597 ../src/views/slideshow.c:602
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "Intervalo entre diapositivas establecido en% d segundo"
 msgstr[1] "Intervalo entre diapositivas establecido en% d segundos"
 
-#: ../src/views/slideshow.c:625
+#: ../src/views/slideshow.c:628
 msgctxt "accel"
 msgid "start and stop"
 msgstr "inicio y detención"
 
-#: ../src/views/slideshow.c:639
+#: ../src/views/slideshow.c:642
 msgid "go to next image"
 msgstr "pasar a la siguiente imagen"
 
-#: ../src/views/slideshow.c:644
+#: ../src/views/slideshow.c:647
 msgid "go to previous image"
 msgstr "retroceder a la imagen anterior"
 
@@ -16570,67 +16580,71 @@ msgstr "Nueva sesión iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
 
-#: ../src/views/view.c:2372
+#: ../src/views/view.c:2371
 msgid "Left click"
 msgstr "Clic"
 
-#: ../src/views/view.c:2375
+#: ../src/views/view.c:2374
 msgid "Right click"
 msgstr "Clic Secundario"
 
-#: ../src/views/view.c:2378
+#: ../src/views/view.c:2377
 msgid "Middle click"
 msgstr "Clic Medio"
 
-#: ../src/views/view.c:2381
+#: ../src/views/view.c:2380
 msgid "Scroll"
 msgstr "Desplazamiento"
 
-#: ../src/views/view.c:2384
+#: ../src/views/view.c:2383
 msgid "Left double-click"
 msgstr "Pulsación Doble"
 
-#: ../src/views/view.c:2387
+#: ../src/views/view.c:2386
 msgid "Right double-click"
 msgstr "Doble Clic Secundario"
 
-#: ../src/views/view.c:2390
+#: ../src/views/view.c:2389
 msgid "Drag and drop"
 msgstr "Arrastrar y Soltar"
 
-#: ../src/views/view.c:2393
+#: ../src/views/view.c:2392
 msgid "Left click+Drag"
 msgstr "Clic+Arrastre"
 
-#: ../src/views/view.c:2396
+#: ../src/views/view.c:2395
 msgid "Right click+Drag"
 msgstr "Clic Secundario + Arrastre"
 
-#: ../src/views/view.c:2417
+#: ../src/views/view.c:2416
 msgid "darktable - accels window"
 msgstr "darktable: ventana de atajos"
 
-#: ../src/views/view.c:2473
+#: ../src/views/view.c:2472
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
 "Cambiar a la ventana clásica que permanecerá abierta después de soltar la "
 "tecla."
 
-#: ../src/views/view.c:2589
+#: ../src/views/view.c:2588
 msgid "+Scroll"
 msgstr "+Desplazamiento"
 
-#: ../src/views/view.c:2604
+#: ../src/views/view.c:2603
 msgid "mouse actions"
 msgstr "acciones con el ratón"
 
-#: ../src/views/view.c:2642
+#: ../src/views/view.c:2641
 msgid "Accel"
 msgstr "Atajos del teclado"
 
-#: ../src/views/view.c:2644
+#: ../src/views/view.c:2643
 msgid "Action"
 msgstr "Acción"
+
+#~ msgctxt "accel"
+#~ msgid "delete"
+#~ msgstr "borrar"
 
 #~ msgid "if set to true, thumb overlay shows filename and some exif data."
 #~ msgstr ""
@@ -18542,10 +18556,6 @@ msgstr "Acción"
 #~ msgctxt "accel"
 #~ msgid "rating"
 #~ msgstr "valoración"
-
-#~ msgctxt "accel"
-#~ msgid "remove"
-#~ msgstr "eliminar"
 
 #~ msgctxt "accel"
 #~ msgid "reset camera from exif data"
