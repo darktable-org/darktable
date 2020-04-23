@@ -131,6 +131,12 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
 // change the type of overlays that should be shown (over or under the image)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);
 
+// change thumbnails group id
+void dt_thumbtable_group_change_representative(dt_thumbtable_t *table, const int group_id, const int new_group_id);
+
+// set thumbnail's group id
+void dt_thumbtable_set_image_group(dt_thumbtable_t *table, const int imgid, const int group_id);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
