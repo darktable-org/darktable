@@ -426,6 +426,34 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
   return changed;
 }
 
+// change thumbnails group id
+void dt_thumbtable_group_change_representative(dt_thumbtable_t *table, const int group_id, const int new_group_id)
+{
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->groupid == group_id) th->groupid = new_group_id;
+    l = g_list_next(l);
+  }
+}
+
+// set thumbnail's group id
+void dt_thumbtable_set_image_group(dt_thumbtable_t *table, const int imgid, const int group_id)
+{
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->imgid == imgid)
+    {
+      th->groupid = group_id;
+      break;
+    }
+    l = g_list_next(l);
+  }
+}
+
 // load all needed thumbnails in the list and the widget
 // needed == that should appear in the current view (possibly not entirely)
 static int _thumbs_load_needed(dt_thumbtable_t *table)
@@ -1069,7 +1097,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         gboolean b = TRUE;
         if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
         {
-          // left brorder
+          // left border
           if(pos != 0 && th->x != table->thumbs_area.x)
           {
             dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - 1);
@@ -1079,7 +1107,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           {
             dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_LEFT);
           }
-          // right brorder
+          // right border
           b = TRUE;
           if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP && pos < g_list_length(table->list) - 1
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
@@ -1099,7 +1127,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_BOTTOM);
         }
 
-        // top brorder
+        // top border
         b = TRUE;
         if(pos - table->thumbs_per_row >= 0)
         {
@@ -1113,7 +1141,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           else
             dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_TOP);
         }
-        // bottom brorder
+        // bottom border
         b = TRUE;
         if(pos + table->thumbs_per_row < g_list_length(table->list))
         {
