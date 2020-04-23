@@ -64,14 +64,11 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   vp->imgid = thumb->imgid;
   vp->sequence = 0;
 
-  gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+  if(thumb->info_line) g_free(thumb->info_line);
+  thumb->info_line = dt_variables_expand(vp, pattern, TRUE);
 
   dt_variables_params_destroy(vp);
 
-  // we change the label
-  g_snprintf(thumb->info_line, sizeof(thumb->info_line), "%s", msg);
-
-  g_free(msg);
   g_free(pattern);
 }
 
@@ -916,6 +913,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   thumb->img_surf = NULL;
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);
+  if(thumb->info_line) g_free(thumb->info_line);
   if(thumb->img_margin) gtk_border_free(thumb->img_margin);
   free(thumb);
 }
