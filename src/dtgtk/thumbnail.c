@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/focus.h"
 #include "common/focus_peaking.h"
 #include "common/grouping.h"
 #include "common/image_cache.h"
@@ -281,6 +282,29 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         // if the image is missing, we reload it again
         g_timeout_add(250, _thumb_expose_again, widget);
         return TRUE;
+      }
+
+      if(thumb->display_focus)
+      {
+        uint8_t *full_res_thumb = NULL;
+        int32_t full_res_thumb_wd, full_res_thumb_ht;
+        dt_colorspaces_color_profile_type_t color_space;
+        if(!dt_imageio_large_thumbnail(thumb->filename, &full_res_thumb, &full_res_thumb_wd, &full_res_thumb_ht,
+                                       &color_space))
+        {
+          // we look for focus areas
+          dt_focus_cluster_t full_res_focus[49];
+          const int frows = 5, fcols = 5;
+          dt_focus_create_clusters(full_res_focus, frows, fcols, full_res_thumb, full_res_thumb_wd,
+                                   full_res_thumb_ht);
+          // and we draw them on the image
+          cairo_t *cri = cairo_create(thumb->img_surf);
+          dt_focus_draw_clusters(cri, cairo_image_surface_get_width(thumb->img_surf),
+                                 cairo_image_surface_get_height(thumb->img_surf), thumb->imgid, full_res_thumb_wd,
+                                 full_res_thumb_ht, full_res_focus, frows, fcols, 1.0, 0, 0);
+          cairo_destroy(cri);
+        }
+        dt_free_align(full_res_thumb);
       }
     }
 
