@@ -85,7 +85,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   if(img)
   {
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
-    thumb->rating = (img->flags & 0x7);
+    thumb->rating = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
     thumb->is_bw = dt_image_is_monochrome(img);
     thumb->is_hdr = dt_image_is_hdr(img);
 

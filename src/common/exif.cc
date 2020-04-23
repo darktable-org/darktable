@@ -60,6 +60,7 @@ extern "C" {
 #include "common/exif.h"
 #include "common/imageio_jpeg.h"
 #include "common/metadata.h"
+#include "common/ratings.h"
 #include "common/tags.h"
 #include "common/iop_order.h"
 #include "common/variables.h"
@@ -2702,7 +2703,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
 
     int32_t preset_applied = 0;
-    
+
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.auto_presets_applied"))) != xmpData.end())
     {
       preset_applied = pos->toLong();
@@ -3375,7 +3376,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
   if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
+  xmpData["Xmp.xmp.Rating"] = (stars & DT_IMAGE_REJECTED)
+                              ? -1                              // rejected image = -1
+                              : (stars & DT_VIEW_RATINGS_MASK); // others = 0 .. 5
 
   // The original file name
   if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
