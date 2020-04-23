@@ -9,7 +9,7 @@
 {
   GtkWidget *widget, *label, *labelev, *viewport;
   GtkWidget *grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
@@ -47,9 +47,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   gdk_event_get_keyval ((GdkEvent*)event, &keyval);
 
   if (keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter)
-  {
      return TRUE;
-  }
   return FALSE;
 }
 ]]></xsl:text>
