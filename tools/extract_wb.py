@@ -133,7 +133,6 @@ for filename in argv[1:]:
                 red /= 256.0
                 blue /= 256.0
             green = 1
-            print("red:",red, "green:", green, "blue:", blue, sep=' ')
         elif tag == "WB GRB Levels":
             green = float(values[0])
             red = float(values[1])/green
@@ -228,22 +227,14 @@ for filename in argv[1:]:
 
     if gm_skew:
         eprint('WARNING: {0} has finetuning over GM axis! Data is skewed!'.format(filename))
-    else:
-        eprint("no skew")
 
     # Adjust the maker/model we found with the map we generated before
     if exif_name_map[maker,model]:
         enm = exif_name_map[maker,model]
-        print(enm)
         maker = enm[0]
         model = enm[1]
     else:
         eprint("WARNING: Couldn't find model in cameras.xml ('{0}', '{1}')".format(maker, model))
-
-    print("found:")
-    print(found_presets)
-    print("listed:")
-    print(listed_presets)
 
     for preset_arr in listed_presets:
         # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
@@ -256,24 +247,40 @@ for filename in argv[1:]:
     
     # Print out the WB value that was used in the file
     if not preset:
-        eprint("empty prest!")
         preset = filename
     if red and green and blue and preset not in IGNORED_PRESETS:
-        eprint("not empty preset!")
         found_presets.append(tuple([maker, model, preset, finetune, red, green, blue]))
-    
-    print("after loopend:")
-    print(found_presets)
-# what's wrong with this code? found_presets[:]=[preset_arrt in found_presets if preset_arrt[2] not in IGNORED_PRESETS]
 
-print("before getting rid of duplicates")
-print(found_presets)
 # get rid of duplicate presets
 
 found_presets = list(set(found_presets))
 
-print("after getting rid")
-print(found_presets)
+def preset_to_sort(preset):
+    sort_for_preset = 0
+    if preset[2] in IGNORED_PRESETS:
+        sort_for_preset = 0
+    elif PRESET_SORT_MAPPING[preset[2]]:
+        sort_for_preset = PRESET_SORT_MAPPING[preset[2]]
+    elif preset[2].endswith('K'):
+        sort_for_preset = int(preset[2][:-1])
+    else:
+        eprint("WARNING: no defined sort order for '{0}'".format(preset[2]))
+    return tuple([preset[0], preset[1], sort_for_preset, preset[3], preset[4], preset[5], preset[6]])
 
+found_presets.sort(key=preset_to_sort)
 
- 
+min_padding = 0
+for preset in found_presets:
+    if len(preset[2]) > min_padding:
+        min_padding = len(preset[2])
+
+for preset in found_presets:
+    if preset[2] in IGNORED_PRESETS:
+        eprint("Ignoring preset '{0}'".format(preset[2]))
+    else:
+        preset_name = ''
+        if preset[2].endswith('K'):
+            preset_name = '"'+preset[2]+'"'
+        else:
+            preset_name = preset[2]
+        print('"{0}", "{1}", {2:<{min_pad}}, {3}, {{ {4}, {5}, {6} }}'.format(preset[0], preset[1], preset_name, preset[3], preset[4], preset[5], preset[6], min_pad=min_padding))
