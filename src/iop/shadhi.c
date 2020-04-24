@@ -125,6 +125,7 @@ typedef struct dt_iop_shadhi_params4_t
 
 typedef struct dt_iop_shadhi_params_t
 {
+  // $VERSION: 1
   dt_gaussian_order_t order;
   float radius;
   float shadows;
@@ -132,10 +133,14 @@ typedef struct dt_iop_shadhi_params_t
   float highlights;
   float reserved2;
   float compress;
+  // $VERSION: 2
   float shadows_ccorrect;
   float highlights_ccorrect;
+  // $VERSION: 3
   unsigned int flags;
+  // $VERSION: 4
   float low_approximation;
+  // $VERSION: 5
   dt_iop_shadhi_algo_t shadhi_algo;
 } dt_iop_shadhi_params_t;
 
