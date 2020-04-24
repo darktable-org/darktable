@@ -967,7 +967,7 @@ gboolean accel_search_children(dt_gui_accel_search_t *search_data, GtkTreeIter *
   if(gtk_tree_model_iter_has_child(tvmodel, parent))
   {
     //match not found then call again for each child, each time exiting if matched
-    int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), parent);
+    const int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), parent);
     for(int i = 0; i < siblings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &iter, parent, i);
@@ -987,6 +987,7 @@ static gboolean accel_search(gpointer widget, gpointer data)
   const gchar *search_term = gtk_entry_get_text(GTK_ENTRY(search_data->search_box));
   if(!search_data->last_search_term || strcmp(search_data->last_search_term, search_term) != 0)
   {
+    g_free(search_data->last_search_term);
     search_data->last_search_term = g_strdup(search_term);
     search_data->last_found_count = 0;
   }
@@ -995,7 +996,7 @@ static gboolean accel_search(gpointer widget, gpointer data)
 
   gtk_tree_view_collapse_all(GTK_TREE_VIEW(tv));
 
-  int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), NULL);
+  const int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), NULL);
   for(int i = 0; i < siblings; i++)
   {
     gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &childiter, NULL, i);
