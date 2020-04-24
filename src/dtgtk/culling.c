@@ -24,6 +24,7 @@
 #include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"

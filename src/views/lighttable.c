@@ -408,7 +408,7 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   if(lib->preview_mode)
   {
     // we only do the change if the offset is different
-    if(lib->culling->offset_imgid != imgid) dt_culling_change_offset_image(lib->culling, imgid);
+    if(lib->culling->offset_imgid != imgid) dt_culling_change_offset_image(lib->preview, imgid);
   }
 
   // culling change (note that full_preview can be combined with culling)
