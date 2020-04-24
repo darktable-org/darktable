@@ -763,16 +763,17 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
   
   // Adding search box
   searchentry = gtk_entry_new();
-  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search"));
   g_signal_connect(G_OBJECT(searchentry), "activate", G_CALLBACK(accel_search), (gpointer)search_data);
 
   gtk_box_pack_start(GTK_BOX(hbox), searchentry, FALSE, TRUE, 10);
 
   // Adding the search button
   button = gtk_button_new_with_label(C_("preferences", "search"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("click or press enter to search\nclick or press enter again to cycle through results"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   search_data->tree = tree;
   search_data->search_box = searchentry;
+  search_data->last_search_term = NULL;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(accel_search), (gpointer)search_data);
 
   // Adding the restore defaults button
@@ -984,7 +985,7 @@ static gboolean accel_search(gpointer widget, gpointer data)
   GtkTreeView *tv = GTK_TREE_VIEW(search_data->tree);
   GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
   const gchar *search_term = gtk_entry_get_text(GTK_ENTRY(search_data->search_box));
-  if(strcmp(search_data->last_search_term, search_term) != 0)
+  if(!search_data->last_search_term || strcmp(search_data->last_search_term, search_term) != 0)
   {
     search_data->last_search_term = g_strdup(search_term);
     search_data->last_found_count = 0;
