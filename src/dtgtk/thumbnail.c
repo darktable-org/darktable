@@ -289,8 +289,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         uint8_t *full_res_thumb = NULL;
         int32_t full_res_thumb_wd, full_res_thumb_ht;
         dt_colorspaces_color_profile_type_t color_space;
-        if(!dt_imageio_large_thumbnail(thumb->filename, &full_res_thumb, &full_res_thumb_wd, &full_res_thumb_ht,
-                                       &color_space))
+        char path[PATH_MAX] = { 0 };
+        gboolean from_cache = TRUE;
+        dt_image_full_path(thumb->imgid, path, sizeof(path), &from_cache);
+        if(!dt_imageio_large_thumbnail(path, &full_res_thumb, &full_res_thumb_wd, &full_res_thumb_ht, &color_space))
         {
           // we look for focus areas
           dt_focus_cluster_t full_res_focus[49];
@@ -622,7 +624,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   // if there's a change, update the thumb
   if(active != thumb->active)
   {
-    printf("activate %d\n", thumb->imgid);
     thumb->active = active;
     _thumb_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
