@@ -58,6 +58,13 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkWidget *format_btn[3];
 } dt_gui_presets_edit_dialog_t;
 
+typedef struct dt_gui_accel_search_t
+{
+  GtkWidget *tree, *search_box;
+  gchar *last_search_term;
+  int last_found_count, curr_found_count;
+} dt_gui_accel_search_t;
+
 // FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
 // same data.
 static const int dt_gui_presets_exposure_value_cnt = 24;
@@ -111,7 +118,8 @@ enum
 };
 
 static void init_tab_presets(GtkWidget *stack);
-static void init_tab_accels(GtkWidget *stack);
+static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data);
+static gboolean accel_search(gpointer widget, gpointer data);
 static void tree_insert_accel(gpointer accel_struct, gpointer model_link);
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gchar *accel_path,
                             const gchar *translated_path, guint accel_key, GdkModifierType accel_mods);
@@ -133,8 +141,6 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, Gtk
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data);
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gpointer data);
-static gboolean prefix_search(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter,
-                              gpointer d);
 
 static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, const gchar *module);
 static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g);
@@ -414,6 +420,8 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
+  dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)malloc(sizeof(dt_gui_accel_search_t));
+
   //setup tabs
   init_tab_interface(stack);
   init_tab_import(_preferences_dialog, stack);
@@ -425,7 +433,7 @@ void dt_gui_preferences_show()
   init_tab_cpugpu(_preferences_dialog, stack);
   init_tab_storage(_preferences_dialog, stack);
   init_tab_misc(_preferences_dialog, stack);
-  init_tab_accels(stack);
+  init_tab_accels(stack, search_data);
   init_tab_presets(stack);
 
   //open in the appropriate tab if currently in darkroom or lighttable view
@@ -445,6 +453,8 @@ void dt_gui_preferences_show()
   destroy_tab_lua(lua_grid);
 #endif
 
+  g_free(search_data->last_search_term);
+  free(search_data);
   gtk_widget_destroy(_preferences_dialog);
 
   // Cleaning up any memory still allocated for remapping
@@ -698,12 +708,12 @@ static void init_tab_presets(GtkWidget *stack)
   g_object_unref(G_OBJECT(model));
 }
 
-static void init_tab_accels(GtkWidget *stack)
+static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data)
 {
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
-  GtkWidget *button, *searchlabel, *searchentry;
+  GtkWidget *button, *searchentry;
   GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(A_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkCellRenderer *renderer;
@@ -740,11 +750,6 @@ static void init_tab_accels(GtkWidget *stack)
   // A keypress may remap an accel or delete one
   g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(tree_key_press), (gpointer)model);
 
-  // Setting up the search functionality
-  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), A_TRANS_COLUMN);
-  gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search, tree, NULL);
-  gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
-
   // Attaching the model to the treeview
   gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
 
@@ -757,14 +762,18 @@ static void init_tab_accels(GtkWidget *stack)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   
   // Adding search box
-  searchlabel = gtk_label_new(C_("preferences", "search shortcut groups"));
-
   searchentry = gtk_entry_new();
-  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search keyboard shortcut groups (e.g. module names)"));
-  gtk_tree_view_set_search_entry(GTK_TREE_VIEW(tree), GTK_ENTRY(searchentry));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(searchentry), _("search"));
+  g_signal_connect(G_OBJECT(searchentry), "activate", G_CALLBACK(accel_search), (gpointer)search_data);
 
-  gtk_box_pack_start(GTK_BOX(hbox), searchlabel, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), searchentry, FALSE, TRUE, 10);
+
+  // Adding the search button
+  button = gtk_button_new_with_label(C_("preferences", "search"));
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  search_data->tree = tree;
+  search_data->search_box = searchentry;
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(accel_search), (gpointer)search_data);
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(C_("preferences", "default"));
@@ -926,6 +935,74 @@ static void update_accels_model(gpointer widget, gpointer data)
     update_accels_model_rec(model, &iter, path, sizeof(path));
     *end = '\0'; // Trimming the string back to the base for the next iteration
   }
+}
+
+gboolean accel_search_children(dt_gui_accel_search_t *search_data, GtkTreeIter *parent)
+{
+  GtkTreeView *tv = GTK_TREE_VIEW(search_data->tree);
+  GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
+  const gchar *search_term = gtk_entry_get_text(GTK_ENTRY(search_data->search_box));
+
+  gchar *row_data;
+  GtkTreeIter iter;
+
+  //check the current item for a match
+  gtk_tree_model_get(tvmodel, parent, A_TRANS_COLUMN, &row_data, -1);
+
+  GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, parent);
+
+  if(strstr(row_data, search_term))
+  {
+    search_data->curr_found_count++;
+    if(search_data->curr_found_count > search_data->last_found_count)
+    {
+      gtk_tree_view_expand_to_path(tv, childpath);
+      gtk_tree_view_set_cursor(tv, childpath, gtk_tree_view_get_column(tv, A_TRANS_COLUMN), FALSE);
+      search_data->last_found_count++;
+      return TRUE;
+    }
+  }
+
+  if(gtk_tree_model_iter_has_child(tvmodel, parent))
+  {
+    //match not found then call again for each child, each time exiting if matched
+    int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), parent);
+    for(int i = 0; i < siblings; i++)
+    {
+      gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &iter, parent, i);
+      if(accel_search_children(search_data, &iter))
+        return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static gboolean accel_search(gpointer widget, gpointer data)
+{
+  dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)data;
+  GtkTreeView *tv = GTK_TREE_VIEW(search_data->tree);
+  GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
+  const gchar *search_term = gtk_entry_get_text(GTK_ENTRY(search_data->search_box));
+  if(strcmp(search_data->last_search_term, search_term) != 0)
+  {
+    search_data->last_search_term = g_strdup(search_term);
+    search_data->last_found_count = 0;
+  }
+  search_data->curr_found_count = 0;
+  GtkTreeIter childiter;
+
+  gtk_tree_view_collapse_all(GTK_TREE_VIEW(tv));
+
+  int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), NULL);
+  for(int i = 0; i < siblings; i++)
+  {
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &childiter, NULL, i);
+    if(accel_search_children(search_data, &childiter))
+      return TRUE;
+  }
+  search_data->last_found_count = 0;
+  return FALSE;
 }
 
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gchar *path, size_t path_len)
@@ -1430,42 +1507,6 @@ static void import_preset(GtkButton *button, gpointer data)
     }
   }
   gtk_widget_destroy(chooser);
-}
-
-static gboolean prefix_search(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter,
-                              gpointer d)
-{
-  gchar *row_data;
-
-  //expand the first level of each tree node for easier searching
-  GtkTreeView *tv = (GtkTreeView *)d;
-  GtkTreeModel *tvmodel = gtk_tree_view_get_model(tv);
-  GtkTreeIter childiter;
-
-  int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(tvmodel), NULL);
-  for(int i = 0; i < siblings; i++)
-  {
-    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(tvmodel), &childiter, NULL, i);
-    gtk_tree_model_get(tvmodel, &childiter, A_TRANS_COLUMN, &row_data, -1);
-
-    //don't expand global
-    if(strcmp(row_data, "global"))
-    {
-      GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, &childiter);
-      gtk_tree_view_expand_to_path(tv, childpath);
-    }
-  }
-
-  //now do the search
-  gtk_tree_model_get(model, iter, A_TRANS_COLUMN, &row_data, -1);
-
-  while(*key != '\0')
-  {
-    if(*row_data != *key) return TRUE;
-    key++;
-    row_data++;
-  }
-  return FALSE;
 }
 
 // Custom sort function for TreeModel entries for accels list
