@@ -260,6 +260,9 @@ GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
 
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget, dt_iop_module_t *self, float min, float max,
                                                          float step, float defval, int digits, int feedback);
+
+GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post);
+
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
