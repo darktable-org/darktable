@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-22 22:46+0200\n"
-"PO-Revision-Date: 2020-04-22 22:57+0200\n"
+"POT-Creation-Date: 2020-04-23 15:08+0200\n"
+"PO-Revision-Date: 2020-04-23 15:09+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2207,21 +2207,21 @@ msgstr "legal"
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
-#: ../src/common/ratings.c:162
+#: ../src/common/ratings.c:171
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "rejet de %d image"
 msgstr[1] "rejet de %d images"
 
-#: ../src/common/ratings.c:164
+#: ../src/common/ratings.c:173
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "application de %d étoile(s) à %d image"
 msgstr[1] "application de %d étoile(s) à %d images"
 
-#: ../src/common/ratings.c:178
+#: ../src/common/ratings.c:187
 msgid "no images selected to apply rating"
 msgstr "aucune image sélectionnée pour appliquer les étoiles"
 
@@ -15172,10 +15172,11 @@ msgstr ""
 msgid "styles"
 msgstr "styles"
 
+# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../src/libs/styles.c:71
 msgctxt "accel"
-msgid "delete"
-msgstr "supprimer"
+msgid "remove"
+msgstr "enlever"
 
 #: ../src/libs/styles.c:73
 msgctxt "accel"
@@ -15184,12 +15185,12 @@ msgstr "importer"
 
 #: ../src/libs/styles.c:275
 #, c-format
-msgid "do you really want to delete style '%s'?"
-msgstr "voulez-vous réellement supprimer le style « %s » ?"
+msgid "do you really want to remove style '%s'?"
+msgstr "voulez-vous réellement enlever le style « %s » ?"
 
 #: ../src/libs/styles.c:280
-msgid "delete style?"
-msgstr "effacer le style?"
+msgid "remove style?"
+msgstr "enlever un style?"
 
 #: ../src/libs/styles.c:324
 msgid "select style"
@@ -15238,8 +15239,8 @@ msgid "edit the selected style in list above"
 msgstr "modifie le style sélectionné dans la liste ci-dessus"
 
 #: ../src/libs/styles.c:476
-msgid "deletes the selected style in list above"
-msgstr "supprime le style sélectionné dans la liste ci-dessus"
+msgid "removes the selected style in list above"
+msgstr "enlève le style sélectionné dans la liste ci-dessus"
 
 #. import button
 #: ../src/libs/styles.c:480 ../src/libs/tagging.c:2730
@@ -16687,6 +16688,13 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2643
 msgid "Action"
 msgstr "action"
+
+#~ msgctxt "accel"
+#~ msgid "delete"
+#~ msgstr "supprimer"
+
+#~ msgid "delete style?"
+#~ msgstr "effacer le style?"
 
 #~ msgid "if set to true, thumb overlay shows filename and some exif data."
 #~ msgstr ""
@@ -18146,9 +18154,6 @@ msgstr "action"
 
 #~ msgid "WebP"
 #~ msgstr "WebP"
-
-#~ msgid "create style"
-#~ msgstr "créer un style"
 
 #~ msgid "[webp export] error saving to %s\n"
 #~ msgstr "[export webp] impossible d'enregistrer %s\n"

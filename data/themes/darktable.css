@@ -1620,8 +1620,11 @@ radiobutton
 /* reject */
 #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always #thumb_reject:active,
+.dt_overlays_always #thumb_main:selected #thumb_reject:active,
 .dt_overlays_always_extended #thumb_reject:active,
-.dt_overlays_mixed #thumb_reject:active
+.dt_overlays_always_extended #thumb_main:selected #thumb_reject:active,
+.dt_overlays_mixed #thumb_reject:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_reject:active
 {
   color: red;
 }
@@ -1729,7 +1732,7 @@ radiobutton
 #log-msg
 {
   color: @log_fg_color;
-  font-size: 14px;
+  font-size: 1em;
   font-weight: bold;
   background-color: @log_bg_color;
   padding: 8px 20px 4px 20px;
