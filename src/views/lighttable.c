@@ -1836,35 +1836,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
   }
 
-  else if(lib->preview_mode)
-  {
-    if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
-       || (key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
-       || (key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods))
-    {
-      lib->track = -1;
-      dt_control_queue_redraw_center();
-      return TRUE;
-    }
-    else if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-            || (key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
-            || (key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods))
-    {
-      lib->track = +1;
-      return TRUE;
-    }
-    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
-    {
-      // TODO
-      return TRUE;
-    }
-    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
-    {
-      // TODO
-      return TRUE;
-    }
-  }
-
   else if(lib->preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     dt_culling_move_t move = DT_CULLING_MOVE_NONE;

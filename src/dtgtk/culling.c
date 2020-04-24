@@ -998,6 +998,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     {
       // we create a completly new thumb
       dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
+      thumb->display_focus = table->focus;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
       if(!aspect_ratio || aspect_ratio < 0.0001)
       {
@@ -1047,6 +1048,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         {
           // we create a completly new thumb
           dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
+          thumb->display_focus = table->focus;
           double aspect_ratio = sqlite3_column_double(stmt, 2);
           if(!aspect_ratio || aspect_ratio < 0.0001)
           {
