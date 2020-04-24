@@ -1009,7 +1009,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   // everything else (css, etc...) is handled in dt_thumbnail_t
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP) return;
 
   if(g_slist_length(darktable.view_manager->active_images) == 0) return;
   int activeid = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
@@ -1827,6 +1826,7 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, const int offset, cons
 // set offset at specific imgid and redraw if needed
 gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid, const gboolean redraw)
 {
+  table->offset_imgid = imgid;
   return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
 }
 
