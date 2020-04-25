@@ -1,7 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2010-2012 Henrik Andersson.
-   copyright (c) 2012 Tobias Ellinghaus.
+   Copyright (C) 2010-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1024,7 +1023,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
 
           if (cfi.preview.size > 0)   // we have valid preview data for this file
           {
-            long unsigned int chunksize = cfi.preview.size;
+            uint64_t chunksize = cfi.preview.size;
             char *chunk = malloc(chunksize);
             if (chunk)
             {
@@ -1040,7 +1039,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
           // If there has been no preview we try to take a small file
           if (!gotit && (cfi.file.size > 0 && cfi.file.size < 512000))
           {
-            long unsigned int chunksize = cfi.file.size;
+            uint64_t chunksize = cfi.file.size;
             char *chunk = malloc(chunksize);
             if (chunk)
             {
@@ -1084,7 +1083,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
         {
           gp_file_new(&exif);
 
-          long unsigned int chunksize = 0x200000;
+          uint64_t chunksize = 0x200000;
           char *chunk = calloc(chunksize,sizeof(char));
           if (chunk)
           {

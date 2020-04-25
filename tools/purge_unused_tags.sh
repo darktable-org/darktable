@@ -10,6 +10,11 @@ if ! which sqlite3 > /dev/null; then
     exit 1
 fi
 
+if pgrep -x "darktable" > /dev/null ; then
+    echo "error: darktable is running, please exit first"
+    exit 1
+fi
+
 configdir="$HOME/.config/darktable"
 LIBDB="$configdir/library.db"
 dryrun=1

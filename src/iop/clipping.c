@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2012 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -235,7 +234,9 @@ typedef struct dt_iop_clipping_gui_data_t
   int k_selected, k_show, k_selected_segment;
   gboolean k_drag;
 
-  int cropping, straightening, applied, center_lock;
+  int cropping, straightening, applied;
+  gboolean shift_hold;
+  gboolean ctrl_hold;
   int old_width, old_height;
 } dt_iop_clipping_gui_data_t;
 
@@ -2015,7 +2016,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropping = 0;
   g->straightening = 0;
   g->applied = 1;
-  g->center_lock = 0;
+  g->shift_hold = FALSE;
+  g->ctrl_hold = FALSE;
   g->k_drag = FALSE;
   g->k_show = -1;
   g->k_selected = -1;
@@ -2323,7 +2325,7 @@ static void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, "ꝏ", -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_set_source_rgba(cr, .5, .5, .5, .7);
+  dt_draw_set_color_overlay(cr, 0.5, 0.7);
   gui_draw_rounded_rectangle(
       cr, ink.width + DT_PIXEL_APPLY_DPI(4), ink.height + DT_PIXEL_APPLY_DPI(8),
       x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2), y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4));
@@ -2387,7 +2389,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    cairo_set_source_rgb(cr, .7, .7, .7);
+    dt_draw_set_color_overlay(cr, 0.7, 1.0);
     cairo_stroke(cr);
   }
 
@@ -2444,7 +2446,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_rectangle(cr, left, top, cwidth, cheight);
   cairo_clip(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  cairo_set_source_rgb(cr, .8, .8, .8);
+  dt_draw_set_color_overlay(cr, 0.8, 1.0);
   cairo_set_dash(cr, &dashes, 1, 0);
 
   // Move coordinates to local center selection.
@@ -2462,13 +2464,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
     cairo_stroke_preserve(cr);
     cairo_set_dash(cr, &dashes, 0, 0);
-    cairo_set_source_rgba(cr, 0.3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke(cr);
   }
   cairo_restore(cr);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  cairo_set_source_rgb(cr, .3, .3, .3);
+  dt_draw_set_color_overlay(cr, 0.3, 1.0);
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
   if(g->straightening)
   {
@@ -2512,7 +2514,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float xp = pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale;
     const float yp = pzy * ht - ink.height;
     gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
-    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_set_source_rgba(cr, .7, .7, .7, .7);
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
@@ -2732,7 +2734,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                  c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4),
                                  c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6));
       cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
-      cairo_set_source_rgba(cr, .2, .2, .2, .9);
+      dt_draw_set_color_overlay(cr, 0.2, 0.9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
       g_object_unref(layout);
@@ -2938,15 +2940,18 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       if(grab == GRAB_ALL)
       {
         /* moving the crop window */
-        g->clip_x
-            = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
-        g->clip_y
-            = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+        if(!g->shift_hold)
+          g->clip_x
+              = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+
+        if(!g->ctrl_hold)
+          g->clip_y
+              = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
       }
       else
       {
         /* changing the crop window */
-        if(g->center_lock)
+        if(g->shift_hold)
         {
           /* the center is locked, scale crop radial with locked ratio */
           gboolean flag = FALSE;
@@ -3173,7 +3178,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(g->k_drag) g->k_drag = FALSE;
 
   /* reset internal ui states*/
-  g->center_lock = g->straightening = g->cropping = 0;
+  g->straightening = g->cropping = 0;
+  g->shift_hold = FALSE;
+  g->ctrl_hold = FALSE;
   return 1;
 }
 
@@ -3335,7 +3342,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->prev_clip_h = g->clip_h;
 
       /* if shift is pressed, then lock crop on center */
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) g->center_lock = 1;
+      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) g->shift_hold = TRUE;
+      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) g->ctrl_hold = TRUE;
     }
 
     return 1;
@@ -3352,6 +3360,11 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "top"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "right"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bottom"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect ratio"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guide lines"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "flip"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "keystone"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -3367,6 +3380,11 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "top", GTK_WIDGET(g->cy));
   dt_accel_connect_slider_iop(self, "right", GTK_WIDGET(g->cw));
   dt_accel_connect_slider_iop(self, "bottom", GTK_WIDGET(g->ch));
+  dt_accel_connect_combobox_iop(self, "guide lines", GTK_WIDGET(g->guide_lines));
+  dt_accel_connect_combobox_iop(self, "aspect ratio", GTK_WIDGET(g->aspect_presets));
+  dt_accel_connect_combobox_iop(self, "flip", GTK_WIDGET(g->hvflip));
+  dt_accel_connect_combobox_iop(self, "keystone", GTK_WIDGET(g->keystone_type));
+  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->crop_auto));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

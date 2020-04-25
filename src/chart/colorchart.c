@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2016-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -298,8 +298,8 @@ chart_t *parse_cht(const char *filename)
           const size_t x_label_size = lxe_len + 1;
           const size_t y_label_size = lye_len + 1;
 
-          char *x_label = malloc(x_label_size * sizeof(char));
-          char *y_label = malloc(y_label_size * sizeof(char));
+          char *x_label = malloc(x_label_size);
+          char *y_label = malloc(y_label_size);
 
           char *first_label = NULL, *last_label = NULL;
           GList *labels = NULL;
@@ -330,7 +330,7 @@ chart_t *parse_cht(const char *filename)
               last_label = label;
 
               // store it
-              box_t *box = (box_t *)calloc(1, sizeof(box_t));
+              box_t *box = calloc(1, sizeof(box_t));
               box->p.x = x;
               box->p.y = y;
               box->w = w;
@@ -346,14 +346,24 @@ chart_t *parse_cht(const char *filename)
               if(!g_strcmp0(x_label, lxe)) break;
               x += xi;
               x_steps++;
-              if(!strinc(x_label, x_label_size)) ERROR;
+              if(!strinc(x_label, x_label_size))
+              {
+                free(y_label);
+                free(x_label);
+                ERROR;
+              }
             }
             x_max = MAX(x_max, x + w);
             // increment in y direction
             if(!g_strcmp0(y_label, lye)) break;
             y += yi;
             y_steps++;
-            if(!strinc(y_label, y_label_size)) ERROR;
+            if(!strinc(y_label, y_label_size))
+            {
+              free(y_label);
+              free(x_label);
+              ERROR;
+            }
           }
           y_max = MAX(y_max, y + h);
           if(kl == 'X' || kl == 'Y')

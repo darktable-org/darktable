@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Chih-Mao Chen
-    copyright (c) 2019 Philippe Weyland
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +28,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -144,6 +144,20 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "application color space"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "application color space", GTK_WIDGET(g->colorspace));
+  dt_accel_connect_combobox_iop(self, "interpolation ", GTK_WIDGET(g->interpolation ));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -717,6 +731,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   float *lclut = NULL;
   uint32_t i = 0;
   size_t buf_size = 0;
+  uint32_t out_of_range_nb = 0;
 
   if(!(cube_file = g_fopen(filepath, "r")))
   {
@@ -783,7 +798,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           return 0;
         }
       }
-      else
+      else if (nb_token == 3)
       {
         if (!level)
         {
@@ -796,6 +811,16 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         for (int j=0; j < 3; j++)
         {
           lclut[i+j] = dt_atof(token[j]);
+          if(isnan(lclut[i+j]))
+          {
+            fprintf(stderr, "[lut3d] error - invalid number line %d\n", (int)i/3);
+            dt_control_log(_("error - cube lut invalid number line %d"), (int)i/3);
+            free(line);
+            fclose(cube_file);
+            return 0;
+          }
+          else if(lclut[i+j] < 0.0 || lclut[i+j] > 1.0)
+            out_of_range_nb++;
         }
         i += 3;
       }
@@ -803,12 +828,19 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   if (i != buf_size || i == 0)
   {
-    fprintf(stderr, "[lut3d] error - cube lut lines number is not correct\n");
-    dt_control_log(_("error - cube lut lines number is not correct"));
+    fprintf(stderr, "[lut3d] error - cube lut lines number %d is not correct, should be %d\n",
+            (int)i/3, (int)buf_size/3);
+    dt_control_log(_("error - cube lut lines number %d is not correct, should be %d"),
+                   (int)i/3, (int)buf_size/3);
     dt_free_align(lclut);
     free(line);
     fclose(cube_file);
     return 0;
+  }
+  if(out_of_range_nb)
+  {
+    fprintf(stderr, "[lut3d] warning - %d out of range values [0,1]\n", out_of_range_nb);
+    dt_control_log(_("warning - cube lut %d out of range values [0,1]"), out_of_range_nb);
   }
   *clut = lclut;
   free(line);

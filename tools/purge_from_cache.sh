@@ -24,6 +24,11 @@
 
 . "$(dirname "$0")/common.sh"
 
+if pgrep -x "darktable" > /dev/null ; then
+    echo "error: darktable is running, please exit first"
+    exit 1
+fi
+
 # default values
 configdir="$HOME/.config/darktable"
 cache_base="${HOME}/.cache/darktable"

@@ -1,9 +1,9 @@
 # - Try to find libsecret
 # Once done, this will define
 #
-# LIBSECRET_FOUND - system has libsecret
-# LIBSECRET_INCLUDE_DIRS - the libsecret include directories
-# LIBSECRET_LIBRARIES - link these to use libsecret
+# Libsecret_FOUND - system has libsecret
+# Libsecret_INCLUDE_DIRS - the libsecret include directories
+# Libsecret_LIBRARIES - link these to use libsecret
 #
 # Copyright (C) 2012 Raphael Kubo da Costa <rakuco@webkit.org>
 # Copyright (C) 2014 Igalia S.L.
@@ -30,27 +30,27 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 include(LibFindMacros)
-libfind_pkg_check_modules(LIBSECRET libsecret-1)
-foreach(i ${LIBSECRET_LIBRARIES})
-	find_library(_libsecret_LIBRARY NAMES ${i} HINTS ${LIBSECRET_LIBRARY_DIRS})
-	LIST(APPEND LIBSECRET_LIBRARY ${_libsecret_LIBRARY})
-	unset(_libsecret_LIBRARY CACHE)
+libfind_pkg_check_modules(Libsecret libsecret-1)
+foreach(i ${Libsecret_LIBRARIES})
+  find_library(_libsecret_LIBRARY NAMES ${i} HINTS ${Libsecret_LIBRARY_DIRS})
+  LIST(APPEND Libsecret_LIBRARY ${_libsecret_LIBRARY})
+  unset(_libsecret_LIBRARY CACHE)
 endforeach(i)
-set(LIBSECRET_LIBRARIES ${LIBSECRET_LIBRARY})
-unset(LIBSECRET_LIBRARY CACHE)
+set(Libsecret_LIBRARIES ${Libsecret_LIBRARY})
+unset(Libsecret_LIBRARY CACHE)
 
 set(VERSION_OK TRUE)
-if (LIBSECRET_VERSION)
-    if (LIBSECRET_FIND_VERSION_EXACT)
-        if (NOT("${LIBSECRET_FIND_VERSION}" VERSION_EQUAL "${LIBSECRET_VERSION}"))
+if(Libsecret_VERSION)
+    if(Libsecret_FIND_VERSION_EXACT)
+        if(NOT("${Libsecret_FIND_VERSION}" VERSION_EQUAL "${Libsecret_VERSION}"))
             set(VERSION_OK FALSE)
-        endif ()
-    else ()
-        if ("${LIBSECRET_VERSION}" VERSION_LESS "${LIBSECRET_FIND_VERSION}")
+        endif()
+    else()
+        if("${Libsecret_VERSION}" VERSION_LESS "${Libsecret_FIND_VERSION}")
             set(VERSION_OK FALSE)
-        endif ()
-    endif ()
-endif ()
+        endif()
+    endif()
+endif()
 
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBSECRET DEFAULT_MSG LIBSECRET_INCLUDE_DIRS LIBSECRET_LIBRARIES VERSION_OK)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Libsecret DEFAULT_MSG Libsecret_INCLUDE_DIRS Libsecret_LIBRARIES VERSION_OK)

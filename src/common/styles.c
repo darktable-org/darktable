@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -572,6 +572,8 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
+  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -580,6 +582,8 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
+    if(mode == DT_STYLE_HISTORY_OVERWRITE)
+      dt_history_delete_on_image_ext(imgid, FALSE);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
   }
@@ -842,12 +846,9 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */
     if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_image_set_aspect_ratio(newimgid);
+      dt_image_set_aspect_ratio(newimgid, TRUE);
     else
-      dt_image_reset_aspect_ratio(newimgid);
-
-    /* if we have created a duplicate, reset collected images */
-    if(duplicate) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+      dt_image_reset_aspect_ratio(newimgid, TRUE);
 
     /* redraw center view to update visible mipmaps */
     dt_control_queue_redraw_center();

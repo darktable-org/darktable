@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2012 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,8 +57,9 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
 static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, gboolean no_group);
 /* signal handlers to update the cached count when something interesting might have happened.
  * we need 2 different since there are different kinds of signals we need to listen to. */
-static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
+static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data);
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data);
+static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data);
 
 /* determine image offset of specified imgid for the given collection */
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
@@ -96,8 +97,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT,
                             G_CALLBACK(_dt_collection_recount_callback_2), collection);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
-                            G_CALLBACK(_dt_collection_recount_callback_2), collection);
-
+                            G_CALLBACK(_dt_collection_filmroll_imported_callback), collection);
   return collection;
 }
 
@@ -106,6 +106,8 @@ void dt_collection_free(const dt_collection_t *collection)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1),
                                (gpointer)collection);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2),
+                               (gpointer)collection);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_filmroll_imported_callback),
                                (gpointer)collection);
 
   g_free(collection->query);
@@ -141,7 +143,39 @@ static char * and_operator(int *term)
   assert(0); // Not reached.
 }
 
+void dt_collection_memory_update()
+{
+  if(!darktable.collection || !darktable.db) return;
+  sqlite3_stmt *stmt;
 
+  /* check if we can get a query from collection */
+  gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
+  if(!query) return;
+
+  // we have a new query for the collection of images to display. For speed reason we collect all images into
+  // a temporary (in-memory) table (collected_images).
+
+  // 1. drop previous data
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL, NULL);
+  // reset autoincrement. need in star_key_accel_callback
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM memory.sqlite_sequence WHERE "
+                        "name='collected_images'",
+                        NULL, NULL, NULL);
+
+  // 2. insert collected images into the temporary table
+  gchar *ins_query = dt_util_dstrcat(NULL, "INSERT INTO memory.collected_images (imgid) %s", query);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), ins_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  g_free(query);
+  g_free(ins_query);
+}
 
 int dt_collection_update(const dt_collection_t *collection)
 {
@@ -381,7 +415,7 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
-  dt_collection_update_query(collection);
+  dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
 const gchar *dt_collection_get_query(const dt_collection_t *collection)
@@ -553,6 +587,7 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
 
 const char *dt_collection_name(dt_collection_properties_t prop)
 {
+  char *col_name = NULL;
   switch(prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:     return _("film roll");
@@ -563,11 +598,6 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_TIME:         return _("time");
     case DT_COLLECTION_PROP_HISTORY:      return _("history");
     case DT_COLLECTION_PROP_COLORLABEL:   return _("color label");
-    case DT_COLLECTION_PROP_TITLE:        return _("title");
-    case DT_COLLECTION_PROP_DESCRIPTION:  return _("description");
-    case DT_COLLECTION_PROP_CREATOR:      return _("creator");
-    case DT_COLLECTION_PROP_PUBLISHER:    return _("publisher");
-    case DT_COLLECTION_PROP_RIGHTS:       return _("rights");
     case DT_COLLECTION_PROP_LENS:         return _("lens");
     case DT_COLLECTION_PROP_FOCAL_LENGTH: return _("focal length");
     case DT_COLLECTION_PROP_ISO:          return _("ISO");
@@ -580,11 +610,25 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_LOCAL_COPY:   return _("local copy");
     case DT_COLLECTION_PROP_MODULE:       return _("module");
     case DT_COLLECTION_PROP_ORDER:        return _("module order");
-    case DT_COLLECTION_PROP_LAST:         return _("???");
-  };
-
-  // should never happen
-  return _("???");
+    case DT_COLLECTION_PROP_LAST:         return NULL;
+    default:
+    {
+      if(prop >= DT_COLLECTION_PROP_METADATA
+         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+      {
+        const int i = prop - DT_COLLECTION_PROP_METADATA;
+        const int type = dt_metadata_get_type_by_display_order(i);
+        if(type != DT_METADATA_TYPE_INTERNAL)
+        {
+          const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
+          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+          if(!hidden) col_name = _(name);
+        }
+      }
+    }
+  }
+  return col_name;
 };
 
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
@@ -856,7 +900,7 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
 GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean selected)
 {
   GList *list = NULL;
-  const gchar *query = dt_collection_get_query(collection);
+  const gchar *query = dt_collection_get_query_no_group(collection);
   if(query)
   {
     sqlite3_stmt *stmt = NULL;
@@ -1383,28 +1427,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               escaped_text);
       break;
 
-    // TODO: How to handle images without metadata? In the moment they are not shown.
-    // TODO: Autogenerate this code?
-    case DT_COLLECTION_PROP_TITLE: // title
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_TITLE, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_DESCRIPTION: // description
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_CREATOR: // creator
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_CREATOR, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_RIGHTS: // rights
-      query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                     "LIKE '%%%s%%'))", DT_METADATA_XMP_DC_RIGHTS, escaped_text);
-      break;
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
       break;
@@ -1578,7 +1600,19 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     default:
-      // we shouldn't be here
+      {
+        if(property >= DT_COLLECTION_PROP_METADATA
+           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        {
+          const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
+          if(strcmp(escaped_text, _("not defined")) != 0)
+            query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+                                           "LIKE '%%%s%%'))", keyid, escaped_text);
+          else
+            query = dt_util_dstrcat(query, "(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+                                           keyid);
+        }
+      }
       break;
   }
   sqlite3_free(escaped_text);
@@ -1671,11 +1705,50 @@ void dt_collection_deserialize(char *buf)
       if(buf[0] == '$') buf++;
     }
   }
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
-void dt_collection_update_query(const dt_collection_t *collection)
+void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change, GList *list)
 {
+  int next = -1;
+  if(!collection->clone)
+  {
+    if(g_list_length(list) > 0)
+    {
+      // for changing offsets, thumbtable needs to know the first untouched imageid after the list
+      // we do this here
+      const int id0 = GPOINTER_TO_INT(g_list_nth_data(list, 0));
+      gchar *txt = NULL;
+      GList *l = g_list_first(list);
+      int i = 0;
+      while(l)
+      {
+        const int id = GPOINTER_TO_INT(l->data);
+        if(i == 0)
+          txt = dt_util_dstrcat(txt, "%d", id);
+        else
+          txt = dt_util_dstrcat(txt, ",%d", id);
+        l = g_list_next(l);
+        i++;
+      }
+      gchar *query = dt_util_dstrcat(NULL,
+                                     "SELECT imgid FROM memory.collected_images "
+                                     "WHERE imgid NOT IN (%s) AND "
+                                     "rowid>(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
+                                     "ORDER BY rowid LIMIT 1",
+                                     txt, id0);
+      sqlite3_stmt *stmt2;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+      if(sqlite3_step(stmt2) == SQLITE_ROW)
+      {
+        next = sqlite3_column_int(stmt2, 0);
+      }
+      sqlite3_finalize(stmt2);
+      g_free(query);
+      g_free(txt);
+    }
+  }
+
   char confname[200];
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
@@ -1694,12 +1767,15 @@ void dt_collection_update_query(const dt_collection_t *collection)
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    if(!text || text[0] == '\0') {
+    if(!text || text[0] == '\0')
+    {
       if (mode == 1) // for OR show all
         query_parts[i] = g_strdup(" OR 1=1");
       else
         query_parts[i] = g_strdup("");
-    } else {
+    }
+    else
+    {
       gchar *query = get_query_string(property, text);
 
       query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
@@ -1742,7 +1818,11 @@ void dt_collection_update_query(const dt_collection_t *collection)
   }
 
   /* raise signal of collection change, only if this is an original */
-  if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  if(!collection->clone)
+  {
+    dt_collection_memory_update();
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change, list, next);
+  }
 }
 
 gboolean dt_collection_hint_message_internal(void *message)
@@ -1830,7 +1910,7 @@ int dt_collection_image_offset(int imgid)
   return dt_collection_image_offset_with_collection(darktable.collection, imgid);
 }
 
-static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
+static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
@@ -1839,12 +1919,16 @@ static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_da
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD, NULL, -1);
   }
 }
 
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data)
 {
+  _dt_collection_recount_callback_1(instance, user_data);
+}
+static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data)
+{
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
@@ -1852,7 +1936,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
   }
 }
 

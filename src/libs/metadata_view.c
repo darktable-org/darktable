@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ enum
   md_exif_lens,
   md_exif_aperture,
   md_exif_exposure,
+  md_exif_exposure_bias,
   md_exif_focal_length,
   md_exif_focus_distance,
   md_exif_iso,
@@ -111,6 +112,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_exif_lens] = _("lens");
   _md_labels[md_exif_aperture] = _("aperture");
   _md_labels[md_exif_exposure] = _("exposure");
+  _md_labels[md_exif_exposure_bias] = _("exposure bias");
   _md_labels[md_exif_focal_length] = _("focal length");
   _md_labels[md_exif_focus_distance] = _("focus distance");
   _md_labels[md_exif_iso] = _("ISO");
@@ -448,6 +450,16 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
 
+    if(isnan(img->exif_exposure_bias))
+    {
+      _metadata_update_value(d->metadata[md_exif_exposure_bias], NODATA_STRING);
+    }
+    else
+    {
+      snprintf(value, sizeof(value), _("%+.2f EV"), img->exif_exposure_bias);
+      _metadata_update_value(d->metadata[md_exif_exposure_bias], value);
+    }
+
     snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
 
@@ -491,34 +503,36 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_width], value);
 
     /* XMP */
-    GList *res;
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
       const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
       const gchar *key = dt_metadata_get_key(keyid);
-      if((res = dt_metadata_get(img->id, key, NULL)) != NULL)
-      {
-        g_strlcpy(value, (char *)res->data, sizeof(value));
-        _filter_non_printable(value, sizeof(value));
-        g_list_free_full(res, &g_free);
-      }
-      else
-        g_strlcpy(value, NODATA_STRING, sizeof(value));
-      _metadata_update_value(d->metadata[md_xmp_metadata+i], value);
       const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_hidden", name);
-      const gboolean hidden = dt_conf_get_bool(setting);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
-      if(hidden)
+      const int meta_type = dt_metadata_get_type(keyid);
+      if(meta_type == DT_METADATA_TYPE_INTERNAL || hidden)
       {
         gtk_widget_hide(GTK_WIDGET(d->name[md_xmp_metadata+i]));
         gtk_widget_hide(GTK_WIDGET(d->metadata[md_xmp_metadata+i]));
+        g_strlcpy(value, NODATA_STRING, sizeof(value));
       }
       else
       {
         gtk_widget_show(GTK_WIDGET(d->name[md_xmp_metadata+i]));
         gtk_widget_show(GTK_WIDGET(d->metadata[md_xmp_metadata+i]));
+        GList *res = dt_metadata_get(img->id, key, NULL);
+        if(res)
+        {
+          g_strlcpy(value, (char *)res->data, sizeof(value));
+          _filter_non_printable(value, sizeof(value));
+          g_list_free_full(res, &g_free);
+        }
+        else
+          g_strlcpy(value, NODATA_STRING, sizeof(value));
       }
+      _metadata_update_value(d->metadata[md_xmp_metadata+i], value);
     }
 
     /* geotagging */

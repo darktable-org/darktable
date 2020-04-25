@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 aldric renaudin.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -537,25 +537,25 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       // draw circle
       cairo_set_dash(cr, dashed, 0, 0);
       cairo_set_line_width(cr, 3.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
 
       cairo_stroke_preserve(cr);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_stroke(cr);
 
       // draw border
       cairo_set_dash(cr, dashed, len, 0);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
       cairo_arc(cr, xpos, ypos, radius2, 0, 2.0 * M_PI);
 
       cairo_stroke_preserve(cr);
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_set_dash(cr, dashed, len, 4);
       cairo_stroke(cr);
 
@@ -593,7 +593,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 5.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 3.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, gpt->points[2] + dx, gpt->points[3] + dy);
     for(int i = 2; i < gpt->points_count; i++)
     {
@@ -605,7 +605,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
   }
 
@@ -617,7 +617,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
     cairo_move_to(cr, gpt->border[2] + dx, gpt->border[3] + dy);
     for(int i = 2; i < gpt->border_count; i++)
@@ -631,7 +631,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
   }
@@ -676,13 +676,13 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
         cairo_set_line_width(cr, 2.5 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.5 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
       cairo_stroke_preserve(cr);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
         cairo_set_line_width(cr, 1.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 0.5 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_stroke(cr);
     }
 
@@ -692,7 +692,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, gpt->source[2] + dxs, gpt->source[3] + dys);
     for(int i = 2; i < gpt->source_count; i++)
     {
@@ -704,7 +704,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
   }
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010--2011 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ void dt_control_time_offset(const long int offset, int imgid);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
+void dt_control_delete_image(int imgid);
 void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
 gboolean dt_control_remove_images();
@@ -40,7 +41,8 @@ void dt_control_copy_images();
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
+                       gboolean high_quality, gboolean upscale, gboolean export_masks,
+                       char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
 void dt_control_merge_hdr();

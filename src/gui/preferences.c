@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika, Tobias Ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,7 +183,14 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-///////////// gui language selection
+static void usercss_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_bool("themes/usercss", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
+///////////// gui language and theme selection
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
@@ -277,9 +284,19 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, (*line)++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
+
+  label = gtk_label_new(_("modify selected theme with user.css"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  GtkToggleButton *cssbutton = GTK_TOGGLE_BUTTON(gtk_check_button_new());
+  gtk_widget_set_tooltip_text(GTK_WIDGET(cssbutton), _("load user.css from the user config directory to modify selected theme"));
+  gtk_toggle_button_set_active(cssbutton, dt_conf_get_bool("themes/usercss"));
+  g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, (*line)++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(cssbutton), label, GTK_POS_RIGHT, 1, 1);
+
 }
 
-///////////// end of gui language selection
+///////////// end of gui and theme language selection
 
 
 void dt_gui_preferences_show()

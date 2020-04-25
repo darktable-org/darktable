@@ -90,8 +90,8 @@
 @define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
-@define-color bauhaus_fg_disabled @grey_70;
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
 
 /* GTK Buttons and tabs */
 @define-color button_border @grey_30;
@@ -122,28 +122,26 @@
 /* Views */
 @define-color darkroom_bg_color @grey_45;
 @define-color darkroom_preview_bg_color @grey_35;
-@define-color lighttable_bg_color @grey_45;
+@define-color print_bg_color @grey_45;
+@define-color lighttable_bg_color @print_bg_color;
 @define-color lighttable_preview_bg_color @grey_35;
 @define-color lighttable_bg_font_color @grey_75;
-@define-color print_bg_color @grey_45;
+
+/* Lighttable and film-strip */
+@define-color thumbnail_font_color @grey_35; /* overlay and extension name hover text color */
+@define-color thumbnail_bg_color @grey_40;
+@define-color thumbnail_bg50_color @grey_100;
+@define-color thumbnail_infos_color @grey_70; /* buttons and metadata text color on thumbnails */
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_90;
+@define-color thumbnail_hover_fg_color @grey_75;
+@define-color filmstrip_bg_color @darkroom_bg_color;
+@define-color culling_selected_border_color @grey_10;
+@define-color culling_filmstrip_selected_border_color @grey_10;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
-
-/* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_50;
-@define-color thumbnail_bg_color @grey_40; /* area between border and outline */
-@define-color thumbnail_outline_color @grey_50; /* square around image+metadata */
-@define-color thumbnail_selected_font_color @grey_50;
-@define-color thumbnail_selected_bg_color @grey_60;
-@define-color thumbnail_selected_outline_color @grey_50;
-@define-color thumbnail_hover_font_color @grey_50;
-@define-color thumbnail_hover_bg_color @grey_80;
-@define-color thumbnail_hover_outline_color @grey_50;
-@define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color culling_selected_border_color @grey_10;
-@define-color culling_filmstrip_selected_border_color @grey_10;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_10;
@@ -225,6 +223,7 @@ eventbox *,
 box,
 box *
 {
+  font-size: 1em;
   background-color: transparent;
 }
 
@@ -284,9 +283,8 @@ box *
   padding: 0.75em;
 }
 
-#module-header
+#module-header  /* module name */
 {
-  /* module name */
   padding: 0.5em 0.5em 0.25em 0.5em;
 }
 
@@ -487,11 +485,7 @@ textview
   margin: 12pt 0 6pt 0;
 }
 
-/* Special modules */
-
-#lib-modulelist
-{
-}
+/* Special modules: search and image infos ones */
 
 #search-box
 {
@@ -657,7 +651,7 @@ menuitem check
   margin-right: 5px;
 }
 
-/* header and footer combobox */
+/* Header and footer combobox */
 #header-toolbar combobox,
 #footer-toolbar combobox
 {
@@ -705,6 +699,24 @@ filechooserdialog scrolledwindow
 {
   padding: 0 1px 0 8px;
   margin: 0;
+}
+
+frame#import_metadata label
+{
+  margin: 4px 3px 4px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata entry
+{
+  margin: 2px 3px 2px 2px;
+  padding: 0px;
+}
+
+frame#import_metadata checkbutton
+{
+  margin: 0px;
+  padding: 0px;
 }
 
 .dialog-vbox treeview check
@@ -781,7 +793,7 @@ notebook tab label /* disabled tabs */
   font-weight: normal;
 }
 
-notebook header /* add space between notebook tabs and options below */ 
+notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 5px;
 }
@@ -823,7 +835,7 @@ notebook header /* add space between notebook tabs and options below */
   color: @bauhaus_fg;
 }
 
-/* separator */
+/* Separator */
 
 separator
 {
@@ -839,7 +851,7 @@ separator:hover
   color: @button_border;
 }
 
-/* empty space at top/bottom of sidepanels when scrolled */
+/* Empty space at top/bottom of sidepanels when scrolled */
 undershoot,
 undershoot.top,
 undershoot.bottom,
@@ -855,16 +867,7 @@ overshoot.right
   border:none;
 }
 
-
-/* Rating stars in lighttable */
-#lib-rating-stars
-{
-  min-height: 1em;
-  min-width: 9em;
-  margin-right: 1em;
-}
-
-/* Special modules */
+/* Special modules: navigation one */
 #navigation-module
 {
   background-color: @graph_bg;
@@ -879,13 +882,13 @@ overshoot.right
   margin: 2px 0;
 }
 
-/* entries options */
+/* Entries options */
 entry
 {
   margin: 2px 0;
 }
 
-#left #lib-plugin-ui entry /* This will avoid have too much height on entry items in filter collections modules */
+#left #lib-plugin-ui entry /* This will avoid having too much height on entry items in filter collections modules */
 {
   padding: 0px;
   margin: 8px 0px;
@@ -903,27 +906,27 @@ entry
   padding: 1px;
 }
 
-/* checkbutton check state */
+/* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
-checkbutton check
+checkbutton:not(#import_metadata) check
 {
   margin: 5px 8px 5px 0;
 }
 
-/* arrow size of dropdown button arrow on filter collection */
+/* Arrow size of dropdown button arrow on filter collection */
 #left #lib-plugin-ui #dt-button
 {
   padding: 0px;
 }
 
-/* arrow size of some buttons on darkroom modules */
+/* Arrow size of some buttons on darkroom modules */
 #iop-plugin-ui #dt-button
 {
   padding: 2px;
 }
 
-/* choose below spacing between history items in darkroom */
+/* Choose below spacing between history items in darkroom */
 #left #history-button,
 #left #history-button-enabled,
 #left #history-switch,
@@ -939,7 +942,7 @@ checkbutton check
   margin: 0px 1px 1px 1px;
 }
 
-/* then font size */
+/* Then font size */
 #left #history-switch-always-enabled,
 #left #history-switch-default-enabled,
 #left #history-switch,
@@ -953,7 +956,7 @@ checkbutton check
   font-size: 0.5em;
 }
 
-/* other stuff */
+/* Other stuff */
 #iop-bottom-bar
 {
     min-height: 1.2em;
@@ -966,7 +969,7 @@ combobox label
 
 /* STUFF TO MERGE WITH ABOVE RULES */
 
-/* about darktable dialog popup */
+/* About darktable dialog popup */
 aboutdialog,
 aboutdialog box,
 aboutdialog box *
@@ -979,7 +982,7 @@ aboutdialog headerbar
   padding: 2px;
 }
 
-/* progress bar on bottom left side when exporting, importing, etc... */
+/* Progress bar on bottom left side when exporting, importing, etc... */
 progressbar *
 {
   background-color: @text_color;
@@ -995,7 +998,7 @@ progressbar progress
   background-color: @fg_color;
 }
 
-/* filechooser sidebar options */
+/* Filechooser sidebar options */
 filechooser sidebar-icon
 {
   padding: 0px 5px 0px 10px;
@@ -1006,7 +1009,7 @@ filechooser sidebar-row
   padding-top: 3px;
 }
 
-/* other stuff */
+/* Other stuff */
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
@@ -1015,6 +1018,10 @@ cell:selected
 #show_mask_button
 {
     color: #ffff00;
+}
+
+#export-max-size spinbutton {
+    padding: 0px 5px;
 }
 
 /* Preferences dialog window options */
@@ -1101,7 +1108,7 @@ cell:selected
 /* Pseudo-classes : need to be defined last to not be overwritten */
 /* All states options are designed below, active, hover, selected, disabled and check states */
 
-/* main states */
+/* Main states */
 * button:selected,
 * button:active,
 * button:checked,
@@ -1171,6 +1178,7 @@ combobox window *:hover,
 #lib-plugin-ui #control-button:hover,
 #right #iop-plugin-ui #control-button:hover,
 #control-button:hover,
+radiobutton:hover label,
 #view_label:hover,
 #view_dropdown menuitem:hover,
 #view_dropdown:hover
@@ -1288,7 +1296,7 @@ filechooser checkbutton:checked
   color: @disabled_fg_color;
 }
 
-/* sliders states */
+/* Sliders states */
 #bauhaus-popup:hover,
 #bauhaus-combobox:hover,
 #bauhaus-slider:hover
@@ -1308,7 +1316,7 @@ filechooser checkbutton:checked
   color: @plugin_bg;
 }
 
-/* notebooks states */
+/* Notebooks states */
 notebook tab:hover
 {
   border-bottom: 2px solid @button_hover_fg;
@@ -1332,7 +1340,7 @@ notebook tab:checked label
   color: @button_checked_fg;
 }
 
-/* entries states */
+/* Entries states */
 entry:hover
 {
   color: @field_hover_fg;
@@ -1354,7 +1362,7 @@ textview text selection
   background-color: @field_selected_bg;
 }
 
-/* scrollbars hover state */
+/* Scrollbars hover state */
 scrollbar.horizontal slider:hover,
 scrollbar.vertical slider:hover,
 #iop-plugin-ui scrollbar slider:hover,
@@ -1365,7 +1373,7 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
-/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+/* Color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
 
 #picker-black
 {
@@ -1380,4 +1388,354 @@ scale contents trough slider:hover
 #picker-white
 {
   color: @grey_100;
+}
+
+/* Thumbtable css part
+
+Hierachy :
+
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom (GtkLayout -- main widget which contains all thumbs)
+    #thumb_main                                                      (GtkOverlay -- thumbnail widget)
+      #thumb_back                                                    (GtkEventBox -- thumbnail background)
+      #thumb_ext                                                     (GtkLabel -- thumbnail extension)
+      #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
+        #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
+      #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
+      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
+      #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
+      #thumb_localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
+      #thumb_altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
+      #thumb_group                                                   (GtkDarktableThumbnailBtn -- grouping icon)
+      #thumb_audio                                                   (GtkDarktableThumbnailBtn -- audio sidecar icon)
+
+Details :
+
+  #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom
+    class = .dt_thumbtable          present for all thumbtable types
+    class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
+    Classes to determine how are shown overlays on/under the image :
+    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended / .dt_overlays_mixed
+    Classes to determine the category of size of the thumbnails (cat sizes limits are defined in dartablerc key=plugins/lighttable/thumbnail_sizes
+    class = .dt_thumbnails_?? where ?? is the cat number
+  #thumb_main
+    state = :selected  if the thumb is in current selection
+    state = :active    if the thumb correspond to one of the images worked on (filmstrip)
+    state = :hover     if the mouse hover the widget
+    class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders arround thumb
+  #thumb_image
+    only the borders are drawn - background is ignored
+  all icons inside the widget
+    class = .dt_thumb_btn
+    state = :hover : the mouse is hovering the icon
+    if color and background-color are transparent, the icon is not drawn and inactive
+  #thumb_reject :
+    state = :active   if the image is actually rejected
+    state = :hover    the mouse is hover the icon (a circle is added around the cross)
+  #thumb_star :
+    - color is the color of the star outline.
+    - background-color is the inner part of the star
+    state = :active : the rating of the image is >=
+  #thumb_group :
+    state = :active : the image is the group leader
+*/
+
+/* Thumbtable */
+.dt_thumbtable
+{
+  background-color: @lighttable_bg_color;
+}
+
+/* background */
+@keyframes lastactive
+{
+  0% {border-color: @lighttable_bg_color; border-width : 2px;}
+  50% {border-color: @thumbnail_bg50_color; border-width : 6px;}
+  100% {border-color: @lighttable_bg_color; border-width : 2px;}
+}
+
+#thumb_back
+{
+  background-color: @thumbnail_bg_color;
+  border: 1px solid @lighttable_bg_color;
+}
+
+#thumb_main:selected #thumb_back
+{
+  background-color: @thumbnail_selected_bg_color;
+}
+
+#thumb_main:hover #thumb_back
+{
+  background-color: @thumbnail_hover_bg_color;
+}
+
+.dt_group_left #thumb_back
+{
+  border-left: 2px solid rgb(255, 187, 0);
+}
+.dt_group_top #thumb_back
+{
+  border-top: 2px solid rgb(255, 187, 0);
+}
+.dt_group_right #thumb_back
+{
+  border-right: 2px solid rgb(255, 187, 0);
+}
+.dt_group_bottom #thumb_back
+{
+  border-bottom: 2px solid rgb(255, 187, 0);
+}
+
+.dt_thumbtable_reorder #thumb_main:hover #thumb_back
+{
+  border-left : 4px solid rgb(255, 187, 0);
+}
+
+.dt_last_active #thumb_back
+{
+  animation-name: lastactive;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: 3;
+}
+
+/* Image extension name */
+#thumb_ext
+{
+  color: @thumbnail_infos_color;
+}
+#thumb_main:selected #thumb_ext
+{
+  color: @thumbnail_infos_color;
+}
+#thumb_main:hover #thumb_ext
+{
+  color: @thumbnail_font_color;
+}
+
+/* Image */
+#thumb_image
+{
+  border: none;
+  margin : 3px; /* not real pixels, but percentage of the thumb size */
+}
+
+.dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown) */
+{
+  margin : 2px;
+}
+
+#thumb_main:active #thumb_image
+{
+  border: 2px solid @plugin_bg_color;
+}
+
+.dt_overlays_always #thumb_image,
+.dt_overlays_always_extended #thumb_image,
+.dt_overlays_mixed #thumb_image
+{
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
+/* Popover overlays options from star icon */
+
+radiobutton
+{
+  padding: 2px;
+}
+
+/* Bottom area */
+#thumb_bottom
+{
+  border : 1px solid transparent; /* to not overlay thumb borders */
+}
+
+#thumb_bottom_label
+{
+  border : 5px solid transparent; /* act as text margins */
+  color: transparent;
+}
+
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_bottom_label
+{
+  color: @thumbnail_infos_color;
+}
+
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_always_extended #thumb_main:selected #thumb_bottom_label,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
+{
+  color: @thumbnail_font_color;
+}
+
+.dt_group_left #thumb_bottom
+{
+  border-left-width: 2px;
+}
+.dt_group_bottom #thumb_bottom
+{
+  border-bottom-width: 2px;
+}
+.dt_group_right #thumb_bottom
+{
+  border-right-width: 2px;
+}
+
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
+}
+
+/* Thumbnails buttons */
+
+/* rating stars in lighttable */
+.dt_overlays_none .dt_thumb_btn,
+.dt_overlays_hover .dt_thumb_btn,
+.dt_overlays_hover_extended .dt_thumb_btn
+{
+  color: transparent;
+  background-color: transparent;
+}
+
+.dt_overlays_always .dt_thumb_btn,
+.dt_overlays_always_extended .dt_thumb_btn,
+.dt_overlays_mixed .dt_thumb_btn
+{
+  color: @thumbnail_infos_color;
+}
+
+#thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:hover .dt_thumb_btn,
+.dt_overlays_always #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb_main:selected .dt_thumb_btn,
+.dt_overlays_mixed #thumb_main:selected .dt_thumb_btn
+{
+  color: @thumbnail_font_color;
+}
+
+/* reject */
+#thumb_main:hover #thumb_reject:active,
+.dt_overlays_always #thumb_reject:active,
+.dt_overlays_always #thumb_main:selected #thumb_reject:active,
+.dt_overlays_always_extended #thumb_reject:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_reject:active,
+.dt_overlays_mixed #thumb_reject:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_reject:active
+{
+  color: red;
+}
+
+/* stars */
+#thumb_main:hover #thumb_star:active,
+.dt_overlays_always #thumb_star:active,
+.dt_overlays_always_extended #thumb_star:active,
+.dt_overlays_mixed #thumb_star:active,
+.dt_overlays_always #thumb_main:selected #thumb_star:active,
+.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
+.dt_overlays_mixed #thumb_main:selected #thumb_star:active
+{
+  color: @thumbnail_hover_bg_color;
+  background-color: @thumbnail_infos_color;
+}
+
+#thumb_main:hover #thumb_star:hover
+{
+  color: @bauhaus_fg_hover;
+  background-color: @thumbnail_hover_fg_color;
+}
+
+/* local copy */
+#thumb_localcopy
+{
+  border-top : 1px solid @lighttable_bg_color;
+  border-right : 1px solid @lighttable_bg_color;
+}
+.dt_group_right #thumb_localcopy
+{
+  border-right: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+.dt_group_top #thumb_localcopy
+{
+  border-top: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
+}
+#thumb_main:hover #thumb_localcopy,
+.dt_overlays_always #thumb_localcopy,
+.dt_overlays_always_extended #thumb_localcopy,
+.dt_overlays_mixed #thumb_localcopy
+{
+  color: white;
+  background-color: white;
+}
+
+/* other icons */
+#thumb_main:hover #thumb_altered,
+#thumb_main:hover #thumb_group,
+#thumb_main:hover #thumb_audio,
+.dt_overlays_always #thumb_altered,
+.dt_overlays_always #thumb_group,
+.dt_overlays_always #thumb_audio,
+.dt_overlays_always_extended #thumb_altered,
+.dt_overlays_always_extended #thumb_group,
+.dt_overlays_always_extended #thumb_audio,
+.dt_overlays_mixed #thumb_altered,
+.dt_overlays_mixed #thumb_group,
+.dt_overlays_mixed #thumb_audio
+{
+  color: @thumbnail_infos_color;
+}
+#thumb_main:hover #thumb_group:hover,
+#thumb_main:hover #thumb_group:active,
+#thumb_main:hover #thumb_audio:hover,
+.dt_overlays_always #thumb_group:hover,
+.dt_overlays_always #thumb_group:active,
+.dt_overlays_always #thumb_audio:hover,
+.dt_overlays_always_extended #thumb_group:hover,
+.dt_overlays_always_extended #thumb_group:active,
+.dt_overlays_always_extended #thumb_audio:hover,
+.dt_overlays_mixed #thumb_group:hover,
+.dt_overlays_mixed #thumb_group:active,
+.dt_overlays_mixed #thumb_audio:hover
+{
+  color: @thumbnail_hover_fg_color;
+}
+.dt_overlays_none #thumb_reject,
+.dt_overlays_none #thumb_star,
+.dt_overlays_none #thumb_colorlabels,
+.dt_overlays_none #thumb_localcopy,
+.dt_overlays_none #thumb_altered,
+.dt_overlays_none #thumb_group,
+.dt_overlays_none #thumb_audio,
+.dt_overlays_none #thumb_main:hover #thumb_reject,
+.dt_overlays_none #thumb_main:hover #thumb_star,
+.dt_overlays_none #thumb_main:hover #thumb_colorlabels,
+.dt_overlays_none #thumb_main:hover #thumb_localcopy,
+.dt_overlays_none #thumb_main:hover #thumb_altered,
+.dt_overlays_none #thumb_main:hover #thumb_group,
+.dt_overlays_none #thumb_main:hover #thumb_audio,
+.dt_overlays_none #thumb_reject:active,
+.dt_overlays_none #thumb_star:active,
+.dt_overlays_none #thumb_colorlabels:active,
+.dt_overlays_none #thumb_localcopy:active,
+.dt_overlays_none #thumb_altered:active,
+.dt_overlays_none #thumb_group:active,
+.dt_overlays_none #thumb_audio:active
+{
+  background-color: transparent;
+  color: transparent;
+}
+
+/* Messages shown on bottom middle of the UI. For example "loading image..." or "working on..." ones */
+#log-msg
+{
+  color: @log_fg_color;
+  font-size: 1em;
+  font-weight: bold;
+  background-color: @log_bg_color;
+  padding: 8px 20px 4px 20px;
+  border-radius: 14px;
 }

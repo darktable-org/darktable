@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 christian tellefsen
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,6 +186,8 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "FILE_NAME", N_("$(FILE_NAME) - basename of the input image") },
           { "FILE_EXTENSION", N_("$(FILE_EXTENSION) - extension of the input image") },
           { "VERSION", N_("$(VERSION) - duplicate version") },
+          { "VERSION_IF_MULTI", N_("$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one version exists") },
+          { "VERSION_NAME", N_("$(VERSION_NAME) - version name from metadata") },
           { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
           { "MAX_WIDTH", N_("$(MAX_WIDTH) - maximum image export width") },
           { "MAX_HEIGHT", N_("$(MAX_HEIGHT) - maximum image export height") },

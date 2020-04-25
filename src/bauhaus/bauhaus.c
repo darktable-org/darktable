@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 johannes hanika.
-    copyright (c) 2012--2014 tobias ellinghaus.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,9 +101,7 @@ static GdkRGBA * default_color_assign()
 
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned)
 {
-  PangoLayout *layout;
-
-  layout = pango_cairo_create_layout(cr);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
 
   if(max_width > 0)
   {
@@ -112,9 +109,11 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
-  if(text) {
+  if(text)
+  {
     pango_layout_set_text(layout, text, -1);
-  } else {
+  } else
+  {
     // length of -1 is not allowed with NULL string (wtf)
     pango_layout_set_text(layout, NULL, 0);
   }
@@ -131,7 +130,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
 
   int pango_width, pango_height;
   pango_layout_get_size(layout, &pango_width, &pango_height);
-  float text_width = ((double)pango_width/PANGO_SCALE);
+  const float text_width = ((double)pango_width/PANGO_SCALE);
 
   if(right_aligned) x_pos -= text_width;
 
@@ -592,6 +591,9 @@ void dt_bauhaus_init()
   // gtk_window_set_keep_above isn't enough on OS X
   gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window),
                                GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  // needed on macOS to avoid fullscreening the popup with newer GTK
+  gtk_window_set_type_hint(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+
   gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
   // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
   gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
@@ -2096,7 +2098,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width))
+  if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING))
   {
     if (w->quad_toggle)
     {
@@ -2265,19 +2267,6 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   {
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
     d->is_changed = 0;
-
-    if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
-    {
-      char text[256];
-      const float f = d->min + d->pos * (d->max - d->min);
-      const float fc = d->callback(GTK_WIDGET(w), f, DT_BAUHAUS_GET);
-      snprintf(text, sizeof(text), d->format, fc);
-
-      if(w->module && !strstr(w->module->name(), w->label))
-        dt_control_log(_("%s/%s: %s"), w->module->name(), w->label, text);
-      else
-        dt_control_log(_("%s: %s"), w->label, text);
-    }
   }
 }
 
@@ -2431,7 +2420,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
 
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-  if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width))
+  if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING))
   {
     if (w->quad_toggle)
     {

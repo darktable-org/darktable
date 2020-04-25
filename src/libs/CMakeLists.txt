@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../")
 
 include(manage-symbol-visibility)
 
@@ -89,11 +89,11 @@ if(BUILD_BATTERY_INDICATOR)
 endif()
 
 # check if gphoto2 found and add build of camera modules...
-if(GPHOTO2_FOUND)
+if(Gphoto2_FOUND)
 	add_library(camera MODULE "camera.c")
 	add_library(live_view MODULE "live_view.c")
 	set(MODULES ${MODULES} camera live_view)
-endif(GPHOTO2_FOUND)
+endif(Gphoto2_FOUND)
 
 # the modules specific to map mode
 if(USE_MAP)

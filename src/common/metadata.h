@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,9 +31,34 @@ typedef enum dt_metadata_t
   DT_METADATA_XMP_DC_DESCRIPTION,
   DT_METADATA_XMP_DC_RIGHTS,
   DT_METADATA_XMP_ACDSEE_NOTES,
+  DT_METADATA_XMP_VERSION_NAME,
   DT_METADATA_NUMBER
 }
 dt_metadata_t;
+
+typedef enum dt_metadata_type_t
+{
+  DT_METADATA_TYPE_USER,     // metadata for users
+  DT_METADATA_TYPE_OPTIONAL, // metadata hidden by default
+  DT_METADATA_TYPE_INTERNAL  // metadata for dt internal usage - the user cannot see it
+}
+dt_metadata_type_t;
+
+typedef enum dt_metadata_signal_t
+{
+  DT_METADATA_SIGNAL_SHOWN,     // metadata set as shown
+  DT_METADATA_SIGNAL_HIDDEN,    // metadata set as hidden
+  DT_METADATA_SIGNAL_NEW_VALUE  // metadata value changed
+}
+dt_metadata_signal_t;
+
+typedef enum dt_metadata_flag_t
+{
+  DT_METADATA_FLAG_HIDDEN = 1 << 0,     // metadata set as shown
+  DT_METADATA_FLAG_PRIVATE = 1 << 1,    // metadata set as hidden
+  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
+}
+dt_metadata_flag_t;
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
@@ -41,27 +66,36 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 /** return the metadata keyid by display order */
 const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
 
+/** return the metadata type by display order */
+const int dt_metadata_get_type_by_display_order(const uint32_t order);
+
 /** return the metadata name of the metadata keyid */
 const char *dt_metadata_get_name(const uint32_t keyid);
 
 /** return the keyid of the metadata key */
 const dt_metadata_t dt_metadata_get_keyid(const char* key);
 
-/** retunr the key of the metadata keyid */
+/** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
 
+/** return the type of the metadata keyid */
+const int dt_metadata_get_type(const uint32_t keyid);
+
 /** Set metadata for a specific image, or all selected for id == -1. */
-void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // exif.cc, ligthroom.c, duplicate.c, lua/image.c
+void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // duplicate.c, lua/image.c
+
+/** Set imported metadata for a specific image */
+void dt_metadata_set_import(int id, const char *key, const char *value); // exif.cc, ligthroom.c
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
 /** list is a set of key, value */
 void dt_metadata_set_list(int id, GList *key_value, const gboolean undo_on, const gboolean group_on); // libs/metadata.c
 
-/** Set metadata (id keys) for a specific image, or all selected for id == -1.
+/** Set metadata (id keys) for a list of images.
     list is a set of keyid, value
     if clear_on TRUE the image metadata are cleared before attaching the new ones*/
-void dt_metadata_set_list_id(const int id, GList *key_value, const gboolean clear_on, const gboolean undo_on, const gboolean group_on); // libs/image.c
-
+void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
+                             const gboolean undo_on, const gboolean group_on);
 /** Get metadata (named keys) for a specific image, or all selected for id == -1.
     For keys which return a string, the caller has to make sure that it
     is freed after usage. */

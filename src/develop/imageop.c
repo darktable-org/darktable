@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 Henrik Andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -815,6 +813,8 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
@@ -846,12 +846,13 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
+    darktable.gui->reset = reset;
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
   {
-    dt_iop_gui_set_expanded(base, FALSE, FALSE);
-    dt_iop_gui_set_expanded(module, TRUE, FALSE);
+    dt_iop_gui_set_expanded(base, FALSE, TRUE);
+    dt_iop_gui_set_expanded(module, TRUE, TRUE);
   }
 
   /* setup key accelerators */
@@ -932,6 +933,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   if(ended)
   {
     gtk_widget_destroy(d->floating_window);
+    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
     free(d);
     return TRUE;
   }
@@ -1749,6 +1751,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
+    //used to take focus away from module search text input box when module selected
+    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), TRUE);
+    gtk_widget_grab_focus(dt_iop_gui_get_pluginui(module));
+    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), FALSE);
+
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_connect_locals_iop(module);
@@ -1887,16 +1894,21 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
       return FALSE;
     }
+    else if(e->state & GDK_CONTROL_MASK)
+    {
+      _iop_gui_rename_module(module);
+      return FALSE;
+    }
     else
     {
-    // make gtk scroll to the module once it updated its allocation size
-    if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-      darktable.gui->scroll_to[1] = module->expander;
+      // make gtk scroll to the module once it updated its allocation size
+      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
+        darktable.gui->scroll_to[1] = module->expander;
 
-    gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
-    dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
+      const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
+      dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
-    return TRUE;
+      return TRUE;
     }
   }
   else if(e->button == 3)
@@ -2124,8 +2136,11 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_dev_modulegroups_switch(darktable.develop, module);
   }
 
-  dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-  dt_iop_request_focus(module);
+  dt_iop_gui_set_expanded(module, !module->expanded, dt_conf_get_bool("darkroom/ui/single_module"));
+  if(module->expanded)
+  {
+    dt_iop_request_focus(module);
+  }
   return TRUE;
 }
 
@@ -2391,6 +2406,27 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *op
 
     if(strcmp(mod->op, operation) == 0
        && (mod->multi_priority == multi_priority || multi_priority == -1))
+    {
+      mod_ret = mod;
+      break;
+    }
+
+    m = g_list_next(m);
+  }
+  return mod_ret;
+}
+
+dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name)
+{
+  dt_iop_module_t *mod_ret = NULL;
+
+  GList *m = g_list_first(modules);
+  while(m)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+
+    if((strcmp(mod->op, operation) == 0)
+       && ((multi_name == NULL) || (strcmp(mod->multi_name, multi_name) == 0)))
     {
       mod_ret = mod;
       break;

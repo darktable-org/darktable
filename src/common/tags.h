@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,8 +77,11 @@ void dt_tag_rename(const guint tagid, const gchar *new_tagname);
 /** checks if tag exists. \param[in] name of tag to check. \return the id of found tag or -1 i not found. */
 gboolean dt_tag_exists(const char *name, guint *tagid);
 
-/** attach a tag on selected images. tagid id of tag to attach. imgid the image
- * id to attach tag to, if < 0 selected images are used. */
+/** attach a tag on images list. tagid id of tag to attach. img the list of image
+ * id to attach tag to */
+gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+/** attach a tag on images. tagid id of tag to attach. imgid the image
+ * id to attach tag to, if < 0 images to act on are used. */
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 /** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
@@ -89,15 +92,19 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created
  * if clear_on TRUE the image tags are cleared before attaching the new ones*/
-void dt_tag_set_tags(GList *tags, const gint imgid, const gboolean clear_on, const gboolean undo_on, const gboolean group_on);
+void dt_tag_set_tags(const GList *tags, const GList *img,
+                     const gboolean ignore_dt_tags, const gboolean clear_on,
+                     const gboolean undo_on, const gboolean group_on);
 
-/** attach a list of tags on selected images. \param[in] tags a comma separated string of tags. \param[in]
- * imgid the image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's
- * created.*/
-void dt_tag_attach_string_list(const gchar *tags, const gint imgid, const gboolean undo_on, const gboolean group_on);
+/** attach a list of tags on list of images. \param[in] tags a comma separated string of tags. \param[in]
+ * img the list of images to attach tag to. \note If tag not exists it's created.*/
+void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on, const gboolean group_on);
 
-/** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach
- * tag from, if < 0 selected images are used. */
+/** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] img the list of image id to detach
+ * tag from */
+void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+/** detach tag from images. \param[in] tagid if of tag to dettach. \param[in] imgid the image id to detach
+ * tag from, if < 0 images to act on are used. */
 void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 /** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
@@ -128,11 +135,11 @@ GList *dt_tag_get_hierarchical(gint imgid);
  *  the difference to dt_tag_get_hierarchical() is that this one checks option for exportation */
 GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 
-/** get a flat list of tag id, without darktable tags*/
-GList *dt_tag_get_tags(gint imgid);
+/** get a flat list of tags id attached to image id*/
+GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags);
 
-/** get the subset of images from the selected ones that have a given tag attached */
-GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
+/** get the subset of images from the given list that have a given tag attached */
+GList *dt_tag_get_images_from_list(const GList *img, gint tagid);
 
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by

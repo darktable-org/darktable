@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
       "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
       "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
-      "raw_maximum, aspect_ratio FROM main.images WHERE id = ?1",
+      "raw_maximum, aspect_ratio, exposure_bias FROM main.images WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -106,6 +106,10 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       img->aspect_ratio = sqlite3_column_double(stmt, 27);
     else
       img->aspect_ratio = 0.0;
+    if(sqlite3_column_type(stmt, 28) == SQLITE_FLOAT)
+      img->exif_exposure_bias = sqlite3_column_double(stmt, 28);
+    else
+      img->exif_exposure_bias = NAN;
 
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
@@ -239,7 +243,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       "focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14, "
       "crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18, longitude = ?19, "
       "latitude = ?20, altitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
-      "raw_maximum = ?25, aspect_ratio = ROUND(?26,1) WHERE id = ?27",
+      "raw_maximum = ?25, aspect_ratio = ROUND(?26,1), exposure_bias = ?28 WHERE id = ?27",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
@@ -269,6 +273,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 26, img->aspect_ratio);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 27, img->id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 28, img->exif_exposure_bias);
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
