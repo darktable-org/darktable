@@ -205,8 +205,8 @@ static inline void gauss_reduce(
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
   // this is the scalar (non-simd) code:
-  const float a = 0.4f;
-  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
+  const float w[5] = { 1.f, 4.f, 6.f, 4.f, 1.f };
+  const float scale = 1.f/256.f;
   memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
@@ -215,9 +215,14 @@ static inline void gauss_reduce(
   schedule(static) \
   collapse(2)
 #endif
-  for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
-    for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
-      coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+  for(int j=1;j<ch-1;j++)
+    for(int i=1;i<cw-1;i++)
+    {
+      for(int jj=-2;jj<=2;jj++)
+        for(int ii=-2;ii<=2;ii++)
+          coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+      coarse[j*cw+i] *= scale;
+    }
   ll_fill_boundary1(coarse, cw, ch);
 }
 
