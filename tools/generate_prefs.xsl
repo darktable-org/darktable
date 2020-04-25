@@ -568,6 +568,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     g_object_unref(store);
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_cell_renderer_set_padding(renderer, 0, 0);
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer, "text", 1, NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
