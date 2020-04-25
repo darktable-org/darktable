@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "POT-Creation-Date: 2020-04-12 17:35-0300\n"
-"PO-Revision-Date: 2020-04-23 09:26-0300\n"
+"PO-Revision-Date: 2020-04-24 19:38-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -704,7 +704,7 @@ msgid ""
 "bpp &lt;bpp&gt;] [--hq &lt;0|1|true|false&gt;] [--upscale &lt;0|1|true|"
 "false&gt;] [--style &lt;style name&gt;] [--style-overwrite] [--verbose] [--"
 "core &lt;darktable options&gt;]"
-msgstr "darktable-cli &lt;input file&gt;|&lt;image folder&gt; [&lt;xmp file&gt;] &lt;output file&gt; [--width &lt;max width&gt;] [--height &lt;max height&gt;] [--bpp &lt;bpp&gt;] [--hq &lt;0|1|true|false&gt;] [--upscale &lt;0|1|true|false&gt;] [--style &lt;style name&gt;] [--style-overwrite] [--verbose] [--core &lt;darktable options&gt;]"
+msgstr "darktable-cli &lt;arquivo de entrada&gt;|&lt;image folder&gt; [&lt;xmp file&gt;] &lt;output file&gt; [--width &lt;max width&gt;] [--height &lt;max height&gt;] [--bpp &lt;bpp&gt;] [--hq &lt;0|1|true|false&gt;] [--upscale &lt;0|1|true|false&gt;] [--style &lt;style name&gt;] [--style-overwrite] [--verbose] [--core &lt;darktable options&gt;]"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:602(term)
 msgid "&lt;input file&gt;"
@@ -2320,7 +2320,7 @@ msgstr "x"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21000(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21004(secondary)
 msgid "GUI options"
-msgstr "Opções da GUI"
+msgstr "Opções da interface gráfica"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2281(entry)
 msgid ""
@@ -2775,7 +2775,7 @@ msgstr "<emphasis>Ctrl+Z</emphasis> : desfazer as últimas modificações"
 msgid ""
 "<emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not "
 "been used yet)"
-msgstr "<emphasis>Ctrl+Y</emphasis> : refazer o último desfazer (nada faz se o 'desfazer' ainda não tiver sido usado)"
+msgstr "<emphasis>Ctrl+Y</emphasis> : refazer o último movimento desfeito (nada faz se o 'desfazer' ainda não tiver sido usado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2817(para)
 msgid "The default keyboard shortcuts are: <placeholder-1/>"
@@ -6828,18 +6828,18 @@ msgid ""
 "gradient is best seen and modified when the mask is displayed by pressing "
 "the <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> button."
-msgstr ""
+msgstr "Usar o scroll perto da linha do centro muda a inclinação do gradiente. Linhas pontilhadas indicam a distância além da qual a opacidade é 100% e 0%, respectivamente. Entre estas linhas pontilhadas a opacidade muda linearmente. O gradiente é melhor visualizado e modificado quando a máscara é mostrada, ao pressionar o botão <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7180(para)
 msgid ""
 "Depending on the module and the underlying image using a gradient shape "
 "might provoke banding artifacts. You should consider to activate the "
 "<emphasis>dithering</emphasis> module (see <xref linkend=\"dithering\"/>)"
-msgstr ""
+msgstr "Dependendo do módulo e da imagem, usar um gradiente pode produzir artefatos de banda. Você deveria considerar ativar o <emphasis>dithering</emphasis>  (veja <xref linkend=\"dithering\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7191(entry)
 msgid "A gradient with controls and activated mask display."
-msgstr "Um gradiente com controles e display da máscara ativado."
+msgstr "Um gradiente com controles e máscara sendo mostrada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7205(para)
 msgid ""
@@ -6850,7 +6850,7 @@ msgid ""
 "these items in order to add it to the current mask. The list also contains "
 "shapes once generated but no longer in use. This way you can even get back a "
 "deleted shape."
-msgstr ""
+msgstr "O número de formas que são usadas na máscara atual é mostrado no campo <quote>máscara desenhada<quote/> Clicar nesse campo abre uma caixa com todas as formas que já foram definidas no contexto da imagem corrente, mas não foram ainda usadas na máscra atual. Você pode clicar em qualquer um desses itens para adicioná-lo à máscara atual. A lista também contém formas geradas em algum momento mas não mais em uso. Assim você pode até mesmo recuperar uma forma que tenha sido removida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7213(para)
 msgid ""
@@ -6863,7 +6863,7 @@ msgid ""
 "inverted – 100% becomes 0% and vice versa. You need this feature when "
 "combining drawn and parametric masks (see <xref linkend=\"combined_masks\"/"
 ">)."
-msgstr ""
+msgstr "Um botão de polaridade ( <inlinegraphic fileref=\"images/darkroom_module_icon_polarity_plus.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e <inlinegraphic fileref=\"images/darkroom_module_icon_polarity_minus.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> , erspectivamente) permite ao usuário alternar entre o estado normal e invertido da máscara desenhada, ou seja, a opacidade dos valores fica invertida - 100% se torna 0% e vice-versa. Você precisa dessa funcionalidade quando combinando máscaras desenhadas e paramétricas (veja <xref linkend=\"combined_masks\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7226(title)
 msgid "invert mask"
@@ -6874,7 +6874,7 @@ msgid ""
 "When <quote>drawn mask</quote> is selected there is an additional combobox "
 "to invert the mask by switching mask inversion <quote>on</quote> or "
 "<quote>off</quote>."
-msgstr ""
+msgstr "Quando <quote>máscara desenhada<quote/> é selecionada há uma combobox adicional para inverter a máscara, alternando a inversão entre <quote>ligada</quote> e <quote>desligada</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7234(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8672(secondary)
@@ -6890,7 +6890,7 @@ msgid ""
 "to keep track of your shapes. You can also select individual shapes for "
 "editing – a helpful feature if your masks happens to contain several shapes "
 "with overlapping control elements."
-msgstr ""
+msgstr "Mais funcionalidade para controlar a interação de múltiplas formas em uma máscara podem ser encontradas no painel de gerenciamento de máscaras (veja <xref linkend=\"mask_manager\"/>). Aqui você pode dar nomes individuais para suas formas, que ajudarão a manter registro e localizá-las. Voce também pode selecionar formas individuais para edição - uma funcionalidade útil se suas máscaras contém várias formas com controles que se sobrepõem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7253(title)
 msgid "Parametric mask"
@@ -6911,7 +6911,7 @@ msgid ""
 "blended. It does so by automatically generating an intermediate blend mask "
 "from user defined parameters. These parameters are color coordinates not the "
 "geometrical coordinates used in drawn masks."
-msgstr ""
+msgstr "A funcionalidade paramétrica, antes chamada de <quote>mesclagem condicional<quote/>, oferece controle fino seletivo sobre como pixels individuais são mesclados. Isto é feito gerando automaticamente uma máscara de mesclagem a partir dos parâmetros do usuário. Estes parâmetros são coordenadas de cor, e não as coordenadas geométricas das máscaras desenhadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7271(para)
 msgid ""
@@ -6925,7 +6925,7 @@ msgid ""
 "channel opacity function. Depending on the pixel's value for this data "
 "channel this function determines a blending factor between 0 and 1 (or 100%) "
 "for that pixel."
-msgstr ""
+msgstr "Para cada canal de dados de um módulo (Lab, RGB), e adicionalmente pra muitos canais virtuais de dados (por exemplo matiz, saturação), usuários podem construir uma função de opacidade por-canal. Dependendo do valor do pixel para este canal de dados, esta função determina um fator de mesclagem entre 0 e 1 (ou 100%) para aquele pixel."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7286(para)
 msgid ""
@@ -6933,20 +6933,20 @@ msgid ""
 "data channels (real and virtual). All blending factors are finally pixel-"
 "wise multiplied together with the value of the global opacity slider (see "
 "<xref linkend=\"blending_operators\"/>) to form a blend mask for the image."
-msgstr ""
+msgstr "Cada pixel de uma imagem tem diferntes fatores de mesclagem para seus canais de dados (realou virtual). Todos os fatores de mesclagem são finalmente multiplicados, pixel por pixel, junto com o valor de opacidade global configurado no deslizador (veja <xref linkend=\"blending_operators\"/>) para formar a máscara de mesclagem da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7293(para)
 msgid ""
 "If for a given pixel the blend mask has a value of 0, the input of the "
 "module is left unchanged. If for a pixel the blend mask has its maximum "
 "value of 1 (or 100%), the module has full effect."
-msgstr ""
+msgstr "Se, para um dado pixel, a máscara de mesclagem tem valor 0, a entrada do módulo tem seu valor inalterado. Se, para o pixel, a máscara de mesclagem tem seu valor máximo de 1 (ou 100%), o módulo tem efeito completo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7312(entry)
 msgid ""
 "When <placeholder-1/> is activated in combobox <placeholder-2/> an "
 "additional set of tabbed controls is shown."
-msgstr ""
+msgstr "Quando <placeholder-1/> está ativada na combobox <placeholder-2/> um conjunto adicional de controles com abas é mostrado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7326(title)
 msgid "Channel tabs"
@@ -6960,14 +6960,14 @@ msgid ""
 "G, B, H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). "
 "Consult for example <ulink url=\"http://en.wikipedia.org/wiki/Color_space\"> "
 "Wikipedia's article on color spaces</ulink> for a deeper look."
-msgstr ""
+msgstr "Cada aba seleciona um canal de dados - real ou virtual. Módulos agindo no espaço de cores Lab tem canais L, a, b, C (croma de LCh) e h (matiz de LCh). Módulos agindo no espaço de cores RGB tem canais para g (cinza), R, G, B, H (matiz de HSL), S (saturação de HSL), e L (luminosidade de HSL). Consulte, por exemplo, <ulink url=\"https://pt.wikipedia.org/wiki/Espaço_de_cores\"> o artigo da Wikipedia sobre espaços de cores</ulink> para uma visão mais aprofundada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7335(para)
 msgid ""
 "Each tab provides two sliders for its data channels: one for the input data "
 "that the module receives and one for the output data that the module "
 "produces prior to blending."
-msgstr ""
+msgstr "Cada aba provê dois deslizadores para seus canais de dados: um para dados de entrada do módulo e um para dados de saída que o módulo produz antes da mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7339(para)
 msgid ""
@@ -6980,7 +6980,7 @@ msgid ""
 "the <emphasis>ctrl</emphasis> key which lets you see the resulting mask "
 "overlaid to the image. When leaving the slider the image goes back to normal "
 "after a short delay."
-msgstr ""
+msgstr "Você pode inspecionar os dados de imagem correspondentes a um canal individual segurando <emphasis>Shift</emphasis> enquanto entra o respectivo deslizador com o cursor do mouse. O centro da imagem muda para mostrar o canal selecionado da imagem em tons de cinza ou em cores falsas, dependendo da configuração de preferências em <quote>Opções da interface</quote> (veja <xref linkend=\"gui_options\"/>). Você pode adicionalmente segurar <emphasis>Ctrl</emphasis>, que permite ver a máscara sobreposta à imagem. Quando sair do deslizador a imagem volta ao normal depois de um tempo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7352(title)
 msgid "Color channel sliders"
@@ -6993,7 +6993,7 @@ msgid ""
 "slider mark the range of values where opacity is 1. Two triangles below the "
 "slider mark the range values where opacity is zero. Intermediate points "
 "between full and zero opacities are given a proportional opacity."
-msgstr ""
+msgstr "Com o deslizador de canal de cores, você constrói uma função trapezoidal de opacidade. Para isto há quatro marcadores por deslizador. Dois triângulos acima do deslizador marcam a faixa de valores onde a opacidade é um. Dois abaixo marcam a faixa de valores onde a opacidade é zero. Pontos intermediários entre opacidades cheia e zero são dados opacidades proporcionais."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7360(para)
 msgid ""
@@ -7002,7 +7002,7 @@ msgid ""
 "markers, indicate the open (mostly wider) edge of the trapezoidal function. "
 "The sequence of the markers always remains unchanged: they can touch but "
 "they can not switch position."
-msgstr ""
+msgstr "Os triângulos cheios, ou marcadores internos, indicam a borda fechada da função trapezoidal. Os triangulos abertos, ou marcadores externos, indicam a borda aberta da função. A sequência dos marcadores permanece inalterada: eles podem se tocar, mas não podem trocar de posição."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7366(para)
 msgid ""
@@ -7015,7 +7015,7 @@ msgid ""
 "function modes with visual confirmation provided by exchanging the upper and "
 "the lower triangle markers. These two types of trapezoidal functions are "
 "represented graphically in the following images."
-msgstr ""
+msgstr "Um botão de polaridade ( <inlinegraphic fileref=\"images/darkroom_module_icon_polarity_plus.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e <inlinegraphic fileref=\"images/darkroom_module_icon_polarity_minus.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> , respectivamente) à direita do deslizador alterna entre modos de função <emphasis>seleção de faixa</emphasis> e <emphasis>de-seleção de faixa</emphasis> com confirmação visual para trocar os triângulos marcadores de xima e de baixo. Estes dois tipos de função trapezoidal são representadas graficamente pelas imagensa seguir."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7384(para)
 msgid "Range select function"
@@ -7044,7 +7044,7 @@ msgid ""
 "<quote>all at 100%</quote> mask. Starting from there one can move the "
 "sliders inwards to gradually take out more an more parts of the image except "
 "of the remaining narrow range."
-msgstr ""
+msgstr "Em seu estado default, os marcadores ficam todos em suas posições extremas, máximo à direita e máximo à esquerda, respectivamente. neste estado, <emphasis>seleção de faixa</emphasis> seleciona a faixa inteira de valores dando uma máscara com <quote>tudo em 100%</quote>. Começando daí, é possível mover os deslizadores para dentro a fim de gradualmente retirar mais e mais partes da imagem exceto uma faixa estreita restante."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7434(para)
 msgid ""
@@ -7052,13 +7052,13 @@ msgid ""
 "whole range of values, giving an <quote>all-zero</quote> mask as a starting "
 "point. Moving the sliders inwards gradually extends the mask more and more "
 "except of the remaining narrow range."
-msgstr ""
+msgstr "Uma função de <emphasis>de-seleção</emphasis> por default de-seleciona toda a faixa de valores, resultando em uma máscara <quote>toda zero</quote> como ponto de partida. Mover os deslizadores para dentro gradualmente extende a máscara mais e mais, exceto por uma estreita faixa restante."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7439(para)
 msgid ""
 "For more information on the polarity feature read <xref linkend="
 "\"combined_masks\"/>."
-msgstr ""
+msgstr "Para mais informação sobre a funcionalidade de polaridade, veja <xref linkend=\"combined_masks\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7445(title)
 msgid "Control buttons"
@@ -7090,7 +7090,7 @@ msgid ""
 "channel slider. You can switch between point and area sampling mode from "
 "within the global color picker panel (see <xref linkend=\"global_color_picker"
 "\"/>)."
-msgstr ""
+msgstr "Com o botão do seletor de cores <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> voce pode selecionar uma amostra da sua imagem. Os valores correspondentes para os canais de dados reais e virtuais são então mostrados em cada deslizador de canal de cor. Você pode alternar entre modos ponto e área a partir do painel global de seletor de cores (veja <xref linkend=\"global_color_picker\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7460(para)
 msgid ""
@@ -7100,18 +7100,14 @@ msgid ""
 "activated drawn mask) and change the method how channels are combined into "
 "the final mask. More on that topic can be found in <xref linkend="
 "\"combined_masks\"/>."
-msgstr ""
+msgstr "Com o botão de inverter  <inlinegraphic fileref=\"images/darkroom_module_icon_invert.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> você pode alternar as polaridades dos canais (inclusive de uma máscara potencialmente ativa) e mudar o método usado para combinar os canais em uma máscara final. Mais sobre este tópico pode ser encontrado em  <xref linkend=\"combined_masks\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7467(para)
-#, fuzzy
 msgid ""
 "With the reset button <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> you can put all settings back to their default state."
-msgstr ""
-"O botão <inlinegraphic fileref=\"images/darkroom_preferences.png\" scalefit="
-"\"1\" width=\"2%\" align=\"center\"/> localizado no painel superior permite "
-"a definição de vários parâmetros que controlam o comportamento de darktable."
+msgstr "Com o botão de reset <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> você pode por todas as definições de volta em seus valores default."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7475(title)
 msgid "combine masks"
@@ -7125,7 +7121,7 @@ msgid ""
 "mask. This option also allows to invert the final mask. Details on the "
 "combination of individual masks can be found in <xref linkend="
 "\"combined_masks\"/>."
-msgstr ""
+msgstr "Quando uma <quote>máscara paramétrica</quote> ou uma combinação de <quote>máscara desenhada e paramétrica</quote> esiver ativa, uma combobox adicional é mostrada que controla como máscaras individuais são combinadas para formar a máscara final. Detalhes sobre a combinaç de máscaras individuais podem ser encontrados em  <xref linkend=\"combined_masks\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7489(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11996(title)
@@ -7134,7 +7130,7 @@ msgstr "Exemplo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7492(title)
 msgid "Colorkey effect"
-msgstr ""
+msgstr "Efeito color key"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7501(para)
 msgid ""
@@ -7142,13 +7138,13 @@ msgid ""
 "of the image in monochrome, we could apply module <link linkend=\"monochrome"
 "\"><emphasis>monochrome</emphasis></link> to all parts of the image except "
 "for of the saturated red petals."
-msgstr ""
+msgstr "Para criar um efeito color key com esta flor em vermelha e o resto da imagem em monocromático, poderíamos aplicar o módulo <link linkend=\"monochrome\"><emphasis>monocromático</emphasis></link> em todas as partes da imagem exceto nas pétalas saturadas de vermelho."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7508(para)
 msgid ""
 "We choose the hue channel to control our mask as hue provides good "
 "separation between the petals and background."
-msgstr ""
+msgstr "Escolhemos o canal matiz para controlar nossa máscara uma vez que a matiz dá uma boa separação entre pétalas e fundo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7519(para)
 msgid ""
@@ -7156,24 +7152,24 @@ msgid ""
 "excludes the red petals. The small white bar in the gradient was obtained by "
 "using the color picker on one of the petals and the markers then closely "
 "centered on the indicated hue to increase the selectivity of our mask."
-msgstr ""
+msgstr "Estas definições no canal matiz constróem uma máscara paramétrica de mesclagem que exclui as pétalas vermelhas. A pequena barra branca no gradiente foi obtida usando o seletor de cores em uma das pétalas e os marcadores então foram posicionados bem próximos, centrados na matiz indicada, para aumentar a seletividade da máscara."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7532(para)
 msgid "The resulting blend mask."
-msgstr ""
+msgstr "A máscara de mesclagem resultante"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7542(para)
 msgid ""
 "The final image after module <emphasis>monochrome</emphasis> is applied."
-msgstr ""
+msgstr "A imagem final depois que o módulo <emphasis>monocromático</emphasis> é aplicado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7564(title)
 msgid "Raster mask"
-msgstr ""
+msgstr "Máscara matricial (raster)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7568(secondary)
 msgid "raster masks"
-msgstr ""
+msgstr "máscaras matriciais"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7571(para)
 msgid ""
@@ -7182,7 +7178,7 @@ msgid ""
 "the shapes from the drawn mask and all the blend functions from the "
 "parametric mask of a module assemble a final mask, which internally is "
 "stored as a raster image and made accessible to other modules."
-msgstr ""
+msgstr "Quando uma <quote>máscara desenhada</quote> ou uma <quote>máscara paramétrica<quote> está ativa, a máscara final pode ser reusada em outros módulos. Isot funciona porque todas as formas da máscara desenhada e todas as funções de mesclagem da máscara paramétrica de um módulo constróem uma máscara final, que internamente é armazenada como uma imagem matricial (raster) e deixada acessível a outros módulos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7582(para)
 msgid ""
@@ -7191,7 +7187,7 @@ msgid ""
 "parametric blend functions can be defined and they all together render the "
 "final mask, the final settings of how drastically the effect of the module "
 "will be."
-msgstr ""
+msgstr "Cada máscara individual seleciona um conjunto de pixels e quão drasticamente o efeito do módulo é aplicado nessa seleção. Várias máscaras desenhadas e funçòes de mesclagem paramétricas podem ser definidas e elas todas juntas renderizam a máscara final, as definições finais de quão drástico o efeito do módulo será."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7589(para)
 msgid ""
@@ -7202,33 +7198,33 @@ msgid ""
 "the maximum intensity the module has full effect and for each alpha value in-"
 "between the minimum and the maximum the effect is applied proportionally at "
 "that location."
-msgstr ""
+msgstr "A seleção de uma destas máscaras pode ser armazenada como mapa alfa, que é uma imagem do mesmo tamanho que a original, mas em que cada pixel a intensidade vale entre zero e o máximo valor alfa. Se o valor de um pixel for zero, a entrada do módulo é mantida inalterada; se for máximo, o módulo tem efeito total, e para cada valor intermediário, o efeito é aplicado proporcionalmente em cada lugar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7597(para)
 msgid ""
 "Internally for each module the alpha map is saved and made accessible to "
 "other modules in the raster mask button. So a mask from any module can be "
 "reused from any other module easily."
-msgstr ""
+msgstr "Internamente, para cada módulo o mapa alfa é gravado e tornado acessível para outros módulos no botão de máscara matricial. Então a máscara matricial de qualquer módulo pode ser reusada de qualquer outro módulo facilmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7609(title)
 msgid "Drop-down menu"
-msgstr ""
+msgstr "Menu drop-down"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7610(para)
 msgid ""
 "If there is a mask in another module it will appear in the drop-down menu of "
 "the raster mask. You can easily identify the mask by the name of the module "
 "it was defined in."
-msgstr ""
+msgstr "Se há uma máscara em outro módulo, ela aprarecerá no menu drop-down da máscara matricial. Você pode facilmente identificar a máscara pelo nome do módulo em que ela foi definida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7624(title)
 msgid "Combining drawn and parametric masks"
-msgstr ""
+msgstr "Combinando máscaras desenhadas e paramétricas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7628(secondary)
 msgid "combined masks"
-msgstr ""
+msgstr "máscaras combinadas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7631(para)
 msgid ""
@@ -7237,7 +7233,7 @@ msgid ""
 "single channels of the parametric mask. The topic is rather advanced – if "
 "you don't want to go through all the theoretical details just jump down "
 "where we describe two typical use cases."
-msgstr ""
+msgstr "Esta seção descreve como o darktable combina máscaras individuais para formar a máscara final do módulo. Máscaras individuais são as máscaras desenhadas e todos os canais individuais das máscaras paramétricas. O tópico é bastante avançado - se voce não quiser passar por todos os detalhes, pule para onde descrevemos dois casos de uso típicos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7642(para)
 msgid ""
@@ -7245,13 +7241,13 @@ msgid ""
 "the polarity setting of each individual mask, defined by the plus or minus "
 "buttons, and the setting in the <quote>combine masks</quote> combobox (see "
 "<xref linkend=\"blending_usage_mask_combination_inversion_combine\"/>)."
-msgstr ""
+msgstr "Há dois principais elementos que controlam como máscaras individuais são combinadas: a polaridade de cada máscara individual, definida pelos botões de mais ou menos, e a definição na combobox <quote>combinar máscaras</quote>  (veja <xref linkend=\"blending_usage_mask_combination_inversion_combine\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7649(para)
 msgid ""
 "Masks can be regarded as grayscale images which take up values between 0 and "
 "1.0 (or from 0% to 100%) for each pixel."
-msgstr ""
+msgstr "Máscaras podem ser vistas como imagens em tons de cinza que tomam valores entre 0 e 1.0 (ou de 0% a 100%) para cada pixel."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7654(para)
 msgid ""
@@ -7264,7 +7260,7 @@ msgid ""
 "its value to zero, regardless of what the other individual masks do. Once a "
 "pixel is excluded (its value is 0) by any mask there is no way to include it "
 "again by any other individual mask."
-msgstr ""
+msgstr "Uma maneira direta de combinar máscaras é multiplicando os valores de pixels. A máscara final terá valor zero se um dos pixels for zero em dado local. A máscara final só pode ter o nível máximo de 1.0 para um pixel se todas as máscaras individuais tiverem valor 1.0 naquele local. Chamamos isto de combinação <quote>exclusiva</quote>. Qualquer máscara individual pode excluir um pixel ao determinar seu valor em zero, independentemente do que as outras máscaras façam com esse pixel. Uma vez que um pixel é excluído (seu valor é 0) por uma máscara, não há como incluí-lo novamente por qualquer outra máscara individual."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7665(para)
 msgid ""
@@ -16427,12 +16423,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20049(title)
 msgid "Camera settings"
-msgstr ""
+msgstr "Configurações da câmera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20053(secondary)
-#, fuzzy
 msgid "camera settings"
-msgstr "Configurações do mapa"
+msgstr "configurações da câmera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20063(entry)
 msgid ""
@@ -16510,11 +16505,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20152(title)
 msgid "Troubleshoot"
-msgstr ""
+msgstr "Resolvendo problemas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20156(title)
 msgid "Verify that your camera is supported"
-msgstr ""
+msgstr "Verifique que sua câmera é suportada"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20158(para)
 msgid ""
@@ -16525,7 +16520,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20166(para)
 msgid "Verify that camera is detected"
-msgstr ""
+msgstr "Verifique que sua câmera foi detectada"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20170(para)
 msgid ""
@@ -16537,11 +16532,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20177(programlisting)
 msgid "env LANG=C gphoto2 --auto-detect"
-msgstr ""
+msgstr "env LANG=C gphoto2 --auto-detect"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20181(para)
 msgid "Verify camera driver abilities"
-msgstr ""
+msgstr "Verifique as habilidades do driver da camera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20185(para)
 msgid ""
@@ -16554,11 +16549,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20193(programlisting)
 msgid "env LANG=C gphoto2 --port usb: --abilities"
-msgstr ""
+msgstr "env LANG=C gphoto2 --port usb: --abilities"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20197(para)
 msgid "Verify camera remote capture"
-msgstr ""
+msgstr "Verifique a captura remota da câmera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20201(para)
 msgid ""
@@ -16569,11 +16564,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20207(programlisting)
 msgid "env LANG=C gphoto2 --port usb: --capture-image-and-download"
-msgstr ""
+msgstr "env LANG=C gphoto2 --port usb: --capture-image-and-download"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20211(para)
 msgid "Verify camera tethered capture"
-msgstr ""
+msgstr "Verifique a captura cabeada da câmera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20215(para)
 msgid ""
@@ -16585,11 +16580,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20223(programlisting)
 msgid "env LANG=C gphoto2 --port usb: --capture-tethered"
-msgstr ""
+msgstr "env LANG=C gphoto2 --port usb: --capture-tethered"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20233(title)
 msgid "So, now what?"
-msgstr ""
+msgstr "Então, e agora?"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20235(para)
 msgid ""
@@ -16603,7 +16598,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20244(programlisting)
 msgid "--debug --debug-file gphoto2_debug.log"
-msgstr ""
+msgstr "--debug --debug-file gphoto2_debug.log"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20248(para)
 msgid ""
@@ -16617,11 +16612,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20257(programlisting)
 msgid "darktable -d camctl 2&gt;1 &gt;camctl.log"
-msgstr ""
+msgstr "darktable -d camctl 2&gt;1 &gt;camctl.log"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20273(keyword)
 msgid "geotagging"
-msgstr ""
+msgstr "geo-etiquetamento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20274(keyword)
 msgid "map"
@@ -16631,15 +16626,15 @@ msgstr "mapa"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20473(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20515(primary)
 msgid "map view"
-msgstr "visão do mapa"
+msgstr "vista do mapa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20285(para)
 msgid "The Map view is were you geotag your images."
-msgstr ""
+msgstr "A Vista do Mapa é onde você faz geo-etiquetamento de suas imagens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20292(screeninfo)
 msgid "The map view"
-msgstr ""
+msgstr "A vista do mapa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20303(para)
 msgid ""
@@ -16648,7 +16643,7 @@ msgid ""
 "image was geotagged by a camera with that feature. Some newer cameras, "
 "including smartphones, are already equipped with GPS receivers. Other "
 "cameras may need additional GPS hardware to do this."
-msgstr ""
+msgstr "A vista do mapa te mostra um mapa do mundo com a imagem atualmente aberta, ou imagens do rolo de filme, indicadas em suas localizações etiquetadas. Isto requer que a imagem tenha sido geo-etiquetada pela camera com esta funcionalidade. Algumas câmeras mais novas, incluindo smartfones, já são equipadas com receptor de GPS. Outras câmeras podem precisar de hardware adicional de GPS para fazer isto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20310(para)
 msgid ""
@@ -16658,28 +16653,28 @@ msgid ""
 "movements. These can be handheld devices or a GPS tracker app on your "
 "smartphone. This is all done in the lighttable view (see <xref linkend="
 "\"geotagging\"/>)."
-msgstr ""
+msgstr "Mesmo que sua camera não suporte esta funcionalidade, há um método alternativo. O darktable pode casar o tempo Exif e a data nas suas imagens com um arquivo separado de trilha GPX, criado por um GPS que tenha acompanhado seus movimentos. Estes podem ser dispositivos de mão ou o GPS de seu smartfone. Tudo isto é feito na vosta da mesa de luz (veja <xref linkend=\"geotagging\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20320(title)
 msgid "Center map view"
-msgstr ""
+msgstr "Visão do mapa central"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20328(entry)
 msgid "In the center of the map view you will see a map."
-msgstr ""
+msgstr "No centro da vista de mapa você vê um mapa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20339(para)
 msgid ""
 "Map data are taken from open map sources on the internet. New map data are "
 "only available if you are connected to the internet. darktable keeps a disk "
 "cache of previously loaded map data."
-msgstr ""
+msgstr "Dados de mapa são obtidos de sontes abertas da internet. Novos dados de mapa só estarão disponíveis se voce estiver conectado à internet. O darktable mantém um cache em disco de dados de mapa previamente acessados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20345(para)
 msgid ""
 "Your mouse will allow navigation in the map. Left-click will drag the map; "
 "using the scroll-wheel will zoom in or out."
-msgstr ""
+msgstr "Seu mouse permite navegar pelo mapa. Clique-esquerdo arrasta o mapa; Usar o scroll aumenta e diminui o zoom."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20350(para)
 msgid ""
@@ -16688,13 +16683,13 @@ msgid ""
 "alternative to mouse-dragging and scrolling. The scale of your map is "
 "displayed on bottom left. On bottom right you see the geographical "
 "coordinates for the center of the map."
-msgstr ""
+msgstr "Há controles na tela e displays que ajudar a encontrar seu caminho. Uma área de navegação fica localizada no canto superior esquerdo do mapa. Use como alternativa ao arrastar o mouse e uso do scroll. A escala é mostrada no canto inferior esquerdo. No canto inferior direito você vê as coordenadas geográficas do centro do mapa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20357(para)
 msgid ""
 "Images that already have geo location attributes in their metadata are "
 "displayed as small icons on the map."
-msgstr ""
+msgstr "Imagens que já tem atributos de geolocalização em seus metadados são mostradas como pequenos ícones no mapa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20362(para)
 msgid ""
@@ -16704,18 +16699,18 @@ msgid ""
 "position it onto the map. darktable will record the new geo location "
 "(longitude and latitude) as part of the image metadata. Exported images will "
 "include this data."
-msgstr ""
+msgstr "Para atribuir geo-coordenadas a uma imagem, ative a tira de filme no painel inferior (pressione <emphasis>Ctrl-F</emphasis>. Você pode atribuir uma geo-localização a uma imagem simplesmente arrastando o íconde da imagem da tira de filme e posicionando-o sobre o mapa. O darktable gravará a nova geo-localização (longitude e latitude) como parte dos metadados da imagem. Imagens exportadas incluirão estes dados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20370(para)
 msgid ""
 "In order to remove geo coordinates from an image just drag it from the map "
 "and drop it onto the filmstrip."
-msgstr ""
+msgstr "Para remover geo-coordenadas de uma imagem, simplesmente arrasta-a do mapa e solte-a na tira de filme."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20375(para)
 msgid ""
 "Left and right to the central map there are panels for additional control."
-msgstr ""
+msgstr "À esquerda e direita do mapa cntral há painéis para controle adicional."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20393(para)
 msgid ""
@@ -16723,31 +16718,31 @@ msgid ""
 "possible to undo or redo such changes to recover a previous state. Note that "
 "this undo/redo facility is unlimited while moving images but it is reset "
 "each time the map view is left."
-msgstr ""
+msgstr "Todos os movimentos de imagem no mapa são gravados pelo darktable. É então possível desfazer ou refazer mudanças para recuperar um estado anterior. Note que esta facilidade de desfazer/refazer é ilimitada ao mover imagens, mas é resetada sempre que você sai da vista de mapa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20403(para)
 msgid "<emphasis>Ctrl+Z</emphasis> : undo last move"
-msgstr ""
+msgstr "<emphasis>Ctrl-Z</emphasis> : desfazer o último movimento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20423(title)
 msgid "Map panels"
-msgstr ""
+msgstr "Painéis do mapa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20425(para)
 msgid ""
 "This section contains documentation for panels that are specific to the map "
 "view."
-msgstr ""
+msgstr "Esta seção contém documentação para painéis específicos da vista do mapa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20433(title)
 msgid "Left panels"
-msgstr ""
+msgstr "Painéis da esquerda"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20442(para)
 msgid ""
 "The panels on the left side we already know from lighttable mode (<xref "
 "linkend=\"lighttable_panels\"/>)."
-msgstr ""
+msgstr "Os painéis no lado esquerdo já conhecemos da vista da mesa de luz (<xref linkend=\"lighttable_panels\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20447(para)
 msgid ""
@@ -16757,21 +16752,21 @@ msgid ""
 "You can also get an overview of the information of the image under your "
 "mouse cursor in a panel labeled <link linkend=\"image_information"
 "\"><emphasis>image information</emphasis></link>."
-msgstr ""
+msgstr "Escolha suas regras de seleção de imagens com o painel <link linkend=\"collect_images\"><emphasis>coletar imagens</emphasis></link>. Coleções recentemente usadas podem ser escolhidas com seus respectivos nomes em um painel separado. Voce também pode obter uma visão geral das informações deuma imagem sob o cursor do mouse no painel <link linkend=\"image_information\"><emphasis>informação da imagem</emphasis></link>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20470(title)
 msgid "Find location"
-msgstr ""
+msgstr "Encontrar localização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20474(secondary)
 msgid "find location"
-msgstr ""
+msgstr "encontrar localização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20485(para)
 msgid ""
 "The <emphasis>find location</emphasis> module is used to search for a place "
 "on map. You need to be connected to the internet to use this feature."
-msgstr ""
+msgstr "O módulo <emphasis>encontrar localização</emphasis> é usado para procurar um lugar no mapa. Você precisa estar conectado à internet para usar esta funcionalidade."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20490(para)
 msgid ""
@@ -16781,7 +16776,7 @@ msgid ""
 "at the location will be displayed. Now drag images from the film strip at "
 "the bottom of the screen to their location on the map. The GPS location will "
 "be embedded in the image."
-msgstr ""
+msgstr "Para usá-lo, digite um lugar ou endereço, pressione enter, e uma lista de resultados será mostrada. Clique em um dos itens resultantes e o mapa fará um zoom naquela localidade. Adicionalmente, um outlne cobrindo esta localização, ou um pin apontando para a localização será mostrado. Agora arraste imagens da tira de filme na parte inferior da tela para a localização delas no mapa. A lcoalização GPS será embutida na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20512(title)
 msgid "Map settings"
@@ -16796,7 +16791,7 @@ msgid ""
 "In the <emphasis>map settings</emphasis> panel you can select your preferred "
 "map data from various providers. Some will provide different layers, such as "
 "satellite view etc., which you can toggle."
-msgstr ""
+msgstr "No painel <emphasis>configurações do mapa</emphasis> você pode selecionar seu mapa preferido de vários provedores. Alguns proverâo camadas diferentes, como visão de satélite, etc, que voce pode ligar e desligar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20553(para)
 msgid ""
@@ -16806,7 +16801,7 @@ msgid ""
 "attached to the image. The lower part contains all available tags. You must "
 "select or mouse over an image for the data to be displayed. See <xref "
 "linkend=\"tagging\"/> for more details."
-msgstr ""
+msgstr "O painel <emphasis>etiquetas</emphasis> permite anexar ou remover diferentes etiquetas de uma imagem assim como criar ou apagar umaetiqueta existente. O painel é dividido em duas partes. A parte superior contém as etiquetas que estão atualmente anexadas à imagem. A parte inferior contém todas as etiquetas disponíveis. Você deve serlecionar ou passar o mouse pela imagem para que os dados sejam mostrados. Veja <xref linkend=\"tagging\"/> para mais detalhes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20581(keyword)
 msgid "slideshow"
@@ -17206,7 +17201,7 @@ msgstr "criador a ser aplicado ao importar"
 msgid ""
 "If provided, automatically add this string as a creator tag when importing "
 "images (default none)."
-msgstr ""
+msgstr "Se incluído, automaticamente adicione esta string como uma etiqueta criador quando importar imagens (o default é nada)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21048(bridgehead)
 msgid "publisher to be applied when importing"
@@ -17216,7 +17211,7 @@ msgstr "editor a ser aplicado ao importar"
 msgid ""
 "If provided, automatically add this string as a publisher tag when importing "
 "images (default none)."
-msgstr ""
+msgstr "Se incluído, automaticamente adicione esta string como uma etiqueta editor quando importar imagens (o default é nada)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21055(bridgehead)
 msgid "rights to be applied when importing"
@@ -17226,17 +17221,17 @@ msgstr "direitos a ser aplicado ao importar"
 msgid ""
 "If provided, automatically add this string as a copyrights tag when "
 "importing images (default none)."
-msgstr ""
+msgstr "Se incluído, automaticamente adicione esta string como uma etiqueta direitos quando importar imagens (o default é nada)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21062(bridgehead)
 msgid "comma separated tags to be applied when importing"
-msgstr "etiquetas separadas por vírgular a serem aplicadas ao importar"
+msgstr "etiquetas separadas por vírgulas a serem aplicadas ao importar"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21064(para)
 msgid ""
 "If you want to add further tags when importing images, you can give them as "
 "a comma separated list (default none)."
-msgstr ""
+msgstr "Se quiser adicionar mais etiquetas, voce pode inclui-las como uma lista separada por vírgulas (o default é nada)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21069(bridgehead)
 msgid "initial import rating"
@@ -17246,53 +17241,53 @@ msgstr "classificação inicial"
 msgid ""
 "Initial star rating (from 0 to 5) for all images when importing a film roll "
 "(default 1)."
-msgstr ""
+msgstr "Classificação inicial em estrelas (de 0 a 5) para todas as imagens quando importar um rolo defilme (o default é 1)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21081(bridgehead)
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr ""
+msgstr "não use a pré-visualização JPEG embutida, mas um RAW de metade do tamanho"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21083(para)
 msgid ""
 "Check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. This is slower. (default off)."
-msgstr ""
+msgstr "Escolha esta opção para não usar o JPEG embutido no arquivo RAW, e sim processar os dados RAW. Isto é mais lento. (o default é não)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21088(bridgehead)
 msgid "high quality thumb processing from size"
-msgstr ""
+msgstr "processamento de miniatura de alta qualidade a partir do tamanho"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21090(para)
 msgid ""
 "If the thumbnails size is greater than this value, it will be processed "
 "using the full quality rendering path which is better but slower (default "
 "720p)."
-msgstr ""
+msgstr "Se o tamanho das miniaturas é maior que este tamanho, serão processadas usando renderização com qualidade completa, que é melhor, mas mais lento (o detault é 720p)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21095(bridgehead)
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "habilita sobreposição extendida em miniaturas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21097(para)
 msgid ""
 "If enabled adds additional information to the thumbnail under the mouse "
 "cursor: image name, exposure time, aperture, focal length, ISO value "
 "(default off)."
-msgstr ""
+msgstr "Se habilitado, adiciona informação adicional às miniaturas sob o cursor do mouse: nome da imagem, tempo de exposição, abertura, distância focal, valor ISO (o default é não)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21102(bridgehead)
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "use clique-simples no painel de coleta"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21104(para)
 msgid ""
 "(default off). In single-click mode, you can select range of value directly "
 "with the mouse."
-msgstr ""
+msgstr "No modo de clique-simples, você pode selecionar faixa de valores diretamente com o mouse."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21108(bridgehead)
 msgid "expand a single lighttable module at a time"
-msgstr ""
+msgstr "expandir um módulo da mesa de luz por vez"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21110(para)
 msgid ""
@@ -17393,7 +17388,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21187(bridgehead)
 msgid "expand a single darkroom module at a time"
-msgstr ""
+msgstr "expandir um único módulo da sala escura por vez"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21189(para)
 msgid ""
@@ -17436,9 +17431,8 @@ msgid ""
 msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21222(title)
-#, fuzzy
 msgid "Map/geolocalisation"
-msgstr "applicativo"
+msgstr "Mapa/geolocalização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21224(bridgehead)
 msgid "only draw images on map that are currently collected and filtered"
@@ -17453,7 +17447,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21232(bridgehead)
 msgid "maximum number of images drawn on map"
-msgstr ""
+msgstr "número máximo de imagens mostradas em um mapa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21234(para)
 msgid ""
@@ -17474,17 +17468,17 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21250(title)
 msgid "Security"
-msgstr ""
+msgstr "Segurança"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21252(bridgehead)
 msgid "ask before removing images from database"
-msgstr ""
+msgstr "perguntar antes de remover imagens da base de dados do darktable"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21254(para)
 msgid ""
 "Always ask the user before any image is removed from the database (default "
 "on)."
-msgstr ""
+msgstr "Sempre perguntar ao usuário antes que qualquer imagem seja removida da base de dados (o default é sim)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21258(bridgehead)
 msgid "ask before erasing images from disk"
@@ -17492,7 +17486,7 @@ msgstr "perguntar antes de apagar imagens do disco"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21260(para)
 msgid "Always ask the user before any image file is deleted (default on)."
-msgstr ""
+msgstr "Sempre perguntar ao usuário antes que qualquer imagem seja removida do disco (o default é sim)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21264(bridgehead)
 msgid "send files to trash when erasing images"
@@ -17589,7 +17583,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21332(bridgehead)
 msgid "enable filmstrip"
-msgstr ""
+msgstr "habilitar tira de filme"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21334(para)
 msgid ""
@@ -17599,7 +17593,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21338(bridgehead)
 msgid "enable timeline"
-msgstr ""
+msgstr "habilitar linha do tempo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21340(para)
 msgid "Enable the timeline lighttable mode (default on)."
@@ -17668,17 +17662,16 @@ msgid "Core options"
 msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21397(secondary)
-#, fuzzy
 msgid "core options"
-msgstr "opções"
+msgstr "opções do core"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21400(para)
 msgid "These options control some of the internals of darktable."
-msgstr ""
+msgstr "Estas opções controlam um pouco do funcionamento interno do darktable."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21406(title)
 msgid "Quality"
-msgstr ""
+msgstr "Qualidade"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21408(bridgehead)
 msgid "color manage cached thumbnails"
@@ -17781,13 +17774,12 @@ msgid ""
 msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21480(title)
-#, fuzzy
 msgid "xmp"
-msgstr "mapa"
+msgstr "xmp"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21482(bridgehead)
 msgid "write sidecar file for each image"
-msgstr ""
+msgstr "escrever arquivo auxiliar para cada imagem"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21484(para)
 msgid ""
@@ -17830,12 +17822,12 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21517(title)
 msgid "cpu/gpu/memory"
-msgstr ""
+msgstr "cpu/gpu/memória"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21519(bridgehead)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24024(term)
 msgid "memory in megabytes to use for thumbnail cache"
-msgstr ""
+msgstr "memória em megabytes usada para o cache de miniaturas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21521(para)
 msgid ""
@@ -17914,7 +17906,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21573(bridgehead)
 msgid "activate OpenCL support"
-msgstr ""
+msgstr "ativar suporte a OpenCL"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21575(para)
 msgid ""
@@ -19911,7 +19903,7 @@ msgid ""
 "makes a total of 4GB. This is the absolute upper limit of memory that can be "
 "used by a process and it constitutes a tight situation for darktable as we "
 "have seen above."
-msgstr ""
+msgstr "Além da memória total do sistema, há outro fator limitante: o espaço de endereçamento disponível na sua arquitetura de hardware. A quantidade de memória que pode ser endereçada por um processo depende do número de bits de endereçamento que sua CPU usa. Para uma CPU com registradores de endereço de 32 bits, serào 2^32 bytes, que dão um total de 4Gb. Este é o limite máximo absoluto de memória que pode ser usado por um processo e constitui uma situação bem justa para o darktable como vimos acima."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23893(para)
 msgid ""
@@ -19920,7 +19912,7 @@ msgid ""
 "step (module). This will still require one full input and output buffer, but "
 "intermediate buffers can be made small enough to have everything fit into "
 "the hardware limits."
-msgstr ""
+msgstr "A rota de escape do darktable para isto é chamada de ladrilhamento. Ao invés de processar uma imagem em um grande pedaço, dividimos a imagem em partes menores para cada passo de processamento (módulos). Isto ainda requer um buffer completo de entrada e um de saída, mas os buffers intermediádios podem ser pequenos o suficiente para que tudo caiba nos limites do hardware."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23904(title)
 msgid "Memory fragmentation"
@@ -19940,7 +19932,7 @@ msgid ""
 "of smaller ones. darktable 2.0 mip map cache allocates several small memory "
 "blocks per each thumbnail, so this problem is even bigger. For this reason, "
 "as of darktable 2.0, 32-bit support is soft-deprecated."
-msgstr ""
+msgstr "Infelizmente, isto ainda não é tudo. Existe um efeito chamado de fragmentação de memória, que pode e vai atingir software que precisa fazer gerenciamento extensivo de memória. Se um programa destes aloca 5 vezes 300Mb de cada vez e libera em seguida, esta memória deveria normalmente estar disponível para uma alocação de 1.5Gb em seguida.  No entanto, é comum que este não seja o caso. O alocador de memória do sistema pode não ver mais esta área como uma região contígua de 1.5Gb de memória, mas uma sequência de áreas de 300Mb. Se não há outra área de 1.5Gb disponível, a alocação irá falhar. Duranto a execução do programa este mecanismo tomará mais e mais dos blocos grandes de memória, em favor dos menores. O cahce do darktable 2.0 aloca vários pequenos blocos de memória para cada miniatura, então este problema é ainda maior. Por este motivo, começando com o darktable 2.0, suporte a 32 bits está em processo de obsolescência."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23923(title)
 msgid "Further limitations"
@@ -19961,7 +19953,7 @@ msgid ""
 "issue needing correction; for example you have 4GB on your board, but your "
 "kernel is only seeing 3GB or less. You need to consult your BIOS manual and "
 "the information about your Linux variant for further help."
-msgstr ""
+msgstr "Como se não fosse suficientemente desafiador, há outras coisas que podem limitar seu acesso à memória. Em algumas placas antigas você pode ter que ativar a opção da BIOS <quote>memory remapping</quote> para poder habilitar toda a memória física instalada. Além disso, se estiver em um sistema operacional de 32 bits você provavelmente precisará de um kernel que tenha <quote>Physical Address Extension</quote> (PAE) habilitada. Isto é comum em Linux, mas nem sempre. Muitas distribuições oferecem vários kernels diferentes, alguns com e outros sem PAR ativado; você precisa escolher o correto. Para verificar se seu sistema está configurado corretamente, use o comando <quote>free</quote> em um terminal e examine a saída. Se a saída reportar menos RAM do que você tem insalada, você tem um problema que precisa de correção; por exemplo, se tem 4Gb na placa, mas o kernel só vê 3Gb ou menos. Você precisa consultar o manual da sua BIOS e a informação da sua variante de linux para obter mais ajuda."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23943(title)
 msgid "Setting up darktable on 32-bit systems"
@@ -19973,7 +19965,7 @@ msgstr "sistemas de 32-bits"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23951(primary)
 msgid "tiling"
-msgstr ""
+msgstr "ladrilhamento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23954(para)
 msgid ""
@@ -20045,7 +20037,7 @@ msgstr ""
 msgid ""
 "Here is a short explanation of the relevant parameters and their proposed "
 "settings: <placeholder-1/>"
-msgstr ""
+msgstr "Aqui está uma explicação dos parâmetros relevantes e suas definições propostas: <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24044(title)
 msgid "darktable on 64-bit systems"
@@ -20062,7 +20054,7 @@ msgid ""
 "true. On the other hand, 64-bit architectures do not suffer from the "
 "specific 32-bit limitations like small address space and fragmentation "
 "madness."
-msgstr ""
+msgstr "Não há muito o que dizer aqui. Claro que mesmo sistemas de 64 bits precisam de memória principal suficiente, então a recomendação de 4Gb mais o swap ainda vale. Por outro lado, arquiteturas de 64 bits não sofrem das limitações específicas de 32 bits, como espaço de endereçamento pequeno e a insanidade da fragmentação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24058(para)
 msgid ""
@@ -20071,7 +20063,7 @@ msgid ""
 "in this context: all AMD and Intel CPUs introduced since 2003 and 2004, "
 "respectively, offer a 64-bit mode. Linux 64-bit has been available for many "
 "years."
-msgstr ""
+msgstr "A maioria das CPUs modernas Intel ou AMD oferecerá espaço de endereçamento na faixa de vários Terabytes. A palavra <quote>moderna</quote> é relativa neste contexto: todas as CPUs introduzidas pela AMD e pela Intel desde 2003 e 2004, respectivamente, oferecem modo de 64 bits. Linux para 64 bits tem estado disponível por muitos anos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24065(para)
 msgid ""
@@ -20080,7 +20072,7 @@ msgid ""
 "on a 64-bit Linux. The only thing you need to do: invest some time into the "
 "migration. In the end we strongly recommend moving to a 64-bit version of "
 "Linux. There really is no reason not to upgrade to 64-bit."
-msgstr ""
+msgstr "Todas as distribuições relevantes de Linux dão a opção de instalar uma versão de 32 ou 64 bits. Você pode até mesmo usar bináios de 32 bits em uma instalação de Linux de 64 bits. A única coisa que você precisa fazer: investir algum tempo na migração. No final das contas, recomendamos fortemente mudar para uma versão 64 bits de Linux. Realmente não há motivo para não mudar para 64 bits."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24073(para)
 msgid ""
@@ -20451,7 +20443,7 @@ msgid ""
 "darktable will detect OpenCL run-time problems automatically. It will then "
 "reprocess everything on CPU; only speed is affected, the final result should "
 "not be endangered."
-msgstr ""
+msgstr "O darktable detectará problemas de run-time do OpenCL automatocamente. Ele irá então reprocessar tudo na CPU; somente a velocidade é afetada, o resultado final não deverá ser comprometido."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24424(para)
 msgid ""
@@ -20657,7 +20649,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24626(para)
 msgid "In order to get profiling info you start darktable from a terminal with"
-msgstr ""
+msgstr "Para obter informação de profiling você inicia o darktable em um terminal com"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24631(programlisting)
 msgid "darktable -d opencl -d perf"
@@ -20829,7 +20821,7 @@ msgid ""
 "With this scheduling profile darktable processes the center image view and "
 "the preview window on the GPU sequentially. This is the preferred setting "
 "for systems with a GPU that strongly outperforms the CPU."
-msgstr ""
+msgstr "Com este perfil de escalonamento o darktable processa a visão da imagem no centro e a janela de pré-visualização na GPU sequencialmente. Esta é a configuração preferida para sistemas com uma GPU que é muit omais rápida que a CPU."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24826(entry)
 msgid "multiple GPUs"
@@ -20855,7 +20847,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24854(title)
 msgid "Multiple OpenCL devices – manual settings"
-msgstr ""
+msgstr "Múltiplos dispositivos OpenCL - confgurações manuais"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24856(para)
 msgid ""
@@ -20894,7 +20886,7 @@ msgstr ""
 msgid ""
 "Configuration parameter <quote>opencl_device_priority</quote> holds a string "
 "with the following structure:"
-msgstr ""
+msgstr "O parâmetro de configuração <quote>opencl_device_priority</quote> contém uma string com a estrutura a seguir:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24889(programlisting)
 msgid "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
@@ -21005,7 +20997,7 @@ msgstr ""
 msgid ""
 "As the GTS450 is slower than the HD7950, an optimized opencl_device_priority "
 "could look like:"
-msgstr ""
+msgstr "Como a GTS450 é mais lenta que a HD7950, um opencl_device_priority otimizado poderia se parecer com:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24988(programlisting)
 msgid "!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*"
@@ -21050,7 +21042,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25024(para)
 msgid "If nothing else helps, the best option might be to start darktable with"
-msgstr ""
+msgstr "Se nada mais ajudar, a melhor opção é iniciar o darktable com"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25029(programlisting)
 msgid "darktable --disable-opencl"
@@ -21061,7 +21053,7 @@ msgid ""
 "In the end there is nothing in darktable which only runs on GPU. Don't let "
 "OpenCL discourage you; also darktable's CPU code is highly optimized for "
 "performance!"
-msgstr ""
+msgstr "Afinal, não há nada no darktable só rode em GPUs. Não deixe que o OpenCL te desencorajar; além disso, o código do darktable para CPU é altamente otimizado para dsempenho!"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25046(title)
 msgid "Using <filename moreinfo=\"none\">darktable-chart</filename>"
@@ -21105,7 +21097,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25112(title)
 msgid "Source image"
-msgstr ""
+msgstr "Imagem fonte"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25114(para)
 msgid ""
@@ -21189,10 +21181,9 @@ msgstr "Procedimento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25206(quote)
 msgid "source image"
-msgstr ""
+msgstr "imagem fonte"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25206(quote)
-#, fuzzy
 msgid "reference values"
 msgstr "valores de referência"
 
@@ -21326,14 +21317,14 @@ msgstr "darktable --conf allow_lab_output=true"
 msgid ""
 "Then select <quote>PFM (float)</quote> as output format and press "
 "<quote>export</quote> to generate the source image file."
-msgstr ""
+msgstr "Então selecione <quote>PFM (float)</quote> como formato de saída e pressione <quote>exportar</quote> para gerar o arquivo fonte da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25335(para)
 msgid ""
 "In a similar way you produce the corresponding reference (target) image from "
 "the JPEG. Also this time you need to disable all modules and export with "
 "<quote>Lab</quote> output color profile in <quote>PFM (float)</quote> format."
-msgstr ""
+msgstr "De maneira similar você pode produzir a imagem de referência correspondente (alvo) a partir do JPEG. Desta vez você precisa desabilitar todos os módulos e exportar com perfi de cor de saída <quote>Lab</quote> em formato <quote>PFM (float)</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25350(title)
 msgid "Index"
