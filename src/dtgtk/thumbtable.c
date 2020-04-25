@@ -127,7 +127,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    dt_thumbnail_set_extended_overlay(th, over);
+    dt_thumbnail_set_overlay(th, over);
     // and we resize the bottom area
     dt_thumbnail_resize(th, th->width, th->height, TRUE);
     l = g_list_next(l);

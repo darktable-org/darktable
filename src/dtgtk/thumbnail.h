@@ -151,7 +151,7 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
-void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
 // force image position refresh (only in the case of zoomed image)
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb);
 
