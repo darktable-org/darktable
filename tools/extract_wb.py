@@ -150,12 +150,18 @@ for filename in argv[1:]:
             green = 1
         elif tag == "White Balance" or tag == "White Balance 2":
             preset = ' '.join(values)
-            preset = FL_PRESET_REPLACE.get(preset,preset)
+            eprint("preset: '"+preset+"'")
+            if preset in FL_PRESET_REPLACE:
+                preset = FL_PRESET_REPLACE[preset]
+                eprint("replaced to : '"+preset+"'")
         elif ' '.join(tag.split()[:2]) == "WB Type":
             preset_names[' '.join(tag.split()[:2])] = ' '.join(values)
         elif ' '.join(tag.split()[:3]) in ['WB RGB Levels', 'WB RRGB Levels', 'WB RB Levels']:
+            # todo - this codepath is weird
             p = ' '.join(tag.split()[3:])
-            p = preset_names[p] if p and preset_names[p] else p
+            if( p in preset_names):
+                p = preset_names[p]
+
             r=g=b=0
 
             if len(values) == 4:
@@ -243,7 +249,7 @@ for filename in argv[1:]:
             preset = "WhiteFluorescent"
         preset = FL_PRESET_REPLACE.get(preset,preset)
         if preset not in IGNORED_PRESETS:
-            found_presets.append(tuple([maker,model,preset, "0", red, green, blue]))
+            found_presets.append(tuple([maker,model,preset, 0, red, green, blue]))
     
     # Print out the WB value that was used in the file
     if not preset:
@@ -259,7 +265,7 @@ def preset_to_sort(preset):
     sort_for_preset = 0
     if preset[2] in IGNORED_PRESETS:
         sort_for_preset = 0
-    elif PRESET_SORT_MAPPING[preset[2]]:
+    elif preset[2] in PRESET_SORT_MAPPING:
         sort_for_preset = PRESET_SORT_MAPPING[preset[2]]
     elif preset[2].endswith('K'):
         sort_for_preset = int(preset[2][:-1])
@@ -274,6 +280,72 @@ for preset in found_presets:
     if len(preset[2]) > min_padding:
         min_padding = len(preset[2])
 
+#dealing with Nikon half-steps
+for index in range(len(found_presets)-1):
+    if (found_presets[index][0] == 'Nikon' and #case now translated
+        found_presets[index+1][0] == found_presets[index][0] and 
+        found_presets[index+1][1] == found_presets[index][1] and
+        found_presets[index+1][2] == found_presets[index][2] and
+        found_presets[index+1][3] == found_presets[index][3]) :
+       
+        curr_finetune = int(found_presets[index][3])
+
+        if curr_finetune < 0:
+            found_presets[index+1] = list(found_presets[index+1])
+            found_presets[index+1][3] = (int(found_presets[index+1][3]) + 1)
+            found_presets[index+1] = tuple(found_presets[index+1])
+        elif curr_finetune > 0:
+            found_presets[index] = list(found_presets[index])
+            found_presets[index][3] = (curr_finetune) - 1
+            found_presets[index] = tuple(found_presets[index])
+
+for index in range(len(found_presets)-1):
+    if (found_presets[index][0] == "Nikon" and #case now translated
+        found_presets[index+1][0] == found_presets[index][0] and ##
+        found_presets[index+1][1] == found_presets[index][1] and
+        found_presets[index+1][2] == found_presets[index][2]) :
+
+        found_presets[index] = list(found_presets[index])
+        found_presets[index+1] = list(found_presets[index+1])
+
+        if (found_presets[index+1][3] % 2 == 0 and
+            found_presets[index][3] % 2 == 0 and
+            found_presets[index+1][3] == found_presets[index][3] + 2):
+    
+            #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
+            found_presets[index][3] = found_presets[index][3] / 2
+            found_presets[index+1][3] = found_presets[index+1][3] / 2
+        elif (found_presets[index+1][3] % 2 == 0 and
+              found_presets[index][3] % 2 == 1 and
+              found_presets[index+1][3] == (found_presets[index][3] + 1)*2 and
+              (index + 2 == len(found_presets) or
+               found_presets[index+2][2] != found_presets[index+1][2] ) ):
+
+            #dealing with corner case of last-halfstep not being dealth with earlier
+            found_presets[index+1][3] = found_presets[index+1][3] / 2
+        
+        found_presets[index] = tuple(found_presets[index])
+        found_presets[index+1] = tuple(found_presets[index+1])
+
+#detect lazy finetuning (will not complain if there's no finetuning)
+lazy_finetuning = []
+for index in range(len(found_presets)-1):
+    if (found_presets[index+1][0] == found_presets[index][0] and ##
+        found_presets[index+1][1] == found_presets[index][1] and
+        found_presets[index+1][2] == found_presets[index][2] and
+        found_presets[index+1][3] != ((found_presets[index][3])+1) ):
+        
+        # found gap. complain about needing to interpolate
+        lazy_finetuning.append(tuple([found_presets[index][0], found_presets[index][1], found_presets[index][2]]))
+
+# Get rid of duplicate lazy finetuning reports
+lazy_finetuning = list(set(lazy_finetuning))
+
+# $stderr.puts lazy_finetuning.inspect.gsub("], ", "],\n") # debug content
+
+for lazy in lazy_finetuning:
+  eprint("Gaps detected in finetuning for {0} {1} preset {2}, dt will need to interpolate!".format(lazy[0], lazy[1], lazy[2]))
+
 for preset in found_presets:
     if preset[2] in IGNORED_PRESETS:
         eprint("Ignoring preset '{0}'".format(preset[2]))
@@ -283,4 +355,4 @@ for preset in found_presets:
             preset_name = '"'+preset[2]+'"'
         else:
             preset_name = preset[2]
-        print('"{0}", "{1}", {2:<{min_pad}}, {3}, {{ {4}, {5}, {6} }}'.format(preset[0], preset[1], preset_name, preset[3], preset[4], preset[5], preset[6], min_pad=min_padding))
+        print('  {{ "{0}", "{1}", {2:<{min_pad}}, {3}, {{ {4}, {5}, {6}, 0 }} }},'.format(preset[0], preset[1], preset_name, preset[3], preset[4], preset[5], preset[6], min_pad=min_padding))
