@@ -177,7 +177,7 @@ static inline void gauss_reduce_sse2(
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(cw, ch, input)   \
+      dt_omp_firstprivate(cw, ch, input, wd, coarse) \
       schedule(static)
 #endif
   for(int j=1;j<ch-1;j++)
