@@ -322,8 +322,6 @@ static void init_tab_general(GtkWidget *stack)
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
@@ -337,8 +335,6 @@ static void init_tab_general(GtkWidget *stack)
   gtk_widget_set_tooltip_text(cssbutton, _("modify theme with CSS keyed below (saved to user.css)"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cssbutton), dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(cssbutton), label, GTK_POS_RIGHT, 1, 1);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
