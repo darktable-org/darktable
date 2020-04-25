@@ -24,6 +24,7 @@
 #include <gtk/gtk.h>
 
 #define MAX_STARS 5
+#define OVERLAY_BLOCK_TIMEOUT 2
 
 typedef enum dt_thumbnail_border_t
 {
@@ -108,6 +109,7 @@ typedef struct
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
 
   dt_thumbnail_overlay_t over; // type of overlays
+  int overlay_timeout_id;
 
   // specific for culling and preview
   gboolean zoomable;
