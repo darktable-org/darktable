@@ -686,6 +686,7 @@ static void init_tab_presets(GtkWidget *stack)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
+  gtk_widget_set_name(hbox, "preset_controls");
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
@@ -765,6 +766,7 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
 
   // Adding toolbar at bottom of treeview
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hbox, "shortcut_controls");
   
   // Adding search box
   searchentry = gtk_entry_new();
