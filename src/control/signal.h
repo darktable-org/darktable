@@ -69,6 +69,7 @@ typedef enum dt_signal_t
     3 : next untouched imgid in the list (-1 if no list)
     no returned value
     */
+  /** image list not to be freed by the caller, automatically freed */
   DT_SIGNAL_COLLECTION_CHANGED,
 
   /** \brief This signal is raised when the selection is changed
@@ -81,6 +82,11 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
   DT_SIGNAL_METADATA_CHANGED,
+
+  /** \brief This signal is raised when any of image info has changed  */
+  /** image list not to be freed by the caller, automatically freed */
+  // TODO check if tag and metadata could be included there
+  DT_SIGNAL_IMAGE_INFO_CHANGED,
 
   /** \brief This signal is raised when a style is added/deleted/changed  */
   DT_SIGNAL_STYLE_CHANGED,

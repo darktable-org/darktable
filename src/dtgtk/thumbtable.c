@@ -426,34 +426,6 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
   return changed;
 }
 
-// change thumbnails group id
-void dt_thumbtable_group_change_representative(dt_thumbtable_t *table, const int group_id, const int new_group_id)
-{
-  GList *l = table->list;
-  while(l)
-  {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->groupid == group_id) th->groupid = new_group_id;
-    l = g_list_next(l);
-  }
-}
-
-// set thumbnail's group id
-void dt_thumbtable_set_image_group(dt_thumbtable_t *table, const int imgid, const int group_id)
-{
-  GList *l = table->list;
-  while(l)
-  {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    if(th->imgid == imgid)
-    {
-      th->groupid = group_id;
-      break;
-    }
-    l = g_list_next(l);
-  }
-}
-
 // load all needed thumbnails in the list and the widget
 // needed == that should appear in the current view (possibly not entirely)
 static int _thumbs_load_needed(dt_thumbtable_t *table)
@@ -1049,6 +1021,29 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
 
+// this is called each time the images info change
+static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gpointer user_data)
+{
+  if(!user_data || !imgs) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  const GList * i = imgs;
+  while(i)
+  {
+    const GList *l = (const GList *)table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(GPOINTER_TO_INT(i->data) == th->imgid)
+      {
+        dt_thumbnail_update_infos(th);
+        break;
+      }
+      l = g_list_next(l);
+    }
+    i = g_list_next(i);
+  }
+}
+
 // this is called each time mouse_over id change
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
@@ -1513,8 +1508,10 @@ dt_thumbtable_t *dt_thumbtable_new()
                             G_CALLBACK(_dt_active_images_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_dt_profile_change_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
-                            table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_dt_pref_change_callback), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+                            G_CALLBACK(_dt_image_info_changed_callback), table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
