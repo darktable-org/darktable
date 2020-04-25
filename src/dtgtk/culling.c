@@ -784,7 +784,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     gtk_style_context_add_class(context, "dt_preview");
   else
     gtk_style_context_add_class(context, "dt_culling");
-  gtk_style_context_add_class(context, "dt_overlays_hover_extended");
+  gtk_style_context_add_class(context, "dt_overlays_hover_block");
 
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
@@ -1004,7 +1004,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK, TRUE);
       thumb->display_focus = table->focus;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
       if(!aspect_ratio || aspect_ratio < 0.0001)
@@ -1054,7 +1054,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED, TRUE);
+          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK, TRUE);
           thumb->display_focus = table->focus;
           double aspect_ratio = sqlite3_column_double(stmt, 2);
           if(!aspect_ratio || aspect_ratio < 0.0001)
