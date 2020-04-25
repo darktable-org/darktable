@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dtgtk/thumbtable.h"
+#include "control/signal.h"
 #include "common/grouping.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -32,7 +32,9 @@ void dt_grouping_add_to_group(const int group_id, const int image_id)
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'w');
   img->group_id = group_id;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-  dt_thumbtable_set_image_group(dt_ui_thumbtable(darktable.gui->ui), image_id, group_id);
+  GList *imgs = NULL;
+  imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 }
 
 /** remove an image from a group */
@@ -40,6 +42,7 @@ int dt_grouping_remove_from_group(const int image_id)
 {
   sqlite3_stmt *stmt;
   int new_group_id = -1;
+  GList *imgs = NULL;
 
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
   int img_group_id = img->group_id;
@@ -58,7 +61,7 @@ int dt_grouping_remove_from_group(const int image_id)
       dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
       other_img->group_id = new_group_id;
       dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
-      dt_thumbtable_set_image_group(dt_ui_thumbtable(darktable.gui->ui), other_id, new_group_id);
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
     }
     sqlite3_finalize(stmt);
 
@@ -78,8 +81,10 @@ int dt_grouping_remove_from_group(const int image_id)
     new_group_id = wimg->group_id;
     wimg->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, wimg, DT_IMAGE_CACHE_SAFE);
-    dt_thumbtable_set_image_group(dt_ui_thumbtable(darktable.gui->ui), image_id, image_id);
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
   }
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+
   return new_group_id;
 }
 
@@ -92,6 +97,7 @@ int dt_grouping_change_representative(const int image_id)
   int group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
+  GList *imgs = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
@@ -101,10 +107,10 @@ int dt_grouping_change_representative(const int image_id)
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
     other_img->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
   }
   sqlite3_finalize(stmt);
-  dt_thumbtable_group_change_representative(dt_ui_thumbtable(darktable.gui->ui),
-                                            group_id, image_id);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return image_id;
 }
