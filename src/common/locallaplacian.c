@@ -29,6 +29,11 @@
 #include <xmmintrin.h>
 #endif
 
+// the maximum number of levels for the gaussian pyramid
+#define max_levels 30
+// the number of segments for the piecewise linear interpolation
+#define num_gamma 6
+
 //#define DEBUG_DUMP
 
 // downsample width/height to given level
@@ -241,8 +246,7 @@ static inline void gauss_reduce(
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
   // this is the scalar (non-simd) code:
-  const float w[5] = { 1.f, 4.f, 6.f, 4.f, 1.f };
-  const float scale = 1.f/256.f;
+  const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
   memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
@@ -257,7 +261,6 @@ static inline void gauss_reduce(
       for(int jj=-2;jj<=2;jj++)
         for(int ii=-2;ii<=2;ii++)
           coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
-      coarse[j*cw+i] *= scale;
     }
   ll_fill_boundary1(coarse, cw, ch);
 }
@@ -565,8 +568,6 @@ void local_laplacian_internal(
     const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
-#define max_levels 30
-#define num_gamma 6
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
@@ -756,16 +757,12 @@ void local_laplacian_internal(
     if(!b || b->mode != 1)        dt_free_align(output[l]);
     for(int k=0; k<num_gamma;k++) dt_free_align(buf[k][l]);
   }
-#undef num_levels
-#undef num_gamma
 }
 
 
 size_t local_laplacian_memory_use(const int width,     // width of input image
                                   const int height)    // height of input image
 {
-#define max_levels 30
-#define num_gamma 6
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   const int max_supp = 1<<(num_levels-1);
   const int paddwd = width  + 2*max_supp;
@@ -777,21 +774,15 @@ size_t local_laplacian_memory_use(const int width,     // width of input image
     memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
 
   return memory_use;
-#undef num_levels
-#undef num_gamma
 }
 
 size_t local_laplacian_singlebuffer_size(const int width,     // width of input image
                                          const int height)    // height of input image
 {
-#define max_levels 30
-#define num_gamma 6
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   const int max_supp = 1<<(num_levels-1);
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
   return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
-#undef num_levels
-#undef num_gamma
 }
