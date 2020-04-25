@@ -150,10 +150,8 @@ for filename in argv[1:]:
             green = 1
         elif tag == "White Balance" or tag == "White Balance 2":
             preset = ' '.join(values)
-            eprint("preset: '"+preset+"'")
             if preset in FL_PRESET_REPLACE:
                 preset = FL_PRESET_REPLACE[preset]
-                eprint("replaced to : '"+preset+"'")
         elif ' '.join(tag.split()[:2]) == "WB Type":
             preset_names[' '.join(tag.split()[:2])] = ' '.join(values)
         elif ' '.join(tag.split()[:3]) in ['WB RGB Levels', 'WB RRGB Levels', 'WB RB Levels']:
@@ -164,7 +162,12 @@ for filename in argv[1:]:
 
             r=g=b=0
 
-            if len(values) == 4:
+            if len(values) == 4 and ' '.join(tag.split()[:3]) in ['WB RB Levels']:
+                g = (float(values[2])+float(values[3]))/2.0
+                r = float(values[0])/g
+                b = float(values[1])/g
+                g = 1
+            elif len(values) == 4:
                 g = (float(values[1])+float(values[2]))/2.0
                 r = float(values[0])/g
                 b = float(values[3])/g
@@ -174,7 +177,7 @@ for filename in argv[1:]:
                 r = float(values[0])/g
                 b = float(values[2])/g
                 g = 1
-            elif len(values) == 2:
+            elif len(values) == 2 and ' '.join(tag.split()[:3]) in ['WB RB Levels']:
                 r = float(values[0])
                 b = float(values[2])
                 g = 1
@@ -244,18 +247,19 @@ for filename in argv[1:]:
 
     for preset_arr in listed_presets:
         # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
-        preset = preset_arr[0]
-        if maker and maker == "Canon" and preset == "Fluorescent":
-            preset = "WhiteFluorescent"
-        preset = FL_PRESET_REPLACE.get(preset,preset)
-        if preset not in IGNORED_PRESETS:
-            found_presets.append(tuple([maker,model,preset, 0, red, green, blue]))
+        preset_arrv = list(preset_arr)
+        if maker and maker == "Canon" and preset_arrv[0] == "Fluorescent":
+            preset_arrv[0] = "WhiteFluorescent"
+        if preset_arrv[0] in FL_PRESET_REPLACE:
+            preset_arrv[0] = FL_PRESET_REPLACE[preset_arrv[0]]
+        if preset_arrv[0] not in IGNORED_PRESETS:
+            found_presets.append(tuple([maker,model,preset_arrv[0], 0, preset_arrv[1], preset_arrv[2], preset_arrv[3]]))
     
     # Print out the WB value that was used in the file
     if not preset:
         preset = filename
     if red and green and blue and preset not in IGNORED_PRESETS:
-        found_presets.append(tuple([maker, model, preset, finetune, red, green, blue]))
+        found_presets.append(tuple([maker, model, preset, int(finetune), red, green, blue]))
 
 # get rid of duplicate presets
 
