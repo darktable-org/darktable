@@ -1541,7 +1541,7 @@ Details :
     class = .dt_thumbtable          present for all thumbtable types
     class = .dt_thumbtable_reorder  if we are dragging images in custom reordering mode
     Classes to determine how are shown overlays on/under the image :
-    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended / .dt_overlays_mixed
+    class = .dt_overlays_none / .dt_overlays_hover / .dt_overlays_hover_extended / .dt_overlays_always / .dt_overlays_always_extended / .dt_overlays_mixed / .dt_overlays_hover_block
     Classes to determine the category of size of the thumbnails (cat sizes limits are defined in dartablerc key=plugins/lighttable/thumbnail_sizes
     class = .dt_thumbnails_?? where ?? is the cat number
   #thumb_main
@@ -1690,9 +1690,9 @@ radiobutton
   color: @thumbnail_infos_color;
 }
 
-.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
 .dt_overlays_always_extended #thumb_main:hover #thumb_bottom_label,
 .dt_overlays_always_extended #thumb_main:selected #thumb_bottom_label,
+.dt_overlays_hover_block #thumb_main:hover #thumb_bottom_label,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
 {
   color: @thumbnail_font_color;
@@ -1716,8 +1716,7 @@ radiobutton
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
-.dt_culling #thumb_main:hover #thumb_bottom,
-.dt_preview #thumb_main:hover #thumb_bottom
+.dt_overlays_hover_block #thumb_main:hover #thumb_bottom
 {
   background-image: none;
   background-color: rgba(220, 220, 220, 0.8);
@@ -1728,7 +1727,8 @@ radiobutton
 /* rating stars in lighttable */
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumb_btn
+.dt_overlays_hover_extended .dt_thumb_btn,
+.dt_overlays_hover_block .dt_thumb_btn
 {
   color: transparent;
   background-color: transparent;
