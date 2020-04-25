@@ -1022,33 +1022,46 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     }
     else
       gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
+    gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0.5);
+    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
+    gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
     gtk_widget_set_margin_bottom(thumb->w_reject, 0.5 * r1);
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
       gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+      gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.5 * r1);
       gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
     }
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_margin_bottom(thumb->w_color, 0.5 * r1);
     gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
     // the local copy indicator
     gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_altered, 0.5 * r1);
     gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_group, 0.5 * r1);
     gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_audio, 0.5 * r1);
     gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
   }
@@ -1093,7 +1106,6 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     {
       gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_START);
-      gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
       gtk_widget_set_margin_top(thumb->w_stars[i], line2);
       gtk_widget_set_margin_start(thumb->w_stars[i], 2.0 * r1 + (i + 1) * 3.0 * r1);
     }
@@ -1105,25 +1117,21 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_color, 3.0 * r1 + (MAX_STARS + 1) * 3.0 * r1);
     // the local copy indicator
     gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
-    gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3);
     gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1);
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
-    gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3);
     gtk_widget_set_margin_start(thumb->w_altered, 7.0 * r1);
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
-    gtk_widget_set_valign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_group, line3);
     gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1);
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
-    gtk_widget_set_valign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_audio, line3);
     gtk_widget_set_margin_start(thumb->w_audio, r1);
@@ -1225,13 +1233,41 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
   gtk_widget_queue_draw(thumb->w_main);
 }
 
-void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over)
+static void _widget_change_parent_overlay(GtkWidget *w, GtkOverlay *new_parent)
+{
+  g_object_ref(w);
+  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(w)), w);
+  gtk_overlay_add_overlay(new_parent, w);
+  gtk_widget_show(w);
+  g_object_unref(w);
+}
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over)
 {
   // if no change, do nothing...
   if(thumb->over == over) return;
   gchar *lb = NULL;
   dt_thumbnail_overlay_t old_over = thumb->over;
   thumb->over = over;
+
+  // first, if we change from/to hover/block, we need to change some parent widgets
+  if(old_over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK || over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  {
+    GtkOverlay *overlays_parent = GTK_OVERLAY(thumb->w_main);
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) overlays_parent = GTK_OVERLAY(thumb->w_image_box);
+
+    _widget_change_parent_overlay(thumb->w_bottom_eb, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_bottom_eb, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_reject, overlays_parent);
+    for(int i = 0; i < MAX_STARS; i++)
+    {
+      _widget_change_parent_overlay(thumb->w_stars[i], overlays_parent);
+    }
+    _widget_change_parent_overlay(thumb->w_color, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_local_copy, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_altered, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_group, overlays_parent);
+    _widget_change_parent_overlay(thumb->w_audio, overlays_parent);
+  }
 
   // we read and cache all the infos from dt_image_t that we need, depending on the overlay level
   // note that when "downgrading" overlay level, we don't bother to remove the infos
