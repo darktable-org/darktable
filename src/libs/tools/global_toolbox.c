@@ -37,7 +37,7 @@ DT_MODULE(1)
 typedef struct dt_lib_tool_preferences_t
 {
   GtkWidget *preferences_button, *grouping_button, *overlays_button, *help_button;
-  GtkWidget *over_popup, *over_label, *over_r0, *over_r1, *over_r2, *over_r3, *over_r4, *over_r5;
+  GtkWidget *over_popup, *over_label, *over_r0, *over_r1, *over_r2, *over_r3, *over_r4, *over_r5, *over_r6;
 } dt_lib_tool_preferences_t;
 
 /* callback for grouping button */
@@ -98,6 +98,8 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED;
   else if(w == d->over_r5)
     over = DT_THUMBNAIL_OVERLAYS_MIXED;
+  else if(w == d->over_r6)
+    over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
 
   dt_thumbtable_set_overlays_mode(dt_ui_thumbtable(darktable.gui->ui), over);
 
@@ -133,6 +135,8 @@ static void _overlays_show_popup(dt_lib_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r4), TRUE);
   else if(mode == DT_THUMBNAIL_OVERLAYS_MIXED)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r5), TRUE);
+  else if(mode == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r6), TRUE);
   else
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r1), TRUE);
 
@@ -198,6 +202,10 @@ void gui_init(dt_lib_module_t *self)
                                                            _("permanent overlays extended on mouse hover"));
   g_signal_connect(G_OBJECT(d->over_r5), "toggled", G_CALLBACK(_overlays_toggle_button), self);
   gtk_box_pack_start(GTK_BOX(vbox), d->over_r5, TRUE, TRUE, 0);
+  d->over_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
+                                                           _("overlays block on mouse hover"));
+  g_signal_connect(G_OBJECT(d->over_r6), "toggled", G_CALLBACK(_overlays_toggle_button), self);
+  gtk_box_pack_start(GTK_BOX(vbox), d->over_r6, TRUE, TRUE, 0);
 
   /* create the widget help button */
   d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
@@ -421,6 +429,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "permanent overlays"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "permanent extended overlays"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "permanent overlays extended on mouse hover"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "overlays block on mouse hover"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -448,6 +457,9 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib(
       self, "permanent overlays extended on mouse hover",
       g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_MIXED), NULL));
+  dt_accel_connect_lib(self, "overlays block on mouse hover",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK), NULL));
 }
 
 #ifdef USE_LUA
