@@ -58,6 +58,8 @@ gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
       return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
     case DT_THUMBNAIL_OVERLAYS_MIXED:
       return dt_util_dstrcat(NULL, "dt_overlays_mixed");
+    case DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover_block");
     default:
       return dt_util_dstrcat(NULL, "dt_overlays_hover");
   }

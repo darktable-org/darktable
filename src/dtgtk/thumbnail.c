@@ -351,8 +351,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     gtk_widget_set_margin_start(thumb->w_image_box, posx);
     gtk_widget_set_margin_top(thumb->w_image_box, posy);
 
-    // for zoomable, we need to resize the overlays
-    if(thumb->zoomable) _thumb_resize_overlays(thumb);
+    // for overlay block, we need to resize it
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
 
     // now that we know image ratio, we can fill the extension label
     const char *ext = thumb->filename + strlen(thumb->filename);
@@ -769,7 +769,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 
     // determine the overlays parents
     GtkWidget *overlays_parent = thumb->w_main;
-    if(thumb->zoomable) overlays_parent = thumb->w_image_box;
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) overlays_parent = thumb->w_image_box;
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
@@ -782,7 +782,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
       thumb->w_bottom = gtk_label_new(lb);
@@ -896,7 +896,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     _thumb_update_extended_infos_line(thumb);
 
   // we read all other infos
@@ -956,7 +956,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   PangoAttribute *attr;
   int width = 0;
   int height = 0;
-  if(!thumb->zoomable)
+  if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
     gtk_widget_get_size_request(thumb->w_main, &width, &height);
 
@@ -1023,31 +1023,19 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
     int line2 = 0;
     int line3 = 0;
-    int over_w = 0;
     // bottom background
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
-    {
-      attrlist = pango_attr_list_new();
-      attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
-      pango_attr_list_insert(attrlist, attr);
-      gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
-      pango_attr_list_unref(attrlist);
-      int w = 0;
-      int h = 0;
-      pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-      over_w = CLAMP(w, width / 2, width);
-      gtk_widget_set_size_request(thumb->w_bottom, over_w, 6.5 * r1 + h);
-      line2 = 4.0 * r1 + h + r1;
-      line3 = 4.0 * r1 + h + 4.0 * r1;
-    }
-    else
-    {
-      gtk_widget_set_size_request(thumb->w_bottom, width, 7.0 * r1);
-      over_w = width;
-      line2 = 4.0 * r1;
-      line3 = 4.0 * r1 + 4.0 * r1;
-    }
+    attrlist = pango_attr_list_new();
+    attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
+    pango_attr_list_insert(attrlist, attr);
+    gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
+    pango_attr_list_unref(attrlist);
+    int w = 0;
+    int h = 0;
+    pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
+    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, width / 2, width), 6.5 * r1 + h);
+    line2 = 4.0 * r1 + h + r1;
+    line3 = 4.0 * r1 + h + 4.0 * r1;
+
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_START);
@@ -1220,7 +1208,7 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
     _thumb_update_extended_infos_line(thumb);
   }
@@ -1234,7 +1222,7 @@ void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overl
 
   // extended overlay text
   if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED)
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
 
   // we set the text
