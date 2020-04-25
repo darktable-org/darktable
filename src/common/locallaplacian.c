@@ -118,14 +118,11 @@ static void pad_by_replication(
   dt_omp_firstprivate(buf, padding, w) \
   schedule(static)
 #endif
-  for(int j=0;j<padding;j++) memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, buf, padding, w) \
-  schedule(static)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(buf + w*j, buf+w*(h-padding-1), sizeof(float)*w);
-  return;
+  for(int j=0;j<padding;j++)
+  {
+    memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
+    memcpy(buf + w*(h-padding+j), buf+w*(h-padding-1), sizeof(float)*w);
+  }
 }
 
 static inline void gauss_expand(
