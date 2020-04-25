@@ -367,6 +367,15 @@ static cmsCIEXYZ temperature_to_XYZ(double TempK)
   }
 }
 
+static cmsCIEXYZ temperature_tint_to_XYZ(double TempK, double tint)
+{
+  cmsCIEXYZ xyz = temperature_to_XYZ(TempK);
+
+  xyz.Y /= tint; // TODO: This is baaad!
+
+  return xyz;
+}
+
 // binary search inversion
 static void XYZ_to_temperature(cmsCIEXYZ XYZ, double *TempK, double *tint)
 {
@@ -994,9 +1003,6 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   const double tint_step = (double)(DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
   const int blackbody_is_confusing = g->blackbody_is_confusing;
 
-  //const float def_temp = dt_bauhaus_slider_get_default(g->scale_k);
-  const float def_tint = dt_bauhaus_slider_get_default(g->scale_tint);
-
   const float cur_temp = dt_bauhaus_slider_get(g->scale_k);
   const float cur_tint = dt_bauhaus_slider_get(g->scale_tint);
 
@@ -1025,21 +1031,31 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
     if(!blackbody_is_confusing)
     {
       // it isn't!
-      // TODO: this SHOULD take tint into account!
-      const cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
-      float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
-      //dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
-      dt_XYZ_to_sRGB(XYZ, sRGB);
+      const cmsCIEXYZ cmsXYZ_temp = temperature_tint_to_XYZ(K,cur_tint);
+      const cmsCIEXYZ cmsXYZ_tint = temperature_tint_to_XYZ(cur_temp, tint);
+      float sRGB_temp[3], XYZ_temp[3] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
+      float sRGB_tint[3], XYZ_tint[3] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
 
-      const float maxsRGB = MAX(MAX(sRGB[0], sRGB[1]), sRGB[2]);
+      dt_XYZ_to_sRGB(XYZ_temp, sRGB_temp);
+      dt_XYZ_to_sRGB(XYZ_tint, sRGB_tint);
 
-      if(maxsRGB > 0.99999999) {
+      const float maxsRGB_temp = MAX(MAX(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
+      const float maxsRGB_tint = MAX(MAX(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
+
+      if(maxsRGB_temp > 0.99999999) {
         for(int ch=0; ch<3; ch++){
-          sRGB[ch] = sRGB[ch] > 0? sRGB[ch] / maxsRGB : 0.0;
+          sRGB_temp[ch] = sRGB_temp[ch] > 0? sRGB_temp[ch] / maxsRGB_temp : 0.0;
         }
       }
 
-      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
+      if(maxsRGB_tint > 0.99999999) {
+        for(int ch=0; ch<3; ch++){
+          sRGB_tint[ch] = sRGB_tint[ch] > 0? sRGB_tint[ch] / maxsRGB_tint : 0.0;
+        }
+      }
+
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_temp[0], sRGB_temp[1], sRGB_temp[2]);
+      dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
     }
     else
     {
@@ -1076,17 +1092,6 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_K[0], sRGB_K[1], sRGB_K[2]);
       dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
     }
-  }
-
-  if(!blackbody_is_confusing)
-  {
-    // TODO: this is weird kind of "wrong" - it shows theoretically desired effect
-    // instead of showing blackbody tint.
-    const float neutral_stop_tint = (def_tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
-
-    dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
-    dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
-    dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
   }
 
   if(gtk_widget_get_visible(GTK_WIDGET(g->scale_k))) 
