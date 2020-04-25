@@ -107,6 +107,27 @@ static inline void ll_fill_boundary2(
   memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
 }
 
+static void pad_by_replication(
+    float *buf,			// the buffer to be padded
+    const uint32_t w,		// width of a line
+    const uint32_t h,		// total height, including top and bottom padding
+    const uint32_t padding)	// number of lines of padding on each side
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, padding, w) \
+  schedule(static)
+#endif
+  for(int j=0;j<padding;j++) memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(h, buf, padding, w) \
+  schedule(static)
+#endif
+  for(int j=h-padding;j<h;j++) memcpy(buf + w*j, buf+w*(h-padding-1), sizeof(float)*w);
+  return;
+}
+
 static inline void gauss_expand(
     const float *const input, // coarse input
     float *const fine,        // upsampled, blurry output
@@ -328,22 +349,7 @@ static inline float *ll_pad_input(
       for(int i=wd+max_supp;i<*wd2;i++)
         out[(j+max_supp)**wd2+i] = input[stride*(j*wd+wd-1)] * 0.01f; // L -> [0,1]
     }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(max_supp, out) \
-    shared(wd2, ht2) \
-    schedule(static)
-#endif
-    for(int j=0;j<max_supp;j++)
-      memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    schedule(static) \
-    dt_omp_firstprivate(ht, max_supp, out) \
-    shared(wd2, ht2)
-#endif
-    for(int j=max_supp+ht;j<*ht2;j++)
-      memcpy(out + *wd2*j, out + *wd2*(max_supp+ht-1), sizeof(float)**wd2);
+    pad_by_replication(out, *wd2, *ht2, max_supp);
   }
 #if 0
   if(b && b->mode == 2)
@@ -502,18 +508,7 @@ void apply_curve_sse2(
     for(int i=0;i<padding;i++)   out2[i] = out2[padding];
     for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, padding, w) \
-  schedule(static)
-#endif
-  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, out, padding, w) \
-  schedule(static)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+  pad_by_replication(out, w, h, padding);
 }
 #endif
 
@@ -545,18 +540,7 @@ void apply_curve(
     for(int i=0;i<padding;i++)   out2[i] = out2[padding];
     for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, padding, w) \
-  schedule(static)
-#endif
-  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, out, padding, w) \
-  schedule(static)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+  pad_by_replication(out, w, h, padding);
 }
 
 void local_laplacian_internal(
