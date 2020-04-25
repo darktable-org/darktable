@@ -125,7 +125,29 @@ static inline void gauss_expand(
   ll_fill_boundary2(fine, wd, ht);
 }
 
-#if defined(__SSE2__) && !defined(_OPENMP)
+#if defined(__SSE2__)
+static inline __m128 convolve14641_vert(const float *in, const int wd)
+{
+  float four[4] = { 4.f, 4.f, 4.f, 4.f };
+  __m128 r0 = _mm_loadu_ps(in);
+  __m128 r1 = _mm_loadu_ps(in + wd);
+  __m128 r2 = _mm_loadu_ps(in + 2*wd);
+  __m128 r3 = _mm_loadu_ps(in + 3*wd);
+  __m128 r4 = _mm_loadu_ps(in + 4*wd);
+  _mm_prefetch(in+4,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
+  r0 = _mm_add_ps(r0, r4);                      // r0 = r0+r4
+  _mm_prefetch(in+4+wd,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
+  r1 = _mm_add_ps(_mm_add_ps(r1,r3), r2);       // r1 = r1+r2+r3
+  _mm_prefetch(in+4+2*wd,_MM_HINT_T0);
+  r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));     // r0 = r0+2*r2+r4
+  _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
+  __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
+  _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
+  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4 
+}
+#endif
+
+#if defined(__SSE2__)
 static inline void gauss_reduce_sse2(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
@@ -135,83 +157,40 @@ static inline void gauss_reduce_sse2(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  // this version is inspired by opencv's pyrDown_ :
-  // - allocate 5 rows of ring buffer (aligned)
-  // - for coarse res y
-  //   - fill 5 coarse-res row buffers with 1 4 6 4 1 weights (reuse some from last time)
-  //   - do vertical convolution via sse and write to coarse output buf
-
-  const int stride = ((cw+8)&~7); // assure sse alignment of rows
-  float *ringbuf = dt_alloc_align(64, sizeof(*ringbuf)*stride*5);
-  float *rows[5] = {0};
-  int rowj = 0; // we initialised this many rows so far
-
-  for(int j=1;j<ch-1;j++)
-  {
-    // horizontal pass, convolve with 1 4 6 4 1 kernel and decimate
-    for(;rowj<=2*j+2;rowj++)
-    {
-      float *const row = ringbuf + (rowj % 5)*stride;
-      const float *const in = input + rowj*wd;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(cw, in, row) \
+      dt_omp_firstprivate(cw, ch, input)   \
       schedule(static)
 #endif
-      for(int i=1;i<cw-1;i++)
-        row[i] = 6*in[2*i] + 4*(in[2*i-1]+in[2*i+1]) + in[2*i-2] + in[2*i+2];
-    }
-
-    // init row pointers
-    for(int k=0;k<5;k++)
-      rows[k] = ringbuf + ((2*j-2+k)%5)*stride;
-
-    // vertical pass, convolve and decimate using SIMD:
-    // note that we're ignoring the (1..cw-1) buffer limit, we'll pull in
-    // garbage and fix it later by border filling.
-    float *const out = coarse + j*cw;
-    const float *const row0 = rows[0], *const row1 = rows[1],
-                *const row2 = rows[2], *const row3 = rows[3], *const row4 = rows[4];
-    const __m128 four = _mm_set1_ps(4.f), scale = _mm_set1_ps(1.f/256.f);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(cw, out, scale, four, row0, row1, row2, row3, row4) \
-    schedule(static)
-#endif
-    for(int i=0;i<=cw-8;i+=8)
+  for(int j=1;j<ch-1;j++)
+  {
+    const float *base = input + 2*(j-1)*wd;
+    float *const out = coarse + j*cw + 1;
+    // prime the vertical axis
+    const __m128 kernel = _mm_setr_ps(1.f, 4.f, 6.f, 4.f);
+    __m128 left = convolve14641_vert(base,wd);
+    for(int col=0; col<cw; col+=2)
     {
-      __m128 r0, r1, r2, r3, r4, t0, t1;
-      r0 = _mm_load_ps(row0 + i);
-      r1 = _mm_load_ps(row1 + i);
-      r2 = _mm_load_ps(row2 + i);
-      r3 = _mm_load_ps(row3 + i);
-      r4 = _mm_load_ps(row4 + i);
-      r0 = _mm_add_ps(r0, r4);
-      r1 = _mm_add_ps(_mm_add_ps(r1, r3), r2);
-      r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));
-      t0 = _mm_add_ps(r0, _mm_mul_ps(r1, four));
-
-      r0 = _mm_load_ps(row0 + i + 4);
-      r1 = _mm_load_ps(row1 + i + 4);
-      r2 = _mm_load_ps(row2 + i + 4);
-      r3 = _mm_load_ps(row3 + i + 4);
-      r4 = _mm_load_ps(row4 + i + 4);
-      r0 = _mm_add_ps(r0, r4);
-      r1 = _mm_add_ps(_mm_add_ps(r1, r3), r2);
-      r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));
-      t1 = _mm_add_ps(r0, _mm_mul_ps(r1, four));
-
-      t0 = _mm_mul_ps(t0, scale);
-      t1 = _mm_mul_ps(t1, scale);
-
-      _mm_storeu_ps(out + i, t0);
-      _mm_storeu_ps(out + i + 4, t1);
+      // convolve the next four pixel wide vertical slice
+      base += 4;
+      __m128 right = convolve14641_vert(base,wd);
+      // horizontal pass, generate two output values from convolving with 1 4 6 4 1
+      // the first uses pixels 0-4, the second uses 2-6
+      __m128 conv = _mm_mul_ps(left,kernel);
+      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.f;
+      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6*right[0] + right[2]) / 256.f;
+      // shift to next pair of output columns (four input columns)
+      left = right;
     }
-    // process the rest
-    for(int i=cw&~7;i<cw-1;i++)
-      out[i] = (6*row2[i] + 4*(row1[i] + row3[i]) + row0[i] + row4[i])*(1.0f/256.0f);
+    // handle the left-over pixel if the output size is odd
+    if (cw % 2)
+    {
+      base += 4;
+      float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
+      __m128 conv = _mm_mul_ps(left,kernel);
+      out[cw-1] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
+    }
   }
-  dt_free_align(ringbuf);
   ll_fill_boundary1(coarse, cw, ch);
 }
 #endif
