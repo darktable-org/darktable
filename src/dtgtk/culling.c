@@ -775,9 +775,15 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
   // set css name and class
-  gtk_widget_set_name(table->widget, "culling");
+  if(mode == DT_CULLING_MODE_PREVIEW)
+    gtk_widget_set_name(table->widget, "preview");
+  else
+    gtk_widget_set_name(table->widget, "culling");
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_add_class(context, "dt_culling");
+  if(mode == DT_CULLING_MODE_PREVIEW)
+    gtk_style_context_add_class(context, "dt_preview");
+  else
+    gtk_style_context_add_class(context, "dt_culling");
   gtk_style_context_add_class(context, "dt_overlays_hover_extended");
 
   // set widget signals
@@ -1079,6 +1085,17 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
   if(!table->list || g_list_length(table->list) == 0) return FALSE;
+
+  // if we have only 1 image, it should take the entire screen
+  if(g_list_length(table->list) == 1)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    thumb->width = table->view_width;
+    thumb->height = table->view_height;
+    thumb->x = 0;
+    thumb->y = 0;
+    return TRUE;
+  }
 
   int sum_w = 0, max_h = 0, max_w = 0;
 
