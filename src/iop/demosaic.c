@@ -2500,9 +2500,10 @@ static void blk4_monochrome(float *out, const float *const in, dt_iop_roi_t *con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, roi_out, roi_in) \
-  shared(out, rgb_pars, filters,rgb_filter) \
-  schedule(static)
+  dt_omp_firstprivate(in, roi_out, roi_in, rgb_pars, filters,rgb_filter) \
+  shared(out) \
+  schedule(static) \
+  collapse(2)
 #endif
 
   for(int j = 0; j < (roi_out->height); j++)
