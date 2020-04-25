@@ -447,7 +447,7 @@ int main(int argc, char *arg[])
   int num = 1;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
-    int id = GPOINTER_TO_INT(iter->data);
+    const int id = GPOINTER_TO_INT(iter->data);
     // TODO: have a parameter in command line to get the export presets
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
