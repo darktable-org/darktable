@@ -7,7 +7,7 @@
   <!-- The start of the gui generating functions -->
   <xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *stack)
 {
-  GtkWidget *widget, *label, *labelev, *viewport;
+  GtkWidget *widget, *label, *labelev, *viewport, *box;
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
@@ -111,7 +111,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("map/geolocalisation"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -125,7 +124,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("slideshow"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -174,7 +172,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("database"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -188,7 +185,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("xmp"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -207,7 +203,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("interface"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -221,7 +216,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("tags"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -235,7 +229,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("other"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -254,7 +247,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("import"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -268,7 +260,6 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       GtkWidget *seclabel = gtk_label_new(_("session options"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
    }
@@ -312,14 +303,14 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))
       g_object_set(labelev, "tooltip-text", _("not available on this system"), (gchar *)0);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? widget : notavailable, labelev, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? box : notavailable, labelev, GTK_POS_RIGHT, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
 </xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
                         <xsl:text>
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), box, labelev, GTK_POS_RIGHT, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
 </xsl:text>
                 </xsl:otherwise>
@@ -438,10 +429,12 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   <xsl:template match="dtconfig[type='longstring']" mode="tab">
   <xsl:text>    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
     widget = gtk_text_view_new_with_buffer(buffer);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(widget), GTK_WRAP_WORD);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(widget), FALSE);
-    gtk_widget_set_hexpand(widget, TRUE);
     gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(widget, TRUE);
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_text_buffer_set_text(buffer, setting, strlen(setting));
     g_free(setting);
@@ -454,8 +447,10 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   </xsl:template>
   <xsl:template match="dtconfig[type='string']" mode="tab">
     <xsl:text>    widget = gtk_entry_new();
-    gtk_widget_set_hexpand(widget, TRUE);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
     gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(widget, TRUE);
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_entry_set_text(GTK_ENTRY(widget), setting);
     g_free(setting);
@@ -468,9 +463,11 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <xsl:template match="dtconfig[type='dir']" mode="tab">
     <xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
     gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
-    gtk_widget_set_hexpand(widget, TRUE);
     gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(widget, TRUE);
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget), setting);
     g_free(setting);
@@ -489,6 +486,9 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     tmp = min * (double)factor; min = tmp;
     tmp = max * (double)factor; max = tmp;
     widget = gtk_spin_button_new_with_range(min, max, 1);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    gtk_widget_set_hexpand(widget, FALSE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
@@ -504,6 +504,9 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>    min *= factor; max *= factor;
     widget = gtk_spin_button_new_with_range(min, max, 1);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    gtk_widget_set_hexpand(widget, FALSE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
@@ -521,6 +524,9 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>    min *= factor; max *= factor;
     widget = gtk_spin_button_new_with_range(min, max, 0.001f);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    gtk_widget_set_hexpand(widget, FALSE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
@@ -532,6 +538,8 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
     <xsl:template match="dtconfig[type='bool']" mode="tab">
     <xsl:text>    widget = gtk_check_button_new();
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
     g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
@@ -566,12 +574,15 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     g_free(str);
 
     widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    gtk_widget_set_hexpand(widget, FALSE);
     g_object_unref(store);
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     gtk_cell_renderer_set_padding(renderer, 0, 0);
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer, "text", 1, NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
