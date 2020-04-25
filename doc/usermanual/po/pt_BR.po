@@ -1,7 +1,27 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable\n"
-"POT-Creation-Date: 2020-04-12 17:35-0300\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2020-04-25 12:07-0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: darktable\n"
+#~ "POT-Creation-Date: 2020-04-12 17:35-0300\n"
 "PO-Revision-Date: 2020-04-25 12:01-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
