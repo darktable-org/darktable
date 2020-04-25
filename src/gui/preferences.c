@@ -251,7 +251,7 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void init_tab_interface(GtkWidget *stack)
+static void init_tab_general(GtkWidget *stack)
 {
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -263,7 +263,7 @@ static void init_tab_interface(GtkWidget *stack)
 
   gtk_box_pack_start(GTK_BOX(container), grid, FALSE, FALSE, 0);
 
-  gtk_stack_add_titled(GTK_STACK(stack), container, "interface", "interface");
+  gtk_stack_add_titled(GTK_STACK(stack), container, "general", "general");
 
   // language
 
@@ -295,8 +295,12 @@ static void init_tab_interface(GtkWidget *stack)
 
   label = gtk_label_new(_("theme"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   widget = gtk_combo_box_text_new();
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
 
   // read all themes
   char *theme_name = dt_conf_get_string("ui_last/theme");
@@ -324,9 +328,14 @@ static void init_tab_interface(GtkWidget *stack)
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  GtkToggleButton *cssbutton = GTK_TOGGLE_BUTTON(gtk_check_button_new());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(cssbutton), _("modify theme with CSS keyed below (saved to user.css)"));
-  gtk_toggle_button_set_active(cssbutton, dt_conf_get_bool("themes/usercss"));
+  GtkWidget *cssbutton = gtk_check_button_new();
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), cssbutton, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(cssbutton, _("modify theme with CSS keyed below (saved to user.css)"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cssbutton), dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
   gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(cssbutton), label, GTK_POS_RIGHT, 1, 1);
@@ -423,7 +432,7 @@ void dt_gui_preferences_show()
   dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)malloc(sizeof(dt_gui_accel_search_t));
 
   //setup tabs
-  init_tab_interface(stack);
+  init_tab_general(stack);
   init_tab_import(_preferences_dialog, stack);
   init_tab_lighttable(_preferences_dialog, stack);
   init_tab_darkroom(_preferences_dialog, stack);

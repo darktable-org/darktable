@@ -1365,7 +1365,7 @@
     <shortdescription>scroll to darkroom modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="gui">
+  <dtconfig prefs="misc" section="interface">
     <name>darkroom/ui/sidebar_scroll_default</name>
     <type>bool</type>
     <default>false</default>
@@ -1386,7 +1386,7 @@
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="gui">
+  <dtconfig prefs="misc" section="interface">
     <name>panel_scrollbars_always_visible</name>
     <type>bool</type>
     <default>true</default>
@@ -2016,7 +2016,7 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="misc" section="gui">
+  <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
       <enum>
