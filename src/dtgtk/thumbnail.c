@@ -395,10 +395,101 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   return TRUE;
 }
 
+static void _thumb_update_icons(dt_thumbnail_t *thumb)
+{
+  gtk_widget_set_visible(thumb->w_local_copy, thumb->has_localcopy);
+  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
+  gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
+  gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
+
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
+
+  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
+  for(int i = 0; i < MAX_STARS; i++)
+    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
+  _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
+
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
+
+  // and the tooltip
+  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
+  if(strcmp(pattern, "") == 0)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
+  }
+  else
+  {
+    // we compute the info line (we reuse the function used in export to disk)
+    char input_dir[1024] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
+
+    dt_variables_params_t *vp;
+    dt_variables_params_init(&vp);
+
+    vp->filename = input_dir;
+    vp->jobcode = "infos";
+    vp->imgid = thumb->imgid;
+    vp->sequence = 0;
+
+    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+
+    dt_variables_params_destroy(vp);
+
+    // we change the label
+    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
+
+    g_free(msg);
+  }
+  g_free(pattern);
+}
+
+static gboolean _thumbs_hide_overlays(gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  thumb->overlay_timeout_id = 0;
+  // if the mouse is inside the infos block, we don't hide them
+  if(gtk_widget_get_state_flags(thumb->w_bottom_eb) & GTK_STATE_FLAG_PRELIGHT) return FALSE;
+
+  gtk_widget_hide(thumb->w_bottom_eb);
+  gtk_widget_hide(thumb->w_reject);
+  for(int i = 0; i < MAX_STARS; i++) gtk_widget_hide(thumb->w_stars[i]);
+  gtk_widget_hide(thumb->w_color);
+  gtk_widget_hide(thumb->w_local_copy);
+  gtk_widget_hide(thumb->w_altered);
+  gtk_widget_hide(thumb->w_group);
+  gtk_widget_hide(thumb->w_audio);
+  return G_SOURCE_REMOVE;
+}
+static gboolean _thumbs_show_overlays(gpointer user_data)
+{
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  gtk_widget_show(thumb->w_bottom_eb);
+  gtk_widget_show(thumb->w_reject);
+  for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
+  _thumb_update_icons(thumb);
+  return G_SOURCE_REMOVE;
+}
+
 static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  // first, we hide the block overlays after a delay if the mouse hasn't move
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  {
+    if(thumb->overlay_timeout_id > 0)
+    {
+      g_source_remove(thumb->overlay_timeout_id);
+      thumb->overlay_timeout_id = 0;
+    }
+    _thumbs_show_overlays(thumb);
+    thumb->overlay_timeout_id = g_timeout_add_seconds(OVERLAY_BLOCK_TIMEOUT, _thumbs_hide_overlays, thumb);
+  }
+
   if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
   return FALSE;
 }
@@ -525,57 +616,6 @@ static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, g
     }
   }
   return FALSE;
-}
-
-static void _thumb_update_icons(dt_thumbnail_t *thumb)
-{
-  gtk_widget_set_visible(thumb->w_local_copy, thumb->has_localcopy);
-  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
-  gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
-  gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
-
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
-
-  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
-  for(int i = 0; i < MAX_STARS; i++)
-    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
-  _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
-
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
-
-  // and the tooltip
-  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
-  if(strcmp(pattern, "") == 0)
-  {
-    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
-  }
-  else
-  {
-    // we compute the info line (we reuse the function used in export to disk)
-    char input_dir[1024] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
-
-    dt_variables_params_t *vp;
-    dt_variables_params_init(&vp);
-
-    vp->filename = input_dir;
-    vp->jobcode = "infos";
-    vp->imgid = thumb->imgid;
-    vp->sequence = 0;
-
-    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
-
-    dt_variables_params_destroy(vp);
-
-    // we change the label
-    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
-
-    g_free(msg);
-  }
-  g_free(pattern);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
