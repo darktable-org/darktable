@@ -158,7 +158,7 @@
   background-color: @bg_color;
   background-image: none;
   font-family: sans-serif;
-  font-size: 1em;
+  font-size: 1em;     /* you can adjust text font size here ; need to have font-size set to 1em; on line 226 to have the rest of the UI ok */
   color: @fg_color;
   text-shadow:none;
   box-shadow:none;
@@ -223,7 +223,7 @@ eventbox *,
 box,
 box *
 {
-  font-size: 1em;
+  font-size: 1em;    /* it's recommanded to avoid changing this setting to be sure the UI stay ok if changing font size on line 161. By default, duplicate line 161. */
   background-color: transparent;
 }
 
@@ -333,8 +333,8 @@ button
 #iop-plugin-ui button,
 #lib-plugin-ui button
 {
-  margin: 2pt;
-  padding: 2pt;
+  margin: 2px;
+  padding: 2px;
 }
 
 /* Buttons in toolbars in lighttable and darkroom */
@@ -414,9 +414,10 @@ checkbutton check
 
 /* Text fields and text boxes */
 
-entry
+entry,
+textview
 {
-  border-radius: 2pt;
+  border-radius: 2px;
   border: 0.5pt solid @border_color;
   color: @field_fg;
   background-color: @field_bg;
@@ -428,17 +429,6 @@ entry
 entry selection
 {
   background-color: @field_selected_bg;
-}
-
-textview
-{
-  border-radius: 2pt;
-  border: 0.5pt solid @border_color;
-  color: @field_fg;
-  background-color: @field_bg;
-  min-height: 0;
-  min-width: 0;
-  padding-left: 3pt;
 }
 
 /* Labels in views */
@@ -691,7 +681,8 @@ filechooserdialog headerbar button
 dialog button,
 filechooserdialog button
 {
-  padding: 1px;
+  padding: 2px;
+  margin: 2px;
 }
 
 dialog scrolledwindow,
@@ -796,33 +787,6 @@ notebook tab label /* disabled tabs */
 notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 5px;
-}
-
-/* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
-
-#preferences_notebook
-{
-  margin: 0;
-  background-color: @plugin_bg_color;
-}
-
-#preferences_notebook scrolledwindow label,
-#preferences_notebook scrolledwindow entry,
-#preferences_notebook scrolledwindow button,
-#preferences_notebook scrolledwindow textview
-{
-  padding: 0px;
-  margin: 3px 0;
-}
-
-#preferences_notebook .sidebar
-{
-   font-size: 1.1em;
-}
-
-#preferences_notebook .sidebar :selected
-{
-   font-weight: bold;
 }
 
 /* Bauhaus controls (sliders and comboboxes in modules) */
@@ -1035,32 +999,6 @@ cell:selected
     padding: 0px 5px;
 }
 
-/* Preferences dialog window options */
-
-#preferences_notebook scrolledwindow viewport {
-  padding: 5px;
-}
-
-#preferences_notebook scrolledwindow label {
-  min-height: 1.5em;
-}
-
-#preferences_notebook scrolledwindow #pref_section > label
-{
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-#preferences_notebook scrolledwindow #pref_section
-{
-    margin-top: 1.1em;
-}
-
-#preferences_notebook scrolledwindow #pref_section:first-child
-{
-    margin-top: 0;
-}
-
 /* Color picker module in darkroom left panel */
 
 #color-picker-area
@@ -1089,12 +1027,6 @@ cell:selected
    font-weight: bold;
    font-size: 1.1em;
    padding: 10px 0px;
-}
-
-.accels_window_list button
-{
-   background-color: @button_bg;
-   border: 0px;
 }
 
 .accels_window_list label
@@ -1383,6 +1315,176 @@ dialog scrollbar slider:hover,
 scale contents trough slider:hover
 {
   background-color: @scroll_bar_active;
+}
+
+/* Preferences dialog window options */
+#preferences_notebook
+{
+  background-color: @plugin_bg_color; /* main background color */
+}
+
+#preferences_notebook *
+{
+  margin: 0px; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
+}
+
+#preferences_notebook decoration  /* allow to resize dialog window */
+{
+  margin: 1px;
+}
+
+/* set headerbar buttons */
+#preferences_notebook headerbar button
+{
+  padding: 1px 5px;
+}
+
+#preferences_notebook headerbar .close
+{
+  padding: 2px 5px 3px 5px;
+}
+
+/* sidebar settings */
+#preferences_box .sidebar scrolledwindow
+{
+  padding: 0px; /* needed to have an hover and selected effect on all width of categories in sidebar */
+  font-size: 1.1em;
+  background-color: @bg_color;
+}
+
+#preferences_box .sidebar row
+{
+  padding: 5px;
+}
+
+#preferences_box separator
+{
+  border: 0px;
+}
+
+#preferences_box .sidebar row:selected,
+#preferences_box .sidebar row:selected:hover label
+{
+  font-weight: bold;
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+}
+
+#preferences_box .sidebar label
+{
+  padding: 2px 12px;
+}
+
+/* set preferences margins in main part */
+
+#preferences_box box grid,
+#preferences_box scrolledwindow
+{
+  padding: 10px 15px 5px 15px;
+}
+
+#preferences_box stack viewport
+{
+  padding-right: 5px;
+}
+
+/* Edit CSS view on preferences dialog window */
+#usercss_box
+{
+  border: 1px inset @border_color;
+  background-color: @bg_color;
+  margin: 10px 25px 20px 25px;
+  padding: 10px;
+}
+
+#usercss_box scrolledwindow
+{
+  margin: 0;
+  padding: 0;
+}
+
+/* set text */
+#preferences_notebook scrolledwindow label
+{
+  min-height: 1.5em;
+}
+
+#preferences_notebook scrolledwindow #pref_section > label	/* sub-category title in main content */
+{
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+#preferences_notebook scrolledwindow #pref_section	/* top margin in sub-category title in main content */
+{
+  margin-top: 1.1em;
+}
+
+#preferences_notebook scrolledwindow #pref_section:first-child	/* reset top margin in first sub-category title in main content */
+{
+  margin-top: 0;
+}
+
+/* just add spacing between label settings and setting beside */
+#preferences_notebook stack widget label
+{
+  margin-right: 25px;
+}
+
+/* this will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
+#preferences_notebook stack label,
+#preferences_notebook stack entry,
+#preferences_notebook stack textview
+{
+  padding: 2px;
+  margin: 1px 0;
+}
+
+#preferences_notebook combobox,
+#preferences_notebook spinbutton
+{
+   min-width: 180px;
+}
+
+#preferences_notebook button
+{
+  margin: 0 2px;
+  padding: 0 2px;
+}
+
+#preferences_box button label
+{
+  margin: 0;
+}
+
+/* set headerbar on presets and shortcuts categories ; and header title bar of accels window to keep having a consistent UI */
+#preferences_box treeview header button,
+.accels_window_list button
+{
+  border: 0px;
+  border-radius: 0px;
+  padding: 0px;
+  margin: 0px 0.5px 0px 0px;
+}
+
+#preferences_notebook treeview header label,
+.accels_window_list button label
+{
+  font-weight: bold;
+  padding: 1px 6px;
+  margin: 0px
+}
+
+/* set buttons and search field on presets and shortcuts control buttons */
+#preferences_box #shortcut_controls,
+#preferences_box #preset_controls
+{
+  margin: 5px 15px 15px 15px;
+}
+
+#preferences_box #shortcut_controls
+{
+  margin-left: 5px;
 }
 
 /* Color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
