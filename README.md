@@ -10,17 +10,17 @@ Contributing
 
 * Write a blog about darktable
 * Create a tutorial for darktable
-* Help expand the [user wiki](https://www.darktable.org/redmine/projects/users/wiki)
+* Help expand the [user wiki](https://github.com/darktable-org/darktable/wiki)
 * Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/)
 * Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code)
+* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and [Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 Building
 --------
 
-Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, so after checking-out the darktable, you need to update/checkout rawspeed,
+Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, as well as OpenCL and LibXCF modules, so after checking-out the darktable, you need to update/checkout them,
 
 ```bash
 git submodule init
@@ -45,7 +45,7 @@ sudo make install
 
 ### Further reading
 
-There is a [comprehensive list](https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20) of build instructions for all the widely used Linux distributions.
+There is a [comprehensive list](https://github.com/darktable-org/darktable/wiki/Build-instructions-for-Ubuntu-18.04-to-20.04) of build instructions for Ubuntu/Debian related Linux distributions or for [Fedora and related ones distributions](https://github.com/darktable-org/darktable/wiki/Build-Instructions-for-Fedora). These build instructions could easily be adapted to all others distributions
 
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
@@ -55,7 +55,7 @@ Wiki
 
 * [GitHub wiki](https://github.com/darktable-org/darktable/wiki "github wiki")
 * [User wiki](https://www.darktable.org/redmine/projects/users/wiki "darktable user wiki")
-* [Developer wiki](https://www.darktable.org/redmine/projects/darktable/wiki "darktable developer wiki")
+* [Developer wiki](https://github.com/darktable-org/darktable/wiki/Developer's-guide "darktable developer wiki")
 
 
 Mailing lists
