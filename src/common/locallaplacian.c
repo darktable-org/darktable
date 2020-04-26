@@ -138,7 +138,7 @@ static void pad_by_replication(
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, padding, w) \
+  dt_omp_firstprivate(buf, padding, h, w) \
   schedule(static)
 #endif
   for(int j=0;j<padding;j++)
