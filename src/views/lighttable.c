@@ -1341,96 +1341,6 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
       break;
   }
 }
-/*
-static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double posx, double posy, int state)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  if(lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    const int max_in_memory_images = _get_max_in_memory_images();
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > max_in_memory_images)
-    {
-      dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
-    }
-    else
-    {
-      // we get the 100% zoom of the largest image
-      float zmax = 1.0f;
-      for(int i = 0; i < lib->slots_count; i++)
-      {
-        if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
-          lib->fp_surf[i].zoom_100
-              = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
-        if(lib->fp_surf[i].zoom_100 > zmax) zmax = lib->fp_surf[i].zoom_100;
-      }
-
-      float nz = fminf(zmax, lib->full_zoom + val);
-      nz = fmaxf(nz, 1.0f);
-
-      // if full preview, we center the zoom at mouse position
-      if(lib->full_zoom != nz && lib->full_preview_id > -1 && posx >= 0.0f && posy >= 0.0f)
-      {
-        // we want to zoom "around" the pointer
-        float dx = nz / lib->full_zoom
-                       * (posx - (self->width - lib->fp_surf[0].w_fit * lib->full_zoom) * 0.5f - lib->full_x)
-                   - posx + (self->width - lib->fp_surf[0].w_fit * nz) * 0.5f;
-        float dy = nz / lib->full_zoom
-                       * (posy - (self->height - lib->fp_surf[0].h_fit * lib->full_zoom) * 0.5f - lib->full_y)
-                   - posy + (self->height - lib->fp_surf[0].h_fit * nz) * 0.5f;
-        lib->full_x = -dx;
-        lib->full_y = -dy;
-      }
-
-      // culling
-      if(lib->full_preview_id < 0)
-      {
-        // if shift+ctrl, we only change the current image
-        if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
-        {
-          int mouseid = dt_control_get_mouse_over_id();
-          for(int i = 0; i < lib->slots_count; i++)
-          {
-            if(lib->fp_surf[i].imgid == mouseid)
-            {
-              lib->fp_surf[i].zoom_delta += val;
-              break;
-            }
-          }
-        }
-        else
-        {
-          // if global zoom doesn't change (we reach bounds) we may have to move individual values
-          if(lib->full_zoom == nz && ((nz == 1.0f && val < 0.0f) || (nz == zmax && val > 0.0f)))
-          {
-            for(int i = 0; i < lib->slots_count; i++)
-            {
-              if(lib->fp_surf[i].zoom_delta != 0.0f) lib->fp_surf[i].zoom_delta += val;
-            }
-          }
-          lib->full_zoom = nz;
-        }
-        // sanitize specific zoomming of individual images
-        for(int i = 0; i < lib->slots_count; i++)
-        {
-          if(lib->full_zoom + lib->fp_surf[i].zoom_delta < 1.0f)
-            lib->fp_surf[i].zoom_delta = 1.0f - lib->full_zoom;
-          if(lib->full_zoom + lib->fp_surf[i].zoom_delta > lib->fp_surf[i].zoom_100)
-            lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
-        }
-      }
-      else // full preview
-      {
-        lib->full_zoom = nz;
-      }
-
-      // redraw
-      dt_control_queue_redraw_center();
-    }
-    return TRUE;
-  }
-  return FALSE;
-}*/
 
 void activate_control_element(dt_view_t *self)
 {
@@ -1928,6 +1838,10 @@ void init_key_accels(dt_view_t *self)
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
+
+  // zoom for full culling & preview
+  dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1988,6 +1902,38 @@ static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *accel
   return TRUE;
 }
 
+static gboolean _culling_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                  GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(lib->preview_mode)
+    dt_culling_zoom_max(lib->preview);
+  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+    dt_culling_zoom_max(lib->culling);
+  else
+    return FALSE;
+
+  return TRUE;
+}
+
+static gboolean _culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                  GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(lib->preview_mode)
+    dt_culling_zoom_fit(lib->preview);
+  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+    dt_culling_zoom_fit(lib->culling);
+  else
+    return FALSE;
+
+  return TRUE;
+}
+
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
@@ -2013,6 +1959,12 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "sticky preview", closure);
   closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(TRUE), NULL);
   dt_accel_connect_view(self, "sticky preview with focus detection", closure);
+
+  // culling & preview zoom
+  closure = g_cclosure_new(G_CALLBACK(_culling_zoom_100), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "preview zoom 100%", closure);
+  closure = g_cclosure_new(G_CALLBACK(_culling_zoom_fit), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "preview zoom fit", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
