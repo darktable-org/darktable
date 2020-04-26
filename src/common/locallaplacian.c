@@ -188,8 +188,7 @@ static inline __m128 convolve14641_vert(const float *in, const int wd)
 }
 #endif
 
-#if defined(__SSE2__)
-static inline void gauss_reduce_sse2(
+static inline void gauss_reduce(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
     const int wd,             // fine res
@@ -198,6 +197,8 @@ static inline void gauss_reduce_sse2(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
+#if defined(__SSE2__)
+  // this is the vectorized code
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
@@ -234,19 +235,7 @@ static inline void gauss_reduce_sse2(
       out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
     }
   }
-  ll_fill_boundary1(coarse, cw, ch);
-}
-#endif
-
-static inline void gauss_reduce(
-    const float *const input, // fine input buffer
-    float *const coarse,      // coarse scale, blurred input buf
-    const int wd,             // fine res
-    const int ht)
-{
-  // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
+#else // !defined(__SSE2__)
   // this is the scalar (non-simd) code:
   const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
   memset(coarse, 0, sizeof(float)*cw*ch);
@@ -266,6 +255,7 @@ static inline void gauss_reduce(
         for(int ii=-2;ii<=2;ii++)
           coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
     }
+#endif /* __SSE2__ */
   ll_fill_boundary1(coarse, cw, ch);
 }
 
@@ -482,54 +472,8 @@ static inline __m128 curve_vec4(
   const __m128 vcon = _mm_mul_ps(clarity, _mm_mul_ps(c, gauss));
   return _mm_add_ps(val, vcon);
 }
+#endif /* __SSE2__*/
 
-// sse (4-wide)
-void apply_curve_sse2(
-    float *const out,
-    const float *const in,
-    const uint32_t w,
-    const uint32_t h,
-    const uint32_t padding,
-    const float g,
-    const float sigma,
-    const float shadows,
-    const float highlights,
-    const float clarity)
-{
-  // TODO: do all this in avx2 8-wide (should be straight forward):
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, shadows, sigma, w) \
-  schedule(static)
-#endif
-  for(uint32_t j=padding;j<h-padding;j++)
-  {
-    const float *in2  = in  + j*w + padding;
-    float *out2 = out + j*w + padding;
-    // find 4-byte aligned block in the middle:
-    const float *const beg = (float *)((size_t)(out2+3)&(size_t)0x10ul);
-    const float *const end = (float *)((size_t)(out2+w-padding)&(size_t)0x10ul);
-    const float *const fin = out2+w-padding;
-    const __m128 g4 = _mm_set1_ps(g);
-    const __m128 sig4 = _mm_set1_ps(sigma);
-    const __m128 shd4 = _mm_set1_ps(shadows);
-    const __m128 hil4 = _mm_set1_ps(highlights);
-    const __m128 clr4 = _mm_set1_ps(clarity);
-    for(;out2<beg;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    for(;out2<end;out2+=4,in2+=4)
-      _mm_stream_ps(out2, curve_vec4(_mm_load_ps(in2), g4, sig4, shd4, hil4, clr4));
-    for(;out2<fin;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    out2 = out + j*w;
-    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
-    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
-  }
-  pad_by_replication(out, w, h, padding);
-}
-#endif
-
-// scalar version
 void apply_curve(
     float *const out,
     const float *const in,
@@ -551,9 +495,28 @@ void apply_curve(
   {
     const float *in2  = in  + j*w + padding;
     float *out2 = out + j*w + padding;
-    for(uint32_t i=padding;i<w-padding;i++)
-      (*out2++) = curve_scalar(*(in2++), g, sigma, shadows, highlights, clarity);
-    out2 = out + j*w;
+    const float *const fin = out2+w-padding;
+#if defined(__SSE2__)
+    // this is the vectorized (4-wide) version
+    // find 4-byte aligned block in the middle:
+    const float *const beg = (float *)((size_t)(out2+3)&(size_t)0x10ul);
+    const float *const end = (float *)((size_t)(out2+w-padding)&(size_t)0x10ul);
+    const __m128 g4 = _mm_set1_ps(g);
+    const __m128 sig4 = _mm_set1_ps(sigma);
+    const __m128 shd4 = _mm_set1_ps(shadows);
+    const __m128 hil4 = _mm_set1_ps(highlights);
+    const __m128 clr4 = _mm_set1_ps(clarity);
+    for(;out2<beg;out2++,in2++)
+      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
+    for(;out2<end;out2+=4,in2+=4)
+      _mm_stream_ps(out2, curve_vec4(_mm_load_ps(in2), g4, sig4, shd4, hil4, clr4));
+#endif
+    // finish up the remaining elements of the line not handled by vectorized code
+    // if SSE is not available, this loop will process the entire line
+    for(;out2<fin;)
+      (*out2++) = curve_scalar((*in2++), g, sigma, shadows, highlights, clarity);
+    // pad on left and right
+    out2 = out + j*w;		// back to start of line
     for(int i=0;i<padding;i++)   out2[i] = out2[padding];
     for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
   }
@@ -569,9 +532,10 @@ void local_laplacian_internal(
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
-    const int use_sse2,         // flag whether to use SSE version
+    int use_sse,
     local_laplacian_boundary_t *b)
 {
+  (void)use_sse;  //unused, keep the compiler happy
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
@@ -595,20 +559,9 @@ void local_laplacian_internal(
     output[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
-#if defined(__SSE2__)
-  if(use_sse2)
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce_sse2(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce_sse2(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
-  else
-#endif
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
+  for(int l=1;l<last_level;l++)
+    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+  gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
 
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
@@ -625,21 +578,11 @@ void local_laplacian_internal(
   // willing to pay the cost).
   for(int k=0;k<num_gamma;k++)
   { // process images
-#if defined(__SSE2__)
-    if(use_sse2)
-      apply_curve_sse2(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
-    else // brackets in next line needed for silly gcc warning:
-#endif
-    {apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);}
+    apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
 
     // create gaussian pyramids
     for(int l=1;l<=last_level;l++)
-#if defined(__SSE2__)
-      if(use_sse2)
-        gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
-      else
-#endif
-        gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
   // resample output[last_level] from preview
