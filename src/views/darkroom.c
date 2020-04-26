@@ -2750,17 +2750,7 @@ void enter(dt_view_t *self)
 
   dt_collection_hint_message(darktable.collection);
 
-  char *scrollbars_conf = dt_conf_get_string("scrollbars");
-
-  gboolean scrollbars_visible = FALSE;
-  if(scrollbars_conf)
-  {
-    if(!strcmp(scrollbars_conf, "lighttable + darkroom"))
-      scrollbars_visible = TRUE;
-    g_free(scrollbars_conf);
-  }
-
-  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+  dt_ui_scrollbars_show(darktable.gui->ui, dt_conf_get_bool("darkroom/ui/scrollbars"));
 
   _register_modules_drag_n_drop(self);
 
