@@ -300,21 +300,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
   float nz = fminf(zmax, table->full_zoom + val);
   nz = fmaxf(nz, 1.0f);
 
-  // if full preview, we center the zoom at mouse position
-  if(g_list_length(table->list) > 0 && table->full_zoom != nz && table->mode == DT_CULLING_MODE_PREVIEW
-     && posx >= 0.0f && posy >= 0.0f)
-  {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    // we want to zoom "around" the pointer
-    float dx = nz / table->full_zoom
-                   * (posx - (table->view_width - th->w_fit * table->full_zoom) * 0.5f - table->full_x)
-               - posx + (table->view_width - th->w_fit * nz) * 0.5f;
-    float dy = nz / table->full_zoom
-                   * (posy - (table->view_height - th->h_fit * table->full_zoom) * 0.5f - table->full_y)
-               - posy + (table->view_height - th->h_fit * nz) * 0.5f;
-    table->full_x = -dx;
-    table->full_y = -dy;
-  }
+
 
   // culling
   if(table->mode == DT_CULLING_MODE_CULLING)
@@ -329,7 +315,14 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
         if(th->imgid == mouseid)
         {
-          th->zoom_delta += val;
+          int zd = th->zoom_delta + val;
+          if(table->full_zoom + zd < 1.0f) zd = 1.0f - table->full_zoom;
+          if(table->full_zoom + zd > th->zoom_100) zd = th->zoom_100 - table->full_zoom;
+          if(zd != th->zoom_delta)
+          {
+            th->zoom_delta = zd;
+            dt_thumbnail_image_refresh(th);
+          }
           break;
         }
         l = g_list_next(l);
@@ -344,35 +337,58 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         while(l)
         {
           dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-          if(th->zoom_delta != 0.0f) th->zoom_delta += val;
+          if(th->zoom_delta != 0.0f)
+          {
+            int zd = th->zoom_delta + val;
+            if(table->full_zoom + zd < 1.0f) zd = 1.0f - table->full_zoom;
+            if(table->full_zoom + zd > th->zoom_100) zd = th->zoom_100 - table->full_zoom;
+            if(zd != th->zoom_delta)
+            {
+              th->zoom_delta = zd;
+              dt_thumbnail_image_refresh(th);
+            }
+          }
           l = g_list_next(l);
         }
       }
-      table->full_zoom = nz;
-    }
-    // sanitize specific zoomming of individual images
-    l = table->list;
-    while(l)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      if(table->full_zoom + th->zoom_delta < 1.0f) th->zoom_delta = 1.0f - table->full_zoom;
-      if(table->full_zoom + th->zoom_delta > th->zoom_100) th->zoom_delta = th->zoom_100 - table->full_zoom;
-      l = g_list_next(l);
+      else if(table->full_zoom != nz)
+      {
+        table->full_zoom = nz;
+        l = table->list;
+        while(l)
+        {
+          dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+          if(table->full_zoom + th->zoom_delta < 1.0f) th->zoom_delta = 1.0f - table->full_zoom;
+          if(table->full_zoom + th->zoom_delta > th->zoom_100) th->zoom_delta = th->zoom_100 - table->full_zoom;
+          th->zoom_glob = table->full_zoom;
+          dt_thumbnail_image_refresh(th);
+          l = g_list_next(l);
+        }
+      }
     }
   }
   else // full preview
   {
-    table->full_zoom = nz;
-  }
-
-  // redraw
-  l = table->list;
-  while(l)
-  {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    th->zoom_glob = table->full_zoom;
-    dt_thumbnail_image_refresh(th);
-    l = g_list_next(l);
+    if(table->full_zoom != nz)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      th->zoom_glob = nz;
+      dt_thumbnail_image_refresh(th);
+      // we center the zoom around cursor position
+      if(posx >= 0.0f && posy >= 0.0f)
+      {
+        const int iw = gtk_widget_get_allocated_width(th->w_image_box);
+        const int ih = gtk_widget_get_allocated_height(th->w_image_box);
+        table->full_x = fmaxf(iw - th->img_width * nz / table->full_zoom,
+                              fminf(0.0f, posx - (posx - table->full_x) * nz / table->full_zoom));
+        table->full_y = fmaxf(ih - th->img_height * nz / table->full_zoom,
+                              fminf(0.0f, posy - (posy - table->full_y) * nz / table->full_zoom));
+        th->zx_glob = table->full_x;
+        th->zy_glob = table->full_y;
+        dt_thumbnail_image_refresh_position(th);
+      }
+      table->full_zoom = nz;
+    }
   }
 
   return TRUE;
@@ -388,8 +404,16 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
   {
     if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
-      const double x = 0; // TODO
-      const double y = 0;
+      int x = 0;
+      int y = 0;
+      if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
+      {
+        dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+        gdk_window_get_origin(gtk_widget_get_window(th->w_image_box), &x, &y);
+        x = e->x_root - x;
+        y = e->y_root - y;
+      }
+
       // zooming
       if(delta < 0)
       {
@@ -465,8 +489,10 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 
   // get the max zoom of all images
   const int max_in_memory_images = _get_max_in_memory_images();
+  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images) return FALSE;
+
   float fz = table->full_zoom;
-  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count <= max_in_memory_images)
+  if(table->mode == DT_CULLING_MODE_CULLING)
   {
     l = table->list;
     while(l)
@@ -482,96 +508,82 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
     const double x = event->x_root;
     const double y = event->y_root;
     // we want the images to stay in the screen
-    if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-      table->full_x += x - table->pan_x;
-      table->full_y += y - table->pan_y;
-      table->full_x = fminf(table->full_x, th->img_width - th->width * 0.97);
-      table->full_x = fmaxf(table->full_x, 0);
-      table->full_y = fminf(table->full_y, th->img_height - th->height * 0.97);
-      table->full_y = fmaxf(table->full_y, 0);
-    }
-    else if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count <= max_in_memory_images)
-    {
-      const float valx = x - table->pan_x;
-      const float valy = y - table->pan_y;
+    const float valx = x - table->pan_x;
+    const float valy = y - table->pan_y;
 
-      float xmin = 0.0f;
-      float ymin = 0.0f;
+    float xmin = 0.0f;
+    float ymin = 0.0f;
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      xmin = fminf(xmin, gtk_widget_get_allocated_width(th->w_image_box) - th->img_width);
+      ymin = fminf(ymin, gtk_widget_get_allocated_height(th->w_image_box) - th->img_height);
+      l = g_list_next(l);
+    }
+    float nx = fmaxf(xmin, table->full_x + valx);
+    float ny = fmaxf(ymin, table->full_y + valy);
+
+    if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      int mouseid = dt_control_get_mouse_over_id();
       l = table->list;
       while(l)
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        xmin = fminf(xmin, th->width * 0.97 - th->img_width);
-        ymin = fminf(ymin, th->height * 0.97 - th->img_height);
+        if(th->imgid == mouseid)
+        {
+          th->zx_delta += valx;
+          th->zy_delta += valy;
+          break;
+        }
         l = g_list_next(l);
       }
-      float nx = fmaxf(xmin, table->full_x + valx);
-      float ny = fmaxf(ymin, table->full_y + valy);
-
-      if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    }
+    else
+    {
+      // if global position doesn't change (we reach bounds) we may have to move individual values
+      if(table->full_x == nx && ((nx == 0 && valx < 0.0f) || (nx == xmin && valx > 0.0f)))
       {
-        int mouseid = dt_control_get_mouse_over_id();
         l = table->list;
         while(l)
         {
           dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-          if(th->imgid == mouseid)
-          {
-            th->zx_delta += valx;
-            th->zy_delta += valy;
-            break;
-          }
+          if(th->zx_delta != 0.0f) th->zx_delta += valx;
           l = g_list_next(l);
         }
       }
-      else
+      if(table->full_y == ny && ((ny == 0 && valy < 0.0f) || (ny == ymin && valy > 0.0f)))
       {
-        // if global position doesn't change (we reach bounds) we may have to move individual values
-        if(table->full_x == nx && ((nx == 0 && valx < 0.0f) || (nx == xmin && valx > 0.0f)))
+        l = table->list;
+        while(l)
         {
-          l = table->list;
-          while(l)
-          {
-            dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-            if(th->zx_delta != 0.0f) th->zx_delta += valx;
-            l = g_list_next(l);
-          }
+          dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+          if(th->zy_delta != 0.0f) th->zy_delta += valy;
+          l = g_list_next(l);
         }
-        if(table->full_y == ny && ((ny == 0 && valy < 0.0f) || (ny == ymin && valy > 0.0f)))
-        {
-          l = table->list;
-          while(l)
-          {
-            dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-            if(th->zy_delta != 0.0f) th->zy_delta += valy;
-            l = g_list_next(l);
-          }
-        }
-        table->full_x = nx;
-        table->full_y = ny;
       }
-      // sanitize specific positions of individual images
-      l = table->list;
-      while(l)
-      {
-        dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        if(table->full_x + th->zx_delta > 0) th->zx_delta = -table->full_x;
-        if(table->full_x + th->zx_delta < th->width * 0.97 - th->img_width)
-          th->zx_delta = th->width * 0.97 - th->img_width - table->full_x;
-        if(table->full_y + th->zy_delta > 0) th->zy_delta = -table->full_y;
-        if(table->full_y + th->zy_delta < th->height * 0.97 - th->img_height)
-          th->zy_delta = th->height * 0.97 - th->img_height - table->full_y;
-        l = g_list_next(l);
-      }
+      table->full_x = nx;
+      table->full_y = ny;
+    }
+    // sanitize specific positions of individual images
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      const int iw = gtk_widget_get_allocated_width(th->w_image_box);
+      const int ih = gtk_widget_get_allocated_height(th->w_image_box);
+      if(table->full_x + th->zx_delta > 0) th->zx_delta = -table->full_x;
+      if(table->full_x + th->zx_delta < iw - th->img_width) th->zx_delta = iw - th->img_width - table->full_x;
+      if(table->full_y + th->zy_delta > 0) th->zy_delta = -table->full_y;
+      if(table->full_y + th->zy_delta < ih - th->img_height) th->zy_delta = ih - th->img_height - table->full_y;
+      l = g_list_next(l);
     }
 
     table->pan_x = x;
     table->pan_y = y;
   }
 
-  // redraw TODO : don't reload image, just move it !
   l = table->list;
   while(l)
   {

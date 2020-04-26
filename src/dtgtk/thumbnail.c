@@ -1309,7 +1309,6 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
 // force the image to be redraw at the right position
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
 {
-  thumb->img_surf_pos_changed = TRUE;
   gtk_widget_queue_draw(thumb->w_main);
 }
 
