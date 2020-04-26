@@ -58,7 +58,7 @@ typedef struct
   int imgid, rowid;
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
-  int img_width, img_height; // current image only size
+  int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
 
   gboolean mouse_over;
   gboolean selected;
@@ -87,7 +87,6 @@ typedef struct
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
   gboolean img_surf_preview; // if TRUE, the image is originated from preview pipe
   gboolean img_surf_dirty;   // if TRUE, we need to recreate the surface on next drawing code
-  gboolean img_surf_pos_changed; // if TRUE, we need to the surface on next drawing code
 
   GtkWidget *w_bottom_eb; // GtkEventBox -- background of the bottom infos area (contains w_bottom)
   GtkWidget *w_bottom;    // GtkLabel -- text of the bottom infos area, just with #thumb_bottom_ext
