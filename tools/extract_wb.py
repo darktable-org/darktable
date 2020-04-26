@@ -16,12 +16,12 @@ def eprint(*args, **kwargs):
 if len(argv) < 2 :
     sys.exit("Usage: extract_wb <file1> [file2] ...")
 
-IGNORED_PRESETS = {"Auto", "Kelvin", "Measured", "AsShot","Preset", "Natural Auto",
-                 "Multi Auto", "Color Temperature Enhancement", "Custom",
+IGNORED_PRESETS = {"Auto", "Kelvin", "Measured", "AsShot", "As Shot", "Preset",
+                 "Natural Auto", "Multi Auto", "Color Temperature Enhancement",
                  "One Touch WB 1", "One Touch WB 2", "One Touch WB 3",
                  "One Touch WB 4", "Custom WB 1", "Auto0", "Auto1", "Auto2",
-                 "CWB1", "CWB2", "CWB3", "CWB4", "Black", "Illuminator1",
-                 "Illuminator2", "Uncorrected"}
+                 "Custom", "CWB1", "CWB2", "CWB3", "CWB4", "Black", 
+                 "Illuminator1", "Illuminator2", "Uncorrected"}
 
 FL_PRESET_REPLACE = {
   "Fluorescent" : "CoolWhiteFluorescent",
@@ -153,10 +153,10 @@ for filename in argv[1:]:
             if preset in FL_PRESET_REPLACE:
                 preset = FL_PRESET_REPLACE[preset]
         elif ' '.join(tag.split()[:2]) == "WB Type":
-            preset_names[' '.join(tag.split()[:2])] = ' '.join(values)
-        elif ' '.join(tag.split()[:3]) in ['WB RGB Levels', 'WB RRGB Levels', 'WB RB Levels']:
+            preset_names[' '.join(tag.split()[2:])] = ' '.join(values)
+        elif ' '.join(tag.split()[:3]) in ['WB RGB Levels', 'WB RGGB Levels', 'WB RB Levels']:
             # todo - this codepath is weird
-            p = ' '.join(tag.split()[3:])
+            p = ''.join(tag.split()[3:])
             if( p in preset_names):
                 p = preset_names[p]
 
@@ -189,8 +189,8 @@ for filename in argv[1:]:
             
             if not p:
                 p= 'Unknown'
-            
-            listed_presets.append(tuple([p,r,g,b]))
+            if p not in IGNORED_PRESETS:
+                listed_presets.append(tuple([p,r,g,b]))
         elif tag == "WB Red Level":
             rlevel = float(values[0])
         elif tag == "WB Blue Level":
@@ -317,8 +317,8 @@ for index in range(len(found_presets)-1):
             found_presets[index+1][3] == found_presets[index][3] + 2):
     
             #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
-            found_presets[index][3] = found_presets[index][3] / 2
-            found_presets[index+1][3] = found_presets[index+1][3] / 2
+            found_presets[index][3] = int(found_presets[index][3] / 2)
+            found_presets[index+1][3] = int(found_presets[index+1][3] / 2)
         elif (found_presets[index+1][3] % 2 == 0 and
               found_presets[index][3] % 2 == 1 and
               found_presets[index+1][3] == (found_presets[index][3] + 1)*2 and
@@ -326,7 +326,7 @@ for index in range(len(found_presets)-1):
                found_presets[index+2][2] != found_presets[index+1][2] ) ):
 
             #dealing with corner case of last-halfstep not being dealth with earlier
-            found_presets[index+1][3] = found_presets[index+1][3] / 2
+            found_presets[index+1][3] = int(found_presets[index+1][3] / 2)
         
         found_presets[index] = tuple(found_presets[index])
         found_presets[index+1] = tuple(found_presets[index+1])
