@@ -15,7 +15,7 @@ Contributing
 * Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and [Developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
+* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 Building
 --------
@@ -45,7 +45,7 @@ sudo make install
 
 ### Further reading
 
-There is a [comprehensive list](https://github.com/darktable-org/darktable/wiki/Build-instructions-for-Ubuntu-18.04-to-20.04) of build instructions for Ubuntu/Debian related Linux distributions or for [Fedora and related ones distributions](https://github.com/darktable-org/darktable/wiki/Build-Instructions-for-Fedora). These build instructions could easily be adapted to all others distributions
+There is a comprehensive list of [build instructions for Ubuntu/Debian related Linux distributions](https://github.com/darktable-org/darktable/wiki/Build-instructions-for-Ubuntu-18.04-to-20.04) or for [Fedora and related ones distributions](https://github.com/darktable-org/darktable/wiki/Build-Instructions-for-Fedora). These build instructions could easily be adapted to all others distributions
 
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
