@@ -1408,6 +1408,40 @@ void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
 }
+
+void dt_culling_zoom_max(dt_culling_t *table)
+{
+  double x = 0;
+  double y = 0;
+  if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
+    y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
+  }
+  _thumbs_zoom_add(table, 100000.0f, x, y, 0);
+}
+void dt_culling_zoom_fit(dt_culling_t *table)
+{
+  // we reset everything
+  table->full_zoom = 1.0;
+  table->full_x = 0;
+  table->full_y = 0;
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->zoom_delta = 0;
+    th->zoom_glob = 1.0;
+    th->zx_delta = 0;
+    th->zx_glob = 0;
+    th->zy_delta = 0;
+    th->zy_glob = 0;
+    dt_thumbnail_image_refresh(th);
+    l = g_list_next(l);
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
