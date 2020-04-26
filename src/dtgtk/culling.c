@@ -612,6 +612,19 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   // dt_thumbtable_full_redraw(table, TRUE);
 }
 
+static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_culling_t *table = (dt_culling_t *)user_data;
+  if(!gtk_widget_get_visible(table->widget)) return;
+
+  // if we are in slection synchronisation mode, we exit this mode
+  if(table->selection_sync) table->selection_sync = FALSE;
+
+  // if we navigate only in the selection we just redraw to ensure no unselected image is present
+  if(table->navigate_inside_selection) dt_culling_full_redraw(table, TRUE);
+}
+
 static void _dt_profile_change_callback(gpointer instance, int type, gpointer user_data)
 {
   if(!user_data) return;
@@ -833,6 +846,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                             table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_dt_filmstrip_change), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_dt_selection_changed_callback), table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -1091,6 +1106,13 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   g_list_free_full(table->list, _list_remove_thumb);
   table->list = newlist;
 
+  // and we ensure that we have the right offset
+  if(g_list_length(table->list) > 0)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    table->offset_imgid = thumb->imgid;
+    table->offset = _thumb_get_rowid(thumb->imgid);
+  }
   return TRUE;
 }
 

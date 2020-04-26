@@ -100,7 +100,6 @@ void dt_culling_zoom_fit(dt_culling_t *table);
 
 // TODO
 // prefetching
-// selection changed
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
