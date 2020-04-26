@@ -18,13 +18,13 @@ import sys
 expected = sys.argv[1]
 output = sys.argv[2]
 
-image1_rgb = cv2.imread(expected)
-image2_rgb = cv2.imread(output)
+expected_rgb = cv2.imread(expected)
+output_rgb = cv2.imread(output)
 
-image1_lab = cv2.cvtColor(image1_rgb, cv2.COLOR_RGB2Lab)
-image2_lab = cv2.cvtColor(image2_rgb, cv2.COLOR_RGB2Lab)
+expected_lab = cv2.cvtColor(expected_rgb, cv2.COLOR_RGB2Lab)
+output_lab = cv2.cvtColor(output_rgb, cv2.COLOR_RGB2Lab)
 
-delta_E = colour.delta_E(image1_lab, image2_lab)
+delta_E = colour.delta_E(expected_lab, output_lab)
 
 max_dE = numpy.max(delta_E)
 mean_dE = numpy.mean(delta_E)
