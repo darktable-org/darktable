@@ -199,7 +199,9 @@ static inline void gauss_reduce_sse2(
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
+  // is greater than the time needed to do it sequentially
+#pragma omp parallel for default(none) if (ch*cw>1000)  \
       dt_omp_firstprivate(cw, ch, input, wd, coarse) \
       schedule(static)
 #endif
@@ -250,7 +252,9 @@ static inline void gauss_reduce(
   memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
+  // is greater than the time needed to do it sequentially
+#pragma omp parallel for default(none) if (ch*cw>500)  \
   dt_omp_firstprivate(coarse, cw, ch, input, w, wd) \
   schedule(static) \
   collapse(2)
