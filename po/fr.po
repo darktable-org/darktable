@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-26 14:58+0200\n"
-"PO-Revision-Date: 2020-04-26 15:02+0200\n"
+"POT-Creation-Date: 2020-04-26 15:27+0200\n"
+"PO-Revision-Date: 2020-04-26 15:27+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -10667,7 +10667,7 @@ msgstr "conserver les hautes lumières"
 
 #: ../src/iop/negadoctor.c:206
 msgid "negadoctor"
-msgstr "docteurnéga"
+msgstr "docteur néga"
 
 #: ../src/iop/negadoctor.c:435
 msgid "color film"
