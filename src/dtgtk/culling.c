@@ -315,7 +315,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
         if(th->imgid == mouseid)
         {
-          int zd = th->zoom_delta + val;
+          float zd = th->zoom_delta + val;
           if(table->full_zoom + zd < 1.0f) zd = 1.0f - table->full_zoom;
           if(table->full_zoom + zd > th->zoom_100) zd = th->zoom_100 - table->full_zoom;
           if(zd != th->zoom_delta)
@@ -339,7 +339,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
           dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
           if(th->zoom_delta != 0.0f)
           {
-            int zd = th->zoom_delta + val;
+            float zd = th->zoom_delta + val;
             if(table->full_zoom + zd < 1.0f) zd = 1.0f - table->full_zoom;
             if(table->full_zoom + zd > th->zoom_100) zd = th->zoom_100 - table->full_zoom;
             if(zd != th->zoom_delta)
