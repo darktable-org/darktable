@@ -1328,6 +1328,11 @@ scale contents trough slider:hover
   margin: 0px; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
+#preferences_notebook decoration  /* allow to resize dialog window */
+{
+  margin: 1px;
+}
+
 /* set headerbar buttons */
 #preferences_notebook headerbar button
 {
