@@ -212,7 +212,7 @@ static inline void gauss_reduce_sse2(
     // prime the vertical axis
     const __m128 kernel = _mm_setr_ps(1.f, 4.f, 6.f, 4.f);
     __m128 left = convolve14641_vert(base,wd);
-    for(int col=0; col<cw-1; col+=2)
+    for(int col=0; col<cw-3; col+=2)
     {
       // convolve the next four pixel wide vertical slice
       base += 4;
@@ -231,7 +231,7 @@ static inline void gauss_reduce_sse2(
       base += 4;
       float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
       __m128 conv = _mm_mul_ps(left,kernel);
-      out[cw-2] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
+      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
     }
   }
   ll_fill_boundary1(coarse, cw, ch);
