@@ -95,12 +95,12 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 // because this may means that other images have changed
 void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 
+void dt_culling_zoom_max(dt_culling_t *table);
+void dt_culling_zoom_fit(dt_culling_t *table);
+
 // TODO
 // prefetching
 // selection changed
-// preview zooming key accels
-/*dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
-  dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);*/
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
