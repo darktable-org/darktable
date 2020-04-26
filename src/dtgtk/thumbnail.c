@@ -269,7 +269,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       gboolean res;
       if(thumb->zoomable)
       {
-        const float z = thumb->zoom_glob - thumb->zoom_delta;
+        const float z = thumb->zoom_glob + thumb->zoom_delta;
         res = dt_view_image_get_surface(thumb->imgid, image_w * z, image_h * z, &thumb->img_surf);
       }
       else
@@ -969,6 +969,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
 
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
+  if(thumb->overlay_timeout_id > 0) g_source_remove(thumb->overlay_timeout_id);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
