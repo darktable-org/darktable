@@ -222,24 +222,27 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
   /* update last settings */
   const int i = gtk_combo_box_get_active(widget);
 
+  uint32_t flags = dt_collection_get_filter_flags(darktable.collection) & ~COLLECTION_FILTER_REJECTED;
+
   /* update collection star filter flags */
-  if(i == 0) // all
-    dt_collection_set_filter_flags(darktable.collection,
-                                   dt_collection_get_filter_flags(darktable.collection)
-                                   & ~(COLLECTION_FILTER_ATLEAST_RATING | COLLECTION_FILTER_EQUAL_RATING
-                                       | COLLECTION_FILTER_CUSTOM_COMPARE));
-  else if(i == 1 || i == 7) // unstarred only || rejected only
-    dt_collection_set_filter_flags(
-        darktable.collection,
-        (dt_collection_get_filter_flags(darktable.collection) | COLLECTION_FILTER_EQUAL_RATING)
-        & ~(COLLECTION_FILTER_ATLEAST_RATING | COLLECTION_FILTER_CUSTOM_COMPARE));
-  else if(i == 8) // all except rejected
-    dt_collection_set_filter_flags(darktable.collection,
-                                   (dt_collection_get_filter_flags(darktable.collection)
-                                    | COLLECTION_FILTER_ATLEAST_RATING) & ~COLLECTION_FILTER_CUSTOM_COMPARE);
-  else // explicit stars
-    dt_collection_set_filter_flags(darktable.collection, dt_collection_get_filter_flags(darktable.collection)
+  if(i == DT_COLLECTION_FILTER_ALL) // all
+    flags &= ~(COLLECTION_FILTER_ATLEAST_RATING
+               | COLLECTION_FILTER_EQUAL_RATING
+               | COLLECTION_FILTER_CUSTOM_COMPARE);
+  else if(i == DT_COLLECTION_FILTER_STAR_NO) // unstarred only
+    flags = (flags | COLLECTION_FILTER_EQUAL_RATING) & ~(COLLECTION_FILTER_ATLEAST_RATING
                                                          | COLLECTION_FILTER_CUSTOM_COMPARE);
+  else if(i == DT_COLLECTION_FILTER_REJECT) // rejected only
+    flags = (flags & ~(COLLECTION_FILTER_ATLEAST_RATING
+                       | COLLECTION_FILTER_EQUAL_RATING
+                       | COLLECTION_FILTER_CUSTOM_COMPARE))
+      | COLLECTION_FILTER_REJECTED;
+  else if(i == DT_COLLECTION_FILTER_NOT_REJECT) // all except rejected
+    flags = (flags | COLLECTION_FILTER_ATLEAST_RATING) & ~COLLECTION_FILTER_CUSTOM_COMPARE;
+  else // explicit stars
+    flags |= COLLECTION_FILTER_CUSTOM_COMPARE;
+
+  dt_collection_set_filter_flags(darktable.collection, flags);
 
   /* set the star filter in collection */
   dt_collection_set_rating(darktable.collection, i);
