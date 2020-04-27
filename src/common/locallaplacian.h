@@ -79,19 +79,3 @@ size_t local_laplacian_memory_use(const int width,      // width of input image
 size_t local_laplacian_singlebuffer_size(const int width,       // width of input image
                                          const int height);     // height of input image
 
-
-#if defined(__SSE2__)
-void local_laplacian_sse2(
-    const float *const input,   // input buffer in some Labx or yuvx format
-    float *const out,           // output buffer with colour
-    const int wd,               // width and
-    const int ht,               // height of the input buffer
-    const float sigma,          // user param: separate shadows/midtones/highlights
-    const float shadows,        // user param: lift shadows
-    const float highlights,     // user param: compress highlights
-    const float clarity,        // user param: increase clarity/local contrast
-    local_laplacian_boundary_t *b) // can be 0
-{
-  local_laplacian_internal(input, out, wd, ht, sigma, shadows, highlights, clarity, 1, b);
-}
-#endif
