@@ -334,6 +334,8 @@ static void check_layout(dt_view_t *self)
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
+    gtk_widget_hide(lib->preview->widget);
+    gtk_widget_hide(lib->culling->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
     if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)

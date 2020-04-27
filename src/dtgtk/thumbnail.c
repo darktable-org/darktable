@@ -623,6 +623,7 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
+  if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   gboolean selected = FALSE;
   /* clear and reset statements */
@@ -647,6 +648,7 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
+  if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   gboolean active = FALSE;
   GSList *l = darktable.view_manager->active_images;
@@ -675,6 +677,7 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
+  if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   if(v->view(v) == DT_VIEW_DARKROOM && darktable.develop->preview_pipe->output_imgid == thumb->imgid
@@ -691,6 +694,7 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb || (imgid > 0 && thumb->imgid != imgid)) return;
+  if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   // reset surface
   thumb->img_surf_dirty = TRUE;
