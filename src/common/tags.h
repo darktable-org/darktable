@@ -37,10 +37,16 @@ typedef enum dt_tag_flags_t
 {
   DT_TF_NONE = 0,
   DT_TF_CATEGORY = 1 << 0,  // this tag (or path) is not a keyword to be exported
-  DT_TF_PRIVATE = 1 << 1, // this tag is private. Will be exported only on demand
-  DT_TF_PATH = 1 << 2, // this tag is on the path of others in the list
+  DT_TF_PRIVATE = 1 << 1,   // this tag is private. Will be exported only on demand
+  DT_TF_PATH = 1 << 2,      // this tag is on the path of others in the list
 } dt_tag_flags_t;
 
+typedef enum dt_tag_selection_t
+{
+  DT_TS_NO_IMAGE = 0,   // no selection or no tag not attached
+  DT_TS_SOME_IMAGES,    // tag attached on some selected images
+  DT_TS_ALL_IMAGES      // tag attached on all selected images
+} dt_tag_selection_t;
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new
  * tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use.
@@ -113,7 +119,7 @@ void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean 
 void dt_tag_detach_by_string(const char *name, const gint imgid, const gboolean undo_on, const gboolean group_on);
 
 /** retrieves a list of tags of specified imgid \param[out] result a list of dt_tag_t, sorted by tag. */
-uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags);
+uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags);
 
 /** sort tags per name (including '|') or per count (desc) */
 GList *dt_sort_tag(GList *tags, gboolean byname);
