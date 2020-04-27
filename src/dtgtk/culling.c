@@ -621,6 +621,22 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   // if we are in slection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
+  // if we are in dynamic mode, zoom = selection count
+  if(table->mode == DT_CULLING_MODE_CULLING
+     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+  {
+    sqlite3_stmt *stmt;
+    int sel_count = 0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT count(*) "
+                                "FROM memory.collected_images AS col, main.selected_images as sel "
+                                "WHERE col.imgid=sel.imgid",
+                                -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    const int nz = (sel_count <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : sel_count;
+    dt_view_lighttable_set_zoom(darktable.view_manager, nz);
+  }
   // if we navigate only in the selection we just redraw to ensure no unselected image is present
   if(table->navigate_inside_selection) dt_culling_full_redraw(table, TRUE);
 }
@@ -629,6 +645,7 @@ static void _dt_profile_change_callback(gpointer instance, int type, gpointer us
 {
   if(!user_data) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
+  if(!gtk_widget_get_visible(table->widget)) return;
 
   GList *l = table->list;
   while(l)
@@ -644,6 +661,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
+  if(!gtk_widget_get_visible(table->widget)) return;
 
   const int imgid = dt_control_get_mouse_over_id();
 
@@ -665,127 +683,11 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   }
 }
 
-// this is called each time collected images change
-static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                            const int next, gpointer user_data)
-{
-  /*if(!user_data) return;
-  dt_culling_t *table = (dt_culling_t *)user_data;
-  if(query_change == DT_COLLECTION_CHANGE_RELOAD)
-  {*/
-  /** Here's how it works
-   *
-   *          list of change|   | x | x | x | x |
-   *  offset inside the list| ? |   | x | x | x |
-   * offset rowid as changed| ? | ? |   | x | x |
-   *     next imgid is valid| ? | ? | ? |   | x |
-   *                        |   |   |   |   |   |
-   *                        | S | S | S | S | N |
-   * S = same imgid as offset ; N = next imgid as offset
-   **/
-  /*int newid = table->offset_imgid;
-  if(newid <= 0 && table->offset > 0) newid = _thumb_get_imgid(table->offset);
-
-  // is the current offset imgid in the changed list
-  gboolean in_list = FALSE;
-  GList *l = imgs;
-  while(l)
-  {
-    if(table->offset_imgid == GPOINTER_TO_INT(l->data))
-    {
-      in_list = TRUE;
-      break;
-    }
-    l = g_list_next(l);
-  }
-
-  if(in_list)
-  {
-    if(next > 0 && _thumb_get_rowid(table->offset_imgid) != table->offset)
-    {
-      // if offset has changed, that means the offset img has moved. So we use the next untouched image as offset
-      // but we have to ensure next is in the selection if we navigate inside sel.
-      newid = next;
-      if(table->navigate_inside_selection)
-      {
-        sqlite3_stmt *stmt;
-        gchar *query = dt_util_dstrcat(
-            NULL,
-            "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
-            "WHERE m.imgid=s.imgid AND m.rowid>=(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-            "ORDER BY m.rowid LIMIT 1",
-            next);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          newid = sqlite3_column_int(stmt, 0);
-        }
-        else
-        {
-          // no select image after, search before
-          g_free(query);
-          sqlite3_finalize(stmt);
-          query = dt_util_dstrcat(
-              NULL,
-              "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
-              "WHERE m.imgid=s.imgid AND m.rowid<(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-              "ORDER BY m.rowid DESC LIMIT 1",
-              next);
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-          if(sqlite3_step(stmt) == SQLITE_ROW)
-          {
-            newid = sqlite3_column_int(stmt, 0);
-          }
-        }
-        g_free(query);
-        sqlite3_finalize(stmt);
-      }
-    }
-  }
-
-  // get the new rowid of the new offset image
-  table->offset_imgid = newid;
-  table->offset = _thumb_get_rowid(newid);
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
-
-  dt_thumbtable_full_redraw(table, TRUE);
-
-  dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
-
-  // and for images that have changed but are still in the view, we update datas
-  l = imgs;
-  while(l)
-  {
-    dt_thumbnail_t *th = _thumbtable_get_thumb(table, GPOINTER_TO_INT(l->data));
-    if(th)
-    {
-      dt_thumbnail_update_infos(th);
-    }
-    l = g_list_next(l);
-  }
-}
-else
-{
-  // otherwise we reset the offset to the beginning
-  table->offset = 1;
-  table->offset_imgid = _thumb_get_imgid(table->offset);
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
-  // and we reset position of first thumb for zooming
-  if(g_list_length(table->list) > 0)
-  {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    thumb->x = 0;
-    thumb->y = 0;
-  }
-  dt_thumbtable_full_redraw(table, TRUE);
-  dt_view_lighttable_change_offset(darktable.view_manager, TRUE, table->offset_imgid);
-}*/
-}
-
 static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_data)
 {
   if(!user_data || imgid <= 0) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
+  if(!gtk_widget_get_visible(table->widget)) return;
 
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
@@ -836,8 +738,6 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_dt_collection_changed_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_dt_mouse_over_image_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
@@ -1118,6 +1018,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
+  if(!gtk_widget_get_visible(table->widget)) return FALSE;
   if(!table->list || g_list_length(table->list) == 0) return FALSE;
 
   // if we have only 1 image, it should take the entire screen
@@ -1322,6 +1223,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
 {
+  if(!gtk_widget_get_visible(table->widget)) return;
   const double start = dt_get_wtime();
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
