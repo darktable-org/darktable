@@ -1574,12 +1574,7 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
 {
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
 
-  //cairo_set_line_width(cr, .25);
-  //cairo_rectangle(cr, -w/2.0, -h/2.0, w, h);
-  //cairo_stroke(cr);
-
   float s = (w < h ? w / 2.0 : h / 2.0);
-  //s = 11.0;
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, .25);
