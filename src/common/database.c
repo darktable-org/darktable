@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 27
+#define CURRENT_DATABASE_VERSION_LIBRARY 28
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1534,7 +1534,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN exposure_bias REAL",
              "[init] can't add `exposure_bias' column to images table in database\n");
-
+    
     new_version = 26;
   }
   else if(version == 26)
@@ -1567,6 +1567,33 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 27;
+  }
+  else if(version == 27)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN import_timestamp INTEGER DEFAULT -1",
+             "[init] can't add `import_timestamp' column to images table in database\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN change_timestamp INTEGER DEFAULT -1",
+             "[init] can't add `change_timestamp' column to images table in database\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN export_timestamp INTEGER DEFAULT -1",
+             "[init] can't add `export_timestamp' column to images table in database\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN print_timestamp INTEGER DEFAULT -1",
+             "[init] can't add `print_timestamp' column to images table in database\n");
+
+    TRY_EXEC("UPDATE main.images SET import_timestamp = (SELECT access_timestamp "
+               "FROM main.film_rolls WHERE film_rolls.id = images.film_id)",
+             "[init] can't populate import_timestamp column from film_rolls.access_timestamp.\n");
+
+    TRY_EXEC("UPDATE main.images SET change_timestamp = images.write_timestamp "
+               "WHERE images.write_timestamp IS NOT NULL "
+                 "AND images.id = (SELECT imgid FROM tagged_images "
+                   "JOIN data.tags ON tags.id = tagged_images.tagid "
+                     "WHERE data.tags.name = 'darktable|changed')",
+             "[init] can't populate change_timestamp column from images.write_timestamp.\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 28;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1834,8 +1861,10 @@ static void _create_library_schema(dt_database_t *db)
       "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL,"
-      "exposure_bias REAL)",
+      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL, "
+      "exposure_bias REAL, "
+      "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
