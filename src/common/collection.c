@@ -267,7 +267,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -280,7 +280,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -293,7 +293,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -306,7 +306,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat(selq_post, ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id"
                                                                         " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",DT_METADATA_XMP_DC_TITLE);
   }
@@ -317,7 +317,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id"
@@ -330,7 +330,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
@@ -341,7 +341,7 @@ int dt_collection_update(const dt_collection_t *collection)
       ||collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR)
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat(selq_post, ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
   }
   /* only PATH */
@@ -349,7 +349,7 @@ int dt_collection_update(const dt_collection_t *collection)
           ||collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id");
@@ -359,7 +359,7 @@ int dt_collection_update(const dt_collection_t *collection)
         ||collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat(selq_post, ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
                                 DT_METADATA_XMP_DC_TITLE);
   }
@@ -368,7 +368,7 @@ int dt_collection_update(const dt_collection_t *collection)
         ||collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
     selq_post = dt_util_dstrcat
       (selq_post, ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
        DT_METADATA_XMP_DC_DESCRIPTION);
