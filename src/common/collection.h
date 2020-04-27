@@ -25,11 +25,11 @@
 
 typedef enum dt_collection_query_t
 {
-  COLLECTION_QUERY_SIMPLE = 0,                 // a query with only select and where statement
-  COLLECTION_QUERY_USE_SORT = 1 << 0,          // if query should include order by statement
-  COLLECTION_QUERY_USE_LIMIT = 1 << 1,         // if query should include "limit ?1,?2" part
-  COLLECTION_QUERY_USE_WHERE_EXT = 1 << 2,     // if query should include extended where part
-  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3 // if query should only use extended where part
+  COLLECTION_QUERY_SIMPLE             = 0,      // a query with only select and where statement
+  COLLECTION_QUERY_USE_SORT           = 1 << 0, // if query should include order by statement
+  COLLECTION_QUERY_USE_LIMIT          = 1 << 1, // if query should include "limit ?1,?2" part
+  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2, // if query should include extended where part
+  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3  // if query should only use extended where part
 } dt_collection_query_t;
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT | COLLECTION_QUERY_USE_LIMIT)
 
@@ -47,20 +47,20 @@ typedef enum dt_collection_filter_comparator_t
 
 typedef enum dt_collection_filter_t
 {
-  DT_COLLECTION_FILTER_ALL = 0,
-  DT_COLLECTION_FILTER_STAR_NO = 1,
-  DT_COLLECTION_FILTER_STAR_1 = 2,
-  DT_COLLECTION_FILTER_STAR_2 = 3,
-  DT_COLLECTION_FILTER_STAR_3 = 4,
-  DT_COLLECTION_FILTER_STAR_4 = 5,
-  DT_COLLECTION_FILTER_STAR_5 = 6,
-  DT_COLLECTION_FILTER_REJECT = 7,
+  DT_COLLECTION_FILTER_ALL        = 0,
+  DT_COLLECTION_FILTER_STAR_NO    = 1,
+  DT_COLLECTION_FILTER_STAR_1     = 2,
+  DT_COLLECTION_FILTER_STAR_2     = 3,
+  DT_COLLECTION_FILTER_STAR_3     = 4,
+  DT_COLLECTION_FILTER_STAR_4     = 5,
+  DT_COLLECTION_FILTER_STAR_5     = 6,
+  DT_COLLECTION_FILTER_REJECT     = 7,
   DT_COLLECTION_FILTER_NOT_REJECT = 8
 } dt_collection_filter_t;
 
 typedef enum dt_collection_sort_t
 {
-  DT_COLLECTION_SORT_NONE = -1,
+  DT_COLLECTION_SORT_NONE     = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
   DT_COLLECTION_SORT_RATING,
@@ -108,21 +108,21 @@ typedef enum dt_collection_properties_t
 
 typedef enum dt_collection_rating_comperator_t
 {
-  DT_COLLECTION_RATING_COMP_LT = 0,
+  DT_COLLECTION_RATING_COMP_LT  = 0,
   DT_COLLECTION_RATING_COMP_LEQ = 1,
-  DT_COLLECTION_RATING_COMP_EQ = 2,
+  DT_COLLECTION_RATING_COMP_EQ  = 2,
   DT_COLLECTION_RATING_COMP_GEQ = 3,
-  DT_COLLECTION_RATING_COMP_GT = 4,
-  DT_COLLECTION_RATING_COMP_NE = 5,
-  DT_COLLECTION_RATING_N_COMPS = 6
+  DT_COLLECTION_RATING_COMP_GT  = 4,
+  DT_COLLECTION_RATING_COMP_NE  = 5,
+  DT_COLLECTION_RATING_N_COMPS  = 6
 } dt_collection_rating_comperator_t;
 
 typedef enum dt_collection_change_t
 {
-  DT_COLLECTION_CHANGE_NONE = 0,
+  DT_COLLECTION_CHANGE_NONE      = 0,
   DT_COLLECTION_CHANGE_NEW_QUERY = 1, // a completly different query
-  DT_COLLECTION_CHANGE_FILTER = 2,    // base query has been finetuned (filter, ...)
-  DT_COLLECTION_CHANGE_RELOAD = 3 // we have just reload the collection after images changes (query is identical)
+  DT_COLLECTION_CHANGE_FILTER    = 2, // base query has been finetuned (filter, ...)
+  DT_COLLECTION_CHANGE_RELOAD    = 3  // we have just reload the collection after images changes (query is identical)
 } dt_collection_change_t;
 
 typedef struct dt_collection_params_t
