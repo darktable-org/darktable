@@ -286,36 +286,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 }
 
 
-#if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
-  // the total scale is composed of scale before input to the pipeline (iscale),
-  // and the scale of the roi.
-  const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->sigma_r; // does not depend on scale
-  const float sigma_s = d->sigma_s / scale;
-
-  if(d->mode == s_mode_bilateral)
-  {
-    dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-    dt_bilateral_splat(b, (float *)i);
-    dt_bilateral_blur(b);
-    dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
-    dt_bilateral_free(b);
-  }
-  else // s_mode_local_laplacian
-  {
-    local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
-  }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
-}
-#endif
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -343,6 +313,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
+
+#if defined(__SSE2__)
+//until such time as the alternate entry point for SSE code is eliminated, just forward to process()
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  process(self, piece, i, o, roi_in, roi_out);
+}
+#endif
 
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
