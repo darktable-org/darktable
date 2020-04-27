@@ -187,6 +187,7 @@ int dt_collection_update(const dt_collection_t *collection)
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
+    char *rejected_check = g_strdup_printf("((flags & %d) == %d)", DT_IMAGE_REJECTED, DT_IMAGE_REJECTED);
     int and_term = and_operator_initial();
     dt_collection_filter_t rating = collection->params.rating;
     if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
@@ -201,15 +202,23 @@ int dt_collection_update(const dt_collection_t *collection)
                          and_operator(&and_term), DT_IMAGE_REMOVE,
                          DT_IMAGE_REMOVE);
 
-    if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND (flags & 7) != 6",
+    if(collection->params.filter_flags & COLLECTION_FILTER_REJECTED)
+      wq = dt_util_dstrcat(wq, " %s %s",
                            and_operator(&and_term),
-                           comparators[collection->params.comparator], rating - 1);
+                           rejected_check);
+    else if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND NOT %s",
+                           and_operator(&and_term),
+                           comparators[collection->params.comparator], rating - 1,
+                           rejected_check);
     else if(collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND (flags & 7) != 6",
-                           and_operator(&and_term), rating - 1);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND NOT %s",
+                           and_operator(&and_term), rating - 1,
+                           rejected_check);
     else if(collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", and_operator(&and_term), rating - 1);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d AND NOT %s",
+                           and_operator(&and_term), rating - 1,
+                           rejected_check);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=mi.id)", and_operator(&and_term));
@@ -219,6 +228,8 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
       wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
+
+    g_free(rejected_check);
   }
   else
     wq = dt_util_dstrcat(wq, "%s", where_ext);
