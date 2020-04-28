@@ -402,6 +402,9 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
   gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
   gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
+  gtk_widget_show(thumb->w_bottom_eb);
+  gtk_widget_show(thumb->w_reject);
+  for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
@@ -466,9 +469,6 @@ static gboolean _thumbs_hide_overlays(gpointer user_data)
 static gboolean _thumbs_show_overlays(gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  gtk_widget_show(thumb->w_bottom_eb);
-  gtk_widget_show(thumb->w_reject);
-  for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
   _thumb_update_icons(thumb);
   return G_SOURCE_REMOVE;
 }
