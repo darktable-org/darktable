@@ -1228,6 +1228,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
       }
       l = g_list_next(l);
     }
+    dt_control_queue_redraw_center();
   }
   else
   {
