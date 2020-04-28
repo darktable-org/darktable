@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-28 09:27+0200\n"
-"PO-Revision-Date: 2020-04-28 09:29+0200\n"
+"POT-Creation-Date: 2020-04-28 09:43+0200\n"
+"PO-Revision-Date: 2020-04-28 09:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -26,6 +26,11 @@ msgstr "Organiser et développer les images d'un boîtier numérique"
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
 msgstr "graphisme;photographie;raw;"
+
+#: ../build/src/preferences_gen.h:1564 ../src/libs/tools/lighttable.c:90
+#: ../src/views/lighttable.c:182
+msgid "lighttable"
+msgstr "table lumineuse"
 
 #: ../build/src/preferences_gen.h:1567
 msgid "color manage cached thumbnails"
@@ -311,6 +316,10 @@ msgstr "affiche les barres de défilement pour la vue centrale"
 msgid "defines whether scrollbars should be displayed"
 msgstr "défini si les barres de défilement doivent apparaître"
 
+#: ../build/src/preferences_gen.h:1969 ../src/views/darkroom.c:109
+msgid "darkroom"
+msgstr "chambre noire"
+
 #: ../build/src/preferences_gen.h:1972
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
@@ -526,6 +535,10 @@ msgstr ""
 "l'exportation. Les capteurs X-Trans utilisent VNG plutôt que PPG en réglage "
 "moyen"
 
+#: ../build/src/preferences_gen.h:2451
+msgid "other views"
+msgstr "autres vues"
+
 #: ../build/src/preferences_gen.h:2454
 msgid "map/geolocalisation"
 msgstr "carte/géolocalisation"
@@ -583,6 +596,10 @@ msgstr "développement de haute qualité lors du diaporama"
 #: ../build/src/preferences_gen.h:2582
 msgid "same option as for export, but applies to slideshow."
 msgstr "même option que pour l'exportation, mais pour le diaporama"
+
+#: ../build/src/preferences_gen.h:2609
+msgid "processing"
+msgstr "traitement"
 
 #: ../build/src/preferences_gen.h:2612
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -680,6 +697,10 @@ msgstr ""
 "utilisez un appareil photo récent ou si vous renforcez la netteté par "
 "d'autres moyens. (nécessite un redémarrage)"
 
+#: ../build/src/preferences_gen.h:2796
+msgid "security"
+msgstr "sécurité"
+
 #: ../build/src/preferences_gen.h:2799
 msgid "ask before removing images from database"
 msgstr "demander avant d'enlever des images"
@@ -747,6 +768,10 @@ msgstr "demander avant de supprimer un mot-clé"
 #: ../build/src/preferences_gen.h:2945
 msgid "ask before deleting a style"
 msgstr "demander avant de supprimer un style"
+
+#: ../build/src/preferences_gen.h:2984
+msgid "cpu / gpu / memory"
+msgstr "cpu / gpu / mémoire"
 
 #: ../build/src/preferences_gen.h:2987
 msgid "memory in megabytes to use for thumbnail cache"
@@ -903,6 +928,10 @@ msgstr ""
 "prévisualisation en parallèle sur des GPUs différents.; GPU très rapide - "
 "utilise le GPU séquentiellement pour l'image et la prévisualisation."
 
+#: ../build/src/preferences_gen.h:3254
+msgid "storage"
+msgstr "stockage"
+
 #: ../build/src/preferences_gen.h:3257
 msgid "database"
 msgstr "base de données"
@@ -1007,6 +1036,10 @@ msgid ""
 msgstr ""
 "récupère la date de modification de tous les fichiers xmp au démarrage pour "
 "vérifier ceux modifiés depuis la dernière session"
+
+#: ../build/src/preferences_gen.h:3483
+msgid "miscellaneous"
+msgstr "divers"
 
 #: ../build/src/preferences_gen.h:3486
 msgid "interface"
@@ -1157,7 +1190,8 @@ msgstr ""
 "cette application externe est utilisée pour jouer les annotations audio "
 "enregistrées par certains appareils photo"
 
-#: ../build/src/preferences_gen.h:3768 ../src/libs/import.c:98
+#: ../build/src/preferences_gen.h:3765 ../build/src/preferences_gen.h:3768
+#: ../src/libs/import.c:98
 msgid "import"
 msgstr "importer"
 
@@ -3412,7 +3446,9 @@ msgstr ""
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1992 ../src/libs/lib.c:1045
+#. Adding the outer container
+#: ../src/develop/imageop.c:1992 ../src/gui/preferences.c:632
+#: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -4175,7 +4211,7 @@ msgid "storage file"
 msgstr "fichier de stockage"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:347
+#: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:266
 msgid "general"
 msgstr "général"
 
@@ -4746,6 +4782,11 @@ msgstr "auto"
 msgctxt "preferences"
 msgid "import..."
 msgstr "importer..."
+
+#. Adding the outer container
+#: ../src/gui/preferences.c:733
+msgid "shortcuts"
+msgstr "raccourcis"
 
 #: ../src/gui/preferences.c:744
 msgid "shortcut"
@@ -15849,10 +15890,6 @@ msgstr "rendu"
 msgid "image infos"
 msgstr "information de l'image"
 
-#: ../src/libs/tools/lighttable.c:90 ../src/views/lighttable.c:182
-msgid "lighttable"
-msgstr "table lumineuse"
-
 #: ../src/libs/tools/lighttable.c:142
 msgid "zoomable light table"
 msgstr "table lumineuse zoomable"
@@ -15942,10 +15979,6 @@ msgstr "double-cliquer pour réinitialiser à « %f »"
 #: ../src/lua/preferences.c:800
 msgid "lua options"
 msgstr "options lua"
-
-#: ../src/views/darkroom.c:109
-msgid "darkroom"
-msgstr "chambre noire"
 
 #: ../src/views/darkroom.c:427
 msgid "loading image"
@@ -16698,12 +16731,6 @@ msgstr "action"
 #~ msgid "GUI options"
 #~ msgstr "options d'interface"
 
-#~ msgid "security"
-#~ msgstr "sécurité"
-
-#~ msgid "miscellaneous"
-#~ msgstr "divers"
-
 #~ msgctxt "preferences"
 #~ msgid "no scrollbars"
 #~ msgstr "pas de barre de défilement"
@@ -16719,9 +16746,6 @@ msgstr "action"
 #~ msgid "core options"
 #~ msgstr "fonctionnement"
 
-#~ msgid "cpu / gpu / memory"
-#~ msgstr "cpu / gpu / mémoire"
-
 #~ msgid ""
 #~ "load user.css from the user config directory to modify selected theme"
 #~ msgstr ""
@@ -16730,9 +16754,6 @@ msgstr "action"
 
 #~ msgid "close"
 #~ msgstr "fermer"
-
-#~ msgid "shortcuts"
-#~ msgstr "raccourcis"
 
 #~ msgctxt "accel"
 #~ msgid "delete"
