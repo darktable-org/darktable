@@ -56,6 +56,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_VNG4 = 2,
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3,
   DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME = 4,
+  DT_IOP_DEMOSAIC_PHOTOSITE = 5,
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
@@ -248,6 +249,9 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       break;
     case DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME:
       string = "blk4 monochrome";
+      break;
+    case DT_IOP_DEMOSAIC_PHOTOSITE:
+      string = "photosite";
       break;
     case DT_IOP_DEMOSAIC_VNG:
       string = "VNG (xtrans)";
@@ -2485,6 +2489,39 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
   }
 }
 
+static void blk4_photosite(float *out, const float *const in, dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in, const uint32_t filters)
+{
+  assert(roi_in->width >= roi_out->width);
+  assert(roi_in->height >= roi_out->height);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, roi_out, roi_in, filters) \
+  shared(out) \
+  schedule(static) \
+  collapse(2)
+#endif
+
+  for(int j = 0; j < (roi_out->height); j++)
+  {
+    for(int i = 0; i < (roi_out->width); i++)
+    {
+      const int src_x = i + roi_out->x;
+      const int src_y = j + roi_out->y;
+
+      const uint32_t offset = (size_t)4 * ((size_t)j * roi_out->width + i);     
+      const uint32_t idx = FC(src_y, src_x, filters);
+
+      out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
+      if(idx<3)
+      {
+        out[offset + idx] = in[(size_t)((size_t)src_y) * roi_in->width + src_x];
+      }
+    }
+  }
+}
+
 static void blk4_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in, const uint32_t filters, const uint32_t rgb_filter)
 {
@@ -2492,10 +2529,9 @@ static void blk4_monochrome(float *out, const float *const in, dt_iop_roi_t *con
   assert(roi_in->height >= roi_out->height);
 
   const float rgb_pars[4][4] = {
-    { 0.2225f, 0.7169f / 2.0f, 0.0606f, 0.0f }, // luminance
-    { 0.5f, 0.5f / 2.0f, 0.0f, 0.0f },          // yellow
-    { 1.0f, 0.0f, 0.0f, 0.0f },                 // red
-    { 0.3333f, 0.3333f / 2.0f, 0.3333f, 0.0f } // equal
+    { 0.3333f, 0.3333f / 2.0f, 0.3333f, 0.0f }, // equal
+    { 0.3f, 0.6f / 2.0f, 0.1f, 0.0f },          // standard
+    { 0.5f, 0.5f / 2.0f, 0.0f, 0.0f }           // yellow
   };
 
 #ifdef _OPENMP
@@ -2923,7 +2959,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   int demosaicing_method = data->demosaicing_method;
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL) // only overwrite setting if quality << requested and in dr mode
     && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) // do not touch this special method
-    && (demosaicing_method != DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME))     // or the monochrome mode
+    && (demosaicing_method != DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME)      // or the monochrome mode
+    && (demosaicing_method != DT_IOP_DEMOSAIC_PHOTOSITE))             // or photosite debug mode
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
@@ -2951,6 +2988,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else if(demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME)
     {
       blk4_monochrome(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, data->yet_unused_data_specific_to_demosaicing_method);
+    }
+    else if(demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE)
+    {
+      blk4_photosite(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters);
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
@@ -3020,7 +3061,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
       dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
-    else if(demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME)
+    else if((demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME) || (demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE))
        dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
     else // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
         if(piece->pipe->dsc.filters == 9u)
@@ -4727,6 +4768,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if((demosaicing_method == DT_IOP_DEMOSAIC_PPG) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME) ||
+      (demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE))
   {
     // Bayer pattern with PPG, Monochrome, bl4 monochrome and Amaze
@@ -4937,6 +4979,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->median_thrs = 0.0f;
   }
 
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE)
+  {
+    d->demosaicing_method = DT_IOP_DEMOSAIC_PHOTOSITE;
+    d->green_eq = DT_IOP_GREEN_EQ_NO;
+    d->color_smoothing = 0;
+    d->median_thrs = 0.0f;
+  }
+
   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
   {
     d->median_thrs = 0.0f;
@@ -4958,6 +5008,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME:
+      piece->process_cl_ready = 0;
+      break;
+    case DT_IOP_DEMOSAIC_PHOTOSITE:
       piece->process_cl_ready = 0;
       break;
     case DT_IOP_DEMOSAIC_VNG:
@@ -5030,7 +5083,7 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->demosaic_method_xtrans, p->demosaicing_method & ~DEMOSAIC_XTRANS);
   }
 
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) || (p->demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE))
   {
     gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->color_smoothing);
@@ -5157,6 +5210,9 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
 
   switch(active)
   {
+    case DT_IOP_DEMOSAIC_PPG:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+      break;
     case DT_IOP_DEMOSAIC_AMAZE:
       p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
       break;
@@ -5169,14 +5225,17 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
     case DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME:
       p->demosaicing_method = DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME;
       break;
+    case DT_IOP_DEMOSAIC_PHOTOSITE:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_PHOTOSITE;
+      break;
     default:
-    case DT_IOP_DEMOSAIC_PPG:
       p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
       break;
   }
 
   if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-      || (p->demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME))
+      || (p->demosaicing_method == DT_IOP_DEMOSAIC_BLOCK4_MONOCHROME)
+      || (p->demosaicing_method == DT_IOP_DEMOSAIC_PHOTOSITE))
   {
     gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->color_smoothing);
@@ -5237,6 +5296,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("passthrough (monochrome) (experimental)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("monochrome (bayer)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("photosite (debug)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("demosaicing raw data method"));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
@@ -5278,10 +5338,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->mono_filters = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mono_filters, NULL, _("filter"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->mono_filters, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->mono_filters, _("luminance"));
+  dt_bauhaus_combobox_add(g->mono_filters, _("equal"));
+  dt_bauhaus_combobox_add(g->mono_filters, _("standard"));
   dt_bauhaus_combobox_add(g->mono_filters, _("yellow"));
-  dt_bauhaus_combobox_add(g->mono_filters, _("red"));
-  dt_bauhaus_combobox_add(g->mono_filters, _("none"));
   gtk_widget_set_tooltip_text(g->mono_filters, _("emulate a color filter for b&w image"));
 
   g_signal_connect(G_OBJECT(g->mono_filters), "value-changed", G_CALLBACK(monochrome_filter_callback), self);
