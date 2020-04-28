@@ -37,20 +37,6 @@ typedef struct dt_undo_tags_t
 
 static void dt_set_darktable_tags();
 
-#if 0
-static gchar *_get_list_string_values(GList *list)
-{
-  GList *l = list;
-  gchar *sl = NULL;
-  while(l)
-  {
-    sl = dt_util_dstrcat(sl, "%d,", GPOINTER_TO_INT(l->data));
-    l = g_list_next(l);
-  }
-  return sl;
-}
-#endif // 0
-
 static gchar *_get_tb_removed_tag_string_values(GList *before, GList *after)
 {
   GList *b = before;
@@ -704,17 +690,17 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
   dt_set_darktable_tags();
   char *query = NULL;
   query = dt_util_dstrcat(query,
-                          "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms "
+                          "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms"
                           // all tags
-                          "FROM data.tags AS T "
+                          " FROM data.tags AS T"
                           // tags attached to image(s), not dt tag, ordered by name
-                          "JOIN (SELECT DISTINCT I.tagid, T.name "
-                            "FROM main.tagged_images AS I  "
-                            "JOIN data.tags AS T ON T.id = I.tagid "
-                            "WHERE I.imgid = %d AND T.id NOT IN memory.darktable_tags "
-                            "ORDER by T.name) AS T1 "
-                            // keep all tags in the path
-                            "ON T.name = SUBSTR(T1.name, 1, LENGTH(T.name))",
+                          " JOIN (SELECT DISTINCT I.tagid, T.name"
+                          "       FROM main.tagged_images AS I"
+                          "       JOIN data.tags AS T ON T.id = I.tagid"
+                          "       WHERE I.imgid = %d AND T.id NOT IN memory.darktable_tags"
+                          "       ORDER by T.name) AS T1"
+                          // keep all tags in the path
+                          "   ON T.name = SUBSTR(T1.name, 1, LENGTH(T.name))",
                           imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -863,10 +849,10 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   sqlite3_stmt *stmt;
   dt_set_darktable_tags();
   char query[256] = { 0 };
-  snprintf(query, sizeof(query), "SELECT DISTINCT T.id "
-                                 "FROM main.tagged_images AS I "
-                                 "JOIN data.tags T on T.id = I.tagid "
-                                 "WHERE I.imgid = %d %s",
+  snprintf(query, sizeof(query), "SELECT DISTINCT T.id"
+                                 "  FROM main.tagged_images AS I"
+                                 "  JOIN data.tags T on T.id = I.tagid"
+                                 "  WHERE I.imgid = %d %s",
            imgid, type == DT_TAG_TYPE_ALL ? "" :
                   type == DT_TAG_TYPE_DT ? "AND T.id IN memory.darktable_tags" :
                                            "AND NOT T.id IN memory.darktable_tags");
@@ -1072,21 +1058,23 @@ uint32_t dt_tag_get_suggestions(GList **result)
   const uint32_t nb_selected = dt_selected_images_count();
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms "
-                              "FROM memory.taglist MT "
-                              "JOIN data.tags T ON MT.id = T.id "
-                              "LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb FROM main.tagged_images "
-                                "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid) AS CT "
-                                "ON CT.tagid = MT.id "
-                              "WHERE T.id NOT IN (SELECT DISTINCT tagid "
-                                "FROM (SELECT TI.tagid, COUNT(DISTINCT SI.imgid) AS imgnb "
-                                  "FROM main.selected_images AS SI "
-                                  "JOIN main.tagged_images AS TI ON TI.imgid = SI.imgid "
-                                  "GROUP BY TI.tagid) "
-                                  "WHERE imgnb = ?1) "
-                              "AND (T.flags IS NULL OR (T.flags & 1) = 0) "
-                              "ORDER BY MT.count DESC "
-                              "LIMIT 500",
+                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms"
+                              "  FROM memory.taglist MT"
+                              "  JOIN data.tags T ON MT.id = T.id"
+                              "  LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb"
+                              "             FROM main.tagged_images"
+                              "             WHERE imgid IN (SELECT imgid FROM main.selected_images)"
+                              "             GROUP BY tagid) AS CT"
+                              "    ON CT.tagid = MT.id"
+                              "  WHERE T.id NOT IN (SELECT DISTINCT tagid"
+                              "                     FROM (SELECT TI.tagid, COUNT(DISTINCT SI.imgid) AS imgnb"
+                              "                           FROM main.selected_images AS SI"
+                              "                           JOIN main.tagged_images AS TI ON TI.imgid = SI.imgid"
+                              "                           GROUP BY TI.tagid)"
+                              "                           WHERE imgnb = ?1)"
+                              "  AND (T.flags IS NULL OR (T.flags & 1) = 0)"
+                              "  ORDER BY MT.count DESC"
+                              "  LIMIT 500",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, nb_selected);
 
@@ -1127,8 +1115,10 @@ void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_cou
 
   /* Only select tags that are equal or child to the one we are looking for once. */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags "
-                              "WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2 ",
+                              "INSERT INTO memory.similar_tags (tagid)"
+                              "  SELECT id"
+                              "    FROM data.tags"
+                              "    WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, keyword_expr, -1, SQLITE_TRANSIENT);
@@ -1145,8 +1135,10 @@ void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_cou
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(DISTINCT ti.imgid) FROM main.tagged_images AS ti "
-                              "JOIN memory.similar_tags AS st ON st.tagid = ti.tagid",
+                              "SELECT COUNT(DISTINCT ti.imgid)"
+                              "  FROM main.tagged_images AS ti "
+                              "  JOIN memory.similar_tags AS st"
+                              "    ON st.tagid = ti.tagid",
                               -1, &stmt, NULL);
 
   sqlite3_step(stmt);
@@ -1165,8 +1157,10 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
 
 /* Only select tags that are equal or child to the one we are looking for once. */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags "
-                              "WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2 ",
+                              "INSERT INTO memory.similar_tags (tagid)"
+                              "  SELECT id"
+                              "  FROM data.tags"
+                              "  WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, keyword_expr, -1, SQLITE_TRANSIENT);
@@ -1243,9 +1237,10 @@ uint32_t dt_tag_get_with_usage(GList **result)
 
   /* Select tags that are similar to the keyword and are actually used to tag images*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) SELECT tagid, COUNT(*)"
-                              " FROM main.tagged_images"
-                              " GROUP BY tagid",
+                              "INSERT INTO memory.taglist (id, count)"
+                              "  SELECT tagid, COUNT(*)"
+                              "  FROM main.tagged_images"
+                              "  GROUP BY tagid",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -1254,14 +1249,15 @@ uint32_t dt_tag_get_with_usage(GList **result)
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms "
-                              "FROM data.tags T "
-                              "LEFT JOIN memory.taglist MT ON MT.id = T.id "
-                              "LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb FROM main.tagged_images "
-                                "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid) AS CT "
-                                "ON CT.tagid = T.id "
-                              "WHERE T.id NOT IN memory.darktable_tags "
-                              "ORDER BY T.name ",
+                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms"
+                              "  FROM data.tags T "
+                              "  LEFT JOIN memory.taglist MT ON MT.id = T.id "
+                              "  LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb"
+                              "             FROM main.tagged_images "
+                              "             WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid) AS CT "
+                              "    ON CT.tagid = T.id"
+                              "  WHERE T.id NOT IN memory.darktable_tags "
+                              "  ORDER BY T.name ",
                               -1, &stmt, NULL);
 
   /* ... and create the result list to send upwards */
