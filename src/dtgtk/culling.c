@@ -474,6 +474,15 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
 static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
+
+  const int id = dt_control_get_mouse_over_id();
+
+  if(id > 0 && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_view_manager_switch(darktable.view_manager, "darkroom");
+    return TRUE;
+  }
+
   table->pan_x = event->x_root;
   table->pan_y = event->y_root;
   table->panning = TRUE;
