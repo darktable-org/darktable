@@ -200,8 +200,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     int closeup = dt_control_get_dev_closeup();
     float zoom_x = dt_control_get_dev_zoom_x();
     float zoom_y = dt_control_get_dev_zoom_y();
-    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1<<closeup, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1<<closeup, 0) * darktable.gui->ppd;
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0) * darktable.gui->ppd;
     // avoid numerical instability for small resolutions:
     double h, w;
     if(cur_scale > min_scale)
@@ -443,8 +443,8 @@ static void _zoom_preset_change(uint64_t val)
   }
   else if(val == 4u)
   {
-    scale = 0.5f;
-    zoom = DT_ZOOM_FREE;
+    scale = 0.5f * dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
   }
   else if(val == 5u)
   {
@@ -464,6 +464,8 @@ static void _zoom_preset_change(uint64_t val)
     zoom = DT_ZOOM_1;
     closeup = 3;
   }
+
+  closeup /= darktable.gui->ppd;
 
   // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
   // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
