@@ -263,7 +263,7 @@ static void init_tab_general(GtkWidget *stack)
 
   gtk_box_pack_start(GTK_BOX(container), grid, FALSE, FALSE, 0);
 
-  gtk_stack_add_titled(GTK_STACK(stack), container, "general", "general");
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("general"), _("general"));
 
   // language
 
@@ -362,7 +362,7 @@ static void init_tab_general(GtkWidget *stack)
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
-  
+
   if(g_file_test(usercsspath, G_FILE_TEST_EXISTS))
   {
     gchar *usercsscontent = NULL;
@@ -380,7 +380,7 @@ static void init_tab_general(GtkWidget *stack)
   }
   else
   {
-    //load default text 
+    //load default text
     gtk_text_buffer_set_text(buffer, "/* Enter CSS theme tweaks here */", -1);
   }
 
@@ -629,7 +629,7 @@ static void init_tab_presets(GtkWidget *stack)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, "presets", "presets");
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("presets"), _("presets"));
 
   tree_insert_presets(model);
 
@@ -730,7 +730,7 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, "accels", "shortcuts");
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("shortcuts"), _("shortcuts"));
 
   // Building the accelerator tree
   g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
@@ -771,7 +771,7 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
   // Adding toolbar at bottom of treeview
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox, "shortcut_controls");
-  
+
   // Adding search box
   searchentry = gtk_entry_new();
   g_signal_connect(G_OBJECT(searchentry), "activate", G_CALLBACK(accel_search), (gpointer)search_data);
