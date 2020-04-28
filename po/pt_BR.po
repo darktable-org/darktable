@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-04-23 10:02-0300\n"
-"PO-Revision-Date: 2020-04-22 20:23-0300\n"
+"PO-Revision-Date: 2020-04-28 09:56-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -544,9 +544,7 @@ msgstr "perguntar antes de remover imagens do bando de dados"
 
 #: ../build/src/preferences_gen.h:2995
 msgid "always ask the user before any image is removed from DB."
-msgstr ""
-"sempre perguntar ao usuário antes de remover qualquer imagem do banco de "
-"dados."
+msgstr "sempre perguntar antes de remover qualquer imagem do banco de dados."
 
 #: ../build/src/preferences_gen.h:3003
 msgid "ask before erasing images from disk / discarding history stack"
@@ -556,9 +554,7 @@ msgstr "perguntar antes de apagar imagens do disco / descartar histórico"
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
-msgstr ""
-"sempre perguntar ao usuário antes de excluir qualquer arquivo de imagem ou "
-"descartar histórico."
+msgstr "sempre perguntar antes de excluir qualquer arquivo de imagem ou descartar histórico."
 
 #: ../build/src/preferences_gen.h:3023
 msgid "send files to trash when erasing images"
@@ -848,7 +844,7 @@ msgstr "usar uma curva base como default (precisa reiniciar)"
 
 #: ../build/src/preferences_gen.h:3611
 msgid "auto-apply per camera basecurve presets"
-msgstr "auto-aplicar pre-configurações de curva base por câmera"
+msgstr "auto-aplicar pré-configurações de curva base por câmera"
 
 #: ../build/src/preferences_gen.h:3623
 msgid ""
@@ -1165,7 +1161,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4133
 msgid "password storage backend to use"
-msgstr "usar backend para armazenamento de senha"
+msgstr "backend a usar para armazenamento de senhas"
 
 #: ../build/src/preferences_gen.h:4144 ../build/src/preferences_gen.h:4176
 msgctxt "preferences"
