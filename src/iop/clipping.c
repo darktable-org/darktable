@@ -1629,7 +1629,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         // some sanity check
         if(dd == 0)
         {
-          dt_control_log(_("invalid ratio format. it should be greater than one"));
+          dt_control_log(_("invalid ratio format. it should be non zero"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
