@@ -76,7 +76,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- lighttable -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "lighttable", "lighttable");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("lighttable"), _("lighttable"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='lighttable']">
     <xsl:apply-templates select="." mode="tab_block"/>
@@ -85,7 +85,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- darkroom -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "darkroom", "darkroom");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("darkroom"), _("darkroom"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='darkroom']">
     <xsl:apply-templates select="." mode="tab_block"/>
@@ -94,7 +94,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- other views -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_other_views</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "other views", "other views");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_other_views</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("other views"), _("other views"));&#xA;</xsl:text>
 
 <xsl:text>
    {
@@ -126,7 +126,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- processing -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_processing</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "processing", "processing");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_processing</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("processing"), _("processing"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='processing']">
     <xsl:apply-templates select="." mode="tab_block"/>
@@ -135,7 +135,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- security -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "security", "security");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("security"), _("security"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='security']">
     <xsl:apply-templates select="." mode="tab_block"/>
@@ -144,7 +144,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- cpu/gpu/memory -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_cpugpu</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "cpu / gpu / memory", "cpu / gpu / memory");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_cpugpu</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("cpu / gpu / memory"), _("cpu / gpu / memory"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='cpugpu']">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
@@ -155,7 +155,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- storage -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "storage", "storage");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("storage"), _("storage"));&#xA;</xsl:text>
 
 <xsl:text>
    {
@@ -187,7 +187,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <!-- miscellaneous -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "miscellaneous", "miscellaneous");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("miscellaneous"), _("miscellaneous"));&#xA;</xsl:text>
 <xsl:text>
    {
       GtkWidget *seclabel = gtk_label_new(_("interface"));
@@ -231,7 +231,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
         <!-- import -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, "import", "import");&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("import"), _("import"));&#xA;</xsl:text>
 <xsl:text>
    {
       GtkWidget *seclabel = gtk_label_new(_("import"));
@@ -367,7 +367,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   </xsl:template>
 
   <xsl:template match="dtconfig[type='longstring']" mode="change">
-     <xsl:text>  
+     <xsl:text>
         GtkTextIter start, end;
         GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
         gtk_text_buffer_get_start_iter(buffer, &amp;start);
