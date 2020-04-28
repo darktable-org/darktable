@@ -287,6 +287,7 @@ void dt_bauhaus_slider_set_step(GtkWidget *w, float val);
 float dt_bauhaus_slider_get_step(GtkWidget *w);
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *w, int feedback);
+int dt_bauhaus_slider_get_feedback(GtkWidget *w);
 
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
