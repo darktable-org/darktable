@@ -3245,7 +3245,7 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+      "SELECT import_timestamp, change_timestamp, export_timestamp, print_timestamp"
       " FROM main.images"
       " WHERE id = ?1",
       -1, &stmt, NULL);
@@ -3253,10 +3253,10 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    xmpData["Xmp.darktable.import_timestamp"] = sqlite3_column_int(stmt, 1);
-    xmpData["Xmp.darktable.change_timestamp"] = sqlite3_column_int(stmt, 2);
-    xmpData["Xmp.darktable.export_timestamp"] = sqlite3_column_int(stmt, 3);
-    xmpData["Xmp.darktable.print_timestamp"] = sqlite3_column_int(stmt, 4);
+    xmpData["Xmp.darktable.import_timestamp"] = sqlite3_column_int(stmt, 0);
+    xmpData["Xmp.darktable.change_timestamp"] = sqlite3_column_int(stmt, 1);
+    xmpData["Xmp.darktable.export_timestamp"] = sqlite3_column_int(stmt, 2);
+    xmpData["Xmp.darktable.print_timestamp"] = sqlite3_column_int(stmt, 3);
   }
   else
   {
