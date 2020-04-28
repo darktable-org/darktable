@@ -889,6 +889,20 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   const int id = dt_control_get_mouse_over_id();
+
+  if(id > 0 && event->button == 1
+     && (table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
+     && event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_view_manager_switch(darktable.view_manager, "darkroom");
+  }
+  else if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
+          && event->type == GDK_BUTTON_PRESS
+          && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+  }
+
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM && id < 1 && event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
     // we click in an empty area, let's deselect all images
