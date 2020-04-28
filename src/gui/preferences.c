@@ -393,18 +393,14 @@ void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
-                                                    GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
-                                                    _("save changes"), GTK_RESPONSE_ACCEPT, _("exit without saving"), GTK_RESPONSE_CLOSE,NULL);
+                                                    GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                                    NULL, NULL);
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_set_name(_preferences_dialog, "preferences_notebook");
-
-  //remove close button from header bar
-  GtkWidget *headerbar = gtk_dialog_get_header_bar(GTK_DIALOG(_preferences_dialog));
-  gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), FALSE);
 
   //grab the content area of the dialog
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
