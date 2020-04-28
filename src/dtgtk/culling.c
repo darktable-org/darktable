@@ -890,6 +890,92 @@ void dt_culling_init(dt_culling_t *table, int offset)
   table->offset = _thumb_get_rowid(first_id);
 }
 
+static void _thumbs_prefetch(dt_culling_t *table)
+{
+  if(!table || g_list_length(table->list) < 1) return;
+
+  // get the mip level by using the max image size actually shown
+  int maxw = 0;
+  int maxh = 0;
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    maxw = MAX(maxw, th->width);
+    maxh = MAX(maxh, th->height);
+    l = g_list_next(l);
+  }
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, maxw, maxh);
+
+  // prefetch next image
+  gchar *query;
+  sqlite3_stmt *stmt;
+  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+  if(table->navigate_inside_selection)
+  {
+    query
+        = dt_util_dstrcat(NULL,
+                          "SELECT m.imgid "
+                          "FROM memory.collected_images AS m, main.selected_images AS s "
+                          "WHERE m.imgid = s.imgid"
+                          " AND m.rowid > (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
+                          "ORDER BY m.rowid "
+                          "LIMIT 1",
+                          last->imgid);
+  }
+  else
+  {
+    query
+        = dt_util_dstrcat(NULL,
+                          "SELECT m.imgid "
+                          "FROM memory.collected_images AS m "
+                          "WHERE m.rowid > (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
+                          "ORDER BY m.rowid "
+                          "LIMIT 1",
+                          last->imgid);
+  }
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int id = sqlite3_column_int(stmt, 0);
+    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  // prefetch previous image
+  dt_thumbnail_t *prev = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  if(table->navigate_inside_selection)
+  {
+    query
+        = dt_util_dstrcat(NULL,
+                          "SELECT m.imgid "
+                          "FROM memory.collected_images AS m, main.selected_images AS s "
+                          "WHERE m.imgid = s.imgid"
+                          " AND m.rowid < (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
+                          "ORDER BY m.rowid DESC "
+                          "LIMIT 1",
+                          prev->imgid);
+  }
+  else
+  {
+    query
+        = dt_util_dstrcat(NULL,
+                          "SELECT m.imgid "
+                          "FROM memory.collected_images AS m "
+                          "WHERE m.rowid < (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
+                          "ORDER BY m.rowid DESC "
+                          "LIMIT 1",
+                          prev->imgid);
+  }
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int id = sqlite3_column_int(stmt, 0);
+    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+  }
+}
+
 static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 {
   gchar *query = NULL;
@@ -1296,6 +1382,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     // reactivate selection_change event
     table->select_desactivate = FALSE;
   }
+
+  // we prefetch next/previous images
+  _thumbs_prefetch(table);
 
   // be sure the focus is in the right widget (needed for accels)
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
