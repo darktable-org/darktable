@@ -3279,9 +3279,9 @@ gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
   // Do not read for import_ts. It must be updated at each import.
 
   const int nb_timestamps = sizeof(timestamps) / sizeof(char *);
-  char xmpkey[1024];
-  char query[1024];
-  char values[1024];
+  char xmpkey[1024] = { 0 };
+  char query[1024] = { 0 };
+  char values[1024] = { 0 };
   char tmp[64];
 
   for (int i = 0 ; i < nb_timestamps ; i++)
