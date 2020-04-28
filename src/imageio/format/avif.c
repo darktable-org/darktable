@@ -307,7 +307,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_SRGB,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_SRGB,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_SRGB,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_REC709:
@@ -315,7 +319,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_GAMMA22,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT709,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_LIN_REC709:
@@ -323,7 +331,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_LINEAR,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT709,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_LIN_REC2020:
@@ -331,7 +343,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_LINEAR,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_PQ_REC2020:
@@ -339,7 +355,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_HLG_REC2020:
@@ -347,7 +367,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_PQ_P3:
@@ -355,7 +379,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_P3,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_HLG_P3:
@@ -363,7 +391,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_P3,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       default:
