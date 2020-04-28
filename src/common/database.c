@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 28
+#define CURRENT_DATABASE_VERSION_LIBRARY 29
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1534,13 +1534,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN exposure_bias REAL",
              "[init] can't add `exposure_bias' column to images table in database\n");
-    
+
     new_version = 26;
   }
   else if(version == 26)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
- 
+
     TRY_EXEC("CREATE TABLE main.new_film_rolls "
              "(id INTEGER PRIMARY KEY, "
              "access_timestamp INTEGER, "
@@ -1594,6 +1594,21 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 28;
+  }
+  else if(version == 28)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // clear flag DT_IMAGE_REJECTED (was not used)
+    TRY_EXEC("UPDATE main.images SET flags = (flags & ~8)",
+             "[init] can't clear rejected flags");
+
+    // add DT_IMAGE_REJECTED and clear rating for all images being rejected
+    TRY_EXEC("UPDATE main.images SET flags = (flags | 8) & ~7 WHERE (flags & 7) = 6",
+             "[init] can't set rejected flags");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 29;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
