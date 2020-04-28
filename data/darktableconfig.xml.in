@@ -2093,13 +2093,6 @@
     <longdescription>if this value is > 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/preview/full_size_preload_count</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>preload images for full-size preview</shortdescription>
-    <longdescription>number of images to load in advance in the background when showing full-size preview</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
     <type>int</type>
     <default>4</default>
