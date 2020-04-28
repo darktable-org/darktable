@@ -2346,17 +2346,16 @@
   </dtconfig>
   <dtconfig prefs="gui" section="darkroom">
     <name>plugins/darkroom/temperature/colored_sliders</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>use colored sliders for visual indication</shortdescription>
-    <longdescription>enable visual indication of temperature adjustments.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
-    <name>plugins/darkroom/temperature/blackbody_is_confusing</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>temperature slider effect color emulation</shortdescription>
-    <longdescription>by default on temperature slider we show color of light coming from blackbody heated to given temperature and then illuminating the scene. think of it as a scene light source. if you find it confusing, enable this option to show inverse gradient of color to show effect of adjustment.</longdescription>
+    <type>
+      <enum>
+        <option>no color</option>
+        <option>blackbody</option>
+        <option>effect emulation</option>
+      </enum>
+    </type>
+    <default>no color</default>
+    <shortdescription>white balance slider colors</shortdescription>
+    <longdescription>visual indication of temperature adjustments. in 'blackbody' mode shows light source color, in 'effect emulation' shows effect the adjustment would have</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@

@@ -1804,14 +1804,72 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
 }
 
+static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  gchar *old_config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
+  gboolean reset_feedback = FALSE;
+
+  if(!g_strcmp0(old_config, "no color")) {
+    dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "blackbody");
+    reset_feedback = TRUE;
+    g->colored_sliders = TRUE;
+    g->blackbody_is_confusing = FALSE;
+  } else if (!g_strcmp0(old_config, "blackbody"))
+  {
+    dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "effect emulation");
+    g->colored_sliders = TRUE;
+    g->blackbody_is_confusing = TRUE;
+  } else
+  {
+    dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "no color");
+    reset_feedback = TRUE;
+    g->colored_sliders = FALSE;
+    g->blackbody_is_confusing = FALSE;
+  }
+
+  g_free(old_config);
+
+  if(reset_feedback)
+  {
+    if(!g->colored_sliders){
+      dt_bauhaus_slider_clear_stops(g->scale_k);
+      dt_bauhaus_slider_clear_stops(g->scale_tint);
+      dt_bauhaus_slider_clear_stops(g->scale_r);
+      dt_bauhaus_slider_clear_stops(g->scale_g);
+      dt_bauhaus_slider_clear_stops(g->scale_b);
+      dt_bauhaus_slider_clear_stops(g->scale_g2);
+      dt_bauhaus_slider_clear_stops(g->finetune);
+    }
+
+    const int feedback = g->colored_sliders ? 0 : 1;
+    dt_bauhaus_slider_set_feedback(g->scale_k, feedback);
+    dt_bauhaus_slider_set_feedback(g->scale_tint, feedback);
+    dt_bauhaus_slider_set_feedback(g->scale_r, feedback);
+    dt_bauhaus_slider_set_feedback(g->scale_g, feedback);
+    dt_bauhaus_slider_set_feedback(g->scale_b, feedback);
+    dt_bauhaus_slider_set_feedback(g->scale_g2, feedback);
+    dt_bauhaus_slider_set_feedback(g->finetune, feedback);
+  }
+
+  color_temptint_sliders(self);
+  color_rgb_sliders(self);
+  color_finetuning_slider(self);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = calloc(1, sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
   
-  g->colored_sliders = dt_conf_get_bool("plugins/darkroom/temperature/colored_sliders");
-  g->blackbody_is_confusing = dt_conf_get_bool("plugins/darkroom/temperature/blackbody_is_confusing");
+  gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
+  g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
+  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "blackbody"); // true if config != "blackbody"
+
+  g_free(config);
 
   const int feedback = g->colored_sliders ? 0 : 1;
 
@@ -1825,9 +1883,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
 
+  GtkWidget *temp_label_box = gtk_event_box_new();
   GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+  gtk_container_add(GTK_CONTAINER(temp_label_box), temp_label);
 
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), temp_label, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
+
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), temp_label_box, TRUE, TRUE, 0);
 
   //Match UI order: temp first, then tint (like every other app ever)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
