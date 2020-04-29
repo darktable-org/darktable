@@ -93,6 +93,7 @@ FILE(GLOB SOURCE_FILES
   "develop/develop.c"
   "develop/imageop.c"
   "develop/imageop_math.c"
+  "develop/imageop_gui.c"
   "develop/lightroom.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
