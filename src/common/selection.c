@@ -57,8 +57,10 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
       else
       {
         query = dt_util_dstrcat(query,
-                                "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images "
-                                "WHERE group_id = %d AND id IN (%s)",
+                                "INSERT OR IGNORE INTO main.selected_images"
+                                "  SELECT id"
+                                "  FROM main.images "
+                                "  WHERE group_id = %d AND id IN (%s)",
                                 img_group_id, dt_collection_get_query_no_group(selection->collection));
       }
 

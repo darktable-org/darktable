@@ -1606,8 +1606,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const int nid = sqlite3_column_int(stmt, 1);
       const int nrow = sqlite3_column_int(stmt, 0);
+      const int nid = sqlite3_column_int(stmt, 1);
+
       // first, we search if the thumb is already here
       GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(nid), _list_compare_by_imgid);
       if(tl)
