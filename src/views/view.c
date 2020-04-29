@@ -759,8 +759,8 @@ int32_t dt_view_get_image_to_act_on()
   //   it only affects the selection.
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-  const gboolean full_preview_mode = darktable.view_manager->proxy.lighttable.get_full_preview_mode(
-      darktable.view_manager->proxy.lighttable.view);
+  const gboolean full_preview_mode
+      = darktable.view_manager->proxy.lighttable.get_preview_state(darktable.view_manager->proxy.lighttable.view);
 
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
@@ -2267,7 +2267,7 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_full_preview_mode(vm->proxy.lighttable.view);
+    return vm->proxy.lighttable.get_preview_state(vm->proxy.lighttable.view);
   else
     return FALSE;
 }
