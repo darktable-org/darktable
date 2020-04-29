@@ -1016,6 +1016,29 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
 
+// this is called each time the images info change
+static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gpointer user_data)
+{
+  if(!user_data || !imgs) return;
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  const GList * i = imgs;
+  while(i)
+  {
+    const GList *l = (const GList *)table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(GPOINTER_TO_INT(i->data) == th->imgid)
+      {
+        dt_thumbnail_update_infos(th);
+        break;
+      }
+      l = g_list_next(l);
+    }
+    i = g_list_next(i);
+  }
+}
+
 // this is called each time mouse_over id change
 static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
@@ -1064,7 +1087,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
         gboolean b = TRUE;
         if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
         {
-          // left brorder
+          // left border
           if(pos != 0 && th->x != table->thumbs_area.x)
           {
             dt_thumbnail_t *th1 = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - 1);
@@ -1074,7 +1097,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           {
             dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_LEFT);
           }
-          // right brorder
+          // right border
           b = TRUE;
           if(table->mode != DT_THUMBTABLE_MODE_FILMSTRIP && pos < g_list_length(table->list) - 1
              && (th->x + th->width * 1.5) < table->thumbs_area.width)
@@ -1094,7 +1117,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_BOTTOM);
         }
 
-        // top brorder
+        // top border
         b = TRUE;
         if(pos - table->thumbs_per_row >= 0)
         {
@@ -1108,7 +1131,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
           else
             dt_thumbnail_set_group_border(th, DT_THUMBNAIL_BORDER_TOP);
         }
-        // bottom brorder
+        // bottom border
         b = TRUE;
         if(pos + table->thumbs_per_row < g_list_length(table->list))
         {
@@ -1481,8 +1504,10 @@ dt_thumbtable_t *dt_thumbtable_new()
                             G_CALLBACK(_dt_active_images_callback), table);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_dt_profile_change_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
-                            table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_dt_pref_change_callback), table);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+                            G_CALLBACK(_dt_image_info_changed_callback), table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -1606,8 +1631,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const int nid = sqlite3_column_int(stmt, 1);
       const int nrow = sqlite3_column_int(stmt, 0);
+      const int nid = sqlite3_column_int(stmt, 1);
+
       // first, we search if the thumb is already here
       GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(nid), _list_compare_by_imgid);
       if(tl)

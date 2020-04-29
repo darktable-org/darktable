@@ -2,8 +2,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2020-04-28 17:50-0300\n"
 "PO-Revision-Date: 2020-04-29 11:49-0300\n"
+=======
+"POT-Creation-Date: 2020-04-28 14:09-0300\n"
+"PO-Revision-Date: 2020-04-28 17:31-0300\n"
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1802,7 +1807,11 @@ msgstr ""
 msgid "no"
 msgstr "não"
 
+<<<<<<< HEAD
 #: ../src/common/darktable.c:812 ../src/common/database.c:2817
+=======
+#: ../src/common/darktable.c:812 ../src/common/database.c:2802
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #: ../src/common/variables.c:451 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2100
 #: ../src/libs/export.c:637 ../src/libs/export.c:643 ../src/libs/export.c:650
@@ -1810,7 +1819,11 @@ msgstr "não"
 msgid "yes"
 msgstr "sim"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2103
+=======
+#: ../src/common/database.c:2088
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1825,6 +1838,7 @@ msgstr ""
 "\n"
 "%s\n"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2110
 msgid "darktable - error locking database"
 msgstr "darktable -- erro ao travar a base de dados"
@@ -1835,6 +1849,18 @@ msgid "close darktable"
 msgstr "fechar o darktable"
 
 #: ../src/common/database.c:2221
+=======
+#: ../src/common/database.c:2095
+msgid "darktable - error locking database"
+msgstr "darktable -- erro ao travar a base de dados"
+
+#: ../src/common/database.c:2095 ../src/common/database.c:2266
+#: ../src/common/database.c:2511 ../src/common/database.c:2593
+msgid "close darktable"
+msgstr "fechar o darktable"
+
+#: ../src/common/database.c:2206
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1843,18 +1869,30 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2227
+=======
+#: ../src/common/database.c:2212
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2235
+=======
+#: ../src/common/database.c:2220
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
 #. the database has to be upgraded, let's ask user
+<<<<<<< HEAD
 #: ../src/common/database.c:2272
+=======
+#: ../src/common/database.c:2257
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1868,17 +1906,29 @@ msgstr ""
 "<span style=\"italic\">%s</span>\n"
 "\n"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2280
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
 #: ../src/common/database.c:2281
+=======
+#: ../src/common/database.c:2265
+msgid "darktable - schema migration"
+msgstr "darktable - migrar esquema"
+
+#: ../src/common/database.c:2266
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 msgid "upgrade database"
 msgstr "atualizar base de dados"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
+<<<<<<< HEAD
 #: ../src/common/database.c:2515 ../src/common/database.c:2597
+=======
+#: ../src/common/database.c:2500 ../src/common/database.c:2582
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1897,6 +1947,7 @@ msgstr ""
 "quer fechar o darktable agora para restaurar manualmente\n"
 "a base de dados de um backup ou começar com uma nova?"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2525 ../src/common/database.c:2607
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
@@ -1914,11 +1965,34 @@ msgid "click later to be asked when closing darktable"
 msgstr "clique 'depois' para ser questionado ao fechar o darktable"
 
 #: ../src/common/database.c:2802
+=======
+#: ../src/common/database.c:2510 ../src/common/database.c:2592
+msgid "darktable - error opening database"
+msgstr "darktable - erro ao abrir a base de dados"
+
+#: ../src/common/database.c:2511 ../src/common/database.c:2593
+msgid "delete database"
+msgstr "apagar base de dados"
+
+#: ../src/common/database.c:2779
+msgid "click later to be asked on next startup"
+msgstr "clique 'depois' para ser questionado na próxima vez que iniciar"
+
+#: ../src/common/database.c:2783
+msgid "click later to be asked when closing darktable"
+msgstr "clique 'depois' para ser questionado ao fechar o darktable"
+
+#: ../src/common/database.c:2787
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "clique 'depois' para ser questionado na próxima vez que fechar o darktable"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2806
+=======
+#: ../src/common/database.c:2791
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -1939,11 +2013,19 @@ msgstr ""
 "%s\\n\n"
 "você sempre pode mudar as preferências de manutenção nas opções do core"
 
+<<<<<<< HEAD
 #: ../src/common/database.c:2816
 msgid "darktable - schema maintenance"
 msgstr "darktable - manutenção de esquema"
 
 #: ../src/common/database.c:2817
+=======
+#: ../src/common/database.c:2801
+msgid "darktable - schema maintenance"
+msgstr "darktable - manutenção de esquema"
+
+#: ../src/common/database.c:2802
+>>>>>>> 77d8789c333995068cf4ea3ef5dee72ce24cb5f7
 msgid "later"
 msgstr "depois"
 
