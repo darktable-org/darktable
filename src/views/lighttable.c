@@ -58,27 +58,24 @@
 
 DT_MODULE(1)
 
-static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id);
-static void _preview_quit(dt_view_t *self);
-
-
 /**
  * this organises the whole library:
  * previously imported film rolls..
  */
 typedef struct dt_library_t
 {
+  // culling and preview struct.
   dt_culling_t *culling;
   dt_culling_t *preview;
 
-  int full_preview_sticky;
   dt_lighttable_layout_t current_layout;
-  gboolean preview_mode;
-  gboolean already_started;
+
+  int preview_sticky;       // are we in sticky preview mode
+  gboolean preview_state;   // are we in preview mode (always combined with another layout)
+  gboolean already_started; // is it the first start of lighttable. Used by culling
+  int thumbtable_offset;    // last thumbtable offset before entering culling
 
   GtkWidget *profile_floating_window;
-
-  int thumbtable_offset;
 } dt_library_t;
 
 const char *name(const dt_view_t *self)
@@ -92,20 +89,11 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-static inline dt_lighttable_layout_t get_layout(void)
-{
-  return dt_view_lighttable_get_layout(darktable.view_manager);
-}
-
-static inline gint get_zoom(void)
-{
-  return dt_view_lighttable_get_zoom(darktable.view_manager);
-}
-
-static void check_layout(dt_view_t *self)
+// check if we need to change the layout, and apply the change if needed
+static void _lighttable_check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
   const dt_lighttable_layout_t layout_old = lib->current_layout;
 
   if(lib->current_layout == layout) return;
@@ -160,7 +148,7 @@ static void check_layout(dt_view_t *self)
 
   lib->already_started = TRUE;
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_mode)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
   {
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
@@ -180,7 +168,7 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // full_preview change
-  if(lib->preview_mode)
+  if(lib->preview_state)
   {
     // we only do the change if the offset is different
     if(lib->culling->offset_imgid != imgid) dt_culling_change_offset_image(lib->preview, imgid);
@@ -193,10 +181,10 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   }
 }
 
-static int _get_full_preview_mode(dt_view_t *self)
+static gboolean _preview_get_state(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  return lib->preview_mode;
+  return lib->preview_state;
 }
 
 void init(dt_view_t *self)
@@ -204,7 +192,7 @@ void init(dt_view_t *self)
   self->data = calloc(1, sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  darktable.view_manager->proxy.lighttable.get_full_preview_mode = _get_full_preview_mode;
+  darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
 
@@ -224,8 +212,9 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-static int expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                        int32_t pointery)
+// display help text in the center view if there's no image to show
+static int _lighttable_expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                                    int32_t pointery)
 {
   const float fs = DT_PIXEL_APPLY_DPI(15.0f);
   const float ls = 1.5f * fs;
@@ -289,18 +278,18 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   dt_library_t *lib = (dt_library_t *)self->data;
 
   const double start = dt_get_wtime();
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   // Let's show full preview if in that state...
-  check_layout(self);
+  _lighttable_check_layout(self);
 
   if(!darktable.collection || darktable.collection->count <= 0)
   {
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
       gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
-    expose_empty(self, cr, width, height, pointerx, pointery);
+    _lighttable_expose_empty(self, cr, width, height, pointerx, pointery);
   }
-  else if(lib->preview_mode)
+  else if(lib->preview_state)
   {
     if(!gtk_widget_get_visible(lib->preview->widget)) gtk_widget_show(lib->preview->widget);
     gtk_widget_hide(lib->culling->widget);
@@ -332,36 +321,21 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
 }
 
-static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  const uint32_t id = dt_control_get_mouse_over_id();
-  dt_selection_toggle(darktable.selection, id);
-  return TRUE;
-}
-
-static gboolean select_single_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  const uint32_t id = dt_control_get_mouse_over_id();
-  dt_selection_select_single(darktable.selection, id);
-  return TRUE;
-}
-
 void enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   // we want to reacquire the thumbtable if needed
-  if(!lib->preview_mode)
+  if(!lib->preview_state)
   {
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_FILEMANAGER);
       gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
     }
-    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
       dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_ZOOM);
@@ -377,7 +351,7 @@ void enter(dt_view_t *self)
   dt_collection_hint_message(darktable.collection);
 
   // show/hide filmstrip & timeline when entering the view
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_mode)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
   {
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
@@ -404,9 +378,9 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
   gtk_widget_hide(lib->culling->widget);
 
-  lib->full_preview_sticky = sticky;
+  lib->preview_sticky = sticky;
   lib->preview->focus = focus;
-  lib->preview_mode = TRUE;
+  lib->preview_state = TRUE;
   dt_culling_init(lib->preview, -1);
   gtk_widget_show(lib->preview->widget);
 
@@ -439,7 +413,7 @@ static void _preview_quit(dt_view_t *self)
   {
     dt_selection_select_single(darktable.selection, lib->preview->offset_imgid);
   }
-  lib->preview_mode = FALSE;
+  lib->preview_state = FALSE;
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
@@ -498,7 +472,7 @@ void leave(dt_view_t *self)
   gtk_widget_hide(lib->preview->widget);
 
   // exit preview mode if non-sticky
-  if(lib->preview_mode && lib->full_preview_sticky == 0)
+  if(lib->preview_state && lib->preview_sticky == 0)
   {
     _preview_quit(self);
   }
@@ -514,7 +488,7 @@ void reset(dt_view_t *self)
 
 void scrollbar_changed(dt_view_t *self, double x, double y)
 {
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   switch(layout)
   {
@@ -539,7 +513,7 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods))
-     && lib->preview_mode && !lib->full_preview_sticky)
+     && lib->preview_state && !lib->preview_sticky)
   {
     _preview_quit(self);
   }
@@ -554,21 +528,21 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(!darktable.control->key_accelerators_on) return 0;
 
-  int zoom = get_zoom();
+  int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
 
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
      || (key == accels->lighttable_preview_display_focus.accel_key
          && state == accels->lighttable_preview_display_focus.accel_mods))
   {
-    if(lib->preview_mode && lib->full_preview_sticky)
+    if(lib->preview_state && lib->preview_sticky)
     {
       _preview_quit(self);
       return TRUE;
     }
     const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-    if(!lib->preview_mode && mouse_over_id != -1)
+    if(!lib->preview_state && mouse_over_id != -1)
     {
       gboolean focus = FALSE;
       if((key == accels->lighttable_preview_display_focus.accel_key
@@ -586,7 +560,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   // navigation accels for thumbtable layouts
   // this can't be "normal" key accels because it's usually arrow keys and lot of other widgets
   // will capture them before the usual accel is triggered
-  if(!lib->preview_mode && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
+  if(!lib->preview_state && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
   {
     dt_thumbtable_move_t move = DT_THUMBTABLE_MOVE_NONE;
     gboolean select = FALSE;
@@ -636,7 +610,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
   }
 
-  else if(lib->preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(lib->preview_state || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     dt_culling_move_t move = DT_CULLING_MOVE_NONE;
     if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
@@ -659,7 +633,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(move != DT_CULLING_MOVE_NONE)
     {
       // for this layout navigation keys are managed directly by thumbtable
-      if(lib->preview_mode)
+      if(lib->preview_state)
         dt_culling_key_move(lib->preview, move);
       else
         dt_culling_key_move(lib->culling, move);
@@ -751,7 +725,7 @@ static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean _accel_align_to_grid(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
@@ -762,7 +736,7 @@ static gboolean _accel_align_to_grid(GtkAccelGroup *accel_group, GObject *accele
 static gboolean _accel_reset_first_offset(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data)
 {
-  const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
@@ -778,7 +752,7 @@ static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *accel
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // if we are alredy in preview mode, we exit
-  if(lib->preview_mode)
+  if(lib->preview_state)
   {
     _preview_quit(self);
     return TRUE;
@@ -792,15 +766,15 @@ static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *accel
   return TRUE;
 }
 
-static gboolean _culling_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(lib->preview_mode)
+  if(lib->preview_state)
     dt_culling_zoom_max(lib->preview);
-  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
     dt_culling_zoom_max(lib->culling);
   else
     return FALSE;
@@ -808,19 +782,35 @@ static gboolean _culling_zoom_100(GtkAccelGroup *accel_group, GObject *accelerat
   return TRUE;
 }
 
-static gboolean _culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(lib->preview_mode)
+  if(lib->preview_state)
     dt_culling_zoom_fit(lib->preview);
-  else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
     dt_culling_zoom_fit(lib->culling);
   else
     return FALSE;
 
+  return TRUE;
+}
+
+static gboolean _accel_select_toggle(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  const uint32_t id = dt_control_get_mouse_over_id();
+  dt_selection_toggle(darktable.selection, id);
+  return TRUE;
+}
+
+static gboolean _accel_select_single(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  const uint32_t id = dt_control_get_mouse_over_id();
+  dt_selection_select_single(darktable.selection, id);
   return TRUE;
 }
 
@@ -829,9 +819,9 @@ void connect_key_accels(dt_view_t *self)
   GClosure *closure;
 
   // Navigation keys
-  closure = g_cclosure_new(G_CALLBACK(select_toggle_callback), (gpointer)self, NULL);
+  closure = g_cclosure_new(G_CALLBACK(_accel_select_toggle), (gpointer)self, NULL);
   dt_accel_connect_view(self, "select toggle image", closure);
-  closure = g_cclosure_new(G_CALLBACK(select_single_callback), (gpointer)self, NULL);
+  closure = g_cclosure_new(G_CALLBACK(_accel_select_single), (gpointer)self, NULL);
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(_accel_align_to_grid), (gpointer)self, NULL);
   dt_accel_connect_view(self, "align images to grid", closure);
@@ -851,9 +841,9 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "sticky preview with focus detection", closure);
 
   // culling & preview zoom
-  closure = g_cclosure_new(G_CALLBACK(_culling_zoom_100), (gpointer)self, NULL);
+  closure = g_cclosure_new(G_CALLBACK(_accel_culling_zoom_100), (gpointer)self, NULL);
   dt_accel_connect_view(self, "preview zoom 100%", closure);
-  closure = g_cclosure_new(G_CALLBACK(_culling_zoom_fit), (gpointer)self, NULL);
+  closure = g_cclosure_new(G_CALLBACK(_accel_culling_zoom_fit), (gpointer)self, NULL);
   dt_accel_connect_view(self, "preview zoom fit", closure);
 }
 
@@ -868,7 +858,7 @@ GSList *mouse_actions(const dt_view_t *self)
   g_strlcpy(a->name, _("open image in darkroom"), sizeof(a->name));
   lm = g_slist_append(lm, a);
 
-  if(lib->preview_mode)
+  if(lib->preview_state)
   {
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_SCROLL;
@@ -949,7 +939,7 @@ GSList *mouse_actions(const dt_view_t *self)
   return lm;
 }
 
-static void display_intent_callback(GtkWidget *combo, gpointer user_data)
+static void _profile_display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
 
@@ -982,7 +972,7 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   }
 }
 
-static void display2_intent_callback(GtkWidget *combo, gpointer user_data)
+static void _profile_display2_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
 
@@ -1015,7 +1005,7 @@ static void display2_intent_callback(GtkWidget *combo, gpointer user_data)
   }
 }
 
-static void display_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _profile_display_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   gboolean profile_changed = FALSE;
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -1055,7 +1045,7 @@ end:
   }
 }
 
-static void display2_profile_callback(GtkWidget *combo, gpointer user_data)
+static void _profile_display2_profile_callback(GtkWidget *combo, gpointer user_data)
 {
   gboolean profile_changed = FALSE;
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -1096,7 +1086,7 @@ end:
   }
 }
 
-static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
+static void _profile_update_display_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
   while(l)
@@ -1119,7 +1109,7 @@ static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
   }
 }
 
-static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
+static void _profile_update_display2_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
   while(l)
@@ -1142,18 +1132,18 @@ static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
   }
 }
 
-static void _display_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _profile_display_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
 {
   GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
 
-  _update_display_profile_cmb(cmb_display_profile);
+  _profile_update_display_cmb(cmb_display_profile);
 }
 
-static void _display2_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _profile_display2_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
 {
   GtkWidget *cmb_display_profile = GTK_WIDGET(user_data);
 
-  _update_display2_profile_cmb(cmb_display_profile);
+  _profile_update_display2_cmb(cmb_display_profile);
 }
 
 void gui_init(dt_view_t *self)
@@ -1250,17 +1240,18 @@ void gui_init(dt_view_t *self)
   g_free(system_profile_dir);
   g_free(user_profile_dir);
 
-  g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
-  g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
+  g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(_profile_display_intent_callback), NULL);
+  g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(_profile_display_profile_callback), NULL);
 
-  g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(display2_intent_callback), NULL);
-  g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), NULL);
+  g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(_profile_display2_intent_callback), NULL);
+  g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(_profile_display2_profile_callback),
+                   NULL);
 
   // update the gui when profiles change
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
+                            G_CALLBACK(_profile_display_changed), (gpointer)display_profile);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+                            G_CALLBACK(_profile_display2_changed), (gpointer)display2_profile);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

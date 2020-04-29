@@ -736,15 +736,6 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gtk_widget_set_app_paintable(table->widget, TRUE);
   gtk_widget_set_can_focus(table->widget, TRUE);
 
-  // drag and drop : used for interactions with maps, exporting uri to external apps, importing images
-  // in filmroll...
-  /*gtk_drag_source_set(table->widget, GDK_BUTTON1_MASK, target_list_all, n_targets_all, GDK_ACTION_COPY);
-  gtk_drag_dest_set(table->widget, GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all, GDK_ACTION_COPY);
-  g_signal_connect_after(table->widget, "drag-begin", G_CALLBACK(_event_dnd_begin), table);
-  g_signal_connect_after(table->widget, "drag-end", G_CALLBACK(_event_dnd_end), table);
-  g_signal_connect(table->widget, "drag-data-get", G_CALLBACK(_event_dnd_get), table);
-  g_signal_connect(table->widget, "drag-data-received", G_CALLBACK(_event_dnd_received), table);*/
-
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
   g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
