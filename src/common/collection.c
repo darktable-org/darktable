@@ -160,8 +160,8 @@ void dt_collection_memory_update()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL, NULL);
   // reset autoincrement. need in star_key_accel_callback
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "DELETE FROM memory.sqlite_sequence WHERE "
-                        "name='collected_images'",
+                        "DELETE FROM memory.sqlite_sequence"
+                        " WHERE name='collected_images'",
                         NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
