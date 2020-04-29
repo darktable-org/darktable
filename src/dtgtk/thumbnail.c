@@ -915,7 +915,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_widget_set_size_request(thumb->w_main, width, height);
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
-  gtk_widget_set_margin_top(thumb->w_ext, 0.045 * width);
+  gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
   const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
