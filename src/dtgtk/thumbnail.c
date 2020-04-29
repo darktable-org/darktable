@@ -1290,8 +1290,11 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     dt_image_get_final_size(thumb->imgid, &w, &h);
-    // 0.97f value come from dt_view_image_expose
-    thumb->zoom_100 = fmaxf((float)w / ((float)thumb->width * 0.97f), (float)h / ((float)thumb->height * 0.97f));
+
+    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
+    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
+    thumb->zoom_100
+        = fmaxf((float)w / ((float)thumb->width * ratio_w), (float)h / ((float)thumb->height * ratio_h));
     if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
   }
 
