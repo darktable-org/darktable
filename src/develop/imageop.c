@@ -208,6 +208,50 @@ static dt_introspection_field_t *default_get_f(const char *name)
   return NULL;
 }
 
+void default_init(dt_iop_module_t *module)
+{
+  size_t param_size = module->so->get_introspection()->size;
+  module->params_size = param_size;
+  module->params = (dt_iop_params_t *)malloc(param_size);
+  module->default_params = (dt_iop_params_t *)malloc(param_size);
+
+  module->default_enabled = 0;
+  module->gui_data = NULL;
+
+  dt_introspection_field_t *i = module->so->get_introspection_linear();
+  for (int num = module->so->get_introspection()->field->Struct.entries; num; num--,i++)
+  {
+    if (i->header.type == DT_INTROSPECTION_TYPE_FLOAT)
+    {
+      *(float*)(module->default_params + i->header.offset) = i->Float.Default;
+    }
+    else if (i->header.type == DT_INTROSPECTION_TYPE_INT)
+    {
+      *(int*)(module->default_params + i->header.offset) = i->Int.Default;
+    }
+    else if (i->header.type == DT_INTROSPECTION_TYPE_UINT)
+    {
+      *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
+    }
+    else if (i->header.type == DT_INTROSPECTION_TYPE_ENUM)
+    {
+//      Introspection $DEFAULT: not available for enums
+//      *(enum*)(module->default_params + i->header.offset) = i->Enum.Default;
+      *(int*)(module->default_params + i->header.offset) = 0;
+    }
+    else if (i->header.type == DT_INTROSPECTION_TYPE_BOOL)
+    {
+      *(gboolean*)(module->default_params + i->header.offset) = i->Bool.Default;
+    }
+    else
+    {
+      fprintf(stderr, "[default_init] can't support module `%s': needs custom init()\n", module->op);
+    }
+  }
+
+  memcpy(module->params, module->default_params, param_size);
+}
+
 int dt_iop_load_module_so(void *m, const char *libname, const char *op)
 {
   dt_iop_module_so_t *module = (dt_iop_module_so_t *)m;
@@ -258,6 +302,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->gui_update = NULL;
   if(!g_module_symbol(module->module, "color_picker_apply", (gpointer) & (module->color_picker_apply)))
     module->color_picker_apply = NULL;
+  if(!g_module_symbol(module->module, "gui_changed", (gpointer) & (module->gui_changed))) 
+    module->gui_changed = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup)))
     module->gui_cleanup = default_gui_cleanup;
 
@@ -287,7 +333,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
 
-  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) goto error;
+  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) 
+    module->init = default_init;
   if(!g_module_symbol(module->module, "cleanup", (gpointer) & (module->cleanup)))
     module->cleanup = &default_cleanup;
   if(!g_module_symbol(module->module, "init_global", (gpointer) & (module->init_global)))
@@ -433,6 +480,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->gui_reset = so->gui_reset;
   module->gui_init = so->gui_init;
   module->color_picker_apply = so->color_picker_apply;
+  module->gui_changed = so->gui_changed;
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;
