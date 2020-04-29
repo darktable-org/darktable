@@ -3290,8 +3290,12 @@ gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
     if((pos = xmpData.findKey(Exiv2::XmpKey(xmpkey))) != xmpData.end())
     {
       snprintf(tmp, sizeof(tmp), " %s = %ld,", timestamps[i], pos->toLong());
-      g_strlcat(values, tmp, sizeof(values));
     }
+    else
+    {
+      snprintf(tmp, sizeof(tmp), " %s = 0,", timestamps[i]);
+    }
+      g_strlcat(values, tmp, sizeof(values));
   }
 
   values[strlen(values) - 1] = '\0'; /* remove last comma */
