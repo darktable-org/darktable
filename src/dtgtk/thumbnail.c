@@ -1248,7 +1248,6 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
 {
   // if no change, do nothing...
   if(thumb->over == over) return;
-  gchar *lb = NULL;
   dt_thumbnail_overlay_t old_over = thumb->over;
   thumb->over = over;
 
@@ -1274,39 +1273,7 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
 
   // we read and cache all the infos from dt_image_t that we need, depending on the overlay level
   // note that when "downgrading" overlay level, we don't bother to remove the infos
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-  if(img)
-  {
-    if(old_over == DT_THUMBNAIL_OVERLAYS_NONE)
-    {
-      thumb->filename = g_strdup(img->filename);
-      thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
-      thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
-    }
-
-    dt_image_cache_read_release(darktable.image_cache, img);
-  }
-  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-  {
-    _thumb_update_extended_infos_line(thumb);
-  }
-
-  // we read all other infos
-  if(old_over == DT_THUMBNAIL_OVERLAYS_NONE)
-  {
-    _image_get_infos(thumb);
-    _thumb_update_icons(thumb);
-  }
-
-  // extended overlay text
-  if(over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-    lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
-
-  // we set the text
-  gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
-  g_free(lb);
+  dt_thumbnail_reload_infos(thumb);
 }
 
 // force the image to be redraw at the right position
@@ -1329,6 +1296,45 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
   }
 
   return thumb->zoom_100;
+}
+
+// force the reload of image infos
+void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
+{
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  if(img)
+  {
+    if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
+    {
+      thumb->filename = g_strdup(img->filename);
+      thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
+      thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
+    }
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  {
+    _thumb_update_extended_infos_line(thumb);
+  }
+
+  // we read all other infos
+  if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
+  {
+    _image_get_infos(thumb);
+    _thumb_update_icons(thumb);
+  }
+
+  // extended overlay text
+  gchar *lb = NULL;
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
+
+  // we set the text
+  gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
+  g_free(lb);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

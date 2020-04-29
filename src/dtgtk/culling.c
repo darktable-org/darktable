@@ -626,9 +626,18 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
 static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
-  // dt_culling_t *table = (dt_culling_t *)user_data;
+  dt_culling_t *table = (dt_culling_t *)user_data;
 
-  // dt_thumbtable_full_redraw(table, TRUE);
+  dt_culling_full_redraw(table, TRUE);
+
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_reload_infos(th);
+    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    l = g_list_next(l);
+  }
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
