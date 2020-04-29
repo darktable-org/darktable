@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-04-28 17:50-0300\n"
-"PO-Revision-Date: 2020-04-28 17:31-0300\n"
+"PO-Revision-Date: 2020-04-29 11:49-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2429,8 +2429,8 @@ msgstr[1] "duplicando %d imagens"
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] "virando %d imagem"
-msgstr[1] "virando %d imagens"
+msgstr[0] "espelhando %d imagem"
+msgstr[1] "espelhando %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:642
 #, c-format
@@ -4859,11 +4859,11 @@ msgstr "descrição ou informação adicional"
 
 #: ../src/gui/preferences.c:1619 ../src/gui/presets.c:411
 msgid "auto apply this preset to matching images"
-msgstr "auto aplicar esta predefinição as imagens correspondentes"
+msgstr "auto aplicar esta predefinição para imagens que casam com os padrões definidos"
 
 #: ../src/gui/preferences.c:1622 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
-msgstr "mostrar apenas esta predefinição para imagens correspondentes"
+msgstr "somente mostre esta pré-definição apenas para imagens que casam com os padrões definidos"
 
 #: ../src/gui/preferences.c:1624 ../src/gui/presets.c:415
 msgid ""
@@ -7080,7 +7080,7 @@ msgstr "margens"
 
 #: ../src/iop/clipping.c:2043 ../src/libs/live_view.c:372
 msgid "flip"
-msgstr "girar"
+msgstr "espelhar"
 
 #: ../src/iop/clipping.c:2047 ../src/iop/clipping.c:2259
 #: ../src/iop/colorbalance.c:2387 ../src/libs/live_view.c:376
@@ -7233,7 +7233,7 @@ msgstr "mostrar linhas guia para auxiliar na composição da sua fotografia"
 #: ../src/iop/clipping.c:2255 ../src/iop/clipping.c:2260
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
-msgstr "girar guias"
+msgstr "espelhar guias"
 
 #: ../src/iop/clipping.c:2257 ../src/libs/live_view.c:374
 msgid "horizontally"
@@ -7246,7 +7246,7 @@ msgstr "verticalmente"
 #: ../src/iop/clipping.c:3357
 msgctxt "accel"
 msgid "commit"
-msgstr "enviar"
+msgstr "finalizar"
 
 #: ../src/iop/clipping.c:3358
 msgctxt "accel"
