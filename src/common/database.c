@@ -2141,7 +2141,7 @@ void dt_database_show_error(const dt_database_t *db)
 
   g_free(db->error_message);
   g_free(db->error_dbfilename);
-  //db->error_other_pid = 0;
+  ((dt_database_t *)db)->error_other_pid = 0;
   ((dt_database_t *)db)->error_message = NULL;
   ((dt_database_t *)db)->error_dbfilename = NULL;
 }
