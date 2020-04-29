@@ -1243,6 +1243,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 static void _preview_quit(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  gtk_widget_hide(lib->preview->widget);
   if(lib->preview->selection_sync)
   {
     dt_selection_select_single(darktable.selection, lib->preview->offset_imgid);

@@ -123,6 +123,13 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
     return FALSE;
   }
 
+  // check the offset
+  if(g_list_length(table->list) > 0)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    if(th->imgid != table->offset_imgid) ret = TRUE;
+  }
+
   if(table->mode == DT_CULLING_MODE_CULLING)
   {
     const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
@@ -829,6 +836,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   {
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
+    table->offset_imgid = first_id;
     return;
   }
 
@@ -888,6 +896,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   }
 
   table->offset = _thumb_get_rowid(first_id);
+  table->offset_imgid = first_id;
 }
 
 static void _thumbs_prefetch(dt_culling_t *table)
