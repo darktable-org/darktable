@@ -22,8 +22,6 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
-#include "gui/color_picker_proxy.h"
-
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -995,111 +993,6 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_slider_destroy), (gpointer)NULL);
   return GTK_WIDGET(w);
-}
-
-typedef struct dt_module_param_t
-{
-  dt_iop_module_t *module;
-  const char *param;
-} dt_module_param_t;
-
-static void generic_slider_callback(GtkWidget *slider, dt_module_param_t *data)
-{
-  if(darktable.gui->reset) return;
-
-  dt_iop_module_t *self = data->module;
-  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-
-  /* todo: 
-     call generic callback to update module gui
-     save previous value
-     if configure_callback defined, call with param and prev value
-     same configure_callback can also be called from gui_update (with param=null)
-  */
-
-  *(float*)self->so->get_p(p, data->param) = dt_bauhaus_slider_get(slider);
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post)
-{
-  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-  dt_introspection_field_t *f = self->so->get_f(param);
-
-  GtkWidget *slider = NULL;
-  gchar *str;
-
-  if (f && f->header.type == DT_INTROSPECTION_TYPE_FLOAT)
-  {
-    float min = f->Float.Min;
-    float max = f->Float.Max;
-    float defval = *(float*)self->so->get_p(p, param);
-    int digits = 2;
-    float step;
-
-    float top = fmaxf(fabsf(min),fabsf(max));
-    if (top>=100)
-    {
-      step = 1.f;
-    }
-    else
-    {
-      step = top / 100;
-      float log10step = log10f(step);
-      float fdigits = floorf(log10step+.1);
-      step = powf(10.f,fdigits);
-      if (log10step - fdigits > .5)
-        step *= 5;
-      if (fdigits < -2.f) 
-        digits = -fdigits;
-    }
-
-    slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1);
-
-    if (*f->Float.header.description)
-    {
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->Float.header.description));
-    }
-    else
-    {
-      str = dt_util_str_replace(f->Float.header.field_name, "_", " ");
-    
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(str));
-
-      g_free(str);
-    }
-
-    if (min < 0 || (post && *post))
-    {
-      str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), digits, post);
-
-      dt_bauhaus_slider_set_format(slider, str);
-    
-      g_free(str);
-    }
-
-    dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
-    module_param->module = self;
-    module_param->param = param;
-    g_signal_connect_data(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_callback), module_param, (GClosureNotify)g_free, 0);
-
-    // todo: add tooltip
-  }
-  else
-  {
-    str = g_strdup_printf(_("'%s' is not a parameter"), param);
-
-    slider = GTK_WIDGET(GTK_LABEL(gtk_label_new(str)));
-
-    g_free(str);
-  }
-
-  gtk_box_pack_start(GTK_BOX(self->widget), slider, TRUE, TRUE, 0);
-
-  return slider;
 }
 
 static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer user_data)
