@@ -1622,7 +1622,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       else
       {
         // find the closest fraction from the input ratio
-        float rr = atof(text);
+        const float rr = atof(text);
         int dd = ceilf(rr);
         int nn = floor(rr);
 
