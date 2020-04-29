@@ -1594,7 +1594,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   int which = dt_bauhaus_combobox_get(combo);
-  int d = p->ratio_d, n = p->ratio_n;
+  int d = abs(p->ratio_d), n = p->ratio_n;
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
   {
@@ -1605,6 +1605,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       while(*c != ':' && *c != '/' && c < end) c++;
       if(c < end - 1)
       {
+        // input the exact fraction
         c++;
         int dd = atoi(text);
         int nn = atoi(c);
@@ -1615,9 +1616,101 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
-        d = dd;
-        n = nn;
+        d = MAX(dd, nn);
+        n = MIN(dd, nn);
       }
+      else
+      {
+        // find the closest fraction from the input ratio
+        float rr = atof(text);
+        int dd = ceilf(rr);
+        int nn = floor(rr);
+
+        // some sanity check
+        if(dd == 0)
+        {
+          dt_control_log(_("invalid ratio format. it should be non zero"));
+          dt_bauhaus_combobox_set(combo, 0);
+          return;
+        }
+
+        // find the superior and inferior rational bounds for rr
+        // such that frac_inf < rr < frac_sup
+        // with frac_inf = frac_inf_top / frac_inf_bot
+        // and frac_sup = frac_sup_top / frac_sup_bot
+        int frac_sup_top = dd * dd;
+        int frac_sup_bot = dd;
+
+        int frac_inf_top = nn * dd;
+        int frac_inf_bot = dd;
+
+        int not_found = TRUE;
+        int count = 0;
+
+        while(not_found && count < 16)
+        {
+          ++count;
+          float mediant = (float)(frac_sup_top + frac_inf_top) / (float)(frac_sup_bot + frac_inf_bot);
+          //fprintf(stdout, "mediant: %f\n", mediant);
+
+          if(mediant > rr)
+          {
+            // frac_inf < input < mediant
+            frac_sup_top = frac_sup_top + frac_inf_top;
+            frac_sup_bot = frac_sup_bot + frac_inf_bot;
+            frac_inf_top *= 2;
+            frac_inf_bot *= 2;
+          }
+          else if(mediant < rr)
+          {
+            // mediant < input < frac_sup
+            frac_inf_top = frac_sup_top + frac_inf_top;
+            frac_inf_bot = frac_sup_bot + frac_inf_bot;
+            frac_sup_top *= 2;
+            frac_sup_bot *= 2;
+          }
+          else
+          {
+            // mediant == input, we found our candidate
+            not_found = FALSE;
+          }
+        }
+
+        /* debug
+        fprintf(stdout, "%i / %i (%f) < input < %i / %i (%f)\n", frac_inf_top, frac_inf_bot, (float)frac_inf_top / (float)frac_inf_bot,
+                                                                 frac_sup_top, frac_sup_bot, (float)frac_sup_top / (float)frac_sup_bot );
+        */
+
+        // output the mediant - it's either the exact result or the closest approximation
+        dd = frac_sup_bot + frac_inf_bot;
+        nn = frac_sup_top + frac_inf_top;
+
+        d = MAX(dd, nn);
+        n = MIN(dd, nn);
+      }
+
+      // simplify the fraction with binary GCD - https://en.wikipedia.org/wiki/Greatest_common_divisor
+      // search g and d such that g is odd and gcd(nn, dd) = g × 2^d
+      int e = 0;
+      int nn = n;
+      int dd = d;
+      while((nn % 2 == 0) && (dd % 2 == 0))
+      {
+        nn /= 2;
+        dd /= 2;
+        e++;
+      }
+      while(nn != dd)
+      {
+        if(nn % 2 == 0) nn /= 2;
+        else if(dd % 2 == 0) dd /= 2;
+        else if(nn > dd) nn = (nn - dd) / 2;
+        else dd = (dd - nn) / 2;
+      }
+
+      // reduce the fraction with the GCD
+      n /= (nn * 1 << e);
+      d /= (nn * 1 << e);
     }
   }
   else
@@ -1644,11 +1737,44 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     p->ratio_d = d;
     p->ratio_n = n;
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
-    dt_conf_set_int("plugins/darkroom/clipping/ratio_n", p->ratio_n);
+    dt_conf_set_int("plugins/darkroom/clipping/ratio_n", abs(p->ratio_n));
     if(self->dt->gui->reset) return;
     apply_box_aspect(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
+
+  // Search if current aspect ratio matches something known
+  int act = -1, i = 0;
+
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    if((aspect->d == d) && (aspect->n == n))
+    {
+      act = i;
+      break;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
+
+  // Update combobox label
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  if(act == -1)
+  {
+    // we got a custom ratio
+    char str[128];
+    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    dt_bauhaus_combobox_set_text(g->aspect_presets, str);
+  }
+  else if(dt_bauhaus_combobox_get(g->aspect_presets) != act)
+    // we got a default ratio
+    dt_bauhaus_combobox_set(g->aspect_presets, act);
+
+  darktable.gui->reset = reset;
 }
 
 static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1798,22 +1924,6 @@ void gui_update(struct dt_iop_module_t *self)
     p->ratio_d = dt_conf_get_int("plugins/darkroom/clipping/ratio_d");
     p->ratio_n = dt_conf_get_int("plugins/darkroom/clipping/ratio_n");
   }
-  const int d = abs(p->ratio_d), n = p->ratio_n;
-
-  int act = -1, i = 0;
-
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
-  {
-    const dt_iop_clipping_aspect_t *aspect = iter->data;
-    if((aspect->d == d) && (aspect->n == n))
-    {
-      act = i;
-      break;
-    }
-    i++;
-    iter = g_list_next(iter);
-  }
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
@@ -1828,20 +1938,7 @@ void gui_update(struct dt_iop_module_t *self)
     keystone_type_populate(self, FALSE, p->k_type);
   }
 
-
-  /* special handling the combobox when current act is already selected
-     callback is not called, let do it our self then..
-   */
-  if(act == -1)
-  {
-    char str[128];
-    snprintf(str, sizeof(str), "%d:%d", abs(p->ratio_d), p->ratio_n);
-    dt_bauhaus_combobox_set_text(g->aspect_presets, str);
-  }
-  if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
-    aspect_presets_changed(g->aspect_presets, self);
-  else
-    dt_bauhaus_combobox_set(g->aspect_presets, act);
+  aspect_presets_changed(g->aspect_presets, self);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
