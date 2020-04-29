@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2020-04-28 17:48-0300\n"
+"PO-Revision-Date: 2020-04-29 07:36-0300\n"
 "Project-Id-Version: darktable 3.0\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
@@ -17278,28 +17278,28 @@ msgstr "Controla como os painéis da mes de luz são expandidos. Se esta opçào
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21118(bridgehead)
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr ""
+msgstr "rolar módulos da mesa de luz quando expandidos/recolhidos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21120(para)
 msgid ""
 "With this option enabled the lighttable side panels will scroll a module to "
 "the top when it is expanded or collapsed (default off)."
-msgstr ""
+msgstr "Com esta opção habilitada, os painéis laterais da mesa de luz rolarão um módulo para o topo quando ele for expandido ou recolhido. (default: desligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21125(bridgehead)
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
+msgstr "classificar uma imagem duas vezes com uma estrela não causará classificação zero"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21127(para)
 msgid ""
 "Normally clicking a one star rating twice will set a zero star rating to "
 "that image. When checking this option a second click on a one star rating "
 "will keep that rating (default off)."
-msgstr ""
+msgstr "Normalmente, clicar na classificação de uma estrela duas vezes é o mesmo que classificar com zero estrelas. Quando esta opção estiver habilitada, isso não ocorre (clicar duas vezes em uma estrela manterá a classificação em uma estrela)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21139(bridgehead)
 msgid "pen pressure control for brush masks"
-msgstr ""
+msgstr "controle por pressão da caneta para máscaras com pincel"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21141(para)
 msgid ""
@@ -17314,13 +17314,13 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21150(bridgehead)
 msgid "smoothing of brush strokes"
-msgstr ""
+msgstr "suavização de pinceladas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21152(para)
 msgid ""
 "Sets the level for smoothing of brush strokes. Stronger smoothing leads to "
 "less nodes and easier editing at the expense of lower accuracy."
-msgstr ""
+msgstr "Define o nível de suavização de pinceladas. Suavização mais forte leva a menos nós e edição mais fácil, ao custo de menor precisão."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21157(bridgehead)
 msgid "display of individual color channels"
@@ -17389,13 +17389,13 @@ msgstr "Permite expandir ou recolher automaticamente módulos quando eles estão
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21204(bridgehead)
 msgid "scroll to darkroom modules when expanded/collapsed"
-msgstr ""
+msgstr "rolar módulos da sala escura quando expandidos/recolhidos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21206(para)
 msgid ""
 "With this option enabled the darkroom side panel will scroll a module to the "
 "top when it is expanded or collapsed (default on)."
-msgstr ""
+msgstr "Com esta opção habilitada, os painéis laterais da sala escura rolarão um módulo para o topo quando ele for expandido ou recolhido. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21211(bridgehead)
 msgid "border around image in darkroom mode"
@@ -17413,14 +17413,14 @@ msgstr "Mapa/geolocalização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21224(bridgehead)
 msgid "only draw images on map that are currently collected and filtered"
-msgstr ""
+msgstr "somente mostrar no mapa imagens que estão atualmente coletadas e filtradas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21226(para)
 msgid ""
 "Use the current filter settings to select the geotagged images drawn in the "
 "map view. This limits the images drawn to those currently shown in the "
 "filmstrip and thus reduces the time needed (default off)."
-msgstr ""
+msgstr "Use as definições de filtro corrente para selecionar as imagens geolocalizadas deesnhadas no mapa. Isto limita as imagens desenhadasa àquelas mostradas na tira de filme, e consequentemente reduz o tempo necessário. (default: desligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21232(bridgehead)
 msgid "maximum number of images drawn on map"
@@ -17431,17 +17431,17 @@ msgid ""
 "The maximum number of geotagged images drawn on the map. Increasing this "
 "number can slow down the drawing of the map. Needs a restart if changed "
 "(default 100)."
-msgstr ""
+msgstr "O número máximo de imagens geo-etiquetadas mostradas no mapa. Aumentar este número pode tornar o processo de desenho do mapa mais lento. É necessário reiniciar o darktable se modificado. (default: 100)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21239(bridgehead)
 msgid "pretty print the image location"
-msgstr ""
+msgstr "mostra localização da imagem de forma mais legível"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21241(para)
 msgid ""
 "Show a more readable representation of the geo location in the image "
 "information module (default on)."
-msgstr ""
+msgstr "Mostra uma representação mais legível da geo-localização da imagem no módulo de informação da imagem. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21250(title)
 msgid "Security"
@@ -17662,25 +17662,25 @@ msgid ""
 "option is not activated thumbnails are directly stored in the specific "
 "monitor color space valid at generation time and are subsequently displayed "
 "without further corrections (default on)."
-msgstr ""
+msgstr "Se esta opção estiver ativada, o darktable gera miniaturas em um espaço de cores geral (AdobeRGB) para poder renderizá-las independentemente do monitor. A conversão para o espaço de cores do monitor é feita no momento da exibição. Se esta opção não estiver ativada, as miniaturas são armazenadas diretamente no espaço de cores específico do monitor, válido no momento da geração, e fica assim sem correções posteriores. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21418(bridgehead)
 msgid "always use LittleCMS 2 to apply output color profile"
-msgstr ""
+msgstr "sempre usar LittleCMS2 ao aplicar o perfil de cores de saída"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21420(para)
 msgid ""
 "If this option is activated, darktable will use system library LittleCMS 2 "
 "instead of its own routines. This is significantly slower than the default "
 "but might give more accurate results in some cases (default off)."
-msgstr ""
+msgstr "Com esta opção ativada, o darktable usa a biblioteca de sistema LittleCMS2 ao invés de suas próprias rotinas. Isto é significativamente mais lento do qu eo default, mas pode dar resultados mais precisos em alguns casos. (default: desligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21426(para)
 msgid ""
 "Note that if the given ICC is LUT-based or contains both, a LUT and a "
 "matrix, darktable will use LittleCMS 2 to render the colors regardless of "
 "this configuration parameter's value."
-msgstr ""
+msgstr "Note que se o ICC dado é baseado em LUT ou contém ambos, um LUT e uma matriz, o darktable usará o LittleCMS2 para renderizar as cores, independente do valor desta configuração."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21431(bridgehead)
 msgid "do high quality processing for slideshow"
@@ -17692,11 +17692,11 @@ msgid ""
 "enabled, the image will first be processed in full resolution, and "
 "downscaled at the very end. This can result in better quality sometimes, but "
 "will always be slower (default on)."
-msgstr ""
+msgstr "Controla como as imagens são processadas para a vista de apresentação. Se esta opção estiver habilitada, a imagem será primeiro processada em resolução cheia, e depois reduzida no final. Isto pode resultar em melhor qualidade algumas vezes, mas será sempre mais lento. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21439(bridgehead)
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr ""
+msgstr "interpolação cromática para modo da sala escura com zoom reduzido"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21441(para)
 msgid ""
@@ -17705,7 +17705,7 @@ msgid ""
 "(reasonable)</quote> is using ppg + interpolation modes specified below, "
 "<quote>full (possibly slow)</quote> will use exactly the settings for full-"
 "size export (default <quote>at most ppg (reasonable)</quote>)."
-msgstr ""
+msgstr "Interpolação quando nào visualizando em escala 1;1 na sala escura: <quote>sempre bilinear</quote> é o mais rápido, mas não muito preciso. <quote>no máximo PPG (razoável)</quote> usa PPG + modos de interpolação abaixo, <quote>completo (possivelmente lento)</quote> usará exatamente as definições para exportação em tamanho cheio. (default: <quote>no máximo PPG (razoável)</quote>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21448(bridgehead)
 msgid "pixel interpolator"
