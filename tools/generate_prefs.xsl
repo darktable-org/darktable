@@ -66,7 +66,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_ACCEPT) return;&#xA;</xsl:text>
+      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
       <xsl:apply-templates select="." mode="change"/>
       <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
     </xsl:if>
@@ -98,7 +98,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("map/geolocalisation"));
+      GtkWidget *seclabel = gtk_label_new(_("map / geolocalisation"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");

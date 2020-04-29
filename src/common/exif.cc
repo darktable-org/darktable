@@ -3245,7 +3245,7 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+      "SELECT import_timestamp, change_timestamp, export_timestamp, print_timestamp"
       " FROM main.images"
       " WHERE id = ?1",
       -1, &stmt, NULL);
@@ -3253,10 +3253,10 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    xmpData["Xmp.darktable.import_timestamp"] = sqlite3_column_int(stmt, 1);
-    xmpData["Xmp.darktable.change_timestamp"] = sqlite3_column_int(stmt, 2);
-    xmpData["Xmp.darktable.export_timestamp"] = sqlite3_column_int(stmt, 3);
-    xmpData["Xmp.darktable.print_timestamp"] = sqlite3_column_int(stmt, 4);
+    xmpData["Xmp.darktable.import_timestamp"] = sqlite3_column_int(stmt, 0);
+    xmpData["Xmp.darktable.change_timestamp"] = sqlite3_column_int(stmt, 1);
+    xmpData["Xmp.darktable.export_timestamp"] = sqlite3_column_int(stmt, 2);
+    xmpData["Xmp.darktable.print_timestamp"] = sqlite3_column_int(stmt, 3);
   }
   else
   {
@@ -3272,38 +3272,45 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 {
   gboolean all_ok = TRUE;
-  sqlite3_stmt *stmt;
   Exiv2::XmpData::iterator pos;
 
   const char *timestamps[] = { "change_timestamp", "export_timestamp", "print_timestamp" };
   // Do not read for import_ts. It must be updated at each import.
 
   const int nb_timestamps = sizeof(timestamps) / sizeof(char *);
-  int i;
-  char xmpkey[1024];
-  char query[1024];
-  char values[1024];
+  char xmpkey[1024] = { 0 };
+  char query[1024] = { 0 };
+  char values[1024] = { 0 };
   char tmp[64];
+  gboolean found_some = FALSE;
 
-  for (i = 0 ; i < nb_timestamps ; i++)
+  for (int i = 0 ; i < nb_timestamps ; i++)
   {
     snprintf(xmpkey, sizeof(xmpkey), "Xmp.darktable.%s", timestamps[i]);
     if((pos = xmpData.findKey(Exiv2::XmpKey(xmpkey))) != xmpData.end())
     {
       snprintf(tmp, sizeof(tmp), " %s = %ld,", timestamps[i], pos->toLong());
       g_strlcat(values, tmp, sizeof(values));
+      found_some = TRUE;
     }
-	}
-  values[strlen(values) - 1] = '\0'; /* remove last comma */
-  snprintf(query, sizeof(query), "UPDATE main.images SET %s WHERE id = %d", values, imgid);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  }
+
+  if(found_some)
+  {
+    sqlite3_stmt *stmt;
+
+    values[strlen(values) - 1] = '\0'; /* remove last comma */
+    snprintf(query, sizeof(query), "UPDATE main.images SET %s WHERE id = %d", values, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
     if(sqlite3_step(stmt) != SQLITE_DONE)
-    {
-      fprintf(stderr, "[exif] error writing timestamps entry for image %d\n", imgid);
-      fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
-      all_ok = FALSE;
-    }
-  sqlite3_finalize(stmt);
+      {
+        fprintf(stderr, "[exif] error writing timestamps entry for image %d\n", imgid);
+        fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+        all_ok = FALSE;
+      }
+    sqlite3_finalize(stmt);
+  }
 
   return all_ok;
 }
