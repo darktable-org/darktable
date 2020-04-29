@@ -59,7 +59,7 @@ sub mark_for_translation
   my $GETTEXT_CONTEXT = "introspection description";
 
   my $result = "(char*)\"$string\"";
-  $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+  $result = "N_($result)" if($string ne "");
 
   return $result;
 }
@@ -1076,6 +1076,7 @@ sub get_introspection_code
 
   my $description = $self->get_description();
   $description = $self->{type}->get_description() if($description eq "");
+  $description = $field_name =~ s/\_/ /gr  if(($description eq "") and ((substr $field_name, -1) ne ']') and (defined($self->{declaration}->get_default())));
   $description = ast::mark_for_translation($description);
 
   my $header = "$type, (char*)\"$type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", $description, sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
