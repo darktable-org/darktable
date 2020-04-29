@@ -1383,22 +1383,23 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
 void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = (w < h ? w : h);
-  const float r = 0.5;
-  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_translate(cr, x + w / 2.0, y + h / 2.0);
+
+  const float s = (w < h ? w / 2.0 : h / 2.0);
   cairo_scale(cr, s, s);
 
-  cairo_set_line_width(cr, 1.0 / (float)s);
-  cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
+  const float r = 0.95;
+  cairo_set_line_width(cr, .1);
+  cairo_arc(cr, 0, 0, r, 0, 2.0f * M_PI);
   const float dx = r * cosf(M_PI / 8.0f), dy = r * sinf(M_PI / 8.0f);
-  cairo_move_to(cr, 0.5 - dx, 0.5 - dy);
-  cairo_curve_to(cr, 0.5, 0.5 - 2 * dy, 0.5, 0.5 + 2 * dy, 0.5 + dx, 0.5 + dy);
-  cairo_move_to(cr, 0.5 - .20 * dx, 0.5 + .8 * dy);
-  cairo_line_to(cr, 0.5 - .80 * dx, 0.5 + .8 * dy);
-  cairo_move_to(cr, 0.5 + .20 * dx, 0.5 - .8 * dy);
-  cairo_line_to(cr, 0.5 + .80 * dx, 0.5 - .8 * dy);
-  cairo_move_to(cr, 0.5 + .50 * dx, 0.5 - .8 * dy - 0.3 * dx);
-  cairo_line_to(cr, 0.5 + .50 * dx, 0.5 - .8 * dy + 0.3 * dx);
+  cairo_move_to(cr,  - dx,  - dy);
+  cairo_curve_to(cr, 0, -2.0 * dy, 0, 2.0 * dy, dx, dy);
+  cairo_move_to(cr, -.2 * dx,  .8 * dy);
+  cairo_line_to(cr, -.8 * dx,  .8 * dy);
+  cairo_move_to(cr,  .2 * dx, -.8 * dy);
+  cairo_line_to(cr,  .8 * dx, -.8 * dy);
+  cairo_move_to(cr,  .5 * dx, -.8 * dy - .3 * dx);
+  cairo_line_to(cr,  .5 * dx, -.8 * dy + .3 * dx);
   cairo_stroke(cr);
 }
 
@@ -1569,81 +1570,75 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_fill(cr);
 }
 
-
-
 void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = (w < h ? w / 1.75 : h / 1.75);
-  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
+
+  float s = (w < h ? w / 2.0 : h / 2.0);
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, .25);
-  cairo_arc(cr, 0.5, 0.5, 0.6, 0., 2.0f * M_PI);
+  cairo_arc(cr, 0.0, 0.0, 0.625, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 
-  double dashes = .35;
+  double dashes = .3436;
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_arc(cr, 0.5, 0.5, 0.8, 0., 2.0f * M_PI);
+  cairo_arc(cr, 0.0, 0.0, 0.875, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 }
 
 void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = (w < h ? w / 1.75 : h / 1.75);
-  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
-  cairo_scale(cr, s, s);
-  cairo_set_line_width(cr, .1);
+  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
 
-  dt_draw_star(cr, 0.5, 0.5, 1.0, 1.0/2.5);
+  const float s = (w < h ? w / 2.0 : h / 2.0);
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, .1);
+  dt_draw_star(cr, 0.0, 0.12, 1.0, 1.0/2.5);
 
   cairo_stroke(cr);
 }
 
 void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PangoLayout *layout;
-  PangoRectangle ink;
-  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
-  // leading to imprecise positioning
-  static const float grow = 12.0;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
-  const gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
-  cairo_scale(cr, s / grow, s / grow);
 
-  pango_layout_set_text(layout, "?", -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
-  pango_cairo_show_layout(cr, layout);
-  pango_font_description_free(desc);
-  g_object_unref(layout);
+  const float s = (w < h ? w / 2.0 : h / 2.0);
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, 0.2);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  cairo_arc(cr, 0.0, -0.5, 0.4, - M_PI, 0.25 * M_PI);
+  cairo_arc_negative(cr, 0.7, 0.4, 0.7, -0.75 * M_PI, - M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.0, 0.85, 0.05, 0.0, 2.0 * M_PI);
+  cairo_stroke(cr);
 }
 
-// TODO: Find better icon
 void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PangoLayout *layout;
-  PangoRectangle ink;
-  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
-  // leading to imprecise positioning
-  static const float grow = 12.0;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
-  const gint s = (w < h ? w : h);
-  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
-  cairo_scale(cr, s / grow, s / grow);
+  cairo_translate(cr, x + w / 2.0, y + h / 2.0);
 
-  pango_layout_set_text(layout, "G", -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
-  pango_cairo_show_layout(cr, layout);
-  pango_font_description_free(desc);
-  g_object_unref(layout);
+  const float s = (w < h ? w / 2.0 : h / 2.0);
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, .1);
+  cairo_arc(cr, 0.0, 0.0, 0.95, 0., 2.0f * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, -0.35, -0.33, 0.25, 0., 2.0f * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+  cairo_arc(cr, -0.35, 0.35, 0.25, 0., 2.0f * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.35, -0.35, 0.25, 0., 2.0f * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.35, 0.35, 0.25, 0., 2.0f * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
 }
 
 void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
