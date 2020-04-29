@@ -222,7 +222,8 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
   /* update last settings */
   const int i = gtk_combo_box_get_active(widget);
 
-  uint32_t flags = dt_collection_get_filter_flags(darktable.collection) & ~COLLECTION_FILTER_REJECTED;
+  uint32_t flags = dt_collection_get_filter_flags(darktable.collection)
+    & ~(COLLECTION_FILTER_REJECTED | COLLECTION_FILTER_ALTERED | COLLECTION_FILTER_UNALTERED);
 
   /* update collection star filter flags */
   if(i == DT_COLLECTION_FILTER_ALL) // all
