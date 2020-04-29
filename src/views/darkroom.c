@@ -1930,6 +1930,7 @@ static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acc
   const int currentval = dt_bauhaus_combobox_get(combobox);
   const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
   dt_bauhaus_combobox_set(combobox, nextval);
+  dt_accel_widget_toast(combobox);
   return TRUE;
 }
 
