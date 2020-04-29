@@ -842,6 +842,14 @@ overshoot.right
   border:none;
 }
 
+/* Rating stars on bottom left of lighttable view */
+#lib-rating-stars
+{
+  min-height: 1em;
+  min-width: 9em;
+  margin-right: 1em;
+}
+
 /* Special modules: navigation one */
 #navigation-module
 {
@@ -1109,7 +1117,6 @@ combobox window *:active,
 button:hover,
 menuitem:hover,
 menuitem:hover arrow,
-.sidebar :hover,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
@@ -1333,17 +1340,6 @@ scale contents trough slider:hover
   margin: 1px;
 }
 
-/* set headerbar buttons */
-#preferences_notebook headerbar button
-{
-  padding: 1px 5px;
-}
-
-#preferences_notebook headerbar .close
-{
-  padding: 2px 5px 3px 5px;
-}
-
 /* sidebar settings */
 #preferences_box .sidebar scrolledwindow
 {
@@ -1365,9 +1361,25 @@ scale contents trough slider:hover
 #preferences_box .sidebar row:selected,
 #preferences_box .sidebar row:selected:hover label
 {
-  font-weight: bold;
   color: @fg_color;
   background-color: @plugin_bg_color;
+}
+
+#preferences_box .sidebar row,
+#preferences_box .sidebar row:selected
+{
+  border-left: 2px solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
+}
+
+#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+{
+  border-left-color: @button_hover_bg;
+  background-color: @button_hover_bg;
+}
+
+#preferences_box .sidebar row:selected
+{
+  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
 }
 
 #preferences_box .sidebar label
