@@ -365,7 +365,7 @@ typedef struct dt_view_manager_t
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
-      int (*get_full_preview_mode)(struct dt_view_t *view);
+      gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
