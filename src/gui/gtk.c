@@ -364,8 +364,6 @@ static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group, GObj
   gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.top_border), visible);
   gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.bottom_border), visible);
 
-  // dt_view_lighttable_force_expose_all(darktable.view_manager);
-
   return TRUE;
 }
 
@@ -1954,8 +1952,6 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     gtk_widget_queue_draw(darktable.gui->widgets.left_border);
   else if(p == DT_UI_PANEL_RIGHT)
     gtk_widget_queue_draw(darktable.gui->widgets.right_border);
-
-  // dt_view_lighttable_force_expose_all(darktable.view_manager);
 
   if(write)
   {

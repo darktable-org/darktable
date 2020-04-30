@@ -1349,14 +1349,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   // do we need to surround the image ?
   gboolean surrounded = FALSE;
   const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
-  if(!full_preview && darktable.view_manager->proxy.lighttable.view
-     && cur_view == darktable.view_manager->proxy.lighttable.view
-     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    // in culling surrounded images are the ones shown in main view
-    // surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
-  }
-  else if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
+  if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
   {
     // in darkroom, surrounded image is the one shown in main view
     surrounded = (darktable.develop->image_storage.id == imgid);
@@ -1721,7 +1714,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_save(cr);
       cairo_new_path(cr);
     }
-    else if(buf_ok) // && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
+    else if(buf_ok)
     {
       // border around image
       if(selected && !vals->filmstrip && darktable.gui->colors[DT_GUI_COLOR_CULLING_SELECTED_BORDER].alpha > 0.0)
