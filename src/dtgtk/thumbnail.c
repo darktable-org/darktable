@@ -553,6 +553,8 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     if(rating != DT_VIEW_DESERT)
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
+      // be sure to update image infos
+      dt_thumbnail_update_infos(thumb);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                  g_list_append(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
