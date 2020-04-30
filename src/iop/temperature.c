@@ -213,6 +213,15 @@ static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *accelerata
   return TRUE;
 }
 
+static gboolean _set_preset_user(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                 GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 3);
+  return TRUE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
@@ -225,6 +234,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/as shot"), 0, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera standard D65"), 0, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/from image area"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/user modified"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -249,6 +259,9 @@ void connect_key_accels(dt_iop_module_t *self)
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
   dt_accel_connect_iop(self, "preset/from image area", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_user), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/user modified", closure);
 }
 
 /*
