@@ -61,6 +61,7 @@ typedef struct dt_database_t
   sqlite3 *handle;
 
   gchar *error_message, *error_dbfilename;
+  int error_other_pid;
 } dt_database_t;
 
 
@@ -2099,22 +2100,48 @@ static void _sanitize_db(dt_database_t *db)
 void dt_database_show_error(const dt_database_t *db)
 {
   if(!db->lock_acquired)
-  {
-    char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
-                                                  "\n"
-                                                  "<span style=\"italic\">%s</span>\n"
-                                                  "\n"
-                                                  "%s\n"),
-                                                db->error_dbfilename, db->error_message ? db->error_message : "");
+  { 
+    char lck_pathname[1024];
+    snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
+    char *lck_dirname = g_strdup(lck_pathname);
+    char *lck_filename = g_strrstr(lck_dirname, "/") + 1 ;
+    *g_strrstr(lck_dirname, "/") = '\0';
 
-    dt_gui_show_standalone_yes_no_dialog(_("darktable - error locking database"), label_text, _("close darktable"),
+    char *label_text = g_markup_printf_escaped(
+        _("\n"
+          " At startup, the database failed to open because at least one of the two files in the database is locked. \n"
+          "\n"
+          " The persistence of the lock is mainly caused by one of the two following causes: \n"
+          " - Another occurrence of darktable has already opened this database file and locked it for its benefit. \n"
+          " - A previous occurrence of darktable ended abnormally and therefore \n"
+          "   could not close one or both files in the database properly. \n"
+          "\n"
+          " How to solve this problem? \n"
+            " 1 - Search in your environment if another darktable occurrence is active. If so, use it or close it. \n"
+            "     The lock indicates that the process number of this occurrence is : <i><b>%d</b></i> \n"
+            " 2 - If you can't find this other occurrence, try closing your session and reopening it or shutting down your computer. \n"
+            "     This will delete all running programs and thus close the database correctly. \n"
+            " 3 - If these two actions are not enough, it is because at least one of the two files that materialize the locks remains \n"
+            "     and that these are no longer attached to any occurrence of darktable. It is then necessary to delete it (or them). \n"
+            "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> respectively. The opening mechanism signals \n"
+            "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> folder \n"
+            "     (full pathname: <i><b>%s</b></i>). \n"
+            "     <u>Caution!</u> Do not delete these files without first checking that there are no more occurrences of darktable, \n"
+            "     otherwise you risk generating serious inconsistencies in your database. \n"
+          "\n"
+          " As soon as you have identified and removed the cause of the lock, darktable will start without any problem. \n"),
+      db->error_other_pid, lck_filename, lck_dirname, lck_pathname);
+
+    dt_gui_show_standalone_yes_no_dialog(_("darktable cannot be started because the database is locked."), label_text, _("close darktable"),
                                          /*_("try again")*/NULL);
 
+    g_free(lck_dirname);
     g_free(label_text);
   }
 
   g_free(db->error_message);
   g_free(db->error_dbfilename);
+  ((dt_database_t *)db)->error_other_pid = 0;
   ((dt_database_t *)db)->error_message = NULL;
   ((dt_database_t *)db)->error_dbfilename = NULL;
 }
@@ -2201,8 +2228,8 @@ lock_again:
         int foo;
         if((foo = read(fd, buf, sizeof(buf) - 1)) > 0)
         {
-          int other_pid = atoi(buf);
-          if(!pid_is_alive(other_pid))
+          db->error_other_pid = atoi(buf);
+          if(!pid_is_alive(db->error_other_pid))
           {
             // the other process seems to no longer exist. unlink the .lock file and try again
             g_unlink(*lockfile);
@@ -2217,8 +2244,8 @@ lock_again:
             fprintf(
               stderr,
               "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
-              other_pid);
-            db->error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), other_pid);
+              db->error_other_pid);
+            db->error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), db->error_other_pid);
           }
         }
         else
