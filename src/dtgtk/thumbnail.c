@@ -418,7 +418,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
 
   // and the tooltip
   gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
-  if(strcmp(pattern, "") == 0)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK || strcmp(pattern, "") == 0)
   {
     gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
   }
