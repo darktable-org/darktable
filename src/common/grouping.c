@@ -82,6 +82,8 @@ int dt_grouping_remove_from_group(const int image_id)
     wimg->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, wimg, DT_IMAGE_CACHE_SAFE);
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
+    // refresh also the group leader which may be alone now
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
   }
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
