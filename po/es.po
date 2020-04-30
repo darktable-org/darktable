@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-04-29 20:15-0500\n"
-"PO-Revision-Date: 2020-04-29 21:00-0500\n"
+"PO-Revision-Date: 2020-04-29 22:50-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -12106,12 +12106,12 @@ msgstr "cuantificación de máscara"
 #: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "compensación de exposición de máscara"
+msgstr "nivelación de exposición de máscara"
 
 #: ../src/iop/toneequal.c:325
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "compensación de contraste de máscara"
+msgstr "nivelación de contraste de máscara"
 
 #: ../src/iop/toneequal.c:326
 msgctxt "accel"
@@ -12403,7 +12403,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3387
 msgid "mask exposure compensation"
-msgstr "compensación de exposición de máscara"
+msgstr "nivelación de exposición"
 
 #: ../src/iop/toneequal.c:3389
 msgid ""
@@ -12419,7 +12419,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3401
 msgid "mask contrast compensation"
-msgstr "compensación de contraste de máscara"
+msgstr "nivelación de contraste"
 
 #: ../src/iop/toneequal.c:3403
 msgid ""
