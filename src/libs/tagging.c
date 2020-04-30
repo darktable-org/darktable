@@ -257,14 +257,16 @@ static void _show_tag_on_view(GtkTreeView *view, const char *tagname)
     char *t = g_strstrip(lt);
     GtkTreeIter iter;
     GtkTreeModel *model = gtk_tree_view_get_model(view);
-    gtk_tree_model_get_iter_first(model, &iter);
-    if(_find_tag_iter_tagname(model, &iter, t))
+    if(gtk_tree_model_get_iter_first(model, &iter))
     {
-      GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
-      gtk_tree_view_expand_to_path(view, path);
-      gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0.5);
-      GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
-      gtk_tree_selection_select_iter(selection, &iter);
+      if(_find_tag_iter_tagname(model, &iter, t))
+      {
+        GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+        gtk_tree_view_expand_to_path(view, path);
+        gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0.5);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+        gtk_tree_selection_select_iter(selection, &iter);
+      }
     }
     g_free(lt);
   }
@@ -654,9 +656,11 @@ static void _calculate_sel_on_tree(GtkTreeModel *model, GtkTreeIter *iter)
   else
   {
     // on full tree
-    gtk_tree_model_get_iter_first(model, &parent);
-    _reset_sel_on_path(model, &parent, FALSE);
-    _calculate_sel_on_path(model, &parent, FALSE);
+    if(gtk_tree_model_get_iter_first(model, &parent))
+    {
+      _reset_sel_on_path(model, &parent, FALSE);
+      _calculate_sel_on_path(model, &parent, FALSE);
+    }
   }
 }
 
@@ -668,23 +672,25 @@ static void _update_sel_on_tree(GtkTreeModel *model)
   if(count > 0 && tags)
   {
     GtkTreeIter parent;
-    gtk_tree_model_get_iter_first(model, &parent);
-    _reset_sel_on_path_full(model, &parent, FALSE);
-    for (GList *tag = tags; tag; tag = g_list_next(tag))
+    if(gtk_tree_model_get_iter_first(model, &parent))
     {
-      GtkTreeIter iter = parent;
-      if (_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
+      _reset_sel_on_path_full(model, &parent, FALSE);
+      for (GList *tag = tags; tag; tag = g_list_next(tag))
       {
-        if(GTK_IS_TREE_STORE(model))
+        GtkTreeIter iter = parent;
+        if (_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
         {
-          gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                             DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
-          _propagate_sel_to_parents(model, &iter);
-        }
-        else
-        {
-          gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                             DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+          if(GTK_IS_TREE_STORE(model))
+          {
+            gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+                               DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+            _propagate_sel_to_parents(model, &iter);
+          }
+          else
+          {
+            gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                               DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+          }
         }
       }
     }
@@ -899,21 +905,23 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
         if(attached) some_attached = TRUE;
 
         const guint count = dt_tag_images_count(tagid);
-        gtk_tree_model_get_iter_first(store, &iter);
-        if (_find_tag_iter_tagid(store, &iter, tagid))
+        if(gtk_tree_model_get_iter_first(store, &iter))
         {
-          if (d->tree_flag)
+          if (_find_tag_iter_tagid(store, &iter, tagid))
           {
-            gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
-                               DT_LIB_TAGGING_COL_COUNT, count,
-                               DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
-            _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
-          }
-          else
-          {
-            gtk_list_store_set(GTK_LIST_STORE(store), &iter,
-                               DT_LIB_TAGGING_COL_COUNT, count,
-                               DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
+            if (d->tree_flag)
+            {
+              gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
+                                 DT_LIB_TAGGING_COL_COUNT, count,
+                                 DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
+              _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
+            }
+            else
+            {
+              gtk_list_store_set(GTK_LIST_STORE(store), &iter,
+                                 DT_LIB_TAGGING_COL_COUNT, count,
+                                 DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
+            }
           }
         }
         entry++;
@@ -1005,21 +1013,23 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
       const guint count = dt_tag_images_count(tagid);
       model = gtk_tree_view_get_model(d->dictionary_view);
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-      gtk_tree_model_get_iter_first(store, &iter);
-      if (_find_tag_iter_tagid(store, &iter, tagid))
+      if(gtk_tree_model_get_iter_first(store, &iter))
       {
-        if (d->tree_flag)
+        if (_find_tag_iter_tagid(store, &iter, tagid))
         {
-          gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
-                             DT_LIB_TAGGING_COL_COUNT, count,
-                             DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
-          _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
-        }
-        else
-        {
-          gtk_list_store_set(GTK_LIST_STORE(store), &iter,
-                             DT_LIB_TAGGING_COL_COUNT, count,
-                             DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
+          if (d->tree_flag)
+          {
+            gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
+                               DT_LIB_TAGGING_COL_COUNT, count,
+                               DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
+            _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
+          }
+          else
+          {
+            gtk_list_store_set(GTK_LIST_STORE(store), &iter,
+                               DT_LIB_TAGGING_COL_COUNT, count,
+                               DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
+          }
         }
       }
     }
@@ -1069,20 +1079,22 @@ static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_
 
   const uint32_t count = dt_tag_images_count(tagid);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
-  gtk_tree_model_get_iter_first(model, &iter);
-  if(_find_tag_iter_tagid(model, &iter, tagid))
+  if(gtk_tree_model_get_iter_first(model, &iter))
   {
-    GtkTreeIter store_iter;
-    GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-    gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
-                              &store_iter, &iter);
-    if (d->tree_flag)
+    if(_find_tag_iter_tagid(model, &iter, tagid))
     {
-      gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
-    }
-    else
-    {
-      gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
+      GtkTreeIter store_iter;
+      GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
+      gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
+                                &store_iter, &iter);
+      if (d->tree_flag)
+      {
+        gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
+      }
+      else
+      {
+        gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_COUNT, count, -1);
+      }
     }
   }
 
