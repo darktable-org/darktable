@@ -563,7 +563,6 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   const int cw = params->flag;
   GList *t = params->index;
-  GList *imgs = NULL;
   const guint total = g_list_length(t);
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
@@ -576,7 +575,6 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     const double fraction = 1.0 / total;
     dt_image_set_aspect_ratio(imgid, FALSE);
     dt_control_job_set_progress(job, fraction);
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   }
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_queue_redraw_center();
