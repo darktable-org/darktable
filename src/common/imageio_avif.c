@@ -345,7 +345,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       case AVIF_NCLX_TRANSFER_CHARACTERISTICS_SRGB:
 
         switch (nclx.matrixCoefficients) {
-        case AVIF_NCLX_MATRIX_COEFFICIENTS_SRGB:
+        case AVIF_NCLX_MATRIX_COEFFICIENTS_BT709:
         case AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
           cp->type = DT_COLORSPACE_SRGB;
           break;
@@ -358,7 +358,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       /*
        * GAMMA22 BT709
        */
-      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_GAMMA22:
+      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT470M:
 
         switch (nclx.matrixCoefficients) {
         case AVIF_NCLX_MATRIX_COEFFICIENTS_BT709:
@@ -418,7 +418,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       /*
        * PQ BT2020
        */
-      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ:
+      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_SMPTE2084:
 
         switch (nclx.matrixCoefficients) {
         case AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL:
@@ -434,7 +434,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       /*
        * HLG BT2020
        */
-      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG:
+      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_HLG:
 
         switch (nclx.matrixCoefficients) {
         case AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL:
@@ -456,13 +456,13 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
     /*
      * P3
      */
-    case AVIF_NCLX_COLOUR_PRIMARIES_P3:
+    case AVIF_NCLX_COLOUR_PRIMARIES_SMPTE432:
 
       switch (nclx.transferCharacteristics) {
       /*
        * PQ P3
        */
-      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ:
+      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_SMPTE2084:
 
         switch (nclx.matrixCoefficients) {
         case AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
@@ -477,7 +477,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       /*
        * HLG P3
        */
-      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG:
+      case AVIF_NCLX_TRANSFER_CHARACTERISTICS_HLG:
 
         switch (nclx.matrixCoefficients) {
         case AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
