@@ -109,30 +109,24 @@ typedef struct
   gboolean single_click;                  // do we activate on single or double click ?
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
 
-  dt_thumbnail_overlay_t over; // type of overlays
-  int overlay_timeout_duration;
-  int overlay_timeout_id;
+  dt_thumbnail_overlay_t over;  // type of overlays
+  int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
+  int overlay_timeout_id;       // id of the g_source timeout fct
 
   // specific for culling and preview
-  gboolean zoomable;
-  double aspect_ratio;
-
-  // global zoom values actually applied to all images in culling table
-  float zoom_glob;
+  gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
+  double aspect_ratio; // aspect ratio of the image
 
   // difference between the global zoom values and the value to apply to this specific thumbnail
-  float zoom_delta;
+  float zoom;     // zoom value. 1.0 is "image to fit" (the initial value)
   int zoomx;      // zoom panning of the image
   int zoomy;      //
   int current_zx; // zoom panning currently applied on the image
   int current_zy; // can differ from zoomx if image is not loaded on first try
 
-  float zoom_100; // max zoom value
+  float zoom_100; // max zoom value (image 100%)
 
-  float w_fit;
-  float h_fit;
-
-  gboolean display_focus;
+  gboolean display_focus; // do we display rectangles to show focused part of the image
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable);
