@@ -140,6 +140,25 @@ static gboolean _thumb_expose_again(gpointer user_data)
   return FALSE;
 }
 
+static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
+{
+  // Safety check to avoid possible error
+  if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return;
+
+  // we draw the image
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
+  const int dx = CLAMP(thumb->zx_glob + thumb->zx_delta, w - thumb->img_width, 0);
+  const int dy = CLAMP(thumb->zy_glob + thumb->zy_delta, h - thumb->img_height, 0);
+  cairo_set_source_surface(cr, thumb->img_surf, dx, dy);
+  cairo_paint(cr);
+
+  // and eventually the image border
+  gtk_render_frame(context, cr, 0, 0, w, h);
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -267,22 +286,29 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     else
     {
       gboolean res;
+      cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
         const float z = thumb->zoom_glob + thumb->zoom_delta;
-        res = dt_view_image_get_surface(thumb->imgid, image_w * z, image_h * z, &thumb->img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w * z, image_h * z, &img_surf);
       }
       else
       {
-        res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &thumb->img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &img_surf);
       }
 
       if(res)
       {
         // if the image is missing, we reload it again
         g_timeout_add(250, _thumb_expose_again, widget);
+        // we still draw the thumb to avoid flickering
+        _thumb_draw_image(thumb, cr);
         return TRUE;
       }
+
+      cairo_surface_t *tmp_surf = thumb->img_surf;
+      thumb->img_surf = img_surf;
+      if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
 
       if(thumb->display_focus)
       {
@@ -372,25 +398,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
     g_free(uext);
     g_free(ext2);
-
-    return TRUE;
   }
 
-  // Safety check to avoid possible error
-  if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return TRUE;
-
-  // we draw the image
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
-  int w = 0;
-  int h = 0;
-  gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
-  const int dx = CLAMP(thumb->zx_glob + thumb->zx_delta, w - thumb->img_width, 0);
-  const int dy = CLAMP(thumb->zy_glob + thumb->zy_delta, h - thumb->img_height, 0);
-  cairo_set_source_surface(cr, thumb->img_surf, dx, dy);
-  cairo_paint(cr);
-
-  // and eventually the image border
-  gtk_render_frame(context, cr, 0, 0, w, h);
+  _thumb_draw_image(thumb, cr);
 
   return TRUE;
 }
@@ -1180,9 +1190,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   _thumb_resize_overlays(thumb);
 
   // reset surface
-  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
-    cairo_surface_destroy(thumb->img_surf);
-  thumb->img_surf = NULL;
+  dt_thumbnail_image_refresh(thumb);
 }
 
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border)
