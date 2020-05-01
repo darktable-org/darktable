@@ -907,7 +907,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
   // colorlabels => 3 * r1 + space r1
   // inner margins are 0.045 * width
-  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
+  const float r1 = fminf((DT_PIXEL_APPLY_DPI(16.0f) + 4.0)/ 2.0f, 0.91 * width / 22.0f);
 
   // widget resizing
   thumb->width = width;
@@ -916,7 +916,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
   gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
-  const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
+  const int fsize = fminf(DT_PIXEL_APPLY_DPI(16.0) + 4.0, .09 * width);
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
   pango_attr_list_insert(attrlist, attr);
