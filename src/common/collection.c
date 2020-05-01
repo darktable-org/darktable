@@ -615,27 +615,31 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   char *col_name = NULL;
   switch(prop)
   {
-    case DT_COLLECTION_PROP_FILMROLL:     return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:      return _("folders");
-    case DT_COLLECTION_PROP_CAMERA:       return _("camera");
-    case DT_COLLECTION_PROP_TAG:          return _("tag");
-    case DT_COLLECTION_PROP_DAY:          return _("date");
-    case DT_COLLECTION_PROP_TIME:         return _("time");
-    case DT_COLLECTION_PROP_HISTORY:      return _("history");
-    case DT_COLLECTION_PROP_COLORLABEL:   return _("color label");
-    case DT_COLLECTION_PROP_LENS:         return _("lens");
-    case DT_COLLECTION_PROP_FOCAL_LENGTH: return _("focal length");
-    case DT_COLLECTION_PROP_ISO:          return _("ISO");
-    case DT_COLLECTION_PROP_APERTURE:     return _("aperture");
-    case DT_COLLECTION_PROP_EXPOSURE:     return _("exposure");
-    case DT_COLLECTION_PROP_ASPECT_RATIO: return _("aspect ratio");
-    case DT_COLLECTION_PROP_FILENAME:     return _("filename");
-    case DT_COLLECTION_PROP_GEOTAGGING:   return _("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:     return _("grouping");
-    case DT_COLLECTION_PROP_LOCAL_COPY:   return _("local copy");
-    case DT_COLLECTION_PROP_MODULE:       return _("module");
-    case DT_COLLECTION_PROP_ORDER:        return _("module order");
-    case DT_COLLECTION_PROP_LAST:         return NULL;
+    case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
+    case DT_COLLECTION_PROP_FOLDERS:          return _("folders");
+    case DT_COLLECTION_PROP_CAMERA:           return _("camera");
+    case DT_COLLECTION_PROP_TAG:              return _("tag");
+    case DT_COLLECTION_PROP_DAY:              return _("date taken");
+    case DT_COLLECTION_PROP_TIME:             return _("date-time taken");
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: return _("import timestamp");
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: return _("change timestamp");
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: return _("export timestamp");
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:  return _("print timestamp");
+    case DT_COLLECTION_PROP_HISTORY:          return _("history");
+    case DT_COLLECTION_PROP_COLORLABEL:       return _("color label");
+    case DT_COLLECTION_PROP_LENS:             return _("lens");
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:     return _("focal length");
+    case DT_COLLECTION_PROP_ISO:              return _("ISO");
+    case DT_COLLECTION_PROP_APERTURE:         return _("aperture");
+    case DT_COLLECTION_PROP_EXPOSURE:         return _("exposure");
+    case DT_COLLECTION_PROP_ASPECT_RATIO:     return _("aspect ratio");
+    case DT_COLLECTION_PROP_FILENAME:         return _("filename");
+    case DT_COLLECTION_PROP_GEOTAGGING:       return _("geotagging");
+    case DT_COLLECTION_PROP_GROUPING:         return _("grouping");
+    case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
+    case DT_COLLECTION_PROP_MODULE:           return _("module");
+    case DT_COLLECTION_PROP_ORDER:            return _("module order");
+    case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
       if(prop >= DT_COLLECTION_PROP_METADATA
@@ -663,57 +667,75 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
   switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
   {
-     case DT_COLLECTION_SORT_DATETIME:
-       second_order = dt_util_dstrcat(NULL, "datetime_taken %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_DATETIME:
+    case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+      {
+        const int local_order = collection->params.sort_second_order;
+        char *colname;
 
-     case DT_COLLECTION_SORT_RATING:
-       second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
-       break;
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;                                         
+          default: colname = "";
+        }
+      second_order = dt_util_dstrcat(NULL, "%s %s", colname, (collection->params.descending ? "DESC" : ""));
+      break;
+      }
 
-     case DT_COLLECTION_SORT_FILENAME:
-       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_RATING:
+      second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
+      break;
 
-     case DT_COLLECTION_SORT_ID:
-       second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_FILENAME:
+      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_COLOR:
-       second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
-       break;
+    case DT_COLLECTION_SORT_ID:
+      second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_GROUP:
-       second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_COLOR:
+      second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
+      break;
 
-     case DT_COLLECTION_SORT_PATH:
-       second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_GROUP:
+      second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-       second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_PATH:
+      second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_TITLE:
-     case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-       second_order = dt_util_dstrcat(NULL, "m.value %s, caption %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_CUSTOM_ORDER:
+      second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_ASPECT_RATIO:
-       second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_TITLE:
+    case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
+      second_order = dt_util_dstrcat(NULL, "m.value %s, caption %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_SHUFFLE:
-       /* do not remember shuffle for second order */
-       if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
-       break;
+    case DT_COLLECTION_SORT_ASPECT_RATIO:
+      second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_NONE:/*fall through for default*/
-     default:
-       // shouldn't happen
-       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_SHUFFLE:
+      /* do not remember shuffle for second order */
+      if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
+      break;
+
+    case DT_COLLECTION_SORT_NONE:/*fall through for default*/
+    default:
+      // shouldn't happen
+      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      break;
   }
 
 
@@ -722,8 +744,26 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken DESC, %s, filename DESC, version DESC", second_order);
+      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+        {
+        const int local_order = collection->params.sort;
+        char *colname;
+
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;                                         
+          default: colname = "";
+        }
+        sq = dt_util_dstrcat(sq, "ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
         break;
+        }
 
       case DT_COLLECTION_SORT_RATING:
         sq = dt_util_dstrcat(sq, "ORDER BY flags & 7, %s, filename DESC, version DESC", second_order);
@@ -783,8 +823,26 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken, %s, filename, version", second_order);
+      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+        {
+        const int local_order = collection->params.sort;
+        char *colname;
+
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;                                         
+          default: colname = "";
+        }
+        sq = dt_util_dstrcat(sq, "ORDER BY %s, %s, filename, version", colname, second_order);
         break;
+        }
 
       case DT_COLLECTION_SORT_RATING:
         sq = dt_util_dstrcat(sq, "ORDER BY flags & 7 DESC, %s, filename, version", second_order);
@@ -1590,6 +1648,47 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
       else
         query = dt_util_dstrcat(query, "(datetime_taken LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+    {
+      const int local_property = property;
+      char *colname;
+      gchar *operator, *number1, *number2;
+
+      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
+
+      switch(local_property)
+      {
+        case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+        case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+        case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+        case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+      }
+
+      if(strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
+                                           "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
+                                  colname, number1, colname, number2);
+      }
+      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
+      else if(strcmp(operator, "<>") == 0 && number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
+      else
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
 
       g_free(operator);
       g_free(number1);
