@@ -25,6 +25,7 @@ extern "C" {
 #include "common/introspection.h"
 
 #include <cairo/cairo.h>
+#include <gtk/gtk.h>
 #include <glib.h>
 #include <stdint.h>
 
@@ -109,6 +110,8 @@ void gui_update(struct dt_iop_module_t *self);
 void gui_reset(struct dt_iop_module_t *self);
 /** construct widget. */
 void gui_init(struct dt_iop_module_t *self);
+/** called by standard widget callbacks after value changed */
+void gui_changed(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
 /** destroy widget. */
 void gui_cleanup(struct dt_iop_module_t *self);
 /** optional method called after darkroom expose. */

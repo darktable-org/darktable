@@ -891,9 +891,11 @@ sub get_introspection_code
   my $arrays_line = "static dt_introspection_type_enum_tuple_t f".$linearisation_pos."[] = { ";
   foreach(@enumerator_list)
   {
-    $arrays_line .= "\n    { \"$_\", $_ },";
+    $d = $_;
+    $d =~ s/\_/ /g;
+    $arrays_line .= "\n    { \"$_\", $_, \"$d\" },";
   }
-  $arrays_line .= "\n    { NULL, 0 },\n  };";
+  $arrays_line .= "\n    { NULL, 0, NULL },\n  };";
   push(@arrays, $arrays_line);
   push(@assignments, "introspection_linear[$linearisation_pos].Enum.values = f$linearisation_pos;");
 

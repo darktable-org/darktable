@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
@@ -64,8 +65,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
 {
-  SHADHI_ALGO_GAUSSIAN,
-  SHADHI_ALGO_BILATERAL
+  SHADHI_ALGO_GAUSSIAN, // $DESC: "gaussian"
+  SHADHI_ALGO_BILATERAL // $DESC: "bilateral filter"
 } dt_iop_shadhi_algo_t;
 
 /* legacy version 1 params */
@@ -125,7 +126,6 @@ typedef struct dt_iop_shadhi_params4_t
 
 typedef struct dt_iop_shadhi_params_t
 {
-  // $VERSION: 1
   dt_gaussian_order_t order;
   float radius;
   float shadows;
@@ -133,15 +133,11 @@ typedef struct dt_iop_shadhi_params_t
   float highlights;
   float reserved2;
   float compress;
-  // $VERSION: 2
   float shadows_ccorrect;
   float highlights_ccorrect;
-  // $VERSION: 3
   unsigned int flags;
-  // $VERSION: 4
   float low_approximation;
-  // $VERSION: 5
-  dt_iop_shadhi_algo_t shadhi_algo;
+  dt_iop_shadhi_algo_t shadhi_algo; // $DESCRIPTION: "soften with"
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
@@ -838,11 +834,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->shadows = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->shadows, 2);
   g->highlights = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->highlights, 2);
   g->whitepoint = dt_bauhaus_slider_new_with_range(self, -10.0, 10.0, .2, p->whitepoint, 2);
-  g->shadhi_algo = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
+  g->shadhi_algo = dt_bauhaus_combobox_new_from_params_box(self, "shadhi_algo");
+/*  dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
+*/  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
   g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
   g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
   g->highlights_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->highlights_ccorrect, 2);

@@ -22,6 +22,8 @@
 
 GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post);
 
+GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const char *param);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

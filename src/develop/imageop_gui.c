@@ -48,19 +48,40 @@ static void generic_slider_callback(GtkWidget *slider, dt_module_param_t *data)
 
   dt_iop_module_t *self = data->module;
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  float *field = (float*)(p + data->param_offset);
 
-  /* todo: 
-     call generic callback to update module gui
-     save previous value
-     if configure_callback defined, call with param and prev value
-     same configure_callback can also be called from gui_update (with param=null)
-  */
+  float previous = *field;
+  *field = dt_bauhaus_slider_get(slider);
 
-  *(float*)(p + data->param_offset) = dt_bauhaus_slider_get(slider);
+  if (*field != previous)  // ignore unchanged (second call for button release)
+  {
+    if (self->gui_changed) self->gui_changed(self, slider, &previous);
 
-  dt_iop_color_picker_reset(self, TRUE);
+    dt_iop_color_picker_reset(self, TRUE);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
+static void generic_combobox_callback(GtkWidget *combobox, dt_module_param_t *data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_module_t *self = data->module;
+  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  int *field = (int*)(p + data->param_offset);
+
+  int previous = *field;
+  *field = dt_bauhaus_combobox_get(combobox);
+
+  if (*field != previous) // ignore unchanged (second call for button release)
+  {
+    if (self->gui_changed) self->gui_changed(self, combobox, &previous);
+
+    dt_iop_color_picker_reset(self, TRUE);
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
 }
 
 GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post)
@@ -98,13 +119,13 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
 
     slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1);
 
-    if (*f->Float.header.description)
+    if (*f->header.description)
     {
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->Float.header.description));
+      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
     }
     else
     {
-      str = dt_util_str_replace(f->Float.header.field_name, "_", " ");
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
     
       dt_bauhaus_widget_set_label(slider, NULL, gettext(str));
 
@@ -136,9 +157,63 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
     g_free(str);
   }
 
-  gtk_box_pack_start(GTK_BOX(self->widget), slider, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), slider, FALSE, FALSE, 0);
 
   return slider;
+}
+
+GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const char *param)
+{
+  dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_introspection_field_t *f = self->so->get_f(param);
+
+  GtkWidget *combobox = NULL;
+  gchar *str;
+
+  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || f->header.type == DT_INTROSPECTION_TYPE_INT))
+  {
+    combobox = dt_bauhaus_combobox_new(self);
+
+    if (*f->header.description)
+    {
+      dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+    }
+    else
+    {
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    
+      dt_bauhaus_widget_set_label(combobox, NULL, gettext(str));
+
+      g_free(str);
+    }
+
+    dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
+    module_param->module = self;
+    module_param->param_offset = self->so->get_p(p, param) - p;
+    g_signal_connect_data(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_callback), module_param, (GClosureNotify)g_free, 0);
+
+    if (f->header.type == DT_INTROSPECTION_TYPE_ENUM)
+    {
+     for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter->name; iter++)
+      {
+        dt_bauhaus_combobox_add(combobox, gettext(iter->description));
+      }
+    }
+
+    // todo: add tooltip
+  }
+  else
+  {
+    str = g_strdup_printf(_("'%s' is not an int/combox parameter"), param);
+
+    combobox = GTK_WIDGET(GTK_LABEL(gtk_label_new(str)));
+
+    g_free(str);
+  }
+
+  gtk_box_pack_start(GTK_BOX(self->widget), combobox, FALSE, FALSE, 0);
+
+  return combobox;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

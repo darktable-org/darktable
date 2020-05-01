@@ -196,7 +196,7 @@ static void _turn_selregion_picker_off(struct dt_iop_module_t *self)
   _turn_select_region_off(self);
   dt_iop_color_picker_reset(self, TRUE);
 }
-
+/*
 static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -208,7 +208,7 @@ static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
+*/
 static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
 {
   _turn_select_region_off(self->module);
@@ -668,8 +668,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_contrast, -1.0, 5.0);
   gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
 
-  g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
+  g->cmb_preserve_colors = dt_bauhaus_combobox_new_from_params_box(self, "preserve_colors") ;
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max RGB"));
@@ -677,9 +676,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum RGB"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
 
   g->sl_middle_grey = dt_bauhaus_slider_new_from_params_box(self, "middle_grey", " %%");
   dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);

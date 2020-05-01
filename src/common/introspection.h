@@ -185,6 +185,7 @@ typedef struct dt_introspection_type_enum_tuple_t
 {
   const char                         *name;
   int                                 value;
+  const char                         *description;
 } dt_introspection_type_enum_tuple_t;
 
 typedef struct dt_introspection_type_enum_t

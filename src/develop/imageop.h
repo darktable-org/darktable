@@ -204,6 +204,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_reset)(struct dt_iop_module_t *self);
   void (*gui_update)(struct dt_iop_module_t *self);
   void (*gui_init)(struct dt_iop_module_t *self);
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                           int32_t pointerx, int32_t pointery);
@@ -437,6 +438,8 @@ typedef struct dt_iop_module_t
   void (*gui_reset)(struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)(struct dt_iop_module_t *self);
+  /** called by standard widget callbacks after value changed */
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   /** destroy widget. */
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
