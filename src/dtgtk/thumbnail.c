@@ -150,9 +150,7 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   int w = 0;
   int h = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
-  const int dx = CLAMP(thumb->zx_glob + thumb->zx_delta, w - thumb->img_width, 0);
-  const int dy = CLAMP(thumb->zy_glob + thumb->zy_delta, h - thumb->img_height, 0);
-  cairo_set_source_surface(cr, thumb->img_surf, dx, dy);
+  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx, thumb->current_zy);
   cairo_paint(cr);
 
   // and eventually the image border
@@ -342,6 +340,12 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
     const int imgbox_w = MIN(image_w, thumb->img_width);
     const int imgbox_h = MIN(image_h, thumb->img_height);
+    // if the imgbox size change, this should also change the panning values
+    int hh = 0;
+    int ww = 0;
+    gtk_widget_get_size_request(thumb->w_image_box, &ww, &hh);
+    thumb->zoomx = thumb->zoomx + (imgbox_w - ww) / 2.0;
+    thumb->zoomy = thumb->zoomy + (imgbox_h - hh) / 2.0;
     gtk_widget_set_size_request(thumb->w_image_box, imgbox_w, imgbox_h);
     // and we set the position of the image
     int posx, posy;
@@ -414,6 +418,12 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         g_free(z);
       }
     }
+
+    // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
+    thumb->zoomx = CLAMP(thumb->zoomx, imgbox_w - thumb->img_width, 0);
+    thumb->zoomy = CLAMP(thumb->zoomy, imgbox_h - thumb->img_height, 0);
+    thumb->current_zx = thumb->zoomx;
+    thumb->current_zy = thumb->zoomy;
   }
 
   _thumb_draw_image(thumb, cr);
