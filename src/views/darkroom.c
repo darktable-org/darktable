@@ -3412,22 +3412,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       return 0;
   }
 
-  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
-  {
-    dt_develop_t *dev = (dt_develop_t *)self->data;
-
-    scrolled(self, dev->width / 2, dev->height / 2, 1, state);
-    return 1;
-  }
-
-  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
-  {
-    dt_develop_t *dev = (dt_develop_t *)self->data;
-
-    scrolled(self, dev->width / 2, dev->height / 2, 0, state);
-    return 1;
-  }
-
   if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
   {
     dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3479,15 +3463,35 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  // set focus to the search module text box
-  if(key == accels->darkroom_search_modules_focus.accel_key
-     && state == accels->darkroom_search_modules_focus.accel_mods)
-  {
-    dt_dev_modulegroups_search_text_focus(darktable.develop);
-    return 1;
-  }
-
   return 1;
+}
+
+static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  // set focus to the search module text box
+  dt_dev_modulegroups_search_text_focus(darktable.develop);
+  return TRUE;
+}
+
+static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  scrolled(self, dev->width / 2, dev->height / 2, 1, modifier);
+  return TRUE;
+}
+
+static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  scrolled(self, dev->width / 2, dev->height / 2, 0, modifier);
+  return TRUE;
 }
 
 
@@ -3505,6 +3509,10 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fit"), GDK_KEY_3, GDK_MOD1_MASK);
+
+  // zoom in/out
+  dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // enable shortcut to export with current export settings:
   dt_accel_register_view(self, NC_("accel", "export"), GDK_KEY_e, GDK_CONTROL_MASK);
@@ -3589,6 +3597,13 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "zoom fit", closure);
 
+  // zoom in/out
+  closure = g_cclosure_new(G_CALLBACK(zoom_in_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom in", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(zoom_out_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom out", closure);
+
   // enable shortcut to export with current export settings:
   closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "export", closure);
@@ -3651,6 +3666,10 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_darkroom_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
+
+  // search modules
+  closure = g_cclosure_new(G_CALLBACK(search_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "search modules", closure);
 
   // dynamics accels
   dt_dynamic_accel_get_valid_list();
