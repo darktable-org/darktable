@@ -98,6 +98,9 @@ typedef struct
   GtkWidget *w_group;      // GtkDarktableThumbnailBtn -- Grouping icon
   GtkWidget *w_audio;      // GtkDarktableThumbnailBtn -- Audio sidecar icon
 
+  GtkWidget *w_zoom_eb; // GtkEventBox -- container for the zoom level widget
+  GtkWidget *w_zoom;    // GtkLabel -- show the zoom level (if zoomable and hover_block overlay)
+
   gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
 
   dt_thumbnail_border_t group_borders; // which group borders should be drawn
