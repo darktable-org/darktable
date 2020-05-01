@@ -129,17 +129,17 @@ typedef struct dt_iop_filmic_rgb_spline_t
 
 typedef struct dt_iop_filmicrgb_params_t
 {
-  float grey_point_source;  // $MIN: .1 $MAX: .36 $DEFAULT: 9.225 $DESCRIPTION: "middle grey luminance"
-  float black_point_source; // $MIN: -14 $MAX: -3 $DEFAULT: -10.55 $DESCRIPTION: "black relative exposure"
-  float white_point_source; // $MIN: 2 $MAX: 8 $DEFAULT: 3.45 $DESCRIPTION: "white relative exposure"
-  float security_factor;    // $MIN: -50 $MAX: 50 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
+  float grey_point_source;  // $MIN: 0 $MAX: 100 $DEFAULT: 9.225 $DESCRIPTION: "middle grey luminance"
+  float black_point_source; // $MIN: -16 $MAX: -0.1 $DEFAULT: -10.55 $DESCRIPTION: "black relative exposure"
+  float white_point_source; // $MIN: 0 $MAX: 16 $DEFAULT: 3.45 $DESCRIPTION: "white relative exposure"
+  float security_factor;    // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
   float grey_point_target;  // $MIN: .1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
   float black_point_target; // $MIN: 0 $MAX: 100 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 100 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 5.98 $DESCRIPTION: "target power transfer function"
-  float latitude;           // $MIN: 5 $MAX: 45 $DEFAULT: 45
-  float contrast;           // $MIN: .1 $MAX: 2 $DEFAULT: 1.30
-  float saturation;         // $MIN: -50 $MAX: 50 $DEFAULT: 5 $DESCRIPTION: "extreme luminance saturation"
+  float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 45
+  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.30
+  float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 5 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 12 $DESCRIPTION: "shadows/highlights balance"
   int preserve_color;       // $DESCRIPTION: "preserve chrominance"
 } dt_iop_filmicrgb_params_t;
@@ -1245,21 +1245,13 @@ void gui_init(dt_iop_module_t *self)
 
   // Init GTK notebook
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
+  
+  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("scene")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("look")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("display")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  dtgtk_justify_notebook_tabs(g->notebook);
-
-  self->widget = page1;
 
   // grey_point_source slider
   g->grey_point_source = dt_bauhaus_slider_new_from_params_box(self, "grey_point_source", " %%");
-  dt_bauhaus_slider_enable_soft_boundaries(g->grey_point_source, 0.0, 100.0);
+  dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, .36);
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the image's subject.\n"
                                                       "the value entered here will then be remapped to 18.45%.\n"
                                                       "decrease the value to increase the overall brightness."));
@@ -1269,7 +1261,7 @@ void gui_init(dt_iop_module_t *self)
 
   // White slider
   g->white_point_source = dt_bauhaus_slider_new_from_params_box(self, "white_point_source", " EV");
-  dt_bauhaus_slider_enable_soft_boundaries(g->white_point_source, 0.0, 16.0);
+  dt_bauhaus_slider_set_soft_range(g->white_point_source, 2.0, 8.0);
   gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
@@ -1279,7 +1271,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Black slider
   g->black_point_source = dt_bauhaus_slider_new_from_params_box(self, "black_point_source", " EV");
-  dt_bauhaus_slider_enable_soft_boundaries(g->black_point_source, -16.0, -0.1);
+  dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   gtk_widget_set_tooltip_text(g->black_point_source, _("number of stops between middle grey and pure black.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));
@@ -1288,7 +1280,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   g->security_factor = dt_bauhaus_slider_new_from_params_box(self, "security_factor", " %%");
-  dt_bauhaus_slider_enable_soft_boundaries(g->security_factor, -50, 200);
+  dt_bauhaus_slider_set_soft_max(g->security_factor, 50);
   gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically enlarge or shrink the computed dynamic range.\n"
                                                     "useful to give a safety margin to extreme luminances."));
 
@@ -1307,15 +1299,16 @@ void gui_init(dt_iop_module_t *self)
                                                 "ensure you understand its assumptions before using it."));
   gtk_box_pack_start(GTK_BOX(page1), g->auto_button, FALSE, FALSE, 0);
 
-  self->widget = page2;
-
+  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("look")));
+  
   g->contrast = dt_bauhaus_slider_new_from_params_box(self, "contrast", "");
-  dt_bauhaus_slider_enable_soft_boundaries(g->contrast, 0.0, 5.0);
+  dt_bauhaus_slider_set_soft_range(g->contrast, 0.1, 2.0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
                                              "affects mostly the mid-tones"));
 
   g->latitude = dt_bauhaus_slider_new_from_params_box(self, "latitude", " %%");
-  dt_bauhaus_slider_enable_soft_boundaries(g->latitude, 0.01, 100.0);
+  dt_bauhaus_slider_set_soft_range(g->latitude, 5.0, 45.0);
   gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve,\n"
                                              "in percent of the dynamic range (white exposure - black exposure).\n"
                                              "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -1329,7 +1322,7 @@ void gui_init(dt_iop_module_t *self)
                                             "at one extremity of the histogram."));
 
   g->saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation", " %%");
-  dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -50, 200.0);
+  dt_bauhaus_slider_set_soft_max(g->saturation, 50.0);
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
                                                "specifically at extreme luminances.\n"
                                                "increase if shadows and/or highlights are under-saturated."));
@@ -1344,7 +1337,8 @@ void gui_init(dt_iop_module_t *self)
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere.\n"));
 
-  self->widget = page3;
+  GtkWidget *page3 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("display")));
 
   g->black_point_target = dt_bauhaus_slider_new_from_params_box(self, "black_point_target", " %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
@@ -1367,6 +1361,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
+  dtgtk_justify_notebook_tabs(g->notebook);
 
   dt_iop_init_picker(&g->color_picker,
               self,
