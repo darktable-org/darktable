@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-30 11:06-0300\n"
-"PO-Revision-Date: 2020-04-30 11:39-0300\n"
+"POT-Creation-Date: 2020-05-01 08:02-0300\n"
+"PO-Revision-Date: 2020-04-30 22:15-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -8721,7 +8721,7 @@ msgstr "correção de viés"
 
 #: ../src/iop/denoiseprofile.c:4482
 msgid "non-local means"
-msgstr "médias não locais"
+msgstr "média não local"
 
 #: ../src/iop/denoiseprofile.c:4483
 msgid "non-local means auto"
@@ -11127,11 +11127,11 @@ msgstr "redução de ruído raw"
 #: ../src/iop/rawdenoise.c:143
 msgctxt "accel"
 msgid "noise threshold"
-msgstr "limite ruído"
+msgstr "limiar de ruído"
 
 #: ../src/iop/rawdenoise.c:1052
 msgid "noise threshold"
-msgstr "limite ruído"
+msgstr "limiar de ruído"
 
 #: ../src/iop/rawdenoise.c:1055
 msgid ""
