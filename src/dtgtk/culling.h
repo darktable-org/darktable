@@ -95,8 +95,8 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 // because this may means that other images have changed
 void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 
-void dt_culling_zoom_max(dt_culling_t *table);
-void dt_culling_zoom_fit(dt_culling_t *table);
+void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current);
+void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -315,7 +315,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
     // if shift+ctrl, we only change the current image
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
-      int mouseid = dt_control_get_mouse_over_id();
+      const int mouseid = dt_control_get_mouse_over_id();
       l = table->list;
       while(l)
       {
@@ -484,6 +484,31 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
 static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
+
+  if(event->button == 2)
+  {
+    // middle toggle zoom max / zoom fit
+    gboolean zmax = TRUE;
+    GList *l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(th->zoom_100 < 1.0 || table->full_zoom + th->zoom_delta < th->zoom_100)
+      {
+        zmax = FALSE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+    // if shift is pressed, we work only with image hovered
+    gboolean cur = FALSE;
+    if(event->state & GDK_SHIFT_MASK) cur = TRUE;
+    if(zmax)
+      dt_culling_zoom_fit(table, cur);
+    else
+      dt_culling_zoom_max(table, cur);
+    return TRUE;
+  }
 
   const int id = dt_control_get_mouse_over_id();
 
@@ -1446,7 +1471,7 @@ void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
   dt_culling_full_redraw(table, TRUE);
 }
 
-void dt_culling_zoom_max(dt_culling_t *table)
+void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current)
 {
   double x = 0;
   double y = 0;
@@ -1456,26 +1481,50 @@ void dt_culling_zoom_max(dt_culling_t *table)
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
     y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
   }
-  _thumbs_zoom_add(table, 100000.0f, x, y, 0);
+  if(only_current)
+    _thumbs_zoom_add(table, 100000.0f, x, y, GDK_SHIFT_MASK);
+  else
+    _thumbs_zoom_add(table, 100000.0f, x, y, 0);
 }
-void dt_culling_zoom_fit(dt_culling_t *table)
+void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
 {
-  // we reset everything
-  table->full_zoom = 1.0;
-  table->full_x = 0;
-  table->full_y = 0;
-  GList *l = table->list;
-  while(l)
+  if(only_current)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    th->zoom_delta = 0;
-    th->zoom_glob = 1.0;
-    th->zx_delta = 0;
-    th->zx_glob = 0;
-    th->zy_delta = 0;
-    th->zy_glob = 0;
-    dt_thumbnail_image_refresh(th);
-    l = g_list_next(l);
+    const int mouseid = dt_control_get_mouse_over_id();
+    GList *l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(th->imgid == mouseid)
+      {
+        th->zoom_delta = 1.0 - th->zoom_glob;
+        th->zx_delta = -th->zx_glob;
+        th->zy_delta = -th->zy_glob;
+        dt_thumbnail_image_refresh(th);
+        break;
+      }
+      l = g_list_next(l);
+    }
+  }
+  else
+  {
+    // we reset everything
+    table->full_zoom = 1.0;
+    table->full_x = 0;
+    table->full_y = 0;
+    GList *l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      th->zoom_delta = 0;
+      th->zoom_glob = 1.0;
+      th->zx_delta = 0;
+      th->zx_glob = 0;
+      th->zy_delta = 0;
+      th->zy_glob = 0;
+      dt_thumbnail_image_refresh(th);
+      l = g_list_next(l);
+    }
   }
 }
 
