@@ -773,9 +773,9 @@ static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_max(lib->preview);
+    dt_culling_zoom_max(lib->preview, FALSE);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_max(lib->culling);
+    dt_culling_zoom_max(lib->culling, FALSE);
   else
     return FALSE;
 
@@ -789,9 +789,9 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_fit(lib->preview);
+    dt_culling_zoom_fit(lib->preview, FALSE);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_fit(lib->culling);
+    dt_culling_zoom_fit(lib->culling, FALSE);
   else
     return FALSE;
 
@@ -870,6 +870,11 @@ GSList *mouse_actions(const dt_view_t *self)
     a->action = DT_MOUSE_ACTION_SCROLL;
     g_strlcpy(a->name, _("zoom in the image"), sizeof(a->name));
     lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_MIDDLE;
+    g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
   }
   else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
@@ -921,6 +926,17 @@ GSList *mouse_actions(const dt_view_t *self)
     a->key.accel_mods = GDK_SHIFT_MASK;
     a->action = DT_MOUSE_ACTION_LEFT_DRAG;
     g_strlcpy(a->name, _("pan inside current image"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_MIDDLE;
+    g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_MIDDLE;
+    g_strlcpy(a->name, _("zoom current image to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
   else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
