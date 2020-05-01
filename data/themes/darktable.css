@@ -1911,3 +1911,17 @@ radiobutton
 {
   border: 4px solid @thumbnail_hover_bg_colorte;
 }
+
+#thumb_zoom_label
+{
+  color: transparent;
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.dt_overlays_hover_block #thumb_main:hover #thumb_zoom_label
+{
+  color: @grey90;
+  background-color: rgba(0, 0, 0, 0.5);
+}
