@@ -121,8 +121,7 @@ typedef struct dt_control_accels_t
       lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end, lighttable_center, lighttable_preview,
       lighttable_preview_display_focus, lighttable_timeline, lighttable_preview_zoom_100,
       lighttable_preview_zoom_fit, global_focus_peaking, global_sideborders, global_accels_window,
-      darkroom_preview, slideshow_start, global_zoom_in, global_zoom_out, darkroom_skip_mouse_events,
-      darkroom_search_modules_focus;
+      darkroom_preview, slideshow_start, darkroom_skip_mouse_events;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10
