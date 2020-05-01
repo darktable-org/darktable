@@ -3,7 +3,7 @@ find_package(OpenMP)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/modules")
 find_library(M_LIBRARY m)
 find_package(Exiv2 REQUIRED)
-include_directories(${EXIV2_INCLUDE_DIR})
+include_directories(${Exiv2_INCLUDE_DIR})
 
 add_executable(darktable-curve-tool darktable-curve-tool.c exif-wrapper.cpp)
 if (OPENMP_FOUND)
@@ -12,7 +12,7 @@ if (OPENMP_FOUND)
         include_directories(${OpenMP_CXX_INCLUDE_DIRS})
     endif()
 endif()
-target_link_libraries(darktable-curve-tool ${EXIV2_LIBRARY} ${OpenMP_CXX_LIBRARIES} m)
+target_link_libraries(darktable-curve-tool ${Exiv2_LIBRARY} ${OpenMP_CXX_LIBRARIES} m)
 
 configure_file(README.cmake.md README.md)
 

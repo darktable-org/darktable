@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -29,7 +29,7 @@ SUDO=""
 
 PRINT_HELP=0
 
-FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP"
+FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
 
 # prepare a lowercase version with a space before and after
 # it's very important for parse_feature, has no impact in for loop expansions

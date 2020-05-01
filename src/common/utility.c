@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 Henrik Andersson, Tobias Ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -394,8 +394,6 @@ cairo_surface_t *dt_util_get_logo(float size)
   RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, &error);
   if(svg)
   {
-    cairo_t *cr;
-
     RsvgDimensionData dimension;
     rsvg_handle_get_dimensions(svg, &dimension);
 
@@ -424,7 +422,7 @@ cairo_surface_t *dt_util_get_logo(float size)
     }
     else
     {
-      cr = cairo_create(surface);
+      cairo_t *cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
       rsvg_handle_render_cairo(svg, cr);
       cairo_destroy(cr);

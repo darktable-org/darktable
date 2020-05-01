@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -119,12 +120,13 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/layout"));
   d->base_layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/base_layout"));
+
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     d->zoom_mode = dt_conf_get_int("plugins/lighttable/culling_zoom_mode");
     if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC && darktable.collection)
     {
-      d->current_zoom = MAX(1, MIN(30, dt_collection_get_selected_count(darktable.collection)));
+      d->current_zoom = MAX(1, MIN(DT_LIGHTTABLE_MAX_ZOOM, dt_collection_get_selected_count(darktable.collection)));
       if(d->current_zoom == 1) d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     }
     else
@@ -149,7 +151,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* create horizontal zoom slider */
-  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
+  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, DT_LIGHTTABLE_MAX_ZOOM, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
@@ -257,6 +259,11 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   }
   else
     dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    dt_thumbtable_zoom_changed(dt_ui_thumbtable(darktable.gui->ui), d->current_zoom, zoom);
+  }
 }
 
 static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data)
@@ -382,7 +389,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     d->combo_evt_reset = TRUE;
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), layout);
     d->combo_evt_reset = FALSE;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_queue_redraw_center();
   }
   else
   {
@@ -441,7 +448,6 @@ static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
   return d->layout;
 }
 
-#define DT_LIBRARY_MAX_ZOOM 13
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
@@ -478,7 +484,7 @@ static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIBRARY_MAX_ZOOM);
+  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIGHTTABLE_MAX_ZOOM);
   return TRUE;
 }
 
@@ -504,8 +510,8 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   int zoom = d->current_zoom;
-  if(zoom >= 2 * DT_LIBRARY_MAX_ZOOM)
-    zoom = 2 * DT_LIBRARY_MAX_ZOOM;
+  if(zoom >= 2 * DT_LIGHTTABLE_MAX_ZOOM)
+    zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
   else
     zoom++;
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -312,6 +312,8 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "marker"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale on"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -324,6 +326,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
   dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
   dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
+  dt_accel_connect_combobox_iop(self, "marker", GTK_WIDGET(g->watermarks));
+  dt_accel_connect_combobox_iop(self, "scale on", GTK_WIDGET(g->sizeto));
 }
 
 static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
@@ -428,7 +432,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     if (data->font[0] && data->text[0])
     {
-      g_snprintf(buffer, sizeof(buffer), "%s", data->text);
+      g_strlcpy(buffer, data->text, sizeof(buffer));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
       if(svgdoc != svgdata)
       {
@@ -440,7 +444,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       const PangoStyle font_style = pango_font_description_get_style(font);
       const int font_weight = (int)pango_font_description_get_weight(font);
 
-      g_snprintf(buffer, sizeof(buffer), "%s", pango_font_description_get_family(font));
+      g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
       if(svgdoc != svgdata)
       {
@@ -480,7 +484,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     // watermark color
     GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
-    g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
+    g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
     if(svgdoc != svgdata)
     {
@@ -864,7 +868,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   dt_variables_params_t *params;
   dt_variables_params_init(&params);
   params->filename = image->filename;
-  params->jobcode = "watermark";
+  params->jobcode = "infos";
   params->sequence = 0;
   params->imgid = image->id;
   dt_variables_set_tags_flags(params, flags);
@@ -930,6 +934,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions(svg, &dimension);
+  // if no text is given dimensions are null
+  if(!dimension.width) dimension.width = 1;
+  if(!dimension.height) dimension.height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
@@ -1142,7 +1149,7 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename, 0, sizeof(p->filename));
   int n = dt_bauhaus_combobox_get(g->watermarks);
-  snprintf(p->filename, sizeof(p->filename), "%s", (char *)g_list_nth_data(g->watermarks_filenames, n));
+  g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1280,7 +1287,7 @@ static void text_callback(GtkWidget *entry, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  snprintf(p->text, sizeof(p->text), "%s", gtk_entry_get_text(GTK_ENTRY(entry)));
+  g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1309,7 +1316,7 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  snprintf(p->font, sizeof(p->font), "%s", gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)));
+  g_strlcpy(p->font, gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)), sizeof(p->font));
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1374,13 +1381,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->alignment = p->alignment;
   d->sizeto = p->sizeto;
   memset(d->filename, 0, sizeof(d->filename));
-  snprintf(d->filename, sizeof(d->filename), "%s", p->filename);
+  g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   memset(d->text, 0, sizeof(d->text));
-  snprintf(d->text, sizeof(d->text), "%s", p->text);
+  g_strlcpy(d->text, p->text, sizeof(d->text));
   for (int k=0; k<3; k++)
     d->color[k] = p->color[k];
   memset(d->font, 0, sizeof(d->font));
-  snprintf(d->font, sizeof(d->font), "%s", p->font);
+  g_strlcpy(d->font, p->font, sizeof(d->font));
 
 // fprintf(stderr,"Commit params: %s...\n",d->filename);
 }

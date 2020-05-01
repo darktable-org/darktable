@@ -42,6 +42,16 @@ include(DefineOptions.cmake)
 # Some defaults are set for OpenBSD as well (info and man pages).
 
 include(GNUInstallDirs)
+include(FeatureSummary)
+
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+if(${FORCE_COLORED_OUTPUT})
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-fdiagnostics-color=always)
+  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_compile_options(-fcolor-diagnostics)
+  endif()
+endif()
 
 # Whether to use relative paths for the build RPATH
 if (APPLE)
@@ -57,13 +67,13 @@ if (USE_OPENMP)
 
         # Clang has an option to specify the OpenMP standard to use. Specify it.
         # FIXME: Implement this in FindOpenMP.cmake
-        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=40")
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=45")
 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
     endif()
 
-    find_package(OpenMP 4.0 REQUIRED)
+    find_package(OpenMP 4.5 REQUIRED)
 endif()
 
 # Check for base threading library
@@ -80,7 +90,7 @@ include(ConfigureChecks.cmake)
 include(CheckCCompilerFlag)
 
 # Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
   set(SOURCE_PACKAGE 1)
 else()
   set(SOURCE_PACKAGE 0)
@@ -120,6 +130,7 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})
   set(USE_COLORD OFF)
   set(USE_KWALLET OFF)
   set(BUILD_CMSTEST OFF)
@@ -363,6 +374,15 @@ if(USE_XMLLINT)
   endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
 endif(USE_XMLLINT)
 
+find_program(exiftool_BIN exiftool)
+if(${exiftool_BIN} STREQUAL "exiftool_BIN-NOTFOUND")
+  message(STATUS "Missing exiftool")
+  set(HAVE_EXIFTOOL 0)
+else()
+  message(STATUS "Found exiftool")
+  set(HAVE_EXIFTOOL 1)
+endif()
+
 # done with looking for programs
 if(NOT EXTERNAL_PROGRAMS_FOUND)
   message(FATAL_ERROR "Some external programs couldn't be found")
@@ -504,3 +524,5 @@ configure_file(
 
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+feature_summary(WHAT ALL)

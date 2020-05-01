@@ -175,7 +175,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       PATTERN "*.la" EXCLUDE)
 
   # Add lensfun libraries
-  if(LENSFUN_FOUND)
+  if(LensFun_FOUND)
     set(LENSFUN_DB_GLOBAL "${MINGW_PATH}/../share/lensfun/version_1")
     set(LENSFUN_DB_UPDATES "${MINGW_PATH}/../var/lib/lensfun-updates/version_1")
     set(LENSFUN_DB "${LENSFUN_DB_GLOBAL}")
@@ -191,21 +191,21 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         "${LENSFUN_DB}"
         DESTINATION share/lensfun/
         COMPONENT DTApplication)
-  endif(LENSFUN_FOUND)
+  endif(LensFun_FOUND)
 
   # Add iso-codes
-  if(ISO_CODES_FOUND)
+  if(IsoCodes_FOUND)
     install(FILES
-        "${ISO_CODES_LOCATION}/iso_639-2.json"
+        "${IsoCodes_LOCATION}/iso_639-2.json"
         DESTINATION share/iso-codes/json/
         COMPONENT DTApplication
     )
-    file(GLOB ISO_CODES_MO_FILES RELATIVE "${ISO_CODES_LOCALEDIR}" "${ISO_CODES_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
-    foreach(MO ${ISO_CODES_MO_FILES})
+    file(GLOB IsoCodes_MO_FILES RELATIVE "${IsoCodes_LOCALEDIR}" "${IsoCodes_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
+    foreach(MO ${IsoCodes_MO_FILES})
       string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
-      install(FILES "${ISO_CODES_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+      install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
     endforeach()
-  endif(ISO_CODES_FOUND)
+  endif(IsoCodes_FOUND)
 
   # Add ca-cert for curl
   install(FILES

@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../")
 
 include(manage-symbol-visibility)
 
@@ -17,7 +17,6 @@ endif(CURL_FOUND)
 
 foreach(module ${MODULES})
 	add_library(${module} MODULE "${module}.c")
-	add_dependencies(${module} generate_metadata)
 endforeach(module)
 
 foreach(module ${MODULES})

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017 johannes hanika.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "iop/gaussian_elimination.h"
-#include "libs/colorpicker.h"
 
 #include <assert.h>
 #include <math.h>
@@ -136,6 +135,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "target color"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -146,6 +146,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green-red", GTK_WIDGET(g->scale_a));
   dt_accel_connect_slider_iop(self, "blue-yellow", GTK_WIDGET(g->scale_b));
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale_C));
+  dt_accel_connect_combobox_iop(self, "target color", GTK_WIDGET(g->combobox_target));
 }
 
 

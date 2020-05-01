@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014, 2015 marcello perathoner
-    copyright (c) 2015, 2016 pascal obry
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -313,12 +313,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 /* Code common to op-engine and gui.                                          */
 /******************************************************************************/
 
-static float get_rot(const dt_liquify_warp_type_enum_t warp_type)
+static inline float get_rot(const dt_liquify_warp_type_enum_t warp_type)
 {
   if (warp_type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK)
-    return M_PI;
+    return DT_M_PI_F;
   else
-    return 0.0;
+    return 0.0f;
 }
 
 static dt_liquify_path_data_t *node_alloc (dt_iop_liquify_params_t *p, int *node_index)
@@ -701,8 +701,8 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
 
 static inline float complex normalize (const float complex v)
 {
-  if (cabs (v) < 0.000001)
-    return 1.0;
+  if (cabs (v) < 0.000001f)
+    return 1.0f;
   return v / cabs (v);
 }
 
@@ -758,13 +758,13 @@ static void interpolate_cubic_bezier (const float complex p0,
   const float complex D =                            p0;
 
   float complex *buf = buffer;
-  const float step = 1.0 / n;
+  const float step = 1.0f / n;
   float t = step;
   *buf++ = p0;
 
   for (int i = 1; i < n - 1; ++i)
   {
-    *buf++ = ((((A) * t) + B) * t + C) * t + D;
+    *buf++ = ((A * t + B) * t + C) * t + D;
     t += step;
   }
   *buf = p3;
@@ -780,7 +780,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p);
 
 static float get_arc_length (const float complex points[], const int n_points)
 {
-  float length = 0.0;
+  float length = 0.0f;
   for (int i = 1; i < n_points; i++)
     length += cabs (points[i-1] - points[i]);
   return length;
@@ -802,10 +802,9 @@ typedef struct
 static float complex point_at_arc_length (const float complex points[], const int n_points,
                                           const float arc_length, restart_cookie_t *restart)
 {
-  float length = restart ? restart->length : 0.0;
-  int i        = restart ? restart->i      : 1;
+  float length = restart ? restart->length : 0.0f;
 
-  for ( ; i < n_points; i++)
+  for(int i = restart ? restart->i : 1; i < n_points; i++)
   {
     const float prev_length = length;
     length += cabsf (points[i-1] - points[i]);
@@ -869,10 +868,10 @@ build_lookup_table (const int distance, const float control1, const float contro
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
-  const float step = 1.0 / (float) distance;
-  float x = 0.0;
+  const float step = 1.0f / (float) distance;
+  float x = 0.0f;
 
-  *ptr++ = 1.0;
+  *ptr++ = 1.0f;
   for (int i = 1; i < distance && cptr < cptr_end; i++)
   {
     x += step;
@@ -882,7 +881,7 @@ build_lookup_table (const int distance, const float control1, const float contro
     const float dx2 = x - creal (cptr[-1]);
     *ptr++ = cimag (cptr[0]) + (dx2 / dx1) * (cimag (cptr[0]) - cimag (cptr[-1]));
   }
-  *ptr++ = 0.0;
+  *ptr++ = 0.0f;
 
   dt_free_align (clookup);
   return lookup;
@@ -933,7 +932,7 @@ static void build_round_stamp (float complex **pstamp,
 
   // 0.5 is factored in so the warp starts to degenerate when the
   // strength arrow crosses the warp radius.
-  float complex strength = 0.5 * (warp->strength - warp->point);
+  float complex strength = 0.5f * (warp->strength - warp->point);
   strength = (warp->status & DT_LIQUIFY_STATUS_INTERPOLATED) ?
     (strength * STAMP_RELOCATION) : strength;
   const float abs_strength = cabs (strength);
@@ -1500,29 +1499,21 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
 // compute lanczos kernel. See: https://en.wikipedia.org/wiki/Lanczos_resampling#Lanczos_kernel
 
-static float lanczos(const float a, const float x)
+static inline float lanczos(const float a, const float x)
 {
-  if (fabs (x) >= a) return 0.0f;
-  if (fabs (x) < CL_FLT_EPSILON) return 1.0f;
+  if(fabsf(x) >= a) return 0.0f;
+  if(fabsf(x) < FLT_EPSILON) return 1.0f;
 
-  return
-    (a * sinf (M_PI * x) * sinf (M_PI * x / a))
-    /
-    (M_PI * M_PI * x * x);
+  return (a * sinf(DT_M_PI_F * x) * sinf(DT_M_PI_F * x / a)) / (DT_M_PI_F * DT_M_PI_F * x * x);
 }
 
 // compute bicubic kernel. See: https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm
 
-static float bicubic(const float a, const float x)
+static inline float bicubic(const float a, const float x)
 {
-  const float absx = fabs (x);
-
-  if (absx <= 1)
-    return ((a + 2) * absx - (a + 3)) * absx * absx + 1;
-
-  if (absx < 2)
-    return ((a * absx - 5 * a) * absx + 8 * a) * absx - 4 * a;
-
+  const float absx = fabsf(x);
+  if(absx <= 1) return ((a + 2) * absx - (a + 3)) * absx * absx + 1;
+  if(absx < 2) return ((a * absx - 5 * a) * absx + 8 * a) * absx - 4 * a;
   return 0.0f;
 }
 
@@ -1778,7 +1769,7 @@ static void draw_circle (cairo_t *cr, const float complex pt, const double diame
   const double x = creal (pt), y = cimag (pt);
   cairo_save (cr);
   cairo_new_sub_path (cr);
-  cairo_arc (cr, x, y, diameter / 2.0, 0, 2 * M_PI);
+  cairo_arc (cr, x, y, diameter / 2.0, 0, 2 * DT_M_PI);
   cairo_restore (cr);
 }
 
@@ -1857,7 +1848,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
     if (data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
     {
       const float total_length = cabs (*p1 - *p2);
-      float arc_length = 0.0;
+      float arc_length = 0.0f;
       while (arc_length < total_length)
       {
         dt_liquify_warp_t *w = malloc (sizeof (dt_liquify_warp_t));
@@ -1881,7 +1872,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
                                 buffer,
                                 INTERPOLATION_POINTS);
       const float total_length = get_arc_length (buffer, INTERPOLATION_POINTS);
-      float arc_length = 0.0;
+      float arc_length = 0.0f;
       restart_cookie_t restart = { 1, 0.0 };
 
       while (arc_length < total_length)
@@ -2067,10 +2058,10 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           switch (data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
-               draw_triangle (cr, point - w / 2.0 * I, -M_PI / 2.0, w);
+               draw_triangle (cr, point - w / 2.0 * I, -DT_M_PI / 2.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-               draw_rectangle (cr, point, M_PI / 4.0, w);
+               draw_rectangle (cr, point, DT_M_PI / 4.0, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
                draw_rectangle (cr, point, 0, w);
@@ -3008,9 +2999,9 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       const float r = cabs(strength_v);
 
       if(up)
-        phi += M_PI / 16.0f;
+        phi += DT_M_PI_F / 16.0f;
       else
-        phi -= M_PI / 16.0f;
+        phi -= DT_M_PI_F / 16.0f;
 
       warp->strength = warp->point + r * cexp (phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
@@ -3671,7 +3662,7 @@ static void _liquify_cairo_paint_point_tool (cairo_t *cr, const gint x, const gi
 {
   PREAMBLE;
   cairo_new_sub_path (cr);
-  cairo_arc (cr, 0.5, 0.5, 0.2, 0.0, 2 * M_PI);
+  cairo_arc (cr, 0.5, 0.5, 0.2, 0.0, 2 * DT_M_PI);
   cairo_fill (cr);
   POSTAMBLE;
 }
