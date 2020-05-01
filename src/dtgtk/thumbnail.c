@@ -287,8 +287,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        const float z = thumb->zoom_glob + thumb->zoom_delta;
-        res = dt_view_image_get_surface(thumb->imgid, image_w * z, image_h * z, &img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf);
       }
       else
       {
@@ -406,14 +405,13 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // and we can also set the zooming level if needed
     if(thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
-      if(thumb->zoom_100 < 1.0 || thumb->zoom_delta + thumb->zoom_glob <= 1.0f)
+      if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
       {
         gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("mini"));
       }
       else
       {
-        gchar *z
-            = dt_util_dstrcat(NULL, "%.0f%%", (thumb->zoom_delta + thumb->zoom_glob) * 100.0 / thumb->zoom_100);
+        gchar *z = dt_util_dstrcat(NULL, "%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
         gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
         g_free(z);
       }
@@ -1013,7 +1011,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->rowid = rowid;
   thumb->over = over;
   thumb->zoomable = zoomable;
-  thumb->zoom_glob = 1.0f;
+  thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
 
   // we read and cache all the infos from dt_image_t that we need
