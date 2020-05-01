@@ -32,6 +32,8 @@ sub print_fallback
  * this code is auto generated. do not edit. change the sources in tools/introspection/ instead.
  * there were errors when generating this code. giving up
  */
+#warning "could not generate introspection for $input_file"
+
 #include "$input_file"
 
 #ifdef __cplusplus

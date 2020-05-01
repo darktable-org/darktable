@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -222,24 +222,28 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
   /* update last settings */
   const int i = gtk_combo_box_get_active(widget);
 
+  uint32_t flags = dt_collection_get_filter_flags(darktable.collection)
+    & ~(COLLECTION_FILTER_REJECTED | COLLECTION_FILTER_ALTERED | COLLECTION_FILTER_UNALTERED);
+
   /* update collection star filter flags */
-  if(i == 0) // all
-    dt_collection_set_filter_flags(darktable.collection,
-                                   dt_collection_get_filter_flags(darktable.collection)
-                                   & ~(COLLECTION_FILTER_ATLEAST_RATING | COLLECTION_FILTER_EQUAL_RATING
-                                       | COLLECTION_FILTER_CUSTOM_COMPARE));
-  else if(i == 1 || i == 7) // unstarred only || rejected only
-    dt_collection_set_filter_flags(
-        darktable.collection,
-        (dt_collection_get_filter_flags(darktable.collection) | COLLECTION_FILTER_EQUAL_RATING)
-        & ~(COLLECTION_FILTER_ATLEAST_RATING | COLLECTION_FILTER_CUSTOM_COMPARE));
-  else if(i == 8) // all except rejected
-    dt_collection_set_filter_flags(darktable.collection,
-                                   (dt_collection_get_filter_flags(darktable.collection)
-                                    | COLLECTION_FILTER_ATLEAST_RATING) & ~COLLECTION_FILTER_CUSTOM_COMPARE);
-  else // explicit stars
-    dt_collection_set_filter_flags(darktable.collection, dt_collection_get_filter_flags(darktable.collection)
+  if(i == DT_COLLECTION_FILTER_ALL) // all
+    flags &= ~(COLLECTION_FILTER_ATLEAST_RATING
+               | COLLECTION_FILTER_EQUAL_RATING
+               | COLLECTION_FILTER_CUSTOM_COMPARE);
+  else if(i == DT_COLLECTION_FILTER_STAR_NO) // unstarred only
+    flags = (flags | COLLECTION_FILTER_EQUAL_RATING) & ~(COLLECTION_FILTER_ATLEAST_RATING
                                                          | COLLECTION_FILTER_CUSTOM_COMPARE);
+  else if(i == DT_COLLECTION_FILTER_REJECT) // rejected only
+    flags = (flags & ~(COLLECTION_FILTER_ATLEAST_RATING
+                       | COLLECTION_FILTER_EQUAL_RATING
+                       | COLLECTION_FILTER_CUSTOM_COMPARE))
+      | COLLECTION_FILTER_REJECTED;
+  else if(i == DT_COLLECTION_FILTER_NOT_REJECT) // all except rejected
+    flags = (flags | COLLECTION_FILTER_ATLEAST_RATING) & ~COLLECTION_FILTER_CUSTOM_COMPARE;
+  else // explicit stars
+    flags |= COLLECTION_FILTER_CUSTOM_COMPARE;
+
+  dt_collection_set_filter_flags(darktable.collection, flags);
 
   /* set the star filter in collection */
   dt_collection_set_rating(darktable.collection, i);
@@ -291,10 +295,7 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
 
   /* updates query */
-  dt_collection_update_query(darktable.collection);
-
-  /* update film strip, jump to currently opened image, if any: */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image_storage.id, FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 }
 
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)

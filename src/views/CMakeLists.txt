@@ -1,16 +1,20 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/../")
 
 include(manage-symbol-visibility)
 
 add_definitions(-include common/module_api.h)
 add_definitions(-include views/view_api.h)
 
-set(MODULES darkroom lighttable slideshow knight)
+set(MODULES darkroom lighttable slideshow)
 
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
 add_library(slideshow MODULE "slideshow.c")
-add_library(knight MODULE "knight.c")
+
+if(USE_GAME)
+    add_library(knight MODULE "knight.c")
+    set(MODULES ${MODULES} knight)
+endif(USE_GAME)
 
 if(USE_MAP)
     add_library(map MODULE "map.c")
@@ -18,10 +22,10 @@ if(USE_MAP)
 endif(USE_MAP)
 
 
-if(GPHOTO2_FOUND)
+if(Gphoto2_FOUND)
     add_library(tethering MODULE "tethering.c")
     set(MODULES ${MODULES} tethering)
-endif(GPHOTO2_FOUND)
+endif(Gphoto2_FOUND)
 
 if(CUPS_FOUND)
     add_library(print MODULE "print.c")

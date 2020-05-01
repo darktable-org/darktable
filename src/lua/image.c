@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,13 +25,13 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/mipmap_cache.h"
+#include "common/metadata.h"
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
 #include "lua/styles.h"
 #include "lua/tags.h"
 #include "lua/types.h"
-#include "metadata_gen.h"
 
 /***********************************************************************
   handling of dt_image_t
@@ -502,6 +502,7 @@ int dt_lua_init_image(lua_State *L)
 {
   luaA_struct(L, dt_image_t);
   luaA_struct_member(L, dt_image_t, exif_exposure, float);
+  luaA_struct_member(L, dt_image_t, exif_exposure_bias, float);
   luaA_struct_member(L, dt_image_t, exif_aperture, float);
   luaA_struct_member(L, dt_image_t, exif_iso, float);
   luaA_struct_member(L, dt_image_t, exif_focal_length, float);

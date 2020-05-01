@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2016 Roman Lebedev.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1006,7 +1004,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // Note that histogram_waveform_stride is pre-initialized/hardcoded,
   // but histogram_waveform_width varies, depending on preview image
   // width and # of bins.
-  const int bin_width = ceilf((float)(roi_in->width) / (float)(waveform_stride/4));
+  const int bin_width = ceilf(roi_in->width / (float)waveform_stride);
   const int waveform_width = ceilf(roi_in->width / (float)bin_width);
   dev->histogram_waveform_width = waveform_width;
 
@@ -1014,34 +1012,30 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // that makes a maximum possible count of 900 in buf, while even if
   // waveform buffer is 128 (about smallest possible), bin_width is
   // 12, making max count of 10,800, still much smaller than uint16_t
-  uint16_t *buf = (uint16_t *)calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
-  memset(dev->histogram_waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride);
+  uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
+  memset(waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride * 3);
 
   // 1.0 is at 8/9 of the height!
-  const double _height = (double)(waveform_height - 1);
+  const float _height = (float)(waveform_height - 1);
 
   // count the colors into buf ...
-  // work bin-wise so omp threads won't conflict
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
   dt_omp_firstprivate(roi_in, bin_width, _height, waveform_width, input, buf) \
-  schedule(static,bin_width*64)
+  schedule(static)
 #endif
-  for(int in_x = 0; in_x < roi_in->width; in_x++)
+  for(int in_y = 0; in_y < roi_in->height; in_y++)
   {
-    const int out_x = in_x / bin_width;
-    for(int in_y = 0; in_y < roi_in->height; in_y++)
+    for(int in_x = 0; in_x < roi_in->width; in_x++)
     {
       const float *const in = input + 4 * (in_y*roi_in->width + in_x);
+      const int out_x = in_x / bin_width;
       for(int k = 0; k < 3; k++)
       {
-        const float c = in[2 - k];
-        // catch NaNs as they don't convert well to integers
-        // FIXME: skip NaN's rather than treating as 0?
-        const float v = isnan(c) ? 0.0f : c;
-        const int out_y = CLAMP(1.0 - (8.0 / 9.0) * v, 0.0, 1.0) * _height;
-        uint16_t *const out = buf + (out_x + waveform_width * out_y) * 3 + k;
-        (*out)++;
+        const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
+        // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
+        const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
+        __sync_add_and_fetch(buf + (out_x + waveform_width * out_y) * 3 + k, 1);
       }
     }
   }
@@ -1067,19 +1061,19 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
   dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
-  for(int out_y = 0; out_y < waveform_height; out_y++)
+  for(int k = 0; k < 3; k++)
   {
-    for(int out_x = 0; out_x < waveform_width; out_x++)
+    for(int out_y = 0; out_y < waveform_height; out_y++)
     {
-      const uint16_t *const in = buf + (waveform_width * out_y + out_x) * 3;
-      uint8_t *const out = waveform + (out_y * waveform_stride) + (out_x * 4);
-      for(int k = 0; k < 3; k++)
+      const uint16_t *const in = buf + (waveform_width * out_y) * 3 + k;
+      uint8_t *const out = waveform + (waveform_stride * (waveform_height * k + out_y));
+      for(int out_x = 0; out_x < waveform_width; out_x++)
       {
         //mincol[k] = MIN(mincol[k], in[k]);
         //maxcol[k] = MAX(maxcol[k], in[k]);
-        const uint16_t v = in[k];
+        const uint16_t v = in[out_x * 3];
         // cache XORd result so common casees cached and cache misses are quick to find
         if(!cache[v])
         {
@@ -1087,7 +1081,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
           // they're writing the same value, don't declare omp atomic
           cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
         }
-        out[k] = cache[v] ^ 1;
+        out[out_x] = cache[v] ^ 1;
         //               if(in[k] == 0)
         //                 out[k] = 0;
         //               else
@@ -2576,7 +2570,7 @@ post_process_collect_info:
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
       // FIXME: is above comment true now that waveform is scaled via Cairo?
-      if(input && dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+      if(input && dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }

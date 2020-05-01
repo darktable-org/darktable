@@ -26,7 +26,7 @@
   </para>
 
   <para>
-    Modules are applied in a fixed order. This differentiates darktable, as a non-destructive
+    Modules are applied in a predefined order. This differentiates darktable, as a non-destructive
     image editor, from classical image manipulation programs like GIMP. As module order is
     fixed, you are free to activate, deactivate or change the parameters of a module at
     arbitrary points in time; the order of activation in your workflow does not have any impact
@@ -34,13 +34,21 @@
   </para>
 
   <para>
-    Users frequently ask why the module order is fixed and if there are plans to change that
-    restriction. There are several reasons why darktable works in the way described:
+    The module order used to be fixed and could not be changed. Since version 3.0 it is possible to
+    change the order of modules via <emphasis>Shift+Ctrl+Drag-and-drop</emphasis>. It is very
+    important to note that this feature is not a question of visual preference - it really
+    changes the order in which the modules are applied to the image. It is strongly
+    recommended not to change the original module order, unless you exactly know what you are
+    doing. Some modules are still fixed and cannot be moved.
+  </para>
+
+  <para>
+    There are several reasons why darktable works in the way described:
     <itemizedlist>
 
       <listitem><para>
         The sequence of modules has been selected with great care in order go give highest
-        output quality. Changes to the sequence would generally worsen the result rather than
+        output quality. Changes to the sequence can generally worsen the result rather than
         improving it.
       </para></listitem>
 
@@ -59,7 +67,6 @@
       </para></listitem>
 
     </itemizedlist>
-    That said, the fixed sequence of modules is not likely to change in the near future.
   </para>
 
   <para>

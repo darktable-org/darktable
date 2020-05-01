@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,10 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "control/signal.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/collect.h"
@@ -74,7 +76,6 @@ static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratabl
   if(line)
   {
     dt_collection_deserialize(line);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
     g_free(line);
   }
   return TRUE;
@@ -115,17 +116,17 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, "%s", _(" and "));
+            c = g_strlcpy(out, _(" and "), outsize);
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, "%s", _(" or "));
+            c = g_strlcpy(out, _(" or "), outsize);
             out += c;
             outsize -= c;
             break;
           default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, "%s", _(" but not "));
+            c = g_strlcpy(out, _(" but not "), outsize);
             out += c;
             outsize -= c;
             break;
@@ -134,7 +135,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", item < dt_lib_collect_string_cnt ? _(dt_lib_collect_string[item]) : "???",
+      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
                    item == 0 ? dt_image_film_roll_name(str) : str);
       out += c;
       outsize -= c;
@@ -166,7 +167,6 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   if(line)
   {
     dt_collection_deserialize(line);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
     g_free(line);
     // position will be updated when the list of recent collections is.
     // that way it'll also catch cases when this is triggered by a signal,
@@ -174,10 +174,12 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   }
 }
 
-static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
+static void _lib_recentcollection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                          int next, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
+  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
   // serialize, check for recently used
   char confname[200];
 
@@ -185,14 +187,14 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   if(dt_collection_serialize(buf, sizeof(buf))) return;
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+  uint32_t curr_pos = table->offset;
   uint32_t new_pos = -1;
 
   if(!d->inited)
   {
     new_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
     d->inited = 1;
-    dt_view_lighttable_set_position(darktable.view_manager, new_pos);
+    dt_thumbtable_set_offset(table, new_pos, TRUE);
   }
   else if(curr_pos != -1)
   {
@@ -280,8 +282,8 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(d->item[k].button, FALSE);
     gtk_widget_set_visible(d->item[k].button, TRUE);
   }
-  if((new_pos != -1) && (new_pos != curr_pos))
-    dt_view_lighttable_set_position(darktable.view_manager, new_pos);
+
+  dt_thumbtable_set_offset(table, new_pos, TRUE);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -295,7 +297,7 @@ void gui_reset(dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
     dt_conf_set_int(confname, 0);
   }
-  _lib_recentcollection_updated(NULL, self);
+  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -316,7 +318,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(GTK_WIDGET(d->item[k].button), "recent-collection-button");
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
-  _lib_recentcollection_updated(NULL, self);
+  _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 
   /* connect collection changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
@@ -325,7 +327,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+  const int curr_pos = dt_ui_thumbtable(darktable.gui->ui)->offset;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
   free(self->data);

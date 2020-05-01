@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 johannes hanika.
-    copyright (c) 2019 pascal obry.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +24,7 @@
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -70,7 +70,7 @@ typedef struct dt_slideshow_t
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
 
-  uint32_t auto_advance;
+  gboolean auto_advance;
   int exporting;
   int delay;
 
@@ -107,13 +107,15 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       const gboolean export_masks)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
 
   memcpy(data->buf.buf, in, sizeof(uint32_t) * datai->width * datai->height);
   data->buf.width = datai->width;
   data->buf.height = datai->height;
+  data->buf.invalidated = FALSE;
 
   return 0;
 }
@@ -211,7 +213,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   {
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-                                 high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
+                                 high_quality, TRUE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_DISPLAY,
                                  NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
 
     // lock to copy back into the slot the rendered buffer, not that this is done only if
@@ -220,10 +222,10 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
     dt_pthread_mutex_lock(&d->lock);
     if(dat.rank == d->buf[slot].rank)
     {
-      d->buf[slot].invalidated = FALSE;
       memcpy(d->buf[slot].buf, dat.buf.buf, sizeof(uint32_t) * dat.buf.width * dat.buf.height);
       d->buf[slot].width = dat.buf.width;
       d->buf[slot].height = dat.buf.height;
+      d->buf[slot].invalidated = FALSE;
     }
     d->exporting--;
     dt_pthread_mutex_unlock(&d->lock);
@@ -239,7 +241,9 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
 static gboolean _is_idle(dt_slideshow_t *d)
 {
-  return !(d->buf[S_LEFT].invalidated || d->buf[S_CURRENT].invalidated || d->buf[S_RIGHT].invalidated);
+  return !((d->buf[S_LEFT].invalidated && d->buf[S_LEFT].rank <= d->col_count)
+           || (d->buf[S_CURRENT].invalidated && d->buf[S_CURRENT].rank <= d->col_count)
+           || (d->buf[S_RIGHT].invalidated && d->buf[S_RIGHT].rank <= d->col_count));
 }
 
 static gboolean auto_advance(gpointer user_data)
@@ -255,16 +259,16 @@ static int32_t process_job_run(dt_job_t *job)
 {
   dt_slideshow_t *d = dt_control_job_get_params(job);
 
-  if(d->buf[S_CURRENT].invalidated)
+  if(d->buf[S_CURRENT].invalidated && d->buf[S_CURRENT].rank <= d->col_count)
   {
     process_image(d, S_CURRENT);
     dt_control_queue_redraw_center();
   }
-  else if(d->buf[S_RIGHT].invalidated)
+  else if(d->buf[S_RIGHT].invalidated && d->buf[S_RIGHT].rank <= d->col_count)
   {
     process_image(d, S_RIGHT);
   }
-  else if(d->buf[S_LEFT].invalidated)
+  else if(d->buf[S_LEFT].invalidated && d->buf[S_LEFT].rank >= 0)
   {
     process_image(d, S_LEFT);
   }
@@ -300,8 +304,8 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank < d->col_count - 1)
     {
       shift_left(d);
-      d->buf[S_RIGHT].invalidated = TRUE;
       d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
+      d->buf[S_RIGHT].invalidated = d->buf[S_RIGHT].rank < d->col_count;
       _refresh_display(d);
       requeue_job(d);
     }
@@ -316,8 +320,8 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank > 0)
     {
       shift_right(d);
-      d->buf[S_LEFT].invalidated = TRUE;
       d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
+      d->buf[S_LEFT].invalidated = d->buf[S_LEFT].rank >= 0;
       _refresh_display(d);
       requeue_job(d);
     }
@@ -444,13 +448,13 @@ void enter(dt_view_t *self)
 
   g_list_free(selected);
 
-  d->buf[S_CURRENT].rank = selrank == -1 ? dt_view_lighttable_get_position(darktable.view_manager) : selrank;
+  d->buf[S_CURRENT].rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
   d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
 
   d->col_count = dt_collection_get_count(darktable.collection);
 
-  d->auto_advance = 0;
+  d->auto_advance = FALSE;
   d->delay = dt_conf_get_int("slideshow_delay");
   // restart from beginning, will first increment counter by step and then prefetch
   dt_pthread_mutex_unlock(&d->lock);
@@ -469,13 +473,13 @@ void leave(dt_view_t *self)
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   d->mouse_timeout = 0;
   dt_control_change_cursor(GDK_LEFT_PTR);
-  d->auto_advance = 0;
+  d->auto_advance = FALSE;
 
   // exporting could be in action, just wait for the last to finish
   // otherwise we will crash releasing lock and memory.
   while(d->exporting > 0) sleep(1);
 
-  dt_view_lighttable_set_position(darktable.view_manager, d->buf[S_CURRENT].rank);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), d->buf[S_CURRENT].rank, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -577,12 +581,12 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     if(!d->auto_advance)
     {
-      d->auto_advance = 1;
+      d->auto_advance = TRUE;
       _step_state(d, S_REQUEST_STEP);
     }
     else
     {
-      d->auto_advance = 0;
+      d->auto_advance = FALSE;
       dt_control_log(_("slideshow paused"));
     }
     return 0;
@@ -600,19 +604,19 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP_BACK);
   }
   else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP);
   }
   else
   {
     // go back to lt mode
-    d->auto_advance = 0;
+    d->auto_advance = FALSE;
     dt_ctl_switch_mode_to("lighttable");
   }
 

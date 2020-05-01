@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
     /* set inner border and icon size */
-    float f_border = (1 + 0.66 * (darktable.gui->dpi_factor-1)) * ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
+    float f_border = ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
     int border = round(f_border);
     int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
     int icon_height = round(height - (f_border * 2));

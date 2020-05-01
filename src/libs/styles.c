@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/styles.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -40,7 +41,7 @@ typedef struct dt_lib_styles_t
   GtkEntry *entry;
   GtkWidget *duplicate;
   GtkTreeView *tree;
-  GtkWidget *delete_button, *import_button, *export_button, *edit_button;
+  GtkWidget *delete_button, *import_button, *export_button, *edit_button, *applymode;
 } dt_lib_styles_t;
 
 
@@ -67,7 +68,7 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "remove"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
@@ -77,7 +78,7 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "delete", d->delete_button);
+  dt_accel_connect_button_lib(self, "remove", d->delete_button);
   dt_accel_connect_button_lib(self, "export", d->export_button);
   dt_accel_connect_button_lib(self, "import", d->import_button);
   if(d->edit_button) dt_accel_connect_button_lib(self, "edit", d->edit_button);
@@ -271,12 +272,12 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
       GtkWidget *dialog = gtk_message_dialog_new
       (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       _("do you really want to delete style '%s'?"), name);
+       _("do you really want to remove style '%s'?"), name);
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
 #endif
 
-      gtk_window_set_title(GTK_WINDOW(dialog), _("delete style?"));
+      gtk_window_set_title(GTK_WINDOW(dialog), _("remove style?"));
       res = gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
     }
@@ -384,6 +385,12 @@ static void _styles_changed_callback(gpointer instance, gpointer user_data)
   _gui_styles_update_view(d);
 }
 
+static void applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const int mode = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/lighttable/style/applymode", mode);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
@@ -436,6 +443,14 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
+  d->applymode = dt_bauhaus_combobox_new(NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
+  dt_bauhaus_widget_set_label(d->applymode, NULL, _("mode"));
+  dt_bauhaus_combobox_add(d->applymode, _("append"));
+  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
+  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
+  dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
+
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
@@ -458,7 +473,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_button_new_with_label(_("remove"));
   d->delete_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("deletes the selected style in list above"));
+  gtk_widget_set_tooltip_text(widget, _("removes the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // import button
@@ -486,6 +501,7 @@ void gui_init(dt_lib_module_t *self)
   _gui_styles_update_view(d);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED, G_CALLBACK(_styles_changed_callback), d);
+  g_signal_connect(G_OBJECT(d->applymode), "value-changed", G_CALLBACK(applymode_combobox_changed), (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

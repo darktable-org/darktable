@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <gtk/gtk.h>
 #include <lua/lua.h>
 
-GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab);
+GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack);
 void destroy_tab_lua( GtkGrid *grid);
 
 int dt_lua_init_preferences(lua_State *L);

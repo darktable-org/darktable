@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -613,6 +613,7 @@ static inline int gui_init_tab(
   *ppcolor = color = gtk_color_button_new_with_rgba(c);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(color), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(color), _("select tone color"));
+  g_signal_connect(G_OBJECT(color), "color-set", G_CALLBACK(colorpick_callback), self);
 
   // hue slider
   GtkWidget *hue;
@@ -629,6 +630,7 @@ static inline int gui_init_tab(
   dt_bauhaus_widget_set_quad_paint(hue, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(hue, TRUE);
   g_signal_connect(G_OBJECT(hue), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  g_signal_connect(G_OBJECT(hue), "value-changed", G_CALLBACK(hue_callback), self);
 
   // saturation slider
   GtkWidget *saturation;
@@ -637,6 +639,7 @@ static inline int gui_init_tab(
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
+  g_signal_connect(G_OBJECT(saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
   // pack the widgets
   gtk_widget_set_hexpand(hue, TRUE); // make sure that the color picker doesn't become HUGE
@@ -674,36 +677,25 @@ void gui_init(struct dt_iop_module_t *self)
   line = gui_init_tab(self, line, _("highlights"), &g->highlight_colorpick, &hi_color, &g->highlight_hue_gslider, &g->highlight_sat_gslider);
 
   // Additional parameters
+
+  gtk_grid_attach(grid, dt_ui_section_label_new(_("properties")), 0, line++, 2, 1);
+
   g->balance_scale = dt_bauhaus_slider_new_with_range_and_feedback(
       self, 0.0, 100.0, 0.1, (1- p->balance) * 100.0, 2, 0);
   dt_bauhaus_slider_set_format(g->balance_scale, "%.2f");
   dt_bauhaus_slider_set_stop(g->balance_scale, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_widget_set_label(g->balance_scale, NULL, _("balance"));
+  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
+  g_signal_connect(G_OBJECT(g->balance_scale), "value-changed", G_CALLBACK(balance_callback), self);
   gtk_grid_attach(grid, g->balance_scale, 0, line++, 2, 1);
-
 
   g->compress_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
   dt_bauhaus_slider_set_format(g->compress_scale, "%.2f%%");
   dt_bauhaus_widget_set_label(g->compress_scale, NULL, _("compress"));
   gtk_grid_attach(grid, g->compress_scale, 0, line++, 2, 1);
-
-
-  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
-
-  g_signal_connect(G_OBJECT(g->shadow_hue_gslider), "value-changed", G_CALLBACK(hue_callback), self);
-  g_signal_connect(G_OBJECT(g->highlight_hue_gslider), "value-changed", G_CALLBACK(hue_callback), self);
-
-  g_signal_connect(G_OBJECT(g->shadow_sat_gslider), "value-changed", G_CALLBACK(saturation_callback), self);
-  g_signal_connect(G_OBJECT(g->highlight_sat_gslider), "value-changed", G_CALLBACK(saturation_callback), self);
-
-  g_signal_connect(G_OBJECT(g->balance_scale), "value-changed", G_CALLBACK(balance_callback), self);
   g_signal_connect(G_OBJECT(g->compress_scale), "value-changed", G_CALLBACK(compress_callback), self);
-
-
-  g_signal_connect(G_OBJECT(g->shadow_colorpick), "color-set", G_CALLBACK(colorpick_callback), self);
-  g_signal_connect(G_OBJECT(g->highlight_colorpick), "color-set", G_CALLBACK(colorpick_callback), self);
 
   dt_iop_init_picker(&g->color_picker,
               self,

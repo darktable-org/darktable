@@ -1,5 +1,6 @@
 /*
     This file is part of darktable,
+    Copyright (C) 2020 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +18,7 @@
 #pragma once
 
 
-gboolean win_valid_duplicate_filename(const char *filename);
+GList* win_image_find_duplicates(const char *filename);
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

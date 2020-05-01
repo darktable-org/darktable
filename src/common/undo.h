@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 pascal obry
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,10 +34,9 @@ typedef enum dt_undo_type_t
   DT_UNDO_TAGS        = 1 << 5,
   DT_UNDO_METADATA    = 1 << 6,
   DT_UNDO_LT_HISTORY  = 1 << 7,
-  DT_UNDO_LT_GEOTAG   = 1 << 8,
   DT_UNDO_DEVELOP     = DT_UNDO_HISTORY | DT_UNDO_MASK | DT_UNDO_TAGS,
   DT_UNDO_LIGHTTABLE  = DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_TAGS | DT_UNDO_METADATA
-                        | DT_UNDO_LT_HISTORY | DT_UNDO_LT_GEOTAG,
+                        | DT_UNDO_LT_HISTORY | DT_UNDO_GEOTAG,
   DT_UNDO_ALL         = DT_UNDO_GEOTAG | DT_UNDO_DEVELOP | DT_UNDO_LIGHTTABLE
 } dt_undo_type_t;
 

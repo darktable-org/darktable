@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 isolist="200 400 800 1600"
 

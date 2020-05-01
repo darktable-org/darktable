@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,17 +124,15 @@ float2rgbe(unsigned char rgbe[4], float red, float green, float blue)
 /*       in the range [0,1] to map back into the range [0,1].            */
 static void rgbe2float(float *red, float *green, float *blue, unsigned char rgbe[4])
 {
-  float f;
-
   if(rgbe[3]) /*nonzero pixel*/
   {
-    f = ldexp(1.0, rgbe[3] - (int)(128 + 8));
+    const float f = ldexpf(1.0f, rgbe[3] - (int)(128 + 8));
     *red = rgbe[0] * f;
     *green = rgbe[1] * f;
     *blue = rgbe[2] * f;
   }
   else
-    *red = *green = *blue = 0.0;
+    *red = *green = *blue = 0.0f;
 }
 
 #if 0
@@ -407,8 +405,8 @@ int RGBE_WritePixels_RLE(FILE *fp, float *data, int scanline_width,
 
 int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanlines)
 {
-  unsigned char rgbe[4], *scanline_buffer, *ptr, *ptr_end;
-  int i, count;
+  unsigned char rgbe[4], *scanline_buffer, *ptr_end;
+  int count;
   unsigned char buf[2];
 
   if((scanline_width < 8) || (scanline_width > 0x7fff)) /* run length encoding is not allowed so read flat*/
@@ -439,9 +437,9 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
       scanline_buffer = (unsigned char *)malloc(sizeof(unsigned char) * 4 * scanline_width);
     if(scanline_buffer == NULL) return rgbe_error(rgbe_memory_error, "unable to allocate buffer space");
 
-    ptr = &scanline_buffer[0];
+    unsigned char *ptr = &scanline_buffer[0];
     /* read each of the four channels for the scanline into the buffer */
-    for(i = 0; i < 4; i++)
+    for(int i = 0; i < 4; i++)
     {
       ptr_end = &scanline_buffer[(i + 1) * scanline_width];
       while(ptr < ptr_end)
@@ -485,7 +483,7 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
       }
     }
     /* now convert data from buffer into floats */
-    for(i = 0; i < scanline_width; i++)
+    for(int i = 0; i < scanline_width; i++)
     {
       rgbe[0] = scanline_buffer[i];
       rgbe[1] = scanline_buffer[i + scanline_width];

@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 bruce guenter
-    copyright (c) 2012 henrik andersson
+    Copyright (C) 2011-2020 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify

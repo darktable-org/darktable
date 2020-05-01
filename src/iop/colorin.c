@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +29,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
@@ -155,6 +155,22 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "input profile"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "working profile"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "gamut clipping"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "input profile", GTK_WIDGET(g->profile_combobox));
+  dt_accel_connect_combobox_iop(self, "working profile", GTK_WIDGET(g->work_combobox));
+  dt_accel_connect_combobox_iop(self, "gamut clipping", GTK_WIDGET(g->clipping_combobox));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1878,6 +1894,7 @@ void reload_defaults(dt_iop_module_t *module)
       use_eprofile = (img->profile_size > 0);
     }
 #endif
+    // the ldr test just checks for magics in the file header
     else if((!strcmp(ext, "tif") || !strcmp(ext, "tiff")) && dt_imageio_is_ldr(filename))
     {
       img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
@@ -1911,9 +1928,11 @@ void reload_defaults(dt_iop_module_t *module)
   else
     use_eprofile = TRUE; // the image has a profile assigned
 
-  if (color_profile != DT_COLORSPACE_NONE) {
+  if (color_profile != DT_COLORSPACE_NONE)
     tmp.type = color_profile;
-  } else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+  else if(use_eprofile)
+    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+  else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     tmp.type = DT_COLORSPACE_LIN_REC709;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     tmp.type = DT_COLORSPACE_LIN_REC709;
@@ -1925,8 +1944,6 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
-  else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 

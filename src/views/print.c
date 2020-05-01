@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -55,7 +56,7 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_PRINT;
 }
 
-static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _print_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -67,19 +68,22 @@ static void _film_strip_activated(const int imgid, void *data)
 
   prt->image_id = imgid;
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-  // record the imgid to display when going back to lighttable
-  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+
+  // update the active images list
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+  darktable.view_manager->active_images
+      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // force redraw
   dt_control_queue_redraw();
 }
 
-static void _view_print_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+static void _view_print_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  int32_t imgid = 0;
-  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
-    _film_strip_activated(imgid,user_data);
+  if(imgid > 0) _film_strip_activated(imgid, user_data);
 }
 
 static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo)
@@ -101,9 +105,6 @@ init(dt_view_t *self)
   /* initialize CB to get the print settings from corresponding lib module */
   darktable.view_manager->proxy.print.view = self;
   darktable.view_manager->proxy.print.print_settings = _view_print_settings;
-
-  /* prefetch next few from first selected image on. */
-  dt_view_filmstrip_prefetch();
 }
 
 void cleanup(dt_view_t *self)
@@ -215,6 +216,25 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     expose_print_page (self, cri, width_i, height_i, pointerx, pointery);
 }
 
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+{
+  const dt_print_t *prt = (dt_print_t *)self->data;
+
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  if(mouse_over_id != prt->image_id)
+  {
+    mouse_over_id = prt->image_id;
+    dt_control_set_mouse_over_id(mouse_over_id);
+  }
+}
+void mouse_leave(dt_view_t *self)
+{
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  const dt_print_t *prt = (dt_print_t *)self->data;
+  dt_control_set_mouse_over_id(prt->image_id);
+}
+
 int try_enter(dt_view_t *self)
 {
   dt_print_t *prt=(dt_print_t*)self->data;
@@ -279,7 +299,11 @@ void enter(dt_view_t *self)
   {
     const int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
+
+    // change active image
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    dt_view_active_images_reset(FALSE);
+    dt_view_active_images_add(imgid, TRUE);
   }
   g_list_free(selected_images);
 
@@ -287,15 +311,10 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_view_print_filmstrip_activate_callback),
-                            self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_view_print_filmstrip_activate_callback), self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 
   darktable.control->mouse_over_id = -1;
   dt_control_set_mouse_over_id(prt->image_id);
@@ -311,32 +330,6 @@ void leave(dt_view_t *self)
   dt_control_signal_disconnect(darktable.signals,
                                G_CALLBACK(_view_print_filmstrip_activate_callback),
                                (gpointer)self);
-}
-
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  // there's only filmstrip in bottom panel, so better hide/show it instead of filmstrip lib
-  const gboolean pb = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, !pb, TRUE);
-  // if we show the panel, ensure that filmstrip is visible
-  if(!pb) dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, TRUE);
-  return TRUE;
-}
-
-void init_key_accels(dt_view_t *self)
-{
-  // Film strip shortcuts
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  GClosure *closure;
-
-  // Film strip shortcuts
-  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

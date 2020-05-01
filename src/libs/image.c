@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2019 philippe weyland.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,6 +87,7 @@ uint32_t container(dt_lib_module_t *self)
 static void _group_helper_function(void)
 {
   int new_group_id = darktable.gui->expanded_group_id;
+  GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
@@ -97,19 +96,21 @@ static void _group_helper_function(void)
     int id = sqlite3_column_int(stmt, 0);
     if(new_group_id == -1) new_group_id = id;
     dt_grouping_add_to_group(new_group_id, id);
+    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
   if(darktable.gui->grouping)
     darktable.gui->expanded_group_id = new_group_id;
   else
     darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
 }
 
 /** removes the selected images from their current group. */
 static void _ungroup_helper_function(void)
 {
+  GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
@@ -117,10 +118,11 @@ static void _ungroup_helper_function(void)
   {
     int id = sqlite3_column_int(stmt, 0);
     dt_grouping_remove_from_group(id);
+    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
   darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   dt_control_queue_redraw_center();
 }
 
@@ -188,24 +190,6 @@ int position()
   return 700;
 }
 
-
-static int _get_source_image(void)
-{
-  // if the mouse is over an image, always choose this one
-  // otherwise, choose the first image selected
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) return imgid;
-
-  GList *l = dt_collection_get_selected(darktable.collection, 1);
-  if(l)
-  {
-    imgid = GPOINTER_TO_INT(l->data);
-    g_list_free(l);
-  }
-
-  return imgid;
-}
-
 typedef enum dt_metadata_actions_t
 {
   DT_MA_REPLACE = 0,
@@ -223,62 +207,66 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  const int img = dt_view_get_image_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on();
+  if(imgs)
+  {
+    const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
+                                    (colors_flag ? DT_UNDO_COLORLABELS : 0) |
+                                    (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
+                                    (geotag_flag ? DT_UNDO_GEOTAG : 0) |
+                                    (dttag_flag ? DT_UNDO_TAGS : 0);
+    if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
 
-  const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
-                                  (colors_flag ? DT_UNDO_COLORLABELS : 0) |
-                                  (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
-                                  (geotag_flag ? DT_UNDO_LT_GEOTAG : 0) |
-                                  (dttag_flag ? DT_UNDO_TAGS : 0);
-  if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
+    if(rating_flag)
+    {
+      const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
+      dt_ratings_apply_on_list(imgs, stars, TRUE, TRUE);
+    }
+    if(colors_flag)
+    {
+      const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
+      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE, TRUE);
+    }
+    if(dtmetadata_flag)
+    {
+      GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
+      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE, TRUE);
+      g_list_free_full(metadata, g_free);
+    }
+    if(geotag_flag)
+    {
+      dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
+      if(action == DT_MA_CLEAR)
+        geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
+      else
+        dt_image_get_location(imageid, geoloc);
+      dt_image_set_locations(imgs, geoloc, TRUE, TRUE);
+      g_free(geoloc);
+    }
+    if(dttag_flag)
+    {
+      // affect only user tags (not dt tags)
+      GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
+      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE, TRUE);
+      g_list_free(tags);
+    }
 
-  if(rating_flag)
-  {
-    const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
-    dt_ratings_apply(img, stars, FALSE, TRUE, TRUE);
-  }
-  if(colors_flag)
-  {
-    const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
-    dt_colorlabels_set_labels(img, colors, action != DT_MA_MERGE, TRUE, TRUE);
-  }
-  if(dtmetadata_flag)
-  {
-    GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
-    dt_metadata_set_list_id(img, metadata, action != DT_MA_MERGE, TRUE, TRUE);
-    g_list_free_full(metadata, g_free);
-  }
-  if(geotag_flag)
-  {
-    dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
-    if(action == DT_MA_CLEAR)
-      geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
-    else
-      dt_image_get_location(imageid, geoloc);
-    dt_image_set_location(img, geoloc, TRUE, TRUE);
-    g_free(geoloc);
-  }
-  if(dttag_flag)
-  {
-    GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid);
-    dt_tag_set_tags(tags, img, action != DT_MA_MERGE, TRUE, TRUE);
-    g_list_free(tags);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  }
-
-  if(undo_type)
-  {
-    dt_undo_end_group(darktable.undo);
-    dt_collection_update_query(darktable.collection);
-    dt_control_queue_redraw_center();
-    dt_image_synch_xmp(img);
+    if(undo_type)
+    {
+      dt_undo_end_group(darktable.undo);
+      dt_image_synch_xmps(imgs);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_control_queue_redraw_center();
+    }
+    else g_list_free(imgs);
   }
 }
 
 static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  d->imageid = _get_source_image();
+
+  d->imageid = dt_view_get_image_to_act_on2();
   if(d->imageid)
   {
     gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);

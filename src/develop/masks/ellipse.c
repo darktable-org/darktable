@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012--2013 aldric renaudin.
-    copyright (c) 2013--2016 Ulrich Pegelow.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +195,7 @@ static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selecte
     cairo_set_line_width(cr, 5.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 3.0 / zoom_scale);
-  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
   _ellipse_point_transform(xref, yref, points[10] + dx, points[11] + dy, sinr, cosr, scalea, scaleb, sinv, cosv,
                            &x, &y);
@@ -215,7 +214,7 @@ static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selecte
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  dt_draw_set_color_overlay(cr, 0.8, 0.8);
   cairo_stroke(cr);
 }
 
@@ -238,7 +237,7 @@ static void dt_ellipse_draw_border(cairo_t *cr, double *dashed, const float len,
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
   _ellipse_point_transform(xref, yref, border[10] + dx, border[11] + dy, sinr, cosr, scaleab, scalebb, sinv, cosv,
                            &x, &y);
@@ -258,7 +257,7 @@ static void dt_ellipse_draw_border(cairo_t *cr, double *dashed, const float len,
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  dt_draw_set_color_overlay(cr, 0.8, 0.8);
   cairo_set_dash(cr, dashed, len, 4);
   cairo_stroke(cr);
 }
@@ -1239,7 +1238,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
 
     for(int i = 1; i < 5; i++)
     {
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
 
       if(i == gui->point_dragging || i == gui->point_selected)
         anchor_size = 7.0f / zoom_scale;
@@ -1256,7 +1255,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
       cairo_stroke(cr);
     }
   }
@@ -1304,13 +1303,13 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
         cairo_set_line_width(cr, 2.5 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.5 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
       cairo_stroke_preserve(cr);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
         cairo_set_line_width(cr, 1.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 0.5 / zoom_scale);
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_stroke(cr);
     }
 
@@ -1320,7 +1319,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     _ellipse_point_transform(xrefs, yrefs, gpt->source[10] + dxs, gpt->source[11] + dys, sinr, cosr, scalea,
                              scaleb, sinv, cosv, &x, &y);
     cairo_move_to(cr, x, y);
@@ -1338,7 +1337,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
   }
 }
@@ -1898,11 +1897,11 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse total render took %0.04f sec\n", form->name, dt_get_wtime() - start1);
-
+    dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse total render took %0.04f sec\n", form->name,
+             dt_get_wtime() - start1);
+  }
   return 1;
 }
 

@@ -1,7 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2013 johannes hanika.
- *    copyright (c) 2015 tobias ellinghaus.
+ *    Copyright (C) 2015-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -41,7 +40,7 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
     snprintf(filename, sizeof(filename), "%s/%s", datadir, "noiseprofiles.json");
   }
   else
-    snprintf(filename, sizeof(filename), "%s", alternative);
+    g_strlcpy(filename, alternative, sizeof(filename));
 
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] loading noiseprofiles from `%s'\n", filename);
   if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return NULL;

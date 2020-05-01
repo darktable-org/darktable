@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ typedef struct dt_iop_gamma_params_t
 
 const char *name()
 {
-  return C_("modulename", "gamma");
+  return C_("modulename", "display encoding");
 }
 
 int default_group()

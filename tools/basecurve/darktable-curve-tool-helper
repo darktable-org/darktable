@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #############################################################################
 # Copyright(C) 2014 Edouard Gomez
@@ -7,8 +7,8 @@
 # As of this writing it can be found at http://www.gnu.org/licenses/gpl.txt
 #############################################################################
 
-_script_dir=$(dirname $0)
-_script_dir=$(cd "$_script_dir" && pwd -P)
+_script_dir="$(dirname "$0")"
+_script_dir="$(cd "$_script_dir" && pwd -P)"
 
 #############################################################################
 # Script vars
@@ -98,7 +98,7 @@ generate_ppm_raw()
 {
     local _src="$1"
     local _dst="$2"
-    local _base=$(printf "$_src"| sed s,'\(.*\)\..*$','\1',g)
+    local _base="$(printf "%s" "$_src" | sed s,'\(.*\)\..*$','\1',g)"
     local _tmpppm="${_base}.ppm"
 
     dcraw -6 -W -g 1 1 -w "$_src"
@@ -109,7 +109,7 @@ extract_jpeg_from_raw()
 {
     local _src="$1"
     local _dst="$2"
-    local _make=$(exiftool -Make -t "$_src"|cut -d "$(printf '\t')" -f 2)
+    local _make="$(exiftool -Make -t "$_src" | cut -d "$(printf '\t')" -f 2)"
 
     case "$_make" in
     [Nn][Ii][Kk][Oo][Nn]*|[Pp][Ee][Nn][Tt][Aa][Xx]*)
@@ -119,7 +119,7 @@ extract_jpeg_from_raw()
         exiftool -b -PreviewImage "$_src" > "$_dst"
         ;;
     *)
-        printf "unknown camera manufacturer $_make, please provide a sample file to darktable developers to see if an embedded JPEG could be used"
+        printf "unknown camera manufacturer %s, please provide a sample file to darktable developers to see if an embedded JPEG could be used" "$_make"
         ;;
     esac
 }
@@ -130,7 +130,7 @@ generate_ppm_jpeg()
     local _srcjpeg="$2"
     local _dst="$3"
 
-    local _orientation=$(exiftool -t -n -Orientation "$_srcraw"|cut -d "$(printf '\t')" -f 2)
+    local _orientation="$(exiftool -t -n -Orientation "$_srcraw" | cut -d "$(printf '\t')" -f 2)"
     local _transform=""
 
     case "$_orientation" in
@@ -156,7 +156,7 @@ setup_dt_curve_tool()
         if [ -x "$_script_dir/darktable-curve-tool" ] ; then
             _dt_curve_tool="$_script_dir/darktable-curve-tool"
         else
-            _tmp=$(which darktable-curve-tool)
+            _tmp="$(which darktable-curve-tool)"
             if [ $? -eq 0 ] ; then
                 _dt_curve_tool="$_tmp"
             else
@@ -176,10 +176,10 @@ setup_dt_curve_tool()
 check_tools
 
 # parse arguments
-parse_args $@
+parse_args "$@"
 
 # first setup source file vars, first is the raw and second is the JPEG if any
-setup_sources $_args
+setup_sources "$_args"
 
 # bail out if no raw
 if [ ! -f "$_raw" ] ; then
@@ -197,7 +197,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 # some intermediary vars
-_base=$(printf "$_raw"| sed s,'\(.*\)\..*$','\1',g)
+_base="$(printf "%s" "$_raw" | sed s,'\(.*\)\..*$','\1',g)"
 _ppm16="${_base}-16.ppm"
 _ppm8="${_base}-8.ppm"
 
@@ -253,5 +253,5 @@ fi
 
 if [ $_quiet -eq 0 ] ; then
     printf "if you accumulated enough data, you can now output the curves with\n"
-    printf "darktable-curve-tool $_state -z -e "$_raw" -n 16\n"
+    printf "darktable-curve-tool %s -z -e %s -n 16\n" "$_state" "$_raw"
 fi

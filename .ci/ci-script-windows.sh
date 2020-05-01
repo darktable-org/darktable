@@ -35,7 +35,7 @@ _status() {
         success) local -n nameref_color='green'; title='[DARKTABLE CI] SUCCESS:' ;;
         message) local -n nameref_color='cyan';  title='[DARKTABLE CI]'
     esac
-    printf "\n${nameref_color}${title}${normal} ${status}\n\n"
+    printf "%s" "\n${nameref_color}${title}${normal} ${status}\n\n"
 }
 
 # Run command with status
@@ -43,21 +43,21 @@ execute(){
     local status="${1}"
     local command="${2}"
     local arguments=("${@:3}")
-    cd "${package:-.}"
+    cd "${package:-.}" || exit "$?"
     message "${status}"
     if [[ "${command}" != *:* ]]
-        then ${command} ${arguments[@]}
-        else ${command%%:*} | ${command#*:} ${arguments[@]}
+        then "${command}" "${arguments[@]}"
+        else "${command%%:*}" | "${command#*:}" "${arguments[@]}"
     fi || failure "${status} failed"
     cd - > /dev/null
 }
 
 # Build
 build_darktable() {
-    cd $(cygpath ${APPVEYOR_BUILD_FOLDER})
+    cd "$(cygpath "${APPVEYOR_BUILD_FOLDER}")" || exit "$?"
 
-    mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build $(cygpath ${APPVEYOR_BUILD_FOLDER})
+    mkdir build && cd build || exit "$?"
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(cygpath "${APPVEYOR_BUILD_FOLDER}")"/build "$(cygpath "${APPVEYOR_BUILD_FOLDER}")"
     cmake --build .
     cmake --build . --target package
 }

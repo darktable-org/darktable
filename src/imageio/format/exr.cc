@@ -1,7 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2010-2011 Henrik Andersson.
-   copyright (c) 2014 LebedevRI.
+   Copyright (C) 2010-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -100,7 +99,8 @@ void cleanup(dt_imageio_module_format_t *self)
 
 int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
@@ -230,12 +230,25 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 {
   if(old_version == 1 && new_version == 4)
   {
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
-    memcpy(new_params, old_params, old_params_size);
-    new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
-    new_params->global.style_append = FALSE;
+    struct dt_imageio_exr_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+    };
+
+    const dt_imageio_exr_v1_t *o = (dt_imageio_exr_v1_t *)old_params;
+    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
+    n->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
     *new_size = self->params_size(self);
-    return new_params;
+    return n;
   }
   if(old_version == 2 && new_version == 4)
   {
@@ -257,15 +270,18 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     };
 
     const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     // last param was dropped (pixel type)
-    memcpy(new_params, old_params, old_params_size);
-    new_params->global.style_append = FALSE;
-    new_params->compression = o->compression;
-
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
+    n->compression = o->compression;
     *new_size = self->params_size(self);
-    return new_params;
+    return n;
   }
   if(old_version == 3 && new_version == 4)
   {
@@ -278,14 +294,17 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     };
 
     const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
-    memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
-    new_params->global.style_append = FALSE;
-    new_params->compression = o->compression;
-
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
+    n->compression = o->compression;
     *new_size = self->params_size(self);
-    return new_params;
+    return n;
   }
   return NULL;
 }

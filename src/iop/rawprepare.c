@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2017 Roman Lebedev.
+    Copyright (C) 2015-2020 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -664,11 +664,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   }
   else
   {
-    const float white = (float)p->raw_white_point / (float)UINT16_MAX;
+    const float normalizer
+        = ((piece->pipe->image.flags & DT_IMAGE_HDR) == DT_IMAGE_HDR) ? 1.0f : (float)UINT16_MAX;
+    const float white = (float)p->raw_white_point / normalizer;
     float black = 0;
     for(int i = 0; i < 4; i++)
     {
-      black += p->raw_black_level_separate[i] / (float)UINT16_MAX;
+      black += p->raw_black_level_separate[i] / normalizer;
     }
     black /= 4.0f;
 

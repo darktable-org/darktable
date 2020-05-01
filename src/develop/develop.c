@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +47,7 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
+const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
@@ -72,7 +71,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->image_loading = dev->preview_loading = dev->preview2_loading = 0;
+  dev->image_loading = dev->preview_loading = dev->preview2_loading = dev->history_updating = 0;
   dev->image_force_reload = 0;
   dev->preview_input_changed = dev->preview2_input_changed = 0;
 
@@ -84,13 +83,29 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
   gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  if(g_strcmp0(mode, "histogram") == 0)
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
   else if(g_strcmp0(mode, "waveform") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
+    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+  else if(g_strcmp0(mode, "linear") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
+  }
+  else if(g_strcmp0(mode, "logarithmic") == 0)
+  { // update legacy conf
+    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
+  }
   g_free(mode);
+  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  if(g_strcmp0(histogram_type, "linear") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  g_free(histogram_type);
 
   dev->forms = NULL;
   dev->form_visible = NULL;
@@ -125,8 +140,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // Hardcoded hack: histogram widget will probably be either 175 or
     // 350 pixels high depending on hidpi
     dev->histogram_waveform_height = 175;
-    dev->histogram_waveform_stride = 4 * dev->histogram_waveform_width;
-    dev->histogram_waveform = (uint8_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride, sizeof(uint8_t));
+    // making the stride work for cairo muddles UI and underlying
+    // data, and mipmap widths should already reasonable, but better
+    // to be safe, and the histogram is for the sake of UI, after all
+    dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width);
+    dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
@@ -149,6 +167,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
+
+  dev->overlay_color.enabled = FALSE;
+  dev->overlay_color.color = dt_conf_get_int("darkroom/ui/overlay_color");
 
   dev->iso_12646.enabled = FALSE;
 
@@ -223,6 +244,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
+
+  dt_conf_set_int("darkroom/ui/overlay_color", dev->overlay_color.color);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
@@ -846,14 +869,14 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
         }
       }
     }
-    snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
+    g_strlcpy(hist->op_name, module->op, sizeof(hist->op_name));
     hist->focus_hash = dev->focus_hash;
     hist->enabled = module->enabled;
     hist->module = module;
     hist->params = malloc(module->params_size);
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
-    snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", module->multi_name);
+    g_strlcpy(hist->multi_name, module->multi_name, sizeof(hist->multi_name));
     /* allocate and set hist blend_params */
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(hist->params, module->params, module->params_size);
@@ -957,6 +980,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
 
+  /* register export timestamp in cache */
+  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -1048,6 +1074,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   dt_lock_image(dev->image_storage.id);
 
+  dt_ioppr_set_default_iop_order(dev, dev->image_storage.id);
   dt_dev_pop_history_items(dev, 0);
 
   // remove unused history items:
@@ -1152,7 +1179,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 
     hist->module->iop_order = hist->iop_order;
     hist->module->enabled = hist->enabled;
-    snprintf(hist->module->multi_name, sizeof(hist->module->multi_name), "%s", hist->multi_name);
+    g_strlcpy(hist->module->multi_name, hist->multi_name, sizeof(hist->module->multi_name));
     if(hist->forms) forms = hist->forms;
 
     history = g_list_next(history);
@@ -1194,6 +1221,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
   dt_dev_pop_history_items_ext(dev, cnt);
 
+  darktable.develop->history_updating = 1;
+
   // update all gui modules
   GList *modules = dev->iop;
   while(modules)
@@ -1202,6 +1231,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     dt_iop_gui_update(module);
     modules = g_list_next(modules);
   }
+
+  darktable.develop->history_updating = 0;
 
   // check if the order of modules has changed
   int dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
@@ -1251,11 +1282,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_control_queue_redraw_center();
 }
 
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
+static void _cleanup_history(const int imgid)
 {
   sqlite3_stmt *stmt;
-  dt_lock_image(imgid);
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1267,6 +1296,14 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+}
+
+void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
+{
+  sqlite3_stmt *stmt;
+  dt_lock_image(imgid);
+
+  _cleanup_history(imgid);
 
   // write history entries
 
@@ -1300,6 +1337,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write the current iop-order-list for this image
 
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_unlock_image(imgid);
 }
@@ -1307,6 +1345,18 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 void dt_dev_write_history(dt_develop_t *dev)
 {
   dt_dev_write_history_ext(dev, dev->image_storage.id);
+}
+
+static int _dev_get_module_nb_records()
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT count (*) FROM  memory.history",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  const int cnt = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return cnt;
 }
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
@@ -1409,8 +1459,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
 
-  // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  // make sure these end up in the image_cache; as the history is not correct right now
+  // we don't write the sidecar here but later in dt_dev_read_history_ext
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -1532,6 +1583,19 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
   }
 }
 
+void _dev_write_history(dt_develop_t *dev, const int imgid)
+{
+  _cleanup_history(imgid);
+  // write history entries
+  GList *history = dev->history;
+  for(int i = 0; history; i++)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    (void)dt_dev_write_history_item(imgid, hist, i);
+    history = g_list_next(history);
+  }
+}
+
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
 {
   if(imgid <= 0) return;
@@ -1545,11 +1609,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   int history_end_current = 0;
-
   sqlite3_stmt *stmt;
 
   dt_ioppr_set_default_iop_order(dev, imgid);
 
+  int auto_apply_modules = 0;
+  gboolean first_run = FALSE;
   if(!no_image)
   {
     // cleanup
@@ -1557,10 +1622,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
     // prepend all default modules to memory.history
     _dev_add_default_modules(dev, imgid);
+    const int default_modules = _dev_get_module_nb_records();
 
-    // maybe add auto-presets to memory.history and commit everything into main.history
-    const gboolean first_run = _dev_auto_apply_presets(dev);
-
+    // maybe add auto-presets to memory.history
+    first_run = _dev_auto_apply_presets(dev);
+    auto_apply_modules = _dev_get_module_nb_records() - default_modules;
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
@@ -1568,6 +1634,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
   }
 
+  gboolean legacy_params = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1620,7 +1687,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         {
           hist->module = module;
           if(multi_name)
-            snprintf(module->multi_name, sizeof(module->multi_name), "%s", multi_name);
+            g_strlcpy(module->multi_name, multi_name, sizeof(module->multi_name));
           else
             memset(module->multi_name, 0, sizeof(module->multi_name));
           break;
@@ -1641,7 +1708,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         dt_iop_update_multi_priority(new_module, multi_priority);
         new_module->iop_order = iop_order;
 
-        snprintf(new_module->multi_name, sizeof(new_module->multi_name), "%s", multi_name);
+        g_strlcpy(new_module->multi_name, multi_name, sizeof(new_module->multi_name));
 
         dev->iop = g_list_append(dev->iop, new_module);
 
@@ -1671,8 +1738,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    snprintf(hist->op_name, sizeof(hist->op_name), "%s", hist->module->op);
-    snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", multi_name);
+    g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
+    g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->iop_order = iop_order;
     hist->multi_priority = multi_priority;
     // update module iop_order only on active history entries
@@ -1691,7 +1758,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
             && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version,
                                               hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
     {
-      // do nothing
+      legacy_params = TRUE;
     }
     else
     {
@@ -1723,6 +1790,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
           memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
           dt_iop_commit_blend_params(hist->module, hist->module->default_blendop_params);
         }
+        legacy_params = TRUE;
       }
 
       /*
@@ -1780,6 +1848,31 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
+
+  // make sure module_dev is in sync with history
+  _dev_write_history(dev, imgid);
+  dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+  dt_history_hash_t flags = DT_HISTORY_HASH_CURRENT;
+  if(first_run)
+  {
+    flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
+
+    // As we have a proper history right now and this is first_run we write the xmp now
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  }
+  else if(legacy_params)
+  {
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
+    if(hash_status & (DT_HISTORY_HASH_BASIC | DT_HISTORY_HASH_AUTO))
+    {
+      // if image not altered keep the current status
+      flags = flags | hash_status;
+    }
+  }
+  // write history_hash when the image has an history
+  dt_history_hash_write_from_history(imgid, flags);
+
   dt_unlock_image(imgid);
 }
 

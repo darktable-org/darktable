@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -187,7 +187,7 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     // TODO: read default darktablerc into ->defaults and other into ->table!
     if(!i)
     {
-      snprintf(darktable.conf->filename, sizeof(darktable.conf->filename), "%s", filename);
+      g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
       f = g_fopen(filename, "rb");
       if(!f)
       {

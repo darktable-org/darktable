@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 johannes hanika.
-    copyright (c) 2015-2016 Roman Lebedev.
+    Copyright (C) 2015-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +32,7 @@
 #include "common/database.h"     // for dt_database_get
 #include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V2
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
+#include "common/history.h"      // for dt_history_hash_set_mipmap
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
 
@@ -114,6 +114,8 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
 
     // and immediately write thumbs to disc and remove from mipmap cache.
     dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
+    // thumbnail in sync with image
+    dt_history_hash_set_mipmap(imgid);
   }
 
   sqlite3_finalize(stmt);

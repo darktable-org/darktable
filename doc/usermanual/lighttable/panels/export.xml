@@ -33,7 +33,7 @@
             export.</emphasis>
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
+            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="100%" align="center" />
           </entry>
         </row>
       </tbody>
@@ -413,10 +413,10 @@
             </row>
             <row>
               <entry>
-                <code>$(CATEGORYn$(category))</code>
+                <code>$(CATEGORYn(category))</code>
               </entry>
               <entry>
-                tag name of level n [0,3] of selected category (or tag)
+                tag name of level n [0,9] of selected category (or tag)
               </entry>
             </row>
           </tbody>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 johannes hanika.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,13 @@
 #include <xmmintrin.h>
 #endif
 
+// the maximum number of levels for the gaussian pyramid
+#define max_levels 30
+// the number of segments for the piecewise linear interpolation
+#define num_gamma 6
+
+//#define DEBUG_DUMP
+
 // downsample width/height to given level
 static inline int dl(int size, const int level)
 {
@@ -36,6 +43,22 @@ static inline int dl(int size, const int level)
     size = (size-1)/2+1;
   return size;
 }
+
+#ifdef DEBUG_DUMP
+static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
+{
+  FILE *f = g_fopen(filename, "wb");
+  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
+  for(int j=0;j<h;j++)
+    for(int i=0;i<w;i++)
+      for(int c=0;c<3;c++)
+        fwrite(out + w*j+i, 1, sizeof(float), f);
+  fclose(f);
+}
+#define debug_dump_PFM dump_PFM
+#else
+#define debug_dump_PFM(f,b,w,h)
+#endif
 
 // needs a boundary of 1 or 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
@@ -107,6 +130,24 @@ static inline void ll_fill_boundary2(
   memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
 }
 
+static void pad_by_replication(
+    float *buf,			// the buffer to be padded
+    const uint32_t w,		// width of a line
+    const uint32_t h,		// total height, including top and bottom padding
+    const uint32_t padding)	// number of lines of padding on each side
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, padding, h, w) \
+  schedule(static)
+#endif
+  for(int j=0;j<padding;j++)
+  {
+    memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
+    memcpy(buf + w*(h-padding+j), buf+w*(h-padding-1), sizeof(float)*w);
+  }
+}
+
 static inline void gauss_expand(
     const float *const input, // coarse input
     float *const fine,        // upsampled, blurry output
@@ -126,6 +167,28 @@ static inline void gauss_expand(
 }
 
 #if defined(__SSE2__)
+static inline __m128 convolve14641_vert(const float *in, const int wd)
+{
+  float four[4] = { 4.f, 4.f, 4.f, 4.f };
+  __m128 r0 = _mm_loadu_ps(in);
+  __m128 r1 = _mm_loadu_ps(in + wd);
+  __m128 r2 = _mm_loadu_ps(in + 2*wd);
+  __m128 r3 = _mm_loadu_ps(in + 3*wd);
+  __m128 r4 = _mm_loadu_ps(in + 4*wd);
+  _mm_prefetch(in+4,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
+  r0 = _mm_add_ps(r0, r4);                      // r0 = r0+r4
+  _mm_prefetch(in+4+wd,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
+  r1 = _mm_add_ps(_mm_add_ps(r1,r3), r2);       // r1 = r1+r2+r3
+  _mm_prefetch(in+4+2*wd,_MM_HINT_T0);
+  r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));     // r0 = r0+2*r2+r4
+  _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
+  __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
+  _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
+  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4 
+}
+#endif
+
+#if defined(__SSE2__)
 static inline void gauss_reduce_sse2(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
@@ -135,83 +198,42 @@ static inline void gauss_reduce_sse2(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  // this version is inspired by opencv's pyrDown_ :
-  // - allocate 5 rows of ring buffer (aligned)
-  // - for coarse res y
-  //   - fill 5 coarse-res row buffers with 1 4 6 4 1 weights (reuse some from last time)
-  //   - do vertical convolution via sse and write to coarse output buf
-
-  const int stride = ((cw+8)&~7); // assure sse alignment of rows
-  float *ringbuf = dt_alloc_align(64, sizeof(*ringbuf)*stride*5);
-  float *rows[5] = {0};
-  int rowj = 0; // we initialised this many rows so far
-
-  for(int j=1;j<ch-1;j++)
-  {
-    // horizontal pass, convolve with 1 4 6 4 1 kernel and decimate
-    for(;rowj<=2*j+2;rowj++)
-    {
-      float *const row = ringbuf + (rowj % 5)*stride;
-      const float *const in = input + rowj*wd;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(cw, in, row) \
+  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
+  // is greater than the time needed to do it sequentially
+#pragma omp parallel for default(none) if (ch*cw>1000)  \
+      dt_omp_firstprivate(cw, ch, input, wd, coarse) \
       schedule(static)
 #endif
-      for(int i=1;i<cw-1;i++)
-        row[i] = 6*in[2*i] + 4*(in[2*i-1]+in[2*i+1]) + in[2*i-2] + in[2*i+2];
-    }
-
-    // init row pointers
-    for(int k=0;k<5;k++)
-      rows[k] = ringbuf + ((2*j-2+k)%5)*stride;
-
-    // vertical pass, convolve and decimate using SIMD:
-    // note that we're ignoring the (1..cw-1) buffer limit, we'll pull in
-    // garbage and fix it later by border filling.
-    float *const out = coarse + j*cw;
-    const float *const row0 = rows[0], *const row1 = rows[1],
-                *const row2 = rows[2], *const row3 = rows[3], *const row4 = rows[4];
-    const __m128 four = _mm_set1_ps(4.f), scale = _mm_set1_ps(1.f/256.f);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(cw, out, scale, four, row0, row1, row2, row3, row4) \
-    schedule(static)
-#endif
-    for(int i=0;i<=cw-8;i+=8)
+  for(int j=1;j<ch-1;j++)
+  {
+    const float *base = input + 2*(j-1)*wd;
+    float *const out = coarse + j*cw + 1;
+    // prime the vertical axis
+    const __m128 kernel = _mm_setr_ps(1.f, 4.f, 6.f, 4.f);
+    __m128 left = convolve14641_vert(base,wd);
+    for(int col=0; col<cw-3; col+=2)
     {
-      __m128 r0, r1, r2, r3, r4, t0, t1;
-      r0 = _mm_load_ps(row0 + i);
-      r1 = _mm_load_ps(row1 + i);
-      r2 = _mm_load_ps(row2 + i);
-      r3 = _mm_load_ps(row3 + i);
-      r4 = _mm_load_ps(row4 + i);
-      r0 = _mm_add_ps(r0, r4);
-      r1 = _mm_add_ps(_mm_add_ps(r1, r3), r2);
-      r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));
-      t0 = _mm_add_ps(r0, _mm_mul_ps(r1, four));
-
-      r0 = _mm_load_ps(row0 + i + 4);
-      r1 = _mm_load_ps(row1 + i + 4);
-      r2 = _mm_load_ps(row2 + i + 4);
-      r3 = _mm_load_ps(row3 + i + 4);
-      r4 = _mm_load_ps(row4 + i + 4);
-      r0 = _mm_add_ps(r0, r4);
-      r1 = _mm_add_ps(_mm_add_ps(r1, r3), r2);
-      r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));
-      t1 = _mm_add_ps(r0, _mm_mul_ps(r1, four));
-
-      t0 = _mm_mul_ps(t0, scale);
-      t1 = _mm_mul_ps(t1, scale);
-
-      _mm_storeu_ps(out + i, t0);
-      _mm_storeu_ps(out + i + 4, t1);
+      // convolve the next four pixel wide vertical slice
+      base += 4;
+      __m128 right = convolve14641_vert(base,wd);
+      // horizontal pass, generate two output values from convolving with 1 4 6 4 1
+      // the first uses pixels 0-4, the second uses 2-6
+      __m128 conv = _mm_mul_ps(left,kernel);
+      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.f;
+      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6*right[0] + right[2]) / 256.f;
+      // shift to next pair of output columns (four input columns)
+      left = right;
     }
-    // process the rest
-    for(int i=cw&~7;i<cw-1;i++)
-      out[i] = (6*row2[i] + 4*(row1[i] + row3[i]) + row0[i] + row4[i])*(1.0f/256.0f);
+    // handle the left-over pixel if the output size is odd
+    if (cw % 2)
+    {
+      base += 4;
+      float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
+      __m128 conv = _mm_mul_ps(left,kernel);
+      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
+    }
   }
-  dt_free_align(ringbuf);
   ll_fill_boundary1(coarse, cw, ch);
 }
 #endif
@@ -226,19 +248,24 @@ static inline void gauss_reduce(
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
   // this is the scalar (non-simd) code:
-  const float a = 0.4f;
-  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
+  const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
   memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
+  // is greater than the time needed to do it sequentially
+#pragma omp parallel for default(none) if (ch*cw>500)  \
   dt_omp_firstprivate(coarse, cw, ch, input, w, wd) \
   schedule(static) \
   collapse(2)
 #endif
-  for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
-    for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
-      coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+  for(int j=1;j<ch-1;j++)
+    for(int i=1;i<cw-1;i++)
+    {
+      for(int jj=-2;jj<=2;jj++)
+        for(int ii=-2;ii<=2;ii++)
+          coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+    }
   ll_fill_boundary1(coarse, cw, ch);
 }
 
@@ -264,7 +291,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ht, input, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // fill regular pixels:
     for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
@@ -293,7 +320,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, max_supp, out, wd, stride) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // left border
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
@@ -302,7 +329,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, max_supp, out, stride, wd) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // right border
     for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
@@ -311,7 +338,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(max_supp, out) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // top border
     for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
@@ -320,7 +347,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ht, max_supp, out) \
     shared(wd2, ht2, b) \
-    schedule(dynamic) \
+    schedule(static) \
     collapse(2)
 #endif // bottom border
     for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
@@ -333,7 +360,7 @@ static inline float *ll_pad_input(
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(input, ht, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
-    schedule(dynamic)
+    schedule(static)
 #endif
     for(int j=0;j<ht;j++)
     {
@@ -344,37 +371,17 @@ static inline float *ll_pad_input(
       for(int i=wd+max_supp;i<*wd2;i++)
         out[(j+max_supp)**wd2+i] = input[stride*(j*wd+wd-1)] * 0.01f; // L -> [0,1]
     }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(max_supp, out) \
-    shared(wd2, ht2) \
-    schedule(dynamic)
-#endif
-    for(int j=0;j<max_supp;j++)
-      memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    schedule(dynamic) \
-    dt_omp_firstprivate(ht, max_supp, out) \
-    shared(wd2, ht2)
-#endif
-    for(int j=max_supp+ht;j<*ht2;j++)
-      memcpy(out + *wd2*j, out + *wd2*(max_supp+ht-1), sizeof(float)**wd2);
+    pad_by_replication(out, *wd2, *ht2, max_supp);
   }
-#if 0
+#ifdef DEBUG_DUMP
   if(b && b->mode == 2)
   {
-    FILE *f = fopen("/tmp/padded.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", *wd2, *ht2);
-    for(int j=0;j<*ht2;j++)
-      for(int i=0;i<*wd2;i++)
-        for(int c=0;c<3;c++)
-          fwrite(out + *wd2*j+i, 1, sizeof(float), f);
-    fclose(f);
+    dump_PFM("/tmp/padded.pfm",out,*wd2,*ht2);
   }
 #endif
   return out;
 }
+
 
 static inline float ll_laplacian(
     const float *const coarse,   // coarse res gaussian
@@ -493,7 +500,7 @@ void apply_curve_sse2(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, shadows, sigma, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(uint32_t j=padding;j<h-padding;j++)
   {
@@ -518,18 +525,7 @@ void apply_curve_sse2(
     for(int i=0;i<padding;i++)   out2[i] = out2[padding];
     for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, padding, w) \
-  schedule(dynamic)
-#endif
-  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, out, padding, w) \
-  schedule(dynamic)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+  pad_by_replication(out, w, h, padding);
 }
 #endif
 
@@ -549,7 +545,7 @@ void apply_curve(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, sigma, shadows, w) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(uint32_t j=padding;j<h-padding;j++)
   {
@@ -561,18 +557,7 @@ void apply_curve(
     for(int i=0;i<padding;i++)   out2[i] = out2[padding];
     for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, padding, w) \
-  schedule(dynamic)
-#endif
-  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(h, out, padding, w) \
-  schedule(dynamic)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+  pad_by_replication(out, w, h, padding);
 }
 
 void local_laplacian_internal(
@@ -587,8 +572,6 @@ void local_laplacian_internal(
     const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
-#define max_levels 30
-#define num_gamma 6
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
@@ -675,28 +658,8 @@ void local_laplacian_internal(
     const int pw = dl(w,last_level), ph = dl(h,last_level);
     const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
     const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
-#if 0
-    {
-    FILE *f = fopen("/tmp/coarse.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", pw0, ph0);
-    for(int j=0;j<ph0;j++)
-      for(int i=0;i<pw0;i++)
-        for(int c=0;c<3;c++)
-          fwrite(b->output[pl0] + pw0*j+i, 1, sizeof(float), f);
-    fclose(f);
-    }
-#endif
-#if 0
-    {
-    FILE *f = fopen("/tmp/oldcoarse.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", pw, ph);
-    for(int j=0;j<ph;j++)
-      for(int i=0;i<pw;i++)
-        for(int c=0;c<3;c++)
-          fwrite(output[last_level] + pw*j+i, 1, sizeof(float), f);
-    fclose(f);
-    }
-#endif
+    debug_dump_PFM("/tmp/coarse.pfm", b->output[pl0], pw0, ph0);
+    debug_dump_PFM("/tmp/oldcoarse.pfm", output[last_level], pw, ph);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) collapse(2) default(shared)
 #endif
@@ -734,17 +697,7 @@ void local_laplacian_internal(
 #endif
       output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
     }
-#if 0
-    {
-    FILE *f = fopen("/tmp/newcoarse.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", pw, ph);
-    for(int j=0;j<ph;j++)
-      for(int i=0;i<pw;i++)
-        for(int c=0;c<3;c++)
-          fwrite(output[last_level] + pw*j+i, 1, sizeof(float), f);
-    fclose(f);
-    }
-#endif
+    debug_dump_PFM("/tmp/newcoarse.pfm", output[last_level], pw, ph);
   }
 
   // assemble output pyramid coarse to fine
@@ -782,7 +735,7 @@ void local_laplacian_internal(
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, max_supp, out, wd) \
   shared(w,output,buf) \
-  schedule(dynamic) \
+  schedule(static) \
   collapse(2)
 #endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
@@ -808,16 +761,12 @@ void local_laplacian_internal(
     if(!b || b->mode != 1)        dt_free_align(output[l]);
     for(int k=0; k<num_gamma;k++) dt_free_align(buf[k][l]);
   }
-#undef num_levels
-#undef num_gamma
 }
 
 
 size_t local_laplacian_memory_use(const int width,     // width of input image
                                   const int height)    // height of input image
 {
-#define max_levels 30
-#define num_gamma 6
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   const int max_supp = 1<<(num_levels-1);
   const int paddwd = width  + 2*max_supp;
@@ -829,21 +778,15 @@ size_t local_laplacian_memory_use(const int width,     // width of input image
     memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
 
   return memory_use;
-#undef num_levels
-#undef num_gamma
 }
 
 size_t local_laplacian_singlebuffer_size(const int width,     // width of input image
                                          const int height)    // height of input image
 {
-#define max_levels 30
-#define num_gamma 6
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   const int max_supp = 1<<(num_levels-1);
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
   return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
-#undef num_levels
-#undef num_gamma
 }

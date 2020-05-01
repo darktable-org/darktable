@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -471,7 +471,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -492,7 +492,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(ccmax < cc1)
           {
             for(int rr = rrmin; rr < rrmax; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
@@ -512,8 +512,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmax < cc1)
           {
-            for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
@@ -523,7 +523,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(rrmin > 0 && ccmax < cc1)
           {
             for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
@@ -532,7 +532,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmin > 0)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -1128,7 +1128,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -1151,7 +1151,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(ccmax < cc1)
           {
             for(int rr = rrmin; rr < rrmax; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
@@ -1173,8 +1173,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmax < cc1)
           {
-            for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
@@ -1185,7 +1185,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(rrmin > 0 && ccmax < cc1)
           {
             for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
@@ -1195,7 +1195,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmin > 0)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
                 int c = FC(rr, cc, filters);

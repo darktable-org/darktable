@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "common/image.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include "common/tags.h"
 #include <glib.h>
 #include <stdio.h>
 
@@ -52,6 +53,10 @@ typedef enum dt_imageio_levels_t
 
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
+// Set te darktable/mode/monochrome tag
+void dt_imageio_set_bw_tag(dt_image_t *img);
+// Set te darktable/mode/hdr tag
+void dt_imageio_set_hdr_tag(dt_image_t *img);
 
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
@@ -66,9 +71,10 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
 struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
 int dt_imageio_export(const uint32_t imgid, const char *filename, struct dt_imageio_module_format_t *format,
-                      struct dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
-                      const gboolean copy_metadata, dt_colorspaces_color_profile_type_t icc_type,
-                      const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
+                      struct dt_imageio_module_data_t *format_params, const gboolean high_quality,
+                      const gboolean upscale, const gboolean copy_metadata, const gboolean export_masks,
+                      dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                      dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
                       dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata);
 
 int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
@@ -76,9 +82,10 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                                  struct dt_imageio_module_data_t *format_params, const gboolean ignore_exif,
                                  const gboolean display_byteorder, const gboolean high_quality, const gboolean upscale,
                                  const gboolean thumbnail_export, const char *filter, const gboolean copy_metadata,
-                                 dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                                 dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
-                                 dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata);
+                                 const gboolean export_masks, dt_colorspaces_color_profile_type_t icc_type,
+                                 const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+                                 dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *storage_params,
+                                 int num, int total, dt_export_metadata_t *metadata);
 
 size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
                             dt_image_orientation_t orientation);
@@ -89,10 +96,6 @@ void dt_imageio_flip_buffers(char *out, const char *in,
                              const int wd, const int ht, const int fwd, const int fht, const int stride,
                              const dt_image_orientation_t orientation);
 
-void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black,
-                                           const float white, const int ch, const int wd, const int ht,
-                                           const int fwd, const int fht, const int stride,
-                                           const dt_image_orientation_t orientation);
 void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white,
                                           const int ch, const int wd, const int ht, const int fwd,
                                           const int fht, const int stride,

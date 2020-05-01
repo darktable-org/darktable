@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 edgardo hoszowski.
-    copyright (c) 2018-2019 Pascal Obry.
+    Copyright (C) 2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1067,9 +1066,6 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   }
   if(profile_info == NULL)
   {
-    // The range information below is not informative in case it's the colorin module itself.
-    if (strcmp(self->op,"colorin"))
-      fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return;
   }
@@ -1327,9 +1323,6 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   }
   if(profile_info == NULL)
   {
-    // The range information below is not informative in case it's the colorin module itself.
-    if (strcmp(self->op,"colorin"))
-      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return FALSE;
   }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,10 +40,15 @@ typedef enum dt_imageio_retval_t
 typedef enum
 {
   // the first 0x7 in flags are reserved for star ratings.
-  DT_IMAGE_DELETE = 1,
-  DT_IMAGE_OKAY = 2,
-  DT_IMAGE_NICE = 3,
-  DT_IMAGE_EXCELLENT = 4,
+  // see view.h:
+  //  DT_VIEW_DESERT = 0,
+  //  DT_VIEW_STAR_1 = 1,
+  //  DT_VIEW_STAR_2 = 2,
+  //  DT_VIEW_STAR_3 = 3,
+  //  DT_VIEW_STAR_4 = 4,
+  //  DT_VIEW_STAR_5 = 5,
+  DT_IMAGE_REJECTED = 8,
+
   // next field unused, but it used to be.
   // old DB entries might have it set.
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
@@ -151,6 +156,7 @@ typedef struct dt_image_t
   int32_t exif_inited;
   dt_image_orientation_t orientation;
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
@@ -178,6 +184,10 @@ typedef struct dt_image_t
 
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
+
+  //timestamps
+  time_t import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+
   dt_image_loader_t loader;
 
   dt_iop_buffer_dsc_t buf_dsc;
@@ -244,8 +254,6 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
-/** look for duplicate's xmp files and read them. */
-void dt_image_read_duplicates(uint32_t id, const char *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
@@ -265,22 +273,26 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 void dt_image_reset_final_size(const int32_t imgid);
-/** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on);
-/** get image location lon/lat */
+/** set image location lon/lat/ele */
+void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
+                           const gboolean undo_on, const gboolean group_on);
+/** set images location lon/lat/ele */
+void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
+                           const gboolean undo_on, const gboolean group_on);
+/** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 gboolean dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
-double dt_image_set_aspect_ratio(const int32_t imgid);
+double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
 /** set the image raw aspect ratio */
 void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** set the image final/cropped aspect ratio if different from stored*/
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio);
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid);
+void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
@@ -335,6 +347,7 @@ void dt_image_local_copy_synch(void);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
+void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
 // add an offset to the exif_datetime_taken field

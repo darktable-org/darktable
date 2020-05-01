@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 jeremy Rosen
-    copyright (c) 2016 Roman Lebedev.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -79,7 +78,8 @@ int bpp(struct dt_imageio_module_data_t *data);
 /* write to file, with exif if not NULL, and icc profile if supported. */
 int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe);
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks);
 /* flag that describes the available precision/levels of output format. mainly used for dithering. */
 int levels(struct dt_imageio_module_data_t *data);
 

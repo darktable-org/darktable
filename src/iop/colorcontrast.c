@@ -1,10 +1,7 @@
 /* -*- Mode: c; c-basic-offset: 2; -*- */
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika
-    copyright (c) 2011 Sergey Astanin
-    copyright (c) 2012 Henrik Andersson
-    copyright (c) 2014 Ulrich Pegelow
+    Copyright (C) 2011-2020 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify

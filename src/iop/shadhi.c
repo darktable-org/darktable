@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2012--2015 Ulrich Pegelow.
+  Copyright (C) 2012-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -280,6 +280,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows color correction"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights color correction"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "soften with"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -293,6 +294,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress));
   dt_accel_connect_slider_iop(self, "shadows color correction", GTK_WIDGET(g->shadows_ccorrect));
   dt_accel_connect_slider_iop(self, "highlights color correction", GTK_WIDGET(g->highlights_ccorrect));
+  dt_accel_connect_combobox_iop(self, "soften with", GTK_WIDGET(g->shadhi_algo));
 }
 
 

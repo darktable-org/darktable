@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,9 +128,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else if(rad <= 6)
   {
-    float *in = (float *)ivoid;
-    float *out = (float *)ovoid;
-
     static const size_t weights_size = 2 * (6 + 1) * 2 * (6 + 1);
     float mat[weights_size];
     const int wd = 2 * rad + 1;
@@ -151,13 +148,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf) \
     shared(m, mat, isig2col) \
-    private(in, out) \
     schedule(static)
 #endif
     for(int j = rad; j < roi_out->height - rad; j++)
     {
-      in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
-      out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
+      const float *in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
+      float *out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
       float *weights = weights_buf + weights_size * dt_get_thread_num();
       float *w = weights + rad * wd + rad;
       float sumw;
@@ -167,7 +163,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++)
           {
-            float *inp = in + ch * (l * roi_in->width + k);
+	    const float *inp = in + ch * (l * roi_in->width + k);
             sumw += w[l * wd + k] = m[l * wd + k]
                                     * expf(-((in[0] - inp[0]) * (in[0] - inp[0]) * isig2col[0]
                                              + (in[1] - inp[1]) * (in[1] - inp[1]) * isig2col[1]
@@ -179,7 +175,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++)
           {
-            float *inp = in + ch * ((size_t)l * roi_in->width + k);
+            const float *inp = in + ch * ((size_t)l * roi_in->width + k);
             float pix_weight = w[(size_t)l * wd + k];
             for(int c = 0; c < 3; c++) out[c] += inp[c] * pix_weight;
           }
@@ -199,8 +195,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
     for(int j = rad; j < roi_out->height - rad; j++)
     {
-      in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
-      out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
+      const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
+      float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
       for(int i = 0; i < rad; i++)
         for(int c = 0; c < 3; c++) out[ch * i + c] = in[ch * i + c];
       for(int i = roi_out->width - rad; i < roi_out->width; i++)
