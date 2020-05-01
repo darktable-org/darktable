@@ -563,8 +563,6 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     if(rating != DT_VIEW_DESERT)
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
-      // be sure to update image infos
-      dt_thumbnail_update_infos(thumb);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                  g_list_append(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
@@ -631,6 +629,25 @@ static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, g
 
 // this is called each time the images info change
 static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gpointer user_data)
+{
+  if(!user_data || !imgs) return;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  const GList *i = imgs;
+  while(i)
+  {
+    if(GPOINTER_TO_INT(i->data) == thumb->imgid)
+    {
+      dt_thumbnail_update_infos(thumb);
+      break;
+    }
+    i = g_list_next(i);
+  }
+}
+
+// this is called each time collected images change
+// we only use this because the image infos may have changed
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                            const int next, gpointer user_data)
 {
   if(!user_data || !imgs) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -799,6 +816,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
                               G_CALLBACK(_dt_preview_updated_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
                               G_CALLBACK(_dt_image_info_changed_callback), thumb);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                              G_CALLBACK(_dt_collection_changed_callback), thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
