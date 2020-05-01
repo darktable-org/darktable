@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ typedef enum dt_iop_guided_filter_blending_t
 #pragma omp declare simd
 #endif
 __DT_CLONE_TARGETS__
-static float fast_clamp(const float value, const float bottom, const float top)
+static inline float fast_clamp(const float value, const float bottom, const float top)
 {
   // vectorizable clamping between bottom and top values
   return fmax(fmin(value, top), bottom);

@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2010--2012 henrik andersson.
-    copyright (c) 2010--2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -241,8 +239,6 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
   {
     // import a directory into a film roll
-    unsigned int last_char = strlen(filename) - 1;
-    if(filename[last_char] == '/') filename[last_char] = '\0';
     id = dt_film_import(filename);
     if(id)
     {
@@ -869,6 +865,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  //db maintenance on startup (if configured to do so)
+  dt_database_maybe_maintenance(darktable.db, init_gui, FALSE);
+
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -979,6 +978,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  // set up memory.darktable_iop_names table
+  dt_iop_set_darktable_iop_table();
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
@@ -1031,6 +1033,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
+#ifdef HAVE_GAME
     // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
     time_t now;
     time(&now);
@@ -1047,6 +1050,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         mode = "knight";
       }
     }
+#endif
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1095,6 +1099,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
+
+  dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
@@ -1157,6 +1163,7 @@ void dt_cleanup()
 
   dt_guides_cleanup(darktable.guides);
 
+  dt_database_optimize(darktable.db);
   dt_database_destroy(darktable.db);
 
   if(init_gui)

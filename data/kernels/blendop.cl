@@ -21,7 +21,6 @@
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_MASK_FLAG = 0x80,
   DEVELOP_BLEND_DISABLED = 0x00,
   DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
@@ -1001,6 +1000,7 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
 			const int width, const int height,
 			const float e, const float brightness, const float gopacity)
 {
+  const float mask_epsilon = 16 * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
@@ -1009,9 +1009,9 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
   float opacity = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   float scaled_opacity = (2.f * opacity / gopacity - 1.f);
   if (1.f - brightness <= 0.f)
-    scaled_opacity = opacity <= 16 * FLT_EPSILON ? -1.f : 1.f;
+    scaled_opacity = opacity <= mask_epsilon ? -1.f : 1.f;
   else if (1.f + brightness <= 0.f)
-    scaled_opacity = opacity >= 1.f - 16 * FLT_EPSILON ? 1.f : -1.f;
+    scaled_opacity = opacity >= 1.f - mask_epsilon ? 1.f : -1.f;
   else if (brightness > 0.f)
   {
     scaled_opacity = (scaled_opacity + brightness) / (1.f - brightness);

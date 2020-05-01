@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 philippe weyland.
+    Copyright (C) 2019-2020 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -56,7 +56,7 @@ typedef struct dt_lib_export_metadata_t
   GList *taglist;
 } dt_lib_export_metadata_t;
 
-GList *dt_get_exiv2_taglist();
+GList *dt_exif_get_exiv2_taglist();
 
 // find a string on the list
 static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
@@ -373,7 +373,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  d->taglist = dt_get_exiv2_taglist();
+  d->taglist = dt_exif_get_exiv2_taglist();
   GList *list = dt_util_str_to_glist("\1", metadata_presets);
   int32_t flags = 0;
   if (list)

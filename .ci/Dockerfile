@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    copyright (c) 2016-2019 Roman Lebedev.
+#    copyright (c) 2016-2020 Roman Lebedev.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/80forceyes
 RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
 ENV GCC_VER=9
-ENV LLVM_VER=9
+ENV LLVM_VER=10
 
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \

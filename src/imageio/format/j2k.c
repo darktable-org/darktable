@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -320,7 +320,8 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
 
 int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   const float *in = (const float *)in_tmp;
   dt_imageio_j2k_t *j2k = (dt_imageio_j2k_t *)j2k_tmp;
@@ -680,7 +681,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 int flags(dt_imageio_module_data_t *data)
 {
   dt_imageio_j2k_t *j = (dt_imageio_j2k_t *)data;
-  return (j->format == JP2_CFMT ? FORMAT_FLAGS_SUPPORT_XMP : 0);
+  return ((j && j->format == JP2_CFMT) ? FORMAT_FLAGS_SUPPORT_XMP : 0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

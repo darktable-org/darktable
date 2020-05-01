@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017 edgardo hoszowski.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -286,7 +286,6 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   float *temp = NULL;
   float *layers = NULL;
   float *merged_layers = NULL;
-  unsigned int lpass, hpass;
   float *buffer[2] = { 0, 0 };
   int bcontinue = 1;
   const int size = p->width * p->height * p->ch;
@@ -336,11 +335,10 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   }
 
   // iterate over wavelet scales
-  lpass = 1;
-  hpass = 0;
+  unsigned int hpass = 0;
   for(unsigned int lev = 0; lev < p->scales && bcontinue; lev++)
   {
-    lpass = (1 - (lev & 1));
+    unsigned int lpass = (1 - (lev & 1));
 
     for(int row = 0; row < p->height; row++)
     {

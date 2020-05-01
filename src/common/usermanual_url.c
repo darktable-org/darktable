@@ -1,5 +1,6 @@
 /*
     This file is part of darktable,
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,6 +52,8 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "global_toolbox_preferences")) return "preferences.html#preferences";
   if(!strcmp(name, "global_toolbox_help")) return "contextual_help.html#contextual_help";
   if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
+  if(!strcmp(name, "lighttable_filemanager")) return "lighttable_chapter.html#lighttable_filemanager";
+  if(!strcmp(name, "lighttable_zoomable")) return "lighttable_chapter.html#lighttable_zoomable";
   if(!strcmp(name, "module_toolbox")) return NULL;
   if(!strcmp(name, "view_toolbox")) return NULL;
   if(!strcmp(name, "backgroundjobs")) return NULL;
@@ -130,5 +133,6 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "invert")) return "modules.html#invert";
   if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
   if(!strcmp(name, "filmic")) return "tone_group.html#filmic";
+  if(!strcmp(name, "filmicrgb")) return "tone_group.html#filmic";
   return NULL;
 }

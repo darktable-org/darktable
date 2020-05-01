@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1061,15 +1060,16 @@ error:
 void rgb2hsl(const float rgb[3], float *h, float *s, float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  float pmax = fmax(r, fmax(g, b));
-  float pmin = fmin(r, fmin(g, b));
-  float delta = (pmax - pmin);
+  const float pmax = fmaxf(r, fmax(g, b));
+  const float pmin = fminf(r, fmin(g, b));
+  const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
 
-  if(pmax != pmin)
+  if(delta != 0.0f)
   {
-    sv = lv < 0.5 ? delta / (pmax + pmin) : delta / (2.0 - pmax - pmin);
+    sv = lv < 0.5 ? delta / fmaxf(pmax + pmin, 1.52587890625e-05f) 
+                  : delta / fmaxf(2.0 - pmax - pmin, 1.52587890625e-05f);
 
     if(pmax == r)
       hv = (g - b) / delta;
@@ -1941,7 +1941,7 @@ gboolean dt_colorspaces_is_profile_equal(const char *fullname, const char *filen
   // basename as recorded in an iop.
   return _colorspaces_is_base_name(filename)
     ? !strcmp(_colorspaces_get_base_name(fullname), filename)
-    : !strcmp(fullname, filename);
+    : !strcmp(_colorspaces_get_base_name(fullname), _colorspaces_get_base_name(filename));
 }
 
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
@@ -1977,7 +1977,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
 // Copied from dcraw's pseudoinverse()
 static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
 {
-  double work[3][6], num;
+  double work[3][6];
 
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 6; j++)
@@ -1987,7 +1987,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
         work[i][j] += in[k][i] * in[k][j];
   }
   for(int i = 0; i < 3; i++) {
-    num = work[i][i];
+    double num = work[i][i];
     for(int j = 0; j < 6; j++)
       work[i][j] /= num;
     for(int k = 0; k < 3; k++) {

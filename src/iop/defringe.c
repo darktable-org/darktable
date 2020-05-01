@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013-2014 dennis gnad.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge detection radius"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "operation mode"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -122,6 +123,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "edge detection radius", GTK_WIDGET(g->radius_scale));
   dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->thresh_scale));
+  dt_accel_connect_combobox_iop(self, "operation mode", GTK_WIDGET(g->mode_select));
 }
 
 // fibonacci lattice to select surrounding pixels for different cases

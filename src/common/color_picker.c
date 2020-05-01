@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Roman Lebedev.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -417,9 +417,9 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
   else if(dsc->channels == 4u && image_cst == iop_cs_rgb && picker_cst == iop_cs_HSL)
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
-  else if(dsc->channels == 1u && dsc->filters && dsc->filters != 9u)
+  else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
     color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
-  else if(dsc->channels == 1u && dsc->filters && dsc->filters == 9u)
+  else if(dsc->channels == 1u && dsc->filters == 9u)
     color_picker_helper_xtrans(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else
     dt_unreachable_codepath();

@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -617,6 +616,10 @@ static int dt_lib_load_module(void *m, const char *libname, const char *plugin_n
   {
     dt_accel_register_lib(module, NC_("accel", "show preset menu"), 0, 0);
   }
+  if(module->expandable(module))
+  {
+    dt_accel_register_lib(module, NC_("accel", "show module"), 0, 0);
+  }
 #ifdef USE_LUA
   dt_lua_lib_register(darktable.lua_state.state, module);
 #endif
@@ -939,6 +942,55 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
+static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+
+{
+  dt_lib_module_t *module = (dt_lib_module_t *)data;
+
+  /* bail out if module is static */
+  if(!module->expandable(module)) return FALSE;
+
+  // make gtk scroll to the module once it updated its allocation size
+  uint32_t container = module->container(module);
+  if(dt_conf_get_bool("lighttable/ui/scroll_to_module"))
+  {
+    if(container == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
+      darktable.gui->scroll_to[0] = module->expander;
+    else if(container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER)
+      darktable.gui->scroll_to[1] = module->expander;
+  }
+
+  if(dt_conf_get_bool("lighttable/ui/single_module"))
+  {
+    GList *it = g_list_first(darktable.lib->plugins);
+    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    gboolean all_other_closed = TRUE;
+    while(it)
+    {
+      dt_lib_module_t *m = (dt_lib_module_t *)it->data;
+
+      if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
+      {
+        all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
+        dt_lib_gui_set_expanded(m, FALSE);
+      }
+
+      it = g_list_next(it);
+    }
+    if(all_other_closed)
+      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+    else
+      dt_lib_gui_set_expanded(module, TRUE);
+    }
+    else
+    {
+      /* else just toggle */
+      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+    }
+  return TRUE;
+}
+
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 {
   /* check if module is expandable */
@@ -1128,6 +1180,12 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
   if(module->reset_button)
     dt_accel_connect_button_lib(module, "reset module parameters", module->reset_button);
   if(module->presets_button) dt_accel_connect_button_lib(module, "show preset menu", module->presets_button);
+  if(module->expandable(module)) 
+  {
+    GClosure *closure = NULL;
+    closure = g_cclosure_new(G_CALLBACK(show_module_callback), module, NULL);
+    dt_accel_connect_lib(module, "show module", closure);
+  }
   if(module->init_presets)
   {
     sqlite3_stmt *stmt;

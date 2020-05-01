@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,6 +116,18 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
     if(p->type == DT_COLORSPACE_LAB) cst = iop_cs_Lab;
   }
   return cst;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "export profile"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_combobox_iop(self, "export profile", GTK_WIDGET(g->output_profile));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

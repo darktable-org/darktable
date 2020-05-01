@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2012-2015 tobias ellinghaus.
+ *    Copyright (C) 2012-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -54,21 +54,21 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   cairo_set_line_width(cr, 1.0 / zoom_scale);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_set_source_rgba(cr, .2, .2, .2, .3);
+  dt_draw_set_color_overlay(cr, 0.2, 0.3);
   dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
   cairo_set_dash(cr, &dashes, 1, dashes);
-  cairo_set_source_rgba(cr, .8, .8, .8, .3);
+  dt_draw_set_color_overlay(cr, 0.8, 0.3);
   dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_set_source_rgba(cr, .2, .2, .2, .5);
+  dt_draw_set_color_overlay(cr, 0.2, 0.5);
   dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, dashes);
-  cairo_set_source_rgba(cr, .8, .8, .8, .5);
+  dt_draw_set_color_overlay(cr, 0.8, 0.5);
   dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
 }

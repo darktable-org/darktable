@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2016 Ulrich Pegelow.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,12 +179,21 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method (bayer)"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method (xtrans)"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color smoothing"));
+  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "match greens"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_accel_connect_slider_iop(self, "edge threshold",
-                              GTK_WIDGET(((dt_iop_demosaic_gui_data_t *)self->gui_data)->median_thrs));
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "edge threshold", GTK_WIDGET(g->median_thrs));
+  dt_accel_connect_combobox_iop(self, "method (bayer)", GTK_WIDGET(g->demosaic_method_bayer));
+  dt_accel_connect_combobox_iop(self, "method (xtrans)", GTK_WIDGET(g->demosaic_method_xtrans));
+  dt_accel_connect_combobox_iop(self, "color smoothing", GTK_WIDGET(g->color_smoothing));
+  dt_accel_connect_combobox_iop(self, "match greens", GTK_WIDGET(g->greeneq));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

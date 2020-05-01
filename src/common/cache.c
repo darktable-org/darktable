@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 johannes hanika.
-    copyright (c) 2015 LebedevRI
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,7 +110,6 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 {
   gpointer orig_key, value;
   gboolean res;
-  int result;
   double start = dt_get_wtime();
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(
@@ -120,8 +118,8 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
-    if(mode == 'w') result = dt_pthread_rwlock_trywrlock(&entry->lock);
-    else            result = dt_pthread_rwlock_tryrdlock(&entry->lock);
+    const int result
+        = (mode == 'w') ? dt_pthread_rwlock_trywrlock(&entry->lock) : dt_pthread_rwlock_tryrdlock(&entry->lock);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,6 +53,16 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_overlay_colors_t
+{
+  DT_DEV_OVERLAY_GRAY = 0,
+  DT_DEV_OVERLAY_RED = 1,
+  DT_DEV_OVERLAY_GREEN = 2,
+  DT_DEV_OVERLAY_YELLOW = 3,
+  DT_DEV_OVERLAY_CYAN = 4,
+  DT_DEV_OVERLAY_MAGENTA = 5
+} dt_dev_overlay_colors_t;
+
 typedef enum dt_dev_rawoverexposed_mode_t {
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID = 1,
@@ -66,11 +76,17 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
 
+typedef enum dt_dev_scope_type_t
+{
+  DT_DEV_SCOPE_HISTOGRAM = 0,
+  DT_DEV_SCOPE_WAVEFORM,
+  DT_DEV_SCOPE_N // needs to be the last one
+} dt_dev_scope_type_t;
+
 typedef enum dt_dev_histogram_type_t
 {
   DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
   DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_WAVEFORM,
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
 
@@ -113,7 +129,7 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
-extern const gchar *dt_dev_histogram_type_names[];
+extern const gchar *dt_dev_scope_type_names[];
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -132,7 +148,7 @@ typedef struct dt_develop_t
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
-  int32_t image_loading, first_load, image_force_reload;
+  int32_t image_loading, first_load, image_force_reload, history_updating;
   int32_t preview_loading, preview_input_changed;
   int32_t preview2_loading, preview2_input_changed;
   dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
@@ -182,6 +198,7 @@ typedef struct dt_develop_t
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint8_t *histogram_waveform;
   uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
+  dt_dev_scope_type_t scope_type;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
@@ -271,6 +288,16 @@ typedef struct dt_develop_t
     dt_dev_rawoverexposed_colorscheme_t colorscheme;
     float threshold;
   } rawoverexposed;
+
+  // for the overlay color indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button, *colors; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_overlay_colors_t color;
+  } overlay_color;
 
   // ISO 12646-compliant colour assessment conditions
   struct
