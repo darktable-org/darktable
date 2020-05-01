@@ -629,6 +629,23 @@ static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, g
   return FALSE;
 }
 
+// this is called each time the images info change
+static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gpointer user_data)
+{
+  if(!user_data || !imgs) return;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  const GList *i = imgs;
+  while(i)
+  {
+    if(GPOINTER_TO_INT(i->data) == thumb->imgid)
+    {
+      dt_thumbnail_update_infos(thumb);
+      break;
+    }
+    i = g_list_next(i);
+  }
+}
+
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
@@ -780,6 +797,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
                               G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_dt_preview_updated_callback), thumb);
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+                              G_CALLBACK(_dt_image_info_changed_callback), thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
