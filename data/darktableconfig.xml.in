@@ -616,6 +616,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/overlay_timeout</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription>timeout for overlay hover block in seconds</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/overlays/0/0</name>
     <type>int</type>
     <default>0</default>

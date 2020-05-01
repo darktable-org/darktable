@@ -497,7 +497,8 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
       thumb->overlay_timeout_id = 0;
     }
     _thumbs_show_overlays(thumb);
-    thumb->overlay_timeout_id = g_timeout_add_seconds(OVERLAY_BLOCK_TIMEOUT, _thumbs_hide_overlays, thumb);
+    thumb->overlay_timeout_id
+        = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
   }
 
   if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
@@ -974,6 +975,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->over = over;
   thumb->zoomable = zoomable;
   thumb->zoom_glob = 1.0f;
+  thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
 
   // we read and cache all the infos from dt_image_t that we need
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1144,7 +1146,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, width / 2, width), 6.5 * r1 + h);
+    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.5 * r1 + h);
     line2 = 4.0 * r1 + h + r1;
     line3 = 4.0 * r1 + h + 4.0 * r1;
 

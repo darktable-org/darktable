@@ -634,6 +634,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE);
     l = g_list_next(l);
