@@ -71,8 +71,6 @@ typedef struct dt_culling_t
   // global zoom/pan values. Individual values for images not synchronized with the other are stored inside
   // dt_thumbnail_t
   float full_zoom; // global zooming value, 1.0 == zoom to fit
-  float full_x;    // global panning value
-  float full_y;    // global panning value
 
   gboolean panning; // are we moving zoomed images ?
   int pan_x;        // last position during panning
