@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-29 20:15-0500\n"
-"PO-Revision-Date: 2020-04-29 22:50-0500\n"
+"POT-Creation-Date: 2020-04-30 20:13-0500\n"
+"PO-Revision-Date: 2020-04-30 21:14-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1335,8 +1335,8 @@ msgstr "Imprimir tus imagenes"
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
 #: ../src/libs/import.c:790 ../src/libs/import.c:897 ../src/libs/lib.c:227
-#: ../src/libs/styles.c:301 ../src/libs/styles.c:324 ../src/libs/tagging.c:2152
-#: ../src/libs/tagging.c:2193
+#: ../src/libs/styles.c:301 ../src/libs/styles.c:324 ../src/libs/tagging.c:2164
+#: ../src/libs/tagging.c:2205
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -1552,13 +1552,13 @@ msgstr "orden de módulo"
 #: ../src/iop/bilateral.cc:369 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2534
 #: ../src/iop/temperature.c:1387 ../src/libs/collect.c:1419
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2344
 msgid "red"
 msgstr "rojo"
 
 #: ../src/common/collection.c:1357 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1419
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2346
 msgid "yellow"
 msgstr "amarillo"
 
@@ -1566,7 +1566,7 @@ msgstr "amarillo"
 #: ../src/iop/bilateral.cc:370 ../src/iop/channelmixer.c:459
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2541
 #: ../src/iop/temperature.c:1375 ../src/iop/temperature.c:1388
-#: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2344
+#: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2345
 msgid "green"
 msgstr "verde"
 
@@ -1634,7 +1634,7 @@ msgid "export profile"
 msgstr "perfil de exportación"
 
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
-#: ../src/views/darkroom.c:2221
+#: ../src/views/darkroom.c:2222
 msgid "softproof profile"
 msgstr "perfil (impresión)"
 
@@ -1837,7 +1837,7 @@ msgstr ""
 msgid "no"
 msgstr "no"
 
-#: ../src/common/darktable.c:812 ../src/common/database.c:2817
+#: ../src/common/darktable.c:812 ../src/common/database.c:2850
 #: ../src/common/variables.c:451 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2197
 #: ../src/libs/export.c:637 ../src/libs/export.c:643 ../src/libs/export.c:650
@@ -1845,31 +1845,106 @@ msgstr "no"
 msgid "yes"
 msgstr "sí"
 
-#: ../src/common/database.c:2103
+#: ../src/common/database.c:2111
 #, c-format
 msgid ""
-"an error has occurred while trying to open the database from\n"
 "\n"
-"<span style=\"italic\">%s</span>\n"
+" At startup, the database failed to open because at least one of the two "
+"files in the database is locked.\n"
 "\n"
-"%s\n"
+" The persistence of the lock is mainly caused by one of the two following "
+"causes:\n"
+"\n"
+" - Another occurrence of darktable has already opened this database file and "
+"locked it for its benefit.\n"
+"\n"
+" - A previous occurrence of darktable ended abnormally and therefore \n"
+"   could not close one or both files in the database properly.\n"
+"\n"
+" How to solve this problem?\n"
+"\n"
+" 1 - Search in your environment if another darktable occurrence is active. "
+"If so, use it or close it. \n"
+"     The lock indicates that the process number of this occurrence is : "
+"<i><b>%d</b></i>\n"
+"\n"
+" 2 - If you can't find this other occurrence, try closing your session and "
+"reopening it or shutting down your computer. \n"
+"     This will delete all running programs and thus close the database "
+"correctly.\n"
+"\n"
+" 3 - If these two actions are not enough, it is because at least one of the "
+"two files that materialize the locks remains \n"
+"     and that these are no longer attached to any occurrence of darktable. "
+"It is then necessary to delete it (or them). \n"
+"     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> "
+"respectively. The opening mechanism signals \n"
+"     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
+"folder. \n"
+"     (full pathname: <i><b>%s</b></i>).\n"
+"\n"
+"     <u>Caution!</u> Do not delete these files without first checking that "
+"there are no more occurrences of darktable, \n"
+"     otherwise you risk generating serious inconsistencies in your "
+"database.\n"
+"\n"
+" As soon as you have identified and removed the cause of the lock, darktable "
+"will start without any problem.\n"
 msgstr ""
-"Ocurrió un error mientras se intentaba abrir la base de datos desde\n"
 "\n"
-"<span style=\"italic\">%s</span>\n"
+" Al iniciar, no fue posible abrir la base de datos porque al menos uno de "
+"los dos archivos que pertenecen a la base de datos está bloqueado.\n"
 "\n"
-"%s\n"
+" Si existe un bloqueo persistente, principalmente se puede deber a una de "
+"las dos causas siguientes:\n"
+"\n"
+" · Una instancia de darktable abrió previamente los archivos pertenecientes "
+"a la base de datos y los ha bloqueado por protección.\n"
+"\n"
+" · Una instancia previa de darktable se cerró atípicamente y por lo tanto, \n"
+"   no pudo cerrar correctamente uno o ambos archivos de la base de datos.\n"
+"\n"
+" ¿Cómo resolver este problema?\n"
+"\n"
+" 1. Verifique si existe ya una instancia activa de darktable. Si es así, "
+"puede usarla o cerrarla. \n"
+"     El número de proceso de esta instancia indicado por el bloqueo es: "
+"<i><b>%d</b></i>\n"
+"\n"
+" 2. Si no puede encontrar esta otra instancia, pruebe con cerrar e iniciar "
+"la sesión o con reiniciar la computadora. \n"
+"     Esto borrará todos los programas en ejecución y así cerrará la base de "
+"datos correctamente.\n"
+"\n"
+" 3. Si estas dos acciones no son suficientes, es porque al menos uno de los "
+"dos archivos que generaronn los bloqueos permanece \n"
+"     y que estos ya no están ligados a ninguna instancia de darktable. "
+"Entonces es necesario eliminar uno o ambos. \n"
+"     Los dos archivos se llaman <i>data.db.lock</i> y <i>library.db.lock</i> "
+"respectivamente. El mecanismo de apertura señala \n"
+"     la presencia del archivo <i><b>%s</b></i> en la carpeta <i><b>%s</b></"
+"i>. \n"
+"     (ruta completa: <i><b>%s</b></i>).\n"
+"\n"
+"     <u>¡Precaución!</u> No borre estos archivos sin antes comprobar que no "
+"hay más instancias de darktable, \n"
+"     de lo contrario corre el riesgo de provocar inconsistencias graves en "
+"la base de datos.\n"
+"\n"
+" Tan pronto como se haya identificado y eliminado la causa del bloqueo, "
+"darktable iniciará apropiadamente.\n"
+"\n"
 
-#: ../src/common/database.c:2110
-msgid "darktable - error locking database"
-msgstr "Error en darktable al bloquear la base de datos"
+#: ../src/common/database.c:2141
+msgid "darktable cannot be started because the database is locked"
+msgstr "darktable no se puede iniciar porque la base de datos está bloqueada"
 
-#: ../src/common/database.c:2110 ../src/common/database.c:2281
-#: ../src/common/database.c:2526 ../src/common/database.c:2608
+#: ../src/common/database.c:2142 ../src/common/database.c:2314
+#: ../src/common/database.c:2559 ../src/common/database.c:2641
 msgid "close darktable"
 msgstr "Cerrar darktable"
 
-#: ../src/common/database.c:2221
+#: ../src/common/database.c:2254
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1878,19 +1953,19 @@ msgstr ""
 "El archivo de bloqueo de la base de datos contiene un pid que parece estar "
 "aun activo en su sistema: %d"
 
-#: ../src/common/database.c:2227
+#: ../src/common/database.c:2260
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "El archivo de bloqueo de la base de datos parece estar vacío"
 
-#: ../src/common/database.c:2235
+#: ../src/common/database.c:2268
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Error al abrir el archivo de bloqueo de la base de datos para su lectura: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2272
+#: ../src/common/database.c:2305
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1905,17 +1980,17 @@ msgstr ""
 "\n"
 "¿Desea continuar o salir ahora para hacer una copia de seguridad?\n"
 
-#: ../src/common/database.c:2280
+#: ../src/common/database.c:2313
 msgid "darktable - schema migration"
 msgstr "migración de esquemas de darktable"
 
-#: ../src/common/database.c:2281
+#: ../src/common/database.c:2314
 msgid "upgrade database"
 msgstr "Actualizar la base de datos"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2515 ../src/common/database.c:2597
+#: ../src/common/database.c:2548 ../src/common/database.c:2630
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1934,28 +2009,28 @@ msgstr ""
 "¿Desea cerrar manualmente darktable para reiniciar\n"
 "desde el respaldo la base de datos o comenzar con una nueva?"
 
-#: ../src/common/database.c:2525 ../src/common/database.c:2607
+#: ../src/common/database.c:2558 ../src/common/database.c:2640
 msgid "darktable - error opening database"
 msgstr "Error en darktable al abrir la base de datos"
 
-#: ../src/common/database.c:2526 ../src/common/database.c:2608
+#: ../src/common/database.c:2559 ../src/common/database.c:2641
 msgid "delete database"
 msgstr "borrar base de datos"
 
-#: ../src/common/database.c:2794
+#: ../src/common/database.c:2827
 msgid "click later to be asked on next startup"
 msgstr "Pulse 'Después' para que se le pregunte en el próximo reinicio"
 
-#: ../src/common/database.c:2798
+#: ../src/common/database.c:2831
 msgid "click later to be asked when closing darktable"
 msgstr "Pulse 'Después' para que se le pregunte al cerrar darktable"
 
-#: ../src/common/database.c:2802
+#: ../src/common/database.c:2835
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "Pulse 'Después' para que se le pregunte la próxima vez que cierre darktable"
 
-#: ../src/common/database.c:2806
+#: ../src/common/database.c:2839
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -1976,11 +2051,11 @@ msgstr ""
 "Se pueden cambiar las preferencias de mantenimiento en las opciones "
 "principales"
 
-#: ../src/common/database.c:2816
+#: ../src/common/database.c:2849
 msgid "darktable - schema maintenance"
 msgstr "Mantenimiento del esquema de darktable"
 
-#: ../src/common/database.c:2817
+#: ../src/common/database.c:2850
 msgid "later"
 msgstr "Después"
 
@@ -3383,11 +3458,11 @@ msgid "move down"
 msgstr "bajar"
 
 #: ../src/develop/imageop.c:1036 ../src/libs/image.c:168
-#: ../src/libs/tagging.c:1246 ../src/libs/tagging.c:1336
+#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:1043 ../src/libs/tagging.c:1759
+#: ../src/develop/imageop.c:1043 ../src/libs/tagging.c:1771
 msgid "rename"
 msgstr "renombrar"
 
@@ -3991,7 +4066,7 @@ msgstr "luz de sol del atardecer"
 msgid "underwater"
 msgstr "submarino"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2118
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2119
 msgid "black & white"
 msgstr "blanco y negro"
 
@@ -4166,7 +4241,7 @@ msgstr "%s %s / %s"
 msgid "%s / %s"
 msgstr "%s / %s"
 
-#: ../src/gui/accelerators.c:588 ../src/libs/tagging.c:2123
+#: ../src/gui/accelerators.c:588 ../src/libs/tagging.c:2135
 #, c-format
 msgid "%s"
 msgstr "%s"
@@ -4185,9 +4260,9 @@ msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:421 ../src/libs/metadata.c:429
-#: ../src/libs/tagging.c:1246 ../src/libs/tagging.c:1336
-#: ../src/libs/tagging.c:1417 ../src/libs/tagging.c:1542
-#: ../src/libs/tagging.c:1759
+#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1429 ../src/libs/tagging.c:1554
+#: ../src/libs/tagging.c:1771
 msgid "cancel"
 msgstr "cancelar"
 
@@ -6530,7 +6605,7 @@ msgstr "modo"
 #: ../src/iop/rgblevels.c:1033 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:703 ../src/libs/image.c:510
 #: ../src/libs/print_settings.c:1515 ../src/libs/styles.c:448
-#: ../src/views/darkroom.c:2053
+#: ../src/views/darkroom.c:2054
 msgid "mode"
 msgstr "modo"
 
@@ -7984,21 +8059,21 @@ msgstr "salida"
 
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:686
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:2196 ../src/views/darkroom.c:2204
+#: ../src/views/darkroom.c:2197 ../src/views/darkroom.c:2205
 #: ../src/views/lighttable.c:3451 ../src/views/lighttable.c:3459
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:687
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:2197 ../src/views/darkroom.c:2205
+#: ../src/views/darkroom.c:2198 ../src/views/darkroom.c:2206
 #: ../src/views/lighttable.c:3452 ../src/views/lighttable.c:3460
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:688
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:2198 ../src/views/darkroom.c:2206
+#: ../src/views/darkroom.c:2199 ../src/views/darkroom.c:2207
 #: ../src/views/lighttable.c:3453 ../src/views/lighttable.c:3461
 msgctxt "rendering intent"
 msgid "saturation"
@@ -8006,7 +8081,7 @@ msgstr "saturación"
 
 #: ../src/iop/colorout.c:885 ../src/libs/export.c:689
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
-#: ../src/views/darkroom.c:2199 ../src/views/darkroom.c:2207
+#: ../src/views/darkroom.c:2200 ../src/views/darkroom.c:2208
 #: ../src/views/lighttable.c:3454 ../src/views/lighttable.c:3462
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
@@ -8961,7 +9036,7 @@ msgstr ""
 "activar"
 
 #: ../src/iop/exposure.c:904 ../src/iop/highlights.c:1099
-#: ../src/views/darkroom.c:2081
+#: ../src/views/darkroom.c:2082
 msgid "clipping threshold"
 msgstr "umbral superior"
 
@@ -10191,7 +10266,7 @@ msgstr "negro"
 msgid "gray percentile"
 msgstr "percentil gris"
 
-#: ../src/iop/levels.c:759 ../src/views/darkroom.c:2342
+#: ../src/iop/levels.c:759 ../src/views/darkroom.c:2343
 msgid "gray"
 msgstr "gris"
 
@@ -11928,11 +12003,11 @@ msgid "failed to read camera white balance information from `%s'!"
 msgstr ""
 "Error al leer la información de balance de blancos de la cámara desde `%s'!"
 
-#: ../src/iop/temperature.c:1376 ../src/views/darkroom.c:2347
+#: ../src/iop/temperature.c:1376 ../src/views/darkroom.c:2348
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1377 ../src/views/darkroom.c:2346
+#: ../src/iop/temperature.c:1377 ../src/views/darkroom.c:2347
 msgid "cyan"
 msgstr "cyan"
 
@@ -13373,7 +13448,7 @@ msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1368 ../src/libs/styles.c:72
-#: ../src/views/darkroom.c:3509
+#: ../src/views/darkroom.c:3510
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -13407,7 +13482,7 @@ msgid "edit metadata exportation"
 msgstr "Editar la exportación de metadatos"
 
 #: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:429
-#: ../src/libs/tagging.c:1417 ../src/libs/tagging.c:1542
+#: ../src/libs/tagging.c:1429 ../src/libs/tagging.c:1554
 msgid "save"
 msgstr "guardar"
 
@@ -14380,8 +14455,8 @@ msgstr ""
 "imagen\n"
 "y el módulo de importación tampoco los exportará"
 
-#: ../src/libs/metadata.c:442 ../src/libs/tagging.c:1447
-#: ../src/libs/tagging.c:1586
+#: ../src/libs/metadata.c:442 ../src/libs/tagging.c:1459
+#: ../src/libs/tagging.c:1598
 msgid "private"
 msgstr "privado"
 
@@ -15251,7 +15326,7 @@ msgid "removes the selected style in list above"
 msgstr "Elimina el estilo seleccionado en la lista anterior"
 
 #. import button
-#: ../src/libs/styles.c:480 ../src/libs/tagging.c:2732
+#: ../src/libs/styles.c:480 ../src/libs/tagging.c:2744
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
@@ -15293,25 +15368,25 @@ msgctxt "accel"
 msgid "redo last tag"
 msgstr "deshacer el último etiquetado"
 
-#: ../src/libs/tagging.c:1114
+#: ../src/libs/tagging.c:1126
 msgid "attach tag to all"
 msgstr "Añadir etiqueta a todas las imágenes"
 
-#: ../src/libs/tagging.c:1122 ../src/libs/tagging.c:1943
+#: ../src/libs/tagging.c:1134 ../src/libs/tagging.c:1955
 msgid "detach tag"
 msgstr "disociar etiqueta"
 
-#: ../src/libs/tagging.c:1245
+#: ../src/libs/tagging.c:1257
 msgid "delete tag?"
 msgstr "¿Borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1252 ../src/libs/tagging.c:1342
-#: ../src/libs/tagging.c:1548
+#: ../src/libs/tagging.c:1264 ../src/libs/tagging.c:1354
+#: ../src/libs/tagging.c:1560
 #, c-format
 msgid "tag: %s "
 msgstr "etiqueta: %s "
 
-#: ../src/libs/tagging.c:1259
+#: ../src/libs/tagging.c:1271
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -15326,77 +15401,77 @@ msgstr[1] ""
 "¿Desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:1295
+#: ../src/libs/tagging.c:1307
 #, c-format
 msgid "tag %s removed"
 msgstr "Etiqueta %s eliminada"
 
-#: ../src/libs/tagging.c:1335 ../src/libs/tagging.c:1959
+#: ../src/libs/tagging.c:1347 ../src/libs/tagging.c:1971
 msgid "delete path"
 msgstr "Borrar ruta"
 
-#: ../src/libs/tagging.c:1349
+#: ../src/libs/tagging.c:1361
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> etiqueta se eliminará."
 msgstr[1] "<u>%d</u> etiqueta se eliminarán."
 
-#: ../src/libs/tagging.c:1354 ../src/libs/tagging.c:1560
-#: ../src/libs/tagging.c:1777
+#: ../src/libs/tagging.c:1366 ../src/libs/tagging.c:1572
+#: ../src/libs/tagging.c:1789
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> imagen se actualizará."
 msgstr[1] "<u>%d</u> imágenes se actualizarán."
 
-#: ../src/libs/tagging.c:1380
+#: ../src/libs/tagging.c:1392
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas eliminadas"
 
-#: ../src/libs/tagging.c:1416
+#: ../src/libs/tagging.c:1428
 msgid "create tag"
 msgstr "Crear etiqueta"
 
-#: ../src/libs/tagging.c:1426 ../src/libs/tagging.c:1568
+#: ../src/libs/tagging.c:1438 ../src/libs/tagging.c:1580
 msgid "name: "
 msgstr "nombre:"
 
-#: ../src/libs/tagging.c:1438
+#: ../src/libs/tagging.c:1450
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "añadir a: \"%s\" "
 
-#: ../src/libs/tagging.c:1444 ../src/libs/tagging.c:1583
+#: ../src/libs/tagging.c:1456 ../src/libs/tagging.c:1595
 msgid "category"
 msgstr "categoría"
 
-#: ../src/libs/tagging.c:1453 ../src/libs/tagging.c:1592
+#: ../src/libs/tagging.c:1465 ../src/libs/tagging.c:1604
 msgid "synonyms: "
 msgstr "sinónimos:"
 
-#: ../src/libs/tagging.c:1470 ../src/libs/tagging.c:1614
-#: ../src/libs/tagging.c:1799
+#: ../src/libs/tagging.c:1482 ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1811
 msgid "empty tag is not allowed, aborting"
 msgstr "No se permite una etiqueta en blanco. Abortando."
 
-#: ../src/libs/tagging.c:1481
+#: ../src/libs/tagging.c:1493
 msgid "tag name already exists. aborting."
 msgstr "El nombre de la etiqueta ya existe. Abortando."
 
-#: ../src/libs/tagging.c:1541
+#: ../src/libs/tagging.c:1553
 msgid "edit tag"
 msgstr "editar etiqueta"
 
-#: ../src/libs/tagging.c:1555 ../src/libs/tagging.c:1772
+#: ../src/libs/tagging.c:1567 ../src/libs/tagging.c:1784
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> etiqueta se actualizará."
 msgstr[1] "<u>%d</u> etiquetas se actualizarán."
 
-#: ../src/libs/tagging.c:1616
+#: ../src/libs/tagging.c:1628
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -15404,100 +15479,100 @@ msgstr ""
 "El caracter '|' no se puede usar para renombrar una etiqueta.\n"
 "Use cambiar ruta para modificar la jerarquía. Abortando."
 
-#: ../src/libs/tagging.c:1655
+#: ../src/libs/tagging.c:1667
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1758
+#: ../src/libs/tagging.c:1770
 msgid "rename path?"
 msgstr "¿confirma cambiar la ruta?"
 
-#: ../src/libs/tagging.c:1765
+#: ../src/libs/tagging.c:1777
 #, c-format
 msgid "selected path: %s "
 msgstr "Ruta seleccionada: %s "
 
-#: ../src/libs/tagging.c:1801
+#: ../src/libs/tagging.c:1813
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando."
 
-#: ../src/libs/tagging.c:1827
+#: ../src/libs/tagging.c:1839
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "Al menos un nombre de etiqueta nuevo (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1939
+#: ../src/libs/tagging.c:1951
 msgid "attach tag"
 msgstr "añadir etiqueta"
 
-#: ../src/libs/tagging.c:1954
+#: ../src/libs/tagging.c:1966
 msgid "delete tag"
 msgstr "borrar etiqueta"
 
-#: ../src/libs/tagging.c:1965
+#: ../src/libs/tagging.c:1977
 msgid "create tag..."
 msgstr "crear etiqueta..."
 
-#: ../src/libs/tagging.c:1969
+#: ../src/libs/tagging.c:1981
 msgid "edit tag..."
 msgstr "editar etiqueta..."
 
-#: ../src/libs/tagging.c:1978
+#: ../src/libs/tagging.c:1990
 msgid "rename path..."
 msgstr "cambiar la ruta..."
 
-#: ../src/libs/tagging.c:1985
+#: ../src/libs/tagging.c:1997
 msgid "copy to entry"
 msgstr "copiar al campo de texto"
 
-#: ../src/libs/tagging.c:2002
+#: ../src/libs/tagging.c:2014
 msgid "go to tag collection"
 msgstr "ir a la colección de etiquetas"
 
-#: ../src/libs/tagging.c:2008
+#: ../src/libs/tagging.c:2020
 msgid "go back to work"
 msgstr "regresar al trabajo"
 
-#: ../src/libs/tagging.c:2124
+#: ../src/libs/tagging.c:2136
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2150
+#: ../src/libs/tagging.c:2162
 msgid "Select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
-#: ../src/libs/tagging.c:2153
+#: ../src/libs/tagging.c:2165
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/libs/tagging.c:2167
+#: ../src/libs/tagging.c:2179
 msgid "error importing tags"
 msgstr "Error al importar etiquetas"
 
-#: ../src/libs/tagging.c:2169
+#: ../src/libs/tagging.c:2181
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2191
+#: ../src/libs/tagging.c:2203
 msgid "Select file to export to"
 msgstr "Seleccione el archivo para exportar"
 
-#: ../src/libs/tagging.c:2194
+#: ../src/libs/tagging.c:2206
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/libs/tagging.c:2209
+#: ../src/libs/tagging.c:2221
 msgid "error exporting tags"
 msgstr "Error al exportar etiquetas"
 
-#: ../src/libs/tagging.c:2211
+#: ../src/libs/tagging.c:2223
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2596
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -15509,43 +15584,43 @@ msgstr ""
 "Pulse clic secundario para mostrar más opciones\n"
 "Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana"
 
-#: ../src/libs/tagging.c:2595
+#: ../src/libs/tagging.c:2607
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:2598
+#: ../src/libs/tagging.c:2610
 msgid "attach tag to all selected images"
 msgstr "Añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2603
+#: ../src/libs/tagging.c:2615
 msgid "detach"
 msgstr "disociar"
 
-#: ../src/libs/tagging.c:2606
+#: ../src/libs/tagging.c:2618
 msgid "detach tag from all selected images"
 msgstr "Disociar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2613
+#: ../src/libs/tagging.c:2625
 msgid "toggle list with / without hierarchy"
 msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
-#: ../src/libs/tagging.c:2621
+#: ../src/libs/tagging.c:2633
 msgid "toggle sort by name or by count"
 msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
-#: ../src/libs/tagging.c:2631
+#: ../src/libs/tagging.c:2643
 msgid "toggle show or not darktable tags"
 msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
-#: ../src/libs/tagging.c:2647
+#: ../src/libs/tagging.c:2659
 msgid "enter tag name"
 msgstr "Introducir el nombre de la etiqueta"
 
-#: ../src/libs/tagging.c:2657
+#: ../src/libs/tagging.c:2669
 msgid "clear entry"
 msgstr "Borrar texto"
 
-#: ../src/libs/tagging.c:2709
+#: ../src/libs/tagging.c:2721
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -15557,11 +15632,11 @@ msgstr ""
 "para más opciones con clic secundario en la etiqueta seleccionada,\n"
 "Ctrl+Rueda del Ratón para redimensionar la ventana"
 
-#: ../src/libs/tagging.c:2724
+#: ../src/libs/tagging.c:2736
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:2727
+#: ../src/libs/tagging.c:2739
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -15569,28 +15644,28 @@ msgstr ""
 "Crear una nueva etiqueta con el\n"
 "nombre designado"
 
-#: ../src/libs/tagging.c:2735
+#: ../src/libs/tagging.c:2747
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importar etiquetas desde el archivo Lightroom"
 
-#: ../src/libs/tagging.c:2740
+#: ../src/libs/tagging.c:2752
 msgctxt "verb"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/libs/tagging.c:2743
+#: ../src/libs/tagging.c:2755
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exportar todas las etiquetas al archivo Lightroom"
 
-#: ../src/libs/tagging.c:2750
+#: ../src/libs/tagging.c:2762
 msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
-#: ../src/libs/tagging.c:2758
+#: ../src/libs/tagging.c:2770
 msgid "toggle list with / without suggestion"
 msgstr "Cambiar entre lista con o sin sugerencia"
 
-#: ../src/libs/tagging.c:2877
+#: ../src/libs/tagging.c:2889
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -15957,23 +16032,23 @@ msgstr "estilo aplicado '%s' en la imagen actual"
 msgid "no styles have been created yet"
 msgstr "no se han creado estilos todavia"
 
-#: ../src/views/darkroom.c:1989
+#: ../src/views/darkroom.c:1990
 msgid "quick access to presets of your favorites"
 msgstr "Acceso rápido a los preajustes de los módulos favoritos"
 
-#: ../src/views/darkroom.c:1998
+#: ../src/views/darkroom.c:1999
 msgid "quick access for applying any of your styles"
 msgstr "Acceso rápido para utilizar cualquiera de los estilos"
 
-#: ../src/views/darkroom.c:2011
+#: ../src/views/darkroom.c:2012
 msgid "display a second darkroom image window"
 msgstr "Abrir en otra ventana la vista previa de la imagen del cuarto oscuro"
 
-#: ../src/views/darkroom.c:2020
+#: ../src/views/darkroom.c:2021
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "Cambiar las condiciones de evaluación de color ISO 12646"
 
-#: ../src/views/darkroom.c:2030
+#: ../src/views/darkroom.c:2031
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -15981,47 +16056,47 @@ msgstr ""
 "Activa el indicador de sobreexposición de la imagen virgen\n"
 "Pulse botón derecho para más opciones"
 
-#: ../src/views/darkroom.c:2054
+#: ../src/views/darkroom.c:2055
 msgid "mark with CFA color"
 msgstr "marcar con color CFA"
 
-#: ../src/views/darkroom.c:2055
+#: ../src/views/darkroom.c:2056
 msgid "mark with solid color"
 msgstr "marcar con color sólido"
 
-#: ../src/views/darkroom.c:2056
+#: ../src/views/darkroom.c:2057
 msgid "false color"
 msgstr "color falso"
 
-#: ../src/views/darkroom.c:2058
+#: ../src/views/darkroom.c:2059
 msgid "select how to mark the clipped pixels"
 msgstr "seleccione como marcar los pixeles cortados"
 
-#: ../src/views/darkroom.c:2065 ../src/views/darkroom.c:2117
+#: ../src/views/darkroom.c:2066 ../src/views/darkroom.c:2118
 msgid "color scheme"
 msgstr "esquema de color"
 
-#: ../src/views/darkroom.c:2066
+#: ../src/views/darkroom.c:2067
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rojo"
 
-#: ../src/views/darkroom.c:2067
+#: ../src/views/darkroom.c:2068
 msgctxt "solidcolor"
 msgid "green"
 msgstr "verde"
 
-#: ../src/views/darkroom.c:2068
+#: ../src/views/darkroom.c:2069
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "azul"
 
-#: ../src/views/darkroom.c:2069
+#: ../src/views/darkroom.c:2070
 msgctxt "solidcolor"
 msgid "black"
 msgstr "negro"
 
-#: ../src/views/darkroom.c:2073
+#: ../src/views/darkroom.c:2074
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -16029,7 +16104,7 @@ msgstr ""
 "Seleccione el color sólido para indicar sobreexposición.\n"
 "Solo será utilizado si el modo = esta marcado con un color sólido"
 
-#: ../src/views/darkroom.c:2083
+#: ../src/views/darkroom.c:2084
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -16039,7 +16114,7 @@ msgstr ""
 "1.0 - nivel blanco\n"
 "0.0 - nivel negro"
 
-#: ../src/views/darkroom.c:2094
+#: ../src/views/darkroom.c:2095
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -16047,35 +16122,35 @@ msgstr ""
 "Activa el indicador de exposición\n"
 "Pulse botón derecho para más opciones"
 
-#: ../src/views/darkroom.c:2119
+#: ../src/views/darkroom.c:2120
 msgid "red & blue"
 msgstr "rojo y azul"
 
-#: ../src/views/darkroom.c:2120
+#: ../src/views/darkroom.c:2121
 msgid "purple & green"
 msgstr "púrpura y verde"
 
-#: ../src/views/darkroom.c:2122
+#: ../src/views/darkroom.c:2123
 msgid "select colors to indicate over/under exposure"
 msgstr "seleccionar los colores para indicar sobreexposición o subexposición"
 
-#: ../src/views/darkroom.c:2131
+#: ../src/views/darkroom.c:2132
 msgid "lower threshold"
 msgstr "umbral inferior"
 
-#: ../src/views/darkroom.c:2132
+#: ../src/views/darkroom.c:2133
 msgid "threshold of what shall be considered underexposed"
 msgstr "umbral bajo el que se considerará subexpuesto"
 
-#: ../src/views/darkroom.c:2140
+#: ../src/views/darkroom.c:2141
 msgid "upper threshold"
 msgstr "umbral superior"
 
-#: ../src/views/darkroom.c:2141
+#: ../src/views/darkroom.c:2142
 msgid "threshold of what shall be considered overexposed"
 msgstr "umbral sobre el que se considerará sobreexpuesto"
 
-#: ../src/views/darkroom.c:2152
+#: ../src/views/darkroom.c:2153
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -16083,7 +16158,7 @@ msgstr ""
 "Activa las pruebas en pantalla\n"
 "Pulse botón derecho para las opciones de perfil"
 
-#: ../src/views/darkroom.c:2166
+#: ../src/views/darkroom.c:2167
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -16091,47 +16166,47 @@ msgstr ""
 "Activa la revisión de gama\n"
 "Pulse botón derecho las para opciones del perfil"
 
-#: ../src/views/darkroom.c:2194 ../src/views/lighttable.c:3449
+#: ../src/views/darkroom.c:2195 ../src/views/lighttable.c:3449
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:2202 ../src/views/lighttable.c:3457
+#: ../src/views/darkroom.c:2203 ../src/views/lighttable.c:3457
 msgid "preview display intent"
 msgstr "vista previa de salida en pantalla"
 
-#: ../src/views/darkroom.c:2222 ../src/views/lighttable.c:3465
+#: ../src/views/darkroom.c:2223 ../src/views/lighttable.c:3465
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:2223 ../src/views/lighttable.c:3469
+#: ../src/views/darkroom.c:2224 ../src/views/lighttable.c:3469
 msgid "preview display profile"
 msgstr "vista previa del perfil (pantalla)"
 
-#: ../src/views/darkroom.c:2224
+#: ../src/views/darkroom.c:2225
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:2278 ../src/views/lighttable.c:3499
+#: ../src/views/darkroom.c:2279 ../src/views/lighttable.c:3499
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2281 ../src/views/lighttable.c:3502
+#: ../src/views/darkroom.c:2282 ../src/views/lighttable.c:3502
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "vista previa: mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2284
+#: ../src/views/darkroom.c:2285
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "prueba de perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2287
+#: ../src/views/darkroom.c:2288
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histograma y selector de color de perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2320
+#: ../src/views/darkroom.c:2321
 msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
@@ -16139,173 +16214,173 @@ msgstr ""
 "Establece el color de las líneas que se superponen a la imagen (máscaras "
 "trazadas, guías de recorte y rotación, etc.)"
 
-#: ../src/views/darkroom.c:2341
+#: ../src/views/darkroom.c:2342
 msgid "overlay color"
 msgstr "modo de superposición"
 
-#: ../src/views/darkroom.c:2349
+#: ../src/views/darkroom.c:2350
 msgid "set overlay color"
 msgstr "Establecer el color de la superposición"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3504
+#: ../src/views/darkroom.c:3505
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ampliar imagen"
 
-#: ../src/views/darkroom.c:3505
+#: ../src/views/darkroom.c:3506
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ampliar imagen hasta rellenar"
 
-#: ../src/views/darkroom.c:3506
+#: ../src/views/darkroom.c:3507
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ampliar imagen a ventana"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3512
+#: ../src/views/darkroom.c:3513
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagen siguiente"
 
-#: ../src/views/darkroom.c:3513
+#: ../src/views/darkroom.c:3514
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3516
+#: ../src/views/darkroom.c:3517
 msgctxt "accel"
 msgid "color assessment"
 msgstr "evaluación del color"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3519
+#: ../src/views/darkroom.c:3520
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "imagen virgen sobreexpuesta"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3522
+#: ../src/views/darkroom.c:3523
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexpuesto"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3525
+#: ../src/views/darkroom.c:3526
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "ciclo de superposición de colores"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3528
+#: ../src/views/darkroom.c:3529
 msgctxt "accel"
 msgid "softproof"
 msgstr "prueba en pantalla"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3531
+#: ../src/views/darkroom.c:3532
 msgctxt "accel"
 msgid "gamut check"
 msgstr "revisión de gama"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3534
+#: ../src/views/darkroom.c:3535
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "mostrar máscaras trazadas"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3537
+#: ../src/views/darkroom.c:3538
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamaño del pincel"
 
-#: ../src/views/darkroom.c:3538
+#: ../src/views/darkroom.c:3539
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "reducir tamaño del pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3541
+#: ../src/views/darkroom.c:3542
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "incrementar dureza del pincel"
 
-#: ../src/views/darkroom.c:3542
+#: ../src/views/darkroom.c:3543
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "reducir dureza del pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3545
+#: ../src/views/darkroom.c:3546
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "incrementar opacidad del pincel"
 
-#: ../src/views/darkroom.c:3546
+#: ../src/views/darkroom.c:3547
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "reducir opacidad del pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3549
+#: ../src/views/darkroom.c:3550
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3552 ../src/views/lighttable.c:2997
+#: ../src/views/darkroom.c:3553 ../src/views/lighttable.c:2997
 #: ../src/views/map.c:920
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3553 ../src/views/lighttable.c:2998
+#: ../src/views/darkroom.c:3554 ../src/views/lighttable.c:2998
 #: ../src/views/map.c:921
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3556
+#: ../src/views/darkroom.c:3557
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "habilitar ampliación y desplazamiento mientras se editan las máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3559
+#: ../src/views/darkroom.c:3560
 msgctxt "accel"
 msgid "search modules"
 msgstr "buscar módulos"
 
-#: ../src/views/darkroom.c:3666
+#: ../src/views/darkroom.c:3667
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3671 ../src/views/lighttable.c:3141
+#: ../src/views/darkroom.c:3672 ../src/views/lighttable.c:3141
 msgid "zoom in the image"
 msgstr "ampliar la imagen"
 
-#: ../src/views/darkroom.c:3677
+#: ../src/views/darkroom.c:3678
 msgid "unbounded zoom in the image"
 msgstr "ampliar y reducir la vista de la imagen"
 
-#: ../src/views/darkroom.c:3682
+#: ../src/views/darkroom.c:3683
 msgid "zoom to 100% 200% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/darkroom.c:3688
+#: ../src/views/darkroom.c:3689
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] desplegar el módulo sin cerrar los otros"
 
-#: ../src/views/darkroom.c:3694
+#: ../src/views/darkroom.c:3695
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] reordenar módulos"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4408 ../src/views/darkroom.c:4426
+#: ../src/views/darkroom.c:4409 ../src/views/darkroom.c:4427
 msgid "darktable - darkroom preview"
 msgstr "darktable: vista previa del cuarto oscuro"
 
@@ -16672,6 +16747,22 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:2643
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid ""
+#~ "an error has occurred while trying to open the database from\n"
+#~ "\n"
+#~ "<span style=\"italic\">%s</span>\n"
+#~ "\n"
+#~ "%s\n"
+#~ msgstr ""
+#~ "Ocurrió un error mientras se intentaba abrir la base de datos desde\n"
+#~ "\n"
+#~ "<span style=\"italic\">%s</span>\n"
+#~ "\n"
+#~ "%s\n"
+
+#~ msgid "darktable - error locking database"
+#~ msgstr "Error en darktable al bloquear la base de datos"
 
 #, fuzzy
 #~ msgid "save changes"
