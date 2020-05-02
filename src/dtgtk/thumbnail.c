@@ -1180,8 +1180,6 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
 
-    int line2 = 0;
-    int line3 = 0;
     // bottom background
     attrlist = pango_attr_list_new();
     attr = pango_attr_size_new_absolute(1.5 * r1 * PANGO_SCALE);
@@ -1193,15 +1191,21 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     int h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
     gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.5 * r1 + h);
-    line2 = 4.0 * r1 + h + r1;
-    line3 = 4.0 * r1 + h + 4.0 * r1;
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_bottom_eb, 4.0 * r1);
-    gtk_widget_set_margin_start(thumb->w_bottom_eb, 0);
+    // for the position, we use css margin and use it as percentage (and not pixels)
+    GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_bottom_eb);
+    GtkBorder *margins = gtk_border_new();
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_bottom_eb);
+    gtk_style_context_get_margin(context, state, margins);
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, height * margins->top / 100);
+    gtk_widget_set_margin_start(thumb->w_bottom_eb, width * margins->left / 100);
+    const int line2 = height * margins->top / 100 + h + r1;
+    const int line3 = line2 + 3.0 * r1;
+    gtk_border_free(margins);
 
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
