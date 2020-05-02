@@ -1920,8 +1920,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
+  GtkWidget *gridw = gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(gridw);
+  gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(grid, DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_homogeneous(grid, FALSE);
+
+  gtk_grid_attach(grid, g->scale_k, 0, 1, 1, 1);
+  gtk_widget_set_hexpand(g->scale_k, TRUE);
+  gtk_grid_attach(grid, g->scale_tint, 0, 2, 1, 1);
+  gtk_widget_set_hexpand(g->scale_tint, TRUE);
+
+  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_grid_attach(grid, g->colorpicker, 1, 1, 1, 1);
+  GtkWidget *btn_reset = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_star, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_grid_attach(grid, btn_reset, 2, 1, 1, 1);
+  gtk_grid_attach(grid, btn_user, 1, 2, 1, 1);
+  gtk_grid_attach(grid, btn_d65, 2, 2, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), gridw, TRUE, TRUE, 0);
+  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
+  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
 
   // collapsible section for coeffs that are generally not to be used
 
@@ -1986,9 +2007,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
 
-  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
+  //g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  //gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
+  //gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_widget_show_all(g->colorpicker);
 
