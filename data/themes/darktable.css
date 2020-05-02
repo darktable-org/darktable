@@ -1925,3 +1925,9 @@ radiobutton
   color: @grey90;
   background-color: rgba(0, 0, 0, 0.5);
 }
+
+.dt_overlays_hover_block #thumb_bottom
+{
+  margin-top: 5px;  /* not real pixels, but percentage of the image size */
+  margin-left: 0px; /* not real pixels, but percentage of the image size */
+}
