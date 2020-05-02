@@ -1027,19 +1027,33 @@ static gboolean window_configure(GtkWidget *da, GdkEvent *event, gpointer user_d
   return FALSE;
 }
 
+guint dt_gui_translated_key_state(GdkEventKey *event)
+{
+  if (gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
+  {
+    //not an alphabetic character
+    //find any modifiers consumed to produce keyval
+    guint consumed;
+    gdk_keymap_translate_keyboard_state(gdk_keymap_get_for_display(gdk_display_get_default()), event->hardware_keycode, event->state, event->group, NULL, NULL, NULL, &consumed);
+    return event->state & ~consumed & KEY_STATE_MASK;
+  }
+  else
+    return event->state & KEY_STATE_MASK;
+}
+
 static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed_override(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed_override(event->keyval, dt_gui_translated_key_state(event));
 }
 
 static gboolean key_pressed(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
 }
 
 static gboolean key_released(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_released(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
+  return dt_control_key_released(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
 }
 
 static gboolean button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
