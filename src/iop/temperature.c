@@ -86,7 +86,8 @@ typedef struct dt_iop_temperature_gui_data_t
   double mod_coeff[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
   int colored_sliders;
-  int blackbody_is_confusing; // TODO: come up with bettern name
+  int blackbody_is_confusing;
+  int expand_coeffs;
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -1775,6 +1776,8 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
                                CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  g->expand_coeffs = active;
+  dt_conf_set_bool("plugins/darkroom/temperature/expand_coefficients", active);
 }
 
 static void gui_sliders_update(struct dt_iop_module_t *self)
@@ -1881,7 +1884,7 @@ void gui_init(struct dt_iop_module_t *self)
   gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
   g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "blackbody"); // true if config != "blackbody"
-
+  g->expand_coeffs = dt_conf_get_bool("plugins/darkroom/temperature/expand_coefficients");
   g_free(config);
 
   const int feedback = g->colored_sliders ? 0 : 1;
@@ -1924,8 +1927,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("rgb coefficients"));
-  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
 
+  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
   gtk_widget_set_name(GTK_WIDGET(g->coeffs_toggle), "control-button");
 
   g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -2014,10 +2018,10 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
 
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), g->expand_coeffs);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), FALSE);
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (g->expand_coeffs?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
 
   gui_sliders_update(self);
 
