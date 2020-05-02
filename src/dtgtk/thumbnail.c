@@ -407,7 +407,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     {
       if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
       {
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("mini"));
+        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
       }
       else
       {
