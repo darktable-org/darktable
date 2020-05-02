@@ -525,15 +525,12 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images) return FALSE;
 
   float fz = 1.0f;
-  if(table->mode == DT_CULLING_MODE_CULLING)
+  l = table->list;
+  while(l)
   {
-    l = table->list;
-    while(l)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      fz = fmaxf(fz, th->zoom);
-      l = g_list_next(l);
-    }
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    fz = fmaxf(fz, th->zoom);
+    l = g_list_next(l);
   }
 
   if(table->panning && fz > 1.0f)
@@ -576,8 +573,9 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
     while(l)
     {
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      const int iw = gtk_widget_get_allocated_width(th->w_image_box);
-      const int ih = gtk_widget_get_allocated_height(th->w_image_box);
+      int iw = 0;
+      int ih = 0;
+      gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
       if(th->zoomx > 0) th->zoomx = 0;
       if(th->zoomx < iw - th->img_width) th->zoomx = iw - th->img_width;
       if(th->zoomy > 0) th->zoomy = 0;
