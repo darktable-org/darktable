@@ -98,7 +98,7 @@ CPACK_ADD_COMPONENT(DTDebugSymbols DISPLAY_NAME "Debug symbols" REQUIRED)
 CPACK_ADD_COMPONENT(DTDocuments DISPLAY_NAME "Documentation and help files")
 
 ADD_CUSTOM_TARGET(pkgsrc
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/version_gen.c ${CMAKE_SOURCE_DIR}/src/version_gen.c
+  COMMAND ${CMAKE_COMMAND} -E copy ${DARKTABLE_BINDIR}/version_gen.c ${CMAKE_SOURCE_DIR}/src/version_gen.c
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target package_source
   COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/src/version_gen.c
 )

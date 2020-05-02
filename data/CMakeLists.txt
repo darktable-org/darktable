@@ -118,7 +118,7 @@ if(APPLE)
   # OS X doesn't have aplay, but afplay should do
   set(DEFCONFIG_AUDIOPLAYER "afplay")
 endif(APPLE)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd COPYONLY )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${DARKTABLE_DATADIR}/darktableconfig.dtd COPYONLY)
 
 # get_property(DT_PLUGIN_IOPS GLOBAL PROPERTY DT_PLUGIN_IOPS)
 get_property(DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT GLOBAL PROPERTY DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
@@ -135,7 +135,7 @@ foreach(DT_PLUGIN_IOP IN LISTS DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
   </dtconfig>")
 endforeach()
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml)
 
 if(USE_XMLLINT)
   add_custom_target(
@@ -143,22 +143,22 @@ if(USE_XMLLINT)
     COMMAND ${Xmllint_BIN} --nonet --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    COMMENT "Checking validity of data/darktableconfig.xml"
+    COMMENT "Checking validity of ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml"
   )
 endif(USE_XMLLINT)
 
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+    DEPENDS ${CMAKE_SOURCE_DIR}/tools/generate_darktablerc.xsl ${DARKTABLE_DATADIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-    COMMAND ${Xsltproc_BIN} --nonet ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+    COMMAND ${Xsltproc_BIN} --nonet ${CMAKE_SOURCE_DIR}/tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     add_custom_command(
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+      DEPENDS ${CMAKE_SOURCE_DIR}/tools/generate_darktablerc.xsl ${DARKTABLE_DATADIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml ${CMAKE_SOURCE_DIR}/tools/generate_darktablerc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
     )
   else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     message(FATAL_ERROR "Don't know how to generate darktablerc")
@@ -167,7 +167,7 @@ endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
 add_custom_target(
   darktablerc_file ALL
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/generate_darktablerc.xsl ${DARKTABLE_DATADIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
 )
 if(USE_XMLLINT)
   add_dependencies(darktablerc_file validate_darktableconfig_xml)

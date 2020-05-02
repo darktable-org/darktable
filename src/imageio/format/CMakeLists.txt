@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../")
+include_directories("${DARKTABLE_BINDIR}")
 
 include_directories(SYSTEM "${PNG_PNG_INCLUDE_DIR}")
 

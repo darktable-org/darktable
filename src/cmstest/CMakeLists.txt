@@ -1,9 +1,9 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-add_executable(darktable-cmstest main.c ${CMAKE_BINARY_DIR}/src/version_gen.c)
+add_executable(darktable-cmstest main.c ${DARKTABLE_BINDIR}/version_gen.c)
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
-set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 add_dependencies(darktable-cmstest generate_version)
 
 target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})

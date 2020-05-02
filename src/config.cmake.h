@@ -9,7 +9,7 @@
 #define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
 #define PACKAGE_BUGREPORT "darktable-dev@lists.darktable.org"
 
-// these will be defined in build/src/version_gen.c
+// these will be defined in build/bin/version_gen.c
 extern const char darktable_package_version[];
 extern const char darktable_package_string[];
 extern const char darktable_last_commit_year[];
