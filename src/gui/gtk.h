@@ -368,6 +368,10 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link);
 // load a CSS theme
 void dt_gui_load_theme(const char *theme);
 
+//translate key press events to remove any modifiers used to produce the keyval
+// for example when the shift key is used to create the asterisk character
+guint dt_gui_translated_key_state(GdkEventKey *event);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
