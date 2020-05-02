@@ -157,6 +157,16 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   gtk_render_frame(context, cr, 0, 0, w, h);
 }
 
+static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
+{
+  if(thumb->img_margin) gtk_border_free(thumb->img_margin);
+  // we retrieve image margins from css
+  GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_image);
+  thumb->img_margin = gtk_border_new();
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+  gtk_style_context_get_margin(context, state, thumb->img_margin);
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -187,12 +197,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   // if we don't have it in memory, we want the image surface
   if(!thumb->img_surf || thumb->img_surf_dirty)
   {
-    if(thumb->img_margin) gtk_border_free(thumb->img_margin);
-    // we retrieve image margins from css
-    GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_image);
-    thumb->img_margin = gtk_border_new();
-    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
-    gtk_style_context_get_margin(context, state, thumb->img_margin);
+    // let's ensure we have the right margins
+    _thumb_retrieve_margins(thumb);
 
     const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
     const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
@@ -1065,6 +1071,8 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
@@ -1394,6 +1402,7 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     dt_image_get_final_size(thumb->imgid, &w, &h);
+    if(!thumb->img_margin) _thumb_retrieve_margins(thumb);
 
     const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
     const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
