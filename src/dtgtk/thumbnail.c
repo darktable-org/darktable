@@ -1375,6 +1375,14 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
 // force the image to be redraw at the right position
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
 {
+  // let's sanitize and apply panning values
+  int iw = 0;
+  int ih = 0;
+  gtk_widget_get_size_request(thumb->w_image_box, &iw, &ih);
+  thumb->zoomx = CLAMP(thumb->zoomx, iw - thumb->img_width, 0);
+  thumb->zoomy = CLAMP(thumb->zoomy, ih - thumb->img_height, 0);
+  thumb->current_zx = thumb->zoomx;
+  thumb->current_zy = thumb->zoomy;
   gtk_widget_queue_draw(thumb->w_main);
 }
 
