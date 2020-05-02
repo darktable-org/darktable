@@ -2357,6 +2357,13 @@
     <shortdescription>white balance slider colors</shortdescription>
     <longdescription>visual indication of temperature adjustments. in 'blackbody' mode shows light source color, in 'effect emulation' shows effect the adjustment would have</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/expand_coefficients</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show coefficients</shortdescription>
+    <longdescription>this is just for remembering whether to show coefficients or not and remember it.</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
