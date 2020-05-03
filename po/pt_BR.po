@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-30 11:06-0300\n"
-"PO-Revision-Date: 2020-04-30 11:39-0300\n"
+"POT-Creation-Date: 2020-05-01 12:20-0300\n"
+"PO-Revision-Date: 2020-05-02 09:29-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -651,8 +651,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "pasta raiz do LUT 3D"
 
-#: ../build/src/preferences_gen.h:2693 ../src/control/jobs/control_jobs.c:1555
-#: ../src/control/jobs/control_jobs.c:1615 ../src/gui/preferences.c:1821
+#: ../build/src/preferences_gen.h:2693 ../src/control/jobs/control_jobs.c:1553
+#: ../src/control/jobs/control_jobs.c:1613 ../src/gui/preferences.c:1821
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
@@ -1311,8 +1311,8 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1555
-#: ../src/control/jobs/control_jobs.c:1615 ../src/gui/hist_dialog.c:187
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1553
+#: ../src/control/jobs/control_jobs.c:1613 ../src/gui/hist_dialog.c:187
 #: ../src/gui/preferences.c:1378 ../src/gui/preferences.c:1404
 #: ../src/gui/preferences.c:1486 ../src/gui/preferences.c:1592
 #: ../src/gui/preferences.c:1821 ../src/gui/presets.c:387
@@ -2111,52 +2111,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imagem orfã"
 
-#: ../src/common/image.c:1582
+#: ../src/common/image.c:1584
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:1589
+#: ../src/common/image.c:1591
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:1596
+#: ../src/common/image.c:1598
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1612
+#: ../src/common/image.c:1614
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:1622
+#: ../src/common/image.c:1624
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:1626
+#: ../src/common/image.c:1628
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:1902
+#: ../src/common/image.c:1904
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar copia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:1916
+#: ../src/common/image.c:1918
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:1988 ../src/control/jobs/control_jobs.c:666
+#: ../src/common/image.c:1990 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover copias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2169
+#: ../src/common/image.c:2171
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -2515,160 +2515,160 @@ msgid_plural "duplicating %d images"
 msgstr[0] "duplicando %d imagem"
 msgstr[1] "duplicando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:569
+#: ../src/control/jobs/control_jobs.c:568
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "espelhando %d imagem"
 msgstr[1] "espelhando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:642
+#: ../src/control/jobs/control_jobs.c:640
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "removendo %d imagem"
 msgstr[1] "removendo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:744
+#: ../src/control/jobs/control_jobs.c:742
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "não foi possível mandar %s para a lixeira%s%s"
 
-#: ../src/control/jobs/control_jobs.c:745
+#: ../src/control/jobs/control_jobs.c:743
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "não é possível excluir fisicamente %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:755
+#: ../src/control/jobs/control_jobs.c:753
 msgid "physically delete"
 msgstr "excluir fisicamente"
 
-#: ../src/control/jobs/control_jobs.c:756
+#: ../src/control/jobs/control_jobs.c:754
 msgid "physically delete all files"
 msgstr "excluir fisicamente todos os arquivos do disco"
 
-#: ../src/control/jobs/control_jobs.c:758
+#: ../src/control/jobs/control_jobs.c:756
 msgid "only remove from the collection"
 msgstr "apenas remover da coleção"
 
-#: ../src/control/jobs/control_jobs.c:759
+#: ../src/control/jobs/control_jobs.c:757
 msgid "skip to next file"
 msgstr "pular para o próximo arquivo"
 
-#: ../src/control/jobs/control_jobs.c:760
+#: ../src/control/jobs/control_jobs.c:758
 msgid "stop process"
 msgstr "parar processo"
 
-#: ../src/control/jobs/control_jobs.c:765
+#: ../src/control/jobs/control_jobs.c:763
 msgid "trashing error"
 msgstr "erro ao enviar para lixeira"
 
-#: ../src/control/jobs/control_jobs.c:766
+#: ../src/control/jobs/control_jobs.c:764
 msgid "deletion error"
 msgstr "erro ao excluir"
 
-#: ../src/control/jobs/control_jobs.c:907
+#: ../src/control/jobs/control_jobs.c:905
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "enviando %d imagem para lixeira"
 msgstr[1] "enviando %d imagens para lixeira"
 
-#: ../src/control/jobs/control_jobs.c:909
+#: ../src/control/jobs/control_jobs.c:907
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "excluindo %d imagem"
 msgstr[1] "excluindo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1036
+#: ../src/control/jobs/control_jobs.c:1034
 msgid "failed to parse GPX file"
 msgstr "falha ao analisar arquivo GPX"
 
-#: ../src/control/jobs/control_jobs.c:1101
+#: ../src/control/jobs/control_jobs.c:1099
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "aplicada localização GPX correspondente em %d imagem"
 msgstr[1] "aplicada localização GPX correspondente em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1116
+#: ../src/control/jobs/control_jobs.c:1114
 #, c-format
 msgid "moving %d image"
 msgstr "movendo %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1117
+#: ../src/control/jobs/control_jobs.c:1115
 #, c-format
 msgid "moving %d images"
 msgstr "movendo %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1122
+#: ../src/control/jobs/control_jobs.c:1120
 #, c-format
 msgid "copying %d image"
 msgstr "copiando %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1123
+#: ../src/control/jobs/control_jobs.c:1121
 #, c-format
 msgid "copying %d images"
 msgstr "copiando %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1138
+#: ../src/control/jobs/control_jobs.c:1136
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "criando cópia local %d de imagem"
 msgstr[1] "criando cópias locais %d de imagens"
 
-#: ../src/control/jobs/control_jobs.c:1141
+#: ../src/control/jobs/control_jobs.c:1139
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "removendo cópia local %d da imagem"
 msgstr[1] "removendo cópias locais %d das imagens"
 
-#: ../src/control/jobs/control_jobs.c:1179
+#: ../src/control/jobs/control_jobs.c:1177
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "atualizando informações para %d imagem"
 msgstr[1] "atualizando informações para %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1244
+#: ../src/control/jobs/control_jobs.c:1242
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportando %d imagem.."
 msgstr[1] "exportando %d imagens.."
 
-#: ../src/control/jobs/control_jobs.c:1276
+#: ../src/control/jobs/control_jobs.c:1274
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportando %d / %d para %s"
 
-#: ../src/control/jobs/control_jobs.c:1297 ../src/views/darkroom.c:688
+#: ../src/control/jobs/control_jobs.c:1295 ../src/views/darkroom.c:688
 #: ../src/views/print.c:281
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imagem `%s' não está disponível"
 
-#: ../src/control/jobs/control_jobs.c:1386
+#: ../src/control/jobs/control_jobs.c:1384
 msgid "merge hdr image"
 msgstr "fundir imagem hdr"
 
-#: ../src/control/jobs/control_jobs.c:1400
+#: ../src/control/jobs/control_jobs.c:1398
 msgid "duplicate images"
 msgstr "duplicar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1407
+#: ../src/control/jobs/control_jobs.c:1405
 msgid "flip images"
 msgstr "inverter (espelhar) imagens"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1412
 msgid "remove images"
 msgstr "remover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1436
+#: ../src/control/jobs/control_jobs.c:1434
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -2676,17 +2676,17 @@ msgid_plural ""
 msgstr[0] "você realmente deseja remover %d imagem selecionada da coleção?"
 msgstr[1] "você realmente deseja remover %d imagens selecionadas da coleção?"
 
-#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1441
 msgid "remove images?"
 msgstr "remover imagens?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1459
-#: ../src/control/jobs/control_jobs.c:1507
+#: ../src/control/jobs/control_jobs.c:1457
+#: ../src/control/jobs/control_jobs.c:1505
 msgid "delete images"
 msgstr "excluir imagens"
 
-#: ../src/control/jobs/control_jobs.c:1483
+#: ../src/control/jobs/control_jobs.c:1481
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -2694,7 +2694,7 @@ msgstr[0] "você realmente deseja enviar %d imagem selecionada para a lixeira?"
 msgstr[1] ""
 "você realmente deseja enviar %d imagens selecionadas para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1485
+#: ../src/control/jobs/control_jobs.c:1483
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -2704,35 +2704,35 @@ msgstr[0] ""
 msgstr[1] ""
 "você realmente deseja excluir fisicamente %d imagens selecionadas do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1492
-#: ../src/control/jobs/control_jobs.c:1530
+#: ../src/control/jobs/control_jobs.c:1490
+#: ../src/control/jobs/control_jobs.c:1528
 msgid "trash images?"
 msgstr "enviar imagens para lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1492
-#: ../src/control/jobs/control_jobs.c:1530
+#: ../src/control/jobs/control_jobs.c:1490
+#: ../src/control/jobs/control_jobs.c:1528
 msgid "delete images?"
 msgstr "excluir imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1524
+#: ../src/control/jobs/control_jobs.c:1522
 msgid "do you really want to send selected image to trash?"
 msgstr "você realmente deseja enviar a imagem selecionada para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1525
+#: ../src/control/jobs/control_jobs.c:1523
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "você realmente deseja excluir fisicamente a imagem selecionada do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1551
+#: ../src/control/jobs/control_jobs.c:1549
 msgid "move images"
 msgstr "mover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1556
-#: ../src/control/jobs/control_jobs.c:1616
+#: ../src/control/jobs/control_jobs.c:1554
+#: ../src/control/jobs/control_jobs.c:1614
 msgid "_select as destination"
 msgstr "_selecionar como destino"
 
-#: ../src/control/jobs/control_jobs.c:1577
+#: ../src/control/jobs/control_jobs.c:1575
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -2747,17 +2747,17 @@ msgstr[1] ""
 "você realmente deseja mover fisicamente as %d imagens selecionadas para %s?\n"
 "(todas duplicatas não selecionadas serão movidas também)"
 
-#: ../src/control/jobs/control_jobs.c:1586
+#: ../src/control/jobs/control_jobs.c:1584
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "mover imagem?"
 msgstr[1] "mover imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1611
+#: ../src/control/jobs/control_jobs.c:1609
 msgid "copy images"
 msgstr "copiar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1637
+#: ../src/control/jobs/control_jobs.c:1635
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -2766,51 +2766,51 @@ msgstr[0] ""
 msgstr[1] ""
 "você realmente deseja copiar fisicamente as %d imagens selecionadas para %s?"
 
-#: ../src/control/jobs/control_jobs.c:1643
+#: ../src/control/jobs/control_jobs.c:1641
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copiar imagem?"
 msgstr[1] "copiar imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1663
-#: ../src/control/jobs/control_jobs.c:1670
+#: ../src/control/jobs/control_jobs.c:1661
+#: ../src/control/jobs/control_jobs.c:1668
 msgid "local copy images"
 msgstr "copiar imagens localmente"
 
-#: ../src/control/jobs/control_jobs.c:1677 ../src/libs/image.c:518
+#: ../src/control/jobs/control_jobs.c:1675 ../src/libs/image.c:518
 msgid "refresh exif"
 msgstr "atualizar exif"
 
-#: ../src/control/jobs/control_jobs.c:1740
+#: ../src/control/jobs/control_jobs.c:1738
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "falha o obter parâmetros do módulo de armazenamento `%s', abortando "
 "exportação.."
 
-#: ../src/control/jobs/control_jobs.c:1756
+#: ../src/control/jobs/control_jobs.c:1754
 msgid "export images"
 msgstr "exportar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1781
+#: ../src/control/jobs/control_jobs.c:1779
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "adicionando compensação de tempo a %d imagem"
 msgstr[1] "adicionando compensação de tempo a %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1796
+#: ../src/control/jobs/control_jobs.c:1794
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "compensação de tempo adicionada a %d imagem"
 msgstr[1] "compensação de tempo adicionada a %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1835 ../src/libs/geotagging.c:783
+#: ../src/control/jobs/control_jobs.c:1833 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "intervalo de tempo"
 
-#: ../src/control/jobs/control_jobs.c:1859 ../src/libs/copy_history.c:332
+#: ../src/control/jobs/control_jobs.c:1857 ../src/libs/copy_history.c:332
 msgid "write sidecar files"
 msgstr "escrever arquivos associados"
 
@@ -6750,7 +6750,7 @@ msgstr "a força da luz suave"
 
 #: ../src/iop/borders.c:174
 msgid "framing"
-msgstr "enquadramento"
+msgstr "moldura"
 
 #: ../src/iop/borders.c:199
 msgctxt "accel"
@@ -7929,7 +7929,7 @@ msgstr "número de clusters"
 #: ../src/iop/colormapping.c:166
 msgctxt "accel"
 msgid "color dominance"
-msgstr "predominância de cor"
+msgstr "dominância de cor"
 
 #: ../src/iop/colormapping.c:167
 msgctxt "accel"
@@ -7948,7 +7948,7 @@ msgstr "adquirir como alvo"
 
 #: ../src/iop/colormapping.c:1119
 msgid "source clusters:"
-msgstr "clusters origem:"
+msgstr "clusters da origem:"
 
 #: ../src/iop/colormapping.c:1128
 msgid "target clusters:"
@@ -8721,7 +8721,7 @@ msgstr "correção de viés"
 
 #: ../src/iop/denoiseprofile.c:4482
 msgid "non-local means"
-msgstr "médias não locais"
+msgstr "média não local"
 
 #: ../src/iop/denoiseprofile.c:4483
 msgid "non-local means auto"
@@ -10350,7 +10350,7 @@ msgstr "ferramenta de nó"
 
 #: ../src/iop/lowlight.c:85
 msgid "lowlight vision"
-msgstr "visão luminosidade baixa"
+msgstr "visão com luz baixa"
 
 #: ../src/iop/lowlight.c:106
 msgctxt "accel"
@@ -11127,11 +11127,11 @@ msgstr "redução de ruído raw"
 #: ../src/iop/rawdenoise.c:143
 msgctxt "accel"
 msgid "noise threshold"
-msgstr "limite ruído"
+msgstr "limiar de ruído"
 
 #: ../src/iop/rawdenoise.c:1052
 msgid "noise threshold"
-msgstr "limite ruído"
+msgstr "limiar de ruído"
 
 #: ../src/iop/rawdenoise.c:1055
 msgid ""
@@ -12496,7 +12496,7 @@ msgstr "forma"
 #: ../src/iop/vignette.c:181
 msgctxt "accel"
 msgid "width-height ratio"
-msgstr "largura-altura relação"
+msgstr "razão largura/altura"
 
 #: ../src/iop/vignette.c:182
 msgctxt "accel"
@@ -12509,15 +12509,15 @@ msgstr "lomo"
 
 #: ../src/iop/vignette.c:1139
 msgid "automatic ratio"
-msgstr "relação automática"
+msgstr "razão automática"
 
 #: ../src/iop/vignette.c:1153
 msgid "8-bit output"
-msgstr "8-bit saída"
+msgstr "saída de 8-bits"
 
 #: ../src/iop/vignette.c:1154
 msgid "16-bit output"
-msgstr "16-bit saída"
+msgstr "saída de 16-bits"
 
 #: ../src/iop/vignette.c:1159
 msgid "fall-off strength"
@@ -12635,7 +12635,7 @@ msgstr "marcador"
 #: ../src/iop/watermark.c:316
 msgctxt "accel"
 msgid "scale on"
-msgstr "escala ativa"
+msgstr "escala em"
 
 #: ../src/iop/watermark.c:1464
 msgid "content"
