@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-03 10:30+0200\n"
-"PO-Revision-Date: 2020-05-03 11:17+0200\n"
+"POT-Creation-Date: 2020-05-03 11:26+0200\n"
+"PO-Revision-Date: 2020-05-03 11:31+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3839,7 +3839,6 @@ msgid "views/thumbtable/color purple"
 msgstr "weergaven/miniatuurlijst/kleur paars"
 
 #: ../src/dtgtk/thumbtable.c:1962
-#, fuzzy
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "weergaven/miniatuurlijst/verwijder kleurlabels"
@@ -4368,10 +4367,9 @@ msgid "toggle filmstrip and timeline"
 msgstr "wissel van fotoreeks of tijdslijn"
 
 #: ../src/gui/gtk.c:1355
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top toolbar"
-msgstr "toppaneel aan/uit"
+msgstr "top werkbalk aan/uit"
 
 #: ../src/gui/gtk.c:1359
 msgctxt "accel"
@@ -4379,10 +4377,9 @@ msgid "toggle bottom toolbar"
 msgstr "onderste werkbalk aan/uit"
 
 #: ../src/gui/gtk.c:1363
-#, fuzzy
 msgctxt "accel"
 msgid "toggle all top panels"
-msgstr "toppaneel aan/uit"
+msgstr "alle top werkbalken aan/uit"
 
 #: ../src/gui/gtk.c:1367
 msgctxt "accel"
@@ -4787,10 +4784,9 @@ msgstr "koppeling"
 
 #. Adding the search button
 #: ../src/gui/preferences.c:778
-#, fuzzy
 msgctxt "preferences"
 msgid "search"
-msgstr "zoek straal"
+msgstr "zoek"
 
 #: ../src/gui/preferences.c:779
 msgid ""
@@ -10729,7 +10725,6 @@ msgid "color film"
 msgstr "kleur mode"
 
 #: ../src/iop/negadoctor.c:449
-#, fuzzy
 msgid "black and white film"
 msgstr "zwart-wit film"
 
@@ -10747,7 +10742,6 @@ msgid "film stock"
 msgstr "fotoreeks"
 
 #: ../src/iop/negadoctor.c:1122
-#, fuzzy
 msgid "black and white"
 msgstr "zwart en wit"
 
@@ -14384,7 +14378,6 @@ msgid "metadata settings"
 msgstr "metadata instellingen"
 
 #: ../src/libs/metadata.c:436
-#, fuzzy
 msgid "hidden"
 msgstr "verborgen"
 
@@ -15742,9 +15735,8 @@ msgid "click to change the type of overlays shown on thumbnails"
 msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:179
-#, fuzzy
 msgid "no overlays"
-msgstr "toon overlays"
+msgstr "geen overlays"
 
 #: ../src/libs/tools/global_toolbox.c:183
 msgid "overlays on mouse hover"
@@ -15809,10 +15801,9 @@ msgid "preferences"
 msgstr "voorkeuren"
 
 #: ../src/libs/tools/global_toolbox.c:418
-#, fuzzy
 msgctxt "accel"
 msgid "no overlays"
-msgstr "toon overlays"
+msgstr "geen overlays"
 
 #: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
