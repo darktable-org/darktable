@@ -38,6 +38,13 @@ unset(CMAKE_CXX_CLANG_TIDY)
 unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
 
 add_subdirectory(rawspeed)
+# Copying rawspeed resources to where dt expects them
+add_custom_target("deploy" ALL)
+SET(RAWSPEED_DATADIR "${CMAKE_CURRENT_SOURCE_DIR}/rawspeed/data")
+add_custom_command(TARGET "deploy" PRE_BUILD
+  COMMAND mkdir -p ${DARKTABLE_DATADIR}/rawspeed/
+  COMMAND cp ${RAWSPEED_DATADIR}/cameras.xml ${RAWSPEED_DATADIR}/showcameras.xsl ${DARKTABLE_DATADIR}/rawspeed/
+  )
 
 set(CMAKE_INSTALL_DATAROOTDIR "${CMAKE_INSTALL_DATAROOTDIR_SAVE}")
 
