@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-03 13:41+0200\n"
-"PO-Revision-Date: 2020-05-03 14:20+0200\n"
+"POT-Creation-Date: 2020-05-03 14:25+0200\n"
+"PO-Revision-Date: 2020-05-03 14:26+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -10792,9 +10792,8 @@ msgstr "D min blauwe component"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:1195
-#, fuzzy
 msgid "dynamic range of the film"
-msgstr "dynamisch bereik"
+msgstr "dynamisch bereik van de film"
 
 #: ../src/iop/negadoctor.c:1199
 msgid "D max"
