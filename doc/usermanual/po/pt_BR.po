@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2020-04-30 11:34-0300\n"
+"PO-Revision-Date: 2020-05-02 13:13-0300\n"
 "Project-Id-Version: darktable 3.0\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
@@ -9677,7 +9677,7 @@ msgid ""
 "influence image display – the final output remains unaffected. It is "
 "recommended that you finetune the parameters of this module while viewing "
 "the full, not zoomed-in image."
-msgstr ""
+msgstr "Uma consequência do algoritmo usado é que cores reconstruídas podem ser exibidas incorretamente se você fizer zoom na imagem na sala escura. Se isto acontecer voce pode percebre um deslocamento para o magenta em áreas de realce perto de arestas de alto contraste, ou pode ver áreas de realces sem cor se usar este módulo em combinação com o módulo <quote>reconstrução de ralces (veja <xref linkend=\"highlight_reconstruction\"/>) com o método <quote>reconstrução de cor</quote>. Estes artefatos só influenciam a exibição da imagem - a saída final permanece inalterada. É recomendado fazer ajuste fino nos parâmetros deste módulo enquanto visualiza a imagem cheia, sem zoom."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10621(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14541(title)
@@ -9712,7 +9712,7 @@ msgid ""
 "Higher values cause ever more distant pixels to contribute; this increases "
 "the chance to find a replacement color but makes that color more undefined "
 "and less clear."
-msgstr "Define a distancia espacial (coordenadas x,y) que o pixel fonte pode ter do pixel alvo para contribuir para a substituição de cores. Valores altos permitem que pixels mais distantes contribuam; isto aumenta a chance de encontrar uma cor substituta, mas pode tornar essa cor menos definida e mais clara."
+msgstr "Define a distância espacial (coordenadas x,y) que o pixel fonte pode ter do pixel alvo para contribuir para a substituição de cores. Valores altos permitem que pixels mais distantes contribuam; isto aumenta a chance de encontrar uma cor substituta, mas pode tornar essa cor menos definida e mais clara."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10645(title)
 msgid "range extent"
@@ -9752,7 +9752,7 @@ msgid ""
 "diverging colors are in close proximity (e.g. textiles or hair with a "
 "luminance close to skin). Setting a hue preference on skin tones avoids "
 "these other colors from creeping in."
-msgstr "Este deslizador é visível se voce definir a combobox de precedência para <quote>matiz</quote>. Ele permite selecionar a matiz preferida para substituição de cores. Só tem efeito se a matiz escolhida está de fato nas faixas espacial e de luminância dos pixels alvo (veja acima). Um caso típico de uso é reparar realces em pele humana em situaçÕes em que cores divergentes estão próximas (por exemplo, tecido ou cabelo com luminância próxima à da pele). Definir precedencia em tons de pele evita que estas outras cores interfiram."
+msgstr "Este deslizador é visível se você definir a combobox de precedência para <quote>matiz</quote>. Ele permite selecionar a matiz preferida para substituição de cores. Só tem efeito se a matiz escolhida está de fato nas faixas espacial e de luminância dos pixels alvo (veja acima). Um caso típico de uso é reparar realces em pele humana em situaçÕes em que cores divergentes estão próximas (por exemplo, tecido ou cabelo com luminância próxima à da pele). Definir precedencia em tons de pele evita que estas outras cores interfiram."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10695(entry)
 msgid ""
@@ -10083,16 +10083,16 @@ msgid ""
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> and take a color probe from your image – preferably from the unexposed "
 "border of your negative."
-msgstr ""
+msgstr "O único elemento de controle deste módulo é um seletor de cor que permite ajustar as diferentes cores de seu material de filme. Clicar no campo colorido abrirá um diálogo seletor de cores que permite escolher entre cores comumente usadas, ou permite definir uma cor no espaço RGB. Você também pode ativar o seletor de cores pressionando <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e escolherndo uma amostra de cor da sua imagem - preferentemente de uma borda não exposta do negativo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11154(title)
 msgid "Raw black/white point"
-msgstr ""
+msgstr "Ponto preto/branco em RAW"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11158(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11162(primary)
 msgid "raw black/white point"
-msgstr ""
+msgstr "ponto preto/branco em RAW"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11175(entry)
 msgid ""
@@ -10100,7 +10100,7 @@ msgid ""
 "the camera specific black and white points are taken into account. Default "
 "settings are applied for all supported cameras. Changes to the defaults are "
 "normally not required."
-msgstr ""
+msgstr "Este módulo é ativado automaticamente para imagens RAW e garante que os pontos pretos e brancos da sua câmera são levados em consideração. Definições default são aplicadas para todas as cameras suportadas. Mudanças aos defaults normalmente não são necessárias."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11196(title)
 msgid "black level 0 to 3"
@@ -10111,7 +10111,7 @@ msgid ""
 "The camera specific black level of the four pixels in the RGGB Bayer "
 "pattern. Pixels with values lower than that level are considered to contain "
 "no valid data."
-msgstr ""
+msgstr "O nível de preto dos quatro pontos no padrão RGGB Bayer para a camera específica. O darktable considerará que pixels com valores abaixo deste nível não contém dados válidos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11204(title)
 msgid "white point"
@@ -10124,7 +10124,7 @@ msgid ""
 "reconstruction</emphasis> module (see <xref linkend="
 "\"highlight_reconstruction\"/>). Pixels with values equal to the white level "
 "are considered to be white."
-msgstr ""
+msgstr "O nível de branco específico da câmera. Todos os pixels com valores acima deste valor serão provavelmente recortados e tratados no múdulo <emphasis>reconstrução de realces</emphasis>  (veja <xref linkend=\"highlight_reconstruction\"/>). Pixels com valores iguais ao nível de branco sào considerados brancos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11221(title)
 msgid "Tone group"
@@ -10174,7 +10174,7 @@ msgid ""
 "find the desired center value. You can switch between point and area "
 "sampling mode from within the global color picker panel (see <xref linkend="
 "\"global_color_picker\"/>)."
-msgstr ""
+msgstr "Determina a luminosidade mediana imactada pela luz de preenchimento. Um seletor de cores é ativado pressionando <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> . Ele mostra valores de luminosidade selecionados na barra de gradiente, que ajuda a encontrar o valor central. Você pode alternar entre os modos de seleção de ponto e área no painel do seletor de cores global (veja <xref linkend=\"global_color_picker\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11296(title)
 msgid "width"
@@ -10249,7 +10249,7 @@ msgid ""
 "lets you define the black point, the gray point and the white point in terms "
 "of <ulink url=\"http://en.wikipedia.org/wiki/Percentile"
 "\"><emphasis>percentiles</emphasis></ulink> relative to these borders."
-msgstr ""
+msgstr "No modo <quote>automático</quote> o módulo automaticamente analisa o histograma da imagem, detecta as bordas esquerda e direita do histograma, e deixa que você defina o ponto preto, o ponto cinza e o ponto branco em termos de <ulink url=\"https://pt.wikipedia.org/wiki/Percentil\"><emphasis>percentis</emphasis></ulink> relativos a estas bordas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11410(para)
 msgid ""
@@ -10257,7 +10257,7 @@ msgid ""
 "sources in the frame, the levels module may produce black pixel artifacts. "
 "See the <emphasis>gamut clipping</emphasis> option (<xref linkend="
 "\"input_color_profile\"/>) on how to mitigate this issue."
-msgstr ""
+msgstr "Dica: sub certas condições, especialmente fontes de luz azul muito saturadas, os módulo níveis pode produzir artefatos de ponto preto. Veja a opção <emphasis>recorte de gama</emphasis> (<xref linkend=\"input_color_profile\"/>) sobre como mitigar este problema."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11419(para)
 msgid ""
@@ -10343,7 +10343,7 @@ msgstr "RGB, canais vinculados."
 msgid ""
 "Depending on the desired intent, you can apply the tone curve in three "
 "different color spaces: <placeholder-1/>"
-msgstr ""
+msgstr "Dependendo da intenção desejada, você pode aplicar a curva de tons em três diferentes espaços de cor: <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11529(para)
 msgid ""
@@ -10454,7 +10454,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11622(title)
 msgid "interpolation method"
-msgstr "Método de interpolação"
+msgstr "método de interpolação"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11623(para)
 msgid ""
@@ -10568,7 +10568,7 @@ msgid ""
 "Ansel Adams' system. It allows modification of a zone's lightness taking "
 "into account the effect on the adjacent zones. It divides the lightness "
 "range into a user-defined number of zones."
-msgstr ""
+msgstr "Este módulo é uma outra maneira de mudar a luminosidade da sua imagem, baseando-se no sistema de Ansel Adams. Ele permite a modificação da luminosidade de uma zona, levando em conta o efeito nas zonas adjacentes. A faixa de luminosidade é dividida em um número de zonas definido pelo usuário."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11776(para)
 msgid ""
@@ -10659,7 +10659,7 @@ msgstr "Grade bilateral"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11907(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18166(title)
 msgid "coarseness"
-msgstr ""
+msgstr "granularidade"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11908(para)
 msgid "Make the details you want to adjust finer or coarser."
@@ -11053,7 +11053,7 @@ msgstr ""
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12388(title)
 msgid ""
 "White relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
-msgstr ""
+msgstr "Exposição relativa de branco (aba <guilabel moreinfo=\"none\">Cena</guilabel> )"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12389(para)
 msgid ""
@@ -11070,12 +11070,12 @@ msgid ""
 "When the grey is set at 18%, the white exposure will always be around "
 "2.45EV. When the grey is set at 100%, the white exposure should be set at "
 "0EV."
-msgstr ""
+msgstr "Quando o cinza está em 18%, a exposição do branco sempre estará perto de 2.45EV. Quando o cinza estiver em 100%, a exposição de branco estará em 0EV."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12403(title)
 msgid ""
 "Black relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
-msgstr ""
+msgstr "Exposição relativa de preto (ana <guilabel moreinfo=\"none\">Cena</guilabel> tab)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12404(para)
 msgid ""
@@ -11493,7 +11493,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12761(para)
 msgid "Adjust the shadows/highlights balance to avoid clipping of the curve"
-msgstr ""
+msgstr "Ajuste o balanço de sombras/realces para evitar o recorde da curva"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12765(para)
 msgid ""
@@ -12018,7 +12018,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13403(title)
 msgid "Optimize luma"
-msgstr ""
+msgstr "Otimizar luma"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13404(para)
 msgid ""
@@ -12064,7 +12064,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13442(title)
 msgid "Neutralize colors"
-msgstr ""
+msgstr "Neutralizar cores"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13443(para)
 msgid ""
@@ -12436,7 +12436,7 @@ msgstr "linear Rec2020 RGB"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13971(entry)
 msgid ""
 "The same image and processing with gamut clipping set to <placeholder-1/>."
-msgstr ""
+msgstr "A mesma imagem e processamento, com recorte de gama definido para <placeholder-1/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13987(title)
 msgid "3D LUT"
@@ -12608,7 +12608,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14241(title)
 msgid "output profile"
-msgstr ""
+msgstr "perfil de saída"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14242(para)
 msgid ""
@@ -12676,7 +12676,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14336(title)
 msgid "gamma"
-msgstr "gamma"
+msgstr "gama"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14337(para)
 msgid ""
@@ -12761,7 +12761,7 @@ msgid ""
 "The correction group contains the modules that will correct typical problems "
 "in an photo such as hotpixels, spot removal, noise, lens correction among "
 "others. This group also includes the basic sharpening tools."
-msgstr ""
+msgstr "O rgupo de correção contém módulos que corrigem problemas típicos rm fotos como pixels quentes, remoção de manchas, ruído, correção de lente dentre outros. Este grupo também inclui as ferramentas básicas de melhoria de nitidez."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14479(title)
 msgid "Sharpen"
@@ -12830,7 +12830,7 @@ msgid ""
 "bloom, denoising, clarity, and local contrast enhancement. It works in the "
 "wavelet domain and parameters can be tuned for each frequency band "
 "separately."
-msgstr ""
+msgstr "Este versátil módulo pode ser usado para obter uma variedade de efeitos, como: florecer, remoção de ruído, claridade, e melhoria de contrate local. Ele funciona no domínio de wavelets e os parâmetros podem ser ajustados para cada banda de frequência separadamente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14609(para)
 msgid ""
@@ -12839,7 +12839,7 @@ msgid ""
 "chromaticity (<quote>luma</quote> and <quote>chroma</quote>), as well as the "
 "acuteness (<quote>edges</quote>) of the wavelet basis on each frequency "
 "scale."
-msgstr ""
+msgstr "Cada banda de frequência pode ser ajustada independentemente. Em particular, você pode ajustar o aumento de contraste e o limiar de remoçào de ruído para luminosidade e cromaticidade (<quote>luma</quote> e <quote>croma</quote>), tanto quanto agudez (<quote>bordas</quote>) da base da wavelet de cada escala de frequência."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14622(entry)
 msgid ""
@@ -12848,7 +12848,7 @@ msgid ""
 "transparent area indicates where you would drag the spline with the current "
 "mouse position and radius. The small little triangles on the x-axis can be "
 "moved to alter the x-position of the spline nodes."
-msgstr ""
+msgstr "Cada spline pode ser arrastada usando uma abordagem de edição proporcional; use a rod do mouse para ajustar o raio onde as mudanças terão efeito. A área transparente indica onde você arrastaria o spline com a posição do mouse e raio atuais. Os pequenos triângulos no eixo x podem ser movidos para alterar a posição x dos nós de spline."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14643(entry)
 msgid ""
@@ -12856,7 +12856,7 @@ msgid ""
 "affect local contrast. Pulling it up, as shown here, will result in a "
 "contrast boost for that frequency band. Higher frequencies, i.e. smaller "
 "details, are to the right of the grid. Pulling it down works, too."
-msgstr ""
+msgstr "Arraste a linha superior (círculos claros, aqui para o canal de luminosidade) para afetar o contraste local. Puxar para cima, como mostrado aqui, resulta em aumento de contraste para aquela banda de frequência. Altas frequências, ou seja, detalhes menores, ficam à direita na grade. Puxar para baixo tamb funciona."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14663(entry)
 msgid ""
@@ -12864,7 +12864,7 @@ msgid ""
 "the wavelet shrinkage threshold for each frequency band. Pull it up to see "
 "the effect. In this example, the noise which has been amplified by local "
 "contrast enhancement is removed."
-msgstr ""
+msgstr "O spline inferior (círculos escuros) é usado para fazr remoção de ruído. Ele ajusta o limiar de encolhimento de wvelet para cada banda de frequência. Poxe para cima para ver o efeito. Neste exemplo, o ruído que havia sido amplificado pela melhoria de contraste local foi removido."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14683(entry)
 msgid ""
@@ -12872,20 +12872,20 @@ msgid ""
 "to zero for all bands. This is effectively a regular à trous wavelet, "
 "without edge detection, and results in the characteristic halos around sharp "
 "edges in the image."
-msgstr ""
+msgstr "Esta tela mostra o efeito do parâmetro de borda. Aqui, ele foi puxado para baixo até zero para todas as bandas. Isto é efetivamente uma verdadeira wavelet, sem detecção de bordas, e resulta em halos característicos ao redor de bordas duras na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14703(entry)
 msgid ""
 "This image is the other extreme. The wavelet basis now oversharpens, which "
 "results in ugly gradient reversals near the ridge of the rock."
-msgstr ""
+msgstr "Esta imagem é o outro extremo. A base da wavelet agora é aguda demais, resultando em um uma reversão de gradiente feia perto do cume da rocha."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14715(para)
 msgid ""
 "Note that the edge parameter only affects the wavelet basis, not the image "
 "directly. You will have to change some denoise/contrast boost parameters to "
 "see an effect following adjustments to the edge parameter."
-msgstr ""
+msgstr "Note que o parâmetro de borda só afeta a base da wavelet, não diretamente a imagem. Você terá que mudar alguns parâmetros de remoção de ruído/contraste para ver o efeito dos ajustes ao parametro de borda."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14721(para)
 msgid ""
@@ -12894,7 +12894,7 @@ msgid ""
 "axis. The slider was added as a convenience tool to help you modify the "
 "strength of the effect. It is not a module parameter in itself; when you "
 "leave darkroom mode all changes will be consolidated into the spline curves."
-msgstr ""
+msgstr "Este módulo tem adicionalmente um deslizador <quote>mistura</quote> abaido da interface de spline. Ajustar este deslizador irá mudar a escala das splines no eixo y. O deslizador foi adicionado como conveniência para ajudar a modificar a força do efeito. Não é, em si, um parâmetro do módulo; quando você sai da sala escura, todas as mudanças serão consolidadas nas splines."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14729(para)
 msgid ""
@@ -12902,7 +12902,7 @@ msgid ""
 "will provide a good starting point to gain an intuitive understanding of the "
 "controls. Among others there is preset to enhance an image's <quote>clarity</"
 "quote>."
-msgstr ""
+msgstr "Veja as pré-configurações onde há uma grande variedade de exemplos que oferecem um bom ponto de partida para ganhar um entendimento intuitivo dos controles. Entre outros, há uma pré-configuração para melhorar a <quote>claridade</quote> da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14741(title)
 msgid "Denoise – profiled"
@@ -12918,7 +12918,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14754(primary)
 msgid "noise removal"
-msgstr ""
+msgstr "remoção de ruído"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14768(entry)
 msgid ""
@@ -13114,7 +13114,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14959(title)
 msgid "preserve shadows"
-msgstr ""
+msgstr "preservar sombras"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14960(para)
 msgid ""
@@ -13162,11 +13162,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15004(secondary)
 msgid "non local means"
-msgstr ""
+msgstr "média não local"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15017(entry)
 msgid "This is a denoise algorithm, which will work on chroma and/or luma."
-msgstr ""
+msgstr "Este é um algoritmo de remoção de ruído que trabalhará em croma e/ou luma."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15034(para)
 msgid ""
@@ -13181,11 +13181,11 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15045(para)
 msgid "The radius of the patch for similarity evaluation."
-msgstr ""
+msgstr "O raio do patch para avaliação de similaridade."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15052(para)
 msgid "The strength of the denoise. Higher values lead to a stronger effect."
-msgstr ""
+msgstr "A força da remoção de ruído. Valores altos levam a efeitos mais fortes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15058(title)
 msgid "luma"
@@ -13195,21 +13195,21 @@ msgstr "luma"
 msgid ""
 "Amount of denoise to apply to luma. Select carefully in order not to lose "
 "too much structure."
-msgstr ""
+msgstr "O quanto de remoção de ruído aplicar em luma. Selecione cuidadosamente, para nào perder muita estrutura."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15067(para)
 msgid ""
 "Amount of denoise to apply to chroma. You can be much more aggressive with "
 "this parameter compared to luma."
-msgstr ""
+msgstr "Quanto de remoção de ruído aplicar em croma. Você pode usar mais agressividade aqui, comparando com luma."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15079(title)
 msgid "Denoise – bilateral"
-msgstr ""
+msgstr "Remoção de ruído - bilateral"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15083(secondary)
 msgid "denoise – bilateral"
-msgstr ""
+msgstr "remoção de ruído - bilateral"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15088(secondary)
 msgid "bilateral"
@@ -13382,7 +13382,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15346(para)
 msgid "A point can be removed by right-clicking on the center."
-msgstr ""
+msgstr "Um ponto pode ser removido com clique direito no centro."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15352(title)
 msgid "line tool"
@@ -13640,7 +13640,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15686(title)
 msgid "lens model"
-msgstr ""
+msgstr "modelo da lente"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15687(para)
 msgid ""
@@ -13899,7 +13899,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15953(title)
 msgid "corrections done"
-msgstr ""
+msgstr "correções deitas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15954(para)
 msgid ""
@@ -13911,19 +13911,19 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15967(title)
 msgid "Scale pixels"
-msgstr ""
+msgstr "Escala de pixels"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15971(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15975(primary)
 msgid "scale pixels"
-msgstr ""
+msgstr "escala de pixels"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15988(entry)
 msgid ""
 "Some cameras like the Nikon D1X have rectangular instead of the usual square "
 "sensor cells. Without correction this would lead to distorted images. This "
 "module applies the needed scaling."
-msgstr ""
+msgstr "Algumas câmeras como a Nikon D1X tem células de sensor retangulares, ao invés das tradicionais quadradas. Sem correção, isto levaria a imagens distorcidas. Este módulo aplica a mudança de escala necessária."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16007(para)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16060(para)
@@ -13961,13 +13961,13 @@ msgstr "remoção de manchas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16084(primary)
 msgid "cloning"
-msgstr ""
+msgstr "clonagem"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16097(entry)
 msgid ""
 "Spot removal allows you to correct an area in your image by using another "
 "area as model."
-msgstr ""
+msgstr "Remoção de manchas permite corrigir uma área na sua imagem usando outra área como modelo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16115(para)
 msgid ""
@@ -13975,14 +13975,14 @@ msgid ""
 "circles, ellipses and path shapes. The user interface and the controls are "
 "the same as in drawn mask and explained in more detail in <xref linkend="
 "\"drawn_mask\"/>."
-msgstr ""
+msgstr "Este módulo usa algumas das formas que são oferecidas em máscaras desenhadas: círculos, elipses e formas de caminho. A interface e o controle são os mesmos que para as máscaras desenhadas, e são explicados em mais detalhes em <xref linkend=\"drawn_mask\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16121(para)
 msgid ""
 "Select the desired shape by clicking the corresponding icon, then click on "
 "the canvas to choose the area to be healed, i.e. the target area. A cross is "
 "displayed where the source area will be positioned."
-msgstr ""
+msgstr "Selecione a forma desejada clicando no ícone correspondente, então clicando na tela para escolher a área a ser consertada (a área alvo). Uma cruz é mostrda onde a área fonte será posicionada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16127(para)
 msgid ""
@@ -13993,44 +13993,44 @@ msgid ""
 "shape, <emphasis>Shift+click</emphasis> on the desired position. The current "
 "shape will have the source created at that position and the subsequent ones "
 "will have the source created at the same relative position."
-msgstr ""
+msgstr "O posicionamento da fonte tem dois modos: absoluto ou relativo. Para usar modo absoluto, quando criar a forma, <emphasis>Shift-Ctrl-clique</emphasis> na posição desejada. De agora em diante, todas as formas terão a fonte criada naquela posição. Para usar modo relativo, ao criar a forma, <emphasis>Ctrl-clique</emphasis> na posição desejada. A forma corrente terá a fonte criada naquela posição, e as próximas formas terão a fonte criada na mesma posição relativa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16136(para)
 msgid ""
 "After creation source area and target area can be shifted independently "
 "until the result matches your expectations. An arrow helps to tell source "
 "from target area."
-msgstr ""
+msgstr "Depois da criação, áreas fonte e alvo podem ser deslocadas independentemente até que o resultado satisfaça suas expectativas. Uma seta ajuda a diferenciar áreas fonte e alvo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16141(para)
 msgid ""
 "Use the shape specific controls to adjust its size, its border width, and "
 "other attributes."
-msgstr ""
+msgstr "Use os controles específicos da forma para ajustar seu tamanho, sua largura de borda, e outros atributos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16146(para)
 msgid "Right-click on a shape to delete it."
-msgstr ""
+msgstr "Clique direito em uma forma para remové-la."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16150(para)
 msgid "Collapse the module to complete the changes."
-msgstr ""
+msgstr "Recolha o módulo para completar as mudanças."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16170(entry)
 msgid ""
 "Let's use this portrait as example; we want to remove some dirt and unwanted "
 "catchlight from camera popup strobe."
-msgstr ""
+msgstr "Usaremos este retrato como exemplo; queremos remover alguma sujeira e luz indesejada da câmera."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16179(entry)
 msgid ""
 "I have marked all the spots that I want to remove from the image with circle "
 "shapes and appropriately selected source areas."
-msgstr ""
+msgstr "Marquei todas as manchas que quero remover da imagem com formas de círculo, e selecionei áreas fonte apropriadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16188(entry)
 msgid "And here is the result image of the spotremoval."
-msgstr ""
+msgstr "E aqui está a imagem resultante após a remoção de manchas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16203(title)
 msgid "Retouch"
@@ -14294,7 +14294,7 @@ msgstr "redução de ruído RAW"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16474(secondary)
 msgid "raw"
-msgstr ""
+msgstr "raw"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16490(emphasis)
 msgid "dcraw"
@@ -14309,7 +14309,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16507(title)
 msgid "noise threshold"
-msgstr ""
+msgstr "limiar de ruído"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16508(para)
 msgid ""
@@ -14356,7 +14356,7 @@ msgid ""
 "occur, when darktable's internal 32-bit floating point data are transferred "
 "into a discrete 8-bit or 16-bit integer output format for display or file "
 "export."
-msgstr ""
+msgstr "Este módulo elimina alguns artefatos de banding típicos que podem ocorrer quanto os dados internos de 32 bits com ponto flutuante do darktable são transferidos para um formato de saída discreto de 8 ou 16 bits para exibição ou exportação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16585(para)
 msgid ""
@@ -14365,7 +14365,7 @@ msgid ""
 "exports the results of a pixelpipe. In order to avoid banding, you may "
 "activate this module. As dithering consumes significant resources this "
 "module is disabled by default."
-msgstr ""
+msgstr "Banding é um problema que pode surgir quando uma imagem é transformada em uma profundidade de bits menor. Este tipo de transformação acontece regularmente, quando o darktable mostra ou exporta os resultados de uma pixelpipe. Para evitar banding, você pode ativar este módulo. Como dithering consome recursos significativos, este módulo fica desativado por default."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16592(para)
 msgid ""
@@ -14379,7 +14379,7 @@ msgid ""
 "cloudless sky. Also when using a <emphasis>gradient mask</emphasis> (see "
 "<xref linkend=\"gradient_shape\"/>) you should watch out for possible "
 "banding artifacts."
-msgstr ""
+msgstr "Apesar de banding não ser um problema inerente a nenhum dos módulos do darktable, algumas operações podemproduzí-lo, porque produzem um gradiente de luminosidade na imagem. Para mitigar possíveis artefatos você deveria considerar ativar dithering quando usar os módulos <quote>vinheta</quote> e <quote>densidade graduada</quote> (veja <xref linkend=\"vignetting\"/> e <xref linkend=\"graduated_density\"/>). Isto é especialmente relevante para imagens com áreas homogêneas extendidas como um céu sem nuvens. Também quando usar uma <quote>máscara de gradiente</quote> (veja <xref linkend=\"gradient_shape\"/>), você deveria verificar a possibilidade de artefatos de banding."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16609(para)
 msgid ""
@@ -14391,7 +14391,7 @@ msgid ""
 "into a higher number of grayscale levels. Note that as a consequence the "
 "histogram – which is derived from the navigation window – will show this "
 "increased number of levels and is no longer a full match of the output image."
-msgstr ""
+msgstr "Vista de alguma distância, uma imagem com dithering em profundidade de bits muito rasa (como <quote>floyd-steinberg 1-bit preto e branco</quote>) dará a impressão de uma imagem homogênea em tons de cinza. Temtamos simular no darktable esta impressão quando você remove zoom da imagem na visão central, na janela de navegação e nas miniaturas. Isto é feito com dithering naquelas imagens, usando um número maior de níveis de cinza. Note que como consequência, o histograma - que é derivado da janela de navegação - mostrará este número aumentado de níveis e não casará mais perfeitamente com a imagem de saída."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16622(para)
 msgid ""
@@ -14402,11 +14402,11 @@ msgid ""
 "randomness to break sharp tonal value bands. The default setting is "
 "<quote>floyd-steinberg auto</quote>, which automatically adapts to the "
 "desired output format."
-msgstr ""
+msgstr "Esta combobox define o método de dithering. Difusão de erro de Floyd-Steinberg - com algumas profundidades de bot de saída típicas - e dithering com ruído aleatório são suportados. Floyd-Steinberg sistematicamente distribui erros de quantização sobre pixels vizinhos, enquanto dithering aleatório só adiciona algum nível de aleatoriedade para quebrar a nitidez das bandas de valores tonais. O default é <quote>floyd-steinberg auto</quote>, que automaticamente se adapta ao formato de saída."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16633(title)
 msgid "damping"
-msgstr ""
+msgstr "amortecimento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16634(para)
 msgid ""
@@ -14414,78 +14414,78 @@ msgid ""
 "controls the level of added random noise expressed as a damping factor in a "
 "10*log <subscript>2</subscript> basis. A value of -80 is a good fit for 8-"
 "bit output formats and -160 for 16-bit ones."
-msgstr ""
+msgstr "Este deslizador só é mostrado se você escolher o método <quote>aleatório</quote>. Ele controla o nível de ruído aleatório adicionado, expressado como fator de amortecimento em base 10*log <subscript>2</subscript>. Um valor de -80 é bom para formatos de saída de 8 bits, assim como -160 para formatos de 16 bits."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16648(para)
 msgid ""
 "The visibility of the following examples depends on the quality of your "
 "monitor or the print quality."
-msgstr ""
+msgstr "A visibilidade dos exemplos a seguir depende da qualidade do seu monitor ou da qualidade da impressão."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16663(entry)
 msgid ""
 "Banding artifact caused by vignetting (100% crop of a 8-bit PNG; effect "
 "heavily exaggerated by strong contrast enhancement)."
-msgstr ""
+msgstr "Artefato de banding causado por vinheta (recorte de PNG de 8 bits; o efeito está pesadamente exagerado por um aumento forte de contraste)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16672(entry)
 msgid ""
 "The same image area, processed as above but with activated Floyd-Steinberg "
 "dithering."
-msgstr ""
+msgstr "A mesma área da imagem, processada como acima, mas com dithering Floyd-Steinberg ativado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16688(title)
 msgid "Hotpixels"
-msgstr ""
+msgstr "Pixels quentes"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16692(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16696(primary)
 msgid "hotpixels"
-msgstr ""
+msgstr "pixels quentes"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16709(entry)
 msgid ""
 "This module is able to automatically detect and eliminate hotpixels. "
 "Hotpixels are pixels which failed to record light level correctly. Detected "
 "hotpixels are replaced by an average value of their neighbors."
-msgstr ""
+msgstr "Este módulo é capaz de automaticamente detectar e eliminar pixels quentes. Os pixels quentes são aqueles que falharam em registrar o nível de luz corretamente. Pixels quentes detectados são substituídos por uma média dos valores dos seus vizinhos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16728(para)
 msgid ""
 "You control the detection sensitivity with the threshold parameter and the "
 "level of elimination with the strength parameter."
-msgstr ""
+msgstr "Você controla a sensitividade de deteção com o parâmetro de limiar e o nível de eliminação com o parâmetro força."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16735(para)
 msgid ""
 "The threshold of the detection, i.e. how strong a pixel's value needs to "
 "deviate from its neighbors to be regarded as a hotpixel."
-msgstr ""
+msgstr "O limiar de detecção, ou seja, quão fortemente o valor de um pixel deve desviar de seus vizinhos para ser considerado um pixel quente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16743(para)
 msgid "The strength of blending hotpixels with their surrounding."
-msgstr ""
+msgstr "A força da mesclagem de pixels quentes com seus arredores."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16749(title)
 msgid "detect by 3 neighbours"
-msgstr ""
+msgstr "detectar por 3 vizinhos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16750(para)
 msgid ""
 "This will extend the detection of hotpixels, it will even regard a pixel as "
 "hot if a minimum of only three (instead of four) neighbor pixels deviate by "
 "more than the threshold level."
-msgstr ""
+msgstr "Extende a detecção de hotpixels. Um pixel será considerado quente se ao menos três vizinhos (ao invés de quatro) de desviam de seu nível além do limiar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16758(title)
 msgid "mark fixed pixels"
-msgstr ""
+msgstr "marcar pixels corrigidos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16759(para)
 msgid ""
 "This options will mark the pixels that have been corrected. It also displays "
 "the count of detected and fixed pixels."
-msgstr ""
+msgstr "Esta opção marcará os pixels que tiverem sido corrigidos. Também mostrará uma contagem de pixels detectados e corrigidos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16771(title)
 msgid "Chromatic aberrations"
@@ -14537,7 +14537,7 @@ msgid ""
 "dust and haze in the air, which often reduces the color contrast in "
 "landscape photographs. In general, this module may be employed to give "
 "pictures a color boost specifically in low-contrast image regions."
-msgstr ""
+msgstr "O módulo de remoção de névoa é projetado para automaticamente remover o efeito da poeira e névoa no ar, que normalmente produz contraste em fotos de paisagem. Em geral, este módulo pode ser aplicado para dar a imagens uma melhoria de cores em regiões com baixo contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16869(para)
 msgid ""
@@ -14548,7 +14548,7 @@ msgid ""
 "light. Thus the haze removal module estimates for each image region the "
 "amount of haze in the scene first and then removes the diffusive background "
 "light according to its local strength and recovers the original object light."
-msgstr ""
+msgstr "Quanto mais alta a densidade da névoa no ar, e maior a distância da câmera e o objeto fotografado, menos cores o objeto parece ter. A névoa absorve luz vindo dos objetos na direção da câmera, mas também é uma fonte de luz de fundo. Assim, o módulo de redução de névoa estima, para cada região da imagem, quanto de névoa existe na cena primeiro, e depois remove a luz de fundo difusa de acordo com sua própria força e recupera a luz original do objeto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16884(para)
 msgid ""
@@ -14559,7 +14559,7 @@ msgid ""
 "may render the image flat and may result in an unnatural looking style. "
 "Optimal values are typically below unity and these are rather image "
 "dependent but also a matter of personal aesthetic preferences."
-msgstr ""
+msgstr "Este módulo tem dois controles que determinam a quantidade de remoção de névoa e o limite da distancia até onde a névoa é removida. Definir os dois controles em um maximiza o efeito da remoção de névoa, mas também pode produzir artefatos. Remover a luz atmosférica inteiramente pode deixar a imagem plana e resultar em um estilo não natural. Valores ótimos ficam normalmente abaixo de um, e estes são bastante dependentes da imagem, mas também uma questão de preferência pessoal."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16895(para)
 msgid ""
@@ -14567,11 +14567,11 @@ msgid ""
 "unity, the module removes 100 percent of the detected haze between the "
 "camera and up to the specified distance; see below. Negative values for the "
 "strength increase the amount of haze in the image."
-msgstr ""
+msgstr "O parâmetro força controla a quantidade de remoção de névoa. Quando em um, o módulo remove 100 por cento da névoa detectada entre a câmera e a distância especificada; veja abaixo. Valores negativos aumentam a quantidade de névoa na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16904(title)
 msgid "distance"
-msgstr ""
+msgstr "distância"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16905(para)
 msgid ""
@@ -14580,38 +14580,38 @@ msgid ""
 "removed from the foreground to the far background if the distance parameter "
 "is set to unity. In case of a negative strength the distance control has no "
 "effect."
-msgstr ""
+msgstr "Este parâmetro limita a distância até onde a névoa é removida. Para valores pequenos, a remoção de névoa é restrita ao primeiro plano. A névoa será removida desde o primeiro plano até o plano de fundo se o parametro for definido em um. Para valores de força negativos, o controle de distância não tem efeito."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16919(title)
 msgid "Defringe"
-msgstr ""
+msgstr "Redução de halo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16923(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16927(primary)
 msgid "defringe"
-msgstr ""
+msgstr "redução de halo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16931(primary)
 msgid "purple fringing"
-msgstr ""
+msgstr "halo roxo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16944(entry)
 msgid ""
 "This module is designed to remove purple or any other color of fringing "
 "which often results from Longitudinal Chromatic Aberrations (LCA), also "
 "known as Axial Chromatic Aberrations."
-msgstr ""
+msgstr "Este módulo foi projetado para remover halos, roxos ou de qualquer outra cor, que frequentemente resultam em aberrações cromáticas longitudinais, também conhecidas por aberrações cromátias axiais."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16963(para)
 msgid ""
 "This module helps removing fringe via edge-detection. Where pixels are "
 "detected as a fringe, it rebuilds the color from lower-saturated neighboring "
 "pixels."
-msgstr ""
+msgstr "O módulo ajuda removendo halos através de detecção de bordas. Onde pixels forem detectados como halo, o módulo reconstrói a cor a partir de pixels vizinhos com baixa saturação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16969(title)
 msgid "operation mode"
-msgstr ""
+msgstr "modo de operação"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16970(para)
 msgid ""
@@ -14623,11 +14623,11 @@ msgid ""
 "might protect color better than global average and allows for rebuilding "
 "color where actually required. The <quote>static</quote> method does not use "
 "a color reference but directly uses the threshold as given by the user."
-msgstr ""
+msgstr "Define o modo de operação para detecção de halos. <quote>média global</quote> é usualmente o mais rápido, mas também mostra pré-visualizações ligeiramente incorretas em inspeção co mzoom alto. Pode também proteger menos ou mais que deveria regiões erradas de cor, quando comparado com média local. O modo <quote>média local</quote> é mais lento, porque computa referências de cor locais para ada pixel, que pode proteger melhor as cores do que a média global, e permite reconstruir cores onde realmente é preciso.  O método <quote>estático</quote> não usa referência de cor, e sim diretamente o limiar, como dado pelo usuário."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16982(title)
 msgid "edge detection radius"
-msgstr ""
+msgstr "raio de detecção de borda"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16983(para)
 msgid ""
@@ -14637,7 +14637,7 @@ msgid ""
 "quote> edge detection). Try increasing this value if you either want a "
 "stronger detection of the fringes or the thickness of the fringe edges is "
 "too high."
-msgstr ""
+msgstr "A extensão espacial do desfoque gaussiano usado na detecção de bordas. O algoritmo usa a diferença entre a iamgem original e a desfocada como indicador de bordas (um caso especial de detecção de borda <quote>diferença de gaussianas</quote>). Tente aumentar o valor se quiser detecção mais forte, ou se a grossura dos halos é muito grande."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16994(para)
 msgid ""
@@ -14647,7 +14647,7 @@ msgid ""
 "fringe detected and try increasing this value if too many pixels are "
 "desaturated. You may additionally want to play around with the edge "
 "detection radius."
-msgstr ""
+msgstr "Define o limiar a partir do qual um pixel de borda é considerado <quote>halo</quote>. As cores dos pixels afetados serão reconstruídas usando pixels vizinhos. Tente baixar este valor se os halos não forem detctados, e tente aumentá-lo se pixels demais forem desaturados. Você também pode tentar modificar o raio de detecção de borda."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17011(title)
 msgid "Effect group"
@@ -14682,14 +14682,14 @@ msgid ""
 "The SVG processor of darktable also substitutes strings within the SVG "
 "document, which gives the opportunity to include image dependent information "
 "in the watermark such as aperture, exposure time and other metadata."
-msgstr ""
+msgstr "O processador SVG do darktable também substitui strings no documento SVG, dando a oportunidade de incluir informação dependente da imagem na marca d'água como abertura, tempo de exposição e outros metadados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17059(para)
 msgid ""
 "User-designed watermarks are placed into the directory $HOME/.config/"
 "darktable/watermarks. Once in place, use the reload button at the right of "
 "the watermark file name to update the list of available watermarks to use."
-msgstr ""
+msgstr "Marcas d'água definidas por usuário ficam na pasta $HOME/.config/darktable/watermarks. Uma vez que a marca d'água esteja ali, use o botão de recarregar à sireita do nome do arquivo da marca d'água para atualizar a lista de marcas d'água disponíveis para uso."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17065(para)
 msgid ""
@@ -14762,7 +14762,7 @@ msgid ""
 "row><row><entry> $(GPS.LOCATION) </entry><entry> All three coordinates "
 "(latitude, longitude, elevation) </entry></row></tbody></tgroup></"
 "informaltable>"
-msgstr ""
+msgstr "Aqui está uma lista das string de variável que são suportadas para substituição no documento SVG. Além desta lista, você pode usar variáveis definidas no módulo de exportação. <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><tbody><row><entry> $(DARKTABLE.NAME) </entry><entry> O nome da aplicação </entry></row><row><entry> $(DARKTABLE.VERSION) </entry><entry> A versão do darktable </entry></row><row><entry> $(WATERMARK_TEXT) </entry><entry> Um texo livre curto (max. 63 caracteres) </entry></row><row><entry> $(WATERMARK_COLOR) </entry><entry> A cor a usar em $WATERMARK_TEXT </entry></row><row><entry> $(WATERMARK_FONT_FAMILY) </entry><entry> A família da fonte a usar em $WATERMARK_TEXT </entry></row><row><entry> $(WATERMARK_FONT_STYLE) </entry><entry> O estilo da fonte (normal, oblíqua, itálico) </entry></row><row><entry> $(WATERMARK_FONT_WEIGHT) </entry><entry> O peso da fonte </entry></row><row><entry> $(IMAGE.ID) </entry><entry> O id único de imagem na biblioteca atual </entry></row><row><entry> $(IMAGE.FILENAME) </entry><entry> O nome do arquivo de imagem </entry></row><row><entry> $(IMAGE.BASENAME) </entry><entry> A base do nome do arquivo da imagem </entry></row><row><entry> $(IMAGE.EXIF) </entry><entry> A string Exif da imagem </entry></row><row><entry> $(EXIF.DATE) </entry><entry> A data da imagem </entry></row><row><entry> $(EXIF.DATE.SECOND) </entry><entry> Os segundos da imagem nos dados Exif </entry></row><row><entry> $(EXIF.DATE.MINUTE) </entry><entry> Minutos da imagem nos dados Exif </entry></row><row><entry> $(EXIF.DATE.HOUR) </entry><entry> Hora da imagem nos dados Exif (24h) </entry></row><row><entry> $(EXIF.DATE.HOUR_AMPM) </entry><entry> Hora da imagem nos dados Exif (12h, AM/PM) </entry></row><row><entry> $(EXIF.DATE.DAY) </entry><entry> Dia do mês  da imagem nos dados Exif (01 .. 31) </entry></row><row><entry> $(EXIF.DATE.MONTH) </entry><entry> Mês da imagem nos dados Exif (01 .. 12) </entry></row><row><entry> $(EXIF.DATE.SHORT_MONTH) </entry><entry> Mês da imagem nos dados Exif (Jan, Fev, .. Dez) </entry></row><row><entry> $(EXIF.DATE.LONG_MONTH) </entry><entry> Mês da imagem nos ados Exif (janeiro, Fevereiro, .. Dezembro) </entry></row><row><entry> $(EXIF.DATE.SHORT_YEAR) </entry><entry> Ano abreviado da imagem nos dados Exif (2013 é \"13\") </entry></row><row><entry> $(EXIF.DATE.LONG_YEAR) </entry><entry> Ano completo nos dados Exif </entry></row><row><entry> $(DATE) </entry><entry> Data atual do sistema </entry></row><row><entry> $(DATE.SECOND) </entry><entry> Segundos da data do sistema </entry></row><row><entry> $(DATE.MINUTE) </entry><entry> Minutos da data do sistema </entry></row><row><entry> $(DATE.HOUR) </entry><entry> Horas da data do sistema (24h) </entry></row><row><entry> $(DATE.HOUR_AMPM) </entry><entry> Horas da data do sistema (12, AP/PM) </entry></row><row><entry> $(DATE.DAY) </entry><entry> Dia do mês na data do sistema (01 .. 31) </entry></row><row><entry> $(DATE.MONTH) </entry><entry> Mês na data do sistema (01 .. 12) </entry></row><row><entry> $(DATE.SHORT_MONTH) </entry><entry> Mês na data do sistema (Jan, Feb, .. Dec) </entry></row><row><entry> $(DATE.LONG_MONTH) </entry><entry> Mês na data do sistema (janeiro, Fevereiro, .. Dezembro) </entry></row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> Ano na data do sistema (abreviado) </entry></row><row><entry> $(DATE.LONG_YEAR) </entry><entry> Ano na data do sistema </entry></row><row><entry> $(EXIF.MAKER) </entry><entry> Fabricante da câmera </entry></row><row><entry> $(EXIF.MODEL) </entry><entry> Modelo da câmera </entry></row><row><entry> $(EXIF.LENS) </entry><entry> A lente usada </entry></row><row><entry> $(Xmp.dc.creator) </entry><entry> Criador </entry></row><row><entry> $(Xmp.dc.publisher) </entry><entry> Editor </entry></row><row><entry> $(Xmp.dc.title) </entry><entry> Título da imagem </entry></row><row><entry> $(Xmp.dc.description) </entry><entry> Descrição da imagem. Este é o campo que você usa quando está procurando por texto especificado por usuário que algumas câmeras adicionam no momento da foto ao campo Exif <quote>User Comment</quote> (também chamado de <quote>Exif.Photo.UserComment</quote>). </entry></row><row><entry> $(Xmp.dc.rights) </entry><entry> Direitos da imagem </entry></row><row><entry> $(GPS.LATITUDE) </entry><entry> Coordenada de latitude da imagem (N/S 0 .. 90) </entry></row><row><entry> $(GPS.LONGITUDE) </entry><entry> Coordenada de longitude da imagem (E/W 0 .. 180) </entry></row><row><entry> $(GPS.ELEVATION) </entry><entry> O nível de elevação (metros) da imagem </entry></row><row><entry> $(GPS.LOCATION) </entry><entry> Todas as três coordenadas (latitude, longitude, elevação) </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17444(title)
 msgid "marker"
@@ -14772,7 +14772,7 @@ msgstr "marcador"
 msgid ""
 "Choose the watermark of interest. You can use the reload button next to the "
 "combobox to update the list with all newly added watermarks."
-msgstr ""
+msgstr "Escolhe uma marca d'água de interesse. Voce pode usar o botão de recarregar perto da combobox para atualizar a lista com todas as marcas d'água recém-adicionadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17452(title)
 msgid "text"
@@ -14783,7 +14783,7 @@ msgid ""
 "A free text field with up to 63 characters which gets printed if the "
 "corresponding watermark references it. An example is supplied as <filename "
 "moreinfo=\"none\">simple-text.svg</filename>."
-msgstr ""
+msgstr "Um texto livre, com no máximo 63 caracteres, que é usado se a marca d'água correspondente o referenciar. Um exemplo é dado no arquivo <filename moreinfo=\"none\">simple-text.svg</filename>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17460(title)
 msgid "text color"
@@ -14794,7 +14794,7 @@ msgid ""
 "This field shows the text color. Clicking on the colored field will open a "
 "color selector dialog which offers you a choice of commonly used colors, or "
 "allows to define a color in RGB color space."
-msgstr ""
+msgstr "Este campo mostra a cor do texto. Clicar no campo colorido abrirá um diálogo seletor de cores que oferece escolha de muitas cores frequentemente usadas, ou permite definir uma cor no espaço RGB.\""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17469(title)
 msgid "text font"
@@ -14807,7 +14807,7 @@ msgid ""
 "searched by name and a preview of each available font is shown next to the "
 "font name; you may specify your own sample text. The font defaults to "
 "<quote>DejaVu Sans Book</quote>."
-msgstr ""
+msgstr "Este campo permite escolher a fonte do texto. Clicar nele abre uma caixa de diálogo que mostra as fontes disponíveis no seu sistema. Fontes podem ser buscadas por nome e uma pré-visualização de cada fonte é mostrada próxima ao nome da fonte; você pode especificar seu próprio texto de exemplo. A fonte dfault é <quote>DejaVu Sans Book</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17479(title)
 msgid "opacity"
@@ -14819,15 +14819,15 @@ msgstr "Define a opacidade da renderização da marca d'água."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17487(para)
 msgid "Scale the watermark pixel-independently."
-msgstr ""
+msgstr "Muda a escala da marca d'água de forma independente de resolução."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17494(para)
 msgid "Set the rotation angle of the watermark."
-msgstr ""
+msgstr "Define o ângulo de rotação da marca d'água."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17500(title)
 msgid "scale on"
-msgstr ""
+msgstr "escala em"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17501(para)
 msgid ""
@@ -14835,7 +14835,7 @@ msgid ""
 "<quote>image</quote> scales the watermark relative to the horizontal image "
 "size. Alternatively you can scale the watermark relative to the "
 "<quote>larger border</quote> and <quote>smaller border</quote>, respectively."
-msgstr ""
+msgstr "Define a referência para o parâmetro de escala. O default, <quote>imagem</quote>, muda a escala da marca d'água relativa ao tamanho horizontal da imagem. Você também pode também pode mudar a escala da imagem relativa à <quote>borda maior</quote> ou à <quote>borda menor</quote>, respectivamente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17510(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20900(bridgehead)
@@ -14845,34 +14845,34 @@ msgstr "alinhamento"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17511(para)
 msgid ""
 "Use these controls to align the watermark to any edge or center of the image."
-msgstr ""
+msgstr "Use estes controles para alinhar a marca d'água com alguma borda ou com o centro da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17517(title)
 msgid "x offset"
-msgstr ""
+msgstr "deslocamento x"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17518(para)
 msgid ""
 "Pixel-independent offset relative to the choice of alignment on the x-axis."
-msgstr ""
+msgstr "Deslocamento relativo, independente de resolução, relativo ao alinhamento no eixo x."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17524(title)
 msgid "y offset"
-msgstr ""
+msgstr "deslocamento y"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17525(para)
 msgid ""
 "Pixel-independent offset relative to the choice of alignment on the y-axis."
-msgstr ""
+msgstr "Deslocamento relativo, independente de resolução, relativo ao alinhamento no eixo y."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17536(title)
 msgid "Framing"
-msgstr ""
+msgstr "Moldura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17540(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17544(primary)
 msgid "framing"
-msgstr ""
+msgstr "moldura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17557(entry)
 msgid ""
@@ -14880,23 +14880,23 @@ msgid ""
 "The frame consists of a border with a user defined color and a frame line "
 "inside that border, which has another user defined color. There are various "
 "options for you to control the geometry of your frame."
-msgstr ""
+msgstr "Este é um módulo artístico que gera uma moldura ao redor da sua imagem. A moldura consiste de uma borda com uma cor definida pelo usuário e uma linha de moldura dentro da borda, que tem outra cor definida pelo usuário. Há várias opções para controlar a geometria da moldura."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17578(title)
 msgid "border size"
-msgstr ""
+msgstr "tamanho da borda"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17579(para)
 msgid ""
 "This slider controls the size of the frame in percent of the underlying full "
 "image."
-msgstr ""
+msgstr "Este deslizador controla o tamanho da moldura, medido em porcentagem da imagem cheia."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17586(para)
 msgid ""
 "With this combobox you can choose between different aspect ratios for the "
 "final output of this module, i.e. underlying image plus frame."
-msgstr ""
+msgstr "Com esta combobox você pode escolher entre diferentes proporções para o resultado final do módulo (a imagem mais a moldura)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17594(para)
 msgid ""
@@ -14904,50 +14904,50 @@ msgid ""
 "orientation – portrait or landscape. Set to <quote>auto</quote> if you want "
 "darktable to select the most reasonable orientation based on the underlying "
 "image."
-msgstr ""
+msgstr "Se você selecionar um aspecto não quadrado, esta combobox define a orientação - retrato ou paisagem. Escolha <quote>auto</quote> se quiser que o darktable escolha o mais razoável, basendo-se na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17602(title)
 msgid "horizontal position"
-msgstr ""
+msgstr "posição horizontal"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17603(para)
 msgid ""
 "Select from a set of pre-defined ratios where you want your underlying image "
 "be positioned on the horizontal axis. You can also right click and enter "
 "your own ratio as <quote>x/y</quote>."
-msgstr ""
+msgstr "Selecione de um conjunto pré-definido de razões para a posição da imagem sobre a moldura no eixo horizontal (centro, 1/3, 5/8 etc). Você também pode clicar e entrar alguma razão à sua escolha como <quote>x/y</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17611(title)
 msgid "vertical position"
-msgstr ""
+msgstr "posição vertical"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17612(para)
 msgid ""
 "Select from a set of pre-defined ratios where you want your underlying image "
 "be positioned on the vertical axis. You can also right click and enter your "
 "own ratio as <quote>x/y</quote>."
-msgstr ""
+msgstr "Selecione de um conjunto pré-definido de razões para a posição da imagem sobre a moldura no eixo vertical (centro, 1/3, 5/8 etc). Você também pode clicar e entrar alguma razão à sua escolha como <quote>x/y</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17620(title)
 msgid "frame line size"
-msgstr ""
+msgstr "tamanho da linha da moldura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17621(para)
 msgid ""
 "The percentage of the frame line size relative to the border size at its "
 "smallest part."
-msgstr ""
+msgstr "A porcentagem do tamanho da linha da moldura relativa ao tamanho da borda em sua menor parte."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17627(title)
 msgid "frame line offset"
-msgstr ""
+msgstr "deslocamento da linha de moldura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17628(para)
 msgid ""
 "Where the frame line is positioned relative to the underlying image. Select "
 "a value of 0 for a frame line touching the image, 100% for a frame line "
 "touching the outer border limits."
-msgstr ""
+msgstr "Onde linha da moldura é posicionada, relativa à imagem. Selecione 0 para uma moldura tocando a imagem, e 100% para uma moldura tocando os limites da borda exterior."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17636(title)
 msgid "border color"
@@ -14959,7 +14959,7 @@ msgid ""
 "the colored field will open a color selector dialog which offers you a "
 "choice of commonly used colors, or allows to define a color in RGB color "
 "space."
-msgstr ""
+msgstr "Um seletor de cores que permite definir uma cor para a borda. Clicar no campo colorido abrirá um diálogo seletor de cores que oferece escolha de muitas cores frequentemente usadas, ou permite definir uma cor no espaço RGB."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17645(para)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17661(para)
@@ -14969,11 +14969,11 @@ msgid ""
 "\"center\"/> and take a color probe from your image. You can switch between "
 "point and area sampling mode from within the global color picker panel (see "
 "<xref linkend=\"global_color_picker\"/>)."
-msgstr ""
+msgstr "Você também pode ativar um seletor de cores pressionando <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e amostrando uma cor da sua imagem. Você pode alternar entre os modos de seleção de ponto e de área no painel do seletod de cores global (see <xref linkend=\"global_color_picker\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17655(title)
 msgid "frame line color"
-msgstr ""
+msgstr "cor da linha de moldura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17656(para)
 msgid ""
@@ -14981,11 +14981,11 @@ msgid ""
 "the colored field will open a color selector dialog which offers you a "
 "choice of commonly used colors, or allows to define a color in RGB color "
 "space."
-msgstr ""
+msgstr "Um seletor de cores que permite definir uma cor para a moldura. Clicar no campo colorido abrirá um diálogo seletor de cores que oferece escolha de muitas cores frequentemente usadas, ou permite definir uma cor no espaço RGB."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17686(entry)
 msgid "Example image with a user defined frame."
-msgstr ""
+msgstr "Imagem de exemplo com moldura definida pelo usuário."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17701(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17705(secondary)
@@ -14993,7 +14993,7 @@ msgstr ""
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19442(para)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19574(para)
 msgid "split-toning"
-msgstr ""
+msgstr "divisão de tons"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17722(entry)
 msgid ""
@@ -15002,7 +15002,7 @@ msgid ""
 "the example image below you can see an original black and white image and "
 "one where a split-toning effect is applied with blue in shadows and a "
 "yellowish color in highlights."
-msgstr ""
+msgstr "O método de divisão de tons do darktable cria um efeito de tonalização linear com duas cores, onde as sombras e realces são representados por duas cores diferentes. Na exemplo abaixo você pode ver uma imagem original preto e branco, e outra, onde o efeito de divisão de tons foi aplicado com sombras azuis e uma cor amarelada nos realces."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17737(para)
 msgid ""
@@ -15013,7 +15013,7 @@ msgid ""
 "<quote>compression</quote> you can compress toning in the shadows and "
 "highlights and leave a gap in the mid-tones, which remain untouched by the "
 "effect."
-msgstr ""
+msgstr "Comparado à divisão de tons tradicionao, nosso módulo tem mais parâmetros para incluenciar o comportamento. Nós temos o parâmetro <quote>balanço</quote>, que desloca o nível de cinza na sua imagem de 50% - à sua escolha - mais para sombras ou para realces. Adicionalmente, com o parâmetro <quote>compressão</quote> você pode comprimir a tonalização nas sombras e nos realces e deixar um gap nos meios-tons, que permanecem inalterados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17746(para)
 msgid ""
@@ -15022,11 +15022,11 @@ msgid ""
 "toning, use the <emphasis>monochrome</emphasis> module (see <xref linkend="
 "\"monochrome\"/>) to make the image black and white before playing around "
 "with split-toning effect."
-msgstr ""
+msgstr "O módulo de divisão de tons não converte a imagem para preto e branco, e tem efeito limitado em imagens coloridas. Assim, se quiser obter a divisão de tons tradicional, use o módulo <emphasis>monocromático</emphasis> (veja <xref linkend=\"monochrome\"/>) para mudar a imagem para preto e branco antes de usar o efeito de divisão de tons."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17760(title)
 msgid "shadows and highlights color"
-msgstr ""
+msgstr "cores de sombras e realces"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17761(para)
 msgid ""
@@ -15035,23 +15035,23 @@ msgid ""
 "Clicking on the colored squares will open a color selector dialog which "
 "offers you a choice of commonly used colors, or allows to define a color in "
 "RGB color space."
-msgstr ""
+msgstr "Estes controles são usados para definir as cores do efeito de divisão de tons. Você seleciona as cores desejadas e a saturação tanto para sombras como para realces. Clicar nos quadrados coloridos abrirá um diálogo seletor de cores que oferece escolha de muitas cores frequentemente usadas, ou permite definir uma cor no espaço RGB."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17770(title)
 msgid "balance"
-msgstr ""
+msgstr "balanço"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17771(para)
 msgid ""
 "This parameter represents the ratio of toning between shadows and "
 "highlights. For a value of 50% half of the lightness range in image is used "
 "for shadows toning and the other half for highlights toning."
-msgstr ""
+msgstr "Este parâmetro representa a razão de tons entre sombras e realces. Para um valor de 50%, metade da luminosidade da imagem é usada para tonalizar sombras, e a outra metade para realces."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17779(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19026(title)
 msgid "compression"
-msgstr ""
+msgstr "compressão"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17780(para)
 msgid ""
@@ -15060,15 +15060,15 @@ msgid ""
 "of an original split-toning which would be 0% compression. The choice of 33% "
 "as a default is to invite you experimenting with these parameters and how it "
 "extends the original split-toning method."
-msgstr ""
+msgstr "Compressão é a porcentagem da luminosidade total que não é afetada pela tonalização. O valor default é 33%; este não é o valor default de uma divisão de tons tradicional, que seria 0% de compressão. A opção de 33% como default serve para te convidar a experimentar com este parâmetro e como ele extende o método de divisão de tons tradicional."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17805(entry)
 msgid "Original black and white image."
-msgstr ""
+msgstr "Imagem original em preto e branco."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17813(entry)
 msgid "split-toning with blue shadows and yellow highlights."
-msgstr ""
+msgstr "Divisão de tons com sombras azuis e realces amarelos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17828(title)
 msgid "Vignetting"
@@ -15083,7 +15083,7 @@ msgstr "vinheta"
 msgid ""
 "This module is an artistic feature which creates vignetting (modification of "
 "the brightness/saturation at the borders)."
-msgstr ""
+msgstr "Este módulo é uma funcionalidade artística que cria vinheta (modificação de brilho e saturação nas bordas)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17872(para)
 msgid ""
@@ -15091,7 +15091,7 @@ msgid ""
 "its effect. It also will display graphical controls within the image if the "
 "module is in focus. Give it a try to get a feeling of how it works. On-"
 "screen controls and parameter sliders will stay in sync."
-msgstr ""
+msgstr "O módulo de vinheta tem um conjunto extensivo de parâmetros para ajustar com precisão seu efeito. Ele também mostra controles gráficos na imagem se o módlo estiver em foco. Tente estes controles para ver como funcionam. Controles na tela e deslizadores de parâmetros permanecem em sincronia."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17879(para)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18928(para)
@@ -15099,7 +15099,7 @@ msgid ""
 "This module is known to provoke banding artifacts under certain conditions; "
 "you should consider to activate the <emphasis>dithering</emphasis> module "
 "(see <xref linkend=\"dithering\"/>)."
-msgstr ""
+msgstr "Sabe-se que este módulo pode provocar artefatos de banding sob certas condições; você deve considerar ativra o módulo <emphasis>dithering</emphasis> (veja <xref linkend=\"dithering\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17887(para)
 msgid "Set the radius of the vignetting area."
@@ -15107,41 +15107,41 @@ msgstr "Define o raio da área da vinheta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17893(title)
 msgid "fall-off strength"
-msgstr ""
+msgstr "força de decaimento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17894(para)
 msgid ""
 "Sets the progressiveness of the fall-off. Higher values will cause a steeper "
 "transition."
-msgstr ""
+msgstr "Define a progressividade do decaimento. Valores mais altos causam uma transição mais brusca."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17901(para)
 msgid ""
 "Sets the intensity of brightening (positive values) or darkening (negative "
 "values)."
-msgstr ""
+msgstr "Define a intensidade do clareamento (valores positivos) ou do escurecimento (valores negativos)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17908(para)
 msgid ""
 "Controls how strong colors become when desaturated or saturated in the "
 "darkened or brightened vignetting area."
-msgstr ""
+msgstr "Controla quão fortemente as cores se tornam desaturadas ou saturadas nas áreas escurecidas ou clareadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17915(title)
 msgid "horizontal center"
-msgstr ""
+msgstr "centro horizontal"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17916(para)
 msgid "Shifts the center of the vignetting area horizontally."
-msgstr ""
+msgstr "Desloca o centro da vinheta horizontalmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17922(title)
 msgid "vertical center"
-msgstr ""
+msgstr "centro vertical"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17923(para)
 msgid "Shifts the center of the vignetting area vertically."
-msgstr ""
+msgstr "Desloca o centro da vinheta verticalmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17929(title)
 msgid "shape"
@@ -15152,26 +15152,26 @@ msgid ""
 "Influences the shape of the vignetting area. The default value of 1 causes a "
 "circular or elliptical area. Smaller values will shift the shape into a more "
 "square one; higher values turn it into a cross-like shape."
-msgstr ""
+msgstr "Influencia a forma da área de vinheta. O valor default de 1 produz uma área circular ou elíptica. Valores menores levam a uma forma mais quadrada; valores maiores a transformam em uma área semelhante a uma cruz."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17938(title)
 msgid "automatic ratio"
-msgstr ""
+msgstr "razão automática"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17939(para)
 msgid ""
 "Click this button to automatically adjust the width/height ratio of the "
 "vignetting area to the aspect ratio of the underlying image. The vignetting "
 "area will typically become elliptical."
-msgstr ""
+msgstr "Clique este botão para ajustar automaticamente a razão largura/altura da área de vinheta ao aspecto da imagem sendo tratada. A área de vinheta usualmente se tornará elíptica."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17947(title)
 msgid "width/height ratio"
-msgstr ""
+msgstr "razão largura/altura"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17948(para)
 msgid "Manually adjust the width/height ratio of the vignetting area."
-msgstr ""
+msgstr "Ajusta manualmente a razão entre largura e altura da área de vinheta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17955(para)
 msgid ""
@@ -15182,12 +15182,12 @@ msgid ""
 "strong enough to compensate for banding on the fine grained 16-bit level. "
 "This feature is mostly obsoleted by our new module <emphasis>dithering</"
 "emphasis> (see <xref linkend=\"dithering\"/>)."
-msgstr ""
+msgstr "Com esta combobox você pode ativar dithering com ruído aleatório para evitar artefatos de banding causados pelos gradientes da vinheta. Selecione <quote>saída de 8 bits</quote> para prevenir banding no monitor ou JPEGs. Quando definido em <quote>saída de 16 bits</quote>, somente um pouco de dithering é aplicado, somente para compensar banding no nível fino de 16 bits. Esta funcionalidade é tornada obsoleta pelo novo módulo <emphasis>dithering</emphasis> (veja <xref linkend=\"dithering\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17981(entry)
 msgid ""
 "An image with vignetting and with graphical vignetting controls displayed."
-msgstr ""
+msgstr "Uma imagem com vinheta e com controles gráficos de vinheta visíveis."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17996(title)
 msgid "Soften"
@@ -15210,14 +15210,14 @@ msgid ""
 "the same scene: one well exposed and one overexposed; he then used a "
 "darkroom technique to blend those into a final image where the overexposed "
 "image was blurred."
-msgstr ""
+msgstr "Michael Orton conseguiu seus resultados em filme, usando duas exposições da mesma cena: uma bem exposta e a outra superexposta; depois, usou uma técnica de sala escura para mesclá-las em uma imagem final onde a imagem superexposta era desfocada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18041(para)
 msgid ""
 "This module is almost a copy of Orton's analogue process into the digital "
 "domain. You can control brightness and blur with the provided parameters; we "
 "also add a control for saturation of the overexposured image for more play."
-msgstr ""
+msgstr "Este módulo é quase uma cópia do processo analógico de Orton, mas no domínio digital. Você pode controlar o brilho e desfoque com os parâmetros providos. também adicionamos um controle para saturação da imagem superexposta para mais diversão."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18048(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18578(title)
@@ -15228,61 +15228,61 @@ msgstr "tamanho"
 msgid ""
 "Set the size of blur of the overexposed image in the process, the bigger the "
 "softer."
-msgstr ""
+msgstr "O tamanho do desfoque da imagem superexposta. Quanto maior, mais suave."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18056(para)
 msgid "Set the saturation of the overexposed image."
-msgstr ""
+msgstr "Define a saturação da imagem superexposta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18063(para)
 msgid ""
 "Expressed in [EV], the brightness slider selects the increase in brightness."
-msgstr ""
+msgstr "Expresso em [EV], o deslizador aumenta o brilho."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18070(para)
 msgid "Controls the mix of the overexposed image and the overall effect."
-msgstr ""
+msgstr "Controla a mistura da imagem superexposta e o efeito geral."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18091(entry)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18614(entry)
 msgid ""
 "This is the original image, use it as reference for the changes below..."
-msgstr ""
+msgstr "Esta é a imagem original, que usamos como referência para as mudanças abaixo..."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18099(entry)
 msgid ""
 "In this image I used the default values, and added 0.33EV to brightness for "
 "a little more light in the soft layer."
-msgstr ""
+msgstr "Nesta imagem eu usei os valores default, e adicionei 0.33EV ao brilho para um pouco mais de luz na camada suave."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18108(entry)
 msgid "This version is the same as above but with 25% saturation."
-msgstr ""
+msgstr "Esta versão é a mesma que a anterior, mas com 25% de saturação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18123(title)
 msgid "Grain"
-msgstr ""
+msgstr "Granulado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18127(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18131(primary)
 msgid "grain"
-msgstr ""
+msgstr "granulado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18144(entry)
 msgid "This module is an artistic feature which simulates the grain of a film."
-msgstr ""
+msgstr "Este módulo é uma funcionalidade artística que simula a granulaçãode um filme."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18161(para)
 msgid "The grain is processed on the L channel from CIELAB."
-msgstr ""
+msgstr "O granulado é processado no canal L do CIELAB."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18167(para)
 msgid "Set the grain size, which has been scaled to simulate an ISO number."
-msgstr ""
+msgstr "Determina o tamanho do granulado, que foi escalado para simular um número ISO."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18174(para)
 msgid "Set the strength of the effect."
-msgstr ""
+msgstr "Determina a força do efeito."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18185(title)
 msgid "Highpass"
@@ -15290,7 +15290,7 @@ msgstr "Passa-altas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18208(quote)
 msgid "soft light"
-msgstr ""
+msgstr "luz suave"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18206(entry)
 msgid ""
@@ -15300,19 +15300,19 @@ msgid ""
 "the effect or use a <placeholder-2/> (see <xref linkend=\"drawn_mask\"/>) or "
 "<placeholder-3/> (see <xref linkend=\"parametric_mask\"/>) to limit the "
 "effect to only parts of your image."
-msgstr ""
+msgstr "Este é um filtro passa-altas. O principal uso dele é em combinação com um operador de mesclagem. Tente o modo de mesclagem <placeholder-1/> para obter nitidez com passa-altas. Use o deslizador de opacidade para ajustar a força do modo de mesclagem ou use uma <placeholder-2/> (veja <xref linkend=\"drawn_mask\"/>) ou <placeholder-3/> (veja <xref linkend=\"parametric_mask\"/>) para limitar o efeito a apenas partes da sua imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18230(para)
 msgid "Set the sharpness. The higher, the more details."
-msgstr ""
+msgstr "Define a nitidez. Quanto mais alta, mais detalhes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18236(title)
 msgid "contrast boost"
-msgstr ""
+msgstr "ganho de contraste"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18237(para)
 msgid "Set the contrast boost."
-msgstr ""
+msgstr "Define o ganho de contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18248(title)
 msgid "Lowpass"
@@ -15325,7 +15325,7 @@ msgstr "passa-baixas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18272(emphasis)
 msgid "blending operator"
-msgstr ""
+msgstr "operador de mesclagem"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18273(quote)
 msgid "local contrast mask"
@@ -15338,13 +15338,13 @@ msgid ""
 "combination with a <placeholder-1/> (see <xref linkend=\"blending_operators"
 "\"/>). Try out the preset named <placeholder-2/> with an <placeholder-3/> "
 "blending operation."
-msgstr ""
+msgstr "Um filtro passa-baixas (por exemplo, desfoque gaussiano) com controle adicional do resultado, tanto do contraste como da saturação. O principal uso deste filtro é em combinação com um <placeholder-1/> (veja <xref linkend=\"blending_operators\"/>). Tente a pré-definição <placeholder-2/> com <placeholder-3/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18290(para)
 msgid ""
 "This module offers enormous artistic potential, albeit, with results that "
 "are sometimes difficult to predict."
-msgstr ""
+msgstr "Este módulo oferece um potencial artístico enorme, mas com resultados que são às vezes difíceis de antecipar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18297(para)
 msgid "Set the radius of the blur."
@@ -15357,20 +15357,20 @@ msgid ""
 "The latter leads to an edge preserving blur. <quote>gaussian</quote> will "
 "blur all image channels: L, a and b. <quote>bilateral</quote> will only blur "
 "L channel."
-msgstr ""
+msgstr "Esta combobox define o algoritmo de desfoque; você pode escolher entre filtros <quote>gaussiano</quote> e <quote>bilateral</quote>. O último leva a desfoque que preserva bordas. O <quote>gaussiano</quote> desfoca todos os canais: L, a, e b. O <quote>bilateral</quote> só desfoca o canal L."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18314(para)
 msgid ""
 "Changes the contrast. Negative values result in an inverted negative image. "
 "Higher absolute values increase contrast; lower absolute values reduce "
 "contrast. A value of zero leads to a neutral plane."
-msgstr ""
+msgstr "Muda o contraste. Valores negativos resultam em uma imagem invertida. Valores altos aumentam o contraste; valores baixos reduzem o contraste. Zero leva a um plano neutro."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18323(para)
 msgid ""
 "Changes the brightness. Negative values result in a darker image. Positive "
 "values increase the image's brightness."
-msgstr ""
+msgstr "Muda o brilho. Valores negativos resultam em uma imagem mais escura. Valores positivos aumentam a luminosidade da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18331(para)
 msgid ""
@@ -15378,44 +15378,44 @@ msgid ""
 "by inverting the a/b-channels. Higher absolute values increase color "
 "saturation; lower absolute values reduce color saturation. A value of zero "
 "leads to a desaturated black&amp;white image."
-msgstr ""
+msgstr "Muda a saturação das cores. Valores negativos resultam em cores complementares, invertendo os vanais a/b. Valores altos aumentam a saturação das cores; valores baixos reduzem a saturação. Zero leva a uma imagem de-saturada preto e branco."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18355(entry)
 msgid ""
 "The original image, already heavily processed. The boat is almost a "
 "silhouette."
-msgstr ""
+msgstr "A imagem original, já pesadamente trabalhada. O barco é quase uma silhueta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18363(entry)
 msgid ""
 "Bilateral blur with high radius. Desaturated, inverted and with high "
 "contrast."
-msgstr ""
+msgstr "Os parametros; desfoque bilateral com raio grande. De-saturada, com contraste altamente negativo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18371(entry)
 msgid "Intermediate result after lowpass filter ..."
-msgstr ""
+msgstr "O resultado intermediário depois do filtro passa-baixas..."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18379(entry)
 msgid ""
 "... and final image after this was applied with blend mode \"vividlight\"."
-msgstr ""
+msgstr "... e a imagem final, depois do filtro ser aplicado com o modo de mesclagem <quote>luz vívida</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18394(title)
 msgid "Low light"
-msgstr ""
+msgstr "Luz baixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18398(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18402(primary)
 msgid "lowlight"
-msgstr ""
+msgstr "luz baixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18416(para)
 msgid ""
 "The <emphasis>low light</emphasis> module allows one to simulate human "
 "lowlight vision, thus providing ability to make lowlight pictures look "
 "closer to reality. It can also be used to perform a day to night conversion."
-msgstr ""
+msgstr "O módulo <emphasis>luz baixa</emphasis> permite simular a visão humana com luz baixa, provendo assim a habilitade de produzir figuras emluz baixa que pareçam próximas de reais. Também pode ser usado para conversão dia para noite."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18422(para)
 msgid ""
@@ -15426,13 +15426,13 @@ msgid ""
 "function. Also this module is able to simulate the <ulink url=\"http://en."
 "wikipedia.org/wiki/Purkinje_effect\">Purkinje effect</ulink> by adding some "
 "blueness to the dark parts of the image."
-msgstr ""
+msgstr "A idéia é calcular uma imagem com <ulink url=\"https://pt.wikipedia.org/wiki/Visão_escotópica\">visão escotópica</ulink> que é percebida por cilindros ao invés de cones no olho sobluz baixa. A luminosidade esotópica então é misturada com o valor fotópico (a cor normal do pixel), usando alguma função de mesclagem/ Este módulo também pode simular o <ulink url=\"http://en.wikipedia.org/wiki/Purkinje_effect\">efeito Purkinje effect</ulink> adicionando mais azul nas partes escuras da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18447(para)
 msgid ""
 "This module comes with several presets. Give them a try to get a better "
 "feeling how it works."
-msgstr ""
+msgstr "Este módulo vem com várias prédefinições. Tente cada uma delas para perceber como o módulo funciona."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18453(title)
 msgid "curve"
@@ -15443,36 +15443,36 @@ msgid ""
 "The horizontal axis is about pixel lightness from dark (left) to bright "
 "(right). The vertical axis represents the kind of vision from night vision "
 "(bottom) to day vision (top)"
-msgstr ""
+msgstr "O eixo horizontal está relacionado a luminosidade de pixels do escuro (esquerda) para o claro (direita). O eixo vertical representa o tipo de visão, de visão noturna (abaixo) até visão diurna (axima)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18463(para)
 msgid "Set the blue hint in shadows (Purkinje effect)."
-msgstr ""
+msgstr "Define o deslocamento de azul nas sombras (efeito Purkinje)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18484(entry)
 msgid "Image 1. This is the original image."
-msgstr ""
+msgstr "Imagem 1. Esta é a imagem original."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18492(entry)
 msgid "Image 1. With low light module on."
-msgstr ""
+msgstr "Imagem 1. Com o módulo luz baixa ligado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18505(entry)
 msgid "Image 2. This is the original image."
-msgstr ""
+msgstr "Imagem 2. Esta é a imagem original."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18513(entry)
 msgid "Image 2. With low light module on."
-msgstr ""
+msgstr "Imagem 2. Com o módulo luz baixa ligado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18531(title)
 msgid "Bloom"
-msgstr ""
+msgstr "Florescer"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18535(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18539(primary)
 msgid "bloom"
-msgstr ""
+msgstr "florescer"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18552(entry)
 msgid ""
@@ -15480,32 +15480,32 @@ msgid ""
 "lightness) with the original to create a soft blooms over the image, hence "
 "the name of the effect. There are numerous ways to use this module depending "
 "on the image's actual scenery lighting."
-msgstr ""
+msgstr "Este módulo toma realces, os desfoca, e depois os mescla com a imagem original para criar efeitos suaves de florescer sobre a imagem. Há várias maneiras de usar este módulo, dependendo da iluminação da imagem original."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18572(para)
 msgid ""
 "Starting from the default settings change the strength value for a pleasant "
 "look, then change the size to control the spread of light."
-msgstr ""
+msgstr "Começando com as definições default, mude o valor da força para uma aparência agradável, então mude o tamanho para controlar a difusão da luz."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18579(para)
 msgid "Represents the spatial extent of the bloom effect."
-msgstr ""
+msgstr "Representa a extensão espacial do efeito de florescer."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18586(para)
 msgid "Set the threshold for the increase in brightness."
-msgstr ""
+msgstr "Define o limiar para aumento do brilho."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18593(para)
 msgid "Set the strength of overlightning for the effect."
-msgstr ""
+msgstr "Define a força da iluminação para o efeito."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18622(entry)
 msgid ""
 "Here we have chosen to use a size of 10%, which is a rather small radius for "
 "the soft light spread. We boosted up the strength to 50% for a more "
 "exaggerated effect."
-msgstr ""
+msgstr "Aqui escolhemos usar um tamanho de 10%, que é um raio bem pequeno para difusão de luz suave. Aumentamos a força em 50% para um efeito mais exagerado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18639(title)
 msgid "Colorize"
@@ -15566,11 +15566,11 @@ msgid ""
 "statistically analyses the color characteristics of a source image and a "
 "target image. The colors of the source image are then mapped to "
 "corresponding colors of the target image."
-msgstr ""
+msgstr "Este módulo transfere o <quote>feeling</quote> de uma imagem para outra. Ele analisa estatisticamente as características de cor de uma imagem fonte e uma imagem alvo. As cores da imagem fonte então são mapeadas para cores correspondentes na imagem alvo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18758(para)
 msgid "To use this module two steps are required."
-msgstr ""
+msgstr "Para usar este módulo, dois passos são necessários."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18762(para)
 msgid ""
@@ -15582,7 +15582,7 @@ msgid ""
 "the color variance within that cluster. The clusters are sorted in ascending "
 "order by their weight, i.e. the number of pixels that contribute to the "
 "clusters."
-msgstr ""
+msgstr "Primeiro, abra a imagem fonte na sala escura e adquira suas características de cor pressionando o botão <quote>adquirir como fonte</quote>. Um conjunto de clusters de cor é gerado e mostrado na área <quote>clusters da origem</quote>. Cada cluster é representado por um conjunto de swatches com o valor médio no centro, rodeado por swatches indicando a variancia de cor no cluster. Os clusters são armazenados em ordem ascendente de peso, ou seja, o número de pixels que contribuíram para sua formação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18771(para)
 msgid ""
@@ -15593,7 +15593,7 @@ msgid ""
 "<quote>acquire as target</quote> button to generate a corresponding set of "
 "color clusters for your target image, which gets displayed in the "
 "<quote>target clusters</quote> area."
-msgstr ""
+msgstr "Em seguida, abra a imagem alvo no modo sala escura. O darktable lembrará os clusters coletados anteriormente; se não estiverem visíveis, pressione o botão <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>. Agora pressione o botão <quote>adquirir como alvo</quote> para gerar um conjunto correspondente de clusters de cor para sua imagem alvo, que serão mostrados na área <quote>clusters alvo</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18780(para)
 msgid ""
@@ -15606,33 +15606,33 @@ msgid ""
 "can finetune the colors with modules like <emphasis>tone curve</emphasis> "
 "(see <xref linkend=\"tone_curve\"/>) or <emphasis>color correction</"
 "emphasis> (see <xref linkend=\"color_correction\"/>)."
-msgstr ""
+msgstr "Quando tanto os clusters fonte como alvo são coletados um mapeamento automático de cores é aplicado à imagem alvo. Em sua configuração default, o efeito geral é bem exagerado. Um conjunto de deslizadores te dá controle sobre a força do efeito. Você também pode usar o operador de mesclagem <quote>normal</quote> para minimizar o efeito (veja <xref linkend=\"blending_operators\"/>). Como o módulo <emphasis>mapeamento de cores</emphasis> fica no começo da pixelpipe, você pode fazer ajustes finos nas cores com módulos como <emphasis>curva de tons</emphasis> (veja <xref linkend=\"tone_curve\"/>) ou <emphasis>correção de cores</emphasis> (veja <xref linkend=\"color_correction\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18792(title)
 msgid "acquire as source/target"
-msgstr ""
+msgstr "adquirir como fonte/alvo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18793(para)
 msgid ""
 "Press these buttons to generate color clusters for the source and target "
 "image, respectively. The processing takes a few seconds during which the GUI "
 "remains unresponsive."
-msgstr ""
+msgstr "Pressione estes botões para gerar clusters de cor para as imagens fonte e alvo, respectivamente. O processamento leva alguns segundos, durante os quais a interface ficará sem responsividade."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18801(title)
 msgid "number of clusters"
-msgstr ""
+msgstr "número de clusters"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18802(para)
 msgid ""
 "Sets the number of color clusters to use. If you change this parameter all "
 "collected color clusters are reset and need to be acquired anew."
-msgstr ""
+msgstr "Define o número de clusters de cor a usar. Se você mudar este parâmetro, todos os clusters de cores coletadas são resetados e precisam ser re-adquiridos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18809(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18864(quote)
 msgid "color dominance"
-msgstr ""
+msgstr "dominância de cores"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18810(para)
 msgid ""
@@ -15643,7 +15643,7 @@ msgid ""
 "source image are mapped to dominant colors of the target image. This "
 "typically leads to a very bold effect. In-between values incrementally shift "
 "between the extremes."
-msgstr ""
+msgstr "Este parametro controla o mapeamento entre os clusters fonte e alvo. No valor mais baixo, o mapeamento é baseado em proximidade de cores. Isto tipicamente leva a efeitos muito sutis na imagem alvo. Com valores altos, o mapeamento é baseado no peso relativo dos clusters de cor - cores dominantes da imagem fonte são mapeadas em cores dominantes da imagem alvo. Isto tipicamente leva a um efeito bastante duro. Valores intermediários tem efeito intermediário entre os extremos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18821(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18865(quote)
@@ -15655,46 +15655,46 @@ msgid ""
 "Besides mapping of color characteristics this module can modify the target "
 "image's contrast by matching its histogram with the histogram of the source "
 "image. This slider controls the extent of the effect."
-msgstr ""
+msgstr "Além do mapeamento de características de cor, este módulo pode modificar o contraste da imagem alvo ao casar seu histograma com o histograma da imagem fonte. Este deslizador controla a extensão deste efeito."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18845(entry)
 msgid ""
 "The source image taken shortly after sunset under front lighting conditions."
-msgstr ""
+msgstr "A imagem fonte, fotografada logo depois do por do sol, em condições de iluminação frontal direta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18853(entry)
 msgid ""
 "The target image taken in the afternoon with a partly clouded sky. Our goal "
 "is to transfer the evening atmosphere of the source image."
-msgstr ""
+msgstr "A imagem alvo, fotografada à tarde, com céu parcialmente nublado. Nosso objetivo é transferir a atmosfera da tarde para a imagem fonte."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18862(entry)
 msgid ""
 "The target image with color mapping applied. A number of 2 clusters was "
 "used. <placeholder-1/> is set to 100% for a bold but still credible effect. "
 "<placeholder-2/> is set to 80%."
-msgstr ""
+msgstr "A imagem fonte com o mapeamento de cores aplicado. Um número de 2 clusters foi usado. <placeholder-1/> é definida em 100% para um efeito forte, mas ainda com credibilidade. <placeholder-2/> foi definida em 80%."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18879(title)
 msgid "Graduated Density"
-msgstr ""
+msgstr "Densidade graduada"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18883(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18887(primary)
 msgid "graduated density"
-msgstr ""
+msgstr "densidade graduada"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18905(entry)
 msgid ""
 "This module aims at simulating a graduated density filter, in order to "
 "correct exposure and color in a progressive manner."
-msgstr ""
+msgstr "Este módulo tenta simular um filtro de densidade graduada, para corrigir exposição e cor de maneira progressiva."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18923(para)
 msgid ""
 "The module uses a gradient to modify the exposure and the color cast of the "
 "image in a non-homogeneously manner."
-msgstr ""
+msgstr "O módulo usa um gradiente para modificar a exposição e o desvio de cor da imagem de menira não-homoênea."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18935(title)
 msgid "density"
@@ -15704,7 +15704,7 @@ msgstr "densidade"
 msgid ""
 "Set the density of the filter in [ev]. A low value underexposes slightly "
 "whereas a high value creates a strong filter."
-msgstr ""
+msgstr "Determina a densidade do filtro em [EV]. Um valor baixo subexpõe levemente, enquanto um valor algo cria um filtro mais forte."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18940(para)
 msgid ""
@@ -15723,21 +15723,21 @@ msgid ""
 "0.9 </entry><entry> 12.5% </entry></row><row><entry><emphasis>ND400</"
 "emphasis></entry><entry> -9 </entry><entry> 2.7 </entry><entry> 0.195% </"
 "entry></row></tbody></tgroup></informaltable>"
-msgstr ""
+msgstr "A densidade é expressa em [EV], que é equivalente a <emphasis>f-stops</emphasis>. Filtros de lente são usualmente chamados de ND2, ND4, ND8, e assim por diante. Cada vez que você adiciona um [EV], você dobra o ND. Dessa forma, ND2 é 1 EV, ND4 é 2 EV, e assim por diante. Você pode também expressar a densidade em densidade óptica ou transmitância. A tabela abaixo resume as diferentes abordagens para os filtros mais comins: <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"4\" colsep=\"0\" rowsep=\"0\"><tbody><row><entry><emphasis>ND</emphasis></entry><entry> [ev] ou f-\"stop </entry><entry> absorvência </entry><entry> transmitância </entry></row><row><entry><emphasis>ND2</emphasis></entry><entry> -1 </entry><entry> 0.3 </entry><entry> 50% </entry></row><row><entry><emphasis>ND4</emphasis></entry><entry> -2 </entry><entry> 0.6 </entry><entry> 25% </entry></row><row><entry><emphasis>ND8</emphasis></entry><entry> -3 </entry><entry> 0.9 </entry><entry> 12.5% </entry></row><row><entry><emphasis>ND400</emphasis></entry><entry> -9 </entry><entry> 2.7 </entry><entry> 0.195% </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19027(para)
 msgid ""
 "Set progressiveness of the gradient. A low value creates a smooth "
 "transition, whereas a high value makes the transition abrupt."
-msgstr ""
+msgstr "Define progressivamente o gradiente. Um valor baixo cria uma transição suave, enquanto um valor algo deixa a transição abrupta."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19035(para)
 msgid "Set the hue to add a color cast to the gradient."
-msgstr ""
+msgstr "Determina a matiz para adicionar um desvio de cor ao gradiente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19042(para)
 msgid "Set the saturation to add a color cast to the gradient."
-msgstr ""
+msgstr "Determina a saturação para adicionar um desvio de cor ao gradiente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19048(title)
 msgid "position"
@@ -15748,31 +15748,31 @@ msgid ""
 "You can set the position of the gradient directly on the image by moving the "
 "white line. For fine tuning, you can also use the rotation slider. Negative "
 "values turn clockwise."
-msgstr ""
+msgstr "Você pode determinar a posição do gradiente diretamente na imagem movendo a linha branca. Para ajuste fino, você pode usar o deslizador de rotação. Valores negativos giram no sentido horário."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19077(para)
 msgid ""
 "Here is an example that shows various options of darktable's graduated "
 "density filter:"
-msgstr ""
+msgstr "Aqui está um exemplo que mostra várias opções do filtro de densidade graduada do darktable:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19091(entry)
 msgid ""
 "This is the original image with a pretty overexposed sky, use it as "
 "reference for the changes below..."
-msgstr ""
+msgstr "Esta é a imagem original, com um céu bastante superexposto. Usaremos como referência para as mudanças a seguir..."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19100(entry)
 msgid ""
 "And now we have added a neutral ND8 filter which does a pretty good job on "
 "the image.."
-msgstr ""
+msgstr "Agora adicionamos um filtro neutro ND8, que faz um bom trabalho na imagem..."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19109(entry)
 msgid ""
 "And at last, we added an orange colored filter rotating it -180 degrees, "
 "applying it on water/trees for a more artistic use of the filter."
-msgstr ""
+msgstr "E finalmente, adicionamos um filtro colorido laranja, girando-o -180 graus, e aplicando na água e árvores para um uso mais artístico do filtro."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19119(para)
 msgid ""
@@ -15780,7 +15780,7 @@ msgid ""
 "hardware filters have some advantages over a pure software solution. With a "
 "physical GND filter you can in fact reduce the dynamic range of your scene "
 "to make it better fit the limits of your camera sensor."
-msgstr ""
+msgstr "O filtro de densidade graduada do darktable é uma ferramentapoderosa. Apesar disso, filtros físicos tem algumas vantagens sobre uma solução puramente de software. Com um filtro GND você pode de fto reduzir a faixa dinâmica da sua cena para fazê-la encaixar melhor nos limites do seu sensor."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19133(entry)
 msgid ""
@@ -15788,7 +15788,7 @@ msgid ""
 "prevent over-exposure in the sky and tree tops, while at the same time "
 "getting a well exposed image of the ground. A rather disturbing element is "
 "the decay of brightness in the tree trunks from bottom to top."
-msgstr ""
+msgstr "Neste exemplo, um filtro físico GND (Hitech ND0.6, soft edge) ajudou a prevenir superexposição no céu e nos topos das árvores, ao mesmo tempo em que obteve uma imagem bem exposta no chão. Um elemento que incomoda é o decaimento do brilho nos troncos das árvores, de baixo para cima."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19144(entry)
 msgid ""
@@ -15797,7 +15797,7 @@ msgid ""
 "a brightness gradient that is just inverted in relation to the hardware "
 "filter. As we only want to compensate the unnatural decay of brightness in "
 "the tree trunks, we combine the module with a suited blend mask."
-msgstr ""
+msgstr "O filtro de densidde graduada do darktable, junto com a funcionalidade de máscara paramétrica (veja <xref linkend=\"parametric_mask\"/>) é bastante útil neste momento. Podemos adicionar um gradiente de brilho que é invertido em relação ao filtro físico. Como só queremos compensar o decaimento não natural do brilho nos troncos das árvores, combinamos o módulo com uma máscara de mesclagem adequada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19156(entry)
 msgid "The resulting image."
@@ -15812,7 +15812,7 @@ msgid ""
 "produce a pleasing results, this is a limitation that is inherent to digital "
 "postprocessing. For instructions on how to intentionally underexpose, please "
 "consult your camera's manual, look for <quote>exposure compensation</quote>."
-msgstr ""
+msgstr "Dica: se você sabe que pretende usar o filro de densidade graduada antes de tirar a foto, pode querer subexpor a foto por umou dois terços de f-stop para ter certeza de que os detalhes permanecem nos realces. Quando todos os detalhes estiverem realmente estourados, o filtro de densidade graduada não consegue produzir bons resultados, e isto é uma limitação inerente ao pós-processamento digital. Para instruções sobre como subexpor intencionalmente, consulte o manual da sua câmera, e procure por <quote>compensação de exposição</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19193(title)
 msgid "Converting to black and white"
@@ -16448,14 +16448,14 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20119(title)
 msgid "Capturing a timelapse"
-msgstr ""
+msgstr "Fazendo capturas para timelapse (vídeo em câmera rápida)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20121(para)
 msgid ""
 "A timelapse is a video clip composed of images taken in a time sequence. A "
 "typical example is to take a timelapse of cityscapes where you capture "
 "clouds and traffic etc."
-msgstr ""
+msgstr "Timelapse é um vídeoclipe composto de fotos tiradas em sequência, num período de tempo. Um exemplo típico é o de clipes de cidades, onde é capturado o movimento das nuvens ou do tráfego."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20126(para)
 msgid ""
@@ -16464,14 +16464,14 @@ msgid ""
 "situations were the ambient light will change significantly during the time "
 "of the shoot, eg. shooting a timelapse over 24 hours might give you easier "
 "control of light in that kind of captured sequence."
-msgstr ""
+msgstr "Para preparar um vídeo timelapse, crie uma nova sessão, como descrito anteriormente. Agora você precisa decidir se vai tirar as fotos em modo manual ou automático. Só use modo automático em situações em que a luz ambiente vai mudar significativamente durante o tempo das capturas - por exemplo, com tempo de 24 horas pode ser mais fácil controlar a luz no modo automático."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20133(para)
 msgid ""
 "The camera settings panel is where you define delay and sequence. Sequence "
 "will give you the opportunity to choose how many images you want to capture "
 "and delay will set the time in seconds between captures."
-msgstr ""
+msgstr "O painel de definições da câmera é onde você define o intervalo de tempo e a sequência. Ao definir sequência você poderá escolher quantas imagens quer capturar e o intervalo de tempo determina o tempo, em segundos, entre as capturas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20139(para)
 msgid ""
@@ -20252,7 +20252,7 @@ msgid ""
 "case for NVIDIA driver version 331.89 on Ubuntu 14.04. We hope that this "
 "will serve you as a first impression and will help to solve possible "
 "problems of your specific setup."
-msgstr "A imansa diversidade de sistemas e as diferenças entre fabricantes e drivers torna impossível dar uma visão geral completa da configuração do OpenCL. Só podemos dar um exemplo, neste caso para o driver da NVIDIA versão 331.89 em um sistema Ubuntu 14.04. Esperamos que isto sejá útil como primeira impressão e que o ajude a resolver possíveis problemas de seu sistema."
+msgstr "A imensa diversidade de sistemas e as diferenças entre fabricantes e drivers torna impossível dar uma visão geral completa da configuração do OpenCL. Só podemos dar um exemplo, neste caso para o driver da NVIDIA versão 331.89 em um sistema Ubuntu 14.04. Esperamos que isto sejá útil como primeira impressão e que o ajude a resolver possíveis problemas de seu sistema."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24272(para)
 msgid "The principle OpenCL function flow is like this:"
@@ -20614,7 +20614,7 @@ msgid ""
 "Performance in this context mostly means the latency of darktable during "
 "interactive work, i.e. how long it takes to reprocess your pixelpipe. For a "
 "comfortable workflow it is essential to keep latency low."
-msgstr ""
+msgstr "Há alguns parâmetros em $HOME/.config/darktable/darktablerc que ajudam a realizar o ajuste fino do desempenho do OpenCL no seu sistema. O desempenho, neste contexto, significa principalmente a latência do darktable durante trabalho interativo, ou seja, quanto tempo o darktable demora para reprocessar a pixelpipe. Para um fluxo de trabalho confortável é essencial manter a latência baixa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24626(para)
 msgid "In order to get profiling info you start darktable from a terminal with"
@@ -20632,7 +20632,7 @@ msgid ""
 "in pixelpipe. Please note that the timings given for each individual module "
 "are unreliable when running the OpenCL pixelpipe asynchronously (see "
 "opencl_async_pixelpipe below)."
-msgstr ""
+msgstr "Depois de cada reprocessamento da pixelpipe - causado por mudança de parâmetro em um módulo, zoom, arrastar, etc - você verá o tempo total e o tempo gasto em cada um dos kernels do OpenCL. O valor mais confiável é o tempo total gato na pixelpipe. Note que os tempos dados para cada módulo individual não são confiáveis quando usando a pixelpipe OpenCL de maneira assíncrona (veja opencl_async_pixelpipe abaixo)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24643(para)
 msgid ""
@@ -20642,7 +20642,7 @@ msgid ""
 "buffers we need to handle during interactive work. They can be processed "
 "quickly by a fast GPU. However, even short-term stalls of the pixelpipe will "
 "easily become a bottleneck."
-msgstr ""
+msgstr "Para permitir um processamento rápido da pixelpipe com OpenCL é essencial manter a GPU ocupada. Qualquer interrupção ou fluxo de dados parado adicionará ao tempo total de processamento. Isto é especialmente importante para os pequenos buffers de imagem que precisamos usar durante trabalho intensivo. Eles podem ser processados rapidamente por uma GPU rápida. No entanto, mesmo paradas pequenas da pixelpipe podem facilmente se tornar um gargalo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24651(para)
 msgid ""
@@ -20650,7 +20650,7 @@ msgid ""
 "less only governed by the speed of our algorithms and the horse-power of "
 "your GPU. Short-term stalls will not have a noticeable effect on the total "
 "time of an export."
-msgstr ""
+msgstr "Por outro lado, o desempenho do darktable durante a exportação de arquivos é mais ou menos governado apenas pela velocidade dos algoritmos e pela potência de sua GPU. Paradas de curto prazo não terão efeito perceptível no tempo total de exportação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24667(computeroutput)
 msgid "opencl_async_pixelpipe"
@@ -20667,7 +20667,7 @@ msgid ""
 "Problems have been reported with some older ATI/AMD cards, like HD57xx, "
 "which can produce garbled output if this parameter is set to TRUE. If in "
 "doubt, leave it at its default FALSE."
-msgstr ""
+msgstr "Esta flag controla quão frequentemente bloqueamos a pixelpipe OpenCL e obtemos um status de sucesso/falha de todos os kernels que estiverem rodando. Para latência ima defina em TRUE, para que o darktable rode a pixelpipe assincronamente e tente usar tão poucas inerrupções quanto possível. Se perceber erros do OpenCL, como kernels falhando, defina em FALSE. O darktable irá então interromper o processamento após cada módulo para que você possa mais facilmente isolar o problema. Houve problemas reportados com algumas placas antivas ATI/AMD, como a HD57xx, que pode produzir saída embaralhada quando este parâmetro é TRUE. Em dúvida, deixe no default, FALSE."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24688(computeroutput)
 msgid "opencl_number_event_handles"
@@ -20899,7 +20899,7 @@ msgid ""
 "left to right and whenever it tries to allocate an OpenCL device to a "
 "pixelpipe it will scan the devices in that order, taking the first free "
 "device it finds."
-msgstr ""
+msgstr "A ordem da sequência em um grupo é relevante. O darktable lerá a lista da esquerda para a direita sempre que tetnar alocar um dispositivo OpenCL para a pixelpipe, e escolherá o primeiro que encontrar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24926(para)
 msgid ""
@@ -20929,7 +20929,7 @@ msgid ""
 "exclusively for the more demanding center image view. This is a reasonable "
 "setting for most systems. No restrictions apply to export and thumbnail "
 "pixelpipes."
-msgstr ""
+msgstr "A qualquer dispositivo OpenCL detectado é permitido processar nossa imagem na visão central. O primeiro dispositivo OpenCL (0) não pode processar a pixelpipe de pré-visualização. Como consequência, se houver somente uma GPU no sistema, a pixelpipe de pré-visualização será sempre processada na CPU, mantendo sua única GPU exclusivamente para a tarefa mais demandante da imagem central. Esta é uma configuração razoável para a maioria dos sistemas. Não há restrições para as pixelpiles de exportação e miniaturas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24952(para)
 msgid ""
@@ -20937,14 +20937,14 @@ msgid ""
 "several devices it forms a reasonable starting point. However, as your "
 "devices might have quite different levels of processing power, it makes "
 "sense to invest a few thoughts and optimize your priority list."
-msgstr ""
+msgstr "O default é uma boa escolha se você só tem um dispositivo. Se tem vários, o default será um bom ponto de partida. No entanto, como seus dispositivos podem ter níveis diferentes de poder de processamento, faz sentido investir um pouco de tempo e otimizar sua lista de prioridades."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24959(para)
 msgid ""
 "Here is an example. Let's assume we have a system with two devices, a fast "
 "Radeon HD7950 and an older and slower GeForce GTS450. darktable (started "
 "with <quote>darktable -d opencl</quote>) will report the following devices:"
-msgstr ""
+msgstr "Aqui está um exemplo. Vamos presumir que temos um sistema com dois dispositivos, uma Radeon HD7950 e uma Geforce GTS450, mais antiga e mais lenta. O darktable (iniciado com <quote>darktable -d opencl</quote> reportará os dispositivos:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24966(programlisting)
 msgid ""
@@ -20952,7 +20952,7 @@ msgid ""
 "numbers and names of OpenCL devices available to darktable: [opencl_init] 0 "
 "'GeForce GTS 450' [opencl_init] 1 'Tahiti' [opencl_init] FINALLY: opencl is "
 "AVAILABLE on this system."
-msgstr ""
+msgstr "[opencl_init] successfully initialized. [opencl_init] here are the internal numbers and names of OpenCL devices available to darktable: [opencl_init] 0 'GeForce GTS 450' [opencl_init] 1 'Tahiti' [opencl_init] FINALLY: opencl is AVAILABLE on this system."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24975(para)
 msgid ""
@@ -20960,7 +20960,7 @@ msgid ""
 "('Tahiti') as the second one. This order will normally not change unless the "
 "hardware or driver configuration is modified. But it's better to use device "
 "names rather than numbers to be on the safe side."
-msgstr ""
+msgstr "Então a GeForce GTS 450 é detectada como primeiro dispositivo; a Radeon HD7950 ('Tahiti') como segundo. Esta ordem normalmente não muda, a não ser que a configuração do driver ou do hardware seja modificada. Mas é melhor usar nomes de dispositivos ao invés de números por segurança."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24982(para)
 msgid ""
