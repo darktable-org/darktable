@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-03 11:26+0200\n"
-"PO-Revision-Date: 2020-05-03 11:31+0200\n"
+"POT-Creation-Date: 2020-05-03 13:41+0200\n"
+"PO-Revision-Date: 2020-05-03 14:20+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -309,9 +309,8 @@ msgid "show scrollbars for central view"
 msgstr "toon schuifbalken voor een centrale weergave"
 
 #: ../build/src/preferences_gen.h:1942 ../build/src/preferences_gen.h:2374
-#, fuzzy
 msgid "defines whether scrollbars should be displayed"
-msgstr "bepaalt waar schuifbalken zichtbaar zijn"
+msgstr "bepaalt of schuifbalken worden getoond"
 
 #: ../build/src/preferences_gen.h:1969 ../src/views/darkroom.c:109
 msgid "darkroom"
@@ -1944,11 +1943,12 @@ msgstr "toets login button om te starten"
 
 #: ../src/common/database.c:2831
 msgid "click later to be asked when closing darktable"
-msgstr ""
+msgstr "klik later om te worden gevraagd wanneer darktable sluit"
 
 #: ../src/common/database.c:2835
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
+"klik later om de volgende keer te worden gevraagd wanneer darktable sluit"
 
 #: ../src/common/database.c:2839
 #, c-format
@@ -4440,11 +4440,12 @@ msgid ""
 "$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
 msgstr ""
+"$(VERSION_IF_MULTI) - hetzelfde als $(VERSION) maar een lege string als "
+"slechts een versie bestaat"
 
 #: ../src/gui/gtkentry.c:190
-#, fuzzy
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(CREATOR) - omschrijving van metadata"
+msgstr "$(VERSION_NAME)) - naam versie van metadata"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -4731,11 +4732,13 @@ msgstr "stel thema in voor gebruikers interface"
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:327
 msgid "modify selected theme with CSS tweaks below"
-msgstr ""
+msgstr "pas geselecteerd thema aan met onderstaande CSS aanpassingen"
 
 #: ../src/gui/preferences.c:335
 msgid "modify theme with CSS keyed below (saved to user.css)"
 msgstr ""
+"pas thema aan met onderstaande CSS hieronder ingetoetst (opgeslagen in user."
+"css)"
 
 #: ../src/gui/preferences.c:355
 msgctxt "usercss"
@@ -7958,7 +7961,6 @@ msgid "output color profile"
 msgstr "uitgaand kleurprofiel"
 
 #: ../src/iop/colorout.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "export profile"
 msgstr "export profiel"
@@ -8337,7 +8339,7 @@ msgstr "methode"
 #: ../src/iop/demosaic.c:183
 msgctxt "accel"
 msgid "method (xtrans)"
-msgstr ""
+msgstr "methode (xtrans)"
 
 #: ../src/iop/demosaic.c:184
 #, fuzzy
@@ -10580,14 +10582,12 @@ msgid "_select"
 msgstr "_selecteren"
 
 #: ../src/iop/lut3d.c:1627
-#, fuzzy
 msgid "hald cluts (png), 3D lut (cube or 3dl) or gmic compressed lut (gmz)"
-msgstr "behoud cluts (png), 3D lut (cube) of gmic gecomprimeerde lut (gmz)"
+msgstr "hald cluts (png), 3D lut (cube) of gmic gecomprimeerde lut (gmz)"
 
 #: ../src/iop/lut3d.c:1629
-#, fuzzy
 msgid "hald cluts (png) or 3D lut (cube or 3dl)"
-msgstr "behoud cluts (png) of 3D lut (cube)"
+msgstr "hald cluts (png) of 3D lut (cube or 3dl)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
 #: ../src/libs/geotagging.c:497 ../src/libs/import.c:821
@@ -10715,9 +10715,8 @@ msgid "how much to keep highlights"
 msgstr "hoeveelheid te behouden hooglichten"
 
 #: ../src/iop/negadoctor.c:206
-#, fuzzy
 msgid "negadoctor"
-msgstr "factor"
+msgstr "negatieven assistent"
 
 #: ../src/iop/negadoctor.c:435
 #, fuzzy
@@ -10734,7 +10733,7 @@ msgstr "D min"
 
 #: ../src/iop/negadoctor.c:515 ../src/iop/negadoctor.c:1165
 msgid "D min red component"
-msgstr ""
+msgstr "D min rood component"
 
 #: ../src/iop/negadoctor.c:1121
 #, fuzzy
@@ -10756,14 +10755,12 @@ msgid "toogle on or off the color controls"
 msgstr "schakel samenvouwen bedieningpanelen"
 
 #: ../src/iop/negadoctor.c:1133
-#, fuzzy
 msgid "film properties"
-msgstr "eigenschappen"
+msgstr "film kenmerken"
 
 #: ../src/iop/negadoctor.c:1135
-#, fuzzy
 msgid "print properties"
-msgstr "eigenschappen"
+msgstr "afdruk kenmerken"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:1144
@@ -10787,11 +10784,11 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:1175
 msgid "D min green component"
-msgstr ""
+msgstr "D min groen component"
 
 #: ../src/iop/negadoctor.c:1185
 msgid "D min blue component"
-msgstr ""
+msgstr "D min blauwe component"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:1195
@@ -10905,9 +10902,8 @@ msgstr ""
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1319
-#, fuzzy
 msgid "virtual paper properties"
-msgstr "extra eigenschappen"
+msgstr "virtuele papier eigenschappen"
 
 #: ../src/iop/negadoctor.c:1323
 #, fuzzy
@@ -14217,7 +14213,7 @@ msgstr "bepaal afbeeldingskenmerk voor bedekken handmatig"
 
 #: ../src/libs/live_view.c:405
 msgid "overlay mode"
-msgstr "bedekken modus"
+msgstr "overlay modus"
 
 #: ../src/libs/live_view.c:407
 msgctxt "blendmode"
@@ -15718,7 +15714,7 @@ msgstr "voorkeuren"
 #: ../src/libs/tools/global_toolbox.c:118
 #: ../src/libs/tools/global_toolbox.c:177
 msgid "overlay mode for size"
-msgstr "overlay modus afmeting"
+msgstr "overlay modus voor maat"
 
 #: ../src/libs/tools/global_toolbox.c:154
 #: ../src/libs/tools/global_toolbox.c:237
@@ -15740,7 +15736,7 @@ msgstr "geen overlays"
 
 #: ../src/libs/tools/global_toolbox.c:183
 msgid "overlays on mouse hover"
-msgstr "overlay met muisaanwijzer"
+msgstr "overlay bij gebruik van muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:187
 msgid "extended overlays on mouse hover"
@@ -15748,12 +15744,11 @@ msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:190
 msgid "permanent overlays"
-msgstr "continue overlay"
+msgstr "blijvende overlay"
 
 #: ../src/libs/tools/global_toolbox.c:194
-#, fuzzy
 msgid "permanent extended overlays"
-msgstr "maak uitgebreidere miniaturen-overlay mogelijk"
+msgstr "permanent uitgebreide overlays"
 
 #: ../src/libs/tools/global_toolbox.c:198
 msgid "permanent overlays extended on mouse hover"
@@ -15808,7 +15803,7 @@ msgstr "geen overlays"
 #: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
 msgid "overlays on mouse hover"
-msgstr "overlay met muisaanwijzer"
+msgstr "overlay bij gebruik van muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:420
 msgctxt "accel"
@@ -15821,15 +15816,14 @@ msgid "permanent overlays"
 msgstr "continue overlay"
 
 #: ../src/libs/tools/global_toolbox.c:422
-#, fuzzy
 msgctxt "accel"
 msgid "permanent extended overlays"
-msgstr "maak uitgebreidere miniaturen-overlay mogelijk"
+msgstr "permanent uitgebreide overlays"
 
 #: ../src/libs/tools/global_toolbox.c:423
 msgctxt "accel"
 msgid "permanent overlays extended on mouse hover"
-msgstr ""
+msgstr "permanent uitgebreide overlays bij gebruik van muisaanwijzer"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -16142,7 +16136,7 @@ msgstr "overlay kleur"
 
 #: ../src/views/darkroom.c:2350
 msgid "set overlay color"
-msgstr "kist overlay kleur"
+msgstr "kies overlay kleur"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:3505
