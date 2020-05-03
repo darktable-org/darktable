@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2020-05-02 13:13-0300\n"
+"PO-Revision-Date: 2020-05-03 12:12-0300\n"
 "Project-Id-Version: darktable 3.0\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
@@ -9789,7 +9789,7 @@ msgid ""
 "channels by interpolation with data of the neighboring pixels. For further "
 "reading see the Wikipedia article on the <ulink url=\"http://en.wikipedia."
 "org/wiki/Bayer_filter\">Bayer filter</ulink>."
-msgstr ""
+msgstr "Uma descrição detalhada ficaria além do escopo deste manual. Resumidamente, as células do sensor de uma câmera digital são capazes de gravar apenas níveis diferentes de luminosidade, e não de cor. Para conseguir uma imagem em cores, cada célula é coberta por um filtr ode cor, vermelho, verde ou azul. Devido à sensibilidade da visão humana, há duas vezes mais células verde que vermelhas ou azuis. Filtros são arranjados em um certo mosaico, chamado de padrão Bayer. Assim, cada pixel da sua imagem só tem originalmente informação de um canal de cor. A interpolação cromática reconstrói a cor faltante dos canais interpolando dados dos pixels vizinhos. Para ler mais, veja o artigo da Wikipedia sobre <ulink url=\"http://en.wikipedia.org/wiki/Bayer_filter\">filtro de Bayer</ulink>.\""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10773(para)
 msgid ""
@@ -9802,7 +9802,7 @@ msgid ""
 "significantly slower, darktable uses PPG as a default. VNG4 produces the "
 "softest results of the three algorithms, but if you see \"maze\" artifacts, "
 "try VNG4 to eliminate them."
-msgstr ""
+msgstr "Como a interpolação tende a produzir artefatos, vários algoritmos diferentes para isso foram desenvolvidos no passado. Artefaatos seriam tipicamente visíveis como algo semelhantes a padrões moiré quando você faz zoom na imagem. Atualmente o darktable suporta PPG, AMAZE, e VNG4. Todos estes algoritmos produzem saída de alta qualidade com tendência baixa a produção de artefatos. AMAZE é algumas vezes reportado como dando resultados ligeiramente melhores. No entanto, o AMAZE é bem mais lento, então o darktable usa PPG por default. O VNG4 produz resultados mais suaves que os outros dois. Se voce perceber artefatos do tipo \"labirinto\", tente o VNG4 para eliminá-los."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10784(para)
 msgid ""
@@ -9813,7 +9813,7 @@ msgid ""
 "processing), choose Markesteijn 3-pass. Though VNG demosaic is faster than "
 "Markesteijn 1-pass on certain computers, it is more prone to demosaicing "
 "artifacts."
-msgstr ""
+msgstr "Há câmeras que não usam filtro Bayer. Câmeras com sensor \"X-Trans\" tem seu próprio algoritmo de interpolação cromática. O algoritmo default para sensores X-Trans é Markesteijn 1-passo, que produz bons resultados. Para um pouco mais de qualidade (ao custo de processamento muito mais lento), escolha Markesteijn 3-passos. Apesar da interpolação VNG ser mais rápida que Markesteijn 1-passo em alguns computadores, ela é mais sujeita a artefatos de interpolação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10793(para)
 msgid ""
@@ -9828,7 +9828,7 @@ msgid ""
 "results in pixels being gray, thus producing a monochrome image. This method "
 "guarantees that there are no interpolation artifacts that would otherwise be "
 "present should one of the standard demosaicing algorithm be used."
-msgstr ""
+msgstr "Adicionalmente, o darktable suporta um algoritmo especial de interpolação - passthrough (monocromático). Não é um algoritmo de propósito geral que seja útil para todas as iamgens. Ele só é útil para câmeras com filtro de cores fisicamente removido do sensor. Normlamente, a interpolação cromática reconstrói os canaise de cor faltantes interpolando dados dos pixels vizinhos. Mas como o filtro de cores não está presente, não há o que interpolar, então este algoritmo simplesmente define todos os canais de cor com o mesmo valor, o que resulta em pixels cinza, produzindo uma image monocromática. Este método garante que não há artefatos de interpolação que poderiam estar presentes se outros algoritmos padrão tivessem sido usados. "
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10805(para)
 msgid ""
@@ -9846,6 +9846,8 @@ msgid ""
 "channels are taken from neighboring pixels without an expensive "
 "interpolation."
 msgstr ""
+"Interpolação cromática sempre é aplicada ao exportar imagens. É feita para exibição em monitor somente quando o zoom é maior que 50% ou quando a configuração de preferências\n"
+"<quote>interpolação cromática para zoom na sala escura</quote> (veja <xref linkend=\"core_options\"/>) estiver habilitada. De outra forma, os canais de cor são tomados de pixels vizinhos sem qualquer interpolação custosa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10819(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10945(title)
@@ -9858,18 +9860,18 @@ msgid ""
 "Set the demosaic method. darktable currently supports PPG, AMAZE, and VNG4 "
 "for Bayer sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-"
 "pass, and Markesteijn 3-pass."
-msgstr ""
+msgstr "Define o método de interpolação cromática. O darktable atualmente suporta PPG, AMAZE e VNG4 para sensores Bayer. Para sensores X-Trans, o darktable suporta VNG, Markesteijn 1-passo e Markesteijn 3-passos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10828(title)
 msgid "edge threshold"
-msgstr ""
+msgstr "limiar de borda"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10829(para)
 msgid ""
 "Set the threshold for an additional median pass. Defaults to <quote>0</"
 "quote> which disables median filtering. This option is not shown for X-Trans "
 "sensors."
-msgstr ""
+msgstr "Define o limiar para um passo adicional de mediana. O default é <quote>0</quote>, que desabilita filtragem por mediana. Esta opção não é mostrada para sensores X-Trans."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10836(title)
 msgid "color smoothing"
@@ -9883,7 +9885,7 @@ msgstr "Ativa uma quantidade de passos adicionais de suavização de cor. O defa
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10843(title)
 msgid "match greens"
-msgstr ""
+msgstr "ajustar verdes"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10844(para)
 msgid ""
@@ -9892,7 +9894,7 @@ msgid ""
 "Available options are <quote>disabled</quote>, <quote>local average</quote>, "
 "<quote>full average</quote> and <quote>full and local average</quote>. This "
 "option is not shown for X-Trans sensors."
-msgstr ""
+msgstr "Em algumas câmeras, os filtros de verde tem propriedades que variam ligeiramente. Este prâmetro adiciona um passo adicional de equalização para suprimir artefatos. As opções disponíveis são <quote>desabilitado</quote>, <quote>média local</quote>, <quote>média total</quote> e <quote>médias total e local</quote>. Esta opção não é mostrada para sensores X-Trans."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10858(title)
 msgid "Highlight reconstruction"
@@ -9942,7 +9944,7 @@ msgid ""
 "curve (such as most manufacturers apply to their JPEG), which renders "
 "highlights desaturated. This method is a good option on naturally "
 "desaturated objects such as clouds."
-msgstr "<quote>Reconstruit em LCh</quote> analisa cada pixel tendo pelo menos um canal recortado e transforma a informação no espaço de cores LCh numa tentativa de corrigit o picel recortado usando os valores dos outros (3 para Bayer ou 8 para X-Trans) pixels no bloco afetado do sensor. Este método normalmente faz um trabalho melhor que <quote>Recortar realces</quote> já que alguns detalhes nas áreas recortadas são preservados. No entanto, ele é incapaz de reconstruir qualquer informação de cor - os realces reconstruídos serão todos nonocromáticos, mas mais claros e com mais detalhes do que com o método <quote>Recortar realces</quote>. Este método funciona razoavelmente bem com uma curva base de alto contraste (como as que a maioria dos fabricantes aplica aos seus JPEGs)., que renderiza realces desaturados. Este método é uma boa opção em objetos desaturados, como nuvens."
+msgstr "<quote>Reconstruir em LCh</quote> analisa cada pixel tendo pelo menos um canal recortado e transforma a informação no espaço de cores LCh numa tentativa de corrigit o picel recortado usando os valores dos outros (3 para Bayer ou 8 para X-Trans) pixels no bloco afetado do sensor. Este método normalmente faz um trabalho melhor que <quote>Recortar realces</quote> já que alguns detalhes nas áreas recortadas são preservados. No entanto, ele é incapaz de reconstruir qualquer informação de cor - os realces reconstruídos serão todos nonocromáticos, mas mais claros e com mais detalhes do que com o método <quote>Recortar realces</quote>. Este método funciona razoavelmente bem com uma curva base de alto contraste (como as que a maioria dos fabricantes aplica aos seus JPEGs)., que renderiza realces desaturados. Este método é uma boa opção em objetos desaturados, como nuvens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10927(para)
 msgid ""
@@ -10149,7 +10151,7 @@ msgstr "luz de preenchimento"
 msgid ""
 "This module allows local modification of the exposure based on pixel "
 "lightness."
-msgstr "Este módlo permite modificação local da exposição, baseada em luminosidade de pixels."
+msgstr "Este módulo permite modificação local da exposição, baseada em luminosidade de pixels."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11268(para)
 msgid ""
@@ -10310,7 +10312,7 @@ msgid ""
 "pointer and the corresponding y-location of the current curve – this adds a "
 "node without risking to accidentally modify the curve. Up to 20 nodes per "
 "curve can be defined. To remove a node, move it out of the widget area."
-msgstr ""
+msgstr "Em seu estado default, as curvas serão linhas retas, definidas por alguns nós-âncora. Você pode mover os nós para modificar a curva. Pode gerar mais nós com <emphasis>clique</emphasis> na curva. Com <emphasis>Ctrl-clique</emphasis> você gera um novo nó na posição x do ponteiro do mouse e a posição y correspondente  da curva atual - isto adiciona um nó sem o risco de acidentalmente modificar a curva. Até 20 nós por curva podem ser definidos. Para remover um nó, remova-o da área da curva."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11508(para)
 msgid ""
@@ -10321,7 +10323,7 @@ msgid ""
 "<xref linkend=\"global_color_picker\"/>). Numerical Lab values of input and "
 "output (see below) at the selected spot or area are shown on top left of the "
 "widget."
-msgstr ""
+msgstr "Um seletor de cores é ativado ao pressionar <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> que vai identificar, no gráfico, as cores que forem selecionadas na imagem. Você pode alternar entre os modos de seleção de ponto e área no painel do seletor de cores global (veja <xref linkend=\"global_color_picker\"/>). Valores Lab numéricos de entrada e saída (veja abaixo) no ponto selecionado são postrados no canto superior esquerdo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11522(para)
 msgid "Lab, linked channels,"
@@ -10358,7 +10360,7 @@ msgid ""
 "channel. This works better in cases where a subtle contrast correction is "
 "applied, but gives increasingly inaccurate saturation correction as the "
 "contrast gets more dramatically enhanced."
-msgstr ""
+msgstr "Lab é um espaço de cores perceptual projetado para aproximar a maneira como seres humanos percebem cores e luminosidade, representando informação de cor independente de informação de luminosidade. Com <quote>Lab, canais separados</quote>, você tem controle completamente intependente da crominância (canais a/b) e da luminância (canal L). Em <quote>Lab, cnais vinculados</quote>, somente o contorle da luminância está disponível. A correção da saturação de cores será automaticamente calculada, para cada pixel, a partir da correção de contraste aplicada no canal da luminância. Isto funciona melhor em casos onde uma correção sutil de contraste é aplicada, mas dá resultados incorretos de saturação que aumentam quanto mais a correção de contraste é melhorada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11543(para)
 msgid ""
@@ -10372,7 +10374,7 @@ msgid ""
 "quote> if you want to tune the strength of automatic chroma scaling (see "
 "<xref linkend=\"blending_operators\"/>). This mode is known to produce a "
 "slight hue shift towards yellow."
-msgstr ""
+msgstr "XYZ é um espaço de cores linear técnico, projetado para relacionar a resposta à luz dos olhos himanos ao espaço RGB. Como o Lab, o XYZ separa as informações de luminosidade e cor, mas faz de maneira a não levar em conta a correção, feita pelo cérebro, da percepção humana. O modo <quote>XYZ, canais vinculados</quote> oferece uma alternativa ao modo <quote>Lab, canais vinculados</quote>. Ele funciona aplicando a curva do canal L a todos os três canais do espaço de cores XYZ. Veja o modo de mesclagem <quote>ajuste de cores</quote> se quiser ajustar a força da escala automática de croma (veja <xref linkend=\"blending_operators\"/>). É sabido que este modo produz um pequeno desvio para o amarelo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11556(para)
 msgid ""
@@ -10386,7 +10388,7 @@ msgid ""
 "it in most software. This mode makes the tone curve module behave the same "
 "way as the basecurve (see <xref linkend=\"base_curve\"/>), except the latter "
 "one works in camera RGB space."
-msgstr ""
+msgstr "Espaços RGB são espaços lineares de cor, projetados para capturar e exibir imagens de maneira sintética aditiva. Eles são relacionados à caputra e exibição, e não isolam informação de cor e luminosidade. O modo <quote>RGB, canais vinculados</quote> funciona em RGB ProPhoto e aplica a curva do canal L a todos os canais do espaço RGB. Adicionar contraste em espaço RGB causa desaturação de realces e aumenta a saturação de regiões menos iluminadas, mas mostrou-se a maneira mais confiável de editar contraste, e é a maneira padrão de fazê-lo na maioria dos softwares. Este modo faz a curva de tons se comportar como a curva base (veja <xref linkend=\"base_curve\"/>), exceto que aquela funciona no espaço RGB da câmera."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11568(para)
 msgid ""
@@ -10396,7 +10398,7 @@ msgid ""
 "background of the curve. The controls are converted to the relevant color "
 "space before the corrections are applied – in RGB and XYZ, the middle-gray "
 "is therefore remapped from 50% to 18%."
-msgstr ""
+msgstr "Note que a interface é controlada em Lab em todos os casos. Isto significa que a coordenada de cinza médio sempre é 50% no gráfico, independente de que espaço de cor seja usado. O mesmo se aplica ao histograma mostrado no fundo da curva. Os controles são convertidos para o espaço de cores relevante antes das correções serem aplicadas - em RGB e XyZ, o cinza médio é remapeado de 50% para 18%."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11579(title)
 msgid "L-channel curve"
@@ -10408,7 +10410,7 @@ msgid ""
 "lightness histogram is displayed in the diagram. When working in <quote>Lab, "
 "linked channels</quote>, <quote>RGB, linked channels</quote> or <quote>XYZ, "
 "linked channels</quote>, the L-channel curve is the only one available."
-msgstr ""
+msgstr "A curva de tons no canal L trabalha em luminosidade. Para uma melhor visão geral, um histograma de luminosidade é mostrado no diagrama. Quando trabalhando em <quote>Lab, canais vinculados</quote>, <quote>RGB, canais vinculados</quote> ou <quote>XYZ, canais vinculados</quote>, a curva do canal L é a única disponível."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11586(para)
 msgid ""
@@ -10419,7 +10421,7 @@ msgid ""
 "center of the curve upwards will lighten the image, shifting it downwards "
 "will darken the image. An S-like curve will enhance the contrast of the "
 "image."
-msgstr ""
+msgstr "A linha horizontal representa a luminosidade dos pixels da imagem de entrada. A linha vertical representa a luminosidade dos pixels na imagem de saída. Uma linha reta, formando angulo de 45°, não muda a imagem. Um ponto acima da diagonal aumenta a luminosidade, enquanto um ponto abaixo dela diminui a luminosidade. Mudar o centro da curva para cima irá iluminar a imagem, e para baixo irá escurecê-la. Uma curva levemente em formato de S aumenta o contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11597(title)
 msgid "a/b-channel curves"
@@ -10434,7 +10436,7 @@ msgid ""
 "Positive a-values correspond to more magenta colors; negative a-values "
 "correspond to more greenish colors. Positive b-values correspond to more "
 "yellowish colors; negative b-values correspond to more blueish colors."
-msgstr ""
+msgstr "As curvas dos canais a e b funcoinam em valores de cor, e estão disponíveis apenas no modo <quote>Lab, canais separados</quote>. O eixo horizontal representa o valor da cor do pixel na imagem de entrada. O eixo vertical representa o valor da cor do pixel na imagem de saída. Valores a positivos correspondem a mais cores magenta; valores a negativos correspondem a cores mais esverdeadas. Valores b positivos correspondem a cores mais amareladas; valores b negativos correspondem a cores mais azuis."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11607(para)
 msgid ""
@@ -10442,7 +10444,7 @@ msgid ""
 "will give the image a color tint: shifting a-channel upwards gives a magenta "
 "tint; shifting b-channel upwards gives a yellow tint; shifting a-channel "
 "downwards gives a green tint; shifting b-channel downwards gives a blue tint."
-msgstr ""
+msgstr "Uma linha reta diagonal não muda a imagem. Mudar o centro da curva dará à imagem uma tonalidade diferente: puxar o canal a para cima dá uma tonalidade magenta; puxar o canal b para cima dá uma tonalidade amarela; <puxar o canal a para baixo dá uma tonalidade esverdeada; puxar o canal b para baixo dá uma tonalidade azul."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11613(para)
 msgid ""
@@ -10450,7 +10452,7 @@ msgid ""
 "center, will increase/decrease the color saturation of the respective "
 "channel. With properly defined curves you can exert fine control on color "
 "saturation, depending on the input pixel's colors."
-msgstr ""
+msgstr "Aumentar/diminuir a inclunação das curvas, sem mudar seu centro, aumentará/diminuirá a saturação das cores do respectivo canal. Com cores definidas apropriadamente, você pode aplicar controle funo na saturação, dependendo das cores de entrada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11622(title)
 msgid "interpolation method"
@@ -10462,7 +10464,7 @@ msgid ""
 "a few punctual nodes. As this process is never perfect, several methods are "
 "offered that can alleviate the potential issues you may encounter with some "
 "nodes setups."
-msgstr ""
+msgstr "Interpolação é o método pelo qual uma curva contínua é obtida de alguns pontos. Como este processo nunca é perfeito, vários métodos são oferecidos que podem aliviar os problemas potenciais que voce pode encontrar com algumas disposições de nós."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11628(para)
 msgid ""
@@ -10472,7 +10474,7 @@ msgid ""
 "can produce cusps and oscillations when the nodes are too close to each "
 "other, or when there are too many of them. This method works best when there "
 "are only 4 to 5 nodes, evenly spaced."
-msgstr ""
+msgstr "É possível argumentar que o método mais visualmente agradável é o <quote>spline cúbica</quote>. Como ele dá curvas mais suaves, o contraste na imagem fica melhor. No entanto, este método é muito sensível às posições dos nós, e pode produzir cúspides e oscilações quando os nós estão muito próximos uns aos outros, ou quando há muitos deles. Ele funciona melhor quando há entre 4 e 5 nós, bem espaçados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11635(para)
 msgid ""
@@ -10480,7 +10482,7 @@ msgid ""
 "avoid cusps and oscillations, but as a drawback it will follow the nodes "
 "more loosely. It is very robust, no matter the number of nodes and their "
 "spacing, but will produce a more faded and dull contrast."
-msgstr ""
+msgstr "<quote>spline centrípeta</quote> é um método projetado especificamente para evitar cúspides e oscilações, mas tem a desvantagem de seguir os nós mais de perto. É muito robusto, não importa quantos nós ou o espaçamento entre eles, mas produz um contraste mais apagado e sem vida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11641(para)
 msgid ""
@@ -10490,20 +10492,20 @@ msgid ""
 "you try to build an analytical function from a node interpolation (for "
 "example: exponential, logarithm, power, etc.). Such functions are provided "
 "as presets. It is a good trade-off between the two aforementioned methods."
-msgstr ""
+msgstr "<quote>spline monotônica</quote> é um método projetado especificamente para resultar em uma interpolação monotônica, o que signifcica que não haverá oscilações como as produzidas pela spline cúbica. Este método é bastante adequado quando você tenta construir uma função analítica da interpolação de nós (por exemplo: eponencial, logarítmica, potência etc). Estas funções são providas como prédefinições. É um bom meio-termo entre os dois outros métodos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11653(para)
 msgid ""
 "The scale allows you to distort the graph display so that certain graphical "
 "properties emerge to help you draw meaningful curves. Notice that the "
 "scaling option only affects the curve display, not the actual parameters."
-msgstr ""
+msgstr "A escala permite que você distorça o gráfico de forma que certas propriedades fiquem visíveis para te ajudar a desenhar curvas que façam sentido. Note que a opção de escala só afeta como as curvas são mostradas, e não os parâmetros delas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11658(para)
 msgid ""
 "By default, the <quote>linear</quote> scale is used. This scale uses evenly "
 "spaced abscissa and ordinates axes."
-msgstr ""
+msgstr "Por default, a escala <quote>linear</quote> é usada. Esta escala usa eixos de abscissas e ordenadas igualmente espaçados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11662(para)
 msgid ""
@@ -10547,7 +10549,7 @@ msgstr "Imagem original"
 msgid ""
 "Tone curve settings. Please note how the center node of our b-curve was "
 "shifted down to negative values. This gives the image its blue tint."
-msgstr ""
+msgstr "As configurações de curva. Veja que o nó central na curva b foi deslocado para baixo até valores negativos. Isto dá à imagem sua tonalidade azul."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11720(entry)
 msgid "Resulting image"
@@ -10576,7 +10578,7 @@ msgid ""
 "from Lab) is divided into a number of zones ranging from pure black to pure "
 "white. These zones are displayed in a zonebar. The number of zones can be "
 "changed by mouse-scrolling on that bar (defaults to 10 zones)."
-msgstr ""
+msgstr "De acordo com o conceito de Ansel Adams, a luminosidade (baseada no canal L do espaço de cores Lab) é dividida em um número de zonas indo do preto puro ao branco puro. Estas zonas são mostradas em uma barra de zonas. O número de zonas pode ser modificado usando scroll na barra (o default é 10 zonas)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11783(para)
 msgid ""
@@ -10588,14 +10590,14 @@ msgid ""
 "expands the zones on one side and compresses the zones on the other side. "
 "Any already existing control point stays in place, effectively preventing "
 "changes to the zones beyond. Use right click to remove a control point."
-msgstr ""
+msgstr "A barra de zonas é dividida horizontalmente, com a parte superior mostrando as zonas de saída do módulo , e a parte inferior mostrando as zonas corrspondentes na entrada do módulo. Em seu estado default, as duas partes ficam alinhadas. As zonas de saída são estáticas, mas você pode clicar e arrastar o ponto de controle para modificar o mapeamento entre as zonas. Deslocar o ponto de controle expande proporcionalmente as zonas em um lado e as comprime no outro. Qualquer ponto de controle existente fica no lugar, prevenindo mudanças às zonas além dele. Use clique direito para remover um ponto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11793(para)
 msgid ""
 "The preview shows the image broken down in zones. When hovering above a zone "
 "on the zonebar, that zone – either from input or output – is highlighted on "
 "the preview."
-msgstr ""
+msgstr "A pré-visualização mostra a imagem dividida em zonas. Ao passar o mouse sobre uma zona na barra de zonas, aquela zona - da entrada ou saída - é destacada na pré-visualização."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11815(entry)
 msgid "The original image."
@@ -10607,7 +10609,7 @@ msgid ""
 "then the upper parts of darker zones were expanded to increase their visual "
 "impact. <graphic fileref=\"darkroom/modules/images/zonesystem_ex2_settings."
 "png\"/>"
-msgstr ""
+msgstr "Aqui, as zonas mais claras e mais escuras foram comprimidas para aumentar o contraste, então as partes superiores das zonas escuras foram expandidas para aumentar seu impacto visual. <graphic fileref=\"darkroom/modules/images/zonesystem_ex2_settings.png\"/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11840(title)
 msgid "Local contrast"
@@ -10632,7 +10634,7 @@ msgid ""
 "operation: the default one uses a local laplacian filter, the other one uses "
 "the unnormalized bilateral filter. Both work exclusively on the L channel "
 "from Lab."
-msgstr ""
+msgstr "Este módulo permite melhorar o contraste local. Ele suporta dois modos de operação: o default usa um filtro laplaceano, e o outro usa um filtro bilateral não normalizado. Os dois operam exclusivamente no canal L."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11881(para)
 msgid ""
@@ -10641,7 +10643,7 @@ msgid ""
 "However, it is easier to use as it does not require you to work on different "
 "frequency bands. The local laplacian filter has been designed to be very "
 "robust against unwanted halo effects and gradient reversals along edges."
-msgstr ""
+msgstr "Contraste local melhora os detalhes da sua imagem, assim como faz o módulo <emphasis>equalizador</emphasis> (veja <xref linkend=\"equalizer\"/>). No entanto, é mais fácil de usar porque não exige que você trabalhe em bandas diferentes de frequência. O filtro laplaceano local foi projetado para ser bastante robusto contra efeitos indesejados de halo e reversão de gradientes pelas bordas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11891(para)
 msgid ""
@@ -10650,7 +10652,7 @@ msgid ""
 "local laplacian filter supports: detail, highlights, shadows, and midtone "
 "range. The local laplacian mode supports shadow lifting and highlight "
 "compression, similar to the shadows and highlights module."
-msgstr ""
+msgstr "Escolha entre \"filtro laplaciano local\" ou \"grade bilateral não normalizada'. As opções para a grade bilateral são: grannularidade, contraste, e detalhe. O filtro laplaciano local suporta: detalhes, realces, sombras e tons médios. O modo laplaciano local suporta aumento de sombras e compressão de realces, semelhantemente ao módulo de sombra e realces."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11904(title)
 msgid "Bilateral grid"
@@ -10663,19 +10665,19 @@ msgstr "granularidade"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11908(para)
 msgid "Make the details you want to adjust finer or coarser."
-msgstr ""
+msgstr "Escolhe os detalhes a ajustar, finos ou grosseiros."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11915(para)
 msgid ""
 "How strongly the algorithm distinguishes between brightness levels. "
 "Increasing the value results in a more contrasty look."
-msgstr ""
+msgstr "Quão fortemente o algoritmo distingue entre níveis de luminosidade. Aumentar resulta em mais contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11922(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11943(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12182(title)
 msgid "detail"
-msgstr ""
+msgstr "detalhe"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11923(para)
 msgid "Add or remove detail. Higher values will increase local contrast."
@@ -10692,7 +10694,7 @@ msgid ""
 "fileref=\"darkroom/modules/images/locallaplacian-curve.png\" scalefit=\"1\" "
 "width=\"80%\" align=\"center\"/> It will then be applied to the image in a "
 "way that works locally and avoids halo artifacts."
-msgstr ""
+msgstr "Para entender os parâmetros do filtro laplaciano, você pode imaginá-lo aplicando uma curva à imagem, de maneira semelhante a esta figura: <graphic fileref=\"darkroom/modules/images/locallaplacian-curve.png\" scalefit=\"1\" width=\"80%\" align=\"center\"/> Ela será então aplicada à imagem de maneira que funcione localmente e evite artefatos de halo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11944(para)
 msgid ""
@@ -10700,13 +10702,13 @@ msgid ""
 "insert an S shaped element in the center of the curve, to increase or "
 "decrease local contrast. For monochrome images it is often possible to push "
 "this parameter to extreme settings without ridiculous results or artifacts."
-msgstr ""
+msgstr "Adiciona ou remove detalhe. Valores altos aumentam o contraste local. Isto insere um elemento em forma de S no centro da curva, para aumentar ou diminuir o contraste local. Para imagens monocromáticas é usualmente possível puxar este parâmetro ao extremo sem resultados ridículos ou artefatos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11954(para)
 msgid ""
 "This affects one end of the curve, effectively increasing or compressing "
 "contrast in the highlights. A low value will pull the highlights down."
-msgstr ""
+msgstr "Afeta o final da curva, efetivamente aumentando ou comprimindo o contraste nos realces. Um valor baixo diminuirá os realces."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11962(para)
 msgid ""
@@ -10717,7 +10719,7 @@ msgid ""
 "manipulation of the image, however: this means that a completely dark image "
 "cannot be brightened this way, only dark things in front of bright things "
 "will be affected."
-msgstr ""
+msgstr "Semelhante ao parâmetro de realces, este afeta o outro extremo da curva, e irá aumentar ou diminuir o contraste nas sombras. Um valor alto dá mais contraste em sombras. Um valor baixo vai levantar a sombras e poderá efetivamente funcionar como luz de preenchimento. Note que isto é feito por manipulação local da imagem, e no entanto, significa que uma imagem completamente escura não pode ser iluminada desta forma, somente formas escuras na frente de outras, claras, serão afetadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11973(title)
 msgid "midtone range"
@@ -10735,14 +10737,14 @@ msgid ""
 "compresses the range, maybe with an approximately logarithmic base curve. "
 "Also the exposure fusion feature in the base curve module may lead to more "
 "pleasing results at times, but is more prone to producing halo effects."
-msgstr ""
+msgstr "Controla a extensão da parte em S da curva de contraste. Um valor maior fará o S mais largo, e assi mclassificará mais valores a serem de meio tom, e menos deles como sombras e realces. Com faixa dinâmica mais alta, pode ser útil reduzir este valor para conseguir compressão de faixa mais forte, reduzindo o contraste em sombras e realces. Note que par cenários realmente fortes HDR, isto funciona melhor em combinação com uma curva base que pré-comprima a faixa, talvez com uma curva base aproximadamente logarítmica. Além disso, a funcionalidade de fusão de exposição na curva base pode levar a resultados mais agradáveis algumas vezes, mas é dujeita a produção de efeitos de halo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11985(para)
 msgid ""
 "This setting can cause banding artifacts in the image if pushed to extreme "
 "values. This is due to the way darktable computes the fast approximation of "
 "the local laplacian filter."
-msgstr ""
+msgstr "Esta definição pode causar artefatos de banding na imagem se levaod a valores extremos. Isto é devido à maneira como o darktable computa a aproximação rápida do filtro laplaciano local."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12004(entry)
 msgid "Before"
@@ -10752,22 +10754,22 @@ msgstr "Antes"
 msgid ""
 "After, a little overdone to demonstrate the effect. Use this sparingly, to "
 "avoid a cheap, overprocessed look."
-msgstr ""
+msgstr "Depois, um pouco exagerado para demonstrar o efeito. Use com parcimônia para evitar uma aparência barata, superprocessada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12030(title)
 msgid "Tonemapping"
-msgstr ""
+msgstr "Mapeamento tonal"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12034(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12038(primary)
 msgid "tonemapping"
-msgstr ""
+msgstr "mapeamento tonal"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12039(seealso)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12105(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12109(primary)
 msgid "global tonemap"
-msgstr ""
+msgstr "mapeamento tonal global"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12052(entry)
 msgid ""
@@ -10776,7 +10778,7 @@ msgid ""
 "darktable can import HDR images if they come in OpenEXR, RGBE or PFM format "
 "or as a DNG generated by darktable's HDR creation mechanism (see <xref "
 "linkend=\"selected_images\"/>)."
-msgstr ""
+msgstr "Este módulo comprime a faixa tonal de imagens HDR, para que caibam em limites de uma imagem normal, de baixa faixa dinâmica, usando o algoritmo de Durand de 2002. O darktable pode importar imagens HDR se elas vierem em formato OpenEXR, RGBE ou PFM, ou como DNG gerado pelo mecanismo de criação do darktable (veja <xref linkend=\"selected_images\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12073(para)
 msgid ""
@@ -10784,34 +10786,34 @@ msgid ""
 "a coarse base layer and a detail layer. The contrast of the base layer is "
 "compressed, while the detail layer is preserved, then both layers are re-"
 "combined."
-msgstr ""
+msgstr "O algoritmo usa um filtro bilateral para decompor a imagem em uma camada base grosseira e uma camada de detalhes. O contraste da camada base é comprimido, enquanto a camada de detalhes é preservada, e então as duas camadas são re-combinadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12080(title)
 msgid "contrast compression"
-msgstr ""
+msgstr "compressão de contraste"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12081(para)
 msgid ""
 "Sets the contrast compression level of the base layer. A higher compression "
 "will make the image fit a lower dynamic range."
-msgstr ""
+msgstr "Define o nível de compressão de contraste da camada base. Uma compressão maior fará a imagem encaixar em uma faixa dinâmica menor."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12089(para)
 msgid ""
 "Sets the spatial extent of the bilateral filter. Lower values cause the "
 "contrast compression to have stronger effects on image details."
-msgstr ""
+msgstr "Define a extensão espacial do filtro bilateral. Valores mais baixos fazem com que a compressão de contraste tenha efeito mais forte nos detalhes da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12101(title)
 msgid "Global tonemap"
-msgstr ""
+msgstr "Mapeamento tonal global"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12122(entry)
 msgid ""
 "This module implements another approach to compressing the tonal range of an "
 "HDR image into the limited tonal range of a typical LDR output file. It "
 "offers several implementations of global tonemap operators."
-msgstr ""
+msgstr "Este módulo implementa outra abordagem para a compressão da faixa tonal de uma imagem HDR na faixa tonal limitada de um arquivo de saída LDR típico. Ele oferece várias implementações de operadores de mapeamento tonal global."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12141(para)
 msgid ""
@@ -10822,7 +10824,7 @@ msgid ""
 "convincing results with very high dynamic scenes. As an enhancement to the "
 "original operators, darktable can preserve detail of the input image, and "
 "transfer it back to the output image."
-msgstr ""
+msgstr "O mapeamento tonal global processa cada pixel de uma imagem HDR, sem levar em conta os arredores locais. Isto é geralmente mais rápido do que o mapeamento tonal local, como implementado no módulo <link linkend=\"tonemapping\"><emphasis>mapeamento tonal</emphasis></link>, mas pode levar a resultados menos convincentes com cenas muito dinâmicas. Como melhoria aos operadores originais, o darktable pode preservar os detalhes de uma imagem de entrada, e tranferí-los para a imagem de saída."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12151(title)
 msgid "operator"
@@ -10834,11 +10836,11 @@ msgid ""
 "Depending on the selected operator, different parameters can be adjusted. "
 "Some operators are fully self-adjusting, and do not require specific "
 "controls."
-msgstr ""
+msgstr "Os operadores de mapeamento tonal global Reinhard, Fílmico e Drago estão disponíveis. Dependendo do operador selecionado, diferentes parametros podem ser ajustados. Alguns operadores são completamente auto-ajustáveis, e não precisam de controles específicos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12160(title)
 msgid "bias"
-msgstr ""
+msgstr "viés"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12161(para)
 msgid ""
@@ -10847,11 +10849,11 @@ msgid ""
 "for adjusting the compression of high values and the visibility of details "
 "in dark areas. According to the original paper, a value of 0.85 is "
 "recommended as a starting point."
-msgstr ""
+msgstr "Somente para o operador <emphasis>Drago</emphasis>. Este parâmetro influencia o contraste da imagem de saída. É um parâmetro essencial para ajustar a compressão de valores altos e a visibilidade em áreas escuras. De acordo com o artigo original, um valor de 0.85 é recomendado como ponto de partida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12170(title)
 msgid "target"
-msgstr ""
+msgstr "alvo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12171(para)
 msgid ""
@@ -10860,23 +10862,23 @@ msgid ""
 "intended display. It is measured in cd/m <superscript>2</superscript> , and "
 "should match the according value of your output device. Higher values lead "
 "to a brighter image, while lower values lead to a darker image."
-msgstr ""
+msgstr "Somente para o operador <emphasis>Drago</emphasis>. É um fator de escala que ajusta o brilho global da imagem ao brilho do display pretendido. É medido em cd/m <superscript>2</superscript>, e deveria casar co mo valor correspondente de seu dispositivo de saída. Valores mais altos levam a uma imagem com mais brilho, e valores mais baixos produzem uma imagem mais escura."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12183(para)
 msgid ""
 "Offered as an addition to all operators. This parameter controls how much "
 "detail is preserved and transferred back into the output image after "
 "tonemapping."
-msgstr ""
+msgstr "Oferecido como adição a todos operadores. Este parametro controla quanto detalhe é preservado e transferido de volta para a imagem de saída depois do mapeamento de tons."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12195(title)
 msgid "Filmic rgb"
-msgstr ""
+msgstr "RGB fílmico"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12199(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12203(primary)
 msgid "filmic rgb"
-msgstr ""
+msgstr "RGB fílmico"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12217(para)
 msgid ""
@@ -10886,7 +10888,7 @@ msgid ""
 "highlights. It is very suitable in portrait photography, especially in back-"
 "lighting situations, but needs extra care when details need to be preserved "
 "in highlights (e.g. clouds)."
-msgstr ""
+msgstr "Este módulo comprime a fixa tonal de uma imagem reproduzindo a resposta de tons e cores de um filme clássico. Ao fazer isto, protege as cores e o contraste dos tons médios, recupera as sombras, e comprime realces claros. É muito apropriado para fotografia de retratos, especialmente em situações de backlighting, mas precisa de cuidado extra quando detalhes precisam ser preservados em realces (por exemplo, sombras)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12226(para)
 msgid ""
@@ -10896,7 +10898,7 @@ msgid ""
 "base curve module. The developer provided a detailed explanation of the "
 "module in a video called <ulink url=\"https://www.youtube.com/watch?"
 "v=zbPj_TqTF88\">Filmic RGB: remap any dynamic range in darktable 3.0</ulink>."
-msgstr ""
+msgstr "O módulo RGB fílmico é derivado do módulo de mesmo nome do modelador Blender 3D de T. J. Sobotka. Apesar de ter a intenção primária de recuperar faixa dinâmica alta de dados de sensor RAW, pode ser usado com qualquer imagem em substituição do módulo de curva básica. O desenvolvedor proveu uma explicação detalhada do módulo em um vídeo chamado <ulink url=\"https://www.youtube.com/watch?v=zbPj_TqTF88\">Filmic RGB: remap any dynamic range in Darktable 3.0</ulink>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12236(para)
 msgid ""
@@ -10904,7 +10906,7 @@ msgid ""
 "x. While the underlying principles did not change much, users of the "
 "previous version should not expect a 1:1 translation of their workflow, and "
 "may find <xref linkend=\"filmic-rgb-for-26-users\"/> useful."
-msgstr ""
+msgstr "RGB fílmico é o sucessor do módulo fílmico provido com o darktable 2.6.x. Os princípios subjacentes não mudaram muito, mas usuários da versão anterior não devem esperar uma tradução 1:1 de seu fluxo de trabalho, e podem achar <xref linkend=\"filmic-rgb-for-26-users\"/> útil."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12255(title)
 msgid "Prerequisites"
@@ -10920,7 +10922,7 @@ msgid ""
 "data. Beware that clipped data are not recoverable. Some cameras have a "
 "clipping alert preview to help you diagnose this, and some even have an "
 "highlight-priority exposure mode."
-msgstr ""
+msgstr "Ao fotografar, faça a foto com subexposição, para que os realces fiquem à direita do histograma, exatamente na borda do recorte, mas não recortados. Não importa se a visualização da imagem está escura na tela da câmera: desde que os realces não sejam cortados, o RGB fílmico poderá recuperar os detalhes. Observe que os dados recortados não podem ser recuperados. Algumas câmeras têm um modo de exibição de área cortada para ajudá-lo a identificar esse problema, e algumas têm inclusive um modo de exposição com priorização de destaque."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12271(para)
 msgid ""
@@ -10934,7 +10936,7 @@ msgid ""
 "resulting in crushed blacks and negative values. If so, brighten the blacks "
 "by setting a negative black level value in the <link linkend=\"exposure"
 "\"><emphasis>exposure </emphasis></link> module."
-msgstr ""
+msgstr "No módulo <link linkend=\"exposure\"><emphasis>exposição</emphasis></link>, leve a exposição até que os tons médios estejam claros o suficiente. Não se preocupe em perder os realces: eles podem ser recuperados como parte do processamento RGB fílmico. No entanto, é importante evitar pixels negativos em áreas pretas: as computações realizadas pelo módulo de RGB fílmico levarão a resultados imprevisíveis neste caso. Para alguns models de camera (principalmente Canon), o rawspeed (a biblioteca de decodificação do darktable) pode usar um nível exagerado de preto, resultando em valores negativos e cores pretas esmagadas em algumas áreas. Se isto acontecer, clareie os pretos usando um nível de preto negativo no módulo <link linkend=\"exposure\"><emphasis>exposição</emphasis></link>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12283(para)
 msgid ""
@@ -10945,7 +10947,7 @@ msgid ""
 "relies on accurate measures of both. If your picture is very noisy, add an "
 "initial step of denoising to help the black exposure readings, and use a "
 "high quality demosaicing."
-msgstr ""
+msgstr "Se você planeja usar os auto-ajustes do RGB fílmicos, use o módulo <link linkend=\"whitebalance\"><emphasis>balanço de branco</emphasis></link> antes para corrigir desvios de cor e obter cores neutras. Em espaços de cor RGB, a luminância e a crominância estão ligadas, e a detecção de luminância do RGB fílmico depende de medidas precisas de ambas. Se a sua imagem tem muito ruído, adicione um passo inicial de remoção de ruído para ajudar com as leituras de exposição de preto, e use interpolação cromática de alta qualidade."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12293(para)
 msgid ""
@@ -10953,20 +10955,20 @@ msgid ""
 "any tone mapping module as well as the base curve module. These may produce "
 "unpredictable color shifts that would make the chrominance preservation "
 "useless. Neither of these modules is usually needed if you use filmic rgb."
-msgstr ""
+msgstr "Se você planeja usar o modo de preservação de crominância do RGB fílmico, evite usar os módulos mapeamento tonal e cueva base. Eles podem produzir desvios de cor imprevisíveis que tornariam a preservação da crominancia inútil. Nenhum desses módulos é normalmente necessário se você usar o RGB fílmico."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12257(para)
 msgid ""
 "In order to get the best out of filmic rgb, images need some preparation: "
 "<placeholder-1/>"
-msgstr ""
+msgstr "Para obter o melhor do RGB fílmico, imagens precisam de alguma preparação: <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12315(para)
 msgid ""
 "The <guilabel moreinfo=\"none\">scene</guilabel> tab contains the "
 "<quote>input</quote> settings of the scene: what constitutes middle grey, "
 "white and black in the photographed scene."
-msgstr ""
+msgstr "A aba <guilabel moreinfo=\"none\">cena</guilabel> contém as definições de <quote>entrada</quote> da cena: o que constitui cinza médio, branco e preto na cena fotografada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12322(para)
 msgid ""
@@ -10976,14 +10978,14 @@ msgid ""
 "applies an S-shaped parametric curve to enhance the contrast and remap the "
 "grey value to the middle grey of the display. This is similar to what the "
 "base curve or tone curve modules do."
-msgstr ""
+msgstr "A aba <guilabel moreinfo=\"none\">aparência</guilabel> contém parâmetros para o mapeamento aplicado aos parâmetros de entrada definidos na aba <guilabel moreinfo=\"none\">cena</guilabel>. Notavelmente, esta parte do módulo aplica uma curva paramétrica em forma da S para melhorar o contraste e remapear o valor de cinza para o cinza médio do display. Isto é similar ao que fazemos módulos curva base e curva de tons."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12333(para)
 msgid ""
 "The <guilabel moreinfo=\"none\">display</guilabel> tab defined the output "
 "settings to map the transformed image to the display. In typical use cases, "
 "this tab should only be used very rarely."
-msgstr ""
+msgstr "A aba <guilabel moreinfo=\"none\">display</guilabel> define as configurações de saída para mapear a imagem transformada para o display. Em casos de uso típicos, esta aba deveria ser usada muito raramente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12309(para)
 msgid ""
@@ -10991,7 +10993,7 @@ msgid ""
 "dynamic range to the (smaller) display dynamic range. This mapping is "
 "defined in three steps, each handled in a separate tab in the interface: "
 "<placeholder-1/>"
-msgstr ""
+msgstr "O módulo RGB fílmico tenta mapear a faixa dinâmica da cena fotografada (imagem RAW) na faixa dinâmica (menor) do display. Este mapeamento é definido em três passos, cada um configurado em três abas da interface: <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12343(para)
 msgid ""
@@ -11000,7 +11002,7 @@ msgid ""
 "right button and inputting values on the keyboard. Filmic rgb has no neutral "
 "parameters resulting in a no-operation: as soon as the module is enabled, "
 "the image is always at least slightly affected."
-msgstr ""
+msgstr "As faixas dos deslizadores do RGB fílmico são limitadas a valores usuais e seguros, mas valores fora dessa faixa são permitidos se você clicar nos deslizadores com o botão direito e entrar os valores com o teclado. O RGB fílmico não tem parametros neutros que resultem em nenhuma operação: assim que o módulo é habilitado, a imagem é sempre modificada, ainda que soment eum pouco."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12350(para)
 msgid ""
@@ -11010,7 +11012,7 @@ msgid ""
 "ordinate represents the display exposure. The dark curve is the desaturation "
 "curve, representing the percentage of saturation as function of the scene "
 "exposure."
-msgstr ""
+msgstr "As curvas na parte superior do módulo são somente de leitura e servem como guia para as operações realizadas pelos deslizadores. A curva clara é a de mapeamento de tons, onde a abscissa representa a exposição da cena, e a ordenada representa a exposição do display. A curva escura é a de desaturação, representando a porcentagem de saturação como função da exposição da cena."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12359(title)
 msgid ""
@@ -14290,7 +14292,7 @@ msgstr "Redução de ruído RAW"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16469(secondary)
 msgid "raw denoise"
-msgstr "redução de ruído RAW"
+msgstr "redução de ruído em RAW"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16474(secondary)
 msgid "raw"
@@ -14298,14 +14300,14 @@ msgstr "raw"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16490(emphasis)
 msgid "dcraw"
-msgstr ""
+msgstr "dcraw"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16487(entry)
 msgid ""
 "Raw denoise allows you to perform denoising on the data before it gets "
 "demosaiced. It is ported from <ulink url=\"http://www.cybercom.net/~dcoffin/"
 "dcraw/\"><placeholder-1/></ulink>."
-msgstr ""
+msgstr "Remoção de ruído em RAW permite fazer remoção de ruído nos dados antes da interpolação cromática. Este módulo foi portado de <ulink url=\"http://www.cybercom.net/~dcoffin/dcraw/\"><placeholder-1/></ulink>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16507(title)
 msgid "noise threshold"
@@ -14315,7 +14317,7 @@ msgstr "limiar de ruído"
 msgid ""
 "Set the threshold for noise detection. Higher values lead to stronger noise "
 "removal and higher loss of image detail."
-msgstr ""
+msgstr "Define o limiar para detecção de ruído. Valores altos levam a mais remoção de ruído e mais perda de detalhes na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16516(para)
 msgid ""
@@ -14338,7 +14340,7 @@ msgid ""
 "individually is not straightforward and can be counterintuitive: a pixel "
 "which is completely red may not be caused by noise on the R channel, but "
 "actually by noise on B and G channels."
-msgstr ""
+msgstr "O ruído em uma imagem é usualmente não apenas de baixa granularidade, mas também mais ou menos grosseiro. Estas curvas permitem remover ruído dependendo da granularidade do ruído visível. A esquerda da curva agirá em ruído bastante grosseiro, enquanto a direita agirá em ruído fino. Puxar a curva para cima resultará em mais suavização, puxar para baixo em menos suavização. Como exemplo, você pode preservar o ruído de granularidade pequena puxando a curva na extremidade direita até o valor mínimo. Outro exemplo: se estiver lidando com ruído de croma usando um modo de mesclagem, você pode puxar para cima a parte direita da curva, já que cores não deveriam mudar muito em escala muito fina: isto ajudará especialmente se você perceber pixels isolados com ruído. Considerando as curvas R, G e B, a melhor forma de usá-las é olhar cada canal usando o módulo misturador de canais no modo cinza, remover duído deste canal, e depois fazer o mesmo para outros canais. Desta forma, você leva em conta o fato de alguns canais poderem trazer mais ruído que outros. Veja que adivinhar qual canal é ruidoso sem olhar os canais individualmente não é fácil e pode ser contraintuitivo: um pixel completamente vermelho pode não ser causado por ruído no canal R, mas nos canais B ou G."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16542(title)
 msgid "Dithering"
@@ -20196,7 +20198,7 @@ msgid ""
 "be read and compiled and the included routines (called OpenCL kernels) need "
 "to be prepared for darktable's modules. If all that is done, the preparation "
 "is finished."
-msgstr ""
+msgstr "Quando o darktable inicial, ele primeiro tentará encontrar e carregar a libOpenCL.so e - tendo sucesso - verificar se a placa gráfica vem com suporte a OpenCL. Uma quantidade de memória suficiente na placa gráfica (1Bg+) precisa estar disponível para que o darktable possa usar a GPU. Se isto estiver OK, o darktable tenta preparar seu ambiente OpenCL: um contexto OpenCL e uma pipeline de cálculos precisam ser inicializados, código fonte OpenCL (com extensão .cl) precisa ser lido e compilado, e as rotinas incluídas (chamadas kernels OpenCL) precisam estar preparadas para os módulos do darktable. Se tudo isso for feito, a preparação está terminada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24222(para)
 msgid ""
@@ -20205,7 +20207,7 @@ msgid ""
 "options</quote> (<xref linkend=\"core_options\"/>) by unchecking "
 "<quote>activate opencl support</quote>. This configuration parameter also "
 "tells you if OpenCL initialization failed: it is greyed out in that case."
-msgstr ""
+msgstr "Por default suporte a OpenCL é ativado no darktable es todos os passos acima tiverem tido sucesso. Se quiser desativar suporte a OpenCL, você pode fazê-lo nas <quote>opções do core</quote> (<xref linkend=\"core_options\"/>) desligando a opção <quote>ativar suporte ao OpenCL</quote>. Este parâmetro de configuração também informa se a inicialização do OpenCL falhou: neste caso a opção estará inabilitada, em cinza."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24230(para)
 msgid ""
@@ -20221,7 +20223,7 @@ msgid ""
 "\"><emphasis>highpass</emphasis></link> or even more extreme <link linkend="
 "\"equalizer\"><emphasis>equalizer</emphasis></link> and <link linkend="
 "\"denoise_profiled\"><emphasis>profiled denoise</emphasis></link>."
-msgstr ""
+msgstr "A qualquer momento você pode ligar e desligra o suporte a OpenCL; isto tem efeito imediatamente. Dependendo do tipo de módulo que estiver usando, você notará o efeito de umaaceleração geral durante trabalho interativo e exportação. A maioria dos módulos do darktable pode usar o OpenCL, mas nem todos os módulos são tão demandantes para que a diferença seja perceptível. Para perceber a diferença, use módulos como  <link linkend=\"shadows_and_highlights\"><emphasis>sombras e realces</emphasis></link>, <link linkend=\"sharpen\"><emphasis>nitidez</emphasis></link>, <link linkend=\"lowpass\"><emphasis>passa-baixas</emphasis></link>, <link linkend=\"lowpass\"><emphasis>passa-altas</emphasis></link> ou, para uma diferença ainda mais extrema, <link linkend=\"equalizer\"><emphasis>equalizador</emphasis></link> e <link linkend=\"denoise_profiled\"><emphasis>remoção de ruído (perfilado)</emphasis></link>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24244(para)
 msgid ""
@@ -20229,7 +20231,7 @@ msgid ""
 "command line parameters <quote>-d opencl -d perf</quote>. After each run of "
 "the pixelpipe you will get a detailed allocation of processing time to each "
 "module plus an even more fine grained profile for all used OpenCL kernels."
-msgstr ""
+msgstr "Se você estiver interessado em dados de profiling, pode iniciar o darktable com os parâmetros de linha de comando <quote>-d opencl -d perf</quote>. Depois de cada execução da pixelpipe, você recberá uma descrição detalhada do tempo de processamento de cada módulo mas um profiling muito detalhado de cada kernel OpenCL."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24251(para)
 msgid ""
@@ -20238,7 +20240,7 @@ msgid ""
 "designed to be identical. If, for some reasons, darktable fails to properly "
 "finish a GPU calculation, it will normally notice and automatically (and "
 "transparently) fall back to CPU processing."
-msgstr ""
+msgstr "Além do aumento em velocidade, você não deve perceber nenhuma diferença nos resultados entre computação na CPU e na GPU. Exceto por erros de arredondamento, os resultados são projetados para serem iguais. Se, por algum motivo, o darktable falhar em terminar apropriadamente uma computação em GPU, ele normalmente perceberá e automaticamente (transparentemente, também) reverterá para processamento em CPU."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24262(title)
 msgid "Setting up OpenCL on your system"
@@ -20754,7 +20756,7 @@ msgid ""
 "performance on most systems. However, if you want to fiddle around a bit by "
 "yourself and try to optimize things further, here is a description of the "
 "relevant configuration parameters. <placeholder-1/>"
-msgstr ""
+msgstr "o darktable vem com configurações default que devem resultar em bom desempenho de GPU na maioria dos sistemas. No entanto, se quiser mudálas um pouco e tentar otimizar mais, aqui está uma descrição dos parâmetros relevantes de configuração. <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24788(para)
 msgid ""
@@ -20826,7 +20828,7 @@ msgid ""
 "relative device priority manually. To do so you need to select the "
 "<quote>default</quote> scheduling profile and do your settings in the "
 "<quote>opencl_device_priority</quote> configuration parameter."
-msgstr ""
+msgstr "o escalonamento de múltiplos dispositivos OpenCL na maioria dos sistemas típicos pode ser otimizado usando as configurações <quote>perfil de escalonamenot OpenCL</quote>. No entanto, se seu sistema vem equipado com uma variedad de GPUs, você pode querer definir a prioridade reltiva dos dispositivos manualmente. Para fazer isto, você precisa selecionar o perfil de escalonamento <quote>default</quote> e fazer as configurações no parâmetro <quote>opencl_device_priority</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24864(para)
 msgid ""
@@ -20883,7 +20885,7 @@ msgid ""
 "whitespace do not matter). If you have more than one device – all with the "
 "same name – you need to use the device numbers in order to differentiate "
 "them."
-msgstr ""
+msgstr "O darktable tem um sistema interno de numeração, onde o primeiro dispositivo OpenCL receberá o número <quote>0</quote>. Todos os outros dispositivos são numerados consecutivamente. Este número, junto com o nome do dispositivo, é mostrado quando você inicia o darktable com <quote>-d opencl</quote>. Você pode especificar um dispositivo pelo número ou pelo nome (caixa alta/baixa e espaços não importam). Se tiver mais de um dispositivo - todos com o mesmo nome - você precisa usar os números de dispositivos para diferenciá-los."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24913(para)
 msgid ""
@@ -20891,7 +20893,7 @@ msgid ""
 "quote>, in which case the device is excluded from processing this pixelpipe. "
 "You can also give an asterisk <quote>*</quote> as a wildcard, representing "
 "all devices not mentioned explicitly before in that group."
-msgstr ""
+msgstr "Um especificador de dispositivo pode ser prefixado com um ponto de exclamação <quote>!</quote>, e neste caso o dispositivo será excluído do processamento desta pixelpile. Você também pode usaar um asterisco, <quote>*</quote>, como curinga, representando todos os dispositivos não mencionados explicitamente naquele grupo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24920(para)
 msgid ""
@@ -20909,7 +20911,7 @@ msgid ""
 "allowed GPUs with a plus sign <quote>+</quote>. darktable will not use the "
 "CPU but rather suspend processing until the next allowed OpenCL device is "
 "available."
-msgstr ""
+msgstr "Se um processo de picelpipe está para começar e todas as GPUs no grupo correspondente estão ocupadas, o darktable automaticamente processa a imagem na CPU por default. Você pode forçar processamento em GPU prefixando a lista de GPUs permitidas com um sinal de mais <quote>+</quote>. O darktable não usará a CPU, e ao invés disso suspenderá o processamento até que o próximo dispositivo OpenCL esteja disponível."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24934(para)
 msgid ""
