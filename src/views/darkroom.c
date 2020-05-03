@@ -929,7 +929,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   darktable.gui->reset = reset;
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */ 
-
   if(active_plugin)
   {
     gboolean valid = FALSE;
