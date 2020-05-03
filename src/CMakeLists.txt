@@ -841,16 +841,16 @@ else(WIN32)
 endif(WIN32)
 
 # Compile views modules
-add_subdirectory(views)
+add_subdirectory(views ${DARKTABLE_LIBDIR}/views)
 
 # Compile lighttable modules
-add_subdirectory(libs)
+add_subdirectory(libs ${DARKTABLE_LIBDIR}/plugins/lighttable)
 
 # Compile darkroom modules
-add_subdirectory(iop)
+add_subdirectory(iop ${DARKTABLE_LIBDIR}/plugins)
 
 # Compile export modules
-add_subdirectory(imageio)
+add_subdirectory(imageio ${DARKTABLE_LIBDIR}/plugins/imageio)
 
 if(HAVE_OPENCL)
   # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
