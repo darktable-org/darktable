@@ -756,9 +756,25 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
-  dt_loc_init_datadir(datadir_from_command);
-  dt_loc_init_plugindir(moduledir_from_command);
-  dt_loc_init_localedir(localedir_from_command);
+
+  // get the application directory from the first argument containing the full path to the executable
+  char* application_directory = malloc(PATH_MAX);
+  const gchar* slash = "/";
+  const gchar* backslash = "\\";
+  gchar* lastPathCharacter = g_strrstr(argv[0], slash);
+  if(!lastPathCharacter)
+  {
+    lastPathCharacter = g_strrstr(argv[0], backslash);
+  }
+  if(lastPathCharacter)
+  {
+    strncpy(application_directory, argv[0], lastPathCharacter - argv[0] + 1);
+  }
+
+  // set up absolute pathes based on their relative value
+  dt_loc_init_datadir(application_directory, datadir_from_command);
+  dt_loc_init_plugindir(application_directory, moduledir_from_command);
+  dt_loc_init_localedir(application_directory, localedir_from_command);
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
     fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);

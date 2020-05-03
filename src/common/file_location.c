@@ -94,6 +94,17 @@ void dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, default_config_dir);
+  DIR* dir = opendir(darktable.configdir);
+  if (dir) {
+    printf("darktable.configdir: %s\n", darktable.configdir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.configdir %s does not exist", darktable.configdir);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("pendir() failed for some other reason");
+    exit(EXIT_FAILURE);
+  }
   g_free(default_config_dir);
 }
 
@@ -138,6 +149,17 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, g_get_tmp_dir());
+  DIR* dir = opendir(darktable.tmpdir);
+  if (dir) {
+    printf("darktable.tmpdir: %s\n", darktable.tmpdir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.tmpdir %s does not exist", darktable.tmpdir);
+    return 1;
+  } else {
+    printf("pendir() failed for some other reason");
+    return 1;
+  }
   if(darktable.tmpdir == NULL) return 1;
   return 0;
 }
@@ -146,10 +168,21 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, default_cache_dir);
+  DIR* dir = opendir(darktable.cachedir);
+  if (dir) {
+    printf("darktable.cachedir: %s\n", darktable.cachedir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.cachedir %s does not exist", darktable.cachedir);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("pendir() failed for some other reason");
+    exit(EXIT_FAILURE);
+  }
   g_free(default_cache_dir);
 }
 
-void dt_loc_init_plugindir(const char *plugindir)
+void dt_loc_init_plugindir(const char* application_directory, const char *plugindir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
   char *suffix = g_build_filename("lib", "darktable", NULL);
@@ -158,11 +191,29 @@ void dt_loc_init_plugindir(const char *plugindir)
   darktable.plugindir = dt_loc_init_generic(plugindir, directory ? directory : DARKTABLE_LIBDIR);
   g_free(directory);
 #else
-  darktable.plugindir = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
+  gchar* path = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
+  gchar* absolute_path;
+  gchar complete_path[PATH_MAX] = { 0 };
+  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
+  absolute_path = realpath(complete_path, NULL);
+  free(path);
+  darktable.plugindir = absolute_path;
+
+  DIR* dir = opendir(darktable.plugindir);
+  if (dir) {
+    printf("darktable.plugindir: %s\n", darktable.plugindir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.plugindir %s does not exist", darktable.plugindir);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("pendir() failed for some other reason");
+    exit(EXIT_FAILURE);
+  }
 #endif
 }
 
-void dt_loc_init_localedir(const char *localedir)
+void dt_loc_init_localedir(const char* application_directory, const char *localedir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
   char *suffix = g_build_filename("share", "locale", NULL);
@@ -175,11 +226,30 @@ void dt_loc_init_localedir(const char *localedir)
 #endif
   g_free(directory);
 #else
-  darktable.localedir = dt_loc_init_generic(localedir, DARKTABLE_LOCALEDIR);
+
+  gchar* path = dt_loc_init_generic(localedir, DARKTABLE_LOCALEDIR);
+  gchar* absolute_path;
+  gchar complete_path[PATH_MAX] = { 0 };
+  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
+  absolute_path = realpath(complete_path, NULL);
+  free(path);
+  darktable.localedir = absolute_path;
+
+  DIR* dir = opendir(darktable.localedir);
+  if (dir) {
+    printf("darktable.localedir: %s\n", darktable.localedir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.localedir %s does not exist", darktable.localedir);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("pendir() failed for some other reason");
+    exit(EXIT_FAILURE);
+  }
 #endif
 }
 
-void dt_loc_init_datadir(const char *datadir)
+void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
   char *suffix = g_build_filename("share", "darktable", NULL);
@@ -188,7 +258,27 @@ void dt_loc_init_datadir(const char *datadir)
   darktable.datadir = dt_loc_init_generic(datadir, directory ? directory : DARKTABLE_DATADIR);
   g_free(directory);
 #else
-  darktable.datadir = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
+// TODO: Apple/windows implementation
+  gchar* path = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
+  // TODO: extract into function
+  gchar* absolute_path;
+  gchar complete_path[PATH_MAX] = { 0 };
+  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
+  absolute_path = realpath(complete_path, NULL);
+  free(path);
+  darktable.datadir = absolute_path;
+
+  DIR* dir = opendir(darktable.datadir);
+  if (dir) {
+    printf("darktable.datadir: %s\n", darktable.datadir);
+    closedir(dir);
+  } else if (ENOENT == errno) {
+    printf("darktable.datadir %s does not exist", darktable.datadir);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("pendir() failed for some other reason");
+    exit(EXIT_FAILURE);
+  }
 #endif
 }
 

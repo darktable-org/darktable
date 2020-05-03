@@ -25,11 +25,11 @@
 gchar *dt_loc_get_home_dir(const gchar *user);
 
 /** init systemwide data dir */
-void dt_loc_init_datadir(const char *datadir);
+void dt_loc_init_datadir(const char * application_directory, const char *datadir);
 /** get the plugin dir */
-void dt_loc_init_plugindir(const char *plugindir);
+void dt_loc_init_plugindir(const char * application_directory, const char *plugindir);
 /** init the locale dir */
-void dt_loc_init_localedir(const char *localedir);
+void dt_loc_init_localedir(const char * application_directory, const char *localedir);
 /** get user local dir */
 int dt_loc_init_tmp_dir(const char *tmpdir);
 /** get user config dir */
