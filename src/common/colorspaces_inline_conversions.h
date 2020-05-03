@@ -231,6 +231,132 @@ static inline void dt_Lab_to_XYZ(const float Lab[3], float XYZ[3])
   for(int i = 0; i < 3; i++) XYZ[i] = d50[i] * lab_f_inv(f[i]);
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, uvY:16)
+#endif
+static inline void dt_xyY_to_uvY(const float xyY[3], float uvY[3])
+{
+  // This is the linear part of the chromaticity transform from CIE L*u*v* e.g. u'v'.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It rescales the chromaticity diagram xyY in a more perceptual way,
+  // but it is still not hue-linear and not perfectly perceptual.
+  // As such, it is the only radiometricly-accurate representation of hue non-linearity in human vision system.
+  // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
+  const float denominator = -2.f * xyY[0] + 12.f * xyY[1] + 3.f;
+  uvY[0] = 4.f * xyY[0] / denominator; // u'
+  uvY[1] = 9.f * xyY[1] / denominator; // v'
+  uvY[2] = xyY[2];                     // Y
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float cbf(const float x)
+{
+  return x * x * x;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, Luv:16)
+#endif
+static inline void dt_xyY_to_Luv(const float xyY[3], float Luv[3])
+{
+  // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It is intended to provide perceptual hue-linear-ish controls and settings for more intuitive GUI.
+  // Don't ever use it for pixel-processing, it sucks, it's old, it kills kittens and makes your mother cry.
+  // Seriously, don't.
+  // You need to convert Luv parameters to XYZ or RGB and properly process pixels in RGB or XYZ or related spaces.
+  float uvY[3];
+  dt_xyY_to_uvY(xyY, uvY);
+
+  // We assume Yn == 1 == peak luminance
+  const float threshold = cbf(6.0f / 29.0f);
+  Luv[0] = (uvY[2] <= threshold) ? cbf(29.0f / 3.0f) * uvY[2] : 116.0f * cbrtf(uvY[2]) - 16.f;
+
+  static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+  Luv[1] = 13.f * Luv[0] * (uvY[0] - D50[0]); // u*
+  Luv[2] = 13.f * Luv[0] * (uvY[1] - D50[1]); // v*
+
+  // Output is in [0; 100] for all channels
+}
+
+
+static inline void dt_Luv_to_Lch(const float Luv[3], float Lch[3])
+{
+  Lch[0] = Luv[0];                 // L stays L
+  Lch[1] = hypotf(Luv[2], Luv[1]); // chroma radius
+  Lch[2] = atan2f(Luv[2], Luv[1]); // hue angle
+}
+
+
+static inline void dt_xyY_to_Lch(const float xyY[3], float Lch[3])
+{
+  float Luv[3];
+  dt_xyY_to_Luv(xyY, Luv);
+  dt_Luv_to_Lch(Luv, Lch);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(uvY, xyY:16)
+#endif
+static inline void dt_uvY_to_xyY(const float uvY[3], float xyY[3])
+{
+  // This is the linear part of chromaticity transform from CIE L*u*v* e.g. u'v'.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It rescales the chromaticity diagram xyY in a more perceptual way,
+  // but it is still not hue-linear and not perfectly perceptual.
+  // As such, it is the only radiometricly-accurate representation of hue non-linearity in human vision system.
+  // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
+  const float denominator = 6.0f * uvY[0] - 16.f * uvY[1] + 12.0f;
+  xyY[0] = 9.f * uvY[0] / denominator; // x
+  xyY[1] = 4.f * uvY[1] / denominator; // y
+  xyY[2] = uvY[2];                     // Y
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, Luv:16)
+#endif
+static inline void dt_Luv_to_xyY(const float Luv[3], float xyY[3])
+{
+  // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It is intended to provide perceptual hue-linear-ish controls and settings for more intuitive GUI.
+  // Don't ever use it for pixel-processing, it sucks, it's old, it kills kittens and makes your mother cry.
+  // Seriously, don't.
+  // You need to convert Luv parameters to XYZ or RGB and properly process pixels in RGB or XYZ or related spaces.
+  float uvY[3];
+
+  // We assume Yn == 1 == peak luminance
+  static const float threshold = 8.0f;
+  uvY[2] = (Luv[0] <= threshold) ? Luv[0] * cbf(3.f / 29.f) : cbf((Luv[0] + 16.f) / 116.f);
+
+  static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+  uvY[0] = Luv[1] / (Luv[0] * 13.f) + D50[0];  // u' = u* / 13 L + u_n
+  uvY[1] = Luv[2] / (Luv[0] * 13.f) + D50[1];  // v' = v* / 13 L + v_n
+
+  dt_uvY_to_xyY(uvY, xyY);
+  // Output is normalized for all channels
+}
+
+static inline void dt_Lch_to_Luv(const float Lch[3], float Luv[3])
+{
+  Luv[0] = Lch[0];                // L stays L
+  Luv[1] = Lch[1] * cosf(Lch[2]); // radius * cos(angle)
+  Luv[2] = Lch[1] * sinf(Lch[2]); // radius * sin(angle)
+}
+
+static inline void dt_Lch_to_xyY(const float Lch[3], float xyY[3])
+{
+  float Luv[3];
+  dt_Lch_to_Luv(Lch, Luv);
+  dt_Luv_to_xyY(Luv, xyY);
+}
+
 /** uses D50 white point. */
 #ifdef _OPENMP
 #pragma omp declare simd
@@ -249,6 +375,45 @@ static inline void dt_XYZ_to_sRGB(const float *const XYZ, float *const sRGB)
   for(int c = 0; c < 3; c++)
     sRGB[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
 }
+
+
+/** Uses D50 **/
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRGB)
+{
+  // linear sRGB == Rec709 with no gamma
+  const float xyz_to_srgb_matrix[3][3] = { {  3.1338561f, -1.6168667f, -0.4906146f },
+                                           { -0.9787684f,  1.9161415f,  0.0334540f },
+                                           {  0.0719453f, -0.2289914f,  1.4052427f } };
+
+  // XYZ -> sRGB
+  float rgb[3] = { 0, 0, 0 };
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+}
+
+
+/** Uses D65 **/
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void dt_XYZ_to_Rec709_D65(const float *const XYZ, float *const sRGB)
+{
+  // linear sRGB == Rec709 with no gamma
+  const float xyz_to_srgb_matrix[3][3] = { {  3.2404542f, -1.5371385f, -0.4985314f },
+                                           { -0.9692660f,  1.8760108f,  0.0415560f },
+                                           {  0.0556434f, -0.2040259f,  1.0572252f } };
+
+  // XYZ -> sRGB
+  float rgb[3] = { 0, 0, 0 };
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+}
+
 
 /** uses D50 white point and clips the output to [0..1]. */
 #ifdef _OPENMP
