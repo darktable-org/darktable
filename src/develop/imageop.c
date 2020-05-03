@@ -155,12 +155,10 @@ static void default_gui_cleanup(dt_iop_module_t *self)
 
 static void default_cleanup(dt_iop_module_t *module)
 {
-  g_free(module->gui_data);
-  module->gui_data = NULL; // just to be sure
   g_free(module->params);
   module->params = NULL;
-  g_free(module->global_data); // just to be sure
-  module->global_data = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -334,7 +332,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) 
     module->init = default_init;
   if(!g_module_symbol(module->module, "cleanup", (gpointer) & (module->cleanup)))
-    module->cleanup = &default_cleanup;
+    module->cleanup = default_cleanup;
   if(!g_module_symbol(module->module, "init_global", (gpointer) & (module->init_global)))
     module->init_global = NULL;
   if(!g_module_symbol(module->module, "cleanup_global", (gpointer) & (module->cleanup_global)))
