@@ -156,8 +156,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(darktable.develop, 0, 0, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
+    pzx = fmin(pzx + 0.5f, 0.0f);
+    pzy = fmin(pzy + 0.5f, 0.0f);
 
     d->vp_width = width;
     d->vp_height = height;
