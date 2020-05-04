@@ -648,23 +648,24 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->sl_black_point = dt_bauhaus_slider_new_from_params_box(self, "black_point", "");
+  g->sl_black_point = dt_bauhaus_slider_new_from_params_box(self, "black_point");
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_black_point, -1.0, 1.0);
   gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
                                                     "if poorly set, it will clip near-black colors out of gamut\n"
                                                     "by pushing RGB values into negatives"));
 
-  g->sl_exposure = dt_bauhaus_slider_new_from_params_box(self, "exposure", " EV");
+  g->sl_exposure = dt_bauhaus_slider_new_from_params_box(self, "exposure");
   dt_bauhaus_slider_set_step(g->sl_exposure, .02);
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure, -18.0, 18.0);
+  dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
   gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
-  g->sl_hlcompr = dt_bauhaus_slider_new_from_params_box(self, "hlcompr", "");
+  g->sl_hlcompr = dt_bauhaus_slider_new_from_params_box(self, "hlcompr");
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_hlcompr, 0.0, 500.0);
   gtk_widget_set_tooltip_text(g->sl_hlcompr, _("highlight compression adjustment"));
 
-  g->sl_contrast = dt_bauhaus_slider_new_from_params_box(self, "contrast", "");
+  g->sl_contrast = dt_bauhaus_slider_new_from_params_box(self, "contrast");
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_contrast, -1.0, 5.0);
   gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
 
@@ -678,8 +679,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
-  g->sl_middle_grey = dt_bauhaus_slider_new_from_params_box(self, "middle_grey", " %%");
+  g->sl_middle_grey = dt_bauhaus_slider_new_from_params_box(self, "middle_grey");
   dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
+  dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle grey adjustment"));
 
   dt_bauhaus_widget_set_quad_paint(g->sl_middle_grey, dtgtk_cairo_paint_colorpicker,
@@ -688,14 +690,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback),
                    &g->color_picker);
 
-  g->sl_brightness = dt_bauhaus_slider_new_from_params_box(self, "brightness", "");
+  g->sl_brightness = dt_bauhaus_slider_new_from_params_box(self, "brightness");
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_brightness, -4.0, 4.0);
   gtk_widget_set_tooltip_text(g->sl_brightness,_("brightness adjustment"));
 
-  g->sl_saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation", "");
+  g->sl_saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation");
   gtk_widget_set_tooltip_text(g->sl_saturation,_("saturation adjustment"));
 
-  g->sl_vibrance = dt_bauhaus_slider_new_from_params_box(self, "vibrance", "");
+  g->sl_vibrance = dt_bauhaus_slider_new_from_params_box(self, "vibrance");
   gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
  
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
@@ -718,7 +720,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
-  g->sl_clip = dt_bauhaus_slider_new_from_params_box(self, "clip", "");
+  g->sl_clip = dt_bauhaus_slider_new_from_params_box(self, "clip");
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish

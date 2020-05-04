@@ -137,7 +137,7 @@ typedef struct dt_iop_shadhi_params_t
   float highlights_ccorrect;
   unsigned int flags;
   float low_approximation;
-  dt_iop_shadhi_algo_t shadhi_algo; // $DESCRIPTION: "soften with"
+  dt_iop_shadhi_algo_t shadhi_algo; // $DESCRIPTION: "soften with" $DEFAULT: 0
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
@@ -834,11 +834,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->shadows = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->shadows, 2);
   g->highlights = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->highlights, 2);
   g->whitepoint = dt_bauhaus_slider_new_with_range(self, -10.0, 10.0, .2, p->whitepoint, 2);
-  g->shadhi_algo = dt_bauhaus_combobox_new_from_params_box(self, "shadhi_algo");
-/*  dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
-  dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
-  dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
-*/  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
+  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
   g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
   g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
   g->highlights_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->highlights_ccorrect, 2);
@@ -860,7 +856,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->whitepoint, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadhi_algo, TRUE, TRUE, 0);
+  g->shadhi_algo = dt_bauhaus_combobox_new_from_params_box(self, "shadhi_algo");
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->compress, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows_ccorrect, TRUE, TRUE, 0);

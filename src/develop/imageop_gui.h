@@ -20,7 +20,7 @@
 
 #include "develop/imageop.h"
 
-GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post);
+GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param);
 
 GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const char *param);
 

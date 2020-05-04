@@ -84,7 +84,7 @@ static void generic_combobox_callback(GtkWidget *combobox, dt_module_param_t *da
   }
 }
 
-GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param, const char *post)
+GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
@@ -132,6 +132,8 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
       g_free(str);
     }
 
+    const char *post = ""; // set " %%", " EV" etc
+
     if (min < 0 || (post && *post))
     {
       str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), digits, post);
@@ -145,12 +147,10 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
     module_param->module = self;
     module_param->param_offset = self->so->get_p(p, param) - p;
     g_signal_connect_data(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_callback), module_param, (GClosureNotify)g_free, 0);
-
-    // todo: add tooltip
   }
   else
   {
-    str = g_strdup_printf(_("'%s' is not a parameter"), param);
+    str = g_strdup_printf("'%s' is not a float/slider parameter", param);
 
     slider = GTK_WIDGET(GTK_LABEL(gtk_label_new(str)));
 
@@ -199,12 +199,10 @@ GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const 
         dt_bauhaus_combobox_add(combobox, gettext(iter->description));
       }
     }
-
-    // todo: add tooltip
   }
   else
   {
-    str = g_strdup_printf(_("'%s' is not an int/combox parameter"), param);
+    str = g_strdup_printf(_("'%s' is not an enum/int/combobox parameter"), param);
 
     combobox = GTK_WIDGET(GTK_LABEL(gtk_label_new(str)));
 
