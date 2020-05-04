@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-03 14:25+0200\n"
-"PO-Revision-Date: 2020-05-03 14:26+0200\n"
+"POT-Creation-Date: 2020-05-04 16:39+0200\n"
+"PO-Revision-Date: 2020-05-04 18:52+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -947,10 +947,9 @@ msgid "on close"
 msgstr "bij het afsluiten"
 
 #: ../build/src/preferences_gen.h:3291
-#, fuzzy
 msgctxt "preferences"
 msgid "on both"
-msgstr "toon beide"
+msgstr "op beide"
 
 #: ../build/src/preferences_gen.h:3296
 msgctxt "preferences"
@@ -3374,7 +3373,7 @@ msgstr "eerder"
 
 #: ../src/develop/imageop.c:1030 ../src/libs/masks.c:1173
 msgid "move down"
-msgstr "later"
+msgstr "verplaats neerwaarts"
 
 #: ../src/develop/imageop.c:1036 ../src/libs/image.c:168
 #: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
@@ -3956,9 +3955,8 @@ msgstr "hoge temp. kwikdamp tl-licht"
 
 #. Found in Nikon Coolpix P1000
 #: ../src/external/wb_presets.c:68
-#, fuzzy
 msgid "high temp. mercury-vapor"
-msgstr "hoge temp. kwikdamp tl-licht"
+msgstr "hoge temp. kwikdamp"
 
 #. On Some Panasonic
 #: ../src/external/wb_presets.c:70
@@ -6737,7 +6735,6 @@ msgid "orientation"
 msgstr "oriëntatie"
 
 #: ../src/iop/borders.c:206
-#, fuzzy
 msgctxt "accel"
 msgid "horizontal position"
 msgstr "horizontale positie"
@@ -7788,7 +7785,6 @@ msgid "working profile"
 msgstr "werkprofiel"
 
 #: ../src/iop/colorin.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "gamut clipping"
 msgstr "gamma-clipping"
@@ -8331,10 +8327,9 @@ msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
 #: ../src/iop/demosaic.c:182
-#, fuzzy
 msgctxt "accel"
 msgid "method (bayer)"
-msgstr "methode"
+msgstr "methode (bayer)"
 
 #: ../src/iop/demosaic.c:183
 msgctxt "accel"
@@ -9572,10 +9567,9 @@ msgid "target"
 msgstr "doel"
 
 #: ../src/iop/globaltonemap.c:125
-#, fuzzy
 msgctxt "accel"
 msgid "operator"
-msgstr "methode"
+msgstr "operator"
 
 #: ../src/iop/globaltonemap.c:728
 msgid "operator"
@@ -10552,9 +10546,9 @@ msgid "warning - cube lut %d out of range values [0,1]"
 msgstr ""
 
 #: ../src/iop/lut3d.c:867
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "fout - ongeldig cube bestand: %s"
+msgstr "fout - ongeldig 3dl bestand: %s"
 
 #: ../src/iop/lut3d.c:896
 #, c-format
@@ -10769,9 +10763,8 @@ msgid "color of the film base"
 msgstr "kleur van het film materiaal"
 
 #: ../src/iop/negadoctor.c:1152
-#, fuzzy
 msgid "select color of film material from a swatch"
-msgstr "selecteer kleur van het filmmateriaal"
+msgstr "selecteer kleur van het filmmateriaal vanuit staal"
 
 #: ../src/iop/negadoctor.c:1166 ../src/iop/negadoctor.c:1176
 #: ../src/iop/negadoctor.c:1186
@@ -10828,19 +10821,16 @@ msgid "shadows color cast"
 msgstr "aanpassen schaduwkleuren"
 
 #: ../src/iop/negadoctor.c:1232
-#, fuzzy
 msgid "select color of shadows from a swatch"
-msgstr "selecteer kleur van het filmmateriaal"
+msgstr "selecteer kleur voor schaduwen vanuit staal"
 
 #: ../src/iop/negadoctor.c:1237
-#, fuzzy
 msgid "pick shadows color from image"
-msgstr "neem kleur uit afbeelding"
+msgstr "neem schaduwkleuren uit afbeelding"
 
 #: ../src/iop/negadoctor.c:1244
-#, fuzzy
 msgid "shadows red offset"
-msgstr "schaduwkleuren: lift/afstand"
+msgstr "rode afstand schaduwen"
 
 #: ../src/iop/negadoctor.c:1245 ../src/iop/negadoctor.c:1254
 #: ../src/iop/negadoctor.c:1263
@@ -10852,14 +10842,12 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/negadoctor.c:1253
-#, fuzzy
 msgid "shadows green offset"
-msgstr "schaduwkleuren: lift/afstand"
+msgstr "groene afstand schaduwen"
 
 #: ../src/iop/negadoctor.c:1262
-#, fuzzy
 msgid "shadows blue offset"
-msgstr "schaduwkleuren: lift/afstand"
+msgstr "blauwe afstand schaduwen"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:1271
@@ -10868,19 +10856,16 @@ msgid "highlights white balance"
 msgstr "schaduwen en hooglichten balans"
 
 #: ../src/iop/negadoctor.c:1280
-#, fuzzy
 msgid "select color of illuminant from a swatch"
-msgstr "selecteer kleur van het filmmateriaal"
+msgstr "selecteer kleur van lichtbron vanuit staal"
 
 #: ../src/iop/negadoctor.c:1285
-#, fuzzy
 msgid "pick illuminant color from image"
-msgstr "kies kleur van afbeelding"
+msgstr "neem lichtgevende kleur van afbeelding"
 
 #: ../src/iop/negadoctor.c:1292
-#, fuzzy
 msgid "illuminant red gain"
-msgstr "luminantie Y"
+msgstr "lichtgevende rode versterking"
 
 #: ../src/iop/negadoctor.c:1293 ../src/iop/negadoctor.c:1302
 #: ../src/iop/negadoctor.c:1311
@@ -10893,11 +10878,11 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:1301
 msgid "illuminant green gain"
-msgstr ""
+msgstr "lichtgevende groene versterking"
 
 #: ../src/iop/negadoctor.c:1310
 msgid "illuminant blue gain"
-msgstr ""
+msgstr "lichtgevende blauwe versterking"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1319
@@ -10916,9 +10901,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/negadoctor.c:1333
-#, fuzzy
 msgid "paper grade (gamma)"
-msgstr "mikpunt gamma"
+msgstr "papierkwaliteit (gamma)"
 
 #: ../src/iop/negadoctor.c:1335
 msgid ""
@@ -10929,7 +10913,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:1342
 msgid "paper gloss (specular highlights)"
-msgstr ""
+msgstr "papierglans (spiegelende highlights)"
 
 #: ../src/iop/negadoctor.c:1344
 msgid ""
@@ -10939,9 +10923,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/negadoctor.c:1349
-#, fuzzy
 msgid "virtual print emulation"
-msgstr "Fuji Provia emulation"
+msgstr "virtuele afdruk emulatie"
 
 #: ../src/iop/negadoctor.c:1353
 #, fuzzy
@@ -11454,10 +11437,9 @@ msgid "continuous add brush"
 msgstr "doorlopend penselen toevoegen"
 
 #: ../src/iop/retouch.c:3342 ../src/iop/spots.c:853
-#, fuzzy
 msgctxt "accel"
 msgid "show or hide shapes"
-msgstr "toon of verberg spot"
+msgstr "toon of verberg maskers"
 
 #: ../src/iop/retouch.c:4493 ../src/iop/retouch.c:5349
 #, c-format
@@ -11834,9 +11816,8 @@ msgstr ""
 "klik rechts om een lijn te verwijderen"
 
 #: ../src/iop/spots.c:801
-#, fuzzy
 msgid "show and edit shapes"
-msgstr "toon en bewerk masker"
+msgstr "toon en bewerk maskers"
 
 #: ../src/iop/spots.c:847
 msgctxt "accel"
@@ -13613,9 +13594,8 @@ msgid "histogram"
 msgstr "histogram"
 
 #: ../src/libs/histogram.c:512 ../src/libs/histogram.c:546
-#, fuzzy
 msgid "set mode to waveform"
-msgstr "toon histogram als waveform"
+msgstr "stel mode in op waveform"
 
 #: ../src/libs/histogram.c:515
 #, fuzzy
@@ -13623,19 +13603,16 @@ msgid "set mode to histogram"
 msgstr "verberg histogram"
 
 #: ../src/libs/histogram.c:530
-#, fuzzy
 msgid "set mode to linear"
-msgstr "toon lineair histogram"
+msgstr "stel modus in op lineair"
 
 #: ../src/libs/histogram.c:533
-#, fuzzy
 msgid "set mode to logarithmic"
-msgstr "toon logaritmisch histogram"
+msgstr "stel modus in op logaritmisch"
 
 #: ../src/libs/histogram.c:543
-#, fuzzy
 msgid "set mode to RGB parade"
-msgstr "reset module"
+msgstr "stel mode in op RGB parade"
 
 #: ../src/libs/histogram.c:559
 msgid "click to hide red channel"
@@ -14042,11 +14019,9 @@ msgid "import folders recursively"
 msgstr "recursief mappen importeren"
 
 #: ../src/libs/import.c:450
-#, fuzzy
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
-"recursief onderliggende mappen importeren, elke map wordt daarbij in een "
-"nieuwe map geplaatst."
+"recursief importeren submappen, elke map wordt in een nieuwe map geplaatst"
 
 #: ../src/libs/import.c:539
 #, fuzzy
@@ -15776,9 +15751,8 @@ msgid "help url opened in web browser"
 msgstr "help url geopend in webbrowser"
 
 #: ../src/libs/tools/global_toolbox.c:362
-#, fuzzy
 msgid "error while opening help url in web browser"
-msgstr "help url geopend in webbrowser"
+msgstr "fout bij het openen van de help url in webbrowser"
 
 #: ../src/libs/tools/global_toolbox.c:373
 msgid "there is no help available for this element"
@@ -16202,10 +16176,9 @@ msgstr "gammacontrole"
 
 #. toggle visability of drawn masks for current gui module
 #: ../src/views/darkroom.c:3535
-#, fuzzy
 msgctxt "accel"
 msgid "show drawn masks"
-msgstr "vector masker"
+msgstr "toon getekende maskers"
 
 #. brush size +/-
 #: ../src/views/darkroom.c:3538
@@ -16355,40 +16328,34 @@ msgstr "zoomen is beperkt tot %d afbeeldingen"
 
 #. movement keys
 #: ../src/views/lighttable.c:2965
-#, fuzzy
 msgctxt "accel"
 msgid "move page up"
-msgstr "eerder"
+msgstr "verplaats pagina omhoog"
 
 #: ../src/views/lighttable.c:2966
-#, fuzzy
 msgctxt "accel"
 msgid "move page down"
-msgstr "later"
+msgstr "verplaats pagina omlaag "
 
 #: ../src/views/lighttable.c:2967
-#, fuzzy
 msgctxt "accel"
 msgid "move up"
-msgstr "eerder"
+msgstr "verplaats omhoog"
 
 #: ../src/views/lighttable.c:2968
-#, fuzzy
 msgctxt "accel"
 msgid "move down"
-msgstr "later"
+msgstr "verplaats omlaag"
 
 #: ../src/views/lighttable.c:2969
-#, fuzzy
 msgctxt "accel"
 msgid "move left"
-msgstr "linksboven"
+msgstr "verplaats naar links"
 
 #: ../src/views/lighttable.c:2970
-#, fuzzy
 msgctxt "accel"
 msgid "move right"
-msgstr "rechtsboven"
+msgstr "verplaats naar rechts"
 
 #: ../src/views/lighttable.c:2971
 msgctxt "accel"
@@ -16396,44 +16363,40 @@ msgid "move start"
 msgstr "verplaats begin"
 
 #: ../src/views/lighttable.c:2972
-#, fuzzy
 msgctxt "accel"
 msgid "move end"
-msgstr "later"
+msgstr "verplaats einde"
 
 #. movement keys with selection
 #: ../src/views/lighttable.c:2975
 msgctxt "accel"
 msgid "move page up and select"
-msgstr ""
+msgstr "verplaats pagina omhoog en selecteer"
 
 #: ../src/views/lighttable.c:2976
 msgctxt "accel"
 msgid "move page down and select"
-msgstr ""
+msgstr "verplaats pagina omlaag en selecteer"
 
 #: ../src/views/lighttable.c:2977
 msgctxt "accel"
 msgid "move up and select"
-msgstr ""
+msgstr "verplaats omhoog en selecteer"
 
 #: ../src/views/lighttable.c:2978
-#, fuzzy
 msgctxt "accel"
 msgid "move down and select"
-msgstr "later"
+msgstr "verplaats neerwaarts en selecteer"
 
 #: ../src/views/lighttable.c:2979
-#, fuzzy
 msgctxt "accel"
 msgid "move left and select"
-msgstr "linkerpaneel aan/uit"
+msgstr "verplaats naar links en selecteer"
 
 #: ../src/views/lighttable.c:2980
-#, fuzzy
 msgctxt "accel"
 msgid "move right and select"
-msgstr "rechterpaneel aan/uit"
+msgstr "verplaats naar rechts en selecteer"
 
 #: ../src/views/lighttable.c:2981
 msgctxt "accel"
@@ -16443,7 +16406,7 @@ msgstr "verplaats start en selecteer"
 #: ../src/views/lighttable.c:2982
 msgctxt "accel"
 msgid "move end and select"
-msgstr ""
+msgstr "verplaats naar einde en selecteer"
 
 #: ../src/views/lighttable.c:2984
 msgctxt "accel"
