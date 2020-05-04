@@ -84,7 +84,7 @@
       <title>scale</title>
       <para>
         This combobox toggles between <quote>linear</quote> and <quote>logarithmic</quote> view.
-        In the double logarithmic view more space is given to the lower values allowing a more
+        In the logarithmic view more space is given to the lower values allowing a more
         fine-grained adjustment of the shadows.
       </para>
     </sect5>
