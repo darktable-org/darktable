@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-04 16:39+0200\n"
-"PO-Revision-Date: 2020-05-04 18:52+0200\n"
+"PO-Revision-Date: 2020-05-04 19:35+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -304,9 +304,8 @@ msgstr ""
 "sterren classificatie"
 
 #: ../build/src/preferences_gen.h:1929 ../build/src/preferences_gen.h:2361
-#, fuzzy
 msgid "show scrollbars for central view"
-msgstr "toon schuifbalken voor een centrale weergave"
+msgstr "toon schuifbalken voor centrale weergave"
 
 #: ../build/src/preferences_gen.h:1942 ../build/src/preferences_gen.h:2374
 msgid "defines whether scrollbars should be displayed"
@@ -934,7 +933,7 @@ msgstr "database"
 
 #: ../build/src/preferences_gen.h:3265
 msgid "check for database maintenance"
-msgstr ""
+msgstr "controleer op database onderhoud"
 
 #: ../build/src/preferences_gen.h:3281
 msgctxt "preferences"
@@ -974,7 +973,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3335
 msgid "database fragmentation ratio threshold"
-msgstr ""
+msgstr "drempel database fragmentatieverhouding"
 
 #: ../build/src/preferences_gen.h:3356
 msgid ""
@@ -1856,7 +1855,7 @@ msgstr ""
 
 #: ../src/common/database.c:2141
 msgid "darktable cannot be started because the database is locked"
-msgstr ""
+msgstr "darktable kan niet worden gestart omdat de database is gesloten"
 
 #: ../src/common/database.c:2142 ../src/common/database.c:2314
 #: ../src/common/database.c:2559 ../src/common/database.c:2641
@@ -1936,9 +1935,8 @@ msgid "delete database"
 msgstr "verwijder database"
 
 #: ../src/common/database.c:2827
-#, fuzzy
 msgid "click later to be asked on next startup"
-msgstr "toets login button om te starten"
+msgstr "klik later om te worden gevraagd bij volgende start"
 
 #: ../src/common/database.c:2831
 msgid "click later to be asked when closing darktable"
@@ -2371,9 +2369,8 @@ msgid "select all"
 msgstr "selecteer alles"
 
 #: ../src/control/crawler.c:398
-#, fuzzy
 msgid "update database from selected xmp files"
-msgstr "overschrijf xmp bestanden"
+msgstr "update database van geselecteerde xmp bestanden"
 
 #: ../src/control/crawler.c:399
 msgid "overwrite selected xmp files"
@@ -2647,15 +2644,14 @@ msgid "delete images?"
 msgstr "afbeelding(en) verwijderen?"
 
 #: ../src/control/jobs/control_jobs.c:1522
-#, fuzzy
 msgid "do you really want to send selected image to trash?"
-msgstr "wilt u %d geselecteerde afbeelding verplaatsen naar de prullenbak?"
+msgstr ""
+"wilt u echt de geselecteerde afbeelding verplaatsen naar de prullenbak?"
 
 #: ../src/control/jobs/control_jobs.c:1523
-#, fuzzy
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
-"wilt u echt  %d geselecteerde afbeelding fysiek van de schijf verwijderen?"
+"wilt u echt de geselecteerde afbeelding fysiek van de schijf verwijderen?"
 
 #: ../src/control/jobs/control_jobs.c:1549
 msgid "move images"
@@ -3213,15 +3209,13 @@ msgstr "normaal & verschillen modus"
 
 #: ../src/develop/blend_gui.c:2593 ../src/develop/blend_gui.c:2651
 #: ../src/develop/blend_gui.c:2711
-#, fuzzy
 msgid "lighten modes"
-msgstr "helderheid"
+msgstr "verlichten modes"
 
 #: ../src/develop/blend_gui.c:2600 ../src/develop/blend_gui.c:2658
 #: ../src/develop/blend_gui.c:2718
-#, fuzzy
 msgid "darken modes"
-msgstr "overige modules"
+msgstr "verdonkeren modus"
 
 #: ../src/develop/blend_gui.c:2607 ../src/develop/blend_gui.c:2665
 #: ../src/develop/blend_gui.c:2725
@@ -3229,9 +3223,8 @@ msgid "contrast enhancing modes"
 msgstr "contrast verbeter modus"
 
 #: ../src/develop/blend_gui.c:2620 ../src/develop/blend_gui.c:2678
-#, fuzzy
 msgid "color channel modes"
-msgstr "kleurenschema"
+msgstr "kleur kanalen modus"
 
 #: ../src/develop/blend_gui.c:2754 ../src/iop/watermark.c:1540
 msgid "opacity"
@@ -4359,10 +4352,9 @@ msgid "toggle header"
 msgstr "header aan/uit"
 
 #: ../src/gui/gtk.c:1351
-#, fuzzy
 msgctxt "accel"
 msgid "toggle filmstrip and timeline"
-msgstr "wissel van fotoreeks of tijdslijn"
+msgstr "wissel van fotoreeks en tijdslijn"
 
 #: ../src/gui/gtk.c:1355
 msgctxt "accel"
@@ -7402,7 +7394,6 @@ msgid "contrast fulcrum"
 msgstr "contrast steunpunt"
 
 #: ../src/iop/colorbalance.c:305
-#, fuzzy
 msgctxt "accel"
 msgid "color control sliders"
 msgstr "kleur schuifregelaars"
@@ -8134,10 +8125,9 @@ msgid "select by"
 msgstr "selecteer op"
 
 #: ../src/iop/colorzones.c:169
-#, fuzzy
 msgctxt "accel"
 msgid "process mode"
-msgstr "werkwijze"
+msgstr "procesmodus"
 
 #: ../src/iop/colorzones.c:170 ../src/iop/rgbcurve.c:148
 #: ../src/iop/tonecurve.c:211
@@ -8261,10 +8251,9 @@ msgid "edge detection radius"
 msgstr "rand opsporingsstraal"
 
 #: ../src/iop/defringe.c:117
-#, fuzzy
 msgctxt "accel"
 msgid "operation mode"
-msgstr "methode"
+msgstr "bedrijfsmodus"
 
 #: ../src/iop/defringe.c:474
 msgid "operation mode"
@@ -8337,7 +8326,6 @@ msgid "method (xtrans)"
 msgstr "methode (xtrans)"
 
 #: ../src/iop/demosaic.c:184
-#, fuzzy
 msgctxt "accel"
 msgid "color smoothing"
 msgstr "kleuren afvlakken"
@@ -9547,10 +9535,9 @@ msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
 
 #: ../src/iop/gamma.c:43
-#, fuzzy
 msgctxt "modulename"
 msgid "display encoding"
-msgstr "toon selectie"
+msgstr "weergeven codering "
 
 #: ../src/iop/globaltonemap.c:102
 msgid "global tonemap"
@@ -10454,7 +10441,6 @@ msgid "lut 3D"
 msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:151
-#, fuzzy
 msgctxt "accel"
 msgid "application color space"
 msgstr "toepassingskleurruimte"
@@ -10531,19 +10517,19 @@ msgid "error - cube lut size is not defined"
 msgstr "error - cube lut size is niet gedefinieerd"
 
 #: ../src/iop/lut3d.c:817
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut invalid number line %d"
-msgstr "error - cube lut lines nummer is niet correct"
+msgstr "error - cube lut incorrect regelnummer %d"
 
 #: ../src/iop/lut3d.c:833
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr "error - cube lut lines nummer is niet correct"
+msgstr "error - cube lut regel nummer %d is niet correct, moet zijn %d"
 
 #: ../src/iop/lut3d.c:843
 #, c-format
 msgid "warning - cube lut %d out of range values [0,1]"
-msgstr ""
+msgstr "waarschuwing - cube lut %d waarden buiten bereik [0,1]"
 
 #: ../src/iop/lut3d.c:867
 #, c-format
@@ -10553,7 +10539,7 @@ msgstr "fout - ongeldig 3dl bestand: %s"
 #: ../src/iop/lut3d.c:896
 #, c-format
 msgid "error - the maximum shaper lut value %d is too low"
-msgstr ""
+msgstr "error - de maximale vormer lut waarde %d is te laag"
 
 #: ../src/iop/lut3d.c:946
 msgid "error - cube lut lines number is not correct"
@@ -10713,9 +10699,8 @@ msgid "negadoctor"
 msgstr "negatieven assistent"
 
 #: ../src/iop/negadoctor.c:435
-#, fuzzy
 msgid "color film"
-msgstr "kleur mode"
+msgstr "kleurenfilm"
 
 #: ../src/iop/negadoctor.c:449
 msgid "black and white film"
@@ -10730,9 +10715,8 @@ msgid "D min red component"
 msgstr "D min rood component"
 
 #: ../src/iop/negadoctor.c:1121
-#, fuzzy
 msgid "film stock"
-msgstr "fotoreeks"
+msgstr "filmmateriaal"
 
 #: ../src/iop/negadoctor.c:1122
 msgid "black and white"
@@ -10744,9 +10728,8 @@ msgid "color"
 msgstr "kleur"
 
 #: ../src/iop/negadoctor.c:1126
-#, fuzzy
 msgid "toogle on or off the color controls"
-msgstr "schakel samenvouwen bedieningpanelen"
+msgstr "schakel de kleurregelaars in of uit"
 
 #: ../src/iop/negadoctor.c:1133
 msgid "film properties"
@@ -10758,9 +10741,8 @@ msgstr "afdruk kenmerken"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:1144
-#, fuzzy
 msgid "color of the film base"
-msgstr "kleur van het film materiaal"
+msgstr "filmbasis kleur"
 
 #: ../src/iop/negadoctor.c:1152
 msgid "select color of film material from a swatch"
@@ -10800,9 +10782,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/negadoctor.c:1209
-#, fuzzy
 msgid "scanner exposure settings"
-msgstr "camerainstellingen"
+msgstr "scanner belichtingsinstellingen"
 
 #: ../src/iop/negadoctor.c:1213
 msgid "scan exposure bias"
@@ -10816,9 +10797,8 @@ msgstr ""
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:1223
-#, fuzzy
 msgid "shadows color cast"
-msgstr "aanpassen schaduwkleuren"
+msgstr "schaduwen kleurenzweem"
 
 #: ../src/iop/negadoctor.c:1232
 msgid "select color of shadows from a swatch"
@@ -10851,9 +10831,8 @@ msgstr "blauwe afstand schaduwen"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:1271
-#, fuzzy
 msgid "highlights white balance"
-msgstr "schaduwen en hooglichten balans"
+msgstr "hooglichten witbalans"
 
 #: ../src/iop/negadoctor.c:1280
 msgid "select color of illuminant from a swatch"
@@ -10890,9 +10869,8 @@ msgid "virtual paper properties"
 msgstr "virtuele papier eigenschappen"
 
 #: ../src/iop/negadoctor.c:1323
-#, fuzzy
 msgid "paper black (density correction)"
-msgstr "zwart niveau correctie"
+msgstr "papier zwart (dichtheidscorrectie)"
 
 #: ../src/iop/negadoctor.c:1327
 msgid ""
@@ -10927,9 +10905,8 @@ msgid "virtual print emulation"
 msgstr "virtuele afdruk emulatie"
 
 #: ../src/iop/negadoctor.c:1353
-#, fuzzy
 msgid "print exposure adjustment"
-msgstr "aanpassen helderheid"
+msgstr "belichtingsaanpassing afdrukken"
 
 #: ../src/iop/negadoctor.c:1357
 msgid ""
@@ -11885,10 +11862,9 @@ msgid "spot"
 msgstr "spot"
 
 #: ../src/iop/temperature.c:790
-#, fuzzy
 msgctxt "white balance"
 msgid "user modified"
-msgstr "zoek module"
+msgstr "door gebruiker gewijzigd"
 
 #: ../src/iop/temperature.c:967
 #, c-format
@@ -12084,7 +12060,6 @@ msgid "mask contrast compensation"
 msgstr "contrast compensatie masker"
 
 #: ../src/iop/toneequal.c:326
-#, fuzzy
 msgctxt "accel"
 msgid "luminance estimator"
 msgstr "luminantie taxateur"
@@ -12599,10 +12574,9 @@ msgid "y offset"
 msgstr "compenseer y"
 
 #: ../src/iop/watermark.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "marker"
-msgstr "bestand"
+msgstr "markeerstift"
 
 #: ../src/iop/watermark.c:316
 msgctxt "accel"
@@ -13598,9 +13572,8 @@ msgid "set mode to waveform"
 msgstr "stel mode in op waveform"
 
 #: ../src/libs/histogram.c:515
-#, fuzzy
 msgid "set mode to histogram"
-msgstr "verberg histogram"
+msgstr "stel modus in op histogram"
 
 #: ../src/libs/histogram.c:530
 msgid "set mode to linear"
@@ -14024,9 +13997,8 @@ msgstr ""
 "recursief importeren submappen, elke map wordt in een nieuwe map geplaatst"
 
 #: ../src/libs/import.c:539
-#, fuzzy
 msgid "metadata to be applied per default"
-msgstr "bij het importeren deze auteursnaam opnemen"
+msgstr "standaard toe te passen metadata"
 
 #: ../src/libs/import.c:548
 msgid "to be imported"
@@ -14276,7 +14248,7 @@ msgstr "toon OSD"
 
 #: ../src/libs/map_settings.c:95
 msgid "toggle the visibility of the map overlays"
-msgstr "kaartomslag zichtbaarheid aan/uit"
+msgstr "zichtbaarheid map overlays aan/uit"
 
 #: ../src/libs/map_settings.c:103
 msgid "map source"
@@ -15120,15 +15092,14 @@ msgid "take snapshot"
 msgstr "maak momentopname"
 
 #: ../src/libs/snapshots.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "maak momentopname"
+msgstr "schakel laatste momentopname"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
 msgid "S"
-msgstr ""
+msgstr "S"
 
 #. create take snapshot button
 #: ../src/libs/snapshots.c:382
@@ -15213,9 +15184,8 @@ msgid "edit the selected style in list above"
 msgstr "bewerk geselecteerde stijl uit bovenstaande lijst"
 
 #: ../src/libs/styles.c:476
-#, fuzzy
 msgid "removes the selected style in list above"
-msgstr "verwijder stijl"
+msgstr "verwijdert in bovenstaande lijst geselecteerde stijl"
 
 #. import button
 #: ../src/libs/styles.c:480 ../src/libs/tagging.c:2744
@@ -15702,7 +15672,7 @@ msgstr "sluit gegroepeerde afbeeldingen"
 
 #: ../src/libs/tools/global_toolbox.c:163
 msgid "click to change the type of overlays shown on thumbnails"
-msgstr ""
+msgstr "klik om het type overlay over de miniaturen te wijzigen"
 
 #: ../src/libs/tools/global_toolbox.c:179
 msgid "no overlays"
@@ -15710,15 +15680,15 @@ msgstr "geen overlays"
 
 #: ../src/libs/tools/global_toolbox.c:183
 msgid "overlays on mouse hover"
-msgstr "overlay bij gebruik van muisaanwijzer"
+msgstr "overlays bij gebruik muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:187
 msgid "extended overlays on mouse hover"
-msgstr ""
+msgstr "uitgebreide overlays bij muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:190
 msgid "permanent overlays"
-msgstr "blijvende overlay"
+msgstr "permanente overlays"
 
 #: ../src/libs/tools/global_toolbox.c:194
 msgid "permanent extended overlays"
@@ -15726,7 +15696,7 @@ msgstr "permanent uitgebreide overlays"
 
 #: ../src/libs/tools/global_toolbox.c:198
 msgid "permanent overlays extended on mouse hover"
-msgstr ""
+msgstr "permanente uitgebreide overlays bij muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:205
 msgid "enable this, then click on a control element to see its online help"
@@ -15776,17 +15746,17 @@ msgstr "geen overlays"
 #: ../src/libs/tools/global_toolbox.c:419
 msgctxt "accel"
 msgid "overlays on mouse hover"
-msgstr "overlay bij gebruik van muisaanwijzer"
+msgstr "overlays bij gebruik muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:420
 msgctxt "accel"
 msgid "extended overlays on mouse hover"
-msgstr ""
+msgstr "uitgebreide overlays bij muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:421
 msgctxt "accel"
 msgid "permanent overlays"
-msgstr "continue overlay"
+msgstr "permanente overlays"
 
 #: ../src/libs/tools/global_toolbox.c:422
 msgctxt "accel"
@@ -15935,7 +15905,6 @@ msgid "display a second darkroom image window"
 msgstr "toon een tweede scherm module ontwikkelen"
 
 #: ../src/views/darkroom.c:2021
-#, fuzzy
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "schakel ISO 12646 kleur beoordelingsvoorwaarden"
 
@@ -16414,10 +16383,9 @@ msgid "align images to grid"
 msgstr "uitlijnen afbeeldingen op raster"
 
 #: ../src/views/lighttable.c:2985
-#, fuzzy
 msgctxt "accel"
 msgid "reset first image offset"
-msgstr "tijdsverschil"
+msgstr "reset eerste beeldverschuiving"
 
 #: ../src/views/lighttable.c:2986
 msgctxt "accel"
