@@ -1194,6 +1194,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.control->accel_remap_str)
   {
+    const guint event_mods = dt_gui_translated_key_state(event);
+
     // First locate the accel list entry
     g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
     GSList *remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
@@ -1209,7 +1211,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
       if (a != accel_current && gtk_accel_map_lookup_entry(a->path, &key))
       {
         if (key.accel_key == gdk_keyval_to_lower(event->keyval) &&
-            key.accel_mods == (event->state & KEY_STATE_MASK) &&
+            key.accel_mods == event_mods &&
             !(a->local && accel_current->local && strcmp(a->module, accel_current->module)) &&
             (a->views & accel_current->views) != 0)
         {
@@ -1224,14 +1226,14 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
     {
       // no conflict
       gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
-                                 event->state & KEY_STATE_MASK, TRUE);
+                                 event_mods, TRUE);
     }
     else
     {
       // we ask for confirmation
       GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
       gchar *accel_txt
-          = gtk_accelerator_get_label(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
+          = gtk_accelerator_get_label(gdk_keyval_to_lower(event->keyval), event_mods);
       gchar txt[512] = { 0 };
       if(g_str_has_prefix(accel_conflict->translated_path, "<Darktable>/"))
         g_strlcpy(txt, accel_conflict->translated_path + 12, sizeof(txt));
@@ -1252,7 +1254,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
       {
         // Change the accel map entry
         if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
-                                      event->state & KEY_STATE_MASK, TRUE))
+                                      event_mods, TRUE))
         {
           // Then remove conflicts
           g_slist_foreach(darktable.control->accelerator_list, delete_matching_accels, (gpointer)(accel_current));
