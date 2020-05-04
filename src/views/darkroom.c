@@ -758,7 +758,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     return;
   }
 
-  // get current plugin in focus before defocus 
+  // get current plugin in focus before defocus
   gchar *active_plugin = NULL;
   if(darktable.develop->gui_module)
   {
@@ -928,7 +928,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   */
   darktable.gui->reset = reset;
 
-  /* Now we can request focus again and write a safe plugins/darkroom/active */ 
+  /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
   {
     gboolean valid = FALSE;
@@ -944,7 +944,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       }
       modules = g_list_next(modules);
     }
-    if (!valid) 
+    if (!valid)
     {
       dt_conf_set_string("plugins/darkroom/active", "");
     }
@@ -1954,7 +1954,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
   if(darktable.gui->reset) return FALSE;
 
   dt_develop_t *dev = (dt_develop_t *)data;
-  dt_iop_module_t *mod = dev->gui_module; 
+  dt_iop_module_t *mod = dev->gui_module;
 
   //retouch and spot removal module use masks differently and have different buttons associated
   //keep the shortcuts independent
