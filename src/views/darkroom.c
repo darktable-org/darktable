@@ -758,17 +758,18 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     return;
   }
 
-  // get last active plugin, make sure focus out is called:
-  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
-  dt_iop_request_focus(NULL);
+  // get current plugin in focus before defocus 
+  gchar *active_plugin = NULL;
+  if(darktable.develop->gui_module)
+  {
+    active_plugin = g_strdup(darktable.develop->gui_module->op);
+  }
+
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
 
-  // store last active plugin:
-  if(darktable.develop->gui_module)
-    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
-  else
-    dt_conf_set_string("plugins/darkroom/active", "");
+  dt_iop_request_focus(NULL);
+
   g_assert(dev->gui_attached);
 
   // commit image ops to db
@@ -913,18 +914,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  if(active_plugin)
-  {
-    modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
-      modules = g_list_next(modules);
-    }
-    g_free(active_plugin);
-  }
-
   dt_dev_masks_list_change(dev);
 
   /* last set the group to update visibility of iop modules for new pipe */
@@ -933,9 +922,34 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   /* cleanup histograms */
   g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
 
-  // make signals work again, but only after focus event,
-  // to avoid crop/rotate for example to add another history item.
+  /* make signals work again, we can't restore the active_plugin while signals
+     are blocked due to implementation of dt_iop_request_focus so we do it now
+     A double history entry is not generated.
+  */
   darktable.gui->reset = reset;
+
+  /* Now we can request focus again and write a safe plugins/darkroom/active */ 
+  if(active_plugin)
+  {
+    gboolean valid = FALSE;
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin))
+      {
+        valid = TRUE;
+        dt_conf_set_string("plugins/darkroom/active", active_plugin);
+        dt_iop_request_focus(module);
+      }
+      modules = g_list_next(modules);
+    }
+    if (!valid) 
+    {
+      dt_conf_set_string("plugins/darkroom/active", "");
+    }
+    g_free(active_plugin);
+  }
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
