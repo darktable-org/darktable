@@ -30,6 +30,7 @@
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/history.h"
+#include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -661,12 +662,7 @@ int try_enter(dt_view_t *self)
     sqlite3_finalize(stmt);
 
     // Leave as selected only the image being edited
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    dt_selection_select_single(darktable.selection, selected);
   }
 
   if(selected < 0)
@@ -979,6 +975,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int im
     // switch images in darkroom mode:
     const dt_view_t *self = (dt_view_t *)user_data;
     dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    dt_selection_select_single(darktable.selection, imgid);
 
     dt_dev_change_image(dev, imgid);
     // move filmstrip

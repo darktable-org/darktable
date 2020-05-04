@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -67,6 +68,8 @@ static void _film_strip_activated(const int imgid, void *data)
   dt_print_t *prt = (dt_print_t *)self->data;
 
   prt->image_id = imgid;
+
+  dt_selection_select_single(darktable.selection, imgid);
 
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
 
