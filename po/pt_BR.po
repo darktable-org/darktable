@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-01 12:20-0300\n"
-"PO-Revision-Date: 2020-05-02 09:29-0300\n"
+"PO-Revision-Date: 2020-05-03 10:16-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -508,7 +508,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "interpolação cromática ampliada modo sala escura"
+msgstr "interpolação cromática para zoom na sala escura"
 
 #: ../build/src/preferences_gen.h:2393
 msgctxt "preferences"
@@ -3183,7 +3183,7 @@ msgstr "cor"
 #: ../src/develop/blend_gui.c:2486
 msgctxt "blendmode"
 msgid "coloradjustment"
-msgstr "ajuste de cor"
+msgstr "ajuste de cores"
 
 #: ../src/develop/blend_gui.c:2488
 msgctxt "blendmode"
@@ -8388,7 +8388,7 @@ msgstr "suavização de cor"
 #: ../src/iop/demosaic.c:185
 msgctxt "accel"
 msgid "match greens"
-msgstr "coincidir verdes"
+msgstr "ajustar verdes"
 
 #: ../src/iop/demosaic.c:4926
 #, c-format
@@ -9586,7 +9586,7 @@ msgstr "encoding de tela"
 
 #: ../src/iop/globaltonemap.c:102
 msgid "global tonemap"
-msgstr "mapa de tom global"
+msgstr "mapemento tonal global"
 
 #: ../src/iop/globaltonemap.c:122
 msgctxt "accel"
@@ -9609,19 +9609,17 @@ msgstr "operador"
 
 #: ../src/iop/globaltonemap.c:734
 msgid "the global tonemap operator"
-msgstr "o operador do mapa de tom global"
+msgstr "operador de mapeamento tonal global"
 
 #: ../src/iop/globaltonemap.c:740
 msgid "bias"
-msgstr "tendência"
+msgstr "viés"
 
 #: ../src/iop/globaltonemap.c:741
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
-msgstr ""
-"a tendência para o mapeador de tom controla a linearidade, quanto mais alto "
-"mais detalhes nos pretos"
+msgstr "a tendência para o mapeador tonal controla a linearidade, quanto mais alto mais detalhes nos pretos"
 
 #: ../src/iop/globaltonemap.c:749
 msgid "target"
@@ -9629,7 +9627,7 @@ msgstr "alvo"
 
 #: ../src/iop/globaltonemap.c:750
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr "a luz alvo para o mapeador de tom especificado em cd/m2"
+msgstr "a luz alvo para o mapeador tonal especificado em cd/m2"
 
 #: ../src/iop/graduatednd.c:71
 msgid "neutral gray ND2 (soft)"

@@ -158,6 +158,11 @@ static int import_images(lua_State *L)
       return luaL_error(L, "error while importing");
     }
     luaA_push(L, dt_lua_image_t, &result);
+    // force refresh of thumbtable view
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(result)));
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+    dt_control_queue_redraw_center();
+
   }
   g_free(full_name);
   return 1;
