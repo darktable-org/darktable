@@ -224,19 +224,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
 
-  // set focus to the search module text box
-  dt_accel_path_view(path, sizeof(path), "darkroom", "search modules");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_search_modules_focus);
-
   // Global
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
-
-  dt_accel_path_global(path, sizeof(path), "zoom in");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_in);
-
-  dt_accel_path_global(path, sizeof(path), "zoom out");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_out);
 
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
@@ -1378,10 +1368,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_accel_connect_global("switch view",
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
-
-  // Global zoom in & zoom out
-  dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
-  dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // accels window
   dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);

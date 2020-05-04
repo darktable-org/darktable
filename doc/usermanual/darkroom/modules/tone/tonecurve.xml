@@ -213,26 +213,14 @@
         abscissa and ordinates axes.
       </para>
       <para>
-        The <quote>log-log (x, y)</quote> scale will compress the high values and dilate
+        The <quote>log</quote> scale will compress the high values and dilate
         the low values, on both the abcissa and the axis of ordinates, so that the nodes in lowlights
         get more space on the graph and can be controlled more clearly.
       </para>
       <para>
-        The <quote>semi-log (x)</quote> is similar to the log-log scale, but the axis of ordinates
-        is left linear and only the abcissa is logarithmically scaled. This is useful
-        when you want to draw a purely exponential function: in semi-log (x) scale, exponential
-        become identity lines.
-      </para>
-      <para>
-        The <quote>semi-log (y)</quote> is similar to the log-log scale, but the abscissa
-        axis is left linear and only the axis of ordinates is logarithmically scaled. This is useful
-        when you want to draw a purely logarithmic function: in semi-log (y) scale, logarithms
-        become identity lines.
-      </para>
-      <para>
-        When using non-linear scales, a <quote>base of the logarithm</quote> slider appears
-        that lets you control the amount of compression/dilatation operated by the logarithmic
-        scales. If you draw purely exponential or logarithmic functions from identity lines,
+        When using the logarithmic scale, a <quote>base of the logarithm</quote> slider appears
+        that lets you control the amount of compression/dilatation operated by the scale.
+        If you draw purely exponential or logarithmic functions from identity lines,
         setting this values defines the base of such functions.
       </para>
     </sect5>

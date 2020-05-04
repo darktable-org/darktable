@@ -2784,8 +2784,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(!darktable.control->key_accelerators_on) return 0;
 
-  int zoom = get_zoom();
-
   const dt_lighttable_layout_t layout = get_layout();
 
   if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
@@ -2935,28 +2933,31 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       return TRUE;
     }
   }
-
-  // zoom out key
-  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
-  {
-    zoom--;
-    if(zoom < 1) zoom = 1;
-
-    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
-    return 1;
-  }
-
-  // zoom in key
-  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
-  {
-    zoom++;
-    if(zoom > 2 * DT_LIGHTTABLE_MAX_ZOOM) zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
-
-    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
-    return 1;
-  }
-
   return 0;
+}
+
+static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  int zoom = get_zoom();
+
+  zoom--;
+  if(zoom < 1) zoom = 1;
+
+  dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+  return TRUE;
+}
+
+static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  int zoom = get_zoom();
+
+  zoom++;
+  if(zoom > 2 * DT_LIGHTTABLE_MAX_ZOOM) zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
+
+  dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+  return TRUE;
 }
 
 void init_key_accels(dt_view_t *self)
@@ -3000,6 +3001,10 @@ void init_key_accels(dt_view_t *self)
   // zoom for full preview
   dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
+
+  // zoom in/out
+  dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -3115,6 +3120,12 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "preview zoom 100%", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_preview_zoom_fit), (gpointer)self, NULL);
   dt_accel_connect_view(self, "preview zoom fit", closure);
+
+  // zoom in/out
+  closure = g_cclosure_new(G_CALLBACK(zoom_in_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom in", closure);
+  closure = g_cclosure_new(G_CALLBACK(zoom_out_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom out", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
