@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-04 16:39+0200\n"
-"PO-Revision-Date: 2020-05-04 19:35+0200\n"
+"POT-Creation-Date: 2020-05-04 19:41+0200\n"
+"PO-Revision-Date: 2020-05-04 19:59+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -153,13 +153,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1640
 msgid "sort collection recent to older"
-msgstr ""
+msgstr "sorteer collectie van recent naar ouder"
 
 #: ../build/src/preferences_gen.h:1653
 msgid ""
 "changes the default collections-list order for folders, times and dates to "
 "run from recent to older"
 msgstr ""
+"wijzigt de standaardvolgorde voor mappen, tijden en datums om van recent "
+"naar ouder te gaan"
 
 #: ../build/src/preferences_gen.h:1661
 msgid "high quality thumb processing from size"
@@ -221,17 +223,19 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1741
 msgid "delimiters for sizes categories"
-msgstr ""
+msgstr "scheidingstekens voor grootte categorieën"
 
 #: ../build/src/preferences_gen.h:1758
 msgid ""
 "sizes categories are used to be able to set different overlays and css "
 "values depending of the size of the thumbnail."
 msgstr ""
+"groottecategorieën worden gebruikt om verschillende overlays en css-waarden "
+"in te stellen, afhankelijk van de grootte van de miniatuur"
 
 #: ../build/src/preferences_gen.h:1766
 msgid "pattern for the thumbnail extended overlay text"
-msgstr ""
+msgstr "patroon voor de uitgebreide miniaturen overlay tekst"
 
 #: ../build/src/preferences_gen.h:1787 ../build/src/preferences_gen.h:1816
 #: ../build/src/preferences_gen.h:2153
@@ -240,7 +244,7 @@ msgstr "lees de handleiding om alle mogelijke labels te ontdekken"
 
 #: ../build/src/preferences_gen.h:1795
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
+msgstr "patroon voor de miniaturen tooltip (leeg om uit te schakelen)"
 
 #: ../build/src/preferences_gen.h:1824
 msgid "use single-click in the collect panel"
@@ -680,16 +684,15 @@ msgid "auto-apply sharpen"
 msgstr "verscherpen automatisch toepassen"
 
 #: ../build/src/preferences_gen.h:2769
-#, fuzzy
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
 "you should disable this option if you use one of those more recent cameras "
 "or sharpen your images with other means. (need a restart)"
 msgstr ""
 "deze toegevoegde verscherping wordt niet aanbevolen voor camera's zonder een "
-"lowpass filter, standaard wordt geen verscherping toegepast omdat de "
-"nieuwere camera's doorgaans geen lowpass filter bezitten (herstarten "
-"noodzakelijke)"
+"lowpass filter, u moet deze optie uitschakelen als u een van die recentere "
+"camera's gebruikt of uw afbeeldingen met andere middelen verscherpt "
+"(herstarten noodzakelijk)"
 
 #: ../build/src/preferences_gen.h:2796
 msgid "security"
@@ -970,6 +973,8 @@ msgid ""
 "this option indicates when to check database fragmentation and perform "
 "maintenance"
 msgstr ""
+"deze optie geeft aan wanneer databasefragmentatie moet worden gecontroleerd "
+"en onderhoud moet worden uitgevoerd"
 
 #: ../build/src/preferences_gen.h:3335
 msgid "database fragmentation ratio threshold"
@@ -980,6 +985,8 @@ msgid ""
 "fragmentation ratio above which to ask or carry out automatically database "
 "maintenance"
 msgstr ""
+"fragmentatieverhouding waarboven u kunt vragen of automatisch "
+"databaseonderhoud moet uitvoeren"
 
 #: ../build/src/preferences_gen.h:3364
 msgid "xmp"
@@ -1509,19 +1516,19 @@ msgstr "module"
 
 #: ../src/common/collection.c:637
 msgid "module order"
-msgstr "modulen volgorde"
+msgstr "module volgorde"
 
 #: ../src/common/collection.c:1355 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:369 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2534
 #: ../src/iop/temperature.c:1387 ../src/libs/collect.c:1419
-#: ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2358
 msgid "red"
 msgstr "rood"
 
 #: ../src/common/collection.c:1357 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1419
-#: ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2360
 msgid "yellow"
 msgstr "geel"
 
@@ -1529,7 +1536,7 @@ msgstr "geel"
 #: ../src/iop/bilateral.cc:370 ../src/iop/channelmixer.c:459
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2541
 #: ../src/iop/temperature.c:1375 ../src/iop/temperature.c:1388
-#: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2345
+#: ../src/libs/collect.c:1419 ../src/views/darkroom.c:2359
 msgid "green"
 msgstr "groen"
 
@@ -1597,7 +1604,7 @@ msgid "export profile"
 msgstr "export profiel"
 
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1634
-#: ../src/views/darkroom.c:2222
+#: ../src/views/darkroom.c:2236
 msgid "softproof profile"
 msgstr "softproofprofiel"
 
@@ -3973,7 +3980,7 @@ msgstr "avondzon"
 msgid "underwater"
 msgstr "onderwater"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2119
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2133
 msgid "black & white"
 msgstr "zwart en wit"
 
@@ -4267,140 +4274,129 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1283
+#: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tethering weergave"
 
-#: ../src/gui/gtk.c:1284
+#: ../src/gui/gtk.c:1274
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "weergave bibliotheek"
 
-#: ../src/gui/gtk.c:1285
+#: ../src/gui/gtk.c:1275
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "weergave ontwikkelen"
 
-#: ../src/gui/gtk.c:1286
+#: ../src/gui/gtk.c:1276
 msgctxt "accel"
 msgid "map view"
 msgstr "bekijk kaart"
 
-#: ../src/gui/gtk.c:1287
+#: ../src/gui/gtk.c:1277
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "presentatieweergave"
 
-#: ../src/gui/gtk.c:1288
+#: ../src/gui/gtk.c:1278
 msgctxt "accel"
 msgid "print view"
 msgstr "printer weergave"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1311
+#: ../src/gui/gtk.c:1301
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1316
+#: ../src/gui/gtk.c:1306
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:1317
+#: ../src/gui/gtk.c:1307
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1325
+#: ../src/gui/gtk.c:1315
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
-#: ../src/gui/gtk.c:1327
+#: ../src/gui/gtk.c:1317
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
 msgstr "schakel samenvouwen bedieningpanelen"
 
-#: ../src/gui/gtk.c:1331
+#: ../src/gui/gtk.c:1321
 msgctxt "accel"
 msgid "toggle left panel"
 msgstr "linkerpaneel aan/uit"
 
-#: ../src/gui/gtk.c:1335
+#: ../src/gui/gtk.c:1325
 msgctxt "accel"
 msgid "toggle right panel"
 msgstr "rechterpaneel aan/uit"
 
-#: ../src/gui/gtk.c:1339
+#: ../src/gui/gtk.c:1329
 msgctxt "accel"
 msgid "toggle top panel"
 msgstr "toppaneel aan/uit"
 
-#: ../src/gui/gtk.c:1343
+#: ../src/gui/gtk.c:1333
 msgctxt "accel"
 msgid "toggle bottom panel"
 msgstr "bodempaneel aan/uit"
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1348
+#: ../src/gui/gtk.c:1338
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
-#: ../src/gui/gtk.c:1351
+#: ../src/gui/gtk.c:1341
 msgctxt "accel"
 msgid "toggle filmstrip and timeline"
 msgstr "wissel van fotoreeks en tijdslijn"
 
-#: ../src/gui/gtk.c:1355
+#: ../src/gui/gtk.c:1345
 msgctxt "accel"
 msgid "toggle top toolbar"
 msgstr "top werkbalk aan/uit"
 
-#: ../src/gui/gtk.c:1359
+#: ../src/gui/gtk.c:1349
 msgctxt "accel"
 msgid "toggle bottom toolbar"
 msgstr "onderste werkbalk aan/uit"
 
-#: ../src/gui/gtk.c:1363
+#: ../src/gui/gtk.c:1353
 msgctxt "accel"
 msgid "toggle all top panels"
 msgstr "alle top werkbalken aan/uit"
 
-#: ../src/gui/gtk.c:1367
+#: ../src/gui/gtk.c:1357
 msgctxt "accel"
 msgid "toggle all bottom panels"
 msgstr "alle onderste werkbalken aan/uit"
 
 #. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1372
+#: ../src/gui/gtk.c:1362
 msgctxt "accel"
 msgid "toggle focus peaking"
 msgstr "focus piek aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:1377
+#: ../src/gui/gtk.c:1367
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
 
-#. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1383 ../src/libs/tools/lighttable.c:214
-msgctxt "accel"
-msgid "zoom in"
-msgstr "inzoomen"
-
-#: ../src/gui/gtk.c:1384 ../src/libs/tools/lighttable.c:215
-msgctxt "accel"
-msgid "zoom out"
-msgstr "uitzoomen"
-
 #. accels window
-#: ../src/gui/gtk.c:1387
+#: ../src/gui/gtk.c:1373
 msgctxt "accel"
 msgid "show accels window"
 msgstr "toon accels window"
@@ -4786,6 +4782,8 @@ msgid ""
 "click or press enter to search\n"
 "click or press enter again to cycle through results"
 msgstr ""
+"klik of druk op enter om te zoeken\n"
+"klik of druk nogmaals op enter om door de resultaten te bladeren"
 
 #. export button
 #: ../src/gui/preferences.c:799 ../src/libs/styles.c:487
@@ -6519,7 +6517,7 @@ msgstr "modus"
 #: ../src/iop/rgblevels.c:1033 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:703 ../src/libs/image.c:510
 #: ../src/libs/print_settings.c:1515 ../src/libs/styles.c:448
-#: ../src/views/darkroom.c:2054
+#: ../src/views/darkroom.c:2068
 msgid "mode"
 msgstr "modus"
 
@@ -7970,30 +7968,30 @@ msgstr "voorgenomen output"
 
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:686
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:2197 ../src/views/darkroom.c:2205
-#: ../src/views/lighttable.c:3451 ../src/views/lighttable.c:3459
+#: ../src/views/darkroom.c:2211 ../src/views/darkroom.c:2219
+#: ../src/views/lighttable.c:3462 ../src/views/lighttable.c:3470
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:687
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:2198 ../src/views/darkroom.c:2206
-#: ../src/views/lighttable.c:3452 ../src/views/lighttable.c:3460
+#: ../src/views/darkroom.c:2212 ../src/views/darkroom.c:2220
+#: ../src/views/lighttable.c:3463 ../src/views/lighttable.c:3471
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:688
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:2199 ../src/views/darkroom.c:2207
-#: ../src/views/lighttable.c:3453 ../src/views/lighttable.c:3461
+#: ../src/views/darkroom.c:2213 ../src/views/darkroom.c:2221
+#: ../src/views/lighttable.c:3464 ../src/views/lighttable.c:3472
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:885 ../src/libs/export.c:689
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
-#: ../src/views/darkroom.c:2200 ../src/views/darkroom.c:2208
-#: ../src/views/lighttable.c:3454 ../src/views/lighttable.c:3462
+#: ../src/views/darkroom.c:2214 ../src/views/darkroom.c:2222
+#: ../src/views/lighttable.c:3465 ../src/views/lighttable.c:3473
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -8945,7 +8943,7 @@ msgstr ""
 "schakelen"
 
 #: ../src/iop/exposure.c:904 ../src/iop/highlights.c:1099
-#: ../src/views/darkroom.c:2082
+#: ../src/views/darkroom.c:2096
 msgid "clipping threshold"
 msgstr "drempel clipping"
 
@@ -10164,7 +10162,7 @@ msgstr "zwartpunt"
 msgid "gray percentile"
 msgstr "grijs percentiel"
 
-#: ../src/iop/levels.c:759 ../src/views/darkroom.c:2343
+#: ../src/iop/levels.c:759 ../src/views/darkroom.c:2357
 msgid "gray"
 msgstr "grijs"
 
@@ -10548,6 +10546,7 @@ msgstr "error - cube lut lines nummer is niet correct"
 #: ../src/iop/lut3d.c:962
 msgid "error - the maximum lut value does not match any valid bit depth"
 msgstr ""
+"error - de maximale lut-waarde komt overeen met geen enkele geldige bitdiepte"
 
 #: ../src/iop/lut3d.c:1600
 msgid "Lut root folder not defined"
@@ -10580,27 +10579,24 @@ msgid "Select file outside Lut root folder is not allowed"
 msgstr "bestandsselectie buiten de Lut hoofdmap is niet toegestaan"
 
 #: ../src/iop/lut3d.c:1733
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
 "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
-"selecteer een png (haldclut), een kubus of een gmz (gecomprimeerd lut) "
-"bestand LET OP: De 3D lut-map moet zijn ingesteld in voorkeuren / "
-"kernopties / diversen voordat u het lut-bestand kiest\n"
+"selecteer een png (haldclut), een kubus, een 3dl of een gmz (gecomprimeerd "
+"lut) bestand, let op: 3D lut-map moet zijn ingesteld in voorkeuren / "
+"kernopties / diversen voordat het lut-bestand wordt gekozen\n"
 " "
 
 #: ../src/iop/lut3d.c:1737
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/core options/miscellaneous before choosing the lut file"
 msgstr ""
-"selecteer een png (haldclut) of een kubusbestand LET OP: 3D lutmap moet "
-"worden ingesteld in voorkeuren / kernopties / diversen voordat u het lut-"
-"bestand kiest\n"
-" "
+"selecteer een png (haldclut) of een kubus of een 3dl bestand,let op: 3D "
+"lutmap moet worden ingesteld in voorkeuren / kernopties / diversen voordat "
+"het lut-bestand wordt gekozen"
 
 #: ../src/iop/lut3d.c:1748
 msgid ""
@@ -11876,11 +11872,11 @@ msgstr "`%s' kleuren matrix is niet gevonden"
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1376 ../src/views/darkroom.c:2348
+#: ../src/iop/temperature.c:1376 ../src/views/darkroom.c:2362
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1377 ../src/views/darkroom.c:2347
+#: ../src/iop/temperature.c:1377 ../src/views/darkroom.c:2361
 msgid "cyan"
 msgstr "cyaan"
 
@@ -13270,6 +13266,8 @@ msgstr "maskers opslaan"
 #: ../src/libs/export.c:651
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
+"sla maskers op als lagen in geëxporteerde afbeeldingen. werkt alleen voor "
+"sommige formaten."
 
 #: ../src/libs/export.c:664 ../src/libs/export.c:685
 #: ../src/libs/print_settings.c:1411 ../src/libs/print_settings.c:1458
@@ -13317,7 +13315,7 @@ msgstr "bewerk exporteer details metagegevens"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1368 ../src/libs/styles.c:72
-#: ../src/views/darkroom.c:3510
+#: ../src/views/darkroom.c:3532
 msgctxt "accel"
 msgid "export"
 msgstr "exporteer"
@@ -14330,6 +14328,10 @@ msgid ""
 "import module\n"
 "neither will it be exported"
 msgstr ""
+"vink aan als de bijbehorende metadata voor u niet interessant zijn\n"
+"het wordt verborgen voor de metadata-editor, verzameling, "
+"afbeeldingsinformatie en importmodule\n"
+"het zal ook niet worden geëxporteerd"
 
 #: ../src/libs/metadata.c:442 ../src/libs/tagging.c:1459
 #: ../src/libs/tagging.c:1598
@@ -14340,6 +14342,8 @@ msgstr "persoonlijk"
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
+"vink aan als u deze informatie privé wilt houden (niet geëxporteerd met "
+"afbeeldingen)"
 
 #: ../src/libs/metadata.c:519
 msgctxt "accel"
@@ -15802,6 +15806,19 @@ msgctxt "accel"
 msgid "zoom max"
 msgstr "volledig inzoomen"
 
+#. zoom in/out
+#: ../src/libs/tools/lighttable.c:214 ../src/views/darkroom.c:3528
+#: ../src/views/lighttable.c:3006
+msgctxt "accel"
+msgid "zoom in"
+msgstr "inzoomen"
+
+#: ../src/libs/tools/lighttable.c:215 ../src/views/darkroom.c:3529
+#: ../src/views/lighttable.c:3007
+msgctxt "accel"
+msgid "zoom out"
+msgstr "uitzoomen"
+
 #: ../src/libs/tools/lighttable.c:216
 msgctxt "accel"
 msgid "zoom min"
@@ -15878,37 +15895,37 @@ msgstr "gammacontrole"
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/views/darkroom.c:1133
+#: ../src/views/darkroom.c:1147
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 "voorkeuren, door gebruiker gedefinieerd, voor favoriete modules ontbreken"
 
-#: ../src/views/darkroom.c:1138
+#: ../src/views/darkroom.c:1152
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "stijl '%s\" is toegepast op de huidige afbeelding"
 
-#: ../src/views/darkroom.c:1250
+#: ../src/views/darkroom.c:1264
 msgid "no styles have been created yet"
 msgstr "er is nog niet eerder een stijl aangemaakt"
 
-#: ../src/views/darkroom.c:1990
+#: ../src/views/darkroom.c:2004
 msgid "quick access to presets of your favorites"
 msgstr "snelle toegang tot de voorkeuren van uw favorieten"
 
-#: ../src/views/darkroom.c:1999
+#: ../src/views/darkroom.c:2013
 msgid "quick access for applying any of your styles"
 msgstr "snelle toegang om een stijl toe te passen"
 
-#: ../src/views/darkroom.c:2012
+#: ../src/views/darkroom.c:2026
 msgid "display a second darkroom image window"
 msgstr "toon een tweede scherm module ontwikkelen"
 
-#: ../src/views/darkroom.c:2021
+#: ../src/views/darkroom.c:2035
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "schakel ISO 12646 kleur beoordelingsvoorwaarden"
 
-#: ../src/views/darkroom.c:2031
+#: ../src/views/darkroom.c:2045
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -15916,47 +15933,47 @@ msgstr ""
 "raw overbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:2055
+#: ../src/views/darkroom.c:2069
 msgid "mark with CFA color"
 msgstr "markeer met CFA kleur"
 
-#: ../src/views/darkroom.c:2056
+#: ../src/views/darkroom.c:2070
 msgid "mark with solid color"
 msgstr "markeer met een vastgestelde kleur"
 
-#: ../src/views/darkroom.c:2057
+#: ../src/views/darkroom.c:2071
 msgid "false color"
 msgstr "fout gekleurde pixels"
 
-#: ../src/views/darkroom.c:2059
+#: ../src/views/darkroom.c:2073
 msgid "select how to mark the clipped pixels"
 msgstr "bepaal hoe geclipte pixels worden gemarkeerd"
 
-#: ../src/views/darkroom.c:2066 ../src/views/darkroom.c:2118
+#: ../src/views/darkroom.c:2080 ../src/views/darkroom.c:2132
 msgid "color scheme"
 msgstr "kleurenschema"
 
-#: ../src/views/darkroom.c:2067
+#: ../src/views/darkroom.c:2081
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rood"
 
-#: ../src/views/darkroom.c:2068
+#: ../src/views/darkroom.c:2082
 msgctxt "solidcolor"
 msgid "green"
 msgstr "groen"
 
-#: ../src/views/darkroom.c:2069
+#: ../src/views/darkroom.c:2083
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/views/darkroom.c:2070
+#: ../src/views/darkroom.c:2084
 msgctxt "solidcolor"
 msgid "black"
 msgstr "zwart"
 
-#: ../src/views/darkroom.c:2074
+#: ../src/views/darkroom.c:2088
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -15964,7 +15981,7 @@ msgstr ""
 "kies een vaste kleur voor indicatie van overbelichting\n"
 "werkt alleen in de stand: markeer met een vaste kleur"
 
-#: ../src/views/darkroom.c:2084
+#: ../src/views/darkroom.c:2098
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -15974,7 +15991,7 @@ msgstr ""
 "1.0 - wit niveau\n"
 "0.0 - zwart niveau"
 
-#: ../src/views/darkroom.c:2095
+#: ../src/views/darkroom.c:2109
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -15982,35 +15999,35 @@ msgstr ""
 "over- en onderbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:2120
+#: ../src/views/darkroom.c:2134
 msgid "red & blue"
 msgstr "rood en blauw"
 
-#: ../src/views/darkroom.c:2121
+#: ../src/views/darkroom.c:2135
 msgid "purple & green"
 msgstr "paars en groen"
 
-#: ../src/views/darkroom.c:2123
+#: ../src/views/darkroom.c:2137
 msgid "select colors to indicate over/under exposure"
 msgstr "kies kleuren voor weergave over/onderbelichting"
 
-#: ../src/views/darkroom.c:2132
+#: ../src/views/darkroom.c:2146
 msgid "lower threshold"
 msgstr "drempel onderkant"
 
-#: ../src/views/darkroom.c:2133
+#: ../src/views/darkroom.c:2147
 msgid "threshold of what shall be considered underexposed"
 msgstr "drempel voor wat moet worden beschouwd als onderbelicht"
 
-#: ../src/views/darkroom.c:2141
+#: ../src/views/darkroom.c:2155
 msgid "upper threshold"
 msgstr "drempel bovenkant"
 
-#: ../src/views/darkroom.c:2142
+#: ../src/views/darkroom.c:2156
 msgid "threshold of what shall be considered overexposed"
 msgstr "drempel voor wat moet worden beschouwd als overbelicht"
 
-#: ../src/views/darkroom.c:2153
+#: ../src/views/darkroom.c:2167
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -16018,7 +16035,7 @@ msgstr ""
 "softproofing in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:2167
+#: ../src/views/darkroom.c:2181
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -16026,221 +16043,221 @@ msgstr ""
 "gamma controle in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:2195 ../src/views/lighttable.c:3449
+#: ../src/views/darkroom.c:2209 ../src/views/lighttable.c:3460
 msgid "display intent"
 msgstr "toon voornemen"
 
-#: ../src/views/darkroom.c:2203 ../src/views/lighttable.c:3457
+#: ../src/views/darkroom.c:2217 ../src/views/lighttable.c:3468
 msgid "preview display intent"
 msgstr "voorbeeldweergave intentie"
 
-#: ../src/views/darkroom.c:2223 ../src/views/lighttable.c:3465
+#: ../src/views/darkroom.c:2237 ../src/views/lighttable.c:3476
 msgid "display profile"
 msgstr "weergaveprofiel"
 
-#: ../src/views/darkroom.c:2224 ../src/views/lighttable.c:3469
+#: ../src/views/darkroom.c:2238 ../src/views/lighttable.c:3480
 msgid "preview display profile"
 msgstr "voorbeeld weergaveprofiel"
 
-#: ../src/views/darkroom.c:2225
+#: ../src/views/darkroom.c:2239
 msgid "histogram profile"
 msgstr "histogram profiel"
 
-#: ../src/views/darkroom.c:2279 ../src/views/lighttable.c:3499
+#: ../src/views/darkroom.c:2293 ../src/views/lighttable.c:3510
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "toon ICC profielen in %s of %s"
 
-#: ../src/views/darkroom.c:2282 ../src/views/lighttable.c:3502
+#: ../src/views/darkroom.c:2296 ../src/views/lighttable.c:3513
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "voorbeeldweergave ICC profielen in %s of %s"
 
-#: ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2299
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC profielen in %s of  %s"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2302
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histogram en kleuren kiezer ICC profiles in %s or %s"
 
-#: ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2335
 msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
 msgstr ""
 
-#: ../src/views/darkroom.c:2342
+#: ../src/views/darkroom.c:2356
 msgid "overlay color"
 msgstr "overlay kleur"
 
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2364
 msgid "set overlay color"
 msgstr "kies overlay kleur"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3505
+#: ../src/views/darkroom.c:3523
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "maximaal inzoomen"
 
-#: ../src/views/darkroom.c:3506
+#: ../src/views/darkroom.c:3524
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom vullen"
 
-#: ../src/views/darkroom.c:3507
+#: ../src/views/darkroom.c:3525
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom passend"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3513
+#: ../src/views/darkroom.c:3535
 msgctxt "accel"
 msgid "image forward"
 msgstr "volgende afbeelding"
 
-#: ../src/views/darkroom.c:3514
+#: ../src/views/darkroom.c:3536
 msgctxt "accel"
 msgid "image back"
 msgstr "vorige afbeelding"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3517
+#: ../src/views/darkroom.c:3539
 msgctxt "accel"
 msgid "color assessment"
 msgstr "kleurbeoordeling"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3520
+#: ../src/views/darkroom.c:3542
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw overbelicht"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3523
+#: ../src/views/darkroom.c:3545
 msgctxt "accel"
 msgid "overexposed"
 msgstr "overbelicht"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3526
+#: ../src/views/darkroom.c:3548
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "draai overlay kleuren"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3529
+#: ../src/views/darkroom.c:3551
 msgctxt "accel"
 msgid "softproof"
 msgstr "soft proof"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3532
+#: ../src/views/darkroom.c:3554
 msgctxt "accel"
 msgid "gamut check"
 msgstr "gammacontrole"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3535
+#: ../src/views/darkroom.c:3557
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "toon getekende maskers"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3538
+#: ../src/views/darkroom.c:3560
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "verhoog penseeldikte"
 
 # Eventueel kan ook gebruikt worden:
 # 'penseeldikte verminderen' (geldt voor alle penseel-combinaties, bv 'penseelhardheid verminderen')
-#: ../src/views/darkroom.c:3539
+#: ../src/views/darkroom.c:3561
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "verminder penseeldikte"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3542
+#: ../src/views/darkroom.c:3564
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "verhoog penseelhardheid"
 
-#: ../src/views/darkroom.c:3543
+#: ../src/views/darkroom.c:3565
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "verminder penseelhardheid"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3546
+#: ../src/views/darkroom.c:3568
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "verhoog penseeldekking"
 
-#: ../src/views/darkroom.c:3547
+#: ../src/views/darkroom.c:3569
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "verminder penseeldekking"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3550
+#: ../src/views/darkroom.c:3572
 msgctxt "accel"
 msgid "full preview"
 msgstr "volledige voorbeeld"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3553 ../src/views/lighttable.c:2997
+#: ../src/views/darkroom.c:3575 ../src/views/lighttable.c:2998
 #: ../src/views/map.c:920
 msgctxt "accel"
 msgid "undo"
 msgstr "herstel"
 
-#: ../src/views/darkroom.c:3554 ../src/views/lighttable.c:2998
+#: ../src/views/darkroom.c:3576 ../src/views/lighttable.c:2999
 #: ../src/views/map.c:921
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3557
+#: ../src/views/darkroom.c:3579
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3560
+#: ../src/views/darkroom.c:3582
 msgctxt "accel"
 msgid "search modules"
 msgstr "zoek modules"
 
-#: ../src/views/darkroom.c:3667
+#: ../src/views/darkroom.c:3700
 msgid "switch to lighttable"
 msgstr "schakel naar bibliotheek"
 
-#: ../src/views/darkroom.c:3672 ../src/views/lighttable.c:3141
+#: ../src/views/darkroom.c:3705 ../src/views/lighttable.c:3152
 msgid "zoom in the image"
 msgstr "inzoomen op de afbeelding"
 
-#: ../src/views/darkroom.c:3678
+#: ../src/views/darkroom.c:3711
 msgid "unbounded zoom in the image"
 msgstr "onbegrensde zoom in de afbeelding"
 
-#: ../src/views/darkroom.c:3683
+#: ../src/views/darkroom.c:3716
 msgid "zoom to 100% 200% and back"
 msgstr "zoom naar 100%, 200% en weer terug"
 
-#: ../src/views/darkroom.c:3689
+#: ../src/views/darkroom.c:3722
 msgid "[modules] expand module without closing others"
 msgstr "[modules] module uitbreiden zonder anderen te sluiten"
 
-#: ../src/views/darkroom.c:3695
+#: ../src/views/darkroom.c:3728
 msgid "[modules] change module position in pipe"
 msgstr "[modules] wijzig modulepositie in pijplijn"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4409 ../src/views/darkroom.c:4427
+#: ../src/views/darkroom.c:4442 ../src/views/darkroom.c:4460
 msgid "darktable - darkroom preview"
 msgstr "darktable - voorbeeldweergave ontwikkelen"
 
@@ -16296,184 +16313,184 @@ msgid "zooming is limited to %d images"
 msgstr "zoomen is beperkt tot %d afbeeldingen"
 
 #. movement keys
-#: ../src/views/lighttable.c:2965
+#: ../src/views/lighttable.c:2966
 msgctxt "accel"
 msgid "move page up"
 msgstr "verplaats pagina omhoog"
 
-#: ../src/views/lighttable.c:2966
+#: ../src/views/lighttable.c:2967
 msgctxt "accel"
 msgid "move page down"
 msgstr "verplaats pagina omlaag "
 
-#: ../src/views/lighttable.c:2967
+#: ../src/views/lighttable.c:2968
 msgctxt "accel"
 msgid "move up"
 msgstr "verplaats omhoog"
 
-#: ../src/views/lighttable.c:2968
+#: ../src/views/lighttable.c:2969
 msgctxt "accel"
 msgid "move down"
 msgstr "verplaats omlaag"
 
-#: ../src/views/lighttable.c:2969
+#: ../src/views/lighttable.c:2970
 msgctxt "accel"
 msgid "move left"
 msgstr "verplaats naar links"
 
-#: ../src/views/lighttable.c:2970
+#: ../src/views/lighttable.c:2971
 msgctxt "accel"
 msgid "move right"
 msgstr "verplaats naar rechts"
 
-#: ../src/views/lighttable.c:2971
+#: ../src/views/lighttable.c:2972
 msgctxt "accel"
 msgid "move start"
 msgstr "verplaats begin"
 
-#: ../src/views/lighttable.c:2972
+#: ../src/views/lighttable.c:2973
 msgctxt "accel"
 msgid "move end"
 msgstr "verplaats einde"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:2975
+#: ../src/views/lighttable.c:2976
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "verplaats pagina omhoog en selecteer"
 
-#: ../src/views/lighttable.c:2976
+#: ../src/views/lighttable.c:2977
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "verplaats pagina omlaag en selecteer"
 
-#: ../src/views/lighttable.c:2977
+#: ../src/views/lighttable.c:2978
 msgctxt "accel"
 msgid "move up and select"
 msgstr "verplaats omhoog en selecteer"
 
-#: ../src/views/lighttable.c:2978
+#: ../src/views/lighttable.c:2979
 msgctxt "accel"
 msgid "move down and select"
 msgstr "verplaats neerwaarts en selecteer"
 
-#: ../src/views/lighttable.c:2979
+#: ../src/views/lighttable.c:2980
 msgctxt "accel"
 msgid "move left and select"
 msgstr "verplaats naar links en selecteer"
 
-#: ../src/views/lighttable.c:2980
+#: ../src/views/lighttable.c:2981
 msgctxt "accel"
 msgid "move right and select"
 msgstr "verplaats naar rechts en selecteer"
 
-#: ../src/views/lighttable.c:2981
+#: ../src/views/lighttable.c:2982
 msgctxt "accel"
 msgid "move start and select"
 msgstr "verplaats start en selecteer"
 
-#: ../src/views/lighttable.c:2982
+#: ../src/views/lighttable.c:2983
 msgctxt "accel"
 msgid "move end and select"
 msgstr "verplaats naar einde en selecteer"
 
-#: ../src/views/lighttable.c:2984
+#: ../src/views/lighttable.c:2985
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "uitlijnen afbeeldingen op raster"
 
-#: ../src/views/lighttable.c:2985
+#: ../src/views/lighttable.c:2986
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "reset eerste beeldverschuiving"
 
-#: ../src/views/lighttable.c:2986
+#: ../src/views/lighttable.c:2987
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "omkeren afbeelding"
 
-#: ../src/views/lighttable.c:2987
+#: ../src/views/lighttable.c:2988
 msgctxt "accel"
 msgid "select single image"
 msgstr "selecteer een  afbeelding"
 
 #. Preview key
-#: ../src/views/lighttable.c:2990
+#: ../src/views/lighttable.c:2991
 msgctxt "accel"
 msgid "preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:2991
+#: ../src/views/lighttable.c:2992
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "voorbeeld met focusdetectie"
 
-#: ../src/views/lighttable.c:2992
+#: ../src/views/lighttable.c:2993
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "sticky-voorbeeld"
 
-#: ../src/views/lighttable.c:2993
+#: ../src/views/lighttable.c:2994
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "sticky-voorbeeld met focus detectie"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:3001
+#: ../src/views/lighttable.c:3002
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "voorbeeld zoom 100%"
 
-#: ../src/views/lighttable.c:3002
+#: ../src/views/lighttable.c:3003
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "voorbeeld passende zoom"
 
-#: ../src/views/lighttable.c:3128
+#: ../src/views/lighttable.c:3139
 msgid "open image in darkroom"
 msgstr "open afbeelding in ontwikkelen"
 
-#: ../src/views/lighttable.c:3135
+#: ../src/views/lighttable.c:3146
 msgid "switch to next/previous image"
 msgstr "overschakelen naar volgende/voorgaande afbeelding"
 
-#: ../src/views/lighttable.c:3148 ../src/views/lighttable.c:3170
+#: ../src/views/lighttable.c:3159 ../src/views/lighttable.c:3181
 msgid "scroll the collection"
 msgstr "scroll door collectie"
 
-#: ../src/views/lighttable.c:3154
+#: ../src/views/lighttable.c:3165
 msgid "change number of images per row"
 msgstr "wijzig aantal afbeeldingen per rij"
 
-#: ../src/views/lighttable.c:3162
+#: ../src/views/lighttable.c:3173
 msgid "change image order"
 msgstr "afbeeldings volgorde wijzigen"
 
-#: ../src/views/lighttable.c:3176
+#: ../src/views/lighttable.c:3187
 msgid "zoom all the images"
 msgstr "inzoomen in op alle afbeeldingen"
 
-#: ../src/views/lighttable.c:3181
+#: ../src/views/lighttable.c:3192
 msgid "pan inside all the images"
 msgstr "uitzoomen op alle afbeeldingen"
 
-#: ../src/views/lighttable.c:3187
+#: ../src/views/lighttable.c:3198
 msgid "zoom current image"
 msgstr "inzoomen op huidige afbeelding"
 
-#: ../src/views/lighttable.c:3193
+#: ../src/views/lighttable.c:3204
 msgid "pan inside current image"
 msgstr "uitzoomen op huidige afbeelding"
 
-#: ../src/views/lighttable.c:3200
+#: ../src/views/lighttable.c:3211
 msgid "zoom the main view"
 msgstr "zoom in op hoofdaanzicht"
 
-#: ../src/views/lighttable.c:3205
+#: ../src/views/lighttable.c:3216
 msgid "pan inside the main view"
 msgstr "zoom binnen de pan inside hoofdweergave"
 
-#: ../src/views/lighttable.c:3426
+#: ../src/views/lighttable.c:3437
 msgid "set display profile"
 msgstr "kies weergaveprofiel"
 
