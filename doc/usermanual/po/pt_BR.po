@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-05-04 07:45-0300\n"
-"PO-Revision-Date: 2020-05-04 12:28-0300\n"
+"PO-Revision-Date: 2020-05-05 12:07-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -423,7 +423,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:244(para)
 msgid "Tethered shooting."
-msgstr "Acesso remoto"
+msgstr "Acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:248(para)
 msgid ""
@@ -1407,20 +1407,7 @@ msgid ""
 "entry><entry> switches to slideshow </entry></row><row><entry><emphasis>P</"
 "emphasis></entry><entry> switches to print </entry></row></tbody></tgroup></"
 "informaltable>"
-msgstr ""
-"O darktable consiste de várias vistas ou modos. Existem cinco vistas "
-"disponíveis como descritas nesta seção. Você pode alternar entre vistas "
-"clicando no nome da vista no topo do painel da direita - a vista ativa é "
-"realçada - ou usando uma das teclas de atalho rápido: <informaltable frame="
-"\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec "
-"colwidth=\"1*\"/><colspec colwidth=\"9*\"/><tbody><row><entry><emphasis>L</"
-"emphasis></entry><entry>muda para mesa de luz</entry></"
-"row><row><entry><emphasis>D</emphasis></entry><entry>muda para sala escura</"
-"entry></row><row><entry><emphasis>T</emphasis></entry><entry>muda para "
-"acesso remoto</entry></row><row><entry><emphasis>M</emphasis></"
-"entry><entry>muda para mapa</entry></row><row><entry><emphasis>P</emphasis></"
-"entry><entry>muda para impressão</entry></row></tbody></tgroup></"
-"informaltable>"
+msgstr "O darktable consiste de várias vistas ou modos. Existem cinco vistas disponíveis como descritas nesta seção. Você pode alternar entre vistas clicando no nome da vista no topo do painel da direita - a vista ativa é realçada - ou usando uma das teclas de atalho rápido: <informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/><tbody><row><entry><emphasis>L</emphasis></entry><entry>muda para mesa de luz</entry></row><row><entry><emphasis>D</emphasis></entry><entry>muda para sala escura</entry></row><row><entry><emphasis>T</emphasis></entry><entry>muda para acesso vinculado</entry></row><row><entry><emphasis>M</emphasis></entry><entry>muda para mapa</entry></row><row><entry><emphasis>P</emphasis></entry><entry>muda para impressão</entry></row></tbody></tgroup></informaltable>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1115(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1655(title)
@@ -1457,7 +1444,7 @@ msgstr ""
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19856(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19904(title)
 msgid "Tethering"
-msgstr "Acesso remoto"
+msgstr "Acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1140(para)
 msgid ""
@@ -1725,14 +1712,7 @@ msgid ""
 "your camera in the import module, hit the <quote>scan for devices</quote> "
 "button. Your camera will then appear in the same module with additional "
 "choices: <emphasis>import</emphasis> and <emphasis>tethering</emphasis>."
-msgstr ""
-"Conecte sua câmera ao seu sistema. Se a sua distribuição tenta montar a "
-"câmera automaticamente, selecione a opção de abortar a operação de montagem. "
-"Caso contrário, a câmera será bloqueada e não poderá ser acessada por meio "
-"do darktable. Se você não vê a câmera no painel de importação, pressione o "
-"botão <quote>procurar por dispositivos</quote>. Sua câmera irá aparecer no "
-"mesmo módulo com opções adicionais: <emphasis> importação </emphasis> e "
-"<emphasis> acesso remoto </emphasis>."
+msgstr "Conecte sua câmera ao seu sistema. Se a sua distribuição tenta montar a câmera automaticamente, selecione a opção de abortar a operação de montagem. Caso contrário, a câmera será bloqueada e não poderá ser acessada por meio do darktable. Se você não vê a câmera no painel de importação, pressione o botão <quote>procurar por dispositivos</quote>. Sua câmera irá aparecer no mesmo módulo com opções adicionais: <emphasis> importação </emphasis> e <emphasis> acesso vinculado </emphasis>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1345(title)
 msgid "Basic development steps"
@@ -3807,7 +3787,7 @@ msgstr ""
 "<placeholder-2/>. Você também pode fazer o darktable procurar cameras "
 "conectadas pressionando <placeholder-3/>. Se uma câmera suportada estiver "
 "conectada você pode importar diretamente daquela câmera a partir do modo de "
-"acesso cabeado do darktable."
+"acesso vinculado do darktable."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2888(para)
 msgid ""
@@ -3922,7 +3902,7 @@ msgstr "importar da câmera"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2965(quote)
 msgid "tethered shoot"
-msgstr "Acesso por cabo"
+msgstr "disparo remoto"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2959(entry)
 msgid ""
@@ -3963,7 +3943,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2994(title)
 msgid "Tethered shoot"
-msgstr "Acesso por cabo"
+msgstr "Disparo remoto"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2996(para)
 msgid ""
@@ -3972,23 +3952,14 @@ msgid ""
 "you can review the result of the shoot. You can also setup remote capture "
 "jobs, controlling the number of images and time between captures, along with "
 "camera settings such as exposure time, aperture and more."
-msgstr ""
-"O acesso por cabo é usado para integrar o darktable com sua câmera. Enquanto "
-"você tira fotos com a câmera, as imagens são automaticamente importadas no "
-"darktable, para que você possa verificar o resultado da foto. Você também "
-"pode configurar trabalhos de captura remota, controlando o número de imagens "
-"e o tempo entre capturas, além das configurações da câmera como tempo de "
-"exposição, abertura, etc."
+msgstr "O acesso vinculado é usado para integrar o darktable com sua câmera. Enquanto você tira fotos com a câmera, as imagens são automaticamente importadas no darktable, para que você possa verificar o resultado da foto. Você também pode configurar trabalhos de captura remota, controlando o número de imagens e o tempo entre capturas, além das configurações da câmera como tempo de exposição, abertura, etc."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3004(para)
 msgid ""
 "If supported by your camera, tethering will take you into the capture view "
 "for tethered shooting. Read more about tethering in <xref linkend="
 "\"tethering_chapter\"/>."
-msgstr ""
-"Se suportado pela sua câmera, o acesso por cabo te levará a uma vista de "
-"captura para fotografar com cabo. Veja mais sobre acesso com cabo em <xref "
-"linkend=\"tethering_chapter\"/>."
+msgstr "Se suportado pela sua câmera, o acesso vinculado te levará a uma vista de captura para fotografar com cabo. Veja mais sobre acesso com cabo em <xref linkend=\"tethering_chapter\"/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3015(title)
 msgid "Supported file formats"
@@ -4640,11 +4611,7 @@ msgid ""
 "hovering with the mouse over thumbnails, darktable will update this view, "
 "displaying information of the image currently under the mouse cursor. This "
 "panel is also available in darkroom, tethering, map, and print view."
-msgstr ""
-"Este painel mostra informação embutira nos dados Exif da imagem. Quando "
-"passando o mouse pelas miniaturas, o darktable atualiza esta visão, "
-"mostrando informação da imagem atualmente sob o cursor do mouse. Este painel "
-"está disponível nas vistas de sala escura, acesso por cabo, mapa e impressão."
+msgstr "Este painel mostra informação embutira nos dados Exif da imagem. Quando passando o mouse pelas miniaturas, o darktable atualiza esta visão, mostrando informação da imagem atualmente sob o cursor do mouse. Este painel está disponível nas vistas de sala escura, acesso vinculado, mapa e impressão."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3607(title)
 msgid "Select"
@@ -15702,7 +15669,7 @@ msgstr "Este módulo oferece uma ferramenta versátil para ajustar o balanço de
 msgid ""
 "<emphasis>lift, gamma, gain</emphasis>, the classic way, that allows a more "
 "separated control of shadows versus highlights,"
-msgstr "<emphasis>elevação, gama, ganho<emphasis>, a maneira clássica, que permite um controle mais separado das sombras e realces,"
+msgstr "<emphasis>elevação, gama, ganho</emphasis>, a maneira clássica, que permite um controle mais separado das sombras e realces,"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13227(para)
 msgid ""
@@ -15725,14 +15692,14 @@ msgid ""
 "limited to usual values ([50%; 150%] for saturations, [-50%; 50%] for "
 "contrast), but higher and lower values can be defined from keyboard inputs "
 "after a right-click on the corresponding slider."
-msgstr ""
+msgstr "As definições mestre afetam toda a imagem. Elas não estão disponíveis no modo <emphasis>elevação, gama, ganho</emphasis>. As faixas dos deslizadores são limitadas aos valores usuais ([50%; 150%] para saturação, [-50%; 50%] para contraste), mas valores mais altos e mais baixos podem ser definidos pela entrada de teclado depois de um clique direito no deslizador correspondente.]"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13245(para)
 msgid ""
 "Side note: although this module acts on RGB colors its location in pixelpipe "
 "puts it into the Lab color space. Accordingly the modules converts from Lab "
 "to RGB, does its color adjustments, and then converts back to Lab."
-msgstr ""
+msgstr "Nota: apesar deste módulo agir em cores RGB, sua localização na pixelpipe o posiciona no espaço de cor Lab. Assim, o módulo converte de Lab para RGB, faz seus ajustes de cor, e converte novamente para Lab."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13252(title)
 msgid "Mode"
@@ -15744,7 +15711,7 @@ msgid ""
 "darktable 2.4 and previous. In this mode, the color transformations are "
 "applied in sRGB color space encoded with the sRGB gamma (average gamma of "
 "2.2)."
-msgstr ""
+msgstr "<emphasis>elevação, gama, ganho (sRGB)</emphasis> é o modo legado do darktable 2.4 e anteriores. Neste modo, as transformações de cor são aplicadas no espaço de cor sRGB, codificado com o gama sRGB (gama médio de 2.2)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13263(para)
 msgid ""
@@ -15753,7 +15720,7 @@ msgid ""
 "the RGB parameters are corrected in XYZ luminance (Y channel) internally so "
 "they affect only the color, and only the <quote>factors</quote> adjust the "
 "luminance."
-msgstr ""
+msgstr "<emphasis>elevação, gama, ganho (ProPhoto RGB)</emphasis> aplica o <emphasis>ASC CDL</emphasis> no espaço ProPhoto RGB, codificado linearmente. Neste modo, os parâmetros RGB são corrigidos em luminância XYZ (cnaal Y) internamente, afetando somente cor, e somente os <quote>fatores</quote> ajustam a luminância."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13270(para)
 msgid ""
@@ -15766,7 +15733,7 @@ msgid ""
 "whole luminance range, but the slope will mostly affect the highlights, the "
 "offset will mostly affect the shadows, and the power will mostly affect the "
 "mid-tones."
-msgstr ""
+msgstr "<emphasis>inclinação, deslocamento, potência (ProPhoto RGB)</emphasis> aplica a <emphasis>ASC CDL</emphasis> no espaço ProPhoto RGB, codificado linearmente. Semelhantemente ao modo anterior, os parâmetros RGB são corrigidos em luminância XYZ internamente. Neste modo, o parâmetro inclinação age como compensação de exposição, o deslocamento como correção de nível de preto, e a potência como correção de gama. Todos os parâmetros tem algum impacto na faixa de luminância, mas a inclinação afeterá principalmente os destaques, o deslocamento afetará principamente as sompras, e a potência, os tons médios."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13284(para)
 msgid ""
@@ -15774,7 +15741,7 @@ msgid ""
 "recommended to set the slope first, then the offset, and finally the power, "
 "in this order. The name of the mode can be use as a mnemonic to remember the "
 "order."
-msgstr ""
+msgstr "Para melhor eficiência, no modo <emphasis>inclinação, deslocamento, potência</emphasis>, é recomendado definir a inclinação primeiro, depois o deslocamento, e finalmente a potência, nesta ordem. O nome do modo pode ser usado para lembrar a ordem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13290(para)
 msgid ""
@@ -15782,7 +15749,7 @@ msgid ""
 "a far heavier effect than in <emphasis>lift, gamma, gain</emphasis>. "
 "Switching from the former to the latter, you should adapt the saturation in "
 "shadows, dividing by around 10."
-msgstr ""
+msgstr "No modo <emphasis>inclinação, deslocamento, potência</emphasis>, o parâmetro sombras tem eveito bem mais pesado que no modo <emphasis>elevação, gama, ganho</emphasis>. Ao mudar do primeiro para o segundo, voce deve adaptar a saturação nas sombras, dividindo por 10."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13298(title)
 msgid "Color control sliders"
@@ -15792,7 +15759,7 @@ msgstr "Deslizadores de controle de cor"
 msgid ""
 "These parameters affect the user interface used for the shadows, mid-tones "
 "and highlights controls."
-msgstr ""
+msgstr "Estes parâmetros afetam a interface de usuário usada para o controles de sombras, meios-tons e realces."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13305(para)
 msgid ""
@@ -15800,7 +15767,7 @@ msgid ""
 "parameters that will be sent to the algorithm and internally adjusted in XYZ "
 "luminance, depending on the <emphasis>mode</emphasis> used. They are the "
 "only ones stored in darktable's development history."
-msgstr ""
+msgstr "O controle <emphasis>RGBL</emphasis> permite acesso direto aos parâmetros RGB que serão enviados ao algoritmo e internamente ajustdos em luminância XYZ, dependendo do <emphasis>modo</emphasis> usado. Eles são os únicos guardados no histórico."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13312(para)
 msgid ""
@@ -15810,7 +15777,7 @@ msgid ""
 "conversion, the HSL lightness is always assumed to be 50%, so the RGB "
 "parameters are always balanced to avoid lightness changes. However, during "
 "the RGB to HSL conversion, the HSL lightness is not corrected."
-msgstr ""
+msgstr "Os controles <emphasis>HSL</emphasis> permite um controle mais intuitivo, mas são apenas uma interface: as matizes e saturações são calculadas dinamicamente a partir dos parâmetros RGB e nunca armazanadas. Durante a conversão HSL para RGB, a luminosidade HSL sempre é presumida como 50%, para que os parametros RGB estejam sempre balanceados para evitar mudanças na luminosidade. No entanto, na conversão RGB para HSL, a luminosidade HSL não é corrigida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13320(para)
 msgid ""
@@ -15819,7 +15786,7 @@ msgid ""
 "lightness is 50%. The difference is barely noticeable in most cases, "
 "especially using the modes that already correct the RGB parameters "
 "internally in XYZ luminance."
-msgstr ""
+msgstr "Como consequência, editar em RGB, então em HSL, e depois novamente em RGB não manterá os parâmetros originais RGB, mas os normalizará para a luminância HSL de 50%. A diferença é pouco perceptível na maioria dos casos, especialmente usando os modos que já corrigem os parâmetros itnernamente em luminância XYZ."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13327(para)
 msgid ""
@@ -15827,7 +15794,7 @@ msgid ""
 "channels at once. Their effect is similar to the controls of the "
 "<emphasis>levels</emphasis> module (see <xref linkend=\"levels\"/>) and "
 "affect only the luminance."
-msgstr ""
+msgstr "Nos dois modos, deslizadores adicionais <quote>fator</quote> agem em todos os canais RGB de uma vez. O efeito deles é similar ao do módulo <emphasis>níveis</emphasis> (veja <xref linkend=\"levels\"/>), e só afeta a luminância."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13336(title)
 msgid "Input saturation"
@@ -15842,7 +15809,7 @@ msgid ""
 "luminance mask, to create color filters with the color balance settings, "
 "like split-toning or sepia effect (you might want to use blending modes "
 "then)."
-msgstr ""
+msgstr "A saturação de entrada é a saturação aplicada antes do balanço de cor. Pode ser usada para amortecer as cores antes do ajuste de balanço, para tornar imagens mais fáceis de processar. Quando você desatura completamente a imagem, o resultado é uma figura monocronática baseada em luminância que pode ser usada como uma máscara de luminância, para criar filtros de cor com os ajustes do balanço de cor, como divisão de tons ou efeito sepia (você pode querer usar modos de mesclagem neste caso)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13349(title)
 msgid "Output saturation"
@@ -15855,11 +15822,11 @@ msgid ""
 "find the effect too heavy, so you can adjust the global saturation at once "
 "instead of editing each channel saturation separately at the expense of "
 "possibly messing the colors."
-msgstr ""
+msgstr "A saturação de saída é a correção de saturação aplicada logo depois do balanço de cor. É útil uma vez que você tenha encontrado o balanço correto de matiz, mas acha o efeito muito pesado, então você pode ajustar a saturação global de uma vez, eo invés de editar a saturação de cada canal separadamente, com o risco de introduzir erros."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13359(title)
 msgid "Contrast and Contrast fulcrum"
-msgstr ""
+msgstr "Contraste e pivô de contraste"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13360(para)
 msgid ""
@@ -15872,11 +15839,11 @@ msgid ""
 "channels separately, so hues and saturations might not be preserved in case "
 "of dramatic settings (shadows might be resaturated, highlights might be "
 "desaturated, and some color shift is to be expected)."
-msgstr ""
+msgstr "O deslizador de contraste permite aumentar a separação de luminancia. O valor pivô define a luminância que não será afetada pela correção de contraste, então o contraste é ajustado ao redor do pivô. Valores de luminância axima do pivô serão amplificados quase linearmente. Valores abaixo do pivô serão comprimidos com uma função de potência (criando uma ponta). A correção vem depois que a saturação de saída é aplicada em todos os canais RGB separadamente, então matizes e saturações podem não ser preservadas em caso de ajustes dramáticos (sombras podem ser resaturadas, realces podem ser desaturados, e algum desvio de cor deve ser esperado)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13374(title)
 msgid "Shadows, Mid-tones, Highlights"
-msgstr ""
+msgstr "Sombras, meios-tons, realces"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13375(para)
 msgid ""
@@ -15884,7 +15851,7 @@ msgid ""
 "or the offset, the mid-tones ones will control either the gamma or the "
 "power, and the highlights ones will control either the gain or the slope. "
 "Parameters are transferred as is when you change the mode."
-msgstr ""
+msgstr "Dependendo do modo usado, os ajustes de sombras controlam ou a elevação ou o deslocamento, os de meios-tons controlarão o gama ou a potência, e o dos realces controlarão o ganho ou a inclinação. Parâmetros são transferidos quando você muda de modo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13382(para)
 msgid ""
@@ -15892,7 +15859,7 @@ msgid ""
 "the saturation sliders range is limited to [0%; 25%]. Values outside of "
 "these bounds can be defined from keyboard input after right-click on the "
 "slider."
-msgstr ""
+msgstr "No modo RGBL, os deslizadores RGB são limitados a [-0.5; 0.5]. No modo HSL, os deslizadores de saturação são limitados a [0%; 25%]. Valores fora dessas faixas podem ser definidos co mentrada pelo teclado, após clique direito no deslizador."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13391(title)
 msgid "Optimize luma"
@@ -15908,7 +15875,7 @@ msgid ""
 "levels module can achieve. The optimizer is accurate only when used in "
 "<emphasis>slope, offset, power</emphasis> mode. It works only fairly in the "
 "other modes."
-msgstr ""
+msgstr "O seletor de cores perto do ródulo <emphasis>otimizar luma</emphasis> irá selecionar a imagem inteira e otimizr os <emphasis>fatores</emphasis> para sombras, meios-tons e realces de forma que a luminância da imagem seja 50% Lab -- o máximo é 0%, e o mínimo, 100% -- na saída deste módulo. Isto é essencialmente uma normalização do histograma, semelhante ao que o módulo níveis pode fazer. O otimizador tem precisão somente quanto usado no modo <emphasis>inclinação, deslocamento, potência</emphasis>. Ele funiciona mais ou menos bem nos outros modos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13402(para)
 msgid ""
@@ -15925,7 +15892,7 @@ msgid ""
 "from patches</quote>. To reset one patch, you can just redo the selection. "
 "Patches are not saved in the parameters and are kept only during the current "
 "session."
-msgstr ""
+msgstr "Se quiser mais controle, você pode definir três patches de controle usando os seletores de cor em frente a dada deslizador de fator, para amostrar a luminância em áreas selecionadas. O seletor de cores das sombras amostra a luminância mínima, o de meios-tons amostra a média, e o de realvez amostra a luminância máxima. O parâmetro mais sensível é o do fator para meios-tons, uma vez que selecionar uma área ligeiramente diferente pode levar a mudanças dramáticas de parâmetros. Usando os seletores de cor para os fatores apenas, sem usar otimização de luma, é possível realizar ajustes sem otimização geral, mas cada parâmetro é sempre computado a partir dos outros dois. Uma vez que os patches tiverem sido selecionados, o rótulo se torna <quote>otimizar luma a partir dos patches</quote>. Para resetar um patch, você pode refazer a seleção. Os patches não são gravados nos parâmetros, e são mantidos somente na sessão atual."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13417(para)
 msgid ""
@@ -15938,7 +15905,7 @@ msgid ""
 "such as tone curves or filmic are better suited for this purpose. Luminance "
 "adjustments in color balance are better suited for local correction, in "
 "combination with color adjustments, for color-grading with masks."
-msgstr ""
+msgstr "É importante notar que o ajuste de luminância realizado tem como alvo somente a saída do módulo de balanço de cores, e não leva em conta outros ajustes de luminância feitos depois na pixelpipe (fílmico, curva de tons, zonas de cor, níveis, mapeamento tonal global etc). Usar o balanço de cores para remapear a luminância globalmente em imagens não é recomendado, porque não preservará as cores originais, e módulos como o fílmico ou curva de tons são mais apropriados para este propósito. Ajustes de luminância em balanço de cor servem melhor para correção local, em combinação com ajustes de cor, para color grading com máscaras."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13430(title)
 msgid "Neutralize colors"
@@ -15954,7 +15921,7 @@ msgid ""
 "The color neutralization optimizer aims at helping you find the "
 "complementary color for shadows, midtones, and highlights so all the color "
 "casts are reverted, and the average color of the picture is a neutral grey."
-msgstr ""
+msgstr "Em uma imagem onde algumas áreas estão expostas à luz solar direta, e outras expostas a luz refletida (sombras), ou mesmo quando muitas luzes artificiais estão presentes ao mesmo tempo, as sombras e realces muitas vezes tem temperaturas diferentes de cor. Ests imagens são particularmente difíceis de corrigir, porque nenhum balanço de branco genérico casará com todas as cores. O otimizador de neutralização de cores tenta ajudar a encontrar a cor complementar para sombras, meios tons e realces, de maneira que os desvios de cor sejam revertidos, e a cor média da imagem seja o cinza neutro."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13441(para)
 msgid ""
@@ -15969,7 +15936,7 @@ msgid ""
 "sample, use a color exposed to ambient light that should be neutral black or "
 "dark grey. For the mid-tones sample, use a color exposed by both ambient and "
 "spot lights."
-msgstr ""
+msgstr "Semelhantemente à otimização de luma, o seletor de cores próximo ao rótulo <emphasis>neutralizar cores</emphasis> iniciará uma otimização geral na imagem toda. Isto funciona muito bem para imagens de paisagem, ou fotos com espectro cheio de cores e luminâncias. Para fotografias de eventos noturnos, provavelmente falhará, e você terá que entrar as áreas de amostra manualmente com os seletores de cor na frente de cada deslizador de matiz. Para amostra de realces, use uma cor exposta a spotliguts que deveria ser branco neutro ou cinza claro. Para as sombras, use uma cor exposta à luz ambiente que deveria ser preto neutro ou cinza escuro. Para os meios tons, use uma cor exposta tanto a luz ambiente como a spotlights."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13453(para)
 msgid ""
@@ -15982,7 +15949,7 @@ msgid ""
 "start over, or simply stop after the patches selection. Notice that in the "
 "auto-optimization the maximum saturation is 25% which might not be enough in "
 "very few cases but will avoid inconsistent results in most."
-msgstr ""
+msgstr "O sucesso da otimização depende da qualidade das amostras. Nem todo conjunto de amostras convergirá para uma boa solução, e voce precisa garantir que os patches de cor que escolheu são cores realmente neutras na vida real. Em muitos caoss, o otimizador encontrará a matiz correta, mas com saturação excessiva, que precisará de mais alguns ajustes. Em outros, não haverá resultado válido e você terá que resetar os parâmetros de saturação e reiniciar, ou simplesmente parar depois da seleção dos patches. Note que om auto-otimização, a saturação máxima é 25%, que pode não ser suficiente em alguns poucos casos, mas evitará resultados inconsistentes na maioria das vezes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13464(para)
 msgid ""
@@ -16000,13 +15967,13 @@ msgid ""
 "automatic neutralization are accurate only in <emphasis>slope, offset, "
 "power</emphasis> mode, but can work to some extent in <emphasis>lift, gamma, "
 "gain</emphasis> too."
-msgstr ""
+msgstr "Se você selecionar patches de usando os seletores de cor nos deslizadores das matizes, sem iniciar a otimização, o softwre tentará fazer um só passo de otimização, e parar logo depois para que você possa controlar cada faixa de luminância separadamente e evitar divergência da solução em casos extremos. Os ajustes de matiz e saturação são computados levando em conta as outrs duas faixas de luminância e os três fatores, e sempre resultará em cores complementares da área selecionada. Se quiser, ao invés disso, reforçar a cor da área, deve adicionar 180° à matiz computada. Uma vez que os patches tenham sido selecionados, o rótulo se torna <quote>neutralizar cores dos patches</quote>. Para resetar um patch, você pode refazer a seleção. Os patches não são gravados nos parâmetros, e são mantidos somente na sessão atual. Os parâmetros achados pela neutralização automática tem precisão no modo <emphasis>inclinação, deslocalmento, potência</emphasis>, mas podem funcionar até certo ponto n modo <emphasis>elevação, gama, ganho</emphasis> também."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13485(para)
 msgid ""
 "Several presets are provided in the module to help you understand how it can "
 "be used."
-msgstr ""
+msgstr "Várias pré-definições são providas no módlo para te ajudar a entender como ele pode ser usado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13489(para)
 msgid ""
@@ -16017,13 +15984,13 @@ msgid ""
 "more vibrance on skin tones only. Together they will help creating "
 "separation between subjects and backgrounds. The masking and blending "
 "parameters will need to be tweaked to suit every picture, though."
-msgstr ""
+msgstr "A pré-definição azul-petróleo/laranja é uma aparência muito popular no cinema, e um bom modelo de exemplo. Ë feita para ser usada com duas instâncias e máscaras: a primeira instância exclui rons de pele e desloca cores neutras para o azul. A segunda reverte parcialmente a primeira, e adiciona mais vibrância aos tons de pele apenas. Juntas, elas ajudam a criar uma separação entre pessoas e o fundo. Os parâmetros de máscara e mesclagem precisam ser ajustados para funicionar para cada imagem, no entanto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13498(para)
 msgid ""
 "Other presets provide Kodak film emulations. In the same way you can "
 "recreate any film look you like with color balance."
-msgstr ""
+msgstr "Outras prédefinições proveem emulação de filme Kodak. Da mesma forma, voce pod erecriar o visual de qualquer filme que goste com balanço de cores."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13509(title)
 msgid "Color look up table"
@@ -16308,7 +16275,7 @@ msgid ""
 "This module can be used to override darktable's automatic allocation of "
 "input color profile if there is an alternative that more closely matches "
 "your original image's color space."
-msgstr ""
+msgstr "Este módulo pode ser usado para sobrescrever a alocação automática de perfil de cor de entrada feita pelo darktable se há uma alternativa que casa melhor com o espaço de cores da imagem original."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13885(para)
 msgid ""
@@ -16316,7 +16283,7 @@ msgid ""
 "input image are to be interpreted. You also have an option to have colors "
 "confined to a certain gamut in order to mitigate some (infrequent) color "
 "artifacts."
-msgstr ""
+msgstr "Neste módulo você define o perfil de cor de entrada, ou seja, como cores da sua imagem de entrada devem ser interpretadas. Você também tem a opção de ter cores confinadas a uma certa gama para mitigar alguns artefatos (infrequentes) de cor."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13893(para)
 msgid ""
@@ -16324,7 +16291,7 @@ msgid ""
 "widespread matrices along with an enhanced matrix for some camera models. "
 "The enhanced matrices were processed by the darktable team in order to "
 "provide a look closer to the manufacturer's."
-msgstr ""
+msgstr "Escolha o perfil ou matriz de cores a aplicar - o darktable oferece muitas matrizes amplamente usadas além de uma matriz melhorada para alguns modelos de câmera. As matrizes melhoradas são processadas pelo time do darktable para prover um visual mai spróximo ao do fabricante."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13898(para)
 msgid ""
@@ -16336,7 +16303,7 @@ msgid ""
 "model. You may need to activate module <emphasis>unbreak input profile</"
 "emphasis> (see <xref linkend=\"unbreak_input_profile\"/>) to use your extra "
 "profiles."
-msgstr ""
+msgstr "Você também pode suprir seus próprios perfis ICC e colocá-los em $DARKTABLE/share/darktable/color/in ou $HOME/.config/darktable/color/in. $DARKTABLE representa a pasta de instalação do darktable, e $HOME sua pasta pessoal de usuário. Uma fonte comum de perfis ICC é software que vem com as câmeras digitais; ele normalmente contém perfis específicos para seu modelo de câmera. Você pode precisar ativar o módulo <emphasis>consertar perfil de entrada</emphasis> (veja <xref linkend=\"unbreak_input_profile\"/>) para usar seus perfis extra."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13907(para)
 msgid ""
@@ -16345,7 +16312,7 @@ msgid ""
 "will use as a default. You can always overrule darktable and select a "
 "different profile. Select <quote>embedded icc profile</quote> to restore the "
 "default."
-msgstr ""
+msgstr "Se sua imagem de entrada é um arquivo de faixa dinâmica baixa como JPEG, ou um RAW em formato DNG, pode já conter um perfil ICC embutido, que o darktable usará por default. Você pode sempre selecionar um diferente. Selecione <quote>perfil icc embutido</quote> para restaurar o default."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13917(para)
 msgid ""
@@ -16354,7 +16321,7 @@ msgid ""
 "image shows some specific features like highly saturated blue light sources, "
 "gamut clipping might be useful to avoid black pixel artifacts. See <xref "
 "linkend=\"possible_color_artifacts\"/> for more background information."
-msgstr ""
+msgstr "Esta combobox permite ativar um mecanismo de recorte de cores. Na maioria dos casos voce pode deixá-la no estado default <quote>desligado</quote>. No entanto, se sua imagem mostrar algumas características específicas como fontes muito saturadas de luz azul, o recorte de gama pode ser útil para evitar artefatos de pixels pretos. Veja <xref linkend=\"possible_color_artifacts\"/> para mais informação."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13924(para)
 msgid ""
@@ -16365,13 +16332,13 @@ msgid ""
 "<quote>sRGB</quote> and <quote>linear Rec709 RGB</quote> produce a tighter "
 "clipping. You should select the profile that prevents artifacts while still "
 "maintaining highest color dynamics."
-msgstr ""
+msgstr "Voce pode escolher de uma list de perfis RGB. Cores de entrada com saturação que exceda a faixa permitida no perfil selecionado serão recortadas para o valor máximo. <quote>linar Rec2020 RGB</quote> e <quote>Adobe RGB (compatível)</quote> permitem uma faixa maior de cores não recortadas, enquanto <quote>sRGB</quote> e <quote>linear Rec709 RGB</quote> produz um recorte mais justo. Você deve selecionar o perfil que previne artefatos enquanto ainda mantém uma alta dinâmica de cores."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13950(entry)
 msgid ""
 "Close-up of a blue light source (LED) with gamut clipping off. The activated "
 "levels module produces a ring of black pixel artifacts."
-msgstr ""
+msgstr "Close de uma fonte de luz azul (LED) com algum recorte de gama. O módulo ativo de níveis produz um anel de artefatos de pixels pretos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13960(quote)
 msgid "linear Rec2020 RGB"
@@ -16380,9 +16347,7 @@ msgstr "linear Rec2020 RGB"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13959(entry)
 msgid ""
 "The same image and processing with gamut clipping set to <placeholder-1/>."
-msgstr ""
-"A mesma imagem e processamento, com recorte de gama definido para "
-"<placeholder-1/>."
+msgstr "A mesma imagem e processamento, com recorte de gama definido para <placeholder-1/>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13975(title)
 msgid "3D LUT"
@@ -16739,7 +16704,7 @@ msgid ""
 "in an photo such as hotpixels, spot removal, noise, lens correction among "
 "others. This group also includes the basic sharpening tools."
 msgstr ""
-"O rgupo de correção contém módulos que corrigem problemas típicos rm fotos "
+"O grupo de correção contém módulos que corrigem problemas típicos rm fotos "
 "como pixels quentes, remoção de manchas, ruído, correção de lente dentre "
 "outros. Este grupo também inclui as ferramentas básicas de melhoria de "
 "nitidez."
@@ -19079,7 +19044,7 @@ msgid ""
 "Choose the watermark of interest. You can use the reload button next to the "
 "combobox to update the list with all newly added watermarks."
 msgstr ""
-"Escolhe uma marca d'água de interesse. Voce pode usar o botão de recarregar "
+"Escolhe uma marca d'água de interesse. Você pode usar o botão de recarregar "
 "perto da combobox para atualizar a lista com todas as marcas d'água recém-"
 "adicionadas."
 
@@ -20995,24 +20960,24 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19851(keyword)
 msgid "tethering"
-msgstr "acesso cabeado"
+msgstr "acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19859(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19967(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20007(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20040(primary)
 msgid "tethering view"
-msgstr "Vista de acesso cabeado"
+msgstr "Vista de acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19862(para)
 msgid ""
 "The tethering view allows you to capture images directly into darktable from "
 "your connected camera."
-msgstr ""
+msgstr "A vista de acesso vinculado permite capturar imagens diretamente no darktable a partir de sua câmera conectada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19870(screeninfo)
 msgid "The tethering view"
-msgstr "A vista de acesso cabeado"
+msgstr "A vista de acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19881(para)
 msgid ""
@@ -21021,7 +20986,7 @@ msgid ""
 "camera. Do not mount or view the camera. If that happens automatically, you "
 "will need to <quote>unmount/eject</quote> the camera. This is required to "
 "unlock the camera so darktable can lock it for usage."
-msgstr ""
+msgstr "Para usar a funcionalidade de acesso vinculado, você precis aconectar sua camera a seu PC usando um cabo USB. Seu computador poderá perguntar onde montar ou visualizar a câmera conectada. Não monte nem visualize. Se isto acontecer automaticamente, você terá de <quote>desmontar/ejetar</quote> a camera. Isto é necessário para destravar a câmera, permitindo ao darktable travá-la para seu próprio uso."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19888(para)
 msgid ""
@@ -21030,14 +20995,14 @@ msgid ""
 "panel, click the <quote>scan devices</quote> button and it will appear with "
 "two functions: <quote>import from camera</quote> and <quote>tethered shoot</"
 "quote>. Click <quote>tethered shoot</quote> to enter the tethering mode."
-msgstr ""
+msgstr "Depois que o cabo USB estiver conectado, veja o painel de importação na mesa de luz  (veja <xref linkend=\"import\"/>). Se sua câmera não estiver visível neste painel, clique no botão <quote>procurar por dispositivos</quote> e ela surgirá com dua sopções: <quote>importar da câmera</quote> e <quote>disparo remoto</quote>. Clique em <quote>disparo remoto</quote> para entrar no modo de disparo remoto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19896(para)
 msgid ""
 "darktable uses gphoto2 to interface with your camera. If you have problems "
 "finding the connected camera as described above, check the troubleshoot "
 "section in this chapter in order to verify your camera has tethering support."
-msgstr ""
+msgstr "O darktable usa o gphoto2 para interfacear com sua câmera. Se você tiver problemas encontrando a câmera conectada como descrito acima, verifique a seção de resolução de problemas neste capítulo para verificar se sua câmera é suportada para acesso remoto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19912(entry)
 msgid ""
@@ -21045,14 +21010,14 @@ msgid ""
 "exposure by either using darktable's userinterface or manually triggering a "
 "capture on your camera. If you are using LiveView it will be shown in "
 "darktable's center view."
-msgstr ""
+msgstr "Na visão central imagens são mostrada enquanto você as captura. Você pode obter uma foto usando a interface do darktable ou manualmente disparando na própria máquina. Se estiver usando LiveView, ela será mostrada na visão central do darktable."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19926(para)
 msgid ""
 "When entering tethering view, a film roll will be created using the same "
 "structure as defined when you import from the camera. Job code will be "
 "predefined as <quote>capture</quote>."
-msgstr ""
+msgstr "Ao entrar no modo vinculado, um rolo de filme será criado usando a mesma estrutura definida quando você importa da camera. O código do job será predefinido como <quote>capture</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19932(para)
 msgid ""
@@ -21060,7 +21025,7 @@ msgid ""
 "the session panel in right side. When entering a new name and pressing "
 "enter, a new film roll will be created and captured images will go into this "
 "new film roll."
-msgstr ""
+msgstr "Se quiser agrupar capturas em rolos de filme diferentes, use o painel de sessão no lado direito. Quando entrar um novo nome e pressionar enter, um novo roo de filme será criado, e as imagens capturadas irão para este novo rolo de filme."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19938(para)
 msgid ""
@@ -21069,17 +21034,17 @@ msgid ""
 "The configuration is so dynamic that you can create sequential capture of "
 "brackets – go figure... For more information read the documentation about "
 "the capture panel and the examples in this chapter."
-msgstr ""
+msgstr "O darktable oferece algumas boas ferramentas para configurar uma captura na interface de usuário. Você pode preparar capturas de sequências em câmera rápida (time lapse) e brackets para criações em HDR. A configuração é tão dinâmica que você pode criar captura sequencial de brackets. Para mais informação leia a documentação sobre o painel de captura e veja os exemplos neste Capítulo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19954(title)
 msgid "Tethering panels"
-msgstr ""
+msgstr "Painéis de acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19956(para)
 msgid ""
 "This section contains documentation for panels that are specific to the "
 "tethering view."
-msgstr ""
+msgstr "Esta seção contém a documentação dos painéis que são específicos da vista de modo vinculado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19964(title)
 msgid "Session"
@@ -21095,22 +21060,21 @@ msgid ""
 "a single film roll. A new session equals a new film roll. A film roll is "
 "created with the same storage structure that is used when you import images "
 "from camera into darktable."
-msgstr ""
+msgstr "Uma sessão é uma sequência de fotos tiradas em modo vinculado, sendo enviada para um mesmo rolo de filme. Uma nova sessão é o mesmo que um novo rolo de filme. Um rolo de filme é criado com a mesma estrutura de armazenamento que é usada quando você importa imagens da câmera para o darktable."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19986(para)
 msgid ""
 "It's a bit awkward, but configuring this storage structure is done in the "
 "camera import dialog for now."
-msgstr ""
+msgstr "É um pouco estranho, mas configurar esta estrutura de armazenamento é feito no diálogo de importação da camera por enquanto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20004(title)
 msgid "Live view"
-msgstr ""
+msgstr "Visão ao vivo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20008(secondary)
-#, fuzzy
 msgid "live view"
-msgstr "visão geral"
+msgstr "visão ao vivo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20019(para)
 msgid ""
@@ -21132,15 +21096,15 @@ msgid ""
 "include sequence, bracket and delayed captures. You are also able to control "
 "other camera settings such as focus mode, aperture, shutter speed, ISO and "
 "white balance."
-msgstr ""
+msgstr "A seção de configurações da camera permite preparar um trabalho (job) de captura. Isto pode incluir sequências de exposição, bracketing, e capturas com atraso. Você é capas de controlar outras configurações da câmera como modo de foco, abertura, velocidade do obturador, ISO e balanço de branco."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20075(para)
 msgid "This section contains examples of typical usages of tethering."
-msgstr ""
+msgstr "Esta seção contém exemplos de uso típico de acesso viculado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20081(title)
 msgid "Studio setup with screening"
-msgstr ""
+msgstr "Setup de estúdio com triagem"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20083(para)
 msgid ""
@@ -21149,7 +21113,7 @@ msgid ""
 "darktable. You work at the camera and take images. Whenever you want, you "
 "can screen the image directly on your computer monitor instead of using the "
 "camera LCD for validation."
-msgstr ""
+msgstr "Este é um caso de uso muito comum. Você te, seu estúdio e objeto prontos, a câmera fica conectada ao computador, e o modo vinculado fica ativo no darktable. Você trabalha na câmera e tira fotos. QUando quiser, pode verificar as imagens diretamente no monitor do computador, sem ter que usar o LCD da câmera para validação da foto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20090(para)
 msgid ""
@@ -21157,14 +21121,14 @@ msgid ""
 "your captures instead of waiting until after the shoot when everyone is "
 "gone. If you're shooting a model this is a pretty nice way to pre-view the "
 "captures with the client instead of fumbling around with your camera."
-msgstr ""
+msgstr "Este fluxo de trabalho é eficiente e efetivo, porque você pode imediatamente revisar suas capturas ao invés de esperar até depois da sessão, quando todos já foram embora. Se estiver fotografando um(a) modelo, é uma maneira muito boa de pré-visualizar as capturas com o cliente ao invés de ficar mostrando no visor da câmera."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20097(para)
 msgid ""
 "Working in the tethered mode can save you time and aggravation. Set a "
 "session name, shoot your images and they will save in the correct film roll "
 "for the session for easy on-site review."
-msgstr ""
+msgstr "Trabalhar em modo vinculado pode economizar tempo e evitar rustração. Configure um nome de sessão, tire as fotos e elas serão guardadas no rolo de filme correto para uma imadiata revisão facilmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20107(title)
 msgid "Capturing a timelapse"
@@ -22295,7 +22259,7 @@ msgid ""
 "defined default value (default off)."
 msgstr ""
 "Controla como a leitura de pressão de um tablet gráfico impacta novas "
-"pinceladas (veja <xref linkend=\"drawn_mask\"/>). Voce pode contorlar a "
+"pinceladas (veja <xref linkend=\"drawn_mask\"/>). Você pode contorlar a "
 "largura do pincel, sua dureza e sua opacidade. Controle <quote>absoluto</"
 "quote> significa que a leitura de pressão define diretamente o atributo com "
 "um valor entre 0% e 100%. <quote>Relativo</quote> significa que a pressão "
@@ -22325,7 +22289,7 @@ msgid ""
 "and <quote>grey scale</quote> (default false color)."
 msgstr ""
 "Controla como canais individuais de cor são mostrados quando ativados na "
-"funcionalidade de máscara paramétrica. Voce pode escolher entre <quote>cor "
+"funcionalidade de máscara paramétrica. Você pode escolher entre <quote>cor "
 "falsa</quote> e <quote>escala de cinza</quote>. (default: cor falsa)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21153(bridgehead)
@@ -22382,7 +22346,7 @@ msgstr ""
 "Controla como os módulos da sala escura são expandidos. Se esta opção "
 "estiver habilitada, expandir um módulo com <emphasis>clique</emphasis> "
 "recolhe qualquer outro módulo expandido. Se quiser expandir um módulo sem "
-"recolher os outros, voce precisa usar <emphasis>Shift-clique</emphasis>. "
+"recolher os outros, você precisa usar <emphasis>Shift-clique</emphasis>. "
 "Desabilitar esta opção troca o significado de <emphasis>clique</emphasis> e "
 "<emphasis>Shifr-clique</emphasis>. (default: ligado)"
 
@@ -22610,7 +22574,7 @@ msgid ""
 "Enable the filmstrip in darkroom, tethering, geomapping and lighttable "
 "culling modes (default on)."
 msgstr ""
-"Habilita a tira de filme na sala escura, acesso cabeado, geolocalização e "
+"Habilita a tira de filme na sala escura, acesso vinculado, geolocalização e "
 "modo de seleção da mesa de luz. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21326(bridgehead)
@@ -22697,7 +22661,7 @@ msgstr ""
 "gerenciamento de cores (veja  <xref linkend=\"rendering_method\"/>). Na "
 "configuração default, <quote>todos</quote>, o dartable oerguntará o servidor "
 "xatom do display X, ou o serviço de sistema <emphasis>colord</emphasis>. "
-"Voce pode definir em <quote>xatom</quote> ou <quote>colord</quote> para "
+"Você pode definir em <quote>xatom</quote> ou <quote>colord</quote> para "
 "forçar um método específico se a alternativa dá resultados errados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21381(title)
@@ -22868,7 +22832,7 @@ msgid ""
 msgstr ""
 "Estes arquivos XMP redundantes podem depois ser re-importandos em uma base "
 "de dados diferente, preservando suas modificações à imagem. É fortemente "
-"recomendado deixar esta opção ativada para que voce não perca dados caso a "
+"recomendado deixar esta opção ativada para que você não perca dados caso a "
 "base de dados fique corrompida. Fazer backup dos arquivos RAW e também dos "
 "XMP permitirá que você recupere completament seu trabalho. (default: ligado)"
 
@@ -23185,7 +23149,7 @@ msgid ""
 msgstr ""
 "Estas opções definem um padrão de nomes para organizar as imagens no disco "
 "quando são importadas da camera (veja <xref linkend=\"import\"/>) e quando "
-"fotos são tiradas na vista de modo cabeado (veja <xref linkend="
+"fotos são tiradas na vista de modo vinculado (veja <xref linkend="
 "\"tethering_chapter\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21655(para)
@@ -23430,7 +23394,7 @@ msgstr "D"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21955(entry)
 msgid "global/tethering view"
-msgstr ""
+msgstr "global/vista de acesso vinculado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21958(entry)
 msgid "T"
@@ -23842,7 +23806,7 @@ msgstr "Alt+3"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22371(entry)
 msgid "modules/live_view/toggle live view"
-msgstr ""
+msgstr "módulos/vista_ao_vivo/alterna vista ao vivo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22374(entry)
 msgid "V"
@@ -24189,7 +24153,7 @@ msgstr "vistas/slideshow/inicia e para"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22827(entry)
 msgid "views/tethering/toggle film strip"
-msgstr ""
+msgstr "visões/vista de acesso vinculado/alterna tira de filme"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22845(title)
 msgid "Presets"
@@ -24206,7 +24170,7 @@ msgstr ""
 "Este menu dá uma visão geral das pré-definições que existem para os módulos "
 "do darktable. Neste diálogo você pode selecionar se uma certa definição "
 "feita por usuário será auto-aplicada nas imagens que casarem com alguns "
-"critérios. Voce pode pressionar o botão <quote>importar</quote> na parte "
+"critérios. Você pode pressionar o botão <quote>importar</quote> na parte "
 "inferior da janela para importar um conjunto gravado de pré-definições."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22863(para)
@@ -25753,7 +25717,7 @@ msgid ""
 "are migrating from a 32-bit to a 64-bit system you will need to check these "
 "settings and manually change them if needed in darktable's preference dialog."
 msgstr ""
-"Em sistemas de 64 bits voce pode deixar a configuração de parâmetros "
+"Em sistemas de 64 bits você pode deixar a configuração de parâmetros "
 "relacionados ao ladrilhamento em seus defaults: <quote>limite de memória (em "
 "MB) para processamento de ladrilhos</quote> deve ter um valor de 1500 e "
 "<quote>minimum amount of memory (in MB) for a single buffer in tiling</"
@@ -26698,7 +26662,7 @@ msgid ""
 "you know for sure that your system runs rock-solid. You can also set this "
 "parameter to -1, which means that darktable assumes no restriction in the "
 "number of event handles; this is not recommended."
-msgstr ""
+msgstr "manipuladores de eventos (event handlers) são usados para que possamos monitorar sucesso e falha de kernels e informação de profiling, memso que a pixelpipe rode assincronamente. O nero de manipuladores de evento é um recurso limitado do driver OpenCL. Claro que podemos reciclá-los, mas existe um número limitado que podemos usar ao mesmo tempo. Infelizmente, não há como saber qual é o limite de recursos; temos que adivinhar. Nosso valor default de 25 é bem conservador. Você pode querer tentar verificar se valores mais altos, como 100, melhoram o desempenho do OpenCL. Se seu driver ficar sem recursos, você perceberá kernels OpenCL falhando com código <quote>-5 (CL_OUT_OF_RESOURCES)</quote> ou mesmo travamentos de sistema; reduza novamenteo número neste caso. Um valor de 0 impede que o darktable use qualquer manipulador de eventos. Isto previne o darktable de monitorar o sucesso de seus kernels OpenCL, mas retira um pouco da sobrearga do driver. Como consequência, quaisquer falhas irão provavelmente levar a saída errada sem que o darktable perceba; só é recomendado se você tem certeza que seu sistema roda com muita solidez. Você também pode definir este parâmetro em -1, que significa que o darktable presumirá que não há restrições ao número de manipuladores de eventos; isto não é recomendado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24705(computeroutput)
 msgid "opencl_synch_cache"
@@ -26715,7 +26679,7 @@ msgid ""
 "pixelpipe. In many cases this parameter should be set to \"active module"
 "\" (default), which will only cache the input of the currently focused "
 "module."
-msgstr ""
+msgstr "Este parâmetro, se definido em \"true\", forçará o darktable a buscar os buffers de imagem da sua GPU depois de cada mulo e armazená-los no cach da pixelpipe. Esta é uma operação que consome recursos, mas faz sentido dependendo da sua GPU (incluindo se sua GPU é lenta). Neste caso o darktable poderá de fato ganhar algum tempo quando os parâmetros do módulo forem mudados, porque pode voltar a um estado intermediário em cache e reprocessar somente parte da pixelpipe. Em muitos casos, este parâmetro deveria ser definido em \"active module\" (default), o que somente guardará em cache a entrada do módulo em foco."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24726(computeroutput)
 msgid "opencl_micro_nap"
@@ -26733,7 +26697,7 @@ msgid ""
 "microseconds. You need to experiment in order to find an optimum value for "
 "your system. Values of 0, 100, 500 and 1000 are good starting points to try. "
 "Defaults to 1000."
-msgstr ""
+msgstr "Idealmente, você manteria sua GPU ocupada 100% do tempo de reprocessamento da pixelpipe. Isto seria bom. Por outro lado, sua GPU também seria necessária para realizar autalizações regulares na interface. Pode acontecer de não haver tempo suficiente sobrando para isso. A consequência seria uma reação com movimentos truncados/intermitentes da interface ao arrastar ou fazer zoom, ou ao mover deslizadores. O darktable pode adicionar pequenas pausas no processamento da pixelpipe para que a GPU possa fazer um pouco do trabalho relacionado à interface. O parâmetro opencl_micro_nap controla a duração dessas pausas em microssegundos. Você precisa experimentar para encontrar o valor ótimo para seu sistema. Valores de 0, 100, 500 e 1000 são bons pontos de partida. O default é 1000."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24748(computeroutput)
 msgid "opencl_use_pinned_memory"
@@ -26752,7 +26716,7 @@ msgid ""
 "arbitrary memory regions. As they may not show any performance gain and even "
 "may produce garbled output, opencl_use_pinned_memory should be left at its "
 "default FALSE for those devices."
-msgstr ""
+msgstr "Durante o ladrilhamento, uma grande quantidade de memória precisa ser transferida entre o host e o dispositivo. Em alguns dispositivos (AMD), transferência direta de memória de e para uma região arbitrária de memória do host pode acarretar uma grande queda de desempenho. Isto é particularmente perceptível ao exportar imagens grandes. Definir este parametro em TRUE diz o darktable para usar um tipo de buffer intermediário especial para a transferência de dados. Em alguns dispositivos, isto pode acelerar a exportação de imagens para grandes arquivos por um fator entre 2 e 3. Dispositivos e drivers NVIDIA eparecem usar uma técnica de transferencia de memória mais eficiente, mesmo para regiões arbitrárias da memória. Como podem não resultar em ganho de desempenho e podem até produzir saída errada, opencl_use_pinned_memory deveria ser deixado em seu estado default FALSE para estes dispositivos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24645(para)
 msgid ""
@@ -26774,7 +26738,7 @@ msgid ""
 "parameter <quote>OpenCL scheduling profile</quote> in the <quote>core "
 "options</quote> dialog (<xref linkend=\"core_options\"/>) which offers the "
 "following choices:"
-msgstr ""
+msgstr "O darktable pode usar a CPU e uma ou mais GPUs com OpenCL. Dependendo do desempenho relativo, usuários podem escolher entre certos perfis de escalonamento para otimizar o desempenho. Isto é feito pelo parâmetro de configuração <quote>perfil de escalonamento OpenCL</quote> no diálogo de <quote>opções do core</quote>  (<xref linkend=\"core_options\"/>), que oferece as seguintes opções:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24800(quote)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24823(quote)
@@ -26789,7 +26753,7 @@ msgid ""
 "systems with a reasonably fast CPU and a moderately fast GPU. The exact "
 "allocation of devices to the various pixelpipe types can be finetuned with "
 "the <placeholder-1/> configuration parameter (see below)."
-msgstr ""
+msgstr "Seuma GPU capaz de ser usada via OpenCL é encontrada, o darktable a usa para preprocessar a imagem da visão central, enquanto a janela de pré-visualização (veja  <xref linkend=\"navigation\"/>) é processada ela CPU em paralelo. Esta é a configuração preferida para sistemas com uma CPU e GPU razoavelmente rápidas. A alocação exata de dispositivos em várias pixelpipes pode ser ajustada de maneira mais fina com o parâmetro de configuração <placeholder-1/> (veja abaixo)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24804(entry)
 msgid "very fast GPU"
@@ -26818,7 +26782,7 @@ msgid ""
 "a variety of GPUs will need better control on their relative priority. They "
 "should better select the <placeholder-1/> profile and finetune their system "
 "with the <placeholder-2/> configuration parameter (see below)."
-msgstr ""
+msgstr "Estas configurações tratam de sistemas com múltiplas GPUs, com desempenho relativo não difere significativamente. Sempre que um trabalho de processamento é iniciado, o darktable use qualquer GPU que esteja ociosa, mas não a CPU. Usuários de sistemas com uma variadade de GPUs irão querer controle melhor da prioridade relativa das GPUs. Devem, para isso, selecionar o perfil <placeholder-1/> e fazer o ajuste fino do sistema com o parametro de configuração <placeholder-2/> (veja abaixo)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24831(para)
 msgid ""
@@ -26867,7 +26831,7 @@ msgid ""
 "be multiple parallel pixelpipes generating thumbnails. If an OpenCL device "
 "is available darktable dynamically allocates it to one specific pixelpipe "
 "for one run and releases it afterwards."
-msgstr ""
+msgstr "É importante entender como darktable usa os dispositivos OpenCL. Cada sequencia de processamento de uma imagem - converter uma entrada para a saída final usando uma dada pilha de histórico - é executada em uma pixelpipe. Há quatro tipos diferentes de pixelpipe no darktable. Um tipo é responsável pelo processamento da imagem central (a visão cheia) na sala escura, outra processa a imagem em modo de pré-visualização (a janela de navegação) no topo e à esquerda, na sala escura. De cada um desses tipos, somente uma pode ser trabalhada ao mesmo tempo - com a pixelpipe cheia e a de pré-visualização rodando em paralelo. Além disso, pode haver múltiplas pixelpipes paralelas para gerar miniaturas. Se um dispositivo OpenCL estiver disponível, o darktable o aloca dinamicamente para uma das pixelpipes específicas para uma execução e o libera logo após ele terminar."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24865(para)
 msgid ""
@@ -26902,7 +26866,7 @@ msgid ""
 "the export pixelpipes and finally devices <quote>x,y,z...</quote> the "
 "thumbnail pixelpipes. An empty field means that no OpenCL device may serve "
 "this type of pixelpipe."
-msgstr ""
+msgstr "Cada letra representa um dispositivo OpenCL. Há quatro campos na string de parâmetro separas por barras, cada um representando um tipo de pixelpipe. <quote>a,b,c...</quote> define os dispositivos aos quais é permitido processar a pixelpipe (completa) da imagem central. Da mesma forma, os dispositivos <quote>k,l,m...</quote> podem processar as pixelpipes de pré-visualização, dispositivos <quote>o,p,q...</quote> as pixelpipes de exportação e, finalmente, os dispositivos <quote>x,y,z...</quote> as pixelpipes de miniaturas. Um campo vazio significa que nenhum dispositivo OpenCL pode servir aquele tipo de pixelpipe."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24891(para)
 msgid ""
