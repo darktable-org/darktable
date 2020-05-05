@@ -1163,7 +1163,7 @@ void gui_update(struct dt_iop_module_t *self)
   generate_preset_combo(self);
 
   gboolean found = FALSE;
-  // is this a camera white balance?
+  // is this a "as shot" white balance?
   if(memcmp(p->coeffs, fp->coeffs, 3 * sizeof(float)) == 0)
   {
     dt_bauhaus_combobox_set(g->presets, 0);
@@ -1171,7 +1171,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   else
   {
-    // is this a "camera neutral white balance"?
+    // is this a "D65 white balance"?
     if((p->coeffs[0] == (float)g->daylight_wb[0]) && (p->coeffs[1] == (float)g->daylight_wb[1])
        && (p->coeffs[2] == (float)g->daylight_wb[2]))
     {
@@ -1268,7 +1268,7 @@ void gui_update(struct dt_iop_module_t *self)
         }
       }
     }
-    if (!found)
+    if (!found) //since we haven't got a match - it's user-set
       dt_bauhaus_combobox_set(g->presets, 3);
   }
 
@@ -1485,10 +1485,6 @@ void reload_defaults(dt_iop_module_t *module)
 
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
-
-    color_temptint_sliders(module);
-    color_rgb_sliders(module);
-    color_finetuning_slider(module);
   }
 
 end:
@@ -1795,9 +1791,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->presets, 2);
-  //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot), FALSE);
-  //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user), FALSE);
-  //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65), FALSE);
 
   // capture gui color picked event.
   if(self->picked_color_max[0] < self->picked_color_min[0]) return;
@@ -1994,13 +1987,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
   gtk_grid_attach(grid, g->btn_d65, 2, 2, 1, 1);
 
+  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_user_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_d65), "toggled", G_CALLBACK(btn_d65_toggled),  (gpointer)self);
 
+  dt_iop_init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->colorpicker),
+                     DT_COLOR_PICKER_AREA,
+                     _iop_color_picker_apply);
+
   gtk_box_pack_start(GTK_BOX(g->box_enabled), gridw, TRUE, TRUE, 0);
-  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
-  //gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
 
   // collapsible section for coeffs that are generally not to be used
 
@@ -2064,18 +2062,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->label_disabled, "disabled");
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
-
-  //g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  //gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  //gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_widget_show_all(g->colorpicker);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
 
   //call to gui_update in gui_init is NOT needed.
   //self->gui_update(self);
