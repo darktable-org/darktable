@@ -6,7 +6,7 @@ add_definitions(-include common/module_api.h)
 add_definitions(-include libs/lib_api.h)
 
 add_custom_command(
-  DEPENDS ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
   COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C sh ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
