@@ -264,7 +264,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
 
-#include "libs/tools/darktable_authors.h"
+#include "tools/darktable_authors.h"
 
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
