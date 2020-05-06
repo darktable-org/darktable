@@ -83,6 +83,18 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
+  // copy the module order
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.undo_module_order"
+                              "  SELECT ?1, imgid, version, iop_list"
+                              "  FROM main.module_order"
+                              "  WHERE imgid=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
+  sqlite3_finalize(stmt);
+
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
@@ -138,6 +150,18 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
   sqlite3_finalize(stmt);
 
+  // restore module order
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO main.module_order"
+                              "  SELECT imgid, version, iop_list"
+                              "  FROM memory.undo_module_order"
+                              "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  sqlite3_finalize(stmt);
+
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
@@ -159,6 +183,13 @@ static void _clear_undo_snapshot(int32_t imgid, int snap_id)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM memory.undo_masks_history WHERE id=?1 AND imgid=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM memory.undo_module_order WHERE id=?1 AND imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
