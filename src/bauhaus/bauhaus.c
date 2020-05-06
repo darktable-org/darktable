@@ -2399,19 +2399,16 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
 
 static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->module) dt_iop_request_focus(w->module);
   gtk_widget_grab_focus(GTK_WIDGET(w));
   gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
 
-
-  GtkAllocation tmp;
-  gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-  if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING))
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  if(event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING)
   {
-    if (w->quad_toggle)
+    if (w->quad_paint && w->quad_toggle)
     {
       if (w->quad_paint_flags & CPF_ACTIVE)
         w->quad_paint_flags &= ~CPF_ACTIVE;
@@ -2438,8 +2435,8 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     else
     {
       const float l = 0.0f;
-      const float r = slider_right_pos((float)tmp.width);
-      dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
+      const float r = slider_right_pos((float)allocation.width);
+      dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 1;
       int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
@@ -2479,17 +2476,20 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 
 static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  // remember mouse position for motion effects in draw
-  if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  if(event->x <= allocation.width - darktable.bauhaus->quad_width)
   {
-    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-    if(w->module) dt_iop_request_focus(w->module);
-    gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
-    GtkAllocation tmp;
-    gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-    const float l = 0.0f;
-    const float r = slider_right_pos((float)tmp.width);
-    dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
+    // remember mouse position for motion effects in draw
+    if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
+    {
+      dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+      if(w->module) dt_iop_request_focus(w->module);
+      gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
+      const float l = 0.0f;
+      const float r = slider_right_pos((float)allocation.width);
+      dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+    }
   }
   // not sure if needed:
   // gdk_event_request_motions(event);
