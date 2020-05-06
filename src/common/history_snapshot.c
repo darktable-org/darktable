@@ -74,7 +74,7 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_masks_history"
-                              "  SELECT ?1, imgid, num, formid, form, name, version, "
+                              "  SELECT ?1, imgid, num, formid, form, name, version,"
                               "         points, points_count, source"
                               "  FROM main.masks_history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
@@ -192,6 +192,7 @@ void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_un
     {
       _history_snapshot_undo_restore(hist->imgid, hist->after, hist->after_history_end);
     }
+
   // in principle undo() routine should add imgid to imgs list to make _undo_do_undo_redo() refresh XMP file for each of them
   // in this case the update of XMP file is done by the normal image (re)development process.
   }
