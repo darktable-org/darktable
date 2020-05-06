@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -65,6 +66,30 @@ static void _film_strip_activated(const int imgid, void *data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
+
+  // if the previous shown image is selected and the selection is unique
+  // then we change the selected image to the new one
+  if(prt->image_id > 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                "WHERE m.imgid=s.imgid",
+                                -1, &stmt, NULL);
+    gboolean follow = FALSE;
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      if(sqlite3_column_int(stmt, 0) == prt->image_id && sqlite3_step(stmt) != SQLITE_ROW)
+      {
+        follow = TRUE;
+      }
+    }
+    sqlite3_finalize(stmt);
+    if(follow)
+    {
+      dt_selection_select_single(darktable.selection, imgid);
+    }
+  }
 
   prt->image_id = imgid;
 
