@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-04 17:21-0300\n"
-"PO-Revision-Date: 2020-05-05 11:59-0300\n"
+"POT-Creation-Date: 2020-05-05 15:09-0300\n"
+"PO-Revision-Date: 2020-05-06 11:01-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -5704,12 +5704,12 @@ msgstr "rotação"
 #: ../src/iop/ashift.c:520
 msgctxt "accel"
 msgid "lens shift (v)"
-msgstr "deslocamento de lente (v)"
+msgstr "desvio de lente (v)"
 
 #: ../src/iop/ashift.c:521
 msgctxt "accel"
 msgid "lens shift (h)"
-msgstr "deslocamento de lente (h)"
+msgstr "desvio de lente (h)"
 
 #: ../src/iop/ashift.c:522
 msgctxt "accel"
@@ -8611,7 +8611,7 @@ msgstr "U0V0"
 
 #: ../src/iop/denoiseprofile.c:4421
 msgid "whitebalance-adaptive transform"
-msgstr "balanço de branco - adaptativo"
+msgstr "transformação adaptativa ao balanço de branco"
 
 #: ../src/iop/denoiseprofile.c:4423
 msgid ""
@@ -8714,7 +8714,7 @@ msgstr "média não local"
 
 #: ../src/iop/denoiseprofile.c:4483
 msgid "non-local means auto"
-msgstr "médias não locais automático"
+msgstr "média não local automático"
 
 #: ../src/iop/denoiseprofile.c:4484
 msgid "wavelets"
@@ -8741,10 +8741,7 @@ msgstr "perfil utilizado para estabilização de variância"
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
-msgstr ""
-"método usado no núcleo de redução de ruído. médias não-locais funcionam "
-"melhor paramesclagem em `luminosidade', wavelets funcionam melhor para "
-"mesclagem em `cor`"
+msgstr "método usado no núcleo de redução de ruído. médias não-locais funcionam melhor paramesclagem em `luminosidade', wavelets funcionam melhor para mesclagem em `cor`"
 
 #: ../src/iop/denoiseprofile.c:4497
 msgid ""
@@ -10970,7 +10967,7 @@ msgstr ""
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
-msgstr "redução de ruído (método não local)"
+msgstr "redução de ruído (média não local)"
 
 #: ../src/iop/nlmeans.c:119
 msgctxt "accel"
