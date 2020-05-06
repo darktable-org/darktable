@@ -39,7 +39,8 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
   CPF_CUSTOM_BG = 1 << 11,
   CPF_CUSTOM_FG = 1 << 12,
-  CPF_SPECIAL_FLAG = 1 << 13       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
+  CPF_FOCUS = 1 << 13, 
+  CPF_SPECIAL_FLAG = 1 << 14       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
 } dtgtk_cairo_paint_flags_t;
 
 
