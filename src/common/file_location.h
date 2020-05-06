@@ -22,7 +22,8 @@
 #include <string.h>
 
 /** TODO: Sort, comment */
-void dt_make_filename_absolute(char* path);
+char* dt_make_filename_absolute(char* path);
+void dt_check_opendir(const char* text, const char* directory);
 
 /** returns the users home directory */
 gchar *dt_loc_get_home_dir(const gchar *user);

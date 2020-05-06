@@ -96,17 +96,7 @@ void dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, default_config_dir);
-  DIR* dir = opendir(darktable.configdir);
-  if (dir) {
-    printf("darktable.configdir: %s\n", darktable.configdir);
-    closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.configdir %s does not exist\n", darktable.configdir);
-    exit(EXIT_FAILURE);
-  } else {
-    printf("opendir() failed for some other reason\n");
-    exit(EXIT_FAILURE);
-  }
+  dt_check_opendir("darktable.configdir", darktable.configdir);
   g_free(default_config_dir);
 }
 
@@ -151,17 +141,8 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, g_get_tmp_dir());
-  DIR* dir = opendir(darktable.tmpdir);
-  if (dir) {
-    printf("darktable.tmpdir: %s\n", darktable.tmpdir);
-    closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.tmpdir %s does not exist\n", darktable.tmpdir);
-    return 1;
-  } else {
-    printf("opendir() failed for some other reason\n");
-    return 1;
-  }
+  // return 1 instead of error originally
+  dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
   if(darktable.tmpdir == NULL) return 1;
   return 0;
 }
@@ -170,17 +151,7 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, default_cache_dir);
-  DIR* dir = opendir(darktable.cachedir);
-  if (dir) {
-    printf("darktable.cachedir: %s\n", darktable.cachedir);
-    closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.cachedir %s does not exist\n", darktable.cachedir);
-    exit(EXIT_FAILURE);
-  } else {
-    printf("opendir() failed for some other reason\n");
-    exit(EXIT_FAILURE);
-  }
+  dt_check_opendir("darktable.cachedir", darktable.cachedir);
   g_free(default_cache_dir);
 }
 
@@ -197,21 +168,50 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  dt_make_filename_absolute(complete_path);
-  darktable.plugindir = complete_path;
+  darktable.plugindir = dt_make_filename_absolute(complete_path);
+  dt_check_opendir("darktable.plugindir", darktable.plugindir);
+#endif
+}
 
-  DIR* dir = opendir(darktable.plugindir);
+void dt_check_opendir(const char* text, const char* directory)
+{
+  if (!directory) {
+    printf("directory for %s has not been set.\n", text);
+    exit(EXIT_FAILURE);
+  } 
+
+  DIR* dir = opendir(directory);
   if (dir) {
-    printf("darktable.plugindir: %s\n", darktable.plugindir);
+    printf("%s: %s\n", text, directory);
     closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.plugindir %s does not exist\n", darktable.plugindir);
+  } else if ( errno == EACCES ) {
+    printf("Permission denied.\n");
+    exit(EXIT_FAILURE);
+  } else if ( errno == ENOENT ) {
+    printf("%s %s does not exist.\n", text, directory);
+    exit(EXIT_FAILURE);
+  } else if ( errno == EBADF ) {
+    printf("fd is not a valid file descriptor opened for reading.\n");
+    exit(EXIT_FAILURE);
+  } else if ( errno == EMFILE ) {
+    printf("The per-process limit on the number of open file descriptors has been reached.\n");
+    exit(EXIT_FAILURE);
+  } else if ( errno == ENFILE ) {
+    printf("The system-wide limit on the total number of open files has been reached.\n");
+    exit(EXIT_FAILURE);
+  } else if ( errno == ENOENT ) {
+    printf("Directory does not exist, or name is an empty string.\n");
+    exit(EXIT_FAILURE);
+  }  else if ( errno == ENOMEM ) {
+    printf("Insufficient memory to complete the operation.\n");
+    exit(EXIT_FAILURE);
+  }  else if ( errno == ENOTDIR ) {
+    printf(" name is not a directory.\n");
     exit(EXIT_FAILURE);
   } else {
-    printf("opendir() failed for some other reason\n");
+    printf("opendir() failed for some other reason.\n");
     exit(EXIT_FAILURE);
   }
-#endif
 }
 
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)
@@ -231,39 +231,27 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  dt_make_filename_absolute(complete_path);
-  darktable.localedir = complete_path;
-
-  DIR* dir = opendir(darktable.localedir);
-  if (dir) {
-    printf("darktable.localedir: %s\n", darktable.localedir);
-    closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.localedir %s does not exist\n", darktable.localedir);
-    exit(EXIT_FAILURE);
-  } else {
-    printf("opendir() failed for some other reason\n");
-    exit(EXIT_FAILURE);
-  }
+  darktable.localedir = dt_make_filename_absolute(complete_path);
+  dt_check_opendir("darktable.localedir", darktable.localedir);
 #endif
 }
 
-void dt_make_filename_absolute(char* path)
+char* dt_make_filename_absolute(char* path)
 {
-  printf("dt_make_filename_absolute: path: %s\n", path);
+  // printf("dt_make_filename_absolute: path: %s\n", path);
 
-  // g_realpath
-  char actualpath [PATH_MAX+1];
-  char *ptr;
-  ptr = realpath(path, actualpath);
-  path = actualpath;
-  printf("absolute_path: %s\n", actualpath);
-  printf("ptr: %s\n", ptr);
+  // // g_realpath
+  // char actualpath [PATH_MAX+1];
+  // char *ptr;
+  // ptr = realpath(path, actualpath);
+  // path = actualpath;
+  // printf("absolute_path: %s\n", actualpath);
+  // printf("ptr: %s\n", ptr);
 
   char* grealpath;
   grealpath = g_realpath(path);
-  printf("g_realpath: %s\n", grealpath);
-
+  // printf("g_realpath: %s\n", grealpath);
+  return grealpath;
 }
 
 void dt_loc_init_datadir(const char* application_directory, const char *datadir)
@@ -275,27 +263,15 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
   darktable.datadir = dt_loc_init_generic(datadir, directory ? directory : DARKTABLE_DATADIR);
   g_free(directory);
 #else
-  // TODO: Apple/windows implementation
+
   gchar* path = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
-  printf("path: %s\n", path);
+  // printf("path: %s\n", path);
 
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  dt_make_filename_absolute(complete_path);
-  darktable.datadir = complete_path;
-
-  DIR* dir = opendir(darktable.datadir);
-  if (dir) {
-    printf("darktable.datadir: %s\n", darktable.datadir);
-    closedir(dir);
-  } else if (ENOENT == errno) {
-    printf("darktable.datadir %s does not exist\n", darktable.datadir);
-    exit(EXIT_FAILURE);
-  } else {
-    printf("opendir() failed for some other reason\n");
-    exit(EXIT_FAILURE);
-  }
+  darktable.datadir = dt_make_filename_absolute(complete_path);
+  dt_check_opendir("darktable.datadir", darktable.datadir);
 #endif
 }
 
