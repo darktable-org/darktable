@@ -42,7 +42,7 @@ static inline gchar *g_realpath(const char *path)
     exit(EXIT_FAILURE);
   } else if ( errno == ENOENT ) {
     printf("A component of file_name does not name an existing file or file_name points to an empty string: %s\n", path);
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
   } else if ( errno == ENOTDIR ) {
     printf("A component of the path prefix is not a directory: %s\n", path);
     exit(EXIT_FAILURE);
