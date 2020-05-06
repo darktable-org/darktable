@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e7234" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="4*" />
+          <colspec colname="col2" colnum="2" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/tonecurve_ex1.png" placement="break" />
+              </entry>
+              <entry colname="col2">Original image</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/tonecurve_ex2.png" placement="break" />
+              </entry>
+              <entry colname="col2">Tone curve settings. Please note how the center node of our b-curve was shifted down to negative values. This gives the image its blue tint.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/tonecurve_ex3.png" placement="break" />
+              </entry>
+              <entry colname="col2">Resulting image</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

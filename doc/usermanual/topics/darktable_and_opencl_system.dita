@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_system" xml:lang="en-us">
+  <title>Setting up OpenCL on your system</title>
+  <body>
+    <p>The huge diversity of systems and the marked differences between OpenCL vendors and driver versions makes it impossible to give an comprehensive overview of how to setup OpenCL. We only can give you an example, in this case for NVIDIA driver version 331.89 on Ubuntu 14.04. We hope that this will serve you as a first impression and will help to solve possible problems of your specific setup.</p>
+    <p>The principle OpenCL function flow is like this:</p>
+    <p>darktable -&gt; libOpenCL.so -&gt; libnvidia-opencl.so.1 -&gt; kernel driver module(s) -&gt; GPU</p>
+    <p>
+      <ul>
+        <li>
+          <p>darktable dynamically loads 
+          <filepath>libOpenCL.so</filepath>, a system library which must be accessible to the system's dynamic loader (
+          <filepath>ld.so</filepath>).</p>
+        </li>
+        <li>
+          <p>
+          <filepath>libOpenCL.so</filepath>will read the vendor specific information file (
+          <filepath>/etc/OpenCL/vendors/nvidia.icd</filepath>) to find the library which contains the vendor specific OpenCL implementation.</p>
+        </li>
+        <li>
+          <p>The vendor specific OpenCL implementation comes as a library 
+          <filepath>libnvidia-opencl.so.1</filepath>(which in our case is a symbolic link to 
+          <filepath>libnvidia-opencl.so.331.89</filepath>).</p>
+        </li>
+        <li>
+          <p>
+          <filepath>libnvidia-opencl.so.1</filepath>needs to talk to the vendor specific kernel modules 
+          <filepath>nvidia</filepath>and 
+          <filepath>nvidia_uvm</filepath>via device special files 
+          <filepath>/dev/nvidia0</filepath>, 
+          <filepath>/dev/nvidiactl</filepath>, and 
+          <filepath>/dev/nvidia-uvm</filepath>.</p>
+        </li>
+      </ul>
+    </p>
+    <p>At system startup the required device special files (/dev/nvidia*) need to be created. If this does not happen on your system by default, the easiest way to set them up and make sure all modules are loaded is installing the 
+    <filepath>nvidia-modprobe</filepath>package (which, at the time of this writing, is only available for 
+    <q>utopic</q>, but works well with 
+    <q>trusty</q>and 
+    <q>Mint 17</q>). You can grab it at 
+    <xref format="html" href="http://packages.ubuntu.com/utopic/nvidia-modprobe" scope="external">this site</xref>.</p>
+    <p>A user account which wants to make use of OpenCL from within darktable needs to have read-write access to NVIDIA's device special files. On some systems these files allow world read-write access by default, which avoids permission issues but might be debatable in terms of system security. Other systems restrict the access to a user group, e.g. 
+    <q>video</q>. In that case your user account has to be member of that group.</p>
+    <p>To summarise, the packages which needed to be installed in this specific case were: 
+    <ul>
+      <li>
+        <p>nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-modprobe (340.24-1)</p>
+      </li>
+      <li>
+        <p>nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)</p>
+      </li>
+      <li>
+        <p>nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)</p>
+      </li>
+      <li>
+        <p>nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)</p>
+      </li>
+      <li>
+        <p>nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)</p>
+      </li>
+      <li>
+        <p>nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)</p>
+      </li>
+      <li>
+        <p>opencl-headers (1.2-2013.10.23-1)</p>
+      </li>
+    </ul></p>
+    <p>The list of NVIDIA related kernel modules as reported by 
+    <filepath>lsmod</filepath>is:</p>
+    <p>
+      <pre xml:space="preserve">
+nvidia
+nvidia_uvm
+</pre>
+    </p>
+    <p>The list of NVIDIA related device special files (
+    <filepath>ls -l /dev/nvidia*</filepath>) should read like:</p>
+    <p>
+      <pre xml:space="preserve">
+crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
+crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
+</pre>
+    </p>
+    <p>Beware that the major/minor numbers (e.g. 250/0 for 
+    <filepath>/dev/nvidia-uvm</filepath>in this example) may vary depending on your system.</p>
+  </body>
+</topic>

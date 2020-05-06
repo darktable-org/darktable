@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e9473" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The horizontal axis represents the range of values you can work on. The vertical axis shows the modifications you can apply by designing a curve. For both horizontal and vertical axes you can work on lightness, saturation or hue.</p>
+    <p>You can click on any of the eight nodes on the curve and drag to adjust it vertically. A circle indicates how strong adjacent nodes will be affected. Use the scroll wheel of your mouse to change the circle diameter. You can also use the eight controlpoints (triangles which define the vertical value of the nodes) at the bottom to adjust the curve.</p>
+    <p>A color picker is activated by pressing 
+    <image align="center" href="../images/darkroom_module_icon_picker.png" placement="inline" />and will show the picked values in the diagram. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+  </body>
+</topic>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e11256" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">The basic elements of all tools in liquify are nodes.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/liquify_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>You can drag the central point of a node to move the node around. The radius describes the area of the applied effect: the distortion occurs only inside this radius. To change the radius drag the handle at the circumference. A strength vector starting from the center describes the direction of the distortion, and its strength is depicted by the length of the vector. You change the vector by dragging its arrowhead.</p>
+  </body>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="exporting_images">
+  <title>Exporting images</title>
+  <body>
+    <p>Changes to an image are not saved as in a regular image editor. darktable is a non-destructive editor, which means all changes are stored in a database, and the original image is untouched. Therefore, you need to export images to bake the processing options into an output file that can be distributed outside of darktable.</p>
+    <p>Images are exported from the lighttable view, using the 
+    <i>export selected</i>dialog in the right panel (
+    <xref href="../lighttable/export_selected.dita#export_selected" type="topic">Export selected</xref>). In general, export means: save my developed raw image as a JPEG.</p>
+    <p>The export is modularized into 
+    <i>storage</i>and 
+    <i>format</i>. darktable ships with several storage modules such as 
+    <i>save on disk</i>, various webalbums, a LaTeX photo book template and more. Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and more.</p>
+    <p>Select images on the lighttable, choose the target storage and format, and set the maximum width and height image restraints. This means that none of the images will be bigger than any of the width/height restraints and hit the export button. Leave the width and height restraints at zero if you want the original resolution.</p>
+  </body>
+</topic>

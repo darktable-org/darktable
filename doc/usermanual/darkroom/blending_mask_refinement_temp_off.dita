@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_temp_off" xml:lang="en-us">
+  <title>temporarily switch off mask</title>
+  <body>
+    <p>Sometimes it is useful to visualize the module's effect without the mask taking action. You can do so by clicking on the 
+    <image align="center" href="../images/darkroom_module_icon_eye.png" placement="inline" />symbol, which will temporarily deactivate the mask – the selected blend mode and opacity remain in effect. Switch this button on and off to see if the mask is acting on the image as intended.</p>
+  </body>
+</topic>

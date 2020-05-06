@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="softproof" xml:lang="en-us">
+  <title>Soft proof</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>soft proof</indexterm></indexterm>
+        <indexterm>soft proof</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_module_icon_softproof.png" placement="inline" />icon activates the soft proof display mode of your image. Soft proof allows you to preview your image rendered using a printer profile so as to see how colors will end up on the final print. You can also activate soft proof with the keyboard shortcut 
+    <q>Ctrl+S</q>. An information message 
+    <q>soft proof</q>on the bottom left of your image tells you that you are in soft proof display mode.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Right-clicking on the icon opens a dialog with configuration parameters.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_softproof.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>
+      <b>display intent</b>
+    </p>
+    <p>Sets the rendering intent for your display – only available if rendering with LittleCMS2 is activated. See 
+    <xref href="rendering_intent.dita#rendering_intent" type="topic">Rendering intent</xref>for available options.</p>
+    <p>
+      <b>softproof profile</b>
+    </p>
+    <p>Sets the color profile for soft proofing. darktable searches for available profiles in 
+    <filepath>$DARKTABLE/share/darktable/color/out</filepath>and 
+    <filepath>$HOME/.config/darktable/color/out</filepath>. 
+    <filepath>$DARKTABLE</filepath>is used here to represent your chosen darktable installation directory and 
+    <filepath>$HOME</filepath>your home directory. Typically these profiles are supplied by your printer or generated during printer profiling.</p>
+    <p>
+      <b>display profile</b>
+    </p>
+    <p>Sets the color profile for the display. The option 
+    <q>system display profile</q>is the preferred setting when working with a calibrated display; the profile is taken either from your system's color manager or from your X display server. In 
+    <i>GUI options</i>(see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>) you can specify which method to use. For more information see 
+    <xref href="display_profile.dita#display_profile" type="topic">Display profile</xref>.</p>
+  </body>
+</topic>

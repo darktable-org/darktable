@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="detail.d12e7541" xml:lang="en-us">
+  <title>detail</title>
+  <body>
+    <p>Add or remove detail. Higher values will increase local contrast. This will insert an S shaped element in the center of the curve, to increase or decrease local contrast. For monochrome images it is often possible to push this parameter to extreme settings without ridiculous results or artifacts.</p>
+  </body>
+</topic>

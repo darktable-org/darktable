@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?path2rootmap-uri ./?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="license">
+  <title>License</title>
+  <body>
+    <p>darktable is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+    <p>darktable is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+    <p>You should have received a copy of the GNU General Public License along with darktable. If not, see 
+    <xref href="http://www.gnu.org/licenses/" format="html" scope="external">
+      <i>the GNU homepage</i>
+    </xref>.</p>
+    <p>The present user manual is under license 
+    <i>cc by-sa</i>, meaning 
+    <i>Attribution Share Alike</i>. You can visit 
+    <xref href="http://creativecommons.org/about/licenses/" format="html" scope="external">
+      <i>the creative commons page</i>
+    </xref>to get more information.</p>
+    <p>
+      <lines xml:space="preserve">
+2010-2012 P.H. Andersson
+</lines>
+      <lines xml:space="preserve">
+2010-2011 Olivier Tribout
+</lines>
+      <lines xml:space="preserve">
+2012-2018 Ulrich Pegelow
+</lines>
+      <lines xml:space="preserve">
+2013-2017 Jérémy Rosen
+</lines>
+    </p>
+  </body>
+</topic>

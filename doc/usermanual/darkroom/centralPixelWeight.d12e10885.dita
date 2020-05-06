@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="centralPixelWeight.d12e10885" xml:lang="en-us">
+  <title>central pixel weight</title>
+  <body>
+    <p>This slider is only available if mode 
+    <q>non-local means</q>or 
+    <q>non-local means auto</q>is selected. It controls the amount of details which should be preserved by the algorithm. It can be used as a way to control the amount of luma noise smoothing: giving a big value to this slider will result mostly in chroma noise smoothing with little smoothing of luma noise. This slider has no effect if patch-size is set to 0.</p>
+  </body>
+</topic>

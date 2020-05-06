@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_feathering_guide" xml:lang="en-us">
+  <title>feathering guide</title>
+  <body>
+    <p>Mask feathering smoothens a drawn or parametric mask non-uniformly such that the mask's edges are adjusted automatically to match the edges of the image. This mask smoothing is guided either by the module's input image or by its output (before blending), depending on what is selected in the 
+    <q>feathering guide</q>combobox. The feathering is particularly sensitive to this choice for edge-modifying modules, i.e., modules for sharpening or blurring an image.</p>
+  </body>
+</topic>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="mode.d12e8947" xml:lang="en-us">
+  <title>Mode</title>
+  <body>
+    <p>
+      <ul>
+        <li>
+          <p>
+          <i>lift, gamma, gain (sRGB)</i>is the legacy mode from darktable 2.4 and previous. In this mode, the color transformations are applied in sRGB color space encoded with the sRGB gamma (average gamma of 2.2).</p>
+        </li>
+        <li>
+          <p>
+          <i>lift, gamma, gain (ProPhotoRGB)</i>is the same as the previous but works in ProPhoto RGB space, encoded linearly. In this mode, the RGB parameters are corrected in XYZ luminance (Y channel) internally so they affect only the color, and only the 
+          <q>factors</q>adjust the luminance.</p>
+        </li>
+        <li>
+          <p>
+          <i>slope, offset, power (ProPhotoRGB)</i>applies the 
+          <i>ASC CDL</i>in ProPhoto RGB space, encoded linearly. Similarly to the previous mode, the RGB parameters are corrected in XYZ luminance internally. In this mode, the slope parameter acts as an exposure compensation, the offset acts as a black level correction, and the power acts as a gamma correction. All parameters will have some impact on the whole luminance range, but the slope will mostly affect the highlights, the offset will mostly affect the shadows, and the power will mostly affect the mid-tones.</p>
+        </li>
+      </ul>
+    </p>
+    <p>For better efficiency, in 
+    <i>slope, offset, power</i>, it is recommended to set the slope first, then the offset, and finally the power, in this order. The name of the mode can be use as a mnemonic to remember the order.</p>
+    <p>In 
+    <i>slope, offset, power</i>mode, the shadows parameter has a far heavier effect than in 
+    <i>lift, gamma, gain</i>. Switching from the former to the latter, you should adapt the saturation in shadows, dividing by around 10.</p>
+  </body>
+</topic>

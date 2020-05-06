@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="optimizeLuma.d12e9079" xml:lang="en-us">
+  <title>Optimize luma</title>
+  <body>
+    <p>The color-picker close to the 
+    <i>optimize luma</i>label will select the whole image and optimize the 
+    <i>factors</i>for shadows, mid-tones and highlights so the average luminance of the picture is 50% Lab, the maximum is 100% and the minimum is 0%, at the output of this module. This is essentially an histogram normalization, similar to what the levels module can achieve. The optimizer is accurate only when used in 
+    <i>slope, offset, power</i>mode. It works only fairly in the other modes.</p>
+    <p>In case you want more control, you can define three control patches using the color-pickers in front of each factor slider, to sample luminance in selected areas. The shadows color-picker samples the minimum luminance, the mid-tones one samples the average, and the highlights one samples the maximum luminance. The most sensitive parameter is the mid-tones factor, since selecting a slightly different area can lead to dramatic parameter changes. Using the factors color-pickers alone, without triggering the luma optimization, will allow to perform adjustments without general optimization, but each parameter is always computed accounting from the two others. Once patches are selected, the label becomes 
+    <q>optimize luma from patches</q>. To reset one patch, you can just redo the selection. Patches are not saved in the parameters and are kept only during the current session.</p>
+    <p>It is important no note that the luminance adjustment performed targets only the output of the color balance module and does not account for other luminance adjustments performed in modules coming later in the pixelpipe (filmic, tone curve, color zones, levels, global tonemapping, etc.). Using the color balance to remap the luminance globally on the image is not recommended because it does not preserve the original colors, and modules such as tone curves or filmic are better suited for this purpose. Luminance adjustments in color balance are better suited for local correction, in combination with color adjustments, for color-grading with masks.</p>
+  </body>
+</topic>

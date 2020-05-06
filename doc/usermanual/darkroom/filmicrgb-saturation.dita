@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="filmicrgb-saturation" xml:lang="en-us">
+  <title>Extreme luminance saturation (
+  <uicontrol>Look</uicontrol>tab)</title>
+  <body>
+    <p>The darker curve in the graph of the module shows the desaturation of the extremities of the luminance range (black and white): since black and white do not have a color, they should normally be associated to 0% saturation. The default saturation is set to 100% in the range defined by the latitude, and decreases down to 0% outside of that range. One of the advantages of this operations is that, since color components do not clip at the same rate in the image, desaturating them avoids fringes around the high exposures.</p>
+    <p>If the bright colors feel too desaturated, you should check that the white-relative exposure setting does not clip the high luminance spots, and if not, increase the extreme luminance saturation parameter.</p>
+  </body>
+</topic>

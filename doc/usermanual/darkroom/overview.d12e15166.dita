@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e15166" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>The 
+              <i>low light</i>module allows one to simulate human lowlight vision, thus providing ability to make lowlight pictures look closer to reality. It can also be used to perform a day to night conversion.</p>
+              <p>The idea is to calculate a 
+              <xref format="html" href="http://en.wikipedia.org/wiki/Scotopic_vision" scope="external">scotopic vision</xref>image which is perceived by rods rather than than cones in the eye under low light. Scotopic lightness then is mixed with photopic value (regular color image pixel) using some blending function. Also this module is able to simulate the 
+              <xref format="html" href="http://en.wikipedia.org/wiki/Purkinje_effect" scope="external">Purkinje effect</xref>by adding some blueness to the dark parts of the image.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/lowlight.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="basic_group" xml:lang="en-us">
+  <title>Basic group</title>
+  <body>
+    <p>The basic group of modules contains the modules for basic development. These are ones you probably will use most often, such as exposure, white balance etc.</p>
+  </body>
+</topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_mask_brightness" xml:lang="en-us">
+  <title>mask opacity</title>
+  <body>
+    <p>The strength of the module's effect is determined by the mask's local opacity. Feathering and blurring the mask may result in a mask with reduced opacity, which implies a reduced effect. Therefore, the 
+    <q>mask opacity</q>slider allows to readjust the mask opacity. If the opacity is decreased (negative slider values) least opaque parts are affected stronger than most opaque parts. Contrary, if the mask opacity is increased (positive slider values) most opaque parts are affected stronger than least opaque parts. As a consequence, completely opaque portions of the mask always remain opaque and completely transparent portions remain transparent. This is to ensure that regions which have been excluded from or included to a module's effect by setting the mask's opacity to 0% or 100% remain excluded or included even if the mask opacity is adjusted by this slider.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="midtonesBias.d12e10276" xml:lang="en-us">
+  <title>mid-tones bias</title>
+  <body>
+    <p>Velvia can reduce its effect for mid-tones to avoid unnatural skin tones. The mid-tones bias slider controls this selectivity; reducing its value reduces mid-tone protection and makes the overall velvia effect stronger.</p>
+  </body>
+</topic>

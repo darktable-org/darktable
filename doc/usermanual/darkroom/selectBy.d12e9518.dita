@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selectBy.d12e9518" xml:lang="en-us">
+  <title>select by</title>
+  <body>
+    <p>Defines the horizontal axis, i.e. the range of values you work on. You can choose between 
+    <q>lightness</q>, 
+    <q>saturation</q>, and 
+    <q>hue</q>(default). Changing this parameter resets any defined curve to a straight horizontal line.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10339" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Vibrance only has one parameter which controls the amount applied.</p>
+  </body>
+</topic>

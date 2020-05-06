@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="user_interface">
+  <title>User Interface</title>
+  <body>
+    <p>This section describes the layout of the user interface. 
+    <fig>
+      <image href="../images/lighttable_view.png" align="center" placement="inline" />
+    </fig></p>
+  </body>
+</topic>

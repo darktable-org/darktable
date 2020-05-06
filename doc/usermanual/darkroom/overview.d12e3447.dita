@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e3447" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>The masks manager panel is the central place where you manage all masks and shapes within the context of the current image. Here you create, delete and change shapes or give them unique names. You can add shapes to and remove shapes from a mask, and you define how multiple shapes interact within a mask.</p>
+  </body>
+</topic>

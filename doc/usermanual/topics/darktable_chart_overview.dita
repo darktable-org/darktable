@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>With 
+    <filepath>darktable-chart</filepath>we provide a tool for extracting luminance and color values out of images taken from color reference cards like IT8.7/1 charts. Its main purpose is to compare a source image (typically a largely unprocessed raw image) to a target image (typically a JPEG image created in-camera) and produce a darktable style that is able to convert luminance and color values of the source image to produce the target image. This style employs the 
+    <i>tone curve</i>module, the 
+    <i>input color profile</i>, and the 
+    <i>color look up table</i>module for that purpose (see 
+    <xref href="../darkroom/tone_curve.dita#tone_curve" type="topic">Tone curve</xref>, 
+    <xref href="../darkroom/input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>, and 
+    <xref href="../darkroom/color_look_up_table.dita#color_look_up_table" type="topic">Color look up table</xref>).</p>
+    <p>Some cameras are particularly advanced in offering various film simulation modes of your choice. With the help of 
+    <filepath>darktable-chart</filepath>and the underlying modules you can now create styles that replicate these film simulations from within darktable.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="coarsefineCurves.d12e12850" xml:lang="en-us">
+  <title>coarse/fine curves</title>
+  <body>
+    <p>The noise of an image is usually not only fine grain, but also more or less coarse grain. These curves allow to denoise more or less depending on the coarseness of the visible noise. The left of the curve will act on very coarse grain noise, while the right of the curve will act on very fine grain noise. Pushing up the curve will result in more smoothing, pulling it down will result in less smoothing. As an example, you can preserve very-fine grain noise by pulling down the rightest point of the curve until the minimum value. As another example, if you are tackling chroma noise with a blend mode, you can push up the right part of the curve, as colors are not supposed to change a lot on fine grain scales: this will help especially if you see some isolated pixel left undenoised. Considering R, G, and B curves, the best way to use them is to look at one of the channel using the channel mixer module in gray mode, denoise this particular channel, and then do the same for the other channels. This way, you can take into account the fact that some channel may be noisier than others into your denoising. Be aware that guessing which channel is noisy without actually seeing the channels individually is not straightforward and can be counterintuitive: a pixel which is completely red may not be caused by noise on the R channel, but actually by noise on B and G channels.</p>
+  </body>
+</topic>

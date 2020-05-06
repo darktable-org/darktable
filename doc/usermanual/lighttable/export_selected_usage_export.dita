@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_export" xml:lang="en-us">
+  <title>export</title>
+  <body>
+    <p>Pressing this button starts a background job to export all selected images. A bar at the bottom of the left side panel displays the progress. Furthermore a notification message pops up reporting the export progress. You may click on the pop-up to make it disappear. You may 
+    <i>abort</i>the export job by clicking on the 
+    <image align="center" href="../images/lighttable_icon_abort.png" placement="inline" />icon located close to the progress bar.</p>
+  </body>
+</topic>

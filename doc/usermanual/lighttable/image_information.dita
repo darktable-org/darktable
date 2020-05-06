@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="image_information" xml:lang="en-us">
+  <title>Image information</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>image information</indexterm></indexterm>
+        <indexterm>image information</indexterm>
+        <indexterm>Exif data</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This panel shows information embedded within an image's Exif data. When hovering with the mouse over thumbnails, darktable will update this view, displaying information of the image currently under the mouse cursor. This panel is also available in darkroom, tethering, map, and print view.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_metadata.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

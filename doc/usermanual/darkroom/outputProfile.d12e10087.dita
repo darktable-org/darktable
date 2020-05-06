@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="outputProfile.d12e10087" xml:lang="en-us">
+  <title>output profile</title>
+  <body>
+    <p>Sets the color profile for output/export, causing darktable to render colors with this profile. darktable embeds the profile data into the output file if supported by the file format – this allows other applications reading the file to correctly interpret its colors.</p>
+    <p>As not all applications, e.g. image viewers, are aware of color profiles, a general recommendation is to stick to 
+    <i>sRGB</i>as the default output profile. You should only deviate from 
+    <i>sRGB</i>if this is really required and if you know what you are doing.</p>
+  </body>
+</topic>

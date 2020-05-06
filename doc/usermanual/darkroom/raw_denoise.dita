@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="raw_denoise" xml:lang="en-us">
+  <title>Raw denoise</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>raw denoise</indexterm></indexterm>
+        <indexterm>denoise
+        <indexterm>raw</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="thumbnails" xml:lang="en-us">
+  <title>Thumbnails</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>thumbnails</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Each image of the current collection is represented by a thumbnail in the lighttable view. darktable keeps a cache of the last recently used thumbnails in a file on disk and loads it into memory at startup. The size of this cache can be adjusted in the core preferences dialog (see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>).</p>
+  </body>
+</topic>

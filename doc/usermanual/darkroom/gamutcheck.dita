@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gamutcheck" xml:lang="en-us">
+  <title>Gamut check</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>gamut check</indexterm></indexterm>
+        <indexterm>gamut check</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_module_icon_gamutcheck.png" placement="inline" />icon activates the gamut check display mode of your image. Gamut check highlights in cyan all pixels out of gamut with respect to the selected softproof profile. You can also activate gamut check with the keyboard shortcut 
+    <q>Ctrl+G</q>. An information message 
+    <q>gamut check</q>on the bottom left of your image tells you that you are in gamut check display mode. Gamut check and soft proof are mutually exclusive modes.</p>
+    <p>Right-clicking on the icon opens a dialog with configuration parameters – they are the same as for the soft proof option (see 
+    <xref href="softproof.dita#softproof" type="topic">Soft proof</xref>).</p>
+  </body>
+</topic>

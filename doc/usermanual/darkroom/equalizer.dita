@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="equalizer" xml:lang="en-us">
+  <title>Equalizer</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>sharpen</indexterm></indexterm>
+        <indexterm>sharpen</indexterm>
+        <indexterm>modules
+        <indexterm>equalizer</indexterm></indexterm>
+        <indexterm>equalizer</indexterm>
+        <indexterm>denoise
+        <indexterm>equalizer</indexterm></indexterm>
+        <indexterm>clarity
+        <index-see>equalizer</index-see></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>halos</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

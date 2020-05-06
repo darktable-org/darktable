@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="colorDominance.d12e15689" xml:lang="en-us">
+  <title>color dominance</title>
+  <body>
+    <p>This parameter controls the mapping between source and target clusters. At the lowest value mapping is based on color proximity. This typically leads to very subtle effects on the target image. At the maximum value mapping is based on the relative weight of the color clusters – dominant colors of the source image are mapped to dominant colors of the target image. This typically leads to a very bold effect. In-between values incrementally shift between the extremes.</p>
+  </body>
+</topic>

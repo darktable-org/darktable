@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="searchRadius.d12e10861" xml:lang="en-us">
+  <title>search radius</title>
+  <body>
+    <p>This slider is only available if mode 
+    <q>non-local means</q>is selected. It controls how far from a pixel the algorithm will try to find similar patches. Increasing the value can give better results for very noisy images when coarse grain noise is visible, but you should better use the scattering slider instead. The processing time is hugely impacted by this parameter: it depends on the square of the parameter. A lower value will make execution faster, a higher value will make it slower.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="hue.d12e15528" xml:lang="en-us">
+  <title>hue</title>
+  <body>
+    <p>Selects the hue of the color layer.</p>
+  </body>
+</topic>

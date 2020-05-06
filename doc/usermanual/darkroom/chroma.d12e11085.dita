@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="chroma.d12e11085" xml:lang="en-us">
+  <title>chroma</title>
+  <body>
+    <p>Amount of denoise to apply to chroma. You can be much more aggressive with this parameter compared to luma.</p>
+  </body>
+</topic>

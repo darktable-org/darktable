@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e5540" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This module is used to tweak the exposure. It is directly linked to the histogram panel. If you correct exposure graphically, using the 
+            <i>histogram</i>(see 
+            <xref href="histogram.dita#histogram" type="topic">Histogram</xref>), you automatically activate the exposure module. The histogram simply acts as a view for the exposure module.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/exposure.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>You can activate multiple instances of this module each with different parameters acting on different parts of the image which you select by a drawn mask (see 
+    <xref href="multiple_instances.dita#multiple_instances" type="topic">Multiple instances</xref>and 
+    <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>). The histogram is always linked to the last instance in pixelpipe.</p>
+  </body>
+</topic>

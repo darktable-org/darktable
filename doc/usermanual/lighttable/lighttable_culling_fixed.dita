@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_culling_fixed" xml:lang="en-us">
+  <title>Fixed mode</title>
+  <body>
+    <p>In fixed mode, the number of image to display is always the same, independently of the selection length. This number can be set with the slider in the bottom panel, near the modes option.</p>
+    <p>In this mode, you'll navigate through all selected images. If no selection is set (or if only 1 image is selected), you'll navigate through all images.</p>
+    <p>Default keyboard shortcut for entering culling in fixed mode is 
+    <i>X</i>.</p>
+  </body>
+</topic>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="aspect.d12e4917" xml:lang="en-us">
+  <title>aspect</title>
+  <body>
+    <p>Here you can change what aspect ratio you want to have on the result, thus constraining the proportion of width and height of the crop rectangle to the aspect ratio of your choice. Many common numerical ratios are pre-defined. A few special aspect ratios deserve explanation:</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="3cm" />
+          <colspec colname="col2" colnum="2" colwidth="3cm" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <i>free</i>
+              </entry>
+              <entry colname="col2">free forming the rectangle without any ratio restrictions</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <i>image</i>
+              </entry>
+              <entry colname="col2">this option constrains the ratio to be equal to image ratio</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <i>golden cut</i>
+              </entry>
+              <entry colname="col2">this option constrains the ratio to be equal the golden number</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <i>square</i>
+              </entry>
+              <entry colname="col2">this option constrains the ratio to be 1</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>You can also select any other ratio after opening the combobox and typing it in the form of 
+    <q>x:y</q>. If you want a certain aspect ratio to be added to the pre-defined ones you can do so by including a line of the form</p>
+    <p>
+      <pre xml:space="preserve">
+plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y
+</pre>
+    </p>
+    <p>into darktable's configuration file 
+    <filepath>$HOME/.config/darktable/darktablerc</filepath>. Here 
+    <q>foo</q>defines the name of the new aspect ratio and 
+    <q>x</q>and 
+    <q>y</q>the corresponding numerical values.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_mask_contrast" xml:lang="en-us">
+  <title>mask contrast</title>
+  <body>
+    <p>This slider increases or decreases the mask contrast. This means it allows to modify the transition between opaque and transparent mask parts.</p>
+  </body>
+</topic>

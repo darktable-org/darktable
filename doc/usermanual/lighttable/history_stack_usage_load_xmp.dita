@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="history_stack_usage_load_xmp" xml:lang="en-us">
+  <title>load sidecar file</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>sidecar files</indexterm>
+        <indexterm>XMP files</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Opens a dialog box to select an XMP file, thus loading a history stack that you can paste on images.</p>
+    <p>Files that were exported by darktable typically contain the full history stack if the file format supports embedded metadata (see 
+    <xref href="export_selected.dita#export_selected" type="topic">Export selected</xref>about this feature and its limitations). You can load an exported image as a sidecar file in the same way as you do with an XMP file. This feature allows you to recover all parameter settings in case you have accidentally lost or overwritten the XMP file. All you need is the source image, typically a raw, and the exported file.</p>
+  </body>
+</topic>

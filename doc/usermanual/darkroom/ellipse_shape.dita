@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="ellipse_shape" xml:lang="en-us">
+  <title>ellipse</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>ellipse</indexterm>
+        <indexterm>mask shapes
+        <indexterm>ellipse</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/shape_ellipse.png" placement="inline" />symbol adds an ellipse shape.</p>
+    <p>The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse line. 
+    <i>Click</i>on the nodes to adjust the ellipse's eccentricity. 
+    <i>Ctrl+click</i>on them to rotate the ellipse or, alternatively, use 
+    <i>Shift+Ctrl+scroll</i>. 
+    <i>Shift+click</i>in the shape to toggle the gradual decay between equidistant and proportional mode.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">An ellipse shape with controls and activated mask display.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/masks_ellipse_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

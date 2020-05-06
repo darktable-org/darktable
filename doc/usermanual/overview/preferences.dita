@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="preferences">
+  <title>Preferences</title>
+  <body>
+    <p>A button 
+    <image href="../images/darkroom_preferences.png" align="center" placement="inline" />located in the upper panel allows you to define various parameters which control darktable's behavior.</p>
+    <p>The options are fairly self-explanatory. If you need more information, hover the mouse cursor over the text label or entry box, to display a popup tool-tip. All configuration parameters are explained in 
+    <xref href="../preferences/preferences_chapter.dita#preferences_chapter" type="topic">Preferences and settings</xref>.</p>
+  </body>
+</topic>

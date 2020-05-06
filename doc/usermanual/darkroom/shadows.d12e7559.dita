@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadows.d12e7559" xml:lang="en-us">
+  <title>shadows</title>
+  <body>
+    <p>Similar to the highlights parameter, this affects the other far end of the curve, and will increase or decrease contrast in the shadows. A higher value gives more contrast in the shadows. A lower value will lift the shadows and can effectively simulate a fill light. Note that this is done via local manipulation of the image, however: this means that a completely dark image cannot be brightened this way, only dark things in front of bright things will be affected.</p>
+  </body>
+</topic>

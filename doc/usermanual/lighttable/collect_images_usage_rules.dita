@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_rules" xml:lang="en-us">
+  <title>search rules</title>
+  <body>
+    <p>In the text field to the right of the attribute, you write a pattern. The pattern is compared against all database entries with the selected attribute. This search detects a match if the images' attribute contains the pattern in its full text. You may use 
+    <i>%</i>as wildcard character. The collection gets limited to those images where the query matches. Leaving the text field empty matches all images for that attribute.</p>
+    <p>Attributes with numerical values as well as date and time attributes can be used in combination with comparative and range operators. Write 
+    <i>&lt;</i>, 
+    <i>&lt;=</i>, 
+    <i>&gt;</i>, 
+    <i>&gt;=</i>, 
+    <i>&lt;&gt;</i>, and 
+    <i>=</i>to select images with attributes less, less or equal, greater, greater or equal, not equal, or equal to the a given value, respectively. An expression in the form 
+    <i>[from;to]</i>selects a range of values.</p>
+    <p>The box below the search rule will list all matching database entries of the query you are currently working on. This list gets updated continuously as you type. You may also choose sorting criteria by scrolling through the list and double-clicking (or single-click if you have set the option in preferences. See 
+    <xref href="../preferences/gui_options_lighttable.dita#gui_options_lighttable" type="topic">Lighttable</xref>).</p>
+    <p>If you have set single-click mode, you'll be able to select range of values with mouse. This only works for numerical and date-time attributes.</p>
+    <p>Clicking on the triangle button to the right of the text field opens a drop-down menu with options to finetune your current collection by adding further rules, or removing them:</p>
+  </body>
+</topic>

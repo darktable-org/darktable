@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="module_presets" xml:lang="en-us">
+  <title>Module presets</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>presets
+        <indexterm>module presets</indexterm></indexterm>
+        <indexterm>module presets</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Presets are stored configurations for a module's parameters. Some modules already have internal pre-defined presets but you can also define your own. Both internal and user-defined presets are displayed by clicking the 
+    <image align="center" href="../images/darkroom_module_icon_presets.png" placement="inline" />icon with the currently activated preset shown in bold text.</p>
+    <p>The preset system also supports automatic preset selection based on image data such as focal length, ISO, camera model and other fields.</p>
+    <p>As a convenience, a preset can be applied to a new module instance by pressing the middle-click.</p>
+  </body>
+</topic>

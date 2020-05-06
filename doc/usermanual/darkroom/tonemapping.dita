@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tonemapping" xml:lang="en-us">
+  <title>Tonemapping</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>tonemapping</indexterm></indexterm>
+        <indexterm>tonemapping
+        <index-see-also>global tonemap</index-see-also></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

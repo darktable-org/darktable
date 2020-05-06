@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>For each data channel of a module (Lab, RGB) and additionally for several virtual data channels (e.g. hue, saturation) users can construct a per-channel opacity function. Depending on the pixel's value for this data channel this function determines a blending factor between 0 and 1 (or 100%) for that pixel.</p>
+    <p>Each pixel of an image thus has different blending factors for each of its data channels (real and virtual). All blending factors are finally pixel-wise multiplied together with the value of the global opacity slider (see 
+    <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>) to form a blend mask for the image.</p>
+    <p>If for a given pixel the blend mask has a value of 0, the input of the module is left unchanged. If for a pixel the blend mask has its maximum value of 1 (or 100%), the module has full effect.</p>
+  </body>
+</topic>

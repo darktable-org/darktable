@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tone_curve" xml:lang="en-us">
+  <title>Tone curve</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>tone curve</indexterm></indexterm>
+        <indexterm>tone curve</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tcaBlue.d12e12199" xml:lang="en-us">
+  <title>TCA blue</title>
+  <body>
+    <p>This slider allows to override the correction parameter for TCA. You can also use this slider to manually set the parameter in case the lens profile does not contain TCA correction.</p>
+  </body>
+</topic>

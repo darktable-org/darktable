@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage_duplicate" xml:lang="en-us">
+  <title>create duplicate</title>
+  <body>
+    <p>When applying a style to selected images, activating this box creates a duplicate of the image before applying the style. Disable this option if you want to try various styles without creating multiple duplicates; beware that in this case any existing history stack gets overwritten and cannot be recovered.</p>
+  </body>
+</topic>

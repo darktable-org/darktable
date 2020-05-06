@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="theObviousWayMonochromeModule.d12e16210" xml:lang="en-us">
+  <title>The obvious way: monochrome module</title>
+  <body>
+    <p>To perform the conversion, just activate the 
+    <i>monochrome</i>module (
+    <xref href="monochrome.dita#monochrome" type="topic">Monochrome</xref>). You can then simulate a color filter, by dragging the circle above the colors you want to filter. Filter size can be modified via scrolling the mouse wheel.</p>
+  </body>
+</topic>

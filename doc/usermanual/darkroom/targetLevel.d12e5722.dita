@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="targetLevel.d12e5722" xml:lang="en-us">
+  <title>target level</title>
+  <body>
+    <p>Defines the target level for automatic exposure correction in terms of [EV] relative to the white point of the camera. The white point is camera specific and defines the highest lightness value that the camera sensor can detect. Only available in 
+    <q>automatic</q>mode.</p>
+  </body>
+</topic>

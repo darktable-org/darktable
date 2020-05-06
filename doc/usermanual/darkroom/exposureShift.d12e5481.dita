@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="exposureShift.d12e5481" xml:lang="en-us">
+  <title>exposure shift</title>
+  <body>
+    <p>This slider is only visible if the 
+    <i>exposure fusion</i>feature is activated. It allows you to set the exposure difference between the merged images in ev units (default 1).</p>
+  </body>
+</topic>

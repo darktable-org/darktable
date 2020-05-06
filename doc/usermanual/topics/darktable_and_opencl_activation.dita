@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_activation" xml:lang="en-us">
+  <title>How to activate OpenCL in darktable</title>
+  <body>
+    <p>Using OpenCL in darktable requires that your PC is equipped with a suitable graphics card and that it has the required libraries in place. Namely modern graphics cards from NVIDIA and AMD come with full OpenCL support. The OpenCL compiler is normally shipped as part of the proprietary graphics driver; it is used as a dynamic library called 
+    <q>libOpenCL.so</q>. This library must be in a folder where it is found by your system's dynamic linker.</p>
+    <p>When darktable starts, it will first try to find and load libOpenCL.so and – on success – check if the available graphics card comes with OpenCL support. A sufficient amount of graphics memory (1GB+) needs to be available to take advantage of the GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context needs to be initialized, a calculation pipeline to be started, OpenCL source code files (extension is .cl) need to be read and compiled and the included routines (called OpenCL kernels) need to be prepared for darktable's modules. If all that is done, the preparation is finished.</p>
+    <p>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in 
+    <q>core options</q>(
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) by unchecking 
+    <q>activate opencl support</q>. This configuration parameter also tells you if OpenCL initialization failed: it is greyed out in that case.</p>
+    <p>You can at any time switch OpenCL support off and on; this will happen immediately. Depending on the type of modules you are using, you will notice the effect as a general speed-up during interactive work and during export. Most modules in darktable can take advantage of OpenCL but not all modules are demanding enough to make a noticeable difference. In order to feel a real difference, take modules like 
+    <xref href="../darkroom/shadows_and_highlights.dita#shadows_and_highlights" type="topic">Shadows and Highlights</xref>, 
+    <xref href="../darkroom/sharpen.dita#sharpen" type="topic">Sharpen</xref>, 
+    <xref href="../darkroom/lowpass.dita#lowpass" type="topic">Lowpass</xref>, 
+    <xref href="../darkroom/highpass.dita#highpass" type="topic">Highpass</xref>or even more extreme 
+    <xref href="../darkroom/usage.d12e7472.dita#usage.d12e7472" type="topic">Usage</xref>and 
+    <xref href="../darkroom/denoise_profiled.dita#denoise_profiled" type="topic">Denoise – profiled</xref>.</p>
+    <p>If you are interested in profiling figures, you can start darktable with command line parameters 
+    <q>-d opencl -d perf</q>. After each run of the pixelpipe you will get a detailed allocation of processing time to each module plus an even more fine grained profile for all used OpenCL kernels.</p>
+    <p>Besides the speed-up you should not see any difference in the results between CPU and GPU processing. Except of rounding errors, the results are designed to be identical. If, for some reasons, darktable fails to properly finish a GPU calculation, it will normally notice and automatically (and transparently) fall back to CPU processing.</p>
+  </body>
+</topic>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_fullpreview" xml:lang="en-us">
+  <title>Full preview</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>focus detection</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>While holding down the 
+    <i>W</i>key a fully zoomed preview of the image under the mouse cursor is displayed. You can use this feature for a quick inspection of image quality while rating and selecting images.</p>
+    <p>Holding down the 
+    <i>Ctlr+W</i>key fully zooms into the image and additionally activates an analysis for sharp regions, detecting those parts of the image that are in focus. Areas of high sharpness are indicated by a red border – the higher the color intensity the better the sharpness. In case that no area of 
+    <i>high</i>sharpness is detected darktable indicates areas of 
+    <i>moderate</i>sharpness with a blue border. For this tool to work the input image needs to hold an embedded JPEG thumbnail which is the case for most raw files.</p>
+    <p>Sometimes pressing 
+    <i>W</i>or 
+    <i>Ctrl+W</i>may not reveal an immediate effect – in that case please click into the center area and press the corresponding key again.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Fully zoomed-in image view while holding down the 
+            <i>Ctrl+W</i>key with indication of the sharp areas in focus. Sharpness detection is based on an embedded JPEG thumbnail of the original raw file independent of any processing steps within darktable.</entry>
+            <entry colname="col2">
+              <image align="center" href="../images/lighttable_focus_detection.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>If you want the full preview to stay, without having to hold 
+    <i>W</i>key, you can use sticky preview mode with 
+    <i>Alt+W</i>key or 
+    <i>Ctrl+Alt+W</i>if you want focus detection. In sticky preview mode, you can zoom and pan in the image, exactly like in culling layout (see 
+    <xref href="lighttable_culling_zoom.dita#lighttable_culling_zoom" type="topic">Zoom and pan</xref>).</p>
+  </body>
+</topic>

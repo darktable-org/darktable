@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_view_selection" xml:lang="en-us">
+  <title>view selection</title>
+  <body>
+    <p>The choice of views is controlled with the two bottom graphic buttons:</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>the toggle button 
+              <image align="center" href="../images/tagging_icon_tree.png" placement="inline" />shows the tag dictionary as a list or as a tree.</p>
+              <p>Tip: Shift+click on tree node fully expands it (all sub-levels).</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_tagging-treebutton.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <p>the toggle button 
+              <image align="center" href="../images/tagging_icon_suggestion.png" placement="inline" />switches the list to suggestions or full dictionary tag list (inactive on tree view). The suggestions list is based on already attached tags on selected images.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_tagging-suggbutton.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

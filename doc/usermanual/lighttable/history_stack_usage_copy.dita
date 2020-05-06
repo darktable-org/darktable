@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="history_stack_usage_copy" xml:lang="en-us">
+  <title>copy</title>
+  <body>
+    <p>Copy the history stack of the selected image. You will be prompted for which items are to be included. If more than one image is selected, the history stack is taken from the image that has been selected first. A double-click on an item copies that item only and close the dialog.</p>
+  </body>
+</topic>

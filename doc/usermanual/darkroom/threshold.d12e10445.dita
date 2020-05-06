@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="threshold.d12e10445" xml:lang="en-us">
+  <title>threshold</title>
+  <body>
+    <p>Contrast differences below this threshold are excluded from sharpening. Use this to avoid amplification of noise.</p>
+  </body>
+</topic>

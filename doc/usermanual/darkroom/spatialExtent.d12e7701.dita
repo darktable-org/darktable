@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="spatialExtent.d12e7701" xml:lang="en-us">
+  <title>spatial extent</title>
+  <body>
+    <p>Sets the spatial extent of the bilateral filter. Lower values cause the contrast compression to have stronger effects on image details.</p>
+  </body>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blackRelativeExposureSceneTab.d12e8010" xml:lang="en-us">
+  <title>Black relative exposure (
+  <uicontrol>Scene</uicontrol>tab)</title>
+  <body>
+    <p>The black relative exposure is the number of stops (EV) between pure black and the middle grey. It is the left bound of the dynamic range. The black exposure color-picker tool reads the minimum luminance in RGB space over the drawn area, assumes it is pure black, and sets the black exposure parameter to remap the minimum reading to 0% luminance. The black color picker measurement is very sensitive to noise, and cannot identify if the minimum luminance is pure black (actual data) or just noise. It works better on low ISO pictures and with high quality demosaicing. When the color picker puts the black exposure at -16EV, it is a sign that the measure failed and you need to adjust it manually.</p>
+    <p>The black relative exposure allows you to choose how far you want to recover lowlights. Contrarily to the white exposure, it is not always possible to completely avoid clipping blacks. Every camera sensor has a maximum physical dynamic range for each ISO value (you can find them measured on 
+    <xref format="html" href="https://www.dxomark.com/" scope="external">
+      <i>DXOmark</i>
+    </xref>or 
+    <xref format="html" href="https://www.dpreview.com/" scope="external">
+      <i>DPreview</i>
+    </xref>), the software dynamic range in filmic rgb (dynamic range = white exposure - black exposure) should generally not be greater than the physical dynamic range of the sensor (10-14EV in most cases). Note that the dynamic range of the scene can be lower than the camera's one, especially indoors.</p>
+  </body>
+</topic>

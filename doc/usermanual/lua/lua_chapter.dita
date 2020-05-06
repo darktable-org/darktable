@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="lua_chapter">
+  <title>Scripting with Lua</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>scripting</keyword>
+        <keyword>lua</keyword>
+        <indexterm>Lua</indexterm>
+        <indexterm>scripting</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable comes with a versatile scripting interface for functionality enhancement.</p>
+    <fig id="fig_h3q_cyb_flb">
+      <title>Scipting with Lua</title>
+      <image href="../images/lua_view.png" placement="break" id="image_i3q_cyb_flb" />
+    </fig>
+  </body>
+</topic>

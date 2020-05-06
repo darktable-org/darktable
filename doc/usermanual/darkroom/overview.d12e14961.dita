@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e14961" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">A lowpass filter (eg. gaussian blur) with additional control of the outcome both of contrast and saturation. The primary usage for lowpass filter is in combination with a 
+            <i>blending operator</i>(see 
+            <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>). Try out the preset named 
+            <q>local contrast mask</q>with an 
+            <q>overlay</q>blending operation.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/lowpass.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

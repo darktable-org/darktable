@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e12402" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>This module uses some of the shapes that are offered in drawn masks, namely circles, ellipses and path shapes. The user interface and the controls are the same as in drawn mask and explained in more detail in 
+    <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>.</p>
+    <p>Select the desired shape by clicking the corresponding icon, then click on the canvas to choose the area to be healed, i.e. the target area. A cross is displayed where the source area will be positioned.</p>
+    <p>The source positioning has two modes: absolute or relative. To set the absolute mode, while creating a shape, 
+    <i>Shift+Ctrl+click</i>on the desired position. From now on, all new shapes will have the source created at that position. To set the relative mode, still while creating a shape, 
+    <i>Shift+click</i>on the desired position. The current shape will have the source created at that position and the subsequent ones will have the source created at the same relative position.</p>
+    <p>After creation source area and target area can be shifted independently until the result matches your expectations. An arrow helps to tell source from target area.</p>
+    <p>Use the shape specific controls to adjust its size, its border width, and other attributes.</p>
+    <p>Right-click on a shape to delete it.</p>
+    <p>Collapse the module to complete the changes.</p>
+  </body>
+</topic>

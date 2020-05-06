@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadowsColorAdjustment.d12e5261" xml:lang="en-us">
+  <title>shadows color adjustment</title>
+  <body>
+    <p>This slider controls the color saturation adjustment made to shadows; high values cause saturation enhancements on lightened shadows; low values cause desaturation on lightened shadows. It is normally safe to leave this at its default of 100%. This gives a natural saturation boost on shadows – similar to the one you would also expect in nature if shadows would receive more light.</p>
+  </body>
+</topic>

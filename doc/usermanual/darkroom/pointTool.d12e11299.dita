@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="pointTool.d12e11299" xml:lang="en-us">
+  <title>point tool</title>
+  <body>
+    <p>Click the 
+    <image align="center" href="../images/darkroom_module_liquify_point.png" placement="inline" />icon to activate the point tool and left-click on the image to place it.</p>
+    <p>A point is formed by a single node. In a point the strength vector has three different modes which are toggled using Ctrl+click over the arrowhead of the strength vector: 
+    <table frame="none">
+      <tgroup cols="3" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="2*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <colspec colname="col3" colnum="3" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>linear</i>
+            </entry>
+            <entry colname="col2">The linear mode produces a linear distortion inside the circle. Starting from the opposite side of the strength vector and following the strength vector's direction. This is the default mode.</entry>
+            <entry colname="col3">
+              <image align="center" href="modules/images/liquify_ex1.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>radial growing</i>
+            </entry>
+            <entry colname="col2">In this mode the strength vector's effect is radial, starting with a strength of 0% in the center and growing when going away from the center. This mode is depicted by an additional circle with the arrow pointing outwards.</entry>
+            <entry colname="col3">
+              <image align="center" href="modules/images/liquify_ex4.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>radial shrinking</i>
+            </entry>
+            <entry colname="col2">In this mode the strength vector's effect is radial, starting with a strength of 100% in the center and shrinking when going away from the center. This mode is depicted by an additional circle with the arrow pointing inwards.</entry>
+            <entry colname="col3">
+              <image align="center" href="modules/images/liquify_ex3.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>Note that the strength by default varies linearly from 0% to 100% between the center and the radius of the control point. It is possible to modify the feathering effect by clicking on the center of the circle: 
+    <table frame="none">
+      <tgroup cols="3" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="2*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <colspec colname="col3" colnum="3" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>default</i>
+            </entry>
+            <entry colname="col2">Linear from the center to the radius.</entry>
+            <entry colname="col3">
+              <image align="center" href="modules/images/liquify_ex1.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>feathered</i>
+            </entry>
+            <entry colname="col2">Two control circles are displayed and can be modified independently to feather the strength of the effect. Note that clicking again the center of the circle only hides the feathering controls but does not return to the default.</entry>
+            <entry colname="col3">
+              <image align="center" href="modules/images/liquify_ex2.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>A point can be removed by right-clicking on the center.</p>
+  </body>
+</topic>

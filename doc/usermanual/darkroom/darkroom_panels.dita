@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_panels" xml:lang="en-us">
+  <title>Darkroom panels</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This section contains documentation for panels that are specific to the darkroom view.</p>
+  </body>
+</topic>

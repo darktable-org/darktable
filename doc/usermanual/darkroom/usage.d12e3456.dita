@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e3456" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">In the top line of the masks manager panel you find buttons to create new shapes. They are the same as in the 
+            <i>drawn mask</i>GUI (see 
+            <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>for more details).</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_maskmanager_1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>The lines below list all masks used and all individual shapes defined. The masks are noted with a headline in the form 
+    <q>grp levels</q>indicating the module in which they are used. The list of masks is followed by a list of all individual shapes which have been generated in the context of the given image. If a shape is in use by any of the masks it is marked by the 
+    <image align="center" href="../images/masks_used.png" placement="inline" />symbol to the right of the shape name.</p>
+  </body>
+</topic>

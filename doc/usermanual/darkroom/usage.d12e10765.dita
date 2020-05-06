@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10765" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The darktable team, with the help of many users, has measured noise profiles for various cameras. Differentiated by ISO settings we evaluated how the noise statistics develop with brightness for the three color channels. Our set of profiles covers well above 200 popular camera models from all major manufacturers.</p>
+    <p>darktable stores noise profiles in an external json file. This file can be found in 
+    <filepath>$DARKTABLE/share/darktable/noiseprofile.json</filepath>where 
+    <filepath>$DARKTABLE</filepath>represents the darktable installation directory. The json format is quite straightforward and explained in depth in 
+    <xref format="html" href="http://json.org/" scope="external">json.org</xref>. You can replace the default noise profiles by your own ones and specify that file on the command line when starting darktable. For more details see 
+    <xref href="../overview/darktable_cli_binary.dita" type="topic">darktable-cli binary</xref>. If you generate your own noise profiles don't forget to share your results with the darktable team!</p>
+    <p>/!\ WARNING /!\ The darkroom zoomed out preview is not completely accurate. Always check your result at 100% zoom level!</p>
+    <p>Note that (almost) all sliders of this module can take values higher than their visible bounds by entering values using Right-click and keyboard.</p>
+  </body>
+</topic>

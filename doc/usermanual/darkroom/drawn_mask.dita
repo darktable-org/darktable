@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="drawn_mask" xml:lang="en-us">
+  <title>Drawn mask</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>masks</indexterm>
+        <indexterm>masks
+        <indexterm>drawn masks</indexterm></indexterm>
+        <indexterm>local adjustments</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific area in the developed image.</p>
+  </body>
+</topic>

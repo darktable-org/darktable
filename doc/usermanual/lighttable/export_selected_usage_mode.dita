@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_mode" xml:lang="en-us">
+  <title>mode</title>
+  <body>
+    <p>When applying a style during export this option defines whether the history stack items of that style replace the original history stack of the image or are appended to it. Technically speaking, in append mode history stack items of the style will constitute separate instances of the respective modules on top of any existing ones (see also 
+    <xref href="../darkroom/multiple_instances.dita#multiple_instances" type="topic">Multiple instances</xref>). As a consequence the original history stack will fully remain in effect with the new items being applied additionally. This way you can apply an overall adjustment (e.g. exposure) to a bunch of exported images while respecting the settings of each individual image.</p>
+  </body>
+</topic>

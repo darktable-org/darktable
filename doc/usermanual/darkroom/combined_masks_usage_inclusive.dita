@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="combined_masks_usage_inclusive" xml:lang="en-us">
+  <title>Inclusive mode</title>
+  <body>
+    <p>For this mode you set the 
+    <q>combine masks</q>combobox to 
+    <i>inclusive</i>and make sure that all polarity buttons of all the individual channels and of the drawn mask are set to negative ( 
+    <image align="center" href="../images/darkroom_module_icon_polarity_minus.png" placement="inline" />). Your starting point is a mask where all pixels have a value of zero, i.e. no pixel is selected. You now adjust the parametric mask sliders to bring more and more pixels into the selection or you draw shapes on the canvas to select specific areas of your image.</p>
+  </body>
+</topic>

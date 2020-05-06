@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?path2rootmap-uri ./?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="untitled1">
+  <title>Preface</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>darktable</keyword>
+        <keyword>preface</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>User manual version and applicable darktable version are listed below: 
+    <table frame="none" id="table_u4j_dzz_xkb">
+      <tgroup cols="3" colsep="0" rowsep="0">
+        <colspec colwidth="3cm" colnum="1" colname="col1" />
+        <colspec colwidth="3cm" colnum="2" colname="col2" />
+        <colspec colwidth="3cm" colnum="3" colname="col3" />
+        <tbody>
+          <row>
+            <entry colname="col1" />
+            <entry colname="col2">version</entry>
+            <entry colname="col3">date</entry>
+          </row>
+          <row>
+            <entry colname="col1">user manual</entry>
+            <entry colname="col2">3.0.0</entry>
+            <entry colname="col3">December 2019</entry>
+          </row>
+          <row>
+            <entry colname="col1">darktable</entry>
+            <entry colname="col2">3.0</entry>
+            <entry colname="col3">December 2019</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>Translations of this manual to local languages are brought to you by Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, María Gracia Leandro, Pierre Metzner, Christian Kanzian, Wolfgang Arndt, Łukasz Karcz, Artur Mercik and Edgar De la Luz.</p>
+    <p>Many thanks to all contributors to this user manual. Special thanks for proof reading, style improvement, constructive criticism, and valuable contributions go to Colin Adams, Mark Garrow, Simon Harhues, István Kovács, Jean-Luc Coulon, Rudolf Martin, Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.</p>
+  </body>
+</topic>

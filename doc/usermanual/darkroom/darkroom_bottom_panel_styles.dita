@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_bottom_panel_styles" xml:lang="en-us">
+  <title>Quick access to styles</title>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_styles.png" placement="inline" />icon opens a combobox with your styles. Hovering with the mouse over a style name opens a tooltip showing the involved modules. Click on a style name to apply that style to the image.</p>
+  </body>
+</topic>

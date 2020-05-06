@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tcaRed.d12e12190" xml:lang="en-us">
+  <title>TCA red</title>
+  <body>
+    <p>This slider allows to override the correction parameter for TCA. You can also use this slider to manually set the parameter in case the lens profile does not contain TCA correction. Look out for colored seams at features with high contrast edges and adjust this parameter and the following one to minimize those seams.</p>
+  </body>
+</topic>

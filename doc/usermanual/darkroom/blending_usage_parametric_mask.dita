@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_parametric_mask" xml:lang="en-us">
+  <title>parametric mask</title>
+  <body>
+    <p>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to adjust the opacity on a per-pixel basis determined by pixel values. In previous versions of darktable this was called 
+    <q>conditional blending</q>. See 
+    <xref href="parametric_mask.dita#parametric_mask" type="topic">Parametric mask</xref>for further details.</p>
+  </body>
+</topic>

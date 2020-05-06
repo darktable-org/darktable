@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tabbedControls.d12e9499" xml:lang="en-us">
+  <title>tabbed controls</title>
+  <body>
+    <p>You can define curves for each of the three channels 
+    <q>lightness</q>, 
+    <q>saturation</q>, and 
+    <q>hue</q>individually.</p>
+  </body>
+</topic>

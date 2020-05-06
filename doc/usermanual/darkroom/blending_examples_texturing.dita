@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_examples_texturing" xml:lang="en-us">
+  <title>Texturing an image</title>
+  <body>
+    <p>The watermark module supports SVG files with embedded images that can be used as a texture source. Blending operators then allow control of how that texture is expressed.</p>
+  </body>
+</topic>

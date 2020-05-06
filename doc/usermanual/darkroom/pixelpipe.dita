@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="pixelpipe" xml:lang="en-us">
+  <title>Pixelpipe, module order, and history stack</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>pixelpipe</indexterm>
+        <indexterm>module processing order</indexterm>
+        <indexterm>history stack</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable processes images – from input to output – in a so called 
+    <q>pixelpipe</q>. Within the pixelpipe image processing consists of consecutive operations which are implemented as 
+    <q>modules</q>.</p>
+    <p>Modules are applied in a fixed order. This differentiates darktable, as a non-destructive image editor, from classical image manipulation programs like GIMP. As module order is fixed, you are free to activate, deactivate or change the parameters of a module at arbitrary points in time; the order of activation in your workflow does not have any impact on the outcome.</p>
+    <p>Users frequently ask why the module order is fixed and if there are plans to change that restriction. There are several reasons why darktable works in the way described: 
+    <ul>
+      <li>
+        <p>The sequence of modules has been selected with great care in order go give highest output quality. Changes to the sequence would generally worsen the result rather than improving it.</p>
+      </li>
+      <li>
+        <p>Certain image processing steps just don't make sense if they are shifted in the pixelpipe. To mention just a few: highlight reconstruction needs to be done on raw data before demosaicing and the demosaic step needs to be performed before any input color profile can be applied.</p>
+      </li>
+      <li>
+        <p>Most of darktable's modules are designed to work within a specific color model (see 
+        <xref href="color_management.dita#color_management" type="topic">Color management</xref>for more details). Full flexibility would require modules to support different parallel algorithms depending on the color space they are working in – this would drastically increase complexity.</p>
+      </li>
+    </ul>That said, the fixed sequence of modules is not likely to change in the near future.</p>
+    <p>Whenever you activate or deactivate a module or go back to a module and change the parameters, this adds an item on top of the 
+    <q>history stack</q>.</p>
+    <p>For example, when working on a raw file, the history stack on the left panel might say that you first enabled 
+    <xref href="denoise_bilateral.dita#denoise_bilateral" type="topic">
+      <i>bilateral filtering</i>
+    </xref>, then disabled 
+    <xref href="base_curve.dita#base_curve" type="topic">
+      <i>base curve</i>
+    </xref>, then adjusted 
+    <xref href="whitebalance.dita#whitebalance" type="topic">
+      <i>white balance</i>
+    </xref>. But at any time, the processing took the raw image, adjusted 
+    <xref href="whitebalance.dita#whitebalance" type="topic">
+      <i>white balance</i>
+    </xref>on it, then 
+    <xref href="demosaic.dita#demosaic" type="topic">
+      <i>demosaic</i>
+    </xref>, then 
+    <xref href="base_curve.dita#base_curve" type="topic">
+      <i>base curve</i>
+    </xref>(if enabled), then 
+    <xref href="denoise_bilateral.dita#denoise_bilateral" type="topic">
+      <i>bilateral filtering</i>
+    </xref>(if enabled), as shown bottom to top on the right panel.</p>
+    <p>The history stack records your workflow in the order in which you made changes to the pipeline. It allows you to go back to an earlier stage of development if needed. The history stack represents your personal workflow and is not to be confused with the sequence in which modules are applied in the pixelpipe (see above). For more details on the history stack see 
+    <xref href="history.dita#history" type="topic">History stack</xref>.</p>
+  </body>
+</topic>

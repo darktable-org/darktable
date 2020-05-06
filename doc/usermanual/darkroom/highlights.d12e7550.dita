@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="highlights.d12e7550" xml:lang="en-us">
+  <title>highlights</title>
+  <body>
+    <p>This affects one end of the curve, effectively increasing or compressing contrast in the highlights. A low value will pull the highlights down.</p>
+  </body>
+</topic>

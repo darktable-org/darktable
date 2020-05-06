@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="mode.d12e6929" xml:lang="en-us">
+  <title>mode</title>
+  <body>
+    <p>Set the mode of operation of this module. Defaults to 
+    <q>manual</q>.</p>
+  </body>
+</topic>

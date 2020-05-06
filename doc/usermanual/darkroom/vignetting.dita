@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="vignetting" xml:lang="en-us">
+  <title>Vignetting</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>vignetting</indexterm></indexterm>
+        <indexterm>vignetting</indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>banding</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

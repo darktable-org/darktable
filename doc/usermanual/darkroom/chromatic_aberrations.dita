@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="chromatic_aberrations" xml:lang="en-us">
+  <title>Chromatic aberrations</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>chromatic aberration</indexterm></indexterm>
+        <indexterm>chromatic aberration
+        <index-see-also>lens correction</index-see-also></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

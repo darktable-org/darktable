@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_usage_buttons" xml:lang="en-us">
+  <title>Control buttons</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color picker</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Control buttons help you when designing a parametric mask.</p>
+    <p>With the color picker button 
+    <image align="center" href="../images/darkroom_module_icon_picker.png" placement="inline" />you can select a probe from your image. The corresponding values for the real and virtual data channels are then displayed within each color channel slider. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+    <p>With the invert button 
+    <image align="center" href="../images/darkroom_module_icon_invert.png" placement="inline" />you can toggle the polarities of all channels (including a potentially activated drawn mask) and change the method how channels are combined into the final mask. More on that topic can be found in 
+    <xref href="combined_masks.dita#combined_masks" type="topic">Combining drawn and parametric masks</xref>.</p>
+    <p>With the reset button 
+    <image align="center" href="../images/darkroom_module_icon_reset.png" placement="inline" />you can put all settings back to their default state.</p>
+  </body>
+</topic>

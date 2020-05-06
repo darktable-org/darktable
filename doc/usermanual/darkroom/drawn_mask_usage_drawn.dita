@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="drawn_mask_usage_drawn" xml:lang="en-us">
+  <title>drawn mask</title>
+  <body>
+    <p>The number of shapes that are used in the current mask is displayed in the 
+    <q>drawn mask</q>field. Clicking on that field opens a dropdown box with all shapes that have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</p>
+    <p>A polarity button ( 
+    <image align="center" href="../images/darkroom_module_icon_polarity_plus.png" placement="inline" />and 
+    <image align="center" href="../images/darkroom_module_icon_polarity_minus.png" placement="inline" />, respectively) allows the user to toggle between the normal and the inverted state of the drawn mask, i.e. the opacity values get inverted – 100% becomes 0% and vice versa. You need this feature when combining drawn and parametric masks (see 
+    <xref href="combined_masks.dita#combined_masks" type="topic">Combining drawn and parametric masks</xref>).</p>
+  </body>
+</topic>

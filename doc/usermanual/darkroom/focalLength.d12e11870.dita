@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="focalLength.d12e11870" xml:lang="en-us">
+  <title>focal length</title>
+  <body>
+    <p>The focal length of the lens used. The default value is taken from the Exif data of your image. This parameter is only effective and visible if the 
+    <q>specific</q>lens model has been selected.</p>
+  </body>
+</topic>

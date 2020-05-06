@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="desaturation.d12e16771" xml:lang="en-us">
+  <title>Desaturation</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1" morerows="1">
+              <ol>
+                <li>Approach - Modifying the output channel 
+                <q>red</q>. 
+                <ol>
+                  <li>Set output channel 
+                  <q>destination</q>to 
+                  <q>red</q>(default)</li>
+                  <li>Set red color value to 0.00</li>
+                  <li>Set green color value to 0.50</li>
+                  <li>Set blue color value to 0.50</li>
+                </ol>
+                <p>You are free to experiment what gives you the most realistic pupil, but this is a good starting point. Another proposal is 0.10/0.60/0.30. The sum of the three values should be 1.</p></li>
+              </ol>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_04.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_05.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1" morerows="1">
+              <ol>
+                <li>Approach - Modifying the output channel 
+                <q>gray</q>. 
+                <ol>
+                  <li>Set output channel 
+                  <q>destination</q>to 
+                  <q>gray</q></li>
+                  <li>Set red color value to 0.24</li>
+                  <li>Set green color value to 0.68</li>
+                  <li>Set blue color value to 0.08</li>
+                </ol>
+                <p>You are free to experiment what gives you the most realistic pupil, but this is a good starting point. The sum of the three values should be 1.</p></li>
+              </ol>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_06.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_07.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

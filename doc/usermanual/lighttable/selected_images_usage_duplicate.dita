@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_duplicate" xml:lang="en-us">
+  <title>duplicate</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>create images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Create a virtual copy of selected images within darktable. It allows testing different developments for the same image, for example. Duplicate images share the same parent input file, but each have their own XMP sidecar file.</p>
+  </body>
+</topic>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="map_undo_redo" xml:lang="en-us">
+  <title>Undo/redo</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>undo</indexterm>
+        <indexterm>redo</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>All image moves in the map view are recorded by darktable. It is then possible to undo or redo such changes to recover a previous state. Note that this undo/redo facility is unlimited while moving images but it is reset each time the map view is left.</p>
+    <p>The default key shortcuts are: 
+    <ul>
+      <li>
+        <p>
+        <i>Ctrl+Z</i>: undo last move</p>
+      </li>
+      <li>
+        <p>
+        <i>Ctrl+Y</i>: redo last undo (does nothing if undo has not been used yet)</p>
+      </li>
+    </ul></p>
+  </body>
+</topic>

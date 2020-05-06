@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="adjustAutosetParameters.d12e10981" xml:lang="en-us">
+  <title>adjust autoset parameters</title>
+  <body>
+    <p>This option is available in 
+    <q>auto</q>modes. In these modes, darktable tries to derive denoising parameters from the camera profile. Depending on your image the automatically derived parameters may not be optimal. E.g. if your image is heavily underexposed and you lifted the exposure, you will have to increase this parameter to get a proper denoising. This parameter should reflect the amplification you add to your image: if you add 1EV of exposure, the signal is multiplied by 2, so this parameter should be set to 2.</p>
+  </body>
+</topic>

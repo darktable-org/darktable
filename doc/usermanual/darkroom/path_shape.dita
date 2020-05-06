@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="path_shape" xml:lang="en-us">
+  <title>path</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>path</indexterm>
+        <indexterm>mask shapes
+        <indexterm>path</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/shape_path.png" placement="inline" />symbol adds a shape defined by a user defined closed path.</p>
+    <p>
+    <i>Left-click</i>into the canvas to define path nodes; terminate the path by 
+    <i>right-clicking</i>after having set the last point. Per default nodes are connected by smooth lines. If you want a node to define a sharp corner, you can do so by creating it with 
+    <i>Ctrl+click</i>.</p>
+    <p>In the edit mode you can convert existing nodes from smooth to sharp corners and vice versa by 
+    <i>Ctrl+clicking</i>on them. You can insert additional nodes by 
+    <i>Ctrl+clicking</i>on one of the line segments. Single nodes can be deleted by 
+    <i>right-clicking</i>on them; make sure that the mouse pointer is over the desired node and the node is highlighted, or else you might accidentally remove the whole path.</p>
+    <p>The size of the complete shape can be modified by 
+    <i>scrolling</i> – analogous to the circle shape. The same holds true for the width of the border, i.e. the area with a gradual opacity decay, which can be changed by 
+    <i>Shift+scroll</i>from anywhere within the shape. Single nodes as well as path segments can be moved by mouse 
+    <i>dragging</i>. If a node is selected by 
+    <i>clicking</i>on it, a further control point appears – you can move it around to modify the curvature of the line and reset to default by 
+    <i>right-clicking</i>. 
+    <i>Dragging</i>one of the control points on the border adjusts the border width just in that part of the shape.</p>
+    <p>Consider to finetune a path in the restricted edit mode (see above), which allows you to adjust single nodes and segments without the risk of accidentally shifting or resizing the whole shape.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">A path shape with controls and activated mask display.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/masks_path_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

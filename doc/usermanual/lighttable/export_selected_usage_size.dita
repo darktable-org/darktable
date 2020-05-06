@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_size" xml:lang="en-us">
+  <title>max size</title>
+  <body>
+    <p>Set the maximum width and height of the output images in pixels. Set both to a value of 
+    <q>0</q>to export with the original dimensions (after cropping). If the values exceed the original dimensions darktable will either export with the original dimensions or perform an upscaling step, depending on the setting of the following parameter.</p>
+    <note type="caution">It's a frequent pitfall to accidentally put low values, like 1 or 10, in these fields, causing darktable to produce miniature output files. You might think darktable's output is broken, but in fact it only generated what you asked for.</note>
+  </body>
+</topic>

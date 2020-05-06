@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>By default a module takes its input from the preceding module, performs its calculations and hands its output over to the next module in the pixelpipe. On demand you can activate an additional step where a module's output is reprocessed with its input before giving the result to the next module. This additional processing step is called blending. Input and output can be processed with different algorithms, called blending operators or blend modes.</p>
+    <p>Each blend mode is further controlled by a parameter called opacity, which can have a value between 0% and 100% and defines how input and output image contribute to the final result. Typically an opacity value of 0% gives as a result an image that is identical to the input image – the module remains without effect. An opacity value of 100% delivers the maximum effect of the module with the blend mode chosen.</p>
+    <p>The opacity value can be the same for all image pixels. In this case blending acts uniformily on the image. Alternatively you can make opacity values to vary between different image locations or pixel values. This is called a mask and gives fine control over what parts of an image are affected by a module and to what extent. At your choice you may activate a drawn mask or a parametric mask or a combination of both.</p>
+  </body>
+</topic>

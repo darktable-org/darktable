@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="map_chapter">
+  <title>Map</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>geotagging</keyword>
+        <keyword>map</keyword>
+        <keyword>view</keyword>
+        <indexterm>map view</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The Map view is were you geotag your images.</p>
+    <fig id="fig_uc3_svb_flb">
+      <title>The map view</title>
+      <image href="../images/map_view.png" placement="break" id="image_vc3_svb_flb" />
+    </fig>
+  </body>
+</topic>

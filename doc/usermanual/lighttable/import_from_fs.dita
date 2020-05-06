@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="import_from_fs" xml:lang="en-us">
+  <title>Import from filesystem</title>
+  <body>
+    <p>You can import either a single image, or a folder. The imported image(s) will show up in a film roll with the name of the filesystem folder.</p>
+    <p>
+      <image align="center" href="images/panel_import_2.png" placement="break" />
+    </p>
+    <p>Clicking on 
+    <q>image</q>or 
+    <q>folder</q>opens a file selector dialog. Navigate through the filesystem, and select the item to import. On the lower part of the dialog, are some further import options.</p>
+    <p>As the name implies, checking 
+    <q>import directories recursively</q>will import images in the currently selected directory, and all subdirectories. It is not recommended, and wastes resources, to do this on an exhaustive list of images. darktable would generate thumbnails for all of them, but in the end only keep the recent ones in its cache. It is better to import images in smaller chunks, making logical film rolls.</p>
+    <p>Checking 
+    <q>ignore JPEG files</q>is a good choice if there are JPEG images in the same folder that you do not want to process; eg. if the camera stores RAW+JPEG, you often only want to work on the raws, leaving the JPEG images alone.</p>
+    <p>You can also apply some metadata during import; see 
+    <xref href="metadata_editor.dita#metadata_editor" type="topic">Metadata editor</xref>for more details.</p>
+    <p>Importing a folder does not mean that darktable copies your images into another folder. It just means that the images are visible in lighttable and thus can be developed. If you delete an image or a folder from disk after having imported them, darktable cannot access them anymore. Importing an image or folder in darktable is not a backup of your filesystem! Moreover, darktable does not watch for changes in the filesystem. Thus, if you add an image to a folder, after having imported that folder in darktable, the new image will not be shown until explicitly imported.</p>
+  </body>
+</topic>

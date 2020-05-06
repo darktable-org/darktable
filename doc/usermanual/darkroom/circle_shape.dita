@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="circle_shape" xml:lang="en-us">
+  <title>circle</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>circle</indexterm>
+        <indexterm>mask shapes
+        <indexterm>circle</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/shape_circle.png" placement="inline" />symbol adds a circle shape.</p>
+    <p>
+    <i>Click</i>into the canvas to place the circle. 
+    <i>Left-click</i>and drag the circle to a different position if needed. Use the scroll wheel of your mouse while in the circle to change the diameter; 
+    <i>scroll</i>within the circle border to adjust the width of the gradual decay or 
+    <i>shift+scroll</i>anywhere in the shape for the same effect. With 
+    <i>Ctrl+scroll</i>you can adjust the opacity of the circle – this is best observed with the mask displayed by pressing the 
+    <image align="center" href="../images/darkroom_module_icon_mask.png" placement="inline" />button.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">A circle shape with controls and activated mask display.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/masks_circle_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

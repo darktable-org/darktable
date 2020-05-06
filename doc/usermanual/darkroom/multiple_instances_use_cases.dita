@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="multiple_instances_use_cases" xml:lang="en-us">
+  <title>Typical use cases</title>
+  <body>
+    <p>There are many occasions where it makes sense to have an operation act more than once in the pixelpipe. Here are a few use cases.</p>
+    <ul>
+      <li>
+        <p>Most of our modules are highly versatile and depending on parameters can deliver quite varying effects. For example the 
+        <i>fill light</i>module (
+        <xref href="fill_light.dita#fill_light" type="topic">Fill light</xref>) allows local modification of lightness based on pixel values. You might want to do two lightness corrections in your image at the same time – one for dark tones and another one for lighter tones.</p>
+      </li>
+      <li>
+        <p>You might want to apply a denoising module like 
+        <i>denoise (profile)</i>(
+        <xref href="denoise_profiled.dita#denoise_profiled" type="topic">Denoise – profiled</xref>) with two different parameter sets. One to do luma denoising and another set of parameters to do chroma denoising. You could do so by generating two instances and use the first one only on luma by selecting blend mode 
+        <q>lightness</q>and use the second one just for chroma by selecting blend mode 
+        <q>color</q>(see 
+        <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>).</p>
+      </li>
+      <li>
+        <p>In an even more elaborate case you could have a module act on different parts of your image. As an example you might want to apply a certain gradation curve with module 
+        <i>tone curve</i>(
+        <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>) to your complete image and have a second curve being applied specifically to skin tones. All of the controls offered by 
+        <i>drawn masks</i>(
+        <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>) and 
+        <i>parametric masks</i>(
+        <xref href="parametric_mask.dita#parametric_mask" type="topic">Parametric mask</xref>) may be used to select those parts of an image where each of the module instances are applied.</p>
+      </li>
+    </ul>
+    <p>Please be aware that of course each instance also adds to the workload of your pixelpipe. Generating too many instances – especially of the more demanding modules – will certainly cause some noticeable slow-down.</p>
+  </body>
+</topic>

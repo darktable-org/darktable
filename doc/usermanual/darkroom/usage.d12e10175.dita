@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10175" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>If you decide in module 
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">
+      <i>input color profile</i>
+    </xref>to use an ICC profile from the camera manufacturer, a correction curve very frequently needs to be pre-applied to image data – or else the final output looks much too dark. This extra processing is not required if you use darktable's standard or enhanced color matrices. The correction curve is defined with a linear part extending from the shadows to some upper limit and a gamma curve covering mid-tones and highlights. For further reading please also have a look at darktable's neighbouring project 
+    <xref format="html" href="http://ufraw.sourceforge.net" scope="external">UFRaw</xref>.</p>
+  </body>
+</topic>

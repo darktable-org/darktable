@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="tethering_chapter">
+  <title>Tethering</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>tethering</keyword>
+        <keyword>view</keyword>
+        <indexterm>tethering view</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The tethering view allows you to capture images directly into darktable from your connected camera.</p>
+    <fig id="fig_e2p_dvb_flb">
+      <title>The tethering view</title>
+      <image href="../images/tethering_view.png" placement="break" id="image_f2p_dvb_flb" />
+    </fig>
+  </body>
+</topic>

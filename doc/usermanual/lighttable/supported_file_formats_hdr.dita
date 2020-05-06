@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="supported_file_formats_hdr" xml:lang="en-us">
+  <title>HDR image files</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>import
+        <indexterm>HDR files</indexterm></indexterm>
+        <indexterm>HDR images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable reads high dynamic range images in OpenEXR, RGBE and PFM format.</p>
+  </body>
+</topic>

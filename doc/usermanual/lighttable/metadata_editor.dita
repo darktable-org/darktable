@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="metadata_editor" xml:lang="en-us">
+  <title>Metadata editor</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>metadata editor</indexterm></indexterm>
+        <indexterm>metadata editor</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Edit metadata of an image, like 
+            <i>title</i>, 
+            <i>description</i>, 
+            <i>creator</i>, 
+            <i>publisher</i>, or 
+            <i>rights</i>. You can define your own presets if you want to apply specific settings frequently.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_metadata_editor.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

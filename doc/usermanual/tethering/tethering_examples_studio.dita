@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tethering_examples_studio" xml:lang="en-us">
+  <title>Studio setup with screening</title>
+  <body>
+    <p>This is a pretty common use case. You have your studio and subject set up, the camera is connected to your computer and tethering view is active in darktable. You work at the camera and take images. Whenever you want, you can screen the image directly on your computer monitor instead of using the camera LCD for validation.</p>
+    <p>This workflow is efficient and effective, since you can immediately review your captures instead of waiting until after the shoot when everyone is gone. If you're shooting a model this is a pretty nice way to pre-view the captures with the client instead of fumbling around with your camera.</p>
+    <p>Working in the tethered mode can save you time and aggravation. Set a session name, shoot your images and they will save in the correct film roll for the session for easy on-site review.</p>
+  </body>
+</topic>

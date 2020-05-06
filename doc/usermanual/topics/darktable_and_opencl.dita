@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl" xml:lang="en-us">
+  <title>darktable and OpenCL</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>OpenCL</indexterm>
+        <indexterm>GPU computing</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable can use GPU acceleration via OpenCL to improve performance.</p>
+  </body>
+</topic>

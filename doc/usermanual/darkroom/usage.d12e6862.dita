@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e6862" xml:lang="en-us">
+  <title>Usage</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color picker</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The levels tool offers two modes of operation: 
+    <q>manual</q>and 
+    <q>automatic</q>.</p>
+    <p>In 
+    <q>manual</q>mode the levels tool shows a histogram of the image, and displays three bars with handles. Dragging the handles modifies the tones in the image. Those bars control the black, middle gray and white points in absolute values of image lightness (the L value from Lab).</p>
+    <p>You can move the black and white bars to match the left and right borders of the histogram, which will make the output image span the full available tonal range. A previously flat looking image will get more contrast and pop.</p>
+    <p>Moving the middle bar will modify the middle gray tones. Shifting it left will make the image look brighter, shifting it right will make it darker. This is often referred to as a change of image gamma.</p>
+    <p>There are three color pickers in black, gray, and white, available by pressing the respectively colored 
+    <image align="center" href="../images/darkroom_module_icon_picker.png" placement="inline" />icon. You can use them to sample the corresponding level directly from the image. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+    <p>The 
+    <q>auto</q>button autoadjusts the black and white point and puts the gray point exactly in the mean between them.</p>
+    <p>In 
+    <q>automatic</q>mode the module automatically analyses the histogram of the image, detects the left and right histogram borders, and lets you define the black point, the gray point and the white point in terms of 
+    <xref format="html" href="http://en.wikipedia.org/wiki/Percentile" scope="external">
+      <i>percentiles</i>
+    </xref>relative to these borders.</p>
+    <p>Tip: Under certain conditions, especially highly saturated blue light sources in the frame, the levels module may produce black pixel artifacts. See the 
+    <i>gamut clipping</i>option (
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>) on how to mitigate this issue.</p>
+  </body>
+</topic>

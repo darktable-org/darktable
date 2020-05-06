@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="base_curve" xml:lang="en-us">
+  <title>Base curve</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>base curve</indexterm></indexterm>
+        <indexterm>base curve</indexterm>
+        <indexterm>exposure fusion</indexterm>
+        <indexterm>exposure bias</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

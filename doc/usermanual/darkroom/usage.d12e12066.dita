@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e12066" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>In order to perform lens corrections the module uses Exif data of your image to identify the specific camera/lens combination and collects the needed correction parameters from a profile in lensfun's database.</p>
+  </body>
+</topic>

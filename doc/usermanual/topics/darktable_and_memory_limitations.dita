@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_memory_limitations" xml:lang="en-us">
+  <title>Further limitations</title>
+  <body>
+    <p>As if this were not challenging enough, there are further things that might limit your access to memory. On some older boards you need to activate BIOS option 
+    <q>memory remapping</q>in order to have all physically installed memory enabled. In addition if you are on a 32-bit OS you will probably need a kernel version that has 
+    <q>Physical Address Extension</q>(PAE) enabled. This is often but not always the case for Linux. Many distributions deliver different kernels, some with and some without PAE activated; you need to choose the right one. To check if the system is setup correctly, use the command 
+    <q>free</q>in a terminal and examine the output. If the output reports less RAM than you have installed, you have an issue needing correction; for example you have 4GB on your board, but your kernel is only seeing 3GB or less. You need to consult your BIOS manual and the information about your Linux variant for further help.</p>
+  </body>
+</topic>

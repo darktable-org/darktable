@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10419" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>This module works by enhancing the contrast around edges and thereby enhances the impression of sharpness of an image. In darktable this module is only applied to the L-channel in Lab color space.</p>
+  </body>
+</topic>

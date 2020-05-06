@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="combined_masks_usage" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">You will typically want to combine drawn and parametric masks to first select a certain region of your image – either by the drawn or the parametric mask – and use the other mask type to finetune your selection. Finetuning can either mean that you want to include further parts of the image, which are not included in the first place, or you want to exclude parts of the image that were previously included.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/combined_masks.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>This gives two typical use cases:</p>
+  </body>
+</topic>

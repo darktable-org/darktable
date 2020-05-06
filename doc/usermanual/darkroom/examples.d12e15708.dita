@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e15708" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="4*" />
+          <colspec colname="col2" colnum="2" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/colormapping_ex1.png" placement="break" />
+              </entry>
+              <entry colname="col2">The source image taken shortly after sunset under front lighting conditions.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/colormapping_ex2.png" placement="break" />
+              </entry>
+              <entry colname="col2">The target image taken in the afternoon with a partly clouded sky. Our goal is to transfer the evening atmosphere of the source image.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/colormapping_ex3.png" placement="break" />
+              </entry>
+              <entry colname="col2">The target image with color mapping applied. A number of 2 clusters was used. 
+              <q>color dominance</q>is set to 100% for a bold but still credible effect. 
+              <q>histogram equalization</q>is set to 80%.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

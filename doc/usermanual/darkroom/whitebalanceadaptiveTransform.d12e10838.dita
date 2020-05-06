@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="whitebalanceadaptiveTransform.d12e10838" xml:lang="en-us">
+  <title>whitebalance-adaptive transform</title>
+  <body>
+    <p>As white-balance amplifies the RGB channels differently, they exhibit different noise levels. This checkbox makes the algorithm adaptive to white balance. This option should be disabled on the second instance if you use a first instance with a color blend mode.</p>
+  </body>
+</topic>

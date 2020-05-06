@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="method.d12e12962" xml:lang="en-us">
+  <title>method</title>
+  <body>
+    <p>This combobox sets the dithering method. Floyd-Steinberg error diffusion – with some typical output bit depths – and random noise dithering are both supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some level of randomness to break sharp tonal value bands. The default setting is 
+    <q>floyd-steinberg auto</q>, which automatically adapts to the desired output format.</p>
+  </body>
+</topic>

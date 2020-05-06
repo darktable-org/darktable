@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="fileSelection.d12e9821" xml:lang="en-us">
+  <title>file selection</title>
+  <body>
+    <p>File selection is inactive as long as the 3D LUT folder (where you have stored your LUT files) is not defined in 
+    <i>3D LUT root folder</i>under 
+    <i>preferences/core options/miscellaneous</i>.</p>
+  </body>
+</topic>

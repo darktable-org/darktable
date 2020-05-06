@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_binary">
+  <title>
+  <tt>darktable</tt>binary</title>
+  <body>
+    <p>This binary starts darktable with its GUI and full functionality; it is the standard way of using darktable.</p>
+    <p>
+    <tt>darktable</tt>is called with the following command line parameters:</p>
+    <codeblock xml:space="preserve">
+darktable [-d {all,cache,camctl,camsupport,control,dev,
+               fswatch,input,lighttable,lua,masks,memory,nan,
+               opencl,perf,pwstorage,print,sql}]
+          [&lt;input file&gt;|&lt;image folder&gt;]
+          [--version]
+          [--disable-opencl]
+          [--library &lt;library file&gt;]
+          [--datadir &lt;data directory&gt;]
+          [--moduledir &lt;module directory&gt;]
+          [--tmpdir &lt;tmp directory&gt;]
+          [--configdir &lt;user config directory&gt;]
+          [--cachedir &lt;user cache directory&gt;]
+          [--localedir &lt;locale directory&gt;]
+          [--luacmd &lt;lua command&gt;]
+          [--noiseprofiles &lt;noiseprofiles json file&gt;]
+          [--conf &lt;key&gt;=&lt;value&gt;]
+</codeblock>
+    <p>All parameters are optional; in most cases users will start darktable without any additional parameters in which case darktable uses suitable defaults. 
+    <dl>
+      <dlentry>
+        <dt>-d</dt>
+        <dd>This option enables debug output to the terminal. There are several subsystems of darktable and debugging of each of them can be activated separately. You can use this option multiple times if you want debugging output of more than one subsystem.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;input file&gt;|&lt;image folder&gt;</dt>
+        <dd>You may optionally supply the filename of an image or the name of a folder containing image files. If a filename is given darktable starts in darkroom view with that file opened. If a folder is given darktable starts in lighttable view with the content of that folder as the current collection.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--version</dt>
+        <dd>This option causes darktable to print its version number, a copyright notice, some other useful information, and then terminate.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--disable-opencl</dt>
+        <dd>This option prevents darktable from initializing the OpenCL subsystem. Use this option in case darktable crashes at startup due to a defective OpenCL implementation.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--library &lt;library file&gt;</dt>
+        <dd>darktable keeps image information in an sqlite database for fast access. The default location of that database file is 
+        <tt>$HOME/.config/darktable/library.db</tt>. You may give an alternative location, e.g. if you want to do some experiments without compromising your original library.db. If the database file does not exist, darktable creates it for you. You may also give 
+        <tt>:memory:</tt>as a library file in which case the database is kept in system memory and all changes are discarded when darktable terminates. 
+        <p>Whenever darktable starts, it will lock the library to the current user. It does this by writing the current process identifier (PID) into a lock file 
+        <tt>&lt;library file&gt;.lock</tt>next to the library specified. If darktable finds an existing lock file for the library, it will terminate immediately.</p></dd>
+      </dlentry>
+      <dlentry>
+        <dt>--datadir &lt;data directory&gt;</dt>
+        <dd>This option defines the directory where darktable finds its runtime data. The default place depends on your installation. Typical places are 
+        <tt>/opt/darktable/share/darktable/</tt>and 
+        <tt>/usr/share/darktable/</tt>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--moduledir &lt;module directory&gt;</dt>
+        <dd>darktable has a modular structure and organizes its modules as shared libraries for loading at runtime. With this option you tell darktable where to look for its shared libraries. The default place depends on your installation; typical places are 
+        <tt>/opt/darktable/lib64/darktable/</tt>and 
+        <tt>/usr/lib64/darktable/</tt>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--tmpdir &lt;tmp directory&gt;</dt>
+        <dd>The place where darktable stores its temporary files. If this option is not supplied darktable uses the system default.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--configdir &lt;config directory&gt;</dt>
+        <dd>This option defines the directory where darktable stores the user specific configuration. The default place is 
+        <tt>$HOME/.config/darktable/</tt>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--cachedir &lt;cache directory&gt;</dt>
+        <dd>darktable keeps a cache of image thumbnails for fast image preview and of precompiled OpenCL binaries for fast startup. By default the cache is located in 
+        <tt>$HOME/.cache/darktable/</tt>. There may exist multiple thumbnail caches in parallel, one for each library file.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>--localedir &lt;locale directory&gt;</dt>
+        <dd>
+          <p>The place where darktable finds its language specific text strings. The default place depends on your installation. Typical places are 
+          <tt>/opt/darktable/share/locale/</tt>and 
+          <tt>/usr/share/locale/</tt>.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>--luacmd &lt;lua command&gt;</dt>
+        <dd>
+          <p>A string containing lua commands to execute after lua initialization. These commands will be run after your 
+          <tt>luarc</tt>file.</p>
+          <p>If lua is not compiled in, this option will be accepted but won't do anything.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>--noiseprofiles &lt;noiseprofiles json file&gt;</dt>
+        <dd>
+          <p>The json file that contains the camera specific noise profiles. The default location depends on your installation. Typical places are 
+          <tt>/opt/darktable/share/darktable/noiseprofile.json</tt>and 
+          <tt>/usr/share/darktable/noiseprofile.json</tt>.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>--conf &lt;key&gt;=&lt;value&gt;</dt>
+        <dd>
+          <p>darktable supports a rich set of configuration parameters which the user defines in 
+          <tt>darktablerc</tt>, darktable's configuration file in the user config directory. You may temporarily overwrite individual settings on the command line with this option, however, these settings will not be stored in 
+          <tt>darktablerc</tt>.</p>
+        </dd>
+      </dlentry>
+    </dl></p>
+  </body>
+</topic>

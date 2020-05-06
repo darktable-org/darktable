@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="display_profile" xml:lang="en-us">
+  <title>Display profile</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color management
+        <indexterm>display profile</indexterm></indexterm>
+        <indexterm>monitor profile</indexterm>
+        <indexterm>display profile</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>In order for darktable to accurately render colors on screen it needs to find the correct display profile of your monitor. In general this requires your monitor to be properly calibrated and profiled, and it needs the profile to be correctly installed on your system. darktable queries your X display server's 
+    <i>xatom</i>as well as the system service 
+    <i>colord</i>(if available) for the right profile. If needed you can enforce a specific method in the GUI preferences dialog (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>).</p>
+    <p>To investigate your display profile configuration you can call the 
+    <filepath>darktable-cmstest</filepath>binary (Linux only) which prints out useful information like profile name per monitor and tells you if the system is correctly configured (see 
+    <xref href="../overview/darktable_cmstest_binary.dita" type="topic">darktable-cmstest binary</xref>).</p>
+    <p>In rare cases you may need to manually select the display profile. This is possible from the softproof and gamut check option dialogs in the darkroom view (see 
+    <xref href="softproof.dita#softproof" type="topic">Soft proof</xref>and 
+    <xref href="gamutcheck.dita#gamutcheck" type="topic">Gamut check</xref>), and the display profile dialog in the lighttable view (see 
+    <xref href="../lighttable/lighttable_overview.dita#lighttable_overview" type="topic">Overview</xref>).</p>
+  </body>
+</topic>

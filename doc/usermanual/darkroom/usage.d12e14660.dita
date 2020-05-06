@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e14660" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Michael Orton achieved his results on slide film by using two exposures of the same scene: one well exposed and one overexposed; he then used a darkroom technique to blend those into a final image where the overexposed image was blurred.</p>
+    <p>This module is almost a copy of Orton's analogue process into the digital domain. You can control brightness and blur with the provided parameters; we also add a control for saturation of the overexposured image for more play.</p>
+  </body>
+</topic>

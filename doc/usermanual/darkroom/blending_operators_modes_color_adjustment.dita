@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_color_adjustment" xml:lang="en-us">
+  <title>color adjustment</title>
+  <body>
+    <p>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments, e.g. module 
+    <xref href="levels.dita#levels" type="topic">
+      <i>levels</i>
+    </xref>and 
+    <xref href="tone_curve.dita#tone_curve" type="topic">
+      <i>tone curve</i>
+    </xref>. The color adjustment blend mode takes the lightness only from output data and mixes colors from input and output enabling control of the module's color adjustments.</p>
+  </body>
+</topic>

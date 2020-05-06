@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="threshold.d12e5980" xml:lang="en-us">
+  <title>threshold</title>
+  <body>
+    <p>The color reconstruction module replaces the color of all target pixels characterized by luminance values above this threshold. Inversely, only pixels with luminance values below this threshold are taken as valid source pixels for replacement colors. Too high settings of this parameter will cause the module to have no effect on any pixels. Too low values will minimize the 
+    <q>pool</q>of replacement colors – if no suited ones are available the original colors are maintained. Therefore, this parameter exhibits a 
+    <q>sweet spot</q>characteristic with an optimum setting depending on the individual image.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="operator.d12e7776" xml:lang="en-us">
+  <title>operator</title>
+  <body>
+    <p>Reinhard, Filmic and Drago global tonemap operators are available for use. Depending on the selected operator, different parameters can be adjusted. Some operators are fully self-adjusting, and do not require specific controls.</p>
+  </body>
+</topic>

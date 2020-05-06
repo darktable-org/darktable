@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="print_button" xml:lang="en-us">
+  <title>Print button</title>
+  <body>
+    <p>At the bottom of the right panel you find the 
+    <q>print</q>button. When clicked the image is exported using the selected options and sent to the printer.</p>
+  </body>
+</topic>

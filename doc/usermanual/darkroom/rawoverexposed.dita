@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rawoverexposed" xml:lang="en-us">
+  <title>Raw overexposed warning</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>raw overexposed warning</indexterm></indexterm>
+        <indexterm>raw overexposed warning</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_module_icon_rawoverexposed.png" placement="inline" />icon warns you about areas of your raw input image with clipped color channels. Clipped color channels imply an overexposed image with loss of information in the affected areas. You may use the 
+    <i>highlight reconstruction</i>module or the 
+    <i>color reconstruction</i>module in order to reconstruct those areas (see 
+    <xref href="highlight_reconstruction.dita#highlight_reconstruction" type="topic">Highlight reconstruction</xref>and 
+    <xref href="color_reconstruction.dita#color_reconstruction" type="topic">Color reconstruction</xref>).</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Right-clicking on the icon opens a dialog with configuration parameters.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_rawoverexposed.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>
+      <b>mode</b>
+    </p>
+    <p>The default 
+    <q>mark with CFA color</q>mode displays a pattern of the respective primary colors (red, green, and blue) to indicate which color channels are found to be clipped. In the 
+    <q>mark with solid color</q>mode clipped areas are marked with a user defined solid color (see below) independent of the affected color channels. In the 
+    <q>false color</q>mode clipped color channels are set to zero in the affected areas.</p>
+    <p>
+      <b>color scheme</b>
+    </p>
+    <p>Selects the solid color for the 
+    <q>mark with solid color</q>mode.</p>
+    <p>
+      <b>clipping threshold</b>
+    </p>
+    <p>This slider sets the threshold of what values are considered to be overexposed. You can leave it at its default value 1.0 (white level) in most cases.</p>
+  </body>
+</topic>

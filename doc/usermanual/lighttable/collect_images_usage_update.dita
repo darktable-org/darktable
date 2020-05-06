@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_update" xml:lang="en-us">
+  <title>updating folder path</title>
+  <body>
+    <p>While it is best to not touch imported files behind darktable's back, this module can help you recover from situations when you move imported folders after import. The collect images module has a feature that allows you to tell darktable about the new location of imported folders which have been moved. You set the combobox to 
+    <i>folders</i>to find the original folder name in the tree. The folder name will be displayed striked-out to emphasize that it is no longer there. Then you right-click on the folder name, select 
+    <q>search filmroll...</q>, and then select the new location of the folder.</p>
+  </body>
+</topic>

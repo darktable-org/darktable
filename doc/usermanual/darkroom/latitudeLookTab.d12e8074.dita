@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="latitudeLookTab.d12e8074" xml:lang="en-us">
+  <title>Latitude (
+  <uicontrol>Look</uicontrol>tab)</title>
+  <body>
+    <p>The latitude is the range between the 2 nodes enclosing the central linear portion of the curve, expressed as a percentage of the dynamic range defined in the 
+    <uicontrol>scene</uicontrol>tab (white-relative exposure minus black-relative-exposure). It is the luminance range that is remapped in priority, and it is remapped to the luminance interval defined by the 
+    <xref href="filmicrgb-contrast.dita#filmicrgb-contrast" type="topic">Contrast</xref>parameter. It is usually advised to keep the latitude as large as possible, while avoiding clipping. If clipping is observed, you can compensate the effects by either decreasing the latitude, shifting the latitude interval with the 
+    <uicontrol>shadow/highlights balance</uicontrol>parameter, or by decreasing the contrast.</p>
+    <p>The latitude also defines the range of luminances that is not desaturated at the extremities of the luminance range (see 
+    <xref href="filmicrgb-saturation.dita#filmicrgb-saturation" type="topic">Extreme luminance saturation (Look tab)</xref>).</p>
+  </body>
+</topic>

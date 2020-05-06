@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="slideshow_chapter">
+  <title>Slideshow</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>slideshow</keyword>
+        <keyword>view</keyword>
+        <indexterm>slideshow view</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The slideshow view starts a slideshow of your current collection.</p>
+    <fig id="fig_w3k_zvb_flb">
+      <title>The slideshow view</title>
+      <image href="../images/slideshow_view.png" placement="break" id="image_x3k_zvb_flb" />
+    </fig>
+  </body>
+</topic>

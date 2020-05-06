@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="navigation" xml:lang="en-us">
+  <title>Navigation</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>navigation</indexterm></indexterm>
+        <indexterm>navigation</indexterm>
+        <indexterm>zoom</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">On the top left hand side the navigation panel displays a full preview of your image with a rectangle showing the currently visible zoom area in the central panel. Drag the rectangle around to pan the zoomed-in view. The current zoom scale is displayed to the right of the preview image. Click on that figure for a quick access to some common zoom levels.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_navigation.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

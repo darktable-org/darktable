@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="import_from_camera_tethering" xml:lang="en-us">
+  <title>Tethered shoot</title>
+  <body>
+    <p>Tethering is used to integrate darktable with your camera. While you take images with your camera, they are automatically imported into darktable, so you can review the result of the shoot. You can also setup remote capture jobs, controlling the number of images and time between captures, along with camera settings such as exposure time, aperture and more.</p>
+    <p>If supported by your camera, tethering will take you into the capture view for tethered shooting. Read more about tethering in 
+    <xref href="../tethering/tethering_chapter.dita#tethering_chapter" type="topic">Tethering</xref>.</p>
+  </body>
+</topic>

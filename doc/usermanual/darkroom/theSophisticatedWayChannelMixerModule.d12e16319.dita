@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="theSophisticatedWayChannelMixerModule.d12e16319" xml:lang="en-us">
+  <title>The sophisticated way: channel mixer module</title>
+  <body>
+    <p>To perform the conversion we use the 
+    <i>channel mixer</i>module (
+    <xref href="channel_mixer.dita#channel_mixer" type="topic">Channel mixer</xref>).</p>
+    <ol>
+      <li>Activate the channel mixer module</li>
+      <li>Select the gray output channel</li>
+      <li>Set the proportion of each color, the sum having to equal 1 if you want to keep your global lightness.</li>
+    </ol>
+  </body>
+</topic>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="screen_layout">
+  <title>Screen layout</title>
+  <body>
+    <p>The general screen layout of all views is similar. There is a center area which contains most of the relevant information of that view. Then there are panels left, right, top and bottom to the center area. The left panel typically has an informational purpose. The right panel offers functions to modify an image. The top and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expanded by pressing a triangle like 
+    <image href="../images/general_icon_collapse.png" placement="inline" />, located close to the panel.</p>
+    <p>By pressing the 
+    <i>TAB</i>key all panels get collapsed, allowing the center area to occupy all available space. Pressing 
+    <i>TAB</i>again brings you back to the previous view.</p>
+    <p>Fullscreen view can be toggled by pressing 
+    <i>F11</i>.</p>
+    <p>Left, right and bottom panels can be resized by dragging their borders. Sizes and visibility of panels are stored per views.</p>
+  </body>
+</topic>

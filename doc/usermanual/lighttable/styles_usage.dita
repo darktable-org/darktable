@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>This panel displays a list of all available styles. A search field above the list allows you to input a text string which is compared against the styles' names and descriptions, thus limiting the list to the matching ones.</p>
+    <p>Double clicking on a style name applies the style to all selected images.</p>
+  </body>
+</topic>

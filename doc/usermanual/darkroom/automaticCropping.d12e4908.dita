@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="automaticCropping.d12e4908" xml:lang="en-us">
+  <title>automatic cropping</title>
+  <body>
+    <p>Use this options to avoid black edges on the image borders. Useful when you rotate the image.</p>
+  </body>
+</topic>

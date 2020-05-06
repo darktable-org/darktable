@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="star_ratings_and_color_labels" xml:lang="en-us">
+  <title>Star ratings and color labels</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>star ratings</indexterm>
+        <indexterm>color labels</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Star ratings and color labels help you to sort and rank images according to your own criteria. An image's star rating and its color labels are displayed in the thumbnail.</p>
+    <p>You can give a rating from zero to five stars to an image. The quality criteria which lead to a rating are fully up to you. Whenever you import images, each image receives a default rating which you can define in 
+    <q>GUI options</q>(see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>). You can later revise the rating at any time. You can also mark an image as 
+    <q>rejected</q>by pressing the 
+    <image align="center" href="../images/lighttable_thumb_reject.png" placement="inline" />icon or typing the 
+    <i>R</i>key. This will remove all stars. You can reverse the rejection by applying a new star rating.</p>
+    <p>There are several ways to change a rating. While hovering the cursor over an image thumbnail, you can press a number key 
+    <i>0 – 5</i>for the number of stars, or type 
+    <i>R</i>to 
+    <q>reject</q>an image; this is probably the fastest way when rating your images on first inspection of a film roll.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">You can also directly click on the stars displayed in the thumbnails; click the 
+              <i>x</i>to reject, click the fifth star to get a rating of five stars, etc. Clicking either the 
+              <i>x</i>or the first star for a second time resets the image rating to unranked, or zero stars. The latter behavior can be changed in the 
+              <q>GUI options</q>dialog (see 
+              <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>).</entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/star_rating_thumbs.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">To rate one or more images at once, select those images (see 
+              <xref href="select.dita#select" type="topic">Select</xref>) and then press the key for your rating, or click the desired star rating in 
+              <i>the bottom panel</i>of the lighttable view.</entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/star_rating_panel.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>Color labels are another way to sort images, and can be used as an alternative to star ratings or work alongside star ratings. Each image can carry any combination of one or more color labels in red, yellow, green, blue, and purple.</p>
+    <p>You can set the color labels for a single image by hovering your cursor over the thumbnail and pressing the function keys 
+    <i>F1 – F5</i>, which correspond with the labels in the order given above.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">To toggle the color labels of one or more images, select the desired images (see 
+              <xref href="select.dita#select" type="topic">Select</xref>) and then press the corresponding color button in the bottom panel. To remove all labels from the selected images, press the grey button.</entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/color_labels_panel.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

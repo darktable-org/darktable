@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_culling" xml:lang="en-us">
+  <title>Culling</title>
+  <body>
+    <p>Culling layout allow to display images side by side to easily compare them. There's 2 different modes to define the number of images to show at the same time : 
+    <q>Fixed mode</q>and 
+    <q>Dynamic mode</q>.</p>
+    <p>Once in culling mode, you can switch between those 2 mode with 
+    <i>&lt;</i>key accel.</p>
+  </body>
+</topic>

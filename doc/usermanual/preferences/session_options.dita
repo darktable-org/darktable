@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="session_options" xml:lang="en-us">
+  <title>Session options</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>preferences and settings
+        <indexterm>session options</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>These options define a naming pattern to organize images on disk when importing from a connected camera (see 
+    <xref href="../lighttable/import.dita#import" type="topic">Import</xref>) and when taking photos in the tethering view (see 
+    <xref href="../tethering/tethering_chapter.dita#tethering_chapter" type="topic">Tethering</xref>).</p>
+    <p>The naming pattern consists of three parts: a base part defining the parent folder, a session part defining a sub directory which is specific to the individual import session, and a file name part defining the filename structure for each imported image.</p>
+    <p>Several pre-defined variables can be used in the pattern as placeholders:</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" />
+        <colspec colname="col2" colnum="2" />
+        <tbody>
+          <row>
+            <entry colname="col1">$(HOME)</entry>
+            <entry colname="col2">the home folder as defined by the system</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(PICTURES_FOLDER)</entry>
+            <entry colname="col2">the pictures folder as defined by the system (usually 
+            <q>$HOME/Pictures</q>)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DESKTOP)</entry>
+            <entry colname="col2">the desktop folder as defined by the system (usually 
+            <q>$HOME/Desktop</q>)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(USERNAME)</entry>
+            <entry colname="col2">your user account name on the system</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(FILE_NAME)</entry>
+            <entry colname="col2">basename of the imported image</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(FILE_EXTENSION)</entry>
+            <entry colname="col2">extension of the imported image</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(JOBCODE)</entry>
+            <entry colname="col2">unique identifier of the import job</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(SEQUENCE)</entry>
+            <entry colname="col2">a sequence number within the import job</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(MAX_WIDTH)</entry>
+            <entry colname="col2">maximum image width to limit within export session</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(MAX_HEIGHT)</entry>
+            <entry colname="col2">maximum image height to limit within export session</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(ID)</entry>
+            <entry colname="col2">unique identification number of the image in darktable's database</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(YEAR)</entry>
+            <entry colname="col2">year at the date of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(MONTH)</entry>
+            <entry colname="col2">month at the date of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DAY)</entry>
+            <entry colname="col2">day at the date of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(HOUR)</entry>
+            <entry colname="col2">hour at the time of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(MINUTE)</entry>
+            <entry colname="col2">minute at the time of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(SECOND)</entry>
+            <entry colname="col2">second at the time of import</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_YEAR)</entry>
+            <entry colname="col2">year the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_MONTH)</entry>
+            <entry colname="col2">month the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_DAY)</entry>
+            <entry colname="col2">day the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_HOUR)</entry>
+            <entry colname="col2">hour the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_MINUTE)</entry>
+            <entry colname="col2">minute the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_SECOND)</entry>
+            <entry colname="col2">seconds the photo was taken (from Exif data)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF_ISO)</entry>
+            <entry colname="col2">ISO value of the photo (from Exif data)</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>
+      <b>base directory naming pattern</b>
+    </p>
+    <p>The base directory part of the naming pattern (default 
+    <q>$(PICTURES_FOLDER)/Darktable</q>).</p>
+    <p>
+      <b>sub directory naming pattern</b>
+    </p>
+    <p>The sub directory part of the naming pattern (default 
+    <q>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</q>).</p>
+    <p>
+      <b>file naming pattern</b>
+    </p>
+    <p>The file name part of the naming pattern (default 
+    <q>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION</q>).</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="balance.d12e14321" xml:lang="en-us">
+  <title>balance</title>
+  <body>
+    <p>This parameter represents the ratio of toning between shadows and highlights. For a value of 50% half of the lightness range in image is used for shadows toning and the other half for highlights toning.</p>
+  </body>
+</topic>

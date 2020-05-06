@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rendering_intent" xml:lang="en-us">
+  <title>Rendering intent</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color management
+        <indexterm>rendering intent</indexterm></indexterm>
+        <indexterm>rendering intent</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>If rendering with LittleCMS2 is activated (see 
+    <xref href="rendering_method.dita#rendering_method" type="topic">Rendering method</xref>) you can define how out-of-gamut colors are handled when converting between color spaces. A selection box in the export panel (see 
+    <xref href="../lighttable/export_selected.dita#export_selected" type="topic">Export selected</xref>), the output color profile module (see 
+    <xref href="output_color_profile.dita#output_color_profile" type="topic">Output color profile</xref>), and the soft proof option (see 
+    <xref href="softproof.dita#softproof" type="topic">Soft proof</xref>) gives you a choice of the following rendering intents: 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="4*" />
+        <colspec colname="col2" colnum="2" colwidth="6*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>perceptual</i>
+            </entry>
+            <entry colname="col2">Suited to pictures as it maintains the relative position of colors. This is usually the best choice.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>relative colorimetric</i>
+            </entry>
+            <entry colname="col2">Out-of-gamut colors are converted to colors having the same lightness, but different saturation. Other colors remain unmodified.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>saturation</i>
+            </entry>
+            <entry colname="col2">Saturation is kept but lightness is slightly changed.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>absolute colorimetric</i>
+            </entry>
+            <entry colname="col2">Keep the white point.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

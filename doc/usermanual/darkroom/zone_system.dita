@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="zone_system" xml:lang="en-us">
+  <title>Zone system</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>zone system</indexterm></indexterm>
+        <indexterm>zone system</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

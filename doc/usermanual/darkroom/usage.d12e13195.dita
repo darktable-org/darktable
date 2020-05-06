@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e13195" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The module has no parameters. On activation it will automatically try to optimize away visible CA's.</p>
+    <p>The underlying model assumes as input an uncropped photographic image. The module is likely to fail when you zoom into the image, as in that case it will only receive parts of your photograph as input in darktable's pixelpipe. As a consequence, chromatic aberrations do not get corrected properly in the center view. This limitation only applies to interactive work, not to file export.</p>
+    <p>This module currently only works for images recorded with a Bayer sensor (which is the sensor used in the majority of cameras).</p>
+  </body>
+</topic>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e7764" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Global tonemapping processes each pixel of an HDR image, without taking the local surrounding into account. This is generally faster than local tonemapping, as implemented in the 
+    <xref href="tonemapping.dita#tonemapping" type="topic">
+      <i>tonemapping</i>
+    </xref>module but might lead to less convincing results with very high dynamic scenes. As an enhancement to the original operators, darktable can preserve detail of the input image, and transfer it back to the output image.</p>
+  </body>
+</topic>

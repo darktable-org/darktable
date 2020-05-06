@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="nodeEditTool.d12e11614" xml:lang="en-us">
+  <title>node edit tool</title>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_module_liquify_edit.png" placement="inline" />icon activates or deactivates the node edit tool displaying all defined distortion objects and their controls. Alternatively you can at any time right-click on the image for the same effect.</p>
+  </body>
+</topic>

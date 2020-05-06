@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart_making_input_images" xml:lang="en-us">
+  <title>Making input images for 
+  <filepath>darktable-chart</filepath></title>
+  <body>
+    <p>To start with, you need a suitable photo of your color reference card in RAW+JPEG format. It goes beyond the scope of this manual to explain the details of how to take this photo, but in a nutshell you need to make the shot on a sunny day around midday with the light source (sun) shining at an angle onto the card. You need to avoid any glare in the image. The neutral white color patch in the gray ramp (G00) should end up at the L value specified in the description of your card. Often this is L=92 and requires you to overexpose the shot by about 1/3 EV. Ideally you make several shots with slightly different exposures to later select the right one in darktable. Make sure that the chart fills up most of the frame. Take a lens with a 
+    <q>normal</q>focal length (e.g. 50mm equivalent) and stop down a bit to avoid vignetting.</p>
+    <p>You then open the raw file in darktable and disable most modules, especially 
+    <i>base curve</i>. Select the standard input matrix in the 
+    <i>input color profile</i>module and disable gamut clipping. Select 
+    <q>camera white balance</q>in the 
+    <i>white balance</i>module (see 
+    <xref href="../darkroom/base_curve.dita#base_curve" type="topic">Base curve</xref>, 
+    <xref href="../darkroom/input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>, and 
+    <xref href="../darkroom/whitebalance.dita#whitebalance" type="topic">White balance</xref>).</p>
+    <p>There is a special situation if your camera automatically applies some lens corrections, namely vignetting correction, to the resulting JPEG file. In this case you need to activate the 
+    <i>lens correction</i>module in darktable so that raw processing matches the JPEG in this respect (see 
+    <xref href="../darkroom/lens_correction.dita#lens_correction" type="topic">Lens correction</xref>). However, since darktable's vignetting correction may not exactly match the in-camera correction, it's better to disable this correction in the camera if possible.</p>
+    <p>To output your image you go to the 
+    <q>export</q>module in darktable (see 
+    <xref href="../lighttable/export_selected.dita#export_selected" type="topic">Export selected</xref>).</p>
+    <p>You need to select 
+    <q>Lab</q>as output color profile. This color space is not visible in the combobox by default. You first need to enable it by setting allow_lab_output to TRUE in 
+    <filepath>$HOME/.config/darktable/darktablerc</filepath>. Alternatively, you can start darktable with:</p>
+    <p>
+      <pre xml:space="preserve">
+darktable --conf allow_lab_output=true
+</pre>
+    </p>
+    <p>Then select 
+    <q>PFM (float)</q>as output format and press 
+    <q>export</q>to generate the source image file.</p>
+    <p>In a similar way you produce the corresponding reference (target) image from the JPEG. Also this time you need to disable all modules and export with 
+    <q>Lab</q>output color profile in 
+    <q>PFM (float)</q>format.</p>
+  </body>
+</topic>

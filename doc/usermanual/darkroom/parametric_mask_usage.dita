@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_usage" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">When 
+              <i>parametric mask</i>is activated in combobox 
+              <q>blend</q>an additional set of tabbed controls is shown.</entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_1.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

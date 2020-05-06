@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="edgeThreshold.d12e6191" xml:lang="en-us">
+  <title>edge threshold</title>
+  <body>
+    <p>Set the threshold for an additional median pass. Defaults to 
+    <q>0</q>which disables median filtering. This option is not shown for X-Trans sensors.</p>
+  </body>
+</topic>

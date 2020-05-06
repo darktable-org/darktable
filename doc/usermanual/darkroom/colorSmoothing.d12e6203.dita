@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="colorSmoothing.d12e6203" xml:lang="en-us">
+  <title>color smoothing</title>
+  <body>
+    <p>Activates a number of additional color smoothing passes. Defaults to 
+    <q>off</q>.</p>
+  </body>
+</topic>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lowpass" xml:lang="en-us">
+  <title>Lowpass</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>lowpass</indexterm></indexterm>
+        <indexterm>lowpass</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

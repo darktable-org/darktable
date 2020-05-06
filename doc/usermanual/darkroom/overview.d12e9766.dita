@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e9766" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>A 
+              <i>3D LUT</i>is a tridimensional table which allows for the transforming any RGB value into another RGB value, normally used for film simulation and color grading.</p>
+              <p>The module accepts 
+              <i>.cube</i>and 
+              <i>.png (haldclut)</i>files. The 3D LUT data are not saved in database nor in the XMP file, only the 3D LUT file path inside the 3D LUT folder is saved (see below).</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/lut3d-1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>The module lut3d needs to find the 3D LUT file at the same place in your 3D LUT folder to calculate the output image. This means you have to backup properly your 3D LUT folder. Sharing an image with its XMP is useless if the recipient doesn't have the same 3D LUT file in his 3D LUT folder.</p>
+  </body>
+</topic>

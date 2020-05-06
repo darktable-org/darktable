@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e16636" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>The red-eye effect in photography is the common appearance of red pupils in color photographs of eyes. It occurs when using a photographic flash very close to the camera lens (as with most cameras with built-in flash), in ambient low light.</p>
+              <p>We use the channel mixer module to reduce the red color of the pupil. To limit the processing to the pupils we have to apply two masks.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_01.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="threshold.d12e13391" xml:lang="en-us">
+  <title>threshold</title>
+  <body>
+    <p>Sets the threshold over which the edge of a pixel is counted as a 
+    <q>fringe</q>. The colors of the affected pixels will be rebuild from neighboring pixels. Try lowering this value if there is not enough fringe detected and try increasing this value if too many pixels are desaturated. You may additionally want to play around with the edge detection radius.</p>
+  </body>
+</topic>

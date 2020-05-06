@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_multiple_devices" xml:lang="en-us">
+  <title>Multiple OpenCL devices – manual settings</title>
+  <body>
+    <p>The scheduling of OpenCL devices on most typical systems can be optimized using the 
+    <q>OpenCL scheduling profile</q>settings. However, if your system is equipped with a variety of GPUs you might want to set the relative device priority manually. To do so you need to select the 
+    <q>default</q>scheduling profile and do your settings in the 
+    <q>opencl_device_priority</q>configuration parameter.</p>
+    <p>It is important to understand how darktable uses OpenCL devices. Each processing sequence of an image – to convert an input to the final output using a certain history stack – is run in a so called pixelpipe. There are four different types of pixelpipe in darktable. One type is responsible to process the center image view (or full view) in darkroom mode, another pixelpipe processes the preview image (navigation window) top left in darkroom mode. Of each of these two pixelpipe there can be one at a time – with the full and the preview pixelpipe running in parallel. In addition there can be multiple parallel pixelpipes doing file exports and there can be multiple parallel pixelpipes generating thumbnails. If an OpenCL device is available darktable dynamically allocates it to one specific pixelpipe for one run and releases it afterwards.</p>
+    <p>The computational demand depends a lot on the pixelpipe type. Preview image and thumbnails have a low resolution and can be processed quickly; center image view is more demanding, let alone the pixelpipe doing a file export.</p>
+    <p>Configuration parameter 
+    <q>opencl_device_priority</q>holds a string with the following structure:</p>
+    <p>
+      <pre xml:space="preserve">
+a,b,c.../k,l,m.../o,p,q.../x,y,z...
+</pre>
+    </p>
+    <p>Each letter represents one specific OpenCL device. There are four fields in the parameter string separated by a slash, each representing one type of pixelpipe. 
+    <q>a,b,c...</q>defines the devices that are allowed to process the center image (full) pixelpipe. Likewise devices 
+    <q>k,l,m...</q>can process the preview pixelpipe, devices 
+    <q>o,p,q...</q>the export pixelpipes and finally devices 
+    <q>x,y,z...</q>the thumbnail pixelpipes. An empty field means that no OpenCL device may serve this type of pixelpipe.</p>
+    <p>darktable has an internal numbering system, where the first available OpenCL device will receive number 
+    <q>0</q>. All further devices are numbered consecutively. This number together with the device name is displayed when you start darktable with 
+    <q>darktable -d opencl</q>. You can specify a device either by number or by name (upper/lower case and whitespace do not matter). If you have more than one device – all with the same name – you need to use the device numbers in order to differentiate them.</p>
+    <p>A device specifier can be prefixed with an exclamation mark 
+    <q>!</q>, in which case the device is excluded from processing this pixelpipe. You can also give an asterisk 
+    <q>*</q>as a wildcard, representing all devices not mentioned explicitly before in that group.</p>
+    <p>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan the devices in that order, taking the first free device it finds.</p>
+    <p>If a pixelpipe process is about to be started and if all GPUs in the corresponding group are busy, darktable automatically processes the image on the CPU by default. You can enforce GPU processing by prefixing the list of allowed GPUs with a plus sign 
+    <q>+</q>. darktable will not use the CPU but rather suspend processing until the next allowed OpenCL device is available.</p>
+    <p>darktable's default setting for 
+    <q>opencl_device_priority</q>is:</p>
+    <pre xml:space="preserve">
+*/!0,*/*/*
+</pre>
+    <p>Any detected OpenCL device is allowed to process our center view image. The first OpenCL device (0) is not allowed to process the preview pixelpipe. As a consequence, if there is only one GPU owned by your system, preview pixelpipe will always be processed on CPU, keeping your single GPU exclusively for the more demanding center image view. This is a reasonable setting for most systems. No restrictions apply to export and thumbnail pixelpipes.</p>
+    <p>The default is a good choice if you have only one device. If you have several devices it forms a reasonable starting point. However, as your devices might have quite different levels of processing power, it makes sense to invest a few thoughts and optimize your priority list.</p>
+    <p>Here is an example. Let's assume we have a system with two devices, a fast Radeon HD7950 and an older and slower GeForce GTS450. darktable (started with 
+    <q>darktable -d opencl</q>) will report the following devices:</p>
+    <pre xml:space="preserve">
+[opencl_init] successfully initialized.
+[opencl_init] here are the internal numbers and names of
+                          OpenCL devices available to darktable:
+[opencl_init]           0       'GeForce GTS 450'
+[opencl_init]           1       'Tahiti'
+[opencl_init] FINALLY: opencl is AVAILABLE on this system.
+</pre>
+    <p>So the GeForce GTS 450 is detected as the first device; the Radeon HD7950 ('Tahiti') as the second one. This order will normally not change unless the hardware or driver configuration is modified. But it's better to use device names rather than numbers to be on the safe side.</p>
+    <p>As the GTS450 is slower than the HD7950, an optimized opencl_device_priority could look like:</p>
+    <pre xml:space="preserve">
+!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
+</pre>
+    <p>The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved to 
+    <q>all</q>other devices (i.e. the HD7950/Tahiti). Completely the opposite for our preview pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be allowed to do the work.</p>
+    <p>For file export and thumbnail generation we want all hands on deck. However, darktable should first look if device Tahiti is free, because it's faster. If that's not the case, all other devices – in fact only the GTS450 – are checked.</p>
+  </body>
+</topic>

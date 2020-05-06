@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_chroma" xml:lang="en-us">
+  <title>chroma</title>
+  <body>
+    <p>This blend mode mixes chroma (saturation) from the input and output images. Lightness and hue are taken unaltered from the input image.</p>
+  </body>
+</topic>

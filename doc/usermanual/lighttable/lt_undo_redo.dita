@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lt_undo_redo" xml:lang="en-us">
+  <title>Undo/redo</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>undo</indexterm>
+        <indexterm>redo</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Most changes in the lighttable are recorded and can be reverted. This includes modifications to color labels, ratings, geo-localization, tags, metadata, copy/paste of history, or applying a style. Thanks to this recording, it is possible to undo changes or redo them to recover a previous state. Note that this undo/redo facility is unlimited in the number of steps while in the lighttable, but it is reset each time the view is switched (going to the darkroom for example).</p>
+    <p>The default keyboard shortcuts are: 
+    <ul>
+      <li>
+      <i>Ctrl+Z</i>: undo last modifications</li>
+      <li>
+      <i>Ctrl+Y</i>: redo last undo (does nothing if undo has not been used yet)</li>
+    </ul></p>
+  </body>
+</topic>

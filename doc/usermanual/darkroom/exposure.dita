@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="exposure" xml:lang="en-us">
+  <title>Exposure</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>exposure</indexterm></indexterm>
+        <indexterm>exposure</indexterm>
+        <indexterm>time-lapse photography</indexterm>
+        <indexterm>deflicker</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

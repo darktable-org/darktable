@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_profiling" xml:lang="en-us">
+  <title>OpenCL scheduling profile</title>
+  <body>
+    <p>darktable can use the CPU and one or several OpenCL capable GPUs. Depending on the relative performance users can choose among certain scheduling profiles to optimize performance. This is done by the configuration parameter 
+    <q>OpenCL scheduling profile</q>in the 
+    <q>core options</q>dialog (
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) which offers the following choices:</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="1*" />
+          <colspec colname="col2" colnum="2" colwidth="3*" />
+          <tbody>
+            <row>
+              <entry colname="col1">default</entry>
+              <entry colname="col2">If an OpenCL capable GPU is found darktable uses it for processing the center image view while the preview window (see 
+              <xref href="../darkroom/navigation.dita#navigation" type="topic">Navigation</xref>) is processed on the CPU in parallel. This is the preferred setting for systems with a reasonably fast CPU and a moderately fast GPU. The exact allocation of devices to the various pixelpipe types can be finetuned with the 
+              <q>opencl_device_priority</q>configuration parameter (see below).</entry>
+            </row>
+            <row>
+              <entry colname="col1">very fast GPU</entry>
+              <entry colname="col2">With this scheduling profile darktable processes the center image view and the preview window on the GPU sequentially. This is the preferred setting for systems with a GPU that strongly outperforms the CPU.</entry>
+            </row>
+            <row>
+              <entry colname="col1">multiple GPUs</entry>
+              <entry colname="col2">This setting addresses systems with multiple GPUs whose relative performance does not differ significantly. Whenever a processing job is started darktable uses any currently idle GPU but not the CPU. Users of systems with a variety of GPUs will need better control on their relative priority. They should better select the 
+              <q>default</q>profile and finetune their system with the 
+              <q>opencl_device_priority</q>configuration parameter (see below).</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>On first start-up or after any detected change in the GPU configuration of your system darktable tries to identify the best suited profile for you. You can change it at any time in the 
+    <q>core options</q>dialog (
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) with immediate effect.</p>
+  </body>
+</topic>

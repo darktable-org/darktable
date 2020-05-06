@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_create" xml:lang="en-us">
+  <title>create</title>
+  <body>
+    <p>New tags get added to the list in different ways.</p>
+    <p>On import of a text file. You can import whatever text file as soon as it follows the lightroom tagging file format. It is possible to import several files. It is also possible to export your tags, add information in it and re-import it. As long as you don't change the tag name, the import function updates the existing tags with new information and create the new ones.</p>
+    <p>On import of already tagged images. This is not a well controlled way especially if your dictionary is hierarchical.</p>
+    <p>In submenu 
+    <q>create tag</q>. A tag can be created manually, under an existing one (hierarchical) or at the root level.</p>
+    <fig>
+      <image align="center" href="images/panel_tagging-create.png" placement="break" />
+    </fig>
+    <p>By typing into the text box and pressing the 
+    <q>new</q>button. Hierarchical tags are created using the pipe symbol 
+    <q>|</q>. Note that the tag is also attached to selected images.</p>
+    <p>As you may notice there are automatically created tags like 
+    <q>darktable|exported</q>or 
+    <q>darktable|styles|your style</q>, which keep track of your actions and let you easily find already exported images or images with specific styles applied.</p>
+  </body>
+</topic>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="applicationColorSpace.d12e9836" xml:lang="en-us">
+  <title>application color space</title>
+  <body>
+    <p>A 3D LUT is relative to a specific color space. You have to select the one for which it has been built. Cube files are usually related to 
+    <i>REC.709</i>while most of others are related to 
+    <i>sRGB</i>.</p>
+  </body>
+</topic>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shortcuts_window">
+  <title>Shortcuts window</title>
+  <body>
+    <p>You can display all the available shortcuts in the current context by pressing 
+    <i>H</i>.</p>
+    <p>If you want the shortcut window to stay opened, there is a button located at the top right of the window.</p>
+  </body>
+</topic>

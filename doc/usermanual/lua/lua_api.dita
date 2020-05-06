@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_api" xml:lang="en-us">
+  <title>Lua API</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>Lua API</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable's Lua API is documented in its own manual with a detailed description of all data structures and functions. You can download the API manual from 
+    <xref format="html" href="https://www.darktable.org/resources/" scope="external">darktable's webpage</xref>.</p>
+  </body>
+</topic>

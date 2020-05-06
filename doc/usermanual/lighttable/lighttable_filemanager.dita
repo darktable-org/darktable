@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_filemanager" xml:lang="en-us">
+  <title>Filemanager</title>
+  <body>
+    <p>This is the default mode to view thumbnails of the images.</p>
+    <p>In this layout, you can can change the number of images in each row, using the slider next to the layouts option, or by using 
+    <i>Ctrl+(mouse wheel)</i>. Use your mouse wheel to navigate through your collection.</p>
+    <p>You can navigate left/right/up/down through your collection using ←/→/↑/↓. Pressing 
+    <i>G</i>goes to the top, 
+    <i>Shift+G</i>to the bottom, 
+    <i>PageUp</i>brings you one page up and 
+    <i>PageDown</i>one page down.</p>
+    <p>You can select the image under the pointer by 
+    <i>left-clicking</i>on its thumbnail or by pressing 
+    <i>Return</i>. A range of images is selected by 
+    <i>clicking</i>on the first one and then 
+    <i>Shift+clicking</i>on the last one. Images are added or removed from your selection by 
+    <i>Ctrl+clicking</i>on their thumbnails or pressing 
+    <i>Spacebar</i>.</p>
+    <p>To locate where you are in a collection, there are indicators at the extreme borders of the window: left/right for your position.</p>
+  </body>
+</topic>

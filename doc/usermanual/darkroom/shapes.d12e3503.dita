@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shapes.d12e3503" xml:lang="en-us">
+  <title>Shapes</title>
+  <body>
+    <p>By default shapes receive an automatically generated name, consisting of the shape type (
+    <q>brush</q>, 
+    <q>circle</q>, 
+    <q>ellipse</q>, 
+    <q>path</q>, 
+    <q>gradient</q>) and a number that is incremented automatically. You can replace these automatically generated names by more meaningful ones. Double-clicking on the existing shape name prompts you for a new one. Giving a meaningful name is a good habit, especially if you are going to use the same selection in different masks. A name like 
+    <q>house front</q>makes it easier to get the right shape, rather than something like 
+    <q>path #32</q>.</p>
+    <p>Clicking on the shape name shows the selected shape in the center canvas with all its controls. This is a convenient way to edit the properties of a specific shape. Especially if there are so many shapes within a mask that their controls overlap and make it difficult to hit the right target.</p>
+    <p>Right-clicking on a shape name gives you a drop-down menu with the options to remove the current shape or to remove all shapes currently not in use.</p>
+    <p>All shapes ever defined for the current image are kept in the list unless you remove them explicitly. If you have worked a lot with shapes on one image, this list can get quite long. All settings – with all defined shapes – are part of the XMP tags of an image and are included in exported files. If the list of shapes is very long the needed space to store all shapes might exceed the given limits of certain file formats, like JPEG. In that case storing the XMP tags might fail during export. This is normally not a problem – however, you can no longer rely on the exported file to contain your full history stack (see 
+    <xref href="../lighttable/export_selected.dita#export_selected" type="topic">Export selected</xref>).</p>
+  </body>
+</topic>

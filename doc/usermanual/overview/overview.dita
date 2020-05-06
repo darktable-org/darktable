@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview_chapter">
+  <title>Overview</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>darktable</keyword>
+        <keyword>overview</keyword>
+        <keyword>application</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable is an open source photography workflow application, image editor and raw developer, a virtual lighttable and darkroom for photographers.</p>
+    <p>It manages your database of digital negatives imported from various sources (including tethered shooting), lets you view them through a zoomable lighttable, provides a rich collection of modules for developing images, allows exporting the results to standard physical and/or digital media or demonstrating them as slides on a screen. All these operations are performed via fully color-managed workflows.</p>
+    <p>
+      <b>General Features:</b>
+      <ul id="ul_ijf_k11_ykb">
+        <li>darktable runs on GNU/Linux / GTK3, Mac OS X / macports, BSD, Windows and Solaris 11 / GTK3.</li>
+        <li>Fully non-destructive editing.</li>
+        <li>All darktable core functions operate on 4x32-bit floating point pixel buffers for high accuracy processing, preventing banding and color breaks.</li>
+        <li>darktable makes heavy use of 
+        <i>Streaming SIMD Extensions 2</i>(SSE2) instructions of the CPU to speed up processing. In fact, darktable requires either an SSE2-capable x86 processor or an ARM64 processor.</li>
+        <li>GPU acceleration via OpenCL (runtime detection and enabling).</li>
+        <li>Image processing modules operate in CIELab and several popular RGB model-based color spaces, which are much larger than the gamut of modern displays, printers or even human vision.</li>
+        <li>Full color managed display with softproofing and gamut-check. Built-in ICC profile support for export: sRGB, Adobe RGB, XYZ and linear RGB.</li>
+        <li>A collect module allows you to execute flexible database queries, search your images by tags, image rating (stars), color labels and many more. Filtering and sorting your collections within the base query or simple tagging by related tags are useful tools in your every-day photo workflow.</li>
+        <li>Import a variety of standard raw, low and high dynamic range image formats (e.g. CR2, DNG, JPEG, OpenEXR, PFM).</li>
+        <li>darktable has a zero-latency fullscreen, zoomable user interface through multi-level software caches.</li>
+        <li>Tethered shooting.</li>
+        <li>darktable can export developed images as low or high dynamic range files (JPEG, PNG, TIFF, PDF, PFM, EXR) to local disk storage, web albums, LaTeX book template, email attachments, and can generate a simple html-based web gallery.</li>
+        <li>darktable uses both XMP sidecar files as well as its fast database for saving metadata and processing settings. All Exif data is read and written using libexiv2.</li>
+        <li>darktable comes with more than 60 image processing modules which cover correction of digital image imperfections and common defects, basic adjustments, tonal value changes, color manipulation, as well as enhancements and artistic effects.</li>
+        <li>You can instantiate most modules multiple times and control the order in which they get applied.</li>
+        <li>A powerful mask feature gives you fine control over how the module affects complete image or its specific areas. You can select image areas by drawing a mask using various shapes, or by defining a parametric mask based on pixel values.</li>
+        <li>Flexibility of masks is further extended by the possibility to apply them in different blending modes and reuse the same mask in several modules.</li>
+        <li>darktable introduces a highly efficient, yet simple 
+        <q>single-click</q>denoiser that always just works. It's designed as a module where the denoising performance only depends on camera and ISO setting. A database of profiles contains parameters for well above 200 popular camera models.</li>
+        <li>darktable comes with a versatile scripting interface for functionality enhancement using Lua as a scripting language.</li>
+        <li>Images containing geo coordinates can be displayed on a map with various map sources at your choice. Geo coordinates can be assigned to images by manually placing them on the map, or by automatically applying GPX track data.</li>
+        <li>darktable has a built-in slideshow feature that lets you display your collection of images fullscreen.</li>
+        <li>A versatile print module lets you send your image to a connected printer with full color management support.</li>
+      </ul>
+    </p>
+  </body>
+</topic>

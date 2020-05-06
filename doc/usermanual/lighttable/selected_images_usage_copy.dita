@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_copy" xml:lang="en-us">
+  <title>copy</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>copy images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Physically copy selected images (parent file plus accompanying XMP sidecar file) to another filesystem folder. If an image with the given name already exists in the target folder it does not get overwritten – instead a new duplicate with the given history stack is generated.</p>
+  </body>
+</topic>

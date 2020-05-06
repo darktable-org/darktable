@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e7843" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>This module compresses the tonal range of an image by reproducing the tone and color response of classic film. Doing so, it protects the colors and the contrast in mid-tones, recovers the shadows, and compresses bright highlights. It is very suitable in portrait photography, especially in back-lighting situations, but needs extra care when details need to be preserved in highlights (e.g. clouds).</p>
+              <p>The module is derived from the same named module in Blender 3D modeller by T. J. Sobotka. While it is primarily intended to recover high-dynamic range from raw sensor data, it can be used with any image in replacement of the base curve module. The developer provided a detailed explanation of the module in a video called 
+              <xref format="html" href="https://www.youtube.com/watch?v=zbPj_TqTF88" scope="external">Filmic RGB: remap any dynamic range in darktable 3.0</xref>.</p>
+              <p>Filmic rgb is the successor of the filmic module provided in darktable 2.6.x. While the underlying principles did not change much, users of the previous version should not expect a 1:1 translation of their workflow, and may find 
+              <xref href="filmic-rgb-for-26-users.dita#filmic-rgb-for-26-users" type="topic">Filmic rgb for Darktable 2.6 filmic users</xref>useful.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/filmic.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e13434" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">The watermark module provides a way to render a vector-based overlay onto your image. Watermarks are standard SVG documents and can be designed using 
+            <xref format="html" href="http://www.inkscape.org" scope="external">
+              <i>Inkscape</i>
+            </xref>.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/watermark.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>The SVG processor of darktable also substitutes strings within the SVG document, which gives the opportunity to include image dependent information in the watermark such as aperture, exposure time and other metadata.</p>
+    <p>User-designed watermarks are placed into the directory $HOME/.config/darktable/watermarks. Once in place, use the reload button at the right of the watermark file name to update the list of available watermarks to use.</p>
+    <p>Here follows a list of available variable strings that is supported for substitution within the svg document. Beside this list you can also use the variable strings defined in export selected module. 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" />
+        <colspec colname="col2" colnum="2" />
+        <tbody>
+          <row>
+            <entry colname="col1">$(DARKTABLE.NAME)</entry>
+            <entry colname="col2">The application name</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DARKTABLE.VERSION)</entry>
+            <entry colname="col2">The version of darktable</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(WATERMARK_TEXT)</entry>
+            <entry colname="col2">A short free text (max. 63 characters)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(WATERMARK_COLOR)</entry>
+            <entry colname="col2">The color to use for $WATERMARK_TEXT</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(WATERMARK_FONT_FAMILY)</entry>
+            <entry colname="col2">The font family to use for $WATERMARK_TEXT</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(WATERMARK_FONT_STYLE)</entry>
+            <entry colname="col2">The font style (normal, oblique, italic)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(WATERMARK_FONT_WEIGHT)</entry>
+            <entry colname="col2">The font weight (boldness)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(IMAGE.ID)</entry>
+            <entry colname="col2">The unique image id within current library</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(IMAGE.FILENAME)</entry>
+            <entry colname="col2">The image filename</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(IMAGE.BASENAME)</entry>
+            <entry colname="col2">The image file basename</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(IMAGE.EXIF)</entry>
+            <entry colname="col2">The image Exif string</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE)</entry>
+            <entry colname="col2">The image date</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.SECOND)</entry>
+            <entry colname="col2">Seconds from the image Exif data</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.MINUTE)</entry>
+            <entry colname="col2">Minutes from the image Exif data</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.HOUR)</entry>
+            <entry colname="col2">Hours from the image Exif data (24h)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.HOUR_AMPM)</entry>
+            <entry colname="col2">Hours from the image Exif data (12h, AM/PM)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.DAY)</entry>
+            <entry colname="col2">Day of month from the image Exif data (01 .. 31)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.MONTH)</entry>
+            <entry colname="col2">Month from the image Exif data (01 .. 12)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.SHORT_MONTH)</entry>
+            <entry colname="col2">Month from the image Exif data localized (Jan, Feb, .. Dec)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.LONG_MONTH)</entry>
+            <entry colname="col2">Month from the image Exif data localized (January, February, .. December)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.SHORT_YEAR)</entry>
+            <entry colname="col2">Abbreviated year from the image Exif data (2013 is "13")</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.DATE.LONG_YEAR)</entry>
+            <entry colname="col2">Full year from the image Exif data</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE)</entry>
+            <entry colname="col2">Current system date</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.SECOND)</entry>
+            <entry colname="col2">Current system time seconds</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.MINUTE)</entry>
+            <entry colname="col2">Current system time minutes</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.HOUR)</entry>
+            <entry colname="col2">Current system time hours (24h)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.HOUR_AMPM)</entry>
+            <entry colname="col2">Current system time hours (12, AP/PM)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.DAY)</entry>
+            <entry colname="col2">Current system time day of month (01 .. 31)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.MONTH)</entry>
+            <entry colname="col2">Current system time month (01 .. 12)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.SHORT_MONTH)</entry>
+            <entry colname="col2">Current system time month localized (Jan, Feb, .. Dec)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.LONG_MONTH)</entry>
+            <entry colname="col2">Current system time month localized (January, February, .. December)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.SHORT_YEAR)</entry>
+            <entry colname="col2">Current system time year (abbreviated)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(DATE.LONG_YEAR)</entry>
+            <entry colname="col2">Current system time year</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.MAKER)</entry>
+            <entry colname="col2">The maker of camera model</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.MODEL)</entry>
+            <entry colname="col2">The camera model</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(EXIF.LENS)</entry>
+            <entry colname="col2">The specific lens used</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(Xmp.dc.creator)</entry>
+            <entry colname="col2">The creator string</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(Xmp.dc.publisher)</entry>
+            <entry colname="col2">The publisher string</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(Xmp.dc.title)</entry>
+            <entry colname="col2">The title of the image</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(Xmp.dc.description)</entry>
+            <entry colname="col2">The description of the image. This is the field to use when you're looking for the user-specified text that some cameras add at shoot time to exif field 
+            <q>User Comment</q>(also called 
+            <q>Exif.Photo.UserComment</q>).</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(Xmp.dc.rights)</entry>
+            <entry colname="col2">The rights assigned to the image</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(GPS.LATITUDE)</entry>
+            <entry colname="col2">The image latitude coordinate (N/S 0 .. 90)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(GPS.LONGITUDE)</entry>
+            <entry colname="col2">The image longitude coordinate (E/W 0 .. 180)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(GPS.ELEVATION)</entry>
+            <entry colname="col2">The image elevation level (meters)</entry>
+          </row>
+          <row>
+            <entry colname="col1">$(GPS.LOCATION)</entry>
+            <entry colname="col2">All three coordinates (latitude, longitude, elevation)</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

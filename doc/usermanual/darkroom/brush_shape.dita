@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="brush_shape" xml:lang="en-us">
+  <title>brush</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>brush</indexterm>
+        <indexterm>mask shapes
+        <indexterm>brush</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/shape_brush.png" placement="inline" />symbol adds a brush stroke.</p>
+    <p>Start drawing by 
+    <i>left-clicking</i>into the canvas and moving the mouse while keeping the button pressed. The brush stroke is finalized once you release the mouse button. Brush size, hardness and opacity can be changed by 
+    <i>scrolling</i>, 
+    <i>shift+scrolling</i>, and 
+    <i>Ctrl+scrolling</i>, respectively, either before you start drawing or at any time during the operation. Likewise you can use keys 
+    <i>[ | ]</i>to decrease/increase brush size, 
+    <i>{ | }</i>to decrease/increase hardness, and 
+    <i>&lt; | &gt;</i>to decrease/increase opacity.</p>
+    <p>If you have a graphics tablet with pen pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>for more details.</p>
+    <p>On lifting the tablet pen or releasing the left mouse button the drawn figure is converted into a number of connected nodes which define the shape. A configuration option (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>) controls how much smoothing is applied. A higher level of smoothing leads to less nodes – this eases subsequent editing at the expense of a lower initial accuracy.</p>
+    <p>Nodes and segments of a brush stroke can be modified individually. See the documentation on 
+    <i>path</i>below for more details.</p>
+    <p>Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">A brush stroke with controls and activated mask display.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/masks_brush_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="scaleOn.d12e13982" xml:lang="en-us">
+  <title>scale on</title>
+  <body>
+    <p>Defines the reference for the scale parameter. The default setting 
+    <q>image</q>scales the watermark relative to the horizontal image size. Alternatively you can scale the watermark relative to the 
+    <q>larger border</q>and 
+    <q>smaller border</q>, respectively.</p>
+  </body>
+</topic>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e9310" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Higher values increase color contrast, lower values decrease it. The effect of this module's sliders are similar to applying a steepened or flattened a- or b-curve in module 
+    <i>tone curve</i>(see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>).</p>
+  </body>
+</topic>

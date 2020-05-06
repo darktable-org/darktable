@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="splittoning" xml:lang="en-us">
+  <title>split-toning</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>split-toning</indexterm></indexterm>
+        <indexterm>split-toning</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

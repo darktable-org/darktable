@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="denoise_bilateral" xml:lang="en-us">
+  <title>Denoise – bilateral</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>denoise - bilateral</indexterm></indexterm>
+        <indexterm>denoise
+        <indexterm>bilateral</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

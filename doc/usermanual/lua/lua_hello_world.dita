@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_hello_world" xml:lang="en-us">
+  <title>A simple lua example</title>
+  <body>
+    <p>Let's start with a simple example. We will print some code on the console. Create a file called 
+    <i>luarc</i>in darktable's configuration directory (usually 
+    <filepath>~/.config/darktable/</filepath>) and add the following line to it:</p>
+    <pre xml:space="preserve">
+print("Hello World !")
+</pre>
+    <p>Start darktable and you will see the sencence 
+    <i>Hello World !</i>printed on the console. Nothing fancy but it's a start...</p>
+    <p>At this point, there is nothing specific to darktable in the script. We simply use the standard 
+    <codeph>print</codeph>function to print a string. That's nice and all, but we can do better than that. To access the darktable API you first need to 
+    <codeph>require</codeph>it and save the returned object in a variable. Once this is done you can access the darktable API as subfields of the returned object. All of this is documented in darktable's Lua API reference manual (see 
+    <xref href="lua_api.dita#lua_api" type="topic">Lua API</xref>).</p>
+    <pre xml:space="preserve">
+local darktable = require "darktable"
+darktable.print_error("Hello World !")
+</pre>
+    <p>Run the script ... and nothing happens. The function 
+    <codeph>darktable.print_error</codeph>is just like print but will only print the message if you have enabled lua traces with 
+    <cmdname>-d lua</cmdname>on the command line. This is the recommended way to do traces in a darktable lua script.</p>
+  </body>
+</topic>

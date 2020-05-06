@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_rules_more" xml:lang="en-us">
+  <title>add more images</title>
+  <body>
+    <p>Adds a new rule which is combined with the previous rule(s) in a logical 
+    <i>OR</i>operation. Images that fulfill the new rule are added to the collection.</p>
+  </body>
+</topic>

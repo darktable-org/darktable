@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_display" xml:lang="en-us">
+  <title>display mask</title>
+  <body>
+    <p>Clicking on the 
+    <image align="center" href="../images/darkroom_module_icon_mask.png" placement="inline" />symbol will display the current mask as a yellow overlay over a black-and-white version of your image. Solid yellow indicates an opacity of 100%; a fully visible gray background image without yellow overlay indicates an opacity of 0%.</p>
+  </body>
+</topic>

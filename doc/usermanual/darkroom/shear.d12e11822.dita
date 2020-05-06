@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shear.d12e11822" xml:lang="en-us">
+  <title>shear</title>
+  <body>
+    <p>This parameter shears the image along one of its diagonals and is needed when correcting vertical and horizontal perspective distortions simultaneously.</p>
+  </body>
+</topic>

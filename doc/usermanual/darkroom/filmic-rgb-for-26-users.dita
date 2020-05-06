@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="filmic-rgb-for-26-users" xml:lang="en-us">
+  <title>Filmic rgb for Darktable 2.6 filmic users</title>
+  <body>
+    <p>Filmic rgb is a reimplementation of the filmic module, and some adjustments are necessary to switch from one version to the other. This last section underlines the most important differences; a more comprehensive overview is available as a video called 
+    <xref format="html" href="https://www.youtube.com/watch?v=9awBFYcPgGU" scope="external">darktable 3.0 filmic explained to users of darktable 2.6</xref>. The major differences points when it comes to usage are the following: 
+    <ul>
+      <li>The default parameters of both modules are not comparable: activating the filmic rgb module with default parameters does not yield the same results as the previous filmic module with default parameters.</li>
+      <li>The latitude is now expressed in percentage of the dynamic range instead of absolute EV values.</li>
+      <li>The saturation slider that was present in the previous version of filmic to avoid oversaturation is not necessary anymore since filmic rgb does a much better job at preserving colors.</li>
+      <li>The previous version of filmic was always using the prophoto RGB profile; filmic rgb respects the working color profile defined in the 
+      <xref href="input_color_profile.dita#input_color_profile" type="topic">
+        <i>input color profile</i>
+      </xref>module. To keep the same behaviour, you can set the working profile to 
+      <i>linear prophoto RGB</i>.</li>
+    </ul></p>
+    <p>To achieve similar results between the previous version of filmic and filmic rgb, the following steps are suggested: 
+    <ol>
+      <li>Transfer the parameters from filmic to filmic rgb. The latitude parameter is now given in percentage of the input dynamic range: compute that percentage from your filmic input values.</li>
+      <li>Lower the contrast.</li>
+      <li>Set the extreme luminance saturation to 50%, unless you are using the chrominance preservation.</li>
+      <li>Adjust the shadows/highlights balance to avoid clipping of the curve</li>
+      <li>Rais the middle grey luminance a bit, set the dynamic range scaling to approximately 6%.</li>
+      <li>The old 
+      <i>preserve chrominance</i>setting corresponds to the 
+      <i>max RGB</i>mode; in that case, do not modify the extreme luminance saturation.</li>
+      <li>If you experience weird color shifts, change the working color space to prophoto RGB in the 
+      <xref href="input_color_profile.dita#input_color_profile" type="topic">
+        <i>input color profile</i>
+      </xref>module.</li>
+    </ol></p>
+  </body>
+</topic>

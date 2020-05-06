@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_blend" xml:lang="en-us">
+  <title>blend</title>
+  <body>
+    <p>Blending is activated with this combobox. Depending on the value selected additional control elements will show up.</p>
+  </body>
+</topic>

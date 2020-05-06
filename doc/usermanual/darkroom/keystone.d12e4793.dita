@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="keystone.d12e4793" xml:lang="en-us">
+  <title>keystone</title>
+  <body>
+    <p>This tool is used to correct perspective distortions in your image. Useful for example when you shoot a high building from ground with a short focal length, aiming upwards with your camera. The combobox lets you select the type of correction you want to use :</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="3cm" />
+          <colspec colname="col2" colnum="2" colwidth="3cm" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <i>vertical</i>
+              </entry>
+              <entry colname="col2">if you want to limit the correction to vertical lines</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <i>horizontal</i>
+              </entry>
+              <entry colname="col2">limit the correction to horizontal lines</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <i>free</i>
+              </entry>
+              <entry colname="col2">if you want to correct horizontal and vertical lines</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>
+      <table frame="none">
+        <tgroup cols="3" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="2*" />
+          <colspec colname="col3" colnum="3" colwidth="2*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>Depending on the selected correction type you will see two or four straight adjustment lines overlaid to your image. Two red circles on every line let you modify the line positions with your mouse. Each line additionally carries a 
+                <q>symmetry</q>button. If activated (and highlighted in red) all movements of the affected line will be mirrored by the opposite line.</p>
+                <p>In order to correct perspective distortions, you need to find suitable horizontal and/or vertical features in your image and align the adjustment lines with them. When done, press the 
+                <q>OK</q>button, which is located close to the center of your image. The image will be corrected immediately. You can at any time come back and refine your corrections by selecting 
+                <q>correction applied</q>in combobox keystone.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="modules/images/crop_and_rotate_k_set.png" placement="break" />
+              </entry>
+              <entry colname="col3">
+                <image align="center" href="modules/images/crop_and_rotate_k_applied.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

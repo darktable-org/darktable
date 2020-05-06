@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_blur" xml:lang="en-us">
+  <title>mask blur</title>
+  <body>
+    <p>Blurring the mask creates a softer transition between blended and unblended parts of an image and avoids artifacts. The mask blur slider controls the radius of a gaussian blur applied to the final blend mask. The higher the radius, the stronger the blur – or set to 0 for an unblurred mask. Gaussian blur is always applied after feathering if both kinds of mask adjustment are activated. This order allows to smooth sharp edges or artefacts that may result by feathering.</p>
+  </body>
+</topic>

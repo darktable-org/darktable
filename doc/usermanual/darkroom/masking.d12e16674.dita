@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="masking.d12e16674" xml:lang="en-us">
+  <title>Masking</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1" morerows="1">
+              <ol>
+                <li>Enable the channel mixer module (see 
+                <xref href="channel_mixer.dita#channel_mixer" type="topic">Channel mixer</xref>).</li>
+                <li>Activate blending 
+                <p>Modules with blending support exhibit an additional combobox 
+                <q>blend</q>at the bottom of their GUI. Blending is activated with this combobox. Set value to 
+                <q>drawn mask</q>. Additional controls are displayed which allow you to draw a mask.</p></li>
+                <li>Masking the pupil 
+                <p>Clicking the 
+                <image align="center" href="../images/shape_circle.png" placement="inline" />symbol adds a circle shape.</p>
+                <p>Click into the canvas to place the circle. Left-click and drag the circle to the position of the first pupil. Use the scroll-wheel of your mouse while in the circle to change the diameter. Scroll within the circle border to minimize the width of the gradual decay.</p>
+                <p>Alternatively you can use an elliptical shape. See 
+                <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>for further details.</p></li>
+                <li>Repeat step 3. 
+                <p>Clicking the 
+                <image align="center" href="../images/shape_circle.png" placement="inline" />symbol adds another circle shape.</p>
+                <p>Mark the second pupil.</p></li>
+              </ol>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_02.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <image align="center" href="examples/images/red_eyes_03.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

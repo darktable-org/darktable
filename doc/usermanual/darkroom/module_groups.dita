@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="module_groups" xml:lang="en-us">
+  <title>Module groups</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>module groups</indexterm></indexterm>
+        <indexterm>module groups</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>The module groups button bar gives you quick access to darktable's processing modules.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_modulegroups.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Here follows a description of the module groups available:</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="3" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="2*" />
+          <colspec colname="col2" colnum="2" colwidth="2*" />
+          <colspec colname="col3" colnum="3" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_active.png" placement="break" />
+              </entry>
+              <entry colname="col2">Active</entry>
+              <entry colname="col3">Modules you have activated and are using on the current image.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_favorites.png" placement="break" />
+              </entry>
+              <entry colname="col2">Favorites</entry>
+              <entry colname="col3">Modules you have marked as favorites using 
+              <i>more modules</i>(see 
+              <xref href="more_modules.dita#more_modules" type="topic">More modules</xref>).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_basic.png" placement="break" />
+              </entry>
+              <entry colname="col2">Basic</entry>
+              <entry colname="col3">Modules that are frequently used, such as exposure, temperature etc. (see 
+              <xref href="basic_group.dita#basic_group" type="topic">Basic group</xref>).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_tone.png" placement="break" />
+              </entry>
+              <entry colname="col2">Tone</entry>
+              <entry colname="col3">Modules for working with the image's tonal values, e.g. levels, tonemap etc. (see 
+              <xref href="tone_group.dita#tone_group" type="topic">Tone group</xref>).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_color.png" placement="break" />
+              </entry>
+              <entry colname="col2">Color</entry>
+              <entry colname="col3">Modules for processing colors, such as color correction, vibrance etc. (see 
+              <xref href="color_group.dita#color_group" type="topic">Color group</xref>).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_correction.png" placement="break" />
+              </entry>
+              <entry colname="col2">Correction</entry>
+              <entry colname="col3">Modules making corrections to the image, e.g. denoise, CA correction etc. (see 
+              <xref href="correction_group.dita#correction_group" type="topic">Correction group</xref>).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="images/darkroom_group_effect.png" placement="break" />
+              </entry>
+              <entry colname="col2">Effect</entry>
+              <entry colname="col3">Modules with a more artistic output, such as vignetting, softening etc. (see 
+              <xref href="effect_group.dita#effect_group" type="topic">Effect group</xref>).</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>Clicking on one of the group symbols will show the modules in that group. If you once again click on the symbol, grouping will be de-activated and all non-hidden modules will be shown in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general principle darktable applies modules in a pre-defined sequence.</p>
+  </body>
+</topic>

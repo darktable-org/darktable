@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="automaticFit.d12e11907" xml:lang="en-us">
+  <title>automatic fit</title>
+  <body>
+    <p>Clicking on one of the icons starts an automatic fitting of the module parameters based on the selected vertical and/or horizontal lines. You can choose to correct only vertical distortions ( 
+    <image align="center" href="../images/darkroom_module_ashift_vertical.png" placement="inline" />), only horizontal distortions ( 
+    <image align="center" href="../images/darkroom_module_ashift_horizontal.png" placement="inline" />), or both types of distortions simultaneously ( 
+    <image align="center" href="../images/darkroom_module_ashift_both.png" placement="inline" />). 
+    <i>Ctrl+clicking</i>on either icon only fits rotation. 
+    <i>Shift+clicking</i>on either icon only fits vertical and/or horizontal lens shift.</p>
+  </body>
+</topic>

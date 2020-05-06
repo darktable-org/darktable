@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="find_location" xml:lang="en-us">
+  <title>Find location</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>map view
+        <indexterm>find location</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>The 
+                <i>find location</i>module is used to search for a place on map. You need to be connected to the internet to use this feature.</p>
+                <p>To use, type in a place or address, press enter and a list of results will be shown. Click on one of the resulting items and the map will zoom to that location. Additionally, an outline covering that location, or a pin pointing at the location will be displayed. Now drag images from the film strip at the bottom of the screen to their location on the map. The GPS location will be embedded in the image.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="images/find_location.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

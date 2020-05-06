@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="warpsAndNodesCount.d12e11290" xml:lang="en-us">
+  <title>warps and nodes count</title>
+  <body>
+    <p>This information field displays the number of warps (individual distortion object) and nodes currently used.</p>
+  </body>
+</topic>

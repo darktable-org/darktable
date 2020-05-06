@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="clippingThreshold.d12e6350" xml:lang="en-us">
+  <title>clipping threshold</title>
+  <body>
+    <p>Manually adjust the clipping threshold against magenta highlights. The default is usually satisfactory without any need for additional adjustments.</p>
+  </body>
+</topic>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="module_presets_managing" xml:lang="en-us">
+  <title>Managing Presets</title>
+  <body>
+    <p>Both user created and pre-defined presets can be viewed and managed from within the presets menu (
+    <xref href="../preferences/presets.dita#presets" type="topic">Presets</xref>) in the preferences dialog (see 
+    <xref href="../preferences/preferences_chapter.dita#preferences_chapter" type="topic">Preferences and settings</xref>).</p>
+  </body>
+</topic>

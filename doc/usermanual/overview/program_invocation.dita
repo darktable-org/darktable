@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="program_invocation">
+  <title>Program invocation</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>program invocation</keyword>
+        <keyword>command line parameters</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable comes with two main binaries: the standard GUI variant which is started by calling 
+    <tt>darktable</tt>and a command line interface variant which is started by calling 
+    <tt>darktable-cli</tt>. Additionally darktable is shipped with some further binaries for special purposes.</p>
+  </body>
+</topic>

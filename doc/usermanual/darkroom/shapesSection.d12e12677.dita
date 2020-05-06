@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shapesSection.d12e12677" xml:lang="en-us">
+  <title>shapes section</title>
+  <body>
+    <p>The shape selected field displays the selected shape (if any). To select a shape click on it, to deselect click on a free area on the image.</p>
+    <p>Mask opacity is displayed when a shape is selected. It displays/sets the opacity of the mask. Opacity is a property of the currently selected shape and won't be used as default value for newly added shapes.</p>
+    <p>Different properties will be displayed depending on the selected algorithm: 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>fill algorithm</i>
+            </entry>
+            <entry colname="col2">
+              <dl>
+                <dlentry>
+                  <dt>fill mode</dt>
+                  <dd>
+                    <p>Can be erase or color. Erase is used to delete details from a wavelet scale. Color allows to select a color to fill the area defined by the shape.</p>
+                  </dd>
+                </dlentry>
+                <dlentry>
+                  <dt>brightness</dt>
+                  <dd>
+                    <p>Adds the selected value to the color, allowing to make it brighter or darker. Works the same with both fill modes.</p>
+                  </dd>
+                </dlentry>
+              </dl>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>blur algorithm</i>
+            </entry>
+            <entry colname="col2">
+              <dl>
+                <dlentry>
+                  <dt>blur type</dt>
+                  <dd>
+                    <p>Can be gaussian or bilateral.</p>
+                  </dd>
+                </dlentry>
+                <dlentry>
+                  <dt>blur radius</dt>
+                  <dd>
+                    <p>Sets the blur radius.</p>
+                  </dd>
+                </dlentry>
+              </dl>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>The value set on each one of these properties is used as a default when a new shape is created.</p>
+  </body>
+</topic>

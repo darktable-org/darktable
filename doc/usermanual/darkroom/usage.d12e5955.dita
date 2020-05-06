@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e5955" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Due to the nature of digital sensors, overexposed highlights are lacking valid color information. Most frequently they appear neutral white or exhibit some color cast – depending on which other image processing steps are involved. This module can 
+    <q>heal</q>overexposed highlights by replacing their colors with better fitting ones. The module acts on highlight pixels whose luminance values exceed a user defined threshold. Replacement colors are taken from the neighborhood. Both, the spatial distance and the luminance distance 
+    <i>(range)</i>are taken into account for color selection.</p>
+    <p>As a limitation of the underlying algorithm reconstructed colors may sometimes be displayed incorrectly if you zoom into the image in the darkroom view. If this happens you might observe a magenta shift in highlight areas close to high contrast edges, or you might see colorless highlight areas if you combine this module with the 
+    <q>reconstruct color</q>method of the 
+    <q>highlight reconstruction</q>module (see 
+    <xref href="highlight_reconstruction.dita#highlight_reconstruction" type="topic">Highlight reconstruction</xref>). These artifacts only influence image display – the final output remains unaffected. It is recommended that you finetune the parameters of this module while viewing the full, not zoomed-in image.</p>
+  </body>
+</topic>

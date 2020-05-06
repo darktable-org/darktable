@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadows_and_highlights" xml:lang="en-us">
+  <title>Shadows and Highlights</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>shadows and highlights</indexterm></indexterm>
+        <indexterm>shadows and highlights</indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>halos</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

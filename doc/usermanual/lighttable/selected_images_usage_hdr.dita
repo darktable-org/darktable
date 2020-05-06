@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_hdr" xml:lang="en-us">
+  <title>create hdr</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>HDR images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Create a high dynamic range image from the selected images, and store it as a new source file in DNG format. Images need to be properly aligned, which implies that they have been taken on a sturdy tripod. You can also generate HDRs with programs like 
+    <xref format="html" href="http://qtpfsgui.sourceforge.net/" scope="external">
+      <i>Luminance HDR</i>
+    </xref>, and later import them into darktable for further processing (see 
+    <xref href="supported_file_formats.dita#supported_file_formats" type="topic">Supported file formats</xref>). Note that darktable will only creates HDR images from raw files.</p>
+  </body>
+</topic>

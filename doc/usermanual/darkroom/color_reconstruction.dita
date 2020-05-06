@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="color_reconstruction" xml:lang="en-us">
+  <title>Color reconstruction</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>color reconstruction</indexterm></indexterm>
+        <indexterm>color reconstruction</indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>blown out highlights</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

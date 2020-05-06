@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_directory" xml:lang="en-us">
+  <title>output directory</title>
+  <body>
+    <p>Pressing button 
+    <image align="center" href="../images/lighttable_directory.png" placement="inline" />opens a dialog to select the parent directory for export.</p>
+  </body>
+</topic>

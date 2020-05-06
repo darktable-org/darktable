@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_metadata" xml:lang="en-us">
+  <title>metadata</title>
+  <body>
+    <p>Pressing the 
+    <image align="center" href="../images/darkroom_preferences.png" placement="inline" />icon on the right of export button opens a window to configure which metadata are to be embedded into the exported image.</p>
+    <p>Metadata configuration is saved along with other export selected parameters to your favorites presets.</p>
+    <p>
+    <image align="center" href="images/panel_exportselected-metadata-config.png" placement="break" />The left part lets you select the groups of metadata to be exported. The entry 
+    <i>metadata</i>corresponds to metadata defined in metadata editor. Under entry 
+    <i>tags</i>you can request the exportation of private tags, synonyms and omit to include the path elements of hierarchical tags. Remember that a tag set up as a category is never exported.</p>
+    <p>The right part lets you define a formula per metadata entry. What you define here has priority on the left settings. The first column identifies the entry to be edited. The second column is editable and defines the calculation of the metadata entry. Leaving the formula empty prevents the exporting of this specific metadata entry (Exif.GPSInfo.GPSVersionID in the above example). To define a formula, you can use the same variables and rules as for filenames (as documented in 
+    <xref href="export_selected_usage_filename.dita#export_selected_usage_filename" type="topic">filename template</xref>). Press 
+    <i>enter</i>to validate the formula.</p>
+    <p>Use the 
+    <q>-</q>icon to remove a metadata entry from the list, the 
+    <q>+</q>icon to add a new one from the predefined list: 
+    <image align="center" href="images/panel_exportselected-metadata-selection.png" placement="break" />Double-click or click on button 
+    <i>add</i>to add a metadata entry to the configuration list.</p>
+    <p>The formulas allow you to get the most of the tagging function. You can virtually define all the metadata you need to qualify your images in tagging and, thanks to these formulas, export the values in the xmp or iptc tags of your choice. The exported tags can be different from one export to the other depending on the destination of the images. Just remember that tags set as 
+    <i>category</i>are not exported. Tags and Categories are displayed separately in image information.</p>
+    <p>Example 1. A first level tag called 
+    <i>places</i>is set as a category, and is followed by four levels of information (or keywords), country, region, city and location: 
+    <codeph>places|France|Nord|Lille|rue Nationale</codeph>. Each level can be retrieved (when it is defined) by one of the variables 
+    <codeph>$(CATEGORY0(places))</codeph>, 
+    <codeph>$(CATEGORY1(places))</codeph>, 
+    <codeph>$(CATEGORY2(places))</codeph>and 
+    <codeph>$(CATEGORY3(places))</codeph>. In that example, the returned values are respectively: 
+    <i>France</i>, 
+    <i>Nord</i>, 
+    <i>Lille</i>and 
+    <i>rue Nationale</i>. These keywords can also be retrieved as simple tags by the variable 
+    <codeph>$(TAGS)</codeph>. The last keyword level defined (the leaf) is displayed in Image informations, here 
+    <i>rue Nationale</i>.</p>
+    <p>Example 2. A first level tag called 
+    <i>creator</i>followed by the name of the photographer, both set as 
+    <i>category</i>: 
+    <codeph>creator|firstname lastname</codeph>. The formula 
+    <codeph>copyrights $(YEAR) $(CATEGORY0(creator))</codeph>builds the text associated to image rights. Image information display in categories the following: 
+    <codeph>creator: firstname lastname</codeph>. Neither 
+    <codeph>creator</codeph>nor 
+    <codeph>firstname lastname</codeph>appear in tags list; they are also not exported as simple tags.</p>
+    <note>Tagging is not appropriate to define free text metadata, like a title or a description, which may be specific to each image. Prefer using the metadata editor for this type of information (see 
+    <xref href="metadata_editor.dita#metadata_editor" type="topic">Metadata editor</xref>).</note>
+  </body>
+</topic>

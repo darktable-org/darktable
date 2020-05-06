@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="geotagging" xml:lang="en-us">
+  <title>Geotagging</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>geo tagging</indexterm></indexterm>
+        <indexterm>geo tagging</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Use this panel to import and apply GPX track data on a selection of images. Alternatively, you can manually geotag images within the 
+            <i>Map</i>view (see 
+            <xref href="../map/map_chapter.dita#map_chapter" type="topic">Map</xref>).</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_geotagging.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

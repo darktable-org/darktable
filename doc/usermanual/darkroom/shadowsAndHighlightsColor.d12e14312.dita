@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadowsAndHighlightsColor.d12e14312" xml:lang="en-us">
+  <title>shadows and highlights color</title>
+  <body>
+    <p>These controls are used to set the color of the split-toning effect, you select the desired color and saturation for both shadows and highlights. Clicking on the colored squares will open a color selector dialog which offers you a choice of commonly used colors, or allows to define a color in RGB color space.</p>
+  </body>
+</topic>

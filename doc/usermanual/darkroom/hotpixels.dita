@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="hotpixels" xml:lang="en-us">
+  <title>Hotpixels</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>hotpixels</indexterm></indexterm>
+        <indexterm>hotpixels</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="geometry.d12e12135" xml:lang="en-us">
+  <title>geometry</title>
+  <body>
+    <p>In addition to the correction of lens flaws, this module can change the projection type of your image. Set this combobox to the aimed projection type, like 
+    <q>rectilinear</q>, 
+    <q>fish-eye</q>, 
+    <q>panoramic</q>, 
+    <q>equirectangular</q>, 
+    <q>orthographic</q>, 
+    <q>stereographic</q>, 
+    <q>equisolid angle</q>, 
+    <q>thoby fish-eye</q>.</p>
+  </body>
+</topic>

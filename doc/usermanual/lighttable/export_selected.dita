@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected" xml:lang="en-us">
+  <title>Export selected</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>export</indexterm></indexterm>
+        <indexterm>export</indexterm>
+        <indexterm>file export</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Workflow ends in this panel with the exporting of your developed images. You can export to a file on disk, email, various on-line storage places, a webalbum, or a book template. 
+            <i>Tip: you can use Ctrl+E from within the darkroom mode to export.</i></entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_exportselected.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>All settings in this panel can be saved for later reuse. Press the 
+    <image align="center" href="../images/darkroom_module_icon_presets.png" placement="inline" />button to manage your presets.</p>
+  </body>
+</topic>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options_darkroom" xml:lang="en-us">
+  <title>Darkroom</title>
+  <body>
+    <p>
+      <b>pen pressure control for brush masks</b>
+    </p>
+    <p>Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes (see 
+    <xref href="../darkroom/drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>). You can control the brush width, its hardness and its opacity. 
+    <q>Absolute</q>control means that the pressure reading directly defines the attribute with a value between 0% and 100%. 
+    <q>Relative</q>means that the pressure reading adjusts the attribute between zero and the pre-defined default value (default off).</p>
+    <p>
+      <b>smoothing of brush strokes</b>
+    </p>
+    <p>Sets the level for smoothing of brush strokes. Stronger smoothing leads to less nodes and easier editing at the expense of lower accuracy.</p>
+    <p>
+      <b>display of individual color channels</b>
+    </p>
+    <p>Controls how individual color channels are displayed when activated in the parametric masks feature. You can choose between 
+    <q>false color</q>and 
+    <q>grey scale</q>(default false color).</p>
+    <p>
+      <b>pattern for the image infos line</b>
+    </p>
+    <p>See for available values.</p>
+    <p>
+      <b>position of the image info line</b>
+    </p>
+    <p>Controls in which panel we display the image info line. You can choose between 
+    <q>top left</q>
+    <q>top right</q>
+    <q>top center</q>
+    <q>bottom</q>and 
+    <q>hidden</q>(default bottom).</p>
+    <p>
+      <b>show search module text entry</b>
+    </p>
+    <p>Controls how to determine which modules are shown at the same time in the right panel. You can choose between 
+    <q>groups icons</q>
+    <q>search entry</q>
+    <q>both</q>(default both). (need a restart)</p>
+    <p>
+      <b>expand a single darkroom module at a time</b>
+    </p>
+    <p>Controls how darkroom modules are expanded. If this option is enabled, expanding a module by 
+    <i>clicking</i>collapses any currently expanded module. If you want to expand a module without collapsing the others you do so with 
+    <i>Shift+click</i>. Disabling this option reverts the meaning of 
+    <i>click</i>and 
+    <i>Shift+click</i>(default on).</p>
+    <p>
+      <b>expand the module when it is activated, and collapse it when disabled</b>
+    </p>
+    <p>This option allows to expand or collapse automatically modules when they are enabled or disabled. (default off)</p>
+    <p>
+      <b>scroll to darkroom modules when expanded/collapsed</b>
+    </p>
+    <p>With this option enabled the darkroom side panel will scroll a module to the top when it is expanded or collapsed (default on).</p>
+    <p>
+      <b>border around image in darkroom mode</b>
+    </p>
+    <p>Process the image in darkroom mode with a small border of the given number of pixels (default 20).</p>
+  </body>
+</topic>

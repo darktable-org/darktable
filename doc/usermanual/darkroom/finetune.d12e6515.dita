@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="finetune.d12e6515" xml:lang="en-us">
+  <title>finetune</title>
+  <body>
+    <p>Some cameras offer additional finetuning parameters if one of the camera presets is selected. Depending on camera white balance, can be adjusted in steps within a certain range. The adjustments are usually towards yellow (value &lt; 1) or blue (value &gt; 1).</p>
+  </body>
+</topic>

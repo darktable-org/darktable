@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="possible_color_artifacts" xml:lang="en-us">
+  <title>Possible color artifacts</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>artifact mitigation
+        <indexterm>blue light sources</indexterm></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>black pixels</indexterm></indexterm>
+        <indexterm>gamut clipping</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>That said there are some infrequent situations which still can lead to problematic results unless the user takes some action. Some modules in Lab color space, like 
+    <xref href="levels.dita#levels" type="topic">
+      <i>levels</i>
+    </xref>and 
+    <xref href="monochrome.dita#monochrome" type="topic">
+      <i>monochrome</i>
+    </xref>, need to rely on the fact that the L channels carries all lightness information and the a and b channels purely represent chroma and hue. Unbounded colors with negative L values are especially problematic to these modules and can lead to black pixel artifacts.</p>
+    <p>It has been found that highly saturated blue light sources in the image frame are hot candidates for pixels with negative L values. If you are engaged in stage photography you should pay close attention to image areas like that.</p>
+    <p>In order to mitigate that issue the 
+    <i>input color profile</i>module (see 
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>) has a 
+    <i>gamut clipping</i>option. It is off by default but can be activated in case you observe artifacts. Depending on the settings, colors get confined to one of the offered RGB gamuts. In effect black pixel artifacts are prevented at the costs of losing some color dynamics. See 
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>for an example.</p>
+  </body>
+</topic>

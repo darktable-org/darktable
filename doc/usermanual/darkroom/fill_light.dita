@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="fill_light" xml:lang="en-us">
+  <title>Fill light</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>fill light</indexterm></indexterm>
+        <indexterm>fill light</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gradient_shape" xml:lang="en-us">
+  <title>gradient</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>gradient</indexterm>
+        <indexterm>mask shapes
+        <indexterm>gradient</indexterm></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>banding</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/shape_gradient.png" placement="inline" />symbol adds a gradient to the mask. This does not generate a confined shape but produces a linear gradient extending the whole image.</p>
+    <p>Click into the canvas to define the position of the line where opacity is at 50%. The line has two anchor nodes which you can drag to change the rotation of the gradient.</p>
+    <p>Scrolling close to the center line changes the steepness of the gradient. Dotted lines indicate the distance beyond which the opacity is 100% and 0%, respectively. Between these dotted lines the opacity changes linearly. The gradient is best seen and modified when the mask is displayed by pressing the 
+    <image align="center" href="../images/darkroom_module_icon_mask.png" placement="inline" />button.</p>
+    <p>Depending on the module and the underlying image using a gradient shape might provoke banding artifacts. You should consider to activate the 
+    <i>dithering</i>module (see 
+    <xref href="dithering.dita#dithering" type="topic">Dithering</xref>)</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">A gradient with controls and activated mask display.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/masks_gradient_ex1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

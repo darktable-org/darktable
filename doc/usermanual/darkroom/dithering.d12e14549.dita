@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="dithering.d12e14549" xml:lang="en-us">
+  <title>dithering</title>
+  <body>
+    <p>With this combobox you can activate random noise dithering to overcome banding artifacts caused by vignette gradients. Select 
+    <q>8-bit output</q>to prevent banding on monitor display and for JPEGs. When set to 
+    <q>16-bit output</q>, only a little dithering will be applied, just strong enough to compensate for banding on the fine grained 16-bit level. This feature is mostly obsoleted by our new module 
+    <i>dithering</i>(see 
+    <xref href="dithering.dita#dithering" type="topic">Dithering</xref>).</p>
+  </body>
+</topic>

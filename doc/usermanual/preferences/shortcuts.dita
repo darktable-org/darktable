@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shortcuts" xml:lang="en-us">
+  <title>Shortcuts</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>preferences and settings
+        <indexterm>shortcuts</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable has a large set of keyboard shortcuts that is user configurable through the preference dialog.</p>
+    <p>When you open the shortcuts menu you are presented with a hierarchical list of all actions that can receive a keyboard shortcut. Go to the action you want to change and double click. You are then prompted to press the new key combination to be mapped to the selected action. In order to remove an existing keyboard shortcut, click on the action and press backspace.</p>
+    <p>In addition to classic shortcuts, you can set dynamic shortcuts to some darkroom module sliders. This allow you to change the value of the mapped slider with 
+    <i>key + mouse scroll</i>.</p>
+    <p>You can export your mappings to a file or import mappings from a file. Press 
+    <q>default</q>to reset all keyaccelerators to their default state.</p>
+    <p>Below is a table with the default keybindings for actions available in darktable.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="3*" />
+          <colspec colname="col2" colnum="2" colwidth="1*" />
+          <tbody>
+            <row>
+              <entry colname="col1">global/quit</entry>
+              <entry colname="col2">Ctrl+Q</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/lighttable view</entry>
+              <entry colname="col2">L</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/darkroom view</entry>
+              <entry colname="col2">D</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/tethering view</entry>
+              <entry colname="col2">T</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/map view</entry>
+              <entry colname="col2">M</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/slideshow view</entry>
+              <entry colname="col2">S</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/print view</entry>
+              <entry colname="col2">P</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/switch view</entry>
+              <entry colname="col2">Period (.)</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/toggle header</entry>
+              <entry colname="col2">Ctrl+H</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/toggle side borders</entry>
+              <entry colname="col2">Tab</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/toggle fullscreen</entry>
+              <entry colname="col2">F11</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/leave fullscreen</entry>
+              <entry colname="col2">Escape</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/zoom in</entry>
+              <entry colname="col2">Ctrl+Plus sign</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/zoom out</entry>
+              <entry colname="col2">Ctrl+Minus sign</entry>
+            </row>
+            <row>
+              <entry colname="col1">global/shortcut window</entry>
+              <entry colname="col2">H</entry>
+            </row>
+            <row>
+              <entry colname="col1">image operations/clipping/commit</entry>
+              <entry colname="col2">Return</entry>
+            </row>
+            <row>
+              <entry colname="col1">image operations/flip/rotate 90 degrees CCW</entry>
+              <entry colname="col2">bracketleft</entry>
+            </row>
+            <row>
+              <entry colname="col1">image operations/flip/rotate 90 degrees CW</entry>
+              <entry colname="col2">bracketright</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/copy_history/copy all</entry>
+              <entry colname="col2">Ctrl+C</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/copy_history/copy</entry>
+              <entry colname="col2">Ctrl+Shift+C</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/copy_history/paste all</entry>
+              <entry colname="col2">Ctrl+V</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/copy_history/paste</entry>
+              <entry colname="col2">Ctrl+Shift+V</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/export/export</entry>
+              <entry colname="col2">Ctrl+E</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/color blue</entry>
+              <entry colname="col2">F4</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/color green</entry>
+              <entry colname="col2">F3</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/color purple</entry>
+              <entry colname="col2">F5</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/color red</entry>
+              <entry colname="col2">F1</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/color yellow</entry>
+              <entry colname="col2">F2</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/copy history</entry>
+              <entry colname="col2">Ctrl+C</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/copy history parts</entry>
+              <entry colname="col2">Ctrl+Shift+C</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/duplicate image</entry>
+              <entry colname="col2">Ctrl+D</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/invert selection</entry>
+              <entry colname="col2">Ctrl+I</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/paste history</entry>
+              <entry colname="col2">Ctrl+V</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/paste history parts</entry>
+              <entry colname="col2">Ctrl+Shift+V</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 0</entry>
+              <entry colname="col2">0</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 1</entry>
+              <entry colname="col2">1</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 2</entry>
+              <entry colname="col2">2</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 3</entry>
+              <entry colname="col2">3</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 4</entry>
+              <entry colname="col2">4</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate 5</entry>
+              <entry colname="col2">5</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/rate reject</entry>
+              <entry colname="col2">R</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/select all</entry>
+              <entry colname="col2">Ctrl+A</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/filmstrip/select none</entry>
+              <entry colname="col2">Ctrl+Shift+A</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/image/duplicate</entry>
+              <entry colname="col2">Ctrl+D</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/image/group</entry>
+              <entry colname="col2">Ctrl+G</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/image/remove from collection</entry>
+              <entry colname="col2">Delete</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/image/ungroup</entry>
+              <entry colname="col2">Ctrl+Shift+G</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/import/import folder</entry>
+              <entry colname="col2">Ctrl+Shift+I</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/invert selection</entry>
+              <entry colname="col2">Ctrl+I</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/select all</entry>
+              <entry colname="col2">Ctrl+A</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/select none</entry>
+              <entry colname="col2">Ctrl+Shift+A</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/zoom in</entry>
+              <entry colname="col2">Alt+2</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/zoom max</entry>
+              <entry colname="col2">Alt+1</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/zoom min</entry>
+              <entry colname="col2">Alt+4</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/lighttable_mode/zoom out</entry>
+              <entry colname="col2">Alt+3</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/live_view/toggle live view</entry>
+              <entry colname="col2">V</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/metadata_view/jump to film roll</entry>
+              <entry colname="col2">Ctrl+J</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/recentcollect/jump back to previous collection</entry>
+              <entry colname="col2">Ctrl+K</entry>
+            </row>
+            <row>
+              <entry colname="col1">modules/tagging/tag</entry>
+              <entry colname="col2">Ctrl+T</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/undo</entry>
+              <entry colname="col2">Ctrl+Z</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/redo</entry>
+              <entry colname="col2">Ctrl+Y</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/decrease brush hardness</entry>
+              <entry colname="col2">braceleft</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/decrease brush opacity</entry>
+              <entry colname="col2">less</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/decrease brush size</entry>
+              <entry colname="col2">bracketleft</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/export</entry>
+              <entry colname="col2">Ctrl+E</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/full preview</entry>
+              <entry colname="col2">Z</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/gamut check</entry>
+              <entry colname="col2">Ctrl+G</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/image back</entry>
+              <entry colname="col2">BackSpace</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/image forward</entry>
+              <entry colname="col2">Spacebar</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/increase brush hardness</entry>
+              <entry colname="col2">braceright</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/increase brush opacity</entry>
+              <entry colname="col2">greater</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/increase brush size</entry>
+              <entry colname="col2">bracketright</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/overexposed</entry>
+              <entry colname="col2">O</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/softproof</entry>
+              <entry colname="col2">Ctrl+S</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/toggle film strip</entry>
+              <entry colname="col2">Ctrl+F</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/zoom close-up</entry>
+              <entry colname="col2">Alt+1</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/zoom fill</entry>
+              <entry colname="col2">Alt+2</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/darkroom/zoom fit</entry>
+              <entry colname="col2">Alt+3</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/color blue</entry>
+              <entry colname="col2">F4</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/color green</entry>
+              <entry colname="col2">F3</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/color purple</entry>
+              <entry colname="col2">F5</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/color red</entry>
+              <entry colname="col2">F1</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/color yellow</entry>
+              <entry colname="col2">F2</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/navigate down</entry>
+              <entry colname="col2">Shift+G</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/navigate page down</entry>
+              <entry colname="col2">Page_Down</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/navigate page up</entry>
+              <entry colname="col2">Page_Up</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/navigate up</entry>
+              <entry colname="col2">G</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/preview</entry>
+              <entry colname="col2">W</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/preview with focus detection</entry>
+              <entry colname="col2">Ctrl+W</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 0</entry>
+              <entry colname="col2">0</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 1</entry>
+              <entry colname="col2">1</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 2</entry>
+              <entry colname="col2">2</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 3</entry>
+              <entry colname="col2">3</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 4</entry>
+              <entry colname="col2">4</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate 5</entry>
+              <entry colname="col2">5</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/rate reject</entry>
+              <entry colname="col2">R</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/realign images to grid</entry>
+              <entry colname="col2">L</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/scroll center</entry>
+              <entry colname="col2">apostrophe</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/scroll down</entry>
+              <entry colname="col2">Down</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/scroll left</entry>
+              <entry colname="col2">Left</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/scroll right</entry>
+              <entry colname="col2">Right</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/scroll up</entry>
+              <entry colname="col2">Up</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/select single image</entry>
+              <entry colname="col2">Return</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/select toggle image</entry>
+              <entry colname="col2">Spacebar</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/sticky preview</entry>
+              <entry colname="col2">Alt+W</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/lighttable/sticky preview with focus detection</entry>
+              <entry colname="col2">Ctrl+Alt+W</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/map/undo</entry>
+              <entry colname="col2">Ctrl+Z</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/map/redo</entry>
+              <entry colname="col2">Ctrl+Y</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/map/toggle film strip</entry>
+              <entry colname="col2">Ctrl+F</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/map/undo</entry>
+              <entry colname="col2">Ctrl+Z</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/print/toggle film strip</entry>
+              <entry colname="col2">Ctrl+F</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/slideshow/start and stop</entry>
+              <entry colname="col2">Spacebar</entry>
+            </row>
+            <row>
+              <entry colname="col1">views/tethering/toggle film strip</entry>
+              <entry colname="col2">Ctrl+F</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interaction.d12e9230" xml:lang="en-us">
+  <title>interaction</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color picker</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>To modify the color mapping, you can change source as well as target colors.</p>
+    <p>The main use case is to change the target colors. You start with an appropriate palette of source colors (either from the presets menu or from a style you download). You can then change lightness (L), green-red (a), blue-yellow (b), or saturation (C) of the patches' target values via sliders.</p>
+    <p>To change the source color of a patch you select a new color from your image by using the color picker, and Shift+click on the patch you want to replace. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+    <p>To reset a patch, double-click it. Right-click a patch to delete it. Shift+click on empty space to add a new patch (with the currently picked color as source color).</p>
+  </body>
+</topic>

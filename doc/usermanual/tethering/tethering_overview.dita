@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tethering_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>To use the tethering feature you need to connect your camera to your PC using a USB cable. Your computer might ask to mount or view the connected camera. Do not mount or view the camera. If that happens automatically, you will need to 
+    <q>unmount/eject</q>the camera. This is required to unlock the camera so darktable can lock it for usage.</p>
+    <p>After the USB cable is connected, look at the import panel in lighttable mode (see 
+    <xref href="../lighttable/import.dita#import" type="topic">Import</xref>). If your camera is not visible in this panel, click the 
+    <q>scan devices</q>button and it will appear with two functions: 
+    <q>import from camera</q>and 
+    <q>tethered shoot</q>. Click 
+    <q>tethered shoot</q>to enter the tethering mode.</p>
+    <p>darktable uses gphoto2 to interface with your camera. If you have problems finding the connected camera as described above, check the troubleshoot section in this chapter in order to verify your camera has tethering support.</p>
+  </body>
+</topic>

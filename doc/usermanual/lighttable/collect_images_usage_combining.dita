@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_combining" xml:lang="en-us">
+  <title>combining rules</title>
+  <body>
+    <p>The logical operators defining the combination of rules are displayed to the right of the rule: 
+    <i>AND</i>by the 
+    <image align="center" href="../images/lighttable_icon_and.png" placement="inline" />symbol, 
+    <i>OR</i>by the 
+    <image align="center" href="../images/lighttable_icon_or.png" placement="inline" />symbol, and 
+    <i>EXCEPT</i>by the 
+    <image align="center" href="../images/lighttable_icon_except.png" placement="inline" />symbol. Clicking on either symbol gives a choice to change the logical operation.</p>
+  </body>
+</topic>

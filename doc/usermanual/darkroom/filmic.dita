@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="filmic" xml:lang="en-us">
+  <title>Filmic rgb</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>filmic rgb</indexterm></indexterm>
+        <indexterm>filmic rgb</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

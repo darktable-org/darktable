@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="colorBoard.d12e9215" xml:lang="en-us">
+  <title>color board</title>
+  <body>
+    <p>When you select the module in darkroom mode, it should look something like the image above (configurations with more than 24 patches are shown in a 7x7 grid instead). By default, it will load the 24 patches of a color checker classic and initialise the mapping to identity (no change to the image).</p>
+    <p>The grid shows a list of colored patches. The colors of the patches are the source points. The target color of the selected patch is shown as offsets controlled by sliders in the GUI under the grid of patches. An outline is drawn around patches that have been altered, i.e. the source and target colors differ.</p>
+    <p>The selected patch is marked with a white square, and its number is displayed in the combo box below. Select a patch by left clicking on it, or using the combo box, or using the color picker.</p>
+  </body>
+</topic>

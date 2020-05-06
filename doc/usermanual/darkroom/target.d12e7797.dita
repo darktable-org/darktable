@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="target.d12e7797" xml:lang="en-us">
+  <title>target</title>
+  <body>
+    <p>Only offered for the 
+    <i>Drago</i>operator. This is a scale factor to adjust the global image brightness to the brightness of the intended display. It is measured in cd/m 
+    <sup>2</sup>, and should match the according value of your output device. Higher values lead to a brighter image, while lower values lead to a darker image.</p>
+  </body>
+</topic>

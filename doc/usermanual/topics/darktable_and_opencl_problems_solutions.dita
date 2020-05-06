@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_problems_solutions" xml:lang="en-us">
+  <title>Possible problems and solutions</title>
+  <body>
+    <p>darktable will detect OpenCL run-time problems automatically. It will then reprocess everything on CPU; only speed is affected, the final result should not be endangered.</p>
+    <p>There can be various reasons why OpenCL could fail during initialization phase. We depend on hardware requirements and on the presence of certain drivers and libraries. In addition all these have to fit in terms of maker model and revision number. If anything does not fit, e.g. your graphics driver (loaded as a kernel module) does not match the version of your libOpenCL.so, OpenCL support is likely not available.</p>
+    <p>In that case, the best thing to do is start darktable from a console with</p>
+    <pre xml:space="preserve">
+darktable -d opencl
+</pre>
+    <p>This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with 
+    <q>[opencl_init] FINALLY ...</q>This should tell you, if OpenCL support is available for you or not. If initialization failed, look at the messages above for anything that reads like 
+    <q>could not be detected</q>or 
+    <q>could not be created</q>. Check if there is a hint about where it failed.</p>
+    <p>Here are a few cases observed in the past:</p>
+    <ul>
+      <li>darktable might tell you that no OpenCL aware graphics card is detected or that the available memory on your GPU is too low and the device is discarded. In that case you might need to buy a new card, if you really want OpenCL support.</li>
+      <li>darktable might find your libOpenCL.so but then tell you that it couldn't get a platform. NVIDIA drivers will often give error code -1001 in that case. This happens because libOpenCL.so is only a wrapper library. For the real work further libraries – specific to vendor, device and driver – need to be loaded. This failed for some reason. There is a structure of files in /etc/OpenCL on your system that libOpenCL.so consults to find these libraries. Check if you find something fishy in there and try to fix it. Often the needed libraries cannot be found by your system's dynamic loader. Giving full path names might help.</li>
+      <li>darktable might also tell you that a context could not be created. This often indicates a version mismatch between (loaded) graphics driver and libOpenCL. Check if you have left-over kernel modules or graphics libraries of an older install and take appropriate action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately after a driver update, the loaded kernel driver does not match the newly installed libraries: reboot your system in that case.</li>
+      <li>darktable might crash in very rare cases directly during startup. This can happen if your OpenCL setup is completely broken or if driver/library contains a severe bug. If you can't fix it, you can still use darktable with option 
+      <q>--disable-opencl</q>, which will skip the entire OpenCL initialization step.</li>
+      <li>darktable might fail to compile its OpenCL source files at run-time. In that case you will get a number of error messages looking like typical compiler errors. This could indicate an incompatibility between your OpenCL implementation and our interpretation of the standard. In that case visit us in IRC in #darktable on FreeNode or on the developers mailing list at darktable-dev@lists.darktable.org and report the problem. Chances are good that we can help you. Please also report if you see significant differences between CPU and GPU processing of an image!</li>
+    </ul>
+    <p>There also exists a few on-CPU implementations of OpenCL. These come as drivers provided by INTEL or AMD. We observed that they do not give us any speed gain versus our hand-optimized CPU code. Therefore we simply discard these devices by default. This behavior can be changed by setting the configuration variable opencl_use_cpu_devices to TRUE.</p>
+  </body>
+</topic>

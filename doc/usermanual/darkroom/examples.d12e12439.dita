@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e12439" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="4*" />
+          <colspec colname="col2" colnum="2" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/spotremoval_ex1_1.png" placement="break" />
+              </entry>
+              <entry colname="col2">Let's use this portrait as example; we want to remove some dirt and unwanted catchlight from camera popup strobe.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/spotremoval_ex1_2.png" placement="break" />
+              </entry>
+              <entry colname="col2">I have marked all the spots that I want to remove from the image with circle shapes and appropriately selected source areas.</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/spotremoval_ex1_3.png" placement="break" />
+              </entry>
+              <entry colname="col2">And here is the result image of the spotremoval.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

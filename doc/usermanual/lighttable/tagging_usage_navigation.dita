@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_navigation" xml:lang="en-us">
+  <title>navigation</title>
+  <body>
+    <p>Right-click on an attached tag (count not null) in the dictionary view make appear in the submenu an entry 
+    <q>go to tag collection</q>. This opens the collection associated to this tag and let you see the images which have this tag attached. It is possible to jump from one tag collection to the other.</p>
+    <p>To come back to the original collection, where you were working before moving to a tag collection, the submenu presents the entry 
+    <q>go back to work</q>. This option is kept as long your don't change the collection in collect module and you are not back to the original collection.</p>
+  </body>
+</topic>

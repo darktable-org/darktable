@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="drawn_mask_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>With the drawn mask feature you can construct a mask by drawing directly on the image base. Different drawing operators, called shapes, are available and can be used alone or in combination. A flexible editing feature allows you to change single aspects of a shape, remove shapes or import shapes already defined in other modules.</p>
+    <p>Internally shapes are stored as vector graphics and rendered with the needed resolution during pixelpipe processing. Shapes are expressed in the coordinate system of the original image and transformed with all distorting modules. This way a shape will always work on the same image area regardless of warping or other modifications that may be applied.</p>
+  </body>
+</topic>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="core_options_quality" xml:lang="en-us">
+  <title>Quality</title>
+  <body>
+    <p>
+      <b>color manage cached thumbnails</b>
+    </p>
+    <p>If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to render them independently of the individual monitor. Conversion to the monitor color space is done at display time. If this option is not activated thumbnails are directly stored in the specific monitor color space valid at generation time and are subsequently displayed without further corrections (default on).</p>
+    <p>
+      <b>always use LittleCMS 2 to apply output color profile</b>
+    </p>
+    <p>If this option is activated, darktable will use system library LittleCMS 2 instead of its own routines. This is significantly slower than the default but might give more accurate results in some cases (default off).</p>
+    <p>Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will use LittleCMS 2 to render the colors regardless of this configuration parameter's value.</p>
+    <p>
+      <b>do high quality processing for slideshow</b>
+    </p>
+    <p>Controls how images are processed for the slideshow view. It this option is enabled, the image will first be processed in full resolution, and downscaled at the very end. This can result in better quality sometimes, but will always be slower (default on).</p>
+    <p>
+      <b>demosaicing for zoomed out darkroom mode</b>
+    </p>
+    <p>Interpolation when not viewing 1:1 in darkroom mode: 
+    <q>always bilinear (fast)</q>is fastest, but not as sharp. 
+    <q>at most ppg (reasonable)</q>is using ppg + interpolation modes specified below, 
+    <q>full (possibly slow)</q>will use exactly the settings for full-size export (default 
+    <q>at most ppg (reasonable)</q>).</p>
+    <p>
+      <b>pixel interpolator</b>
+    </p>
+    <p>Pixel interpolator used in rotation, lens correction, up-and-down scaling; options are 
+    <q>bilinear</q>, 
+    <q>bicubic</q>, 
+    <q>lanczos2</q>, 
+    <q>lanczos3</q>(default).</p>
+    <p>
+      <b>auto-apply basecurve</b>
+    </p>
+    <p>Use a basecurve by default. For more details see 
+    <xref href="../darkroom/base_curve.dita#base_curve" type="topic">Base curve</xref>(default on). (need a restart)</p>
+    <p>
+      <b>auto-apply per camera basecurve presets</b>
+    </p>
+    <p>Use the per-camera basecurve by default instead of the generic manufacturer one if there is one available. For more details see 
+    <xref href="../darkroom/base_curve.dita#base_curve" type="topic">Base curve</xref>(default off).</p>
+    <p>
+      <b>auto-apply sharpen</b>
+    </p>
+    <p>This added sharpen is not recommended on cameras without a low-pass filter. The default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)</p>
+  </body>
+</topic>

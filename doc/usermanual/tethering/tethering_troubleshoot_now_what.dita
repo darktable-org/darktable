@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tethering_troubleshoot_now_what" xml:lang="en-us">
+  <title>So, now what?</title>
+  <body>
+    <p>If any of the steps above failed, there are problems with your specific camera and driver. Please report the issues to gphoto2 mailing list for further help. You can find the mailing list at 
+    <xref format="html" href="http://www.gphoto.org/mailinglists/" scope="external">www.gphoto.org</xref>. Add the following flags to the failed command above for better support and attach the log output to your mail:</p>
+    <p>
+      <pre xml:space="preserve">
+--debug --debug-file gphoto2_debug.log
+</pre>
+    </p>
+    <p>If you successfully went through all the tests above, your camera will most likely be supported by darktable. Even if successful, if you stumble upon a problem in darktable, please file a bug on the 
+    <xref format="html" href="https://github.com/darktable-org/darktable/issues" scope="external">bugtracker</xref>. Please attach the log outputs from the steps above and the log file output generated after starting darktable with the following command.</p>
+    <p>
+      <pre xml:space="preserve">
+darktable -d camctl 2&gt;1 &gt;camctl.log
+</pre>
+    </p>
+  </body>
+</topic>

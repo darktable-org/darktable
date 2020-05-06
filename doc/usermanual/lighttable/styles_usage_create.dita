@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage_create" xml:lang="en-us">
+  <title>create</title>
+  <body>
+    <p>This creates new styles out of the history stacks of the selected images. For each image a style creation window pops up. You need to supply a unique name for the new style and you can add an additional descriptive text. You have the option to de-select those history stack items which you want to not be part of the newly created style.</p>
+    <p>The panel supports a hierarchical view, this means you can create categories using the pipe symbol 
+    <codeph>|</codeph>as a separator. For example 
+    <codeph>print|tone curve +0.5 EV</codeph>will create a print category.</p>
+  </body>
+</topic>

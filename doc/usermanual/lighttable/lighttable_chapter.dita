@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="lighttable_chapter">
+  <title>Lighttable</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>lighttable</keyword>
+        <keyword>view</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The lighttable is where you manage all your images, ratings, export and much more.</p>
+    <fig id="fig_jvf_fvp_dlb">
+      <title>The lighttable view</title>
+      <image href="../images/lighttable_view.png" placement="break" id="image_kvf_fvp_dlb" />
+    </fig>
+  </body>
+</topic>

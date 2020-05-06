@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tethering_overview_tethering" xml:lang="en-us">
+  <title>Tethering</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">In the center view images are shown while you capture them. You can get an exposure by either using darktable's userinterface or manually triggering a capture on your camera. If you are using LiveView it will be shown in darktable's center view.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/tethering_center_view.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>When entering tethering view, a film roll will be created using the same structure as defined when you import from the camera. Job code will be predefined as 
+    <q>capture</q>.</p>
+    <p>If you want to group your captures into different film rolls, you should use the session panel in right side. When entering a new name and pressing enter, a new film roll will be created and captured images will go into this new film roll.</p>
+    <p>darktable provides some nifty tools to setup a capture in the user interface. You can setup timelapse captures and brackets for HDR creations. The configuration is so dynamic that you can create sequential capture of brackets – go figure... For more information read the documentation about the capture panel and the examples in this chapter.</p>
+  </body>
+</topic>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rendering_method" xml:lang="en-us">
+  <title>Rendering method</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color management
+        <indexterm>rendering method</indexterm></indexterm>
+        <indexterm>LittleCMS2</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>A configuration parameter 
+    <q>always use LittleCMS 2 to apply output color profile</q>in darktable's 
+    <i>core options</i>(see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) defines how colors are rendered.</p>
+    <p>darktable can render colors either with its internal algorithms or by using the external library 
+    <xref format="html" href="http://www.littlecms.com/" scope="external">
+      <i>LittleCMS2</i>
+    </xref>. darktable's internal method is by an order of magnitude faster than the external one. The external option gives you a choice of the rendering intent and might offer a slightly higher accuracy in some cases.</p>
+    <p>Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will use LittleCMS 2 to render the colors regardless of that configuration parameter's value.</p>
+  </body>
+</topic>

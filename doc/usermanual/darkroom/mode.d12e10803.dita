@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="mode.d12e10803" xml:lang="en-us">
+  <title>mode</title>
+  <body>
+    <p>This module can eliminate noise by two different core algorithms. Both 
+    <q>non-local means</q>and 
+    <q>wavelet</q>can tackle efficiently luma (lightness) noise and chroma (color) noise. 
+    <q>wavelet</q>mode also lets you adjust the force of the denoising depending on the noise coarseness. If needed you can apply two instances of this module (see 
+    <xref href="multiple_instances.dita#multiple_instances" type="topic">Multiple instances</xref>): one instance to tackle luma noise with blend mode 
+    <q>lightness</q>or 
+    <q>HSV lightness</q>, and another one to tackle chroma noise with blend mode 
+    <q>color</q>or 
+    <q>HSV color</q>. An example of the use of two instances with blending modes is available within the presets of this module. For more information on blend modes have a look at 
+    <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>. The module also offers an automatic mode for each algorithm. Automatic modes allow to set module's parameters in an easier way, as it guesses several parameters from the profile. All sliders of this module can take values higher than their bounds if needed using Right-click.</p>
+  </body>
+</topic>

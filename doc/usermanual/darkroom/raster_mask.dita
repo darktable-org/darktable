@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="raster_mask" xml:lang="en-us">
+  <title>Raster mask</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>masks
+        <indexterm>raster masks</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>When a 
+    <q>drawn mask</q>or a 
+    <q>parametric mask</q>is active the final mask can be reused in other modules. This works because all the shapes from the drawn mask and all the blend functions from the parametric mask of a module assemble a final mask, which internally is stored as a raster image and made accessible to other modules.</p>
+  </body>
+</topic>

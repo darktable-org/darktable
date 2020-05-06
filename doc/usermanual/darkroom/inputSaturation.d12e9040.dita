@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="inputSaturation.d12e9040" xml:lang="en-us">
+  <title>Input saturation</title>
+  <body>
+    <p>The input saturation is a saturation correction applied before the color balance. It can be used to dampen colors before adjusting the balance, to make difficult pictures easier to process. When you desaturate entirely the image, it creates a luminance-based monochrome picture that can be used as a luminance mask, to create color filters with the color balance settings, like split-toning or sepia effect (you might want to use blending modes then).</p>
+  </body>
+</topic>

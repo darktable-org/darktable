@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="targetBlackLuminanceDisplayTab.d12e8191" xml:lang="en-us">
+  <title>Target black luminance (
+  <uicontrol>Display</uicontrol>tab)</title>
+  <body>
+    <p>The destination parameters set the target luminance values used to remap the tones through filmic rgb. The default parameters will work 99% of the times, the remaining 1% being when you output in linear RGB space (REC709, REC2020) for media handling log-encoded data. These settings are then to be used with caution because darktable does not allow separate pipelines for display preview and for file output.</p>
+    <p>The target black luminance parameter allows to set the ground-level black of the target medium. Set it greater than 0% if you want raised, faded blacks to achieve a retro look.</p>
+  </body>
+</topic>

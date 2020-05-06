@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_style" xml:lang="en-us">
+  <title>style</title>
+  <body>
+    <p>This option lets you choose a style, i.e. a collection of history stack items, which darktable combines with the existing history stack to generate the output image. These history items are only added temporarily; the original history stack is not overwritten. You can use this feature to add processing steps and parameters that you want to be applied specifically to images before export, e.g. you may define a style that adds a stronger level of sharpening when you produce scaled-down JPEG files for the internet or add a certain level of exposure compensation to all of your output images. Learn more about styles in 
+    <xref href="styles.dita#styles" type="topic">Styles</xref>, and 
+    <xref href="../darkroom/history.dita#history" type="topic">History stack</xref>.</p>
+  </body>
+</topic>

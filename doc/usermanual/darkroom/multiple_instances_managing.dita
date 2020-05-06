@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="multiple_instances_managing" xml:lang="en-us">
+  <title>Managing instances</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">When clicking on the 
+            <image align="center" href="../images/darkroom_module_icon_instances.png" placement="inline" />icon a drop-down menu will appear.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/instances.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Selecting 
+    <q>new instance</q>generates a new module instance above any existing ones. All parameters are set to default values. The new instance gets its own complete set of GUI controls and a number appended to the base module name for distinction.</p>
+    <p>Selecting 
+    <q>duplicate instance</q>behaves in a similar way. The only difference: the new instance will inherit all parameter settings from its parent.</p>
+    <p>darktable applies all modules in a defined order according to their type. Therefore all instances of a particular module will occur together in the pixelpipe. You can however decide on the relative order in which the different instances of a module are applied by selecting 
+    <q>move up</q>or 
+    <q>move down</q>to shift the position of the instance among its peers.</p>
+    <p>To delete an instance just press 
+    <q>delete</q>from the drop-down menu.</p>
+    <p>An instance can have any name without influencing the edits. To change the name use the 
+    <q>rename</q>option. See 
+    <xref format="dita" href="history.dita#history" type="topic">History stack</xref>for more details on how the instance name impacts copying and pasting history stacks.</p>
+  </body>
+</topic>

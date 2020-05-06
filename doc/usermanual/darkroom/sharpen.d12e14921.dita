@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="sharpen.d12e14921" xml:lang="en-us">
+  <title>sharpen</title>
+  <body>
+    <p>Set the sharpness. The higher, the more details.</p>
+  </body>
+</topic>

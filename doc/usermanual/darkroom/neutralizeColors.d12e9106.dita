@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="neutralizeColors.d12e9106" xml:lang="en-us">
+  <title>Neutralize colors</title>
+  <body>
+    <p>In an image where some areas are exposed to direct sunlight and some areas are exposed to reflected light (shadows), or when several artificial light sources are present simultaneously, shadows and highlights often have different color temperatures. These images are particularly difficult to correct since no general white balance will match all the colors at once. The color neutralization optimizer aims at helping you find the complementary color for shadows, midtones, and highlights so all the color casts are reverted, and the average color of the picture is a neutral grey.</p>
+    <p>Similarly to the luma optimization, the color-picker next to the 
+    <i>neutralize colors</i>label will trigger a general optimization over the whole picture. This works fairly in landscape photography, or any photography with a full spectrum of colors and luminances. For night and events photography, this will most likely fail and you will need to input manually the sampling areas with the color-pickers in front of each hue slider. For the highlights sample, use a color exposed to spotlights that should be neutral white or light grey. For the shadows sample, use a color exposed to ambient light that should be neutral black or dark grey. For the mid-tones sample, use a color exposed by both ambient and spot lights.</p>
+    <p>The success of the optimization depends on the quality of the samples. Not every set of samples will converge to a good solution, you need to ensure the color patches you choose are really neutral color in real life. In many cases the optimizer will output the correct hue but an excessive saturation that will need some extra tweaking. In some cases, no valid optimization will be delivered and you will need to reset the saturation parameters and start over, or simply stop after the patches selection. Notice that in the auto-optimization the maximum saturation is 25% which might not be enough in very few cases but will avoid inconsistent results in most.</p>
+    <p>If you select color patches from the hues color-pickers, without triggering the optimization, the software will only perform one round of optimization and stop so it allows you to control each luminance range separately and avoid divergence of the solution in corner cases. The hue and saturation corrections are computed accounting for the two other luminance ranges and the three factors, and will always output the complementary color of the selected area. If you want to reinforce the color of the area instead, you can then add 180° to the computed hue. Once patches are selected the label becomes 
+    <q>neutralize colors from patches</q>. To reset one patch you can just redo the selection. Patches are not saved in the parameters and are kept only during the current session. The parameters found by the automatic neutralization are accurate only in 
+    <i>slope, offset, power</i>mode, but can work to some extent in 
+    <i>lift, gamma, gain</i>too.</p>
+  </body>
+</topic>

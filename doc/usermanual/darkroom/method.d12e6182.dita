@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="method.d12e6182" xml:lang="en-us">
+  <title>method</title>
+  <body>
+    <p>Set the demosaic method. darktable currently supports PPG, AMAZE, and VNG4 for Bayer sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-pass, and Markesteijn 3-pass.</p>
+  </body>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_profile" xml:lang="en-us">
+  <title>profile</title>
+  <prolog>
+    <metadata>
+      <keywords />
+    </metadata>
+  </prolog>
+  <body>
+    <p>This defines the output color profile. Select 
+    <q>image settings</q>if you want the settings in the 
+    <i>output color profile</i>(see 
+    <xref href="../darkroom/output_color_profile.dita#output_color_profile" type="topic">Output color profile</xref>) module of the individual images to take precedence.</p>
+  </body>
+</topic>

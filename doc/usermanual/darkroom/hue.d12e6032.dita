@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="hue.d12e6032" xml:lang="en-us">
+  <title>hue</title>
+  <body>
+    <p>This slider is visible if you set the preference combobox to 
+    <q>hue</q>. It allows you to select a preferred hue of replacement colors. This only has an effect if the preferred hue is actually present within the selected spatial and range distance of the target pixels (see above). A typical use case is repairing highlights on human skin in situations where diverging colors are in close proximity (e.g. textiles or hair with a luminance close to skin). Setting a hue preference on skin tones avoids these other colors from creeping in.</p>
+  </body>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="crop_and_rotate" xml:lang="en-us">
+  <title>Crop and rotate</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>crop and rotate</indexterm></indexterm>
+        <indexterm>crop and rotate</indexterm>
+        <indexterm>cropping an image</indexterm>
+        <indexterm>rotating an image</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

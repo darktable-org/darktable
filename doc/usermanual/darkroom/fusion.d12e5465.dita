@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="fusion.d12e5465" xml:lang="en-us">
+  <title>fusion</title>
+  <body>
+    <p>This control triggers the 
+    <xref format="html" href="https://en.wikipedia.org/wiki/Exposure_Fusion" scope="external">
+      <i>exposure fusion</i>
+    </xref>feature. You can choose to merge the image with one or two copies of itself after applying the current base curve and boosting its exposure by a selectable number of ev units. The resulting image is thus a combination of two or three different exposures of the original image. Use this to compress dynamic range for extremely underexposed images or for true HDR input. For best results, use the exposure module (see 
+    <xref href="exposure.dita#exposure" type="topic">Exposure</xref>) to apply a suitable adjustment for correctly exposed highlights.</p>
+  </body>
+</topic>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10536" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Each frequency band can be tweaked independently. In particular, you can adjust contrast boost and denoise threshold splines for both lightness and chromaticity (
+    <q>luma</q>and 
+    <q>chroma</q>), as well as the acuteness (
+    <q>edges</q>) of the wavelet basis on each frequency scale.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Each spline can be dragged with a proportional edit approach; use the mouse wheel to adjust the radius in which your changes will have an effect. The transparent area indicates where you would drag the spline with the current mouse position and radius. The small little triangles on the x-axis can be moved to alter the x-position of the spline nodes.</entry>
+            <entry colname="col2">
+              <image align="right" href="modules/images/atrous-1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Drag the upper line (bright circles, here for the lightness channel) to affect local contrast. Pulling it up, as shown here, will result in a contrast boost for that frequency band. Higher frequencies, i.e. smaller details, are to the right of the grid. Pulling it down works, too.</entry>
+            <entry colname="col2">
+              <image align="right" href="modules/images/atrous-2.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">The bottom spline (black circles) is used to perform denoising. It adjusts the wavelet shrinkage threshold for each frequency band. Pull it up to see the effect. In this example, the noise which has been amplified by local contrast enhancement is removed.</entry>
+            <entry colname="col2">
+              <image align="right" href="modules/images/atrous-4.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This screen shows the effect of the edge parameter. It is here pulled down to zero for all bands. This is effectively a regular à trous wavelet, without edge detection, and results in the characteristic halos around sharp edges in the image.</entry>
+            <entry colname="col2">
+              <image align="right" href="modules/images/atrous-5.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This image is the other extreme. The wavelet basis now oversharpens, which results in ugly gradient reversals near the ridge of the rock.</entry>
+            <entry colname="col2">
+              <image align="right" href="modules/images/atrous-6.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Note that the edge parameter only affects the wavelet basis, not the image directly. You will have to change some denoise/contrast boost parameters to see an effect following adjustments to the edge parameter.</p>
+    <p>This module additionally has a 
+    <q>mix</q>slider below the spline GUI. Adjusting the slider will upscale or downscale the splines on the y-axis. The slider was added as a convenience tool to help you modify the strength of the effect. It is not a module parameter in itself; when you leave darkroom mode all changes will be consolidated into the spline curves.</p>
+    <p>Have a look at the presets where there are a broad variety of examples that will provide a good starting point to gain an intuitive understanding of the controls. Among others there is preset to enhance an image's 
+    <q>clarity</q>.</p>
+  </body>
+</topic>

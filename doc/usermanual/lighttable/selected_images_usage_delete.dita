@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_delete" xml:lang="en-us">
+  <title>delete/trash</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>delete images</indexterm>
+        <indexterm>trash images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Eliminate the selected images from the darktable database and remove the image files from their respective locations. Depending on the setting of config parameter 
+    <q>send files to trash when erasing images</q>(
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>) this either irrevocably deletes the images from filesystem or puts them into your system's trash bin.</p>
+    <p>See also preference option 
+    <q>ask before erasing images from disk</q>(
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>). If this configuration option is not active, darktable will delete/trash the file(s) without further question.</p>
+    <p>When deleting an image with duplicates, darktable keeps the original input file on disk until the last of the duplicates gets deleted.</p>
+  </body>
+</topic>

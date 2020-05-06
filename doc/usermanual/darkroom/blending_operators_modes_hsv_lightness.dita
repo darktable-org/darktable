@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_hsv_lightness" xml:lang="en-us">
+  <title>HSV lightness</title>
+  <body>
+    <p>Only available with modules that work in the RGB color space; this blend mode mixes lightness from the input and output images, while color data are taken only from the input image. In contrast to blend mode 
+    <q>lightness</q>this mode does not involve clamping.</p>
+  </body>
+</topic>

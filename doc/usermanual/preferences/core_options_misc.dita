@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="core_options_misc" xml:lang="en-us">
+  <title>Miscellaneous</title>
+  <body>
+    <p>
+      <b>omit hierarchy in simple tag lists</b>
+    </p>
+    <p>When exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. When this option is checked darktable will only include their last part and ignore the rest. So 
+    <q>foo|bar|baz</q>will only add 
+    <q>baz</q>.</p>
+    <p>
+      <b>force exportation of private tags</b>
+    </p>
+    <p>This option force darktable to export private tags to XMP-dc Subject and XMP-lr Hierarchical Subject (default off).</p>
+    <p>
+      <b>request exportation of synonyms</b>
+    </p>
+    <p>This option force darktable to export synonyms along with tags to XMP-dc Subject (default off).</p>
+    <p>
+      <b>disable the entry completion</b>
+    </p>
+    <p>The entry completion is useful for those who enter tags from keyboard only. For others the entry completion can be embarrassing (default off). (need a restart)</p>
+    <p>
+      <b>password storage backend to use</b>
+    </p>
+    <p>The storage backend for password storage. Options: 
+    <q>auto</q>(default), 
+    <q>none</q>, 
+    <q>libsecret</q>, 
+    <q>kwallet</q>.</p>
+    <p>
+      <b>executable for playing audio files</b>
+    </p>
+    <p>Defines an external program which is used in the lighttable view to play audio files that some cameras record to keep notes for images (default 
+    <q>aplay</q>).</p>
+    <p>
+      <b>3D lut root folder</b>
+    </p>
+    <p>This folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart)</p>
+  </body>
+</topic>

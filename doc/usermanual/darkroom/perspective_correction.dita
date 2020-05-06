@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="perspective_correction" xml:lang="en-us">
+  <title>Perspective correction</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>perspective correction</indexterm></indexterm>
+        <indexterm>perspective correction</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

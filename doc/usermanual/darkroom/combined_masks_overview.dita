@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="combined_masks_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>There are two main elements which control how individual masks are combined: the polarity setting of each individual mask, defined by the plus or minus buttons, and the setting in the 
+    <q>combine masks</q>combobox (see 
+    <xref href="blending_usage_mask_combination_inversion_combine.dita#blending_usage_mask_combination_inversion_combine" type="topic">combine masks</xref>).</p>
+    <p>Masks can be regarded as grayscale images which take up values between 0 and 1.0 (or from 0% to 100%) for each pixel.</p>
+    <p>A straightforward way to combine masks is by multiplying the individual pixel values. The final mask will have a pixel value of 0 whenever one of the individual masks is 0 at that pixel location. The final mask can only reach a maximum pixel value of 1.0 if each and every of the individual masks has a value of 1.0 at that location. We call this way of combination 
+    <q>exclusive</q>. Any individual mask can exclude a pixel by setting its value to zero, regardless of what the other individual masks do. Once a pixel is excluded (its value is 0) by any mask there is no way to include it again by any other individual mask.</p>
+    <p>An alternative way to combine masks is the following: we first invert each individual mask  – calculating 1.0 minus its value – then we multiply these inverted masks and as a last step invert the final mask again. Now if one of the non-inverted individual masks has a value of 1.0 at a pixel location the final will also be 1.0. The final mask can only reach a pixel value of 0 if all the individual masks have a value of 0. We call this way of combination 
+    <q>inclusive</q>. Any individual mask can include a pixel by setting its value to 1.0, regardless of what the other individual masks do. Once a pixel is included (its value is 1.0) by any mask there is no way to exclude it again by any other individual mask.</p>
+    <p>These two combination methods alone would still be rather limiting. We gain maximum flexibility by allowing an additional inversion step for each individual mask. This is governed by the polarity buttons 
+    <image align="center" href="../images/darkroom_module_icon_polarity_plus.png" placement="inline" />and 
+    <image align="center" href="../images/darkroom_module_icon_polarity_minus.png" placement="inline" />that you find close to the individual channels. Toggling the polarity button of a mask inverts its values, i.e. it recalculates the pixel values to 1.0 minus the original value.</p>
+    <p>Finally within the 
+    <q>combine masks</q>combobox you may once again invert the final result to fit your needs by selecting the 
+    <i>exclusive &amp; inverted</i>or 
+    <i>inclusive &amp; inverted</i>options.</p>
+  </body>
+</topic>

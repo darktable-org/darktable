@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e10061" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>You can define the output color profile in two different places, either in this module, or in the export panel in lighttable mode (see 
+    <xref href="../lighttable/export_selected.dita#export_selected" type="topic">Export selected</xref>).</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="aspect.d12e14095" xml:lang="en-us">
+  <title>aspect</title>
+  <body>
+    <p>With this combobox you can choose between different aspect ratios for the final output of this module, i.e. underlying image plus frame.</p>
+  </body>
+</topic>

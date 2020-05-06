@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="curveTool.d12e11498" xml:lang="en-us">
+  <title>curve tool</title>
+  <body>
+    <p>Click the 
+    <image align="center" href="../images/darkroom_module_liquify_curve.png" placement="inline" />icon to activate the curve tool and left-click on the image to place the first point, move and left-click to place another point and start forming the path. To end the line just right-click anywhere.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">A curve is a set of points. The points are linked together, the effect is interpolated as a bezier curve by a set of strength vectors.</entry>
+              <entry colname="col2">
+                <image align="center" href="modules/images/liquify_ex6.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>It is possible to add a control point on a curve by Ctrl+click on a segment. You may remove a control point from a curve by Ctrl+right click on the node center.</p>
+    <p>A right-click on a segment will remove the shape completely.</p>
+    <p>A Ctrl+Alt+click on a segment will change it to a line segment.</p>
+    <p>It is possible to change the way the points of the curve are linked together by using Ctrl+click on the center. There are four modes which correspond to different ways of handling the steepness of the bezier curve by control handles: 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="4*" />
+        <colspec colname="col2" colnum="2" colwidth="6*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>autosmooth</i>
+            </entry>
+            <entry colname="col2">This is the default mode in which the control handles are not displayed as they are automatically computed to always give a smooth curve.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>cusp</i>
+            </entry>
+            <entry colname="col2">Control handles can be moved independently. This mode is depicted by a triangle symbol in the node center.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>smooth</i>
+            </entry>
+            <entry colname="col2">Control handles are always giving a smooth curve. This mode is depicted by a diamond symbol in the node center.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>symmetrical</i>
+            </entry>
+            <entry colname="col2">Control handles are always moved together. This mode is depicted by a square symbol in the node center.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

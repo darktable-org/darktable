@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options_import" xml:lang="en-us">
+  <title>Import</title>
+  <body>
+    <p>
+      <b>ignore JPEG images when importing film rolls</b>
+    </p>
+    <p>When having RAW+JPEG images together in one directory it makes no sense to import both. With this flag one can ignore all JPEGs found (default off).</p>
+    <p>
+      <b>recursive directory traversal when importing film rolls</b>
+    </p>
+    <p>Not only import images from the directory selected but recursively go through all subdirectories as well (default off).</p>
+    <p>
+      <b>creator to be applied when importing</b>
+    </p>
+    <p>If provided, automatically add this string as a creator tag when importing images (default none).</p>
+    <p>
+      <b>publisher to be applied when importing</b>
+    </p>
+    <p>If provided, automatically add this string as a publisher tag when importing images (default none).</p>
+    <p>
+      <b>rights to be applied when importing</b>
+    </p>
+    <p>If provided, automatically add this string as a copyrights tag when importing images (default none).</p>
+    <p>
+      <b>comma separated tags to be applied when importing</b>
+    </p>
+    <p>If you want to add further tags when importing images, you can give them as a comma separated list (default none).</p>
+    <p>
+      <b>initial import rating</b>
+    </p>
+    <p>Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).</p>
+  </body>
+</topic>

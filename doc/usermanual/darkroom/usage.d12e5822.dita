@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e5822" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The module has sliders for each of the three affected attributes. In their neutral position (zero) the image remains unchanged. Shifting sliders left to negative values reduces contrast, brightness and saturation, respectively. Shifting right to positive values leads to an increase.</p>
+    <p>Much more versatility for contrast and brightness adjustment is offered by the 
+    <i>tone curve</i>, 
+    <i>levels</i>, and 
+    <i>zone system</i>modules (see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>, 
+    <xref href="levels.dita#levels" type="topic">Levels</xref>, and 
+    <xref href="zone_system.dita#zone_system" type="topic">Zone system</xref>). Likewise you may adjust color saturation in a more detailed way with the 
+    <i>tone curve</i>, 
+    <i>color contrast</i>, and 
+    <i>color zones</i>modules (see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>, 
+    <xref href="color_contrast.dita#color_contrast" type="topic">Color contrast</xref>, and 
+    <xref href="color_zones.dita#color_zones" type="topic">Color zones</xref>).</p>
+  </body>
+</topic>

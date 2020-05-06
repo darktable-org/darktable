@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadowshighlightBalanceLookTab.d12e8100" xml:lang="en-us">
+  <title>Shadows/highlight balance (
+  <uicontrol>Look</uicontrol>tab)</title>
+  <body>
+    <p>By default, the latitude is centered in the middle of the dynamic range. If this produces clipping in one part of the other of the curve, the balance parameter allows to slide the latitude along the slopes, towards the shadows or towards the highlights. This allows more room to be given to one extremity of the dynamic range than to the other, if the image properties demand it.</p>
+  </body>
+</topic>

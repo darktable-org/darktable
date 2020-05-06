@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="outputSaturation.d12e9049" xml:lang="en-us">
+  <title>Output saturation</title>
+  <body>
+    <p>The output saturation is a saturation correction applied just after the color balance. It is useful once you have found a proper hue balance but find the effect too heavy, so you can adjust the global saturation at once instead of editing each channel saturation separately at the expense of possibly messing the colors.</p>
+  </body>
+</topic>

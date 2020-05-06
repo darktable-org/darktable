@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="vibrance" xml:lang="en-us">
+  <title>Vibrance</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>vibrance</indexterm></indexterm>
+        <indexterm>vibrance</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

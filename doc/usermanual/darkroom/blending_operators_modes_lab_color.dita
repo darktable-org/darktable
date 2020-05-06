@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_lab_color" xml:lang="en-us">
+  <title>Lab color</title>
+  <body>
+    <p>Only available with modules that work in the Lab color space; this blend mode mixes Lab color channels a and b from the input and output images, while lightness data are taken unaltered from the input image. In contrast to blend mode 
+    <q>color</q>this blend mode does not involve any color space conversion and does not clamp any data. In some cases this is less prone to artifacts in comparison to 
+    <q>color</q>.</p>
+  </body>
+</topic>

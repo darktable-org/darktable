@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="frameLineOffset.d12e14150" xml:lang="en-us">
+  <title>frame line offset</title>
+  <body>
+    <p>Where the frame line is positioned relative to the underlying image. Select a value of 0 for a frame line touching the image, 100% for a frame line touching the outer border limits.</p>
+  </body>
+</topic>

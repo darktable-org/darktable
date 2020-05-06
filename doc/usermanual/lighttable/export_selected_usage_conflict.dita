@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_conflict" xml:lang="en-us">
+  <title>on conflict</title>
+  <body>
+    <p>If this option is set to 
+    <q>create unique filename</q>darktable automatically chooses a unique new file name in case of naming conflicts with existing files. Setting this to 
+    <q>overwrite</q>forces darktable to exactly adhere to the selected filename template, overwriting any existing files on conflict. This option will present you with a confirmation dialog in order to protect you from accidental data loss. Setting this to 
+    <q>skip</q>will result in images not being exported when the destination filename already exists.</p>
+  </body>
+</topic>

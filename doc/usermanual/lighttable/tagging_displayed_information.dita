@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_displayed_information" xml:lang="en-us">
+  <title>displayed information</title>
+  <body>
+    <fig>
+      <image align="center" href="images/panel_tagging-attached.png" placement="break" />
+    </fig>
+    <p>The attached tags and tag dictionary views display additional information on the sides of the tag: 
+    <ul>
+      <li>
+        <p>On the left, an indicator gives the status of the tag in relation to the selected images: 
+        <ul>
+          <li>
+            <p>A 
+            <q>check-mark</q>means that the tag is attached to all selected images.</p>
+          </li>
+          <li>
+            <p>A 
+            <q>minus</q>means that the tag is attached to at least one selected image. In tree view, for a parent tag it also means that at least one child tag is attached to at least one of the selected images.</p>
+          </li>
+          <li>
+            <p>Absence of any marking in the tag dictionary view means that the tag exists in the database, but is not attached to any of the selected images. In tree view, for a parent tag it also means that none of its child tags is attached to any of the selected images.</p>
+          </li>
+        </ul></p>
+      </li>
+      <li>
+        <p>On the right, the number in parentheses gives the attached image count. In the attached tags view, this count refers to the selected images, while in the tag dictionary view it refers to the whole database.</p>
+      </li>
+    </ul></p>
+    <p>An 
+    <i>italic</i>tag is considered as a category. A category is a tag which helps to organize the tags but doesn't bring information to the image. A category is not exported.</p>
+    <p>Right-clicking on the tag opens a submenu with available commands.</p>
+    <fig>
+      <image align="center" href="images/panel_tagging-submenu.png" placement="break" />
+    </fig>
+    <p>Hovering cursor over a tag displays an overlay with basic usage instructions for the tagging panel.</p>
+    <fig>
+      <image align="center" href="images/panel_tagging-overlay.png" placement="break" />
+    </fig>
+    <p>The list views are controlled with the three upper graphic buttons:</p>
+    <p>By default the full tag name is shown. The list is sorted alphabetically and the attached view includes the darktable tags.</p>
+    <p>the toggle button 
+    <image align="center" href="../images/tagging_icon_dt_tag.png" placement="inline" />hides or shows the automatic darktable tags.</p>
+    <p>
+      <image align="center" href="images/panel_tagging-dttag.png" placement="break" />
+    </p>
+    <p>the toggle button 
+    <image align="center" href="../images/tagging_icon_sort.png" placement="inline" />sorts the list alphabetically or by number of tagged images.</p>
+    <p>
+      <image align="center" href="images/panel_tagging-sort.png" placement="break" />
+    </p>
+    <p>the toggle button 
+    <image align="center" href="../images/tagging_icon_short_name.png" placement="inline" />shows the short or long tag name.</p>
+    <p>
+      <image align="center" href="images/panel_tagging-short.png" placement="break" />
+    </p>
+    <p>You can adjust height of the attached tags and tag dictionary list views using Ctrl+wheel. The updated list view height is kept for new darktable sessions.</p>
+  </body>
+</topic>

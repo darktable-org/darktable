@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blackLevel0To3.d12e6656" xml:lang="en-us">
+  <title>black level 0 to 3</title>
+  <body>
+    <p>The camera specific black level of the four pixels in the RGGB Bayer pattern. Pixels with values lower than that level are considered to contain no valid data.</p>
+  </body>
+</topic>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="photometricParametersFocalLengthApertureFocalDistance.d12e12095" xml:lang="en-us">
+  <title>photometric parameters: focal length, aperture, focal distance</title>
+  <body>
+    <p>Corrections additionally depend on certain photometric parameters that are read from Exif data: focal length (needed for distortion, TCA, vignetting), aperture (needed for TCA, vignetting) and focal distance (needed for vignetting). Many cameras do not record focal distance in their Exif data; most likely you need to set this manually.</p>
+    <p>You can manually override all automatically selected parameters. Either take one of the predefined values from the pull-down menu; or – with the pull-down menu still open – just type in your own value.</p>
+    <p>If your system's lensfun library has no correction profile for the automatically identified camera/lens combination the controls for the three photometric parameters are not displayed, and you get a warning message instead. You may try to find the right profile yourself by searching for it in the menu. If you can't find your lens, check if it is in the 
+    <xref format="html" href="http://lensfun.sourceforge.net/lenslist/" scope="external">list of currently supported lenses</xref>, and refer to the 
+    <xref format="html" href="http://lensfun.sourceforge.net/manual/lensfun-update-data.html" scope="external">lensfun-update-data tool</xref>. If there is no matching profile for your lens, please visit 
+    <xref format="html" href="https://www.darktable.org/2013/07/have-your-lens-calibrated/" scope="external">this lens calibration service</xref>offered by Torsten Bronger, one of darktable's users. Alternatively you may go to 
+    <xref format="html" href="http://lensfun.sourceforge.net/" scope="external">lensfun's home page</xref>and learn how to generate your own set of correction parameters. Don't forget to share your profile with the lensfun team!</p>
+  </body>
+</topic>

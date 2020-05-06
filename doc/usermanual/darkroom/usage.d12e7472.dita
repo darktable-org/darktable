@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e7472" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Local contrast boosts details of your image, much like the 
+    <i>equalizer</i>does (see 
+    <xref href="equalizer.dita#equalizer" type="topic">Equalizer</xref>). However, it is easier to use as it does not require you to work on different frequency bands. The local laplacian filter has been designed to be very robust against unwanted halo effects and gradient reversals along edges.</p>
+  </body>
+</topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="bias.d12e7785" xml:lang="en-us">
+  <title>bias</title>
+  <body>
+    <p>Only offered for the 
+    <i>Drago</i>operator. This parameter influences the contrast of the output image. It is an essential parameter for adjusting the compression of high values and the visibility of details in dark areas. According to the original paper, a value of 0.85 is recommended as a starting point.</p>
+  </body>
+</topic>

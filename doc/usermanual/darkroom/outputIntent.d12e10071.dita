@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="outputIntent.d12e10071" xml:lang="en-us">
+  <title>output intent</title>
+  <body>
+    <p>Sets the rendering intent for output/export. For more details see 
+    <xref href="rendering_intent.dita#rendering_intent" type="topic">Rendering intent</xref>).</p>
+    <p>Only rendering with LittleCMS2 gives you a choice of rendering intent. The option is hidden, if darktable's internal rendering routines are used. Rendering with LittleCMS2 is activated in the preferences dialog (see 
+    <xref format="dita" href="rendering_intent.dita#rendering_intent" type="topic">Rendering intent</xref>).</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rangeExtent.d12e6004" xml:lang="en-us">
+  <title>range extent</title>
+  <body>
+    <p>Defines the range distance (difference in luminance values) that source pixels may have from target pixels in order for them to contribute to color replacement. Higher values cause more pixels to contribute even if their luminance differs more strongly from the target pixels; this again increases the chance to find a replacement color but at the same time increases the risk of unfitting colors creeping in.</p>
+  </body>
+</topic>

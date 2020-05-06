@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="raster_mask_usage_dropdown" xml:lang="en-us">
+  <title>Drop-down menu</title>
+  <body>
+    <p>If there is a mask in another module it will appear in the drop-down menu of the raster mask. You can easily identify the mask by the name of the module it was defined in.</p>
+  </body>
+</topic>

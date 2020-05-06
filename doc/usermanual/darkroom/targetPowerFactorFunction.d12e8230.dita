@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="targetPowerFactorFunction.d12e8230" xml:lang="en-us">
+  <title>Target power factor function</title>
+  <body>
+    <p>The power of the output transfer function, often improperly called the gamma (only screen have a gamma), is the parameter used to raise or compress the mid-tones to account for the display non-linearities or to avoid quantization artifacts when encoding in 8 bits file formats. This is a common operation when applying ICC color profiles (except for linear RGB spaces, like REC 709 or REC 2020, which have a linear 
+    <q>gamma</q>of 1.0). However, at the output of filmic rgb, the signal is logarithmically encoded, which is not something ICC color profiles know to handle. As a consequence, if we let them apply a gamma 1/2.2 on top, it will result in a double up, and the middle-grey will be remapped to 76% instead of 45% as it should.</p>
+    <p>To avoid double ups and washed pictures, filmic rgb applies a 
+    <q>gamma</q>compression reverting the output ICC gamma correction, so the middle-grey is correctly remapped at the end. To remove this compression, set the destination power factor to 1.0 and the middle-grey destination to 45%.</p>
+  </body>
+</topic>

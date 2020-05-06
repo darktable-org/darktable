@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_mask_combination_inversion_combine" xml:lang="en-us">
+  <title>combine masks</title>
+  <body>
+    <p>When either a 
+    <q>parametric masks</q>, or the combination of 
+    <q>drawn and parametric mask</q>is active an additional combobox is shown that controls how the individual masks are combined to form the final mask. This option also allows to invert the final mask. Details on the combination of individual masks can be found in 
+    <xref href="combined_masks.dita#combined_masks" type="topic">Combining drawn and parametric masks</xref>.</p>
+  </body>
+</topic>

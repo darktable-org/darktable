@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options_misc" xml:lang="en-us">
+  <title>Miscellaneous</title>
+  <body>
+    <p>
+      <b>width of the side panels in pixels</b>
+    </p>
+    <p>This controls the size of side panels in pixels. Side panels are found left and right to the center view (default 350).</p>
+    <p>
+      <b>waiting time before each picture in slideshow</b>
+    </p>
+    <p>The number of seconds before displaying the next image (default 5).</p>
+    <p>
+      <b>do not show april 1st game</b>
+    </p>
+    <p>(default on).</p>
+    <p>
+      <b>number of folder levels to show in lists</b>
+    </p>
+    <p>The number of folder levels to show in film roll names, starting from the right (default 1).</p>
+    <p>
+      <b>enable filmstrip</b>
+    </p>
+    <p>Enable the filmstrip in darkroom, tethering, geomapping and lighttable culling modes (default on).</p>
+    <p>
+      <b>enable timeline</b>
+    </p>
+    <p>Enable the timeline lighttable mode (default on).</p>
+    <p>
+      <b>overlay txt sidecar over zoomed images</b>
+    </p>
+    <p>When there is a text file next to an image it can be shown as an overlay over zoomed images on the lighttable. The text file has the same base name as the image file with file extension 
+    <q>.txt</q>. It either has to be there at import time or the crawler has to be enabled – see option 
+    <q>look for updated xmp files on startup</q>in 
+    <xref href="core_options.dita#core_options" type="topic">Core options</xref>(default off).</p>
+    <p>
+      <b>mouse wheel scrolls modules side panel by default</b>
+    </p>
+    <p>When enabled, mouse wheel scroll modules side panel, and Ctrl+Alt+mouse wheel scroll data entry. When disabled, this behavior is reversed (default off).</p>
+    <p>
+      <b>show scrollbars for center view</b>
+    </p>
+    <p>Defines in which modes scrollbars should be displayed (default lighttable).</p>
+    <p>
+      <b>always show panels scrollbars</b>
+    </p>
+    <p>Defines whether the panel scrollbars should be always visible or activated only depending on the content (default on). (need a restart)</p>
+    <p>
+      <b>method to use for getting the display profile</b>
+    </p>
+    <p>This option allows to force a specific way of getting the current display profile for color management (see 
+    <xref href="../darkroom/rendering_method.dita#rendering_method" type="topic">Rendering method</xref>). In the default setting 
+    <q>all</q>darktable will either query the X display server's xatom or the 
+    <i>colord</i>system service. You can set this option to 
+    <q>xatom</q>or 
+    <q>colord</q>to enforce a specific method if the alternative gives wrong results.</p>
+  </body>
+</topic>

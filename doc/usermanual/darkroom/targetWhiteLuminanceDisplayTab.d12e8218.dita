@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="targetWhiteLuminanceDisplayTab.d12e8218" xml:lang="en-us">
+  <title>Target white luminance (
+  <uicontrol>Display</uicontrol>tab)</title>
+  <body>
+    <p>The target white luminance parameter allows to set the ceiling level white of the target medium. Set it lower than 100% if you want dampened, muted whites to achieve a retro look.</p>
+  </body>
+</topic>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="setOperators.d12e3594" xml:lang="en-us">
+  <title>Set operators</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">We use as an example a combination of a gradient followed by a path to demonstrate the effect of the set operator which we apply to the path shape. As a convention we say that a pixel is 
+            <q>selected</q>in a mask or shape if it has a value higher than zero.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_maskmanager_ex1.png" placement="break" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1" />
+            <entry colname="col2">
+              <image align="center" href="images/panel_maskmanager_ex2.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

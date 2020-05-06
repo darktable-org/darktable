@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="monochrome" xml:lang="en-us">
+  <title>Monochrome</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>monochrome</indexterm></indexterm>
+        <indexterm>monochrome</indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>black pixels</indexterm></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>blue light sources</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

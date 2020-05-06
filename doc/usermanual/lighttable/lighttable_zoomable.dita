@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_zoomable" xml:lang="en-us">
+  <title>Zoomable lighttable</title>
+  <body>
+    <p>Zoomable lighttable layout inherits from most the filemanager features, with some noticeable changes :</p>
+    <p>Scroll with your mouse wheel to zoom in and out. Moving the mouse while 
+    <i>pressing the left mouse button</i>allows you to navigate through your collection.</p>
+    <p>To locate where you are in a collection, there are indicators at the extreme borders of the window: left/right and top/bottom for your vertical and your horizontal position, respectively.</p>
+  </body>
+</topic>

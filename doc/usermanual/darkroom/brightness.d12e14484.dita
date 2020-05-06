@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="brightness.d12e14484" xml:lang="en-us">
+  <title>brightness</title>
+  <body>
+    <p>Sets the intensity of brightening (positive values) or darkening (negative values).</p>
+  </body>
+</topic>

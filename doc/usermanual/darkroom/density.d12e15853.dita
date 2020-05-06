@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="density.d12e15853" xml:lang="en-us">
+  <title>density</title>
+  <body>
+    <p>Set the density of the filter in [ev]. A low value underexposes slightly whereas a high value creates a strong filter.</p>
+    <p>It is expressed as [ev] that is equivalent to 
+    <i>f-stops</i>. Lens filters are often referred as ND2, ND4, ND8 and so on. Each time you add an [ev] you double the ND. So ND2 is 1 ev, ND4 is 2 ev, and so on. You can also express it in optical density or transmittance. The table below sums up the different approach for the most common filters: 
+    <table frame="none">
+      <tgroup cols="4" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" />
+        <colspec colname="col2" colnum="2" />
+        <colspec colname="col3" colnum="3" />
+        <colspec colname="col4" colnum="4" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>ND</i>
+            </entry>
+            <entry colname="col2">[ev] or f-stop</entry>
+            <entry colname="col3">absorbance</entry>
+            <entry colname="col4">transmittance</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>ND2</i>
+            </entry>
+            <entry colname="col2">-1</entry>
+            <entry colname="col3">0.3</entry>
+            <entry colname="col4">50%</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>ND4</i>
+            </entry>
+            <entry colname="col2">-2</entry>
+            <entry colname="col3">0.6</entry>
+            <entry colname="col4">25%</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>ND8</i>
+            </entry>
+            <entry colname="col2">-3</entry>
+            <entry colname="col3">0.9</entry>
+            <entry colname="col4">12.5%</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>ND400</i>
+            </entry>
+            <entry colname="col2">-9</entry>
+            <entry colname="col3">2.7</entry>
+            <entry colname="col4">0.195%</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

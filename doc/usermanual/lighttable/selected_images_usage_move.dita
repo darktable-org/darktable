@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_move" xml:lang="en-us">
+  <title>move</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>move images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Physically move selected images (parent file plus all accompanying XMP sidecar files) to another filesystem folder. darktable does not overwrite images in the target folder. If an input image with the given filename already exists in the target folder the source image is not moved but kept where it is.</p>
+  </body>
+</topic>

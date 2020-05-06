@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="textColor.d12e13933" xml:lang="en-us">
+  <title>text color</title>
+  <body>
+    <p>This field shows the text color. Clicking on the colored field will open a color selector dialog which offers you a choice of commonly used colors, or allows to define a color in RGB color space.</p>
+  </body>
+</topic>

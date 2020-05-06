@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="red_eyes" xml:lang="en-us">
+  <title>Removal of red-eye effect</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>red-eye removal</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

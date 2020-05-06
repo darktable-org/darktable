@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="drawn_mask_usage" xml:lang="en-us">
+  <title>Usage</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>mask shapes</indexterm>
+        <indexterm>shapes
+        <index-sort-as>mask shapes</index-sort-as></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">To draw a shape you need to click on one of the shape symbols. You will automatically be moved into the edit mode in which you generate a new instance of the selected shape and afterwards change its properties.</entry>
+            <entry colname="col2">
+              <image align="center" href="concepts/images/drawn_masks.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>You leave edit mode by clicking on the 
+    <image align="center" href="../images/shape_edit.png" placement="inline" />symbol. You can at any time go back to edit mode and do further adjustments by clicking the edit symbol again. In edit mode you can also remove a shape by right-clicking on it – the shape is removed from the current mask but it's still in the list of defined shapes.</p>
+    <p>Independent of the specific shape you can 
+    <i>scroll</i>to change the size of the shape, 
+    <i>shift+scroll</i>to change the feather of the shape and 
+    <i>Ctrl+scroll</i>to change the opacity of the shape.</p>
+    <p>If you 
+    <i>Ctrl+click</i>on the edit mode symbol you enter a restricted edit mode. Certain actions like dragging a complete shape or changing its size are blocked. Only finetuning changes like dragging a node are allowed.</p>
+    <p>Currently five shapes are implemented.</p>
+  </body>
+</topic>

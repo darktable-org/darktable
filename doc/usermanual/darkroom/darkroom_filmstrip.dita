@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_filmstrip" xml:lang="en-us">
+  <title>Filmstrip</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>filmstrip</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same as the ones in the lighttable view.</p>
+    <p>The filmstrip can be switched on and off using the shortcut 
+    <i>Ctrl+F</i>. You can change the height of the filmstrip panel by dragging its top.</p>
+    <p>You can scroll with your mouse to quickly navigate through the images. You can change the photo being processed by double clicking on another picture. You can also use Spacebar to process the next photo and use Backspace key to process the previous photo.</p>
+    <p>The picture currently processed is selected and highlighted; with a single click you can select any other picture from the filmstrip without changing the picture currently processed. With the 
+    <i>Ctrl+A</i>shortcut you select all the pictures of the filmstrip. With the shortcut 
+    <i>Ctrl+Shift+A</i>you unselect all images, and with 
+    <i>Ctrl+I</i>you reverse the current selection.</p>
+    <p>The following shortcuts are available to act on the selected picture(s): 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="3*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>F1 – F5</i>
+            </entry>
+            <entry colname="col2">toggle color label (red, yellow, green, blue, purple)</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>0 – 5</i>
+            </entry>
+            <entry colname="col2">set/change image rating</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>R</i>
+            </entry>
+            <entry colname="col2">reject image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+D</i>
+            </entry>
+            <entry colname="col2">duplicate image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+C</i>
+            </entry>
+            <entry colname="col2">copy the full history stack</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+V</i>
+            </entry>
+            <entry colname="col2">paste all of the copied history stack</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Alt+Ctrl+C</i>
+            </entry>
+            <entry colname="col2">selectively copy the history stack</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Alt+Ctrl+V</i>
+            </entry>
+            <entry colname="col2">selectively paste from the copied history stack</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>
+      <image align="center" href="images/filmstrip.png" placement="break" />
+    </p>
+  </body>
+</topic>

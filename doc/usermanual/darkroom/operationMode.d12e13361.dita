@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="operationMode.d12e13361" xml:lang="en-us">
+  <title>operation mode</title>
+  <body>
+    <p>Set the operation mode for detecting fringes. 
+    <q>global average</q>is usually the fastest but might show slightly incorrect previews in high magnification. It might also protect the wrong regions of color too much or too little by comparison with local averaging. 
+    <q>local average</q>is slower because it computes local color references for every pixel, which might protect color better than global average and allows for rebuilding color where actually required. The 
+    <q>static</q>method does not use a color reference but directly uses the threshold as given by the user.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="history_stack_usage_paste_all" xml:lang="en-us">
+  <title>paste all</title>
+  <body>
+    <p>Paste all previously copied items of a history stack onto all selected images. This button is greyed out, until a history stack is copied from another image.</p>
+  </body>
+</topic>

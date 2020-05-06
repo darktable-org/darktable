@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="redGreenAndBlueChannels.d12e6436" xml:lang="en-us">
+  <title>red, green and blue channels</title>
+  <body>
+    <p>Set the channel values on a scale from 0 to 8.</p>
+  </body>
+</topic>

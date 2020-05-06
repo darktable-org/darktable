@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage_export" xml:lang="en-us">
+  <title>export</title>
+  <body>
+    <p>This option saves a selected style to disk as a 
+    <q>.dtstyle</q>file. This allows publishing styles and sharing styles with other users.</p>
+  </body>
+</topic>

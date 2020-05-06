@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lensShiftVertical.d12e11813" xml:lang="en-us">
+  <title>lens shift (vertical)</title>
+  <body>
+    <p>This parameter corrects converging lines vertically. In some cases you get a more naturally looking image if you correct vertical distortions not to their full extent but rather at an 80 to 90% level. If desired just reduce the value after having performed the automatic correction.</p>
+  </body>
+</topic>

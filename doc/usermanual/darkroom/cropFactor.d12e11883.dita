@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="cropFactor.d12e11883" xml:lang="en-us">
+  <title>crop factor</title>
+  <body>
+    <p>The crop factor of the camera used. You will typically need to set this value manually. This parameter is only effective and visible if the 
+    <q>specific</q>lens model has been selected.</p>
+  </body>
+</topic>

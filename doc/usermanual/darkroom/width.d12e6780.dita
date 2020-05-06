@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="width.d12e6780" xml:lang="en-us">
+  <title>width</title>
+  <body>
+    <p>Sets the width of the Gaussian curve. This number is expressed in zones, with the whole dynamic range being 10 zones. As the Gaussian curve is symmetric, only even numbers can be entered.</p>
+  </body>
+</topic>

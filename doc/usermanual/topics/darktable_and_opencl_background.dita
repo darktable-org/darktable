@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_background" xml:lang="en-us">
+  <title>The background</title>
+  <body>
+    <p>Processing high resolution images is a demanding task needing a modern computer. Both in terms of memory requirements and in terms of CPU power, getting the best out of a typical 15, 20 or 25 Megapixel image can quickly bring your computer to its limits.</p>
+    <p>darktable's requirements are no exception. Our decision to not compromise processing quality, has led to all calculations being done on 4 x 32bit floating point numbers. This is slower than 
+    <q>ordinary</q>8 or 16bit integer algebra, but eliminates all problems of tonal breaks or loss of information.</p>
+    <p>A lot of hand optimization has been invested to make darktable as fast as possible. If you run a current version of darktable on a modern computer, you might not notice any 
+    <q>slowness</q>. However, there are conditions and certain modules where you will feel (or hear from the howling of your CPU fan) how much your poor multi-core processor has to struggle.</p>
+    <p>That's where OpenCL comes in. OpenCL allows us to take advantage of the enormous power of modern graphics cards. Gamer's demand for high detailed 3D worlds in modern ego shooters has fostered GPU development. ATI, NVIDIA and Co had to put enormous processing power into their GPUs to meet these demands. The result is modern graphics cards with highly parallelized GPUs to quickly calculate surfaces and textures at high frame rates.</p>
+    <p>You are not a gamer and you don't take advantage of that power? Well, then you should at least use it in darktable! For the task of highly parallel floating point calculations modern GPUs are much faster than CPUs. That is especially true, when you want to do the same few processing steps over millions of items. Typical use case: processing of megapixel images.</p>
+  </body>
+</topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_ungroup" xml:lang="en-us">
+  <title>ungroup</title>
+  <body>
+    <p>Remove selected images from the group (see 
+    <xref href="image_grouping.dita#image_grouping" type="topic">Image grouping</xref>).</p>
+  </body>
+</topic>

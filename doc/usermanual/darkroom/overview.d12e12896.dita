@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e12896" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This module eliminates some of the typical banding artifacts which can occur, when darktable's internal 32-bit floating point data are transferred into a discrete 8-bit or 16-bit integer output format for display or file export.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/dithering.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Banding is a problem which can arise, when an image is downsampled into a lower bit-depth. Downsampling happens regularly, when darktable displays or exports the results of a pixelpipe. In order to avoid banding, you may activate this module. As dithering consumes significant resources this module is disabled by default.</p>
+    <p>Although banding is not an inherent problem of any of darktable's modules, some operations may provoke it as they produce a lightness gradient in the image. To mitigate possible artifacts you should consider to activate dithering when using the 
+    <i>vignette</i>and the 
+    <i>graduated density</i>module, respectively (see 
+    <xref href="vignetting.dita#vignetting" type="topic">Vignetting</xref>and 
+    <xref href="graduated_density.dita#graduated_density" type="topic">Graduated Density</xref>). This is especially relevant for images with extended homogeneous areas like cloudless sky. Also when using a 
+    <i>gradient mask</i>(see 
+    <xref href="gradient_shape.dita#gradient_shape" type="topic">gradient</xref>) you should watch out for possible banding artifacts.</p>
+  </body>
+</topic>

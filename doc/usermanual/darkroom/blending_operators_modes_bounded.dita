@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_bounded" xml:lang="en-us">
+  <title>normal bounded</title>
+  <body>
+    <p>This blend mode acts similarly to blend mode 
+    <q>normal</q>, except that input and output data are clamped to a particular min/max value range. Out-of-range values are effectively blocked and do not pass to the following modules. Sometimes this helps to prevent artifacts. However, in most cases (e.g. highly color saturated extreme highlights) it is better to let unbound values travel through the pixelpipe in order to properly deal with them at the right place (e.g. in module 
+    <xref href="output_color_profile.dita#output_color_profile" type="topic">
+      <i>output color profile</i>
+    </xref>). Blend mode 
+    <q>normal</q>is most often the preferred choice.</p>
+  </body>
+</topic>

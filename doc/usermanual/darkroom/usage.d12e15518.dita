@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e15518" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Several parameters control the effect of this module. Much more versatility can be reached if you apply blending and masks. (see 
+    <xref href="blending.dita#blending" type="topic">Blending</xref>).</p>
+  </body>
+</topic>

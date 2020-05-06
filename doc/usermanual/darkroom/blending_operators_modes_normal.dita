@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_normal" xml:lang="en-us">
+  <title>normal</title>
+  <body>
+    <p>This will probably be the most used blend mode. It just mixes input and output and, depending on the opacity value, it reduces the strength of a module's effect. Generally this is also the blend mode of choice if you want to apply a module's effect locally using masks.</p>
+  </body>
+</topic>

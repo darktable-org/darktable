@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_optimization" xml:lang="en-us">
+  <title>OpenCL performance optimization</title>
+  <body>
+    <p>There are some configuration parameters in $HOME/.config/darktable/darktablerc that help to finetune your system's OpenCL performance. Performance in this context mostly means the latency of darktable during interactive work, i.e. how long it takes to reprocess your pixelpipe. For a comfortable workflow it is essential to keep latency low.</p>
+    <p>In order to get profiling info you start darktable from a terminal with</p>
+    <pre xml:space="preserve">
+darktable -d opencl -d perf
+</pre>
+    <p>After each reprocessing of pixelpipe – caused by module parameter change, zooming, panning, etc. – you will get the total time and the time spent in each of our OpenCL kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each individual module are unreliable when running the OpenCL pixelpipe asynchronously (see opencl_async_pixelpipe below).</p>
+    <p>To allow for a fast pixelpipe processing with OpenCL it is essential that we keep the GPU busy. Any interrupts or a stalled data flow will add to the total processing time. This is especially important for the small image buffers we need to handle during interactive work. They can be processed quickly by a fast GPU. However, even short-term stalls of the pixelpipe will easily become a bottleneck.</p>
+    <p>On the other hand darktable's performance during file exports is more or less only governed by the speed of our algorithms and the horse-power of your GPU. Short-term stalls will not have a noticeable effect on the total time of an export.</p>
+    <p>darktable comes with default settings that should deliver a decent GPU performance on most systems. However, if you want to fiddle around a bit by yourself and try to optimize things further, here is a description of the relevant configuration parameters. 
+    <dl>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_async_pixelpipe</systemoutput>
+        </dt>
+        <dd>This boolean flag controls how often we block the OpenCL pixelpipe and get a status on success/failure of all the kernels that have been run. For optimum latency set this to TRUE, so darktable runs the pixelpipe asynchronously and tries to use as few interrupts as possible. If you experience OpenCL errors like failing kernels, set the parameter to FALSE. darktable will then interrupt after each module so you can more easily isolate the problem. Problems have been reported with some older ATI/AMD cards, like HD57xx, which can produce garbled output if this parameter is set to TRUE. If in doubt, leave it at its default FALSE.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_number_event_handles</systemoutput>
+        </dt>
+        <dd>Event handles are used so we can monitor success/failure of kernels and profiling info even if the pixelpipe is run asynchronously. The number of event handles is a limited resource of your OpenCL driver. For sure we can recycle them, but there is a limited number that we can use at the same time. Unfortunately, there is no way to find out what the resource limits are; so we need to guess. Our default value of 25 is quite conservative. You might want to try if higher values like 100 give better OpenCL performance. If your driver runs out of free handles you would experience failing OpenCL kernels with error code 
+        <q>-5 (CL_OUT_OF_RESOURCES)</q>or even crashes or system freezes; reduce the number again in that case. A value of 0 will block darktable from using any event handles. This will prevent darktable from properly monitoring the success of your OpenCL kernels but saves some driver overhead. The consequence is that any failures will likely lead to garbled output without darktable taking notice; only recommended if you know for sure that your system runs rock-solid. You can also set this parameter to -1, which means that darktable assumes no restriction in the number of event handles; this is not recommended.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_synch_cache</systemoutput>
+        </dt>
+        <dd>This parameter, if set to "true", will force darktable to fetch image buffers from your GPU after each module and store them in its pixelpipe cache. This is a resource consuming operation, but makes sense depending on your GPU (including if the GPU is rather slow). In that case darktable might in fact save some time when module parameters have changed, as it can go back to some cached intermediate state and reprocess only part of the pixelpipe. In many cases this parameter should be set to "active module" (default), which will only cache the input of the currently focused module.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_micro_nap</systemoutput>
+        </dt>
+        <dd>In an ideal case you keep your GPU busy at 100% when reprocessing the pixelpipe. That's good. On the other hand your GPU is also needed to do regular GUI updates. It might happen that there is no sufficient time left for this task. Consequence would by a jerky reaction of your GUI on panning, zooming or when moving sliders. darktable can add small naps into its pixelpipe processing to have the GPU catch some breath and do GUI related stuff. Parameter opencl_micro_nap controls the duration of these naps in microseconds. You need to experiment in order to find an optimum value for your system. Values of 0, 100, 500 and 1000 are good starting points to try. Defaults to 1000.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_use_pinned_memory</systemoutput>
+        </dt>
+        <dd>During tiling huge amounts of memory need to be transferred between host and device. On some devices (namely AMD) direct memory transfers to and from an arbitrary host memory region may give a huge performance penalty. This is especially noticeable when exporting large images. Setting this configuration parameter to TRUE tells darktable to use a special kind of intermediate buffer for host-device data transfers. On some devices this can speed up exporting of large files by a factor of 2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer technique even for arbitrary memory regions. As they may not show any performance gain and even may produce garbled output, opencl_use_pinned_memory should be left at its default FALSE for those devices.</dd>
+      </dlentry>
+    </dl></p>
+  </body>
+</topic>

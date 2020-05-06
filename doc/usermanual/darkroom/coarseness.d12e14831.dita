@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="coarseness.d12e14831" xml:lang="en-us">
+  <title>coarseness</title>
+  <body>
+    <p>Set the grain size, which has been scaled to simulate an ISO number.</p>
+  </body>
+</topic>

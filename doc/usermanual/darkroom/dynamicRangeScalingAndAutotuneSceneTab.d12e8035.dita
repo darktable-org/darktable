@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="dynamicRangeScalingAndAutotuneSceneTab.d12e8035" xml:lang="en-us">
+  <title>Dynamic range scaling and auto-tune (
+  <uicontrol>Scene</uicontrol>tab)</title>
+  <body>
+    <p>The auto-tune color picker combines all three color pickers above, and allows to set the grey, white and black exposures all at once, using the average of the drawn region as the grey estimation, the maximum as the white, and the minimum as the black. This gives good results in landscape photography but usually fails for portraits and indoor scenes.</p>
+    <p>When no true white and no true black are available on the scene, the maximum and minimum RGB values read on the image are not valid assumptions anymore, so the dynamic range scaling symmetrically shrinks or enlarges the detected dynamic range and the current parameters. This works with all color pickers, and adjusts the current values of white and black relative exposures.</p>
+  </body>
+</topic>

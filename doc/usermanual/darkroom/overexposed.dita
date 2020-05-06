@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overexposed" xml:lang="en-us">
+  <title>Over/underexposed warning</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>overexposed warning</indexterm></indexterm>
+        <indexterm>darkroom panels
+        <indexterm>underexposed warning</indexterm></indexterm>
+        <indexterm>overexposed warning</indexterm>
+        <indexterm>underexposed warning</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>By clicking the 
+    <image align="center" href="../images/darkroom_module_icon_overexposed.png" placement="inline" />icon an over/underexposed warning is toggled on or off. Pixels outside the dynamic range, close to pure white or close to pure black, are prominently displayed in a signal color. You can also activate the over/underexposure warning with the keyboard shortcut 
+    <q>O</q>.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Right-clicking on the icon opens a dialog with configuration parameters.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_overexposed.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>
+      <b>color scheme</b>
+    </p>
+    <p>In the default color scheme underexposed pixels are shown in blue and overexposed pixels in red. These colors are easy to identify in most cases. In some cases you may want to change the color scheme to 
+    <q>black &amp; white</q>or 
+    <q>purple &amp; green</q>, eg. if you experience overexposed highlights in red blossoms.</p>
+    <p>
+      <b>lower threshold</b>
+    </p>
+    <p>Sets the threshold for underexposure warning, expressed as a percentage of the maximal brightness.</p>
+    <p>
+      <b>upper threshold</b>
+    </p>
+    <p>Sets the threshold for overexposure warning, expressed as a percentage of the maximal brightness.</p>
+  </body>
+</topic>

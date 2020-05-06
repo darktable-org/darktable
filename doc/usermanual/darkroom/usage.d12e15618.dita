@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e15618" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>To use this module two steps are required.</p>
+    <p>First you open the source image in darkroom mode and acquire its color characteristics by pressing the 
+    <q>acquire as source</q>button. A set of color clusters is generated and displayed in the 
+    <q>source clusters</q>area. Each cluster is represented by a set of color swatches with the mean value in the center surrounded by swatches indicating the color variance within that cluster. The clusters are sorted in ascending order by their weight, i.e. the number of pixels that contribute to the clusters.</p>
+    <p>Next you open your target image in darkroom mode. darktable has remembered the previously collected source clusters; if they are not yet displayed, press the 
+    <image align="center" href="../images/darkroom_module_icon_reset.png" placement="inline" />button. You now press the 
+    <q>acquire as target</q>button to generate a corresponding set of color clusters for your target image, which gets displayed in the 
+    <q>target clusters</q>area.</p>
+    <p>When both source and target clusters are collected an automatic color mapping is applied to the target image. In its default settings the overall effect is quite exaggerated. A set of sliders gives you control of the effect's strength. You can also use blending operator 
+    <q>normal</q>to tame the effect (see 
+    <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>). As the 
+    <i>color mapping</i>module comes early in the pixelpipe, you can finetune the colors with modules like 
+    <i>tone curve</i>(see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>) or 
+    <i>color correction</i>(see 
+    <xref href="color_correction.dita#color_correction" type="topic">Color correction</xref>).</p>
+  </body>
+</topic>

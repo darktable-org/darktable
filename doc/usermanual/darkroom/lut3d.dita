@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lut3d" xml:lang="en-us">
+  <title>3D LUT</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>lut3d</indexterm></indexterm>
+        <indexterm>lut3d</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

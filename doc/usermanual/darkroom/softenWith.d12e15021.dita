@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="softenWith.d12e15021" xml:lang="en-us">
+  <title>soften with</title>
+  <body>
+    <p>This combobox defines the blur algorithm; you can choose between 
+    <q>gaussian</q>blur (default) and 
+    <q>bilateral</q>filter. The latter leads to an edge preserving blur. 
+    <q>gaussian</q>will blur all image channels: L, a and b. 
+    <q>bilateral</q>will only blur L channel.</p>
+  </body>
+</topic>

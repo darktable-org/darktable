@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_concepts" xml:lang="en-us">
+  <title>Darkroom concepts</title>
+  <body>
+    <p>This section tries to explain some of the basic concepts on how darktable develops images in the darkroom.</p>
+    <p>The basic element of an image operation in darktable is called a module. darktable comes with a rich set of over 60 modules for all kind of image manipulations. In 
+    <xref href="modules.dita#modules" type="topic">Modules</xref>you will find a description for each of the available modules.</p>
+  </body>
+</topic>

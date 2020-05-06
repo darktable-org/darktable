@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interacting_curves" xml:lang="en-us">
+  <title>Curves</title>
+  <body>
+    <p>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective modules are explained.</p>
+  </body>
+</topic>

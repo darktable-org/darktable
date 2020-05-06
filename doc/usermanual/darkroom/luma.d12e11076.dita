@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="luma.d12e11076" xml:lang="en-us">
+  <title>luma</title>
+  <body>
+    <p>Amount of denoise to apply to luma. Select carefully in order not to lose too much structure.</p>
+  </body>
+</topic>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="combined_masks_usage_exclusive" xml:lang="en-us">
+  <title>Exclusive mode</title>
+  <body>
+    <p>In the opposite case you set the 
+    <q>combine masks</q>combobox to 
+    <i>exclusive</i>and make sure that all polarity buttons are set to positive ( 
+    <image align="center" href="../images/darkroom_module_icon_polarity_plus.png" placement="inline" />). Your starting point is a mask with all values at 1.0, i.e. all pixels selected. You now gradually change the parametric mask sliders to exclude parts of your image as needed or you directly draw shapes on the canvas to specifically exclude these areas.</p>
+    <p>For your convenience you find in the parametric masks GUI a 
+    <image align="center" href="../images/darkroom_module_icon_invert.png" placement="inline" />toggle button that inverts all channel polarities and toggles between inclusive and exclusive mode in the 
+    <q>combine masks</q>combobox.</p>
+    <p>For novice users it is recommended to stick to these two use cases. This implies that you should decide beforehand how you want to construct your mask. Advanced users will find their way to take advantage of the many possible combinations of polarities and mask combination modes.</p>
+  </body>
+</topic>

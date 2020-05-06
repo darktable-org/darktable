@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="detectBy3Neighbours.d12e13120" xml:lang="en-us">
+  <title>detect by 3 neighbours</title>
+  <body>
+    <p>This will extend the detection of hotpixels, it will even regard a pixel as hot if a minimum of only three (instead of four) neighbor pixels deviate by more than the threshold level.</p>
+  </body>
+</topic>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_memory_32bit" xml:lang="en-us">
+  <title>Setting up darktable on 32-bit systems</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>memory setup
+        <indexterm>32-bit systems</indexterm></indexterm>
+        <indexterm>tiling</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>As we've seen 32-bit systems are difficult environments for darktable. Still some users are running darktable on them, if the basic requirements in terms of total system memory and the topics mentioned in the paragraphs above are addressed properly.</p>
+    <p>There are several adjustment parameters to get it running. If you install fresh, darktable will detect your system and set conservative values by default. However, if you upgrade darktable from an older version (e.g. coming from 0.9.3 and going to 1.0), chances are you have unfavorable settings in your preferences. The consequences might be darktable aborting due to allocation failures or – very typically – darktable not being able to properly import a new film roll. As a frequent symptom you get skulls displayed instead of thumbs for many of your pictures.</p>
+    <p>If this is the case, take a minute to optimize the preference settings in this case. You will find them under 
+    <q>core options</q>(
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) in darktable's preference dialog. You should also find these parameters as configuration variables in $HOME/.config/darktable/darktablerc and edit them there.</p>
+    <p>Here is a short explanation of the relevant parameters and their proposed settings: 
+    <dl>
+      <dlentry>
+        <dt>number of background threads</dt>
+        <dd>
+          <p>This parameter defines the maximum number of threads that are allowed in parallel when importing film rolls or doing other background stuff. For obvious reasons on 32-bit systems you can only have one thread eating resources at a time. So you need set this parameter to 1; anything higher will kill you.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>host memory limit (in MB) for tiling</dt>
+        <dd>
+          <p>This parameter tells darktable how much memory (in MB) it should assume is available to store image buffers during module operations. If an image can not be processed within these limits in one chunk, tiling will take over and process the image in several parts, one after the other. Set this to the lowest possible value of 500 as a starting point. You might experiment later whether you can increase it a bit in order to reduce the overhead of tiling.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>minimum amount of memory (in MB) for a single buffer in tiling</dt>
+        <dd>
+          <p>This is a second parameter that controls tiling. It sets a lower limit for the size of intermediate image buffers in megabytes. The parameter is needed to avoid excessive tiling in some cases (for some modules). Set this parameter to a low value of 8. You might tentatively increase it to 16 later.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>memory in megabytes to use for thumbnail cache</dt>
+        <dd>
+          <p>This controls how many thumbnails (or mip maps) can be stored in memory at a time. As a starting point set this to something like 256MB. Since darktable 2.0, the cache does allocate a few small buffers per each thumbnail in cache, thus causing significant memory fragmentation. As explained before, this poses a problem for 32-bit systems. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.</p>
+        </dd>
+      </dlentry>
+    </dl></p>
+  </body>
+</topic>

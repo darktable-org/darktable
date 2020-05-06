@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_still_fubar" xml:lang="en-us">
+  <title>OpenCL still does not run for me!</title>
+  <body>
+    <p>As has been said before OpenCL systems come with a huge variety of setups: different GPU manufacturers, different GPU models, varying amounts of GPU memory, different drivers, different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</p>
+    <p>As we developers of darktable on our computers only have access to a small fraction of those variations, please understand that we might not be able to fix your specific problem. There is not much we can do, if there is no way for us to reproduce.</p>
+    <p>If nothing else helps, the best option might be to start darktable with</p>
+    <pre xml:space="preserve">
+darktable --disable-opencl
+</pre>
+    <p>In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL discourage you; also darktable's CPU code is highly optimized for performance!</p>
+  </body>
+</topic>

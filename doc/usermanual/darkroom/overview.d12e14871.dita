@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e14871" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Highpass acts as a high pass filter. The primary usage for this filter is in combination with a blending operator. Try out blend mode 
+            <q>soft light</q>to get highpass sharpening. Use the opacity slider to adjust the strength of the effect or use a 
+            <i>drawn mask</i>(see 
+            <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>) or 
+            <i>parametric mask</i>(see 
+            <xref href="parametric_mask.dita#parametric_mask" type="topic">Parametric mask</xref>) to limit the effect to only parts of your image.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/highpass.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

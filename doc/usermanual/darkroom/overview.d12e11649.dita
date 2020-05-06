@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e11649" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This module is designed to automatically correct for converging lines, a form of perspective distortions frequently seen in architectural photographs. The underlying mechanism is inspired by Markus Hebel's 
+            <xref format="html" href="http://www.shiftn.de/" scope="external">
+              <i>ShiftN</i>
+            </xref>program.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/ashift.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Perspective distortions are a natural effect when projecting a three dimensional scene onto a two dimensional plane and cause objects close to the viewer to appear larger than objects further away. Converging lines are a special case of perspective distortions frequently seen in architectural photographs. Parallel lines when photographed at an angle get transformed into converging lines that meet at some vantage point within or outside the image frame.</p>
+    <p>This module is able to correct converging lines by warping the image in such a way that the lines in question become parallel to the image frame. Corrections can be applied in vertical and horizontal direction, either separately or in combination. In order to perform an automatic correction the module analyzes the image for suitable structural features consisting of line segments. Based on these line segments a fitting procedure is started that determines the best values of the module parameters.</p>
+  </body>
+</topic>

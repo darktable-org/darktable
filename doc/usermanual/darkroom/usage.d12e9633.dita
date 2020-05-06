@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e9633" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>In this module you define the input color profile, i.e. how colors of your input image are to be interpreted. You also have an option to have colors confined to a certain gamut in order to mitigate some (infrequent) color artifacts.</p>
+  </body>
+</topic>

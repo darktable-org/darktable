@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="textFont.d12e13942" xml:lang="en-us">
+  <title>text font</title>
+  <body>
+    <p>This field lets you select the text font. Clicking on the field opens a dialog box which shows the fonts available to your system. Fonts can be searched by name and a preview of each available font is shown next to the font name; you may specify your own sample text. The font defaults to 
+    <q>DejaVu Sans Book</q>.</p>
+  </body>
+</topic>

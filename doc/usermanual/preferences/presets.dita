@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="presets" xml:lang="en-us">
+  <title>Presets</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>preferences and settings
+        <indexterm>presets</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This menu gives you an overview of the presets that are defined for darktable's modules. In this dialog you can select whether a certain user defined preset shall be auto-applied to matching images. By pressing the 
+    <q>import</q>button at the bottom of the window you can import a saved preset.</p>
+    <p>darktable already comes with a set of pre-defined presets for several modules. In addition you can define your own presets from within each module in darkroom mode (see 
+    <xref href="../darkroom/module_presets.dita#module_presets" type="topic">Module presets</xref>).</p>
+    <p>Pre-defined presets are shown with a lock symbol. Their auto-apply properties can not be changed.</p>
+    <p>Double clicking on a user-defined preset will open a menu. This allows editing the preset or saving it to an external .dtpreset file.</p>
+    <p>
+      <image align="center" href="images/presets.png" placement="break" />
+    </p>
+    <p>
+      <b>auto apply this preset to matching images</b>
+    </p>
+    <p>activate this checkbutton to automatically apply the preset on newly imported images; a set of fields is displayed where you can define patterns to be matched against Exif data.</p>
+    <p>
+      <b>only show this preset for matching images</b>
+    </p>
+    <p>activate this checkbutton to hide the preset in darkroom mode if it does not match the defined patterns.</p>
+    <p>
+      <b>model</b>
+    </p>
+    <p>a pattern to be matched against the Exif field that describes your camera model; use "%" as wildcard.</p>
+    <p>
+      <b>maker</b>
+    </p>
+    <p>a pattern to be matched against the Exif field that describes the maker of your camera; use "%" as wildcard.</p>
+    <p>
+      <b>lens</b>
+    </p>
+    <p>a pattern to be matched against the Exif field that describes your lens; use "%" as wildcard.</p>
+    <p>
+      <b>iso</b>
+    </p>
+    <p>only apply the preset if the ISO value of your image lies within the given range.</p>
+    <p>
+      <b>exposure</b>
+    </p>
+    <p>only apply the preset if the exposure time of your image lies within the given range; set "+" as the upper value to match arbitrarily long exposures.</p>
+    <p>
+      <b>aperture</b>
+    </p>
+    <p>only apply the preset if the aperture of your image lies within the given range; set "f/0" as the lower value to match arbitrarily open apertures; set "f/+" as the upper value to match arbitrarily closed apertures.</p>
+    <p>
+      <b>focal length</b>
+    </p>
+    <p>only apply the preset if the focal length of your image lies within the given range (from 0 to 1000).</p>
+  </body>
+</topic>

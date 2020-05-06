@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="colorControlSliders.d12e9001" xml:lang="en-us">
+  <title>Color control sliders</title>
+  <body>
+    <p>These parameters affect the user interface used for the shadows, mid-tones and highlights controls.</p>
+    <p>The 
+    <i>RGBL</i>controls allow direct access of the RGB parameters that will be sent to the algorithm and internally adjusted in XYZ luminance, depending on the 
+    <i>mode</i>used. They are the only ones stored in darktable's development history.</p>
+    <p>The 
+    <i>HSL</i>controls allow a more intuitive control, but are only an interface: the hues and saturations are computed dynamically from and to the RGB parameters and never stored. During the HSL to RGB conversion, the HSL lightness is always assumed to be 50%, so the RGB parameters are always balanced to avoid lightness changes. However, during the RGB to HSL conversion, the HSL lightness is not corrected.</p>
+    <p>As a consequence, editing in RGB, then in HSL, then again in RGB will not retain the original RGB parameters, but will normalize them so their HSL lightness is 50%. The difference is barely noticeable in most cases, especially using the modes that already correct the RGB parameters internally in XYZ luminance.</p>
+    <p>In both modes, additional 
+    <q>factor</q>sliders act on all RGB channels at once. Their effect is similar to the controls of the 
+    <i>levels</i>module (see 
+    <xref href="levels.dita#levels" type="topic">Levels</xref>) and affect only the luminance.</p>
+  </body>
+</topic>

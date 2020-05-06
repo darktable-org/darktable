@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_dbus" xml:lang="en-us">
+  <title>Calling Lua from DBus</title>
+  <body>
+    <p>It is possible to send a lua command to darktable via its DBus interface. The method 
+    <i>org.darktable.service.Remote.Lua</i>takes a single string parameter which is interpreted as a lua command. The command will be executed in the current lua context and should return either 
+    <i>nil</i>or a string. The result will be passed back as the result of the DBus method.</p>
+    <p>If the Lua call results in an error, the DBus method call will return an error 
+    <i>org.darktable.Error.LuaError</i>with the lua error message as the message attached to the DBus error.</p>
+  </body>
+</topic>

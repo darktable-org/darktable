@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_remove" xml:lang="en-us">
+  <title>remove</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>remove images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Remove the selected images from the darktable database. Those images will not be shown in lighttable anymore, but remain on the filesystem. As darktable stores XMP files with your development parameters on disk, you can later fully reconstruct your work by just re-importing the images.</p>
+    <p>When backing up your RAWs make sure to also save the XMP files!</p>
+  </body>
+</topic>

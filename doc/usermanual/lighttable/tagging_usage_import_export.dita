@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_import_export" xml:lang="en-us">
+  <title>import - export</title>
+  <body>
+    <p>The button 
+    <q>import</q>let you choose a text file, which must follows the lightroom tag text file format and import its content. If a tag already exists, its properties will be updated. Otherwise the tag is created.</p>
+    <p>The button 
+    <q>export</q>exports all your tag dictionary into a text file of your choice (lightroom tag text file format).</p>
+  </body>
+</topic>

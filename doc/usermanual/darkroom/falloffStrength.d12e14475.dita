@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="falloffStrength.d12e14475" xml:lang="en-us">
+  <title>fall-off strength</title>
+  <body>
+    <p>Sets the progressiveness of the fall-off. Higher values will cause a steeper transition.</p>
+  </body>
+</topic>

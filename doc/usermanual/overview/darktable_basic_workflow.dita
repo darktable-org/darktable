@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_basic_workflow">
+  <title>darktable basic workflow</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>basic workflow</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This section describes a typical darktable workflow which novice users may take as a starting point. We describe how to get an image into darktable, the basic steps of a raw development workflow and how to export the final result.</p>
+  </body>
+</topic>

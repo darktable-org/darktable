@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="xOffset.d12e14009" xml:lang="en-us">
+  <title>x offset</title>
+  <body>
+    <p>Pixel-independent offset relative to the choice of alignment on the x-axis.</p>
+  </body>
+</topic>

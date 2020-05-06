@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="select_usage_all" xml:lang="en-us">
+  <title>select all</title>
+  <body>
+    <p>Select all images in the current view (collection), with respect to the filters.</p>
+  </body>
+</topic>

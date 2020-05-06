@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e5585" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>This module is responsible for one of the most basic steps in each raw image development. An exposure adjustment value allows you – within certain limits – to correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.</p>
+    <p>Positive exposure corrections will make the image brighter. As a side effect noise level gets higher. Depending on the basic noise level of your camera and the ISO value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.</p>
+    <p>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for fully blown out highlights but allows to reconstruct data in case that only some of the RGB channels are clipped (see also 
+    <xref href="highlight_reconstruction.dita#highlight_reconstruction" type="topic">Highlight reconstruction</xref>).</p>
+    <p>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values are cut off to pure black. Use with care as the clipped values can not be recovered in other modules further down the pixelpipe. Please also have a look at the 
+    <i>tone curve</i>module (see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>) and the 
+    <i>levels</i>module (see 
+    <xref href="levels.dita#levels" type="topic">Levels</xref>) which can produce similar results with less side effects as they come later in pixelpipe.</p>
+    <p>The exposure module has two modes of operation.</p>
+    <p>In 
+    <q>manual</q>mode you directly define the value for exposure correction that you want to apply to your image.</p>
+    <p>In 
+    <q>automatic</q>mode darktable analyses the histogram of your image. You select a reference point within the histogram as a 
+    <i>percentile</i>and define a 
+    <i>target level</i> – darktable automatically calculates the exposure compensation that is needed to shift the selected position to that target value. The computed exposure compensation value is displayed in the module's GUI for your information.</p>
+    <p>The 
+    <q>automatic</q>mode has a black level adjustment that works as in manual mode.</p>
+    <p>Automatic adjustment is only available for raw images. A typical use case is deflickering of 
+    <xref format="html" href="http://en.wikipedia.org/wiki/Time-lapse_photography" scope="external">
+      <i>time-lapse photographs</i>
+    </xref>. You apply an automatic exposure correction with the same set of parameters to all images of the series – differences in lighting get compensated so that the final video sequence does not show any flickering.</p>
+  </body>
+</topic>

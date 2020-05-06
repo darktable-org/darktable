@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="whiteRelativeExposureSceneTab.d12e7994" xml:lang="en-us">
+  <title>White relative exposure (
+  <uicontrol>Scene</uicontrol>tab)</title>
+  <body>
+    <p>The white relative exposure is the number of stops (EV) between pure white and the middle grey. It is the right bound of the dynamic range. It should be adjusted to avoid highlight clipping. The white exposure color picker tool reads the maximum luminance in RGB space over the drawn area, assumes it is pure white, and sets the white exposure parameter to remap the reading to 100% luminance.</p>
+    <p>When the grey is set at 18%, the white exposure will always be around 2.45EV. When the grey is set at 100%, the white exposure should be set at 0EV.</p>
+  </body>
+</topic>

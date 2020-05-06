@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e9137" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>Several presets are provided in the module to help you understand how it can be used.</p>
+    <p>The teal/orange color-grading preset is a very popular look in cinema and a good showcase model. It is meant to be used with two instances and masks: the first instance will exclude skin tones and will shift neutral colors toward teal blue. The second will partially revert the first one and add more vibrance on skin tones only. Together they will help creating separation between subjects and backgrounds. The masking and blending parameters will need to be tweaked to suit every picture, though.</p>
+    <p>Other presets provide Kodak film emulations. In the same way you can recreate any film look you like with color balance.</p>
+  </body>
+</topic>

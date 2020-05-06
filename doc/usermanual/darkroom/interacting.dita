@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interacting" xml:lang="en-us">
+  <title>Interacting with modules</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>module usage</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>A module has an expander bar 
+    <image align="center" href="../images/darkroom_module_expander.png" placement="inline" />. Clicking on the name of the module expands the module's GUI with all parameters.</p>
+    <p>In its default setting darktable will only expand one GUI at a time. If you click the expander bar of another module, the previous GUI gets collapsed. If you want to see more than one GUI expanded, you may expand further modules with 
+    <i>Shift+click</i> – all previously expanded GUIs remain opened. The expander bar behavior on 
+    <i>click</i>and 
+    <i>Shift+click</i>, respectively, is controlled by a preference setting in GUI options (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>).</p>
+    <p>Expanding a module does 
+    <i>not</i>activate it. You need to click the 
+    <image align="center" href="../images/darkroom_module_icon_enable.png" placement="inline" />icon to turn a module on or off.</p>
+    <p>Icon 
+    <image align="center" href="../images/darkroom_module_icon_presets.png" placement="inline" />accesses the module's available presets or creates a new preset from your current settings (see 
+    <xref href="module_presets.dita#module_presets" type="topic">Module presets</xref>).</p>
+    <p>The 
+    <image align="center" href="../images/darkroom_module_icon_reset.png" placement="inline" />icon is used to reset the module parameters to their default values.</p>
+    <p>Many of darktable's modules can have multiple instances, each with different settings. Click on the 
+    <image align="center" href="../images/darkroom_module_icon_instances.png" placement="inline" />icon to generate new instances and control existing ones (see 
+    <xref href="multiple_instances.dita#multiple_instances" type="topic">Multiple instances</xref>).</p>
+    <p>The most frequently used control elements of modules are sliders, comboboxes and curves.</p>
+  </body>
+</topic>

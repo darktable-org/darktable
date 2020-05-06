@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="preserveShadows.d12e10951" xml:lang="en-us">
+  <title>preserve shadows</title>
+  <body>
+    <p>This option is available in 
+    <q>wavelets</q>and 
+    <q>non local means</q>modes. It allows to denoise more agressively the shadows or the highlights. Lower the value to denoise more the shadows than the highlights. Usually, as noise increases, you will need to lower this value.</p>
+  </body>
+</topic>

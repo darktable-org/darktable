@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="softenWith.d12e5233" xml:lang="en-us">
+  <title>soften with</title>
+  <body>
+    <p>This combobox chooses the underlying blurring filter, gaussian or bilateral. Try bilateral filter if you experience halos with gaussian blur.</p>
+  </body>
+</topic>

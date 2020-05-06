@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>
+          <indexterm>color management
+          <indexterm>display profile</indexterm></indexterm>
+        </indexterm>
+        <indexterm>monitor profile</indexterm>
+        <indexterm>display profile</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">In the central view, your images are shown as thumbnails, surrounded by a frame. When the mouse is over an image, its rating and color labels are shown in the frame, along with an indicator 
+            <image href="../images/lighttable_thumb_icon_altered.png" placement="inline" width="3mm" />of whether the image has already been altered in darkroom. Also, when the mouse hovers over an image frame, image information (EXIF data, metadata) is shown in the 
+            <xref href="image_information.dita#image_information" type="topic">
+              <i>image information</i>
+            </xref>panel at the bottom left.</entry>
+            <entry colname="col2">
+              <image align="center" href="../images/lighttable_thumb.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>While the mouse is over an image frame, there are a number of actions you can perform. Here is a table of keyboard shortcuts and assigned actions. 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="3*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>0 – 5</i>
+            </entry>
+            <entry colname="col2">set the rating of the image; if an image has 1 star and you hit the 
+            <i>1</i>key, the image will be unrated. Pressing 
+            <i>R</i>rejects the image.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>F1 – F5</i>
+            </entry>
+            <entry colname="col2">set a color label</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+C</i>
+            </entry>
+            <entry colname="col2">copy the history stack</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+V</i>
+            </entry>
+            <entry colname="col2">paste the copied history stack</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>D</i>
+            </entry>
+            <entry colname="col2">open in darkroom view for developing</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>W</i>
+            </entry>
+            <entry colname="col2">fully zoom into the image while the key is pressed</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>Ctrl+W</i>
+            </entry>
+            <entry colname="col2">fully zoom into the image and show areas in focus</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>The 
+    <indexterm>overlay</indexterm>button 
+    <image align="center" href="../images/general_icon_overlay.png" placement="inline" />located in the upper panel activates the permanent display of star ratings and image-changed indicator 
+    <image href="../images/lighttable_thumb_icon_altered.png" placement="inline" width="3mm" />on all thumbnails. By default these overlays are only visible on the thumbnail under the mouse cursor. An overlay button is also available in the other views where it affects the filmstrip accordingly (see 
+    <xref href="../overview/filmstrip.dita" type="topic">Filmstrip</xref>and 
+    <xref href="../darkroom/darkroom_filmstrip.dita#darkroom_filmstrip" type="topic">Filmstrip</xref>).</p>
+    <p>Pressing the 
+    <image align="center" href="../images/lighttable_icon_displayprofile.png" placement="inline" />button on the right side of the bottom panel lets you define the color profile of your monitor. You can either set this to 
+    <q>system display profile</q>(default) and let darktable enquire the system's display profile, or alternatively set it to one of the ICC profiles located in 
+    <filepath>$DARKTABLE/share/darktable/color/out</filepath>and 
+    <filepath>$HOME/.config/darktable/color/out</filepath>. 
+    <filepath>$DARKTABLE</filepath>is used here to represent your chosen darktable installation directory and 
+    <filepath>$HOME</filepath>your home directory. For more details on color management see 
+    <xref href="../darkroom/color_management.dita#color_management" type="topic">Color management</xref>.</p>
+    <p>In the center of the bottom panel you have an option to choose between different layouts.</p>
+  </body>
+</topic>

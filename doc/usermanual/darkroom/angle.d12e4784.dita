@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="angle.d12e4784" xml:lang="en-us">
+  <title>angle</title>
+  <body>
+    <p>This tool corrects the rotation angle helping you level an image. You can either set a numerical value or use your mouse directly on the image. To use your mouse, right-click, hold it down and draw a line along a suited horizontal or vertical feature; as soon as you release the mouse button the image is rotated so the line you drew matches the horizontal/vertical axis.</p>
+  </body>
+</topic>

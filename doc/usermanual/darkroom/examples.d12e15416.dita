@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e15416" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="4*" />
+          <colspec colname="col2" colnum="2" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/bloom_ex1.png" placement="break" />
+              </entry>
+              <entry colname="col2">This is the original image, use it as reference for the changes below...</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/bloom_ex2.png" placement="break" />
+              </entry>
+              <entry colname="col2">Here we have chosen to use a size of 10%, which is a rather small radius for the soft light spread. We boosted up the strength to 50% for a more exaggerated effect.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

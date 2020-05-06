@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="print_printer_section" xml:lang="en-us">
+  <title>Printer section</title>
+  <body>
+    <p>
+      <b>printer</b>
+    </p>
+    <p>This entry is to select one of the installed printers.</p>
+    <p>
+      <b>media</b>
+    </p>
+    <p>The media kind loaded on the printer (Plain Paper, Luster Photo Paper, etc.).</p>
+    <p>
+      <b>profile</b>
+    </p>
+    <p>The printer's ICC profile for the loaded paper. This is the profile specific to the printer and printer's paper. This profile is the last color space transformation done to the picture whose goal is to create a high quality print.</p>
+    <p>
+      <b>intent</b>
+    </p>
+    <p>The print rendering intent (
+    <q>perceptual</q>, 
+    <q>relative colorimetric</q>, 
+    <q>saturation</q>or 
+    <q>absolute colorimetric</q>). See 
+    <xref href="../darkroom/rendering_intent.dita#rendering_intent" type="topic">Rendering intent</xref>for more information.</p>
+    <p>
+      <b>black point compensation</b>
+    </p>
+    <p>Whether to adjust the black point of the output profile which is often lighter than the input profile. This should be 
+    <q>on</q>when the above intent is set to 
+    <q>relative colorimetric</q>.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e13267" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The haze removal module has two controls that determine the amount of haze reduction and limit the distance up to which haze is removed. Setting both controls to unity maximizes the amount of haze removal but this is also likely to produce some artifacts. Removing the atmospheric light entirely may render the image flat and may result in an unnatural looking style. Optimal values are typically below unity and these are rather image dependent but also a matter of personal aesthetic preferences.</p>
+  </body>
+</topic>

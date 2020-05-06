@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_examples_colorkey" xml:lang="en-us">
+  <title>Colorkey effect</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>To create a colorkey effect with this poppy blossom in red and the remainder of the image in monochrome, we could apply module 
+                <xref href="monochrome.dita#monochrome" type="topic">
+                  <i>monochrome</i>
+                </xref>to all parts of the image except for of the saturated red petals.</p>
+                <p>We choose the hue channel to control our mask as hue provides good separation between the petals and background.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_4.png" placement="break" />
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <p>These settings in hue channel construct a parametric blend mask that excludes the red petals. The small white bar in the gradient was obtained by using the color picker on one of the petals and the markers then closely centered on the indicated hue to increase the selectivity of our mask.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_5.png" placement="break" />
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <p>The resulting blend mask.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_6.png" placement="break" />
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <p>The final image after module 
+                <i>monochrome</i>is applied.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_7.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

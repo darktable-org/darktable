@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="procedure.d12e16524" xml:lang="en-us">
+  <title>Procedure</title>
+  <body>
+    <p>This procedure uses monochrome, channel mixer and split-toning modules.</p>
+    <ol>
+      <li>Image preparation 
+      <p>Prepare the image for the cyan toned steps by adjusting the base settings such as exposure,black level, contrast etc. for a correctly looking image.</p></li>
+      <li>Black and white 
+      <p>Enable the 
+      <i>monochrome</i>module (
+      <xref href="monochrome.dita#monochrome" type="topic">Monochrome</xref>) to make the image black and white.</p></li>
+      <li>Add color tone 
+      <p>This step selects the base tone of the image using 
+      <i>channel mixer</i>(
+      <xref href="channel_mixer.dita#channel_mixer" type="topic">Channel mixer</xref>), we are going for cyan tone but you can choose any tone that you like here.</p>
+      <ol>
+        <li>Enable the channel mixer module</li>
+        <li>Select the red channel destination and set the red color value to 0.7</li>
+        <li>Select the green channel destination and set the green color value to 1.15</li>
+        <li>Select the blue channel destination and set the blue color value to 1.15</li>
+      </ol>
+      <p>As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from the red channel and add them to blue and green.</p></li>
+      <li>split-toning 
+      <p>The result of the previous step does also add a color cast on highlights that we actually want to have white for a prettier result. We also want to add some blue color cast to the shadows in order to emphasis them. Module 
+      <i>split-toning</i>(
+      <xref href="splittoning.dita#splittoning" type="topic">split-toning</xref>) can accomplish this.</p>
+      <ol>
+        <li>Enable the split-toning module</li>
+        <li>Select a blue/cyan tone for shadows and set saturation around 50%</li>
+        <li>Set highlights saturation to zero, to remove saturation on highlights</li>
+        <li>Set compression to zero</li>
+        <li>Use the balance slider to tune the effect, our example uses a balance of 70/30</li>
+      </ol></li>
+    </ol>
+  </body>
+</topic>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="masks.d12e3546" xml:lang="en-us">
+  <title>Masks</title>
+  <body>
+    <p>Clicking on the name of a mask expands a list showing the individual shapes which constitute that mask.</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Right-clicking on the shape name opens a drop-down menu. Here you define the way that the individual shapes interact to form the mask. You can also remove shapes from that mask.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_maskmanager_2.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Masks are constructed by adding the shapes in the order that they are listed from top to bottom. Each shape adds to the mask by using at your choice one out of four logical set operators.</p>
+    <p>As order matters when combining shapes you may move each shape up or down if needed.</p>
+    <p>Each shape before being added can be inverted and is then depicted by the 
+    <image align="center" href="../images/masks_invert.png" placement="inline" />symbol.</p>
+  </body>
+</topic>

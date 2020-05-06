@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart_process" xml:lang="en-us">
+  <title>Process</title>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">If all required settings in 
+              <q>source image</q>and 
+              <q>reference values</q>are ready you can move to the 
+              <q>process</q>tab.</entry>
+              <entry colname="col2">
+                <image align="center" href="../images/darktable_chart_process.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>You first need to tell 
+    <filepath>darktable-chart</filepath>which of the patches represent the gray ramp. In the screenshot displayed further above the gray ramp is positioned in the lower part of the color reference chart, denoted as 
+    <q>GS00...GS23</q>.</p>
+    <p>The input 
+    <q>number of final patches</q>defines how many editable color patches the resulting style will use within the 
+    <i>color look up table</i>module (for more details see 
+    <xref href="../darkroom/color_look_up_table.dita#color_look_up_table" type="topic">Color look up table</xref>).</p>
+    <p>By clicking the 
+    <q>process</q>button you start the calculation.</p>
+    <p>The quality of the result in terms of average delta E and maximum delta E are displayed below the button. These data show how close the resulting style applied to the source image will be able to match the reference values – the lower the better.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">Once you are happy with the result you can click on 
+              <q>export</q>and save the generated style.</entry>
+              <entry colname="col2">
+                <image align="center" href="../images/darktable_chart_save.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>You supply a style name and a style description under which the style will later appear in darktable. 
+    <filepath>darktable-chart</filepath>saves the style as a 
+    <i>.dtstyle</i>file which can be imported into darktable (see 
+    <xref href="../darkroom/darkroom_bottom_panel_styles.dita#darkroom_bottom_panel_styles" type="topic">Quick access to styles</xref>) and shared with others.</p>
+    <p>The 
+    <q>export raw data as csv</q>button allows you to save the extracted raw data as a CSV file for debugging purposes or later usage. 
+    <filepath>darktable-chart</filepath>offers a command line option to produce a style with the desired number of final patches from a supplied CSV file (see 
+    <xref href="../overview/darktable_chart_binary.dita" type="topic">darktable-chart binary</xref>).</p>
+  </body>
+</topic>

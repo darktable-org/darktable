@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tableOfMixingValuesForSomeBwFilms.d12e8542" xml:lang="en-us">
+  <title>Table of mixing values for some b/w films</title>
+  <body>
+    <p>Classic black and white films have different characteristic color responses. Select gray as output mixing channel, and try out the values suggested below for your favorite film type.</p>
+    <table frame="none">
+      <tgroup cols="4" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="2*" />
+        <colspec colname="col2" colnum="2" colwidth="1*" />
+        <colspec colname="col3" colnum="3" colwidth="1*" />
+        <colspec colname="col4" colnum="4" colwidth="1*" />
+        <tbody>
+          <row>
+            <entry colname="col1">Film Type</entry>
+            <entry colname="col2">Red</entry>
+            <entry colname="col3">Green</entry>
+            <entry colname="col4">Blue</entry>
+          </row>
+          <row>
+            <entry colname="col1">AGFA 200X</entry>
+            <entry colname="col2">0.18</entry>
+            <entry colname="col3">0.41</entry>
+            <entry colname="col4">0.41</entry>
+          </row>
+          <row>
+            <entry colname="col1">Agfapan 25</entry>
+            <entry colname="col2">0.25</entry>
+            <entry colname="col3">0.39</entry>
+            <entry colname="col4">0.36</entry>
+          </row>
+          <row>
+            <entry colname="col1">Agfapan 100</entry>
+            <entry colname="col2">0.21</entry>
+            <entry colname="col3">0.40</entry>
+            <entry colname="col4">0.39</entry>
+          </row>
+          <row>
+            <entry colname="col1">Agfapan 400</entry>
+            <entry colname="col2">0.20</entry>
+            <entry colname="col3">0.41</entry>
+            <entry colname="col4">0.39</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford Delta 100</entry>
+            <entry colname="col2">0.21</entry>
+            <entry colname="col3">0.42</entry>
+            <entry colname="col4">0.37</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford Delta 400</entry>
+            <entry colname="col2">0.22</entry>
+            <entry colname="col3">0.42</entry>
+            <entry colname="col4">0.36</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford Delta 3200</entry>
+            <entry colname="col2">0.31</entry>
+            <entry colname="col3">0.36</entry>
+            <entry colname="col4">0.33</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford FP4</entry>
+            <entry colname="col2">0.28</entry>
+            <entry colname="col3">0.41</entry>
+            <entry colname="col4">0.31</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford HP5</entry>
+            <entry colname="col2">0.23</entry>
+            <entry colname="col3">0.37</entry>
+            <entry colname="col4">0.40</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford Pan F</entry>
+            <entry colname="col2">0.33</entry>
+            <entry colname="col3">0.36</entry>
+            <entry colname="col4">0.31</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford SFX</entry>
+            <entry colname="col2">0.36</entry>
+            <entry colname="col3">0.31</entry>
+            <entry colname="col4">0.33</entry>
+          </row>
+          <row>
+            <entry colname="col1">Ilford XP2 Super</entry>
+            <entry colname="col2">0.21</entry>
+            <entry colname="col3">0.42</entry>
+            <entry colname="col4">0.37</entry>
+          </row>
+          <row>
+            <entry colname="col1">Kodak T-Max 100</entry>
+            <entry colname="col2">0.24</entry>
+            <entry colname="col3">0.37</entry>
+            <entry colname="col4">0.39</entry>
+          </row>
+          <row>
+            <entry colname="col1">Kodak T-Max 400</entry>
+            <entry colname="col2">0.27</entry>
+            <entry colname="col3">0.36</entry>
+            <entry colname="col4">0.37</entry>
+          </row>
+          <row>
+            <entry colname="col1">Kodak Tri-X 400</entry>
+            <entry colname="col2">0.25</entry>
+            <entry colname="col3">0.35</entry>
+            <entry colname="col4">0.40</entry>
+          </row>
+          <row>
+            <entry colname="col1">Normal Contrast</entry>
+            <entry colname="col2">0.43</entry>
+            <entry colname="col3">0.33</entry>
+            <entry colname="col4">0.30</entry>
+          </row>
+          <row>
+            <entry colname="col1">High Contrast</entry>
+            <entry colname="col2">0.40</entry>
+            <entry colname="col3">0.34</entry>
+            <entry colname="col4">0.60</entry>
+          </row>
+          <row>
+            <entry colname="col1">Generic B/W</entry>
+            <entry colname="col2">0.24</entry>
+            <entry colname="col3">0.68</entry>
+            <entry colname="col4">0.08</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

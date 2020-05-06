@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="filmicrgb-contrast" xml:lang="en-us">
+  <title>Contrast (
+  <uicontrol>Look</uicontrol>tab)</title>
+  <body>
+    <p>The filmic rgb S-curve is created from the user parameters, by computing the position of virtual nodes and interpolating them, similarly to the tone curve module (but here, the nodes cannot be moved manually). The filmic rgb S-curve is split into three parts: a middle linear part, and two extremities that transition smoothly from the slope of the middle part to the ends of the exposure range.</p>
+    <p>The 
+    <uicontrol>contrast</uicontrol>slider controls the slope of the middle part of the curve, as illustrated in the graph display.</p>
+    <p>The contrast parameter drives the slope of the central part of the curve. The larger the dynamic range is, the greater the contrast should be set. This parameter mostly affects mid-tones.</p>
+    <p>When the contrast is set to 1, this disables the S-curve.</p>
+  </body>
+</topic>

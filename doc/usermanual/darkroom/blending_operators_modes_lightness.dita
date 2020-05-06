@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators_modes_lightness" xml:lang="en-us">
+  <title>lightness</title>
+  <body>
+    <p>This blend mode mixes lightness from the input and output images. Color data (chroma and hue) are taken unaltered from the input image.</p>
+  </body>
+</topic>

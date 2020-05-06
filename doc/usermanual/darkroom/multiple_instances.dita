@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="multiple_instances" xml:lang="en-us">
+  <title>Multiple instances</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>multiple instances</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Many of darktable's modules can be applied multiple times. Each instance of that module behaves like any other module, taking its input from the module below in the pixelpipe delivering its output to the module above.</p>
+  </body>
+</topic>

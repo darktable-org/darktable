@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_mask_combination_inversion_invert" xml:lang="en-us">
+  <title>invert mask</title>
+  <body>
+    <p>When 
+    <q>drawn mask</q>is selected there is an additional combobox to invert the mask by switching mask inversion 
+    <q>on</q>or 
+    <q>off</q>.</p>
+  </body>
+</topic>

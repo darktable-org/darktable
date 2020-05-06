@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="shadowsMidtonesHighlights.d12e9067" xml:lang="en-us">
+  <title>Shadows, Mid-tones, Highlights</title>
+  <body>
+    <p>Depending on the mode set, the shadows settings will control either the lift or the offset, the mid-tones ones will control either the gamma or the power, and the highlights ones will control either the gain or the slope. Parameters are transferred as is when you change the mode.</p>
+    <p>In RGBL mode, the RGB sliders range is limited to [-0.5; 0.5]. In HSL mode, the saturation sliders range is limited to [0%; 25%]. Values outside of these bounds can be defined from keyboard input after right-click on the slider.</p>
+  </body>
+</topic>

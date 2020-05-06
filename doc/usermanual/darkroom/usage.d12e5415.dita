@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e5415" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>darktable comes with base curve presets that mimic the curves of various manufacturers. These are automatically applied to raw images according to the manufacturer ID found in Exif data. For several camera models darktable comes with base curves adapted for that specific model. A configuration option in the core preferences dialog (see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>) defines whether darktable by default should apply the per-camera base curve or the manufacturer one.</p>
+    <p>You can adjust an existing base curve or create a new one. The base curve is defined by two or more nodes. You can move any node to modify the curve. You can also create additional nodes by 
+    <i>clicking</i>on a curve segment between two nodes. With 
+    <i>Ctrl+click</i>you generate a new node at the x-location of the mouse pointer and the corresponding y-location of the current curve – this adds a node without risking to accidentally modify the curve. In order to remove a node move it outside of the widget area.</p>
+    <p>Tip: If you intend to take full manual control of the tonal values with the 
+    <i>tone curve</i>module or the 
+    <i>zone system</i>module (see 
+    <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>and 
+    <xref href="zone_system.dita#zone_system" type="topic">Zone system</xref>) it may be easier to leave the image in linear RGB. Disable the 
+    <i>base curve</i>module in this case.</p>
+  </body>
+</topic>

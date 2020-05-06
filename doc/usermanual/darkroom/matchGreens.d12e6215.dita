@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="matchGreens.d12e6215" xml:lang="en-us">
+  <title>match greens</title>
+  <body>
+    <p>In some cameras the green filters have slightly varying properties. This parameter adds an additional equalization step to suppress artifacts. Available options are 
+    <q>disabled</q>, 
+    <q>local average</q>, 
+    <q>full average</q>and 
+    <q>full and local average</q>. This option is not shown for X-Trans sensors.</p>
+  </body>
+</topic>

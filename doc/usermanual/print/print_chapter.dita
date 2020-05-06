@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="print_chapter">
+  <title>Print</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>print</keyword>
+        <keyword>view</keyword>
+        <indexterm>print view</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The print view lets you output a selected image to your printer.</p>
+    <fig id="fig_cpd_cwb_flb">
+      <title>The print view</title>
+      <image href="../images/print_view.png" placement="break" id="image_dpd_cwb_flb" />
+    </fig>
+  </body>
+</topic>

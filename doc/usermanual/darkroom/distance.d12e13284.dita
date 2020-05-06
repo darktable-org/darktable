@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="distance.d12e13284" xml:lang="en-us">
+  <title>distance</title>
+  <body>
+    <p>This parameter limits the distance up to which haze is removed. For small values, haze removal is restricted to the foreground of the image. Haze is removed from the foreground to the far background if the distance parameter is set to unity. In case of a negative strength the distance control has no effect.</p>
+  </body>
+</topic>

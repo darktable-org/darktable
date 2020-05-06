@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="basic_deeclopment_steps">
+  <title>Basic development steps</title>
+  <body>
+    <section id="basic_development_steps_introduction">
+      <title>Introduction</title>
+      <p>This section will guide you through the basics of developing an image in the darkroom view.</p>
+      <p>To begin, open an image in darkroom mode by double clicking an image thumbnail on the lighttable. The darkroom mode is where the actual adjustments for an image are made, where an arsenal of modules are at hand to help you reach your goal.</p>
+      <p>Each change made on a module while developing an image is turned into a 
+      <xref href="../darkroom/history.dita#history" type="topic">
+        <i>history stack</i>
+      </xref>
+      <xref href="../darkroom/history.dita#history" type="topic">History stack</xref>item. The history is stored in a database and in an XMP sidecar file for the specific image.</p>
+      <p>All changes are stored automatically when you switch images or go from one darktable view to another. You can safely leave darkroom mode or quit darktable at any time and come back later to continue your work. That said darktable does not need a 
+      <q>save</q>button and it does not have one. 
+      <indexterm>save button</indexterm></p>
+      <p>On the left panel in darkroom mode is the 
+      <xref href="../darkroom/history.dita#history" type="topic">
+        <i>history stack</i>
+      </xref>, showing changes starting from bottom, and building up with each change made to the image. You can select a point in this history to show how the image looked at that point, for comparison of changes. The stack can be compressed: it will be optimized and redundant changes will be discarded. When you think you are done and are happy with what you have done, just compress the history stack.</p>
+      <p>darktable ships with a number of modules, arranged into groups. These module groups are accessed via toggle buttons in the right panel, just under the histogram. There are also two special module groups named 
+      <q>active</q>and 
+      <q>favorites</q>, which only show modules enabled in the history for the current image, and modules selected as a favorite, respectively. Marking a module as a favorite is done in the 
+      <i>more modules</i>dialog (
+      <xref href="../darkroom/more_modules.dita#more_modules" type="topic">More modules</xref>
+      <xref href="../darkroom/more_modules.dita#more_modules" type="topic">More modules</xref>), at the bottom of the right panel, by clicking a module until a star is displayed in front of the icon.</p>
+    </section>
+    <section id="basic_development_steps_wb">
+      <title>White balance</title>
+      <p>The 
+      <xref href="../darkroom/whitebalance.dita#whitebalance" type="topic">White balance</xref>module controls the white balance or color temperature of the image. It's always enabled and reads its default values from camera metadata embedded in the image. The most common change is fine-tuning the white balance, which is done using the 
+      <q>temperature</q>slider. Moving this slider left will make the color balance cooler, and moving it right will make it warmer.</p>
+    </section>
+    <section id="basic_development_steps_exposure">
+      <title>Exposure correction</title>
+      <p>The 
+      <xref href="../darkroom/exposure.dita#exposure" type="topic">Exposure</xref>module is probably the most basic module of them all. Exposure is fine-tuned either by using the slider, or by dragging with the mouse in the 
+      <xref href="../darkroom/histogram.dita#histogram" type="topic">Histogram</xref>. You can also boost the black level to enhance contrast; but be careful: use small amounts, like steps of 0.005. There is also an auto-correct feature.</p>
+    </section>
+    <section id="basic_development_steps_noise">
+      <title>Noise reduction</title>
+      <p>The best starting point for noise reduction is 
+      <xref href="../darkroom/denoise_profiled.dita#denoise_profiled" type="topic">Denoise – profiled</xref>. This module offers an almost 
+      <q>single-click</q>solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both derived from Exif data. All other settings are taken from a database of noise profiles that the darktable team has collected, now covering well above 200 popular camera models. In addition you have several other options in darktable to reduce noise. There is 
+      <xref href="../darkroom/raw_denoise.dita#raw_denoise" type="topic">Raw denoise</xref>, 
+      <xref href="../darkroom/denoise_bilateral.dita#denoise_bilateral" type="topic">Denoise – bilateral</xref>, 
+      <xref href="../darkroom/denoise_non_local_means.dita#denoise_non_local_means" type="topic">Denoise – non local means</xref>, and 
+      <xref href="../darkroom/equalizer.dita#equalizer" type="topic">Equalizer</xref>, which is based on wavelets. If your camera is not yet supported by 
+      <xref href="../darkroom/denoise_profiled.dita#denoise_profiled" type="topic">Denoise – profiled</xref>, 
+      <xref href="../darkroom/denoise_non_local_means.dita#denoise_non_local_means" type="topic">Denoise – non local means</xref>is probably the most convenient, as it allows you to treat color and luminance noise separately.</p>
+    </section>
+    <section id="basic_development_steps_spots">
+      <title>Fixing spots</title>
+      <p>Sometimes you will need to remove spots caused by sensor dirt. The 
+      <xref href="../darkroom/spot_removal.dita#spot_removal" type="topic">Spot removal</xref>module and the 
+      <xref href="../darkroom/retouch.dita#retouch" type="topic">Retouch</xref>module are at hand and can also correct other disturbing elements like skin blemishes. If your camera has stuck pixels or tends to produce hot pixels at high ISO values or longer exposure times, have a look at the 
+      <xref href="../darkroom/hotpixels.dita#hotpixels" type="topic">Hotpixels</xref>module for automatic correction.</p>
+    </section>
+    <section id="basic_development_steps_geometry">
+      <title>Geometrical corrections</title>
+      <p>Quite frequently you want to only show part of the captured scene in your image, e.g. to take away some disturbing feature close to the frame. In other cases, the horizon in the image may need levelling, or there are perspective distortions. All this can be corrected with full manual control in the 
+      <xref href="../darkroom/crop_and_rotate.dita#crop_and_rotate" type="topic">Crop and rotate</xref>module. For a fully automatic correction of perspective distortions you may alternatively visit the 
+      <xref href="../darkroom/perspective_correction.dita#perspective_correction" type="topic">Perspective correction</xref>module. If you need to correct typical camera lens flaws like cushion distortion, transversal chromatic aberrations or vignetting, there is a 
+      <xref href="../darkroom/lens_correction.dita#lens_correction" type="topic">Lens correction</xref>module.</p>
+    </section>
+    <section id="basic_development_steps_details">
+      <title>Bringing back detail</title>
+      <p>Digital raw images often contain more information than you can see at first sight. Especially in the shadows of an image, there are lots of hidden details. The 
+      <xref href="../darkroom/shadows_and_highlights.dita#shadows_and_highlights" type="topic">Shadows and Highlights</xref>module helps bring these details back into visible tonal values. Structural details in fully blown-out highlights, by nature of the digital sensor, can not be recovered. However, you can correct unfavorable color casts in these areas with the 
+      <xref href="../darkroom/highlight_reconstruction.dita#highlight_reconstruction" type="topic">Highlight reconstruction</xref>module. Additionally the 
+      <xref href="../darkroom/color_reconstruction.dita#color_reconstruction" type="topic">Color reconstruction</xref>module is able to fill overexposed areas with suitable colors based on their surroundings.</p>
+    </section>
+    <section id="basic_development_steps_tonality">
+      <title>Adjusting tonal values</title>
+      <p>Almost every workflow is likely to include adjusting the image's tonal range. darktable offers several alternative modules to take care of that. The most basic one is the 
+      <xref href="../darkroom/contrast_brightness_saturation.dita#contrast_brightness_saturation" type="topic">Contrast Brightness Saturation</xref>module. In the 
+      <xref href="../darkroom/tone_curve.dita#tone_curve" type="topic">Tone curve</xref>module, tonal values are adjusted by constructing a gradient curve. The 
+      <xref href="../darkroom/levels.dita#levels" type="topic">Levels</xref>module offers a concise interface, with three markers in a histogram. In addition, there is a 
+      <xref href="../darkroom/zone_system.dita#zone_system" type="topic">Zone system</xref>module which allows control over tonal values by zones, inspired by the work of Ansel Adams.</p>
+    </section>
+    <section id="basic_development_steps_local_contrast">
+      <title>Enhancing local contrast</title>
+      <p>Local contrast enhancement can emphasize detail and clarity in your image. Carefully used, it can give your photograph the right pop. darktable offers several modules for this task. The 
+      <xref href="../darkroom/local_contrast.dita#local_contrast" type="topic">Local contrast</xref>module is easy to handle, with just a few parameters. A much more versatile, but also more complex, technique is offered by the 
+      <xref href="../darkroom/equalizer.dita#equalizer" type="topic">Equalizer</xref>module. Have a look at its presets, to get a feeling for how it works. Equalizer is darktable's "Swiss Army Knife" for many adjustments where spatial dimension plays a role.</p>
+    </section>
+    <section id="basic_development_steps_colors">
+      <title>Color adjustments</title>
+      <p>darktable offers many modules for adjusting colors in an image. A very straightforward technique is implemented in the 
+      <xref href="../darkroom/color_correction.dita#color_correction" type="topic">Color correction</xref>module. Use it to give an image an overall tint or to adjust overall color saturation. The 
+      <xref href="../darkroom/color_zones.dita#color_zones" type="topic">Color zones</xref>module offers a much finer control to adjust saturation, or lightness, and even hue, in user defined zones. darktable's 
+      <xref href="../darkroom/tone_curve.dita#tone_curve" type="topic">Tone curve</xref>module - in addition to the classical adjustment of tonal values - gives you fine control over the colors in an image. Finally, if you intend to convert an image into black &amp; white, a good starting point, with an easy to use and intuitive user interface, is offered by the 
+      <xref href="../darkroom/monochrome.dita#monochrome" type="topic">Monochrome</xref>module. Alternatively, you might consider using darktable's 
+      <xref href="../darkroom/channel_mixer.dita#channel_mixer" type="topic">Channel mixer</xref>.</p>
+    </section>
+    <section id="basic_development_steps_sharpening">
+      <title>Sharpening</title>
+      <p>If you start your workflow from a raw image, you will need to have your final output sharpened. The 
+      <xref href="../darkroom/sharpen.dita#sharpen" type="topic">Sharpen</xref>module can do this with the classical USM (unsharp mask) approach, available in most image processing software. Another very versatile way to enhance edges in an image is offered by the 
+      <xref href="../darkroom/highpass.dita#highpass" type="topic">Highpass</xref>module, in combination with darktable's rich set of blending operators.</p>
+    </section>
+    <section id="basic_development_steps_effects">
+      <title>Artistic effects</title>
+      <p>darktable comes with a rich set of artistic effect modules. To name just a few: with the 
+      <xref href="../darkroom/watermark.dita#watermark" type="topic">Watermark</xref>module you add an individual watermark to your image. The 
+      <xref href="../darkroom/grain.dita#grain" type="topic">Grain</xref>module simulates the typical noise of classical analogue footage. Use the 
+      <xref href="../darkroom/color_mapping.dita#color_mapping" type="topic">Color mapping</xref>module to transfer the look and feel of one color image onto another. darktable's 
+      <xref href="../darkroom/low_light.dita#low_light" type="topic">Low light</xref>module allows to simulate human vision to make lowlight pictures look closer to reality. The 
+      <xref href="../darkroom/graduated_density.dita#graduated_density" type="topic">Graduated Density</xref>filter adds a neutral or colored gradient to your image for exposure and color correction.</p>
+    </section>
+  </body>
+</topic>

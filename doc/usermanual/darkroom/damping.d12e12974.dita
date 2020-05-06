@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="damping.d12e12974" xml:lang="en-us">
+  <title>damping</title>
+  <body>
+    <p>This slider is only displayed if you choose method 
+    <q>random</q>. It controls the level of added random noise expressed as a damping factor in a 10*log 
+    <sub>2</sub>basis. A value of -80 is a good fit for 8-bit output formats and -160 for 16-bit ones.</p>
+  </body>
+</topic>

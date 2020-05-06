@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="automaticCropping.d12e11840" xml:lang="en-us">
+  <title>automatic cropping</title>
+  <body>
+    <p>When activated the automatic cropping feature clips the image to get rid of any black corners. At your choice you can either clip to the 
+    <q>largest area</q>or to the largest rectangle maintaining the original aspect ratio (
+    <q>original format</q>). In the latter case you can manually adjust the automatic cropping result: left click into to clip region and move it around. The size of the region gets modified automatically excluding any black corners.</p>
+  </body>
+</topic>

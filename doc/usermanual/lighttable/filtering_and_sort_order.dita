@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="filtering_and_sort_order" xml:lang="en-us">
+  <title>Filtering and sort order</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>sort order</indexterm>
+        <indexterm>filtering</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">The filtering and sort order of images in the lighttable view are controlled in the top panel.</entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/filter_sort_panel.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>With filtering you limit the number of displayed images in your current collection (see also 
+    <xref href="collect_images.dita#collect_images" type="topic">Collect images</xref>). Filtering is mainly based on the star ratings of your images. A typical filtering rule will show all images that have a rating at or above the given number of stars (from one to five). The comparison operators is not restricted to 
+    <q>≥</q>. By clicking on the operator field you toggle between 
+    <q>≥</q>, 
+    <q>&gt;</q>, 
+    <q>≠</q>, 
+    <q>&lt;</q>, 
+    <q>≤</q>, and 
+    <q>=</q>.</p>
+    <p>Alternatively you can make darktable display 
+    <q>all</q>images, only the 
+    <q>unstarred</q>ones, only the 
+    <q>rejected</q>images and all but the rejected ones.</p>
+    <p>Images in the lighttable view can be displayed in different sort orders, depending on 
+    <q>filename</q>, 
+    <q>time</q>(when the photo was taken), 
+    <q>rating</q>(i.e. stars), 
+    <q>id</q>(an internal ordering number of darktable), 
+    <q>color labels</q>, 
+    <q>groups</q>, 
+    <q>full path</q>, 
+    <q>title</q>, 
+    <q>description</q>, 
+    <q>aspect ratio</q>or 
+    <q>custom order</q>(user can drag &amp; drop images, only available in the lighttable's file manager mode). You can sort in reversed order by toggling the triangle button to the right of the 
+    <q>sort by</q>combobox.</p>
+  </body>
+</topic>

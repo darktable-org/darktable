@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="history" xml:lang="en-us">
+  <title>History stack</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>history stack</indexterm></indexterm>
+        <indexterm>history stack</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>The history stack lists every change of state (activate/de-activated) for all modules. Here you can 
+              <i>select</i>a point in the stack to return to a point in the development history. If you then activate a new module or change a module parameter, all modules above the selected point will be discarded.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_history.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>
+      <note type="caution">Activating any module action using key accelerators will discard all modules above the currently selected one. It is easy to lose all development work on an image this way!</note>
+    </p>
+    <p>In darktable 2.0 it is safe to quit the program, leave the darkroom mode, or switch to another image while having selected some earlier state in the history stack panel. The history stack remains unchanged. When returning to the image you will find the history stack panel in the state where you left it.</p>
+    <p>Hitting 
+    <q>compress history stack</q>generates the shortest history stack that produces the current image, i.e. suppressing all obsolete stack items. This also will discard all modules above the currently selected one.</p>
+    <p>The button to the right 
+    <image align="center" href="../images/darkroom_styles.png" placement="inline" />lets you create a new style for applying your history stack to other images. Use the first line of the popup dialog window to name your style and the second to add a searchable description. You are prompted for which of the current history stack modules to include in the style.</p>
+    <p>Once created styles are then managed and applied to other images through lighttable's 
+    <i>styles</i>panel (see 
+    <xref href="../lighttable/styles.dita#styles" type="topic">Styles</xref>).</p>
+  </body>
+</topic>

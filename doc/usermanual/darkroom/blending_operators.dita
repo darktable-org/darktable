@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_operators" xml:lang="en-us">
+  <title>Blending operators</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>blending operators</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>There are several blend modes implemented and more might be added in future. For now all of the most commonly used ones are included and you will recognize a few of them from other imaging software. A good introduction on many common blend modes is given in the 
+    <xref format="html" href="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html" scope="external">
+      <i>GIMP Manual (Chapter 8.2, 
+      <q>Layer Modes</q>)</i>
+    </xref>. Therefore we only discuss a few blend modes here in more detail.</p>
+  </body>
+</topic>

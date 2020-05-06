@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="scale_pixels" xml:lang="en-us">
+  <title>Scale pixels</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>scale pixels</indexterm></indexterm>
+        <indexterm>scale pixels</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

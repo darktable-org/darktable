@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="strength.d12e13275" xml:lang="en-us">
+  <title>strength</title>
+  <body>
+    <p>The strength parameter controls the amount of haze removal. Setting it to unity, the module removes 100 percent of the detected haze between the camera and up to the specified distance; see below. Negative values for the strength increase the amount of haze in the image.</p>
+  </body>
+</topic>

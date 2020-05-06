@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="preferences_chapter">
+  <title>Preferences and settings</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>preferences</keyword>
+        <keyword>settings</keyword>
+        <keyword>configuration</keyword>
+        <keyword>options</keyword>
+        <keyword>accelerators</keyword>
+        <indexterm>preferences and settings</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable comes with a number of settings that can be configured by users. You reach the configuration menu by clicking 
+    <image href="../images/darkroom_preferences.png" align="center" placement="inline" />at the top of the screen.</p>
+    <fig id="fig_gvr_lxb_flb">
+      <title>The preferences window</title>
+      <image href="../images/preferences_view.png" placement="break" id="image_hvr_lxb_flb" />
+    </fig>
+  </body>
+</topic>

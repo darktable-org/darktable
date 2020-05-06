@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="text.d12e13921" xml:lang="en-us">
+  <title>text</title>
+  <body>
+    <p>A free text field with up to 63 characters which gets printed if the corresponding watermark references it. An example is supplied as 
+    <filepath>simple-text.svg</filepath>.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="numberOfClusters.d12e15680" xml:lang="en-us">
+  <title>number of clusters</title>
+  <body>
+    <p>Sets the number of color clusters to use. If you change this parameter all collected color clusters are reset and need to be acquired anew.</p>
+  </body>
+</topic>

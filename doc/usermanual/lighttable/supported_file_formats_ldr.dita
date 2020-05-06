@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="supported_file_formats_ldr" xml:lang="en-us">
+  <title>LDR image files</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>import
+        <indexterm>LDR files</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable natively reads 
+    <q>ordinary</q>images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format. JPEG2000 is also supported if the required libraries are present at compile time. Similarly, if darktable was compiled with GraphicsMagick support, there are further import formats, like GIF, Dicom DCM, additional exotic TIFF formats, and some of Sun's 
+    <q>portable xyz-map</q>family.</p>
+  </body>
+</topic>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="print_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>This view is about printing – or the joy of giving birth to a photograph which can be put on the wall. Because printing is not easy, there are many technical aspects to be taken into account.</p>
+    <p>After selecting an image in the lighttable view (see 
+    <xref href="../lighttable/lighttable_overview.dita#lighttable_overview" type="topic">Overview</xref>) one can enter the print module where there are several options for the print layout and for selecting which printer to use.</p>
+    <p>The central area displays the image layout on the paper (the white area). Some gray borders may be displayed around the image to represent the printable area (the page minus the borders) not filled by the image.</p>
+    <p>On the left side you find the 
+    <i>collect images</i>panel which is described in more detail in 
+    <xref href="../lighttable/collect_images.dita#collect_images" type="topic">Collect images</xref>. This panel lets you define which images are present in the filmstrip. Visibility of the filmstrip – located in the bottom panel – is toggled by pressing 
+    <i>Ctrl+F</i>(see 
+    <xref href="../darkroom/darkroom_filmstrip.dita#darkroom_filmstrip" type="topic">Filmstrip</xref>). On the left side you also have an 
+    <i>image information</i>panel which displays useful Exif data of the image in the center area, or the filmstrip image under the pointer, respectively (see 
+    <xref href="../lighttable/image_information.dita#image_information" type="topic">Image information</xref>).</p>
+    <p>On the right panel the print settings module has many options to layout the image on the page, select the paper, options for exporting, etc. This module is described in depth in the section below.</p>
+    <p>This module supports the printer's ICC profile which is somewhat mandatory if you want to get a high quality print close to the image displayed on the screen.</p>
+    <p>It is important to note that ICC profiles provided by the paper and/or printer manufacturers cannot be used on GNU/Linux as they depend on the printer drivers. The darktable print module is using 
+    <xref format="html" href="http://www.cups.org/" scope="external">CUPS</xref>and there is no ready-to-use ICC profiles for this driver.</p>
+  </body>
+</topic>

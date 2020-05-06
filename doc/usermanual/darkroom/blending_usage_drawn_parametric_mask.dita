@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_drawn_parametric_mask" xml:lang="en-us">
+  <title>drawn and parametric mask</title>
+  <body>
+    <p>this option combines drawn and parametric masks and shows the full set of both controls. See 
+    <xref href="combined_masks.dita#combined_masks" type="topic">Combining drawn and parametric masks</xref>to learn how to best use this combination.</p>
+  </body>
+</topic>

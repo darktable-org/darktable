@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_detach" xml:lang="en-us">
+  <title>detach</title>
+  <body>
+    <p>An attached tag can be detached in the following ways.</p>
+    <p>Click on button 
+    <q>detach</q>detaches the selected tag in attached view.</p>
+    <p>Double-click on a tag of attached view.</p>
+    <p>Click-right on a tag of attached view and sub-menu 
+    <q>detach</q></p>
+  </body>
+</topic>

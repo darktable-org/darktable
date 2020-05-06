@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="color_mapping" xml:lang="en-us">
+  <title>Color mapping</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>color mapping</indexterm></indexterm>
+        <indexterm>color mapping</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

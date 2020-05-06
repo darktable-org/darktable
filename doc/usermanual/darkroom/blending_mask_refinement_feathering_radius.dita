@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_feathering_radius" xml:lang="en-us">
+  <title>feathering radius</title>
+  <body>
+    <p>The 
+    <q>feathering radius</q>slider adjusts the strength of the feathering effect. Feathering works best if the drawn and/or parametric mask's edges already match approximately some edges in the guiding image. The larger the 
+    <q>feathering radius</q>the better the feathering algorithm can align mask edges to more distant edges of the image. If this radius is too large, however, the feathered mask may overshoot. This means it cover regions that the user actually wants to exclude. Feathering is turned off if the feathering radius is set to 0.</p>
+  </body>
+</topic>

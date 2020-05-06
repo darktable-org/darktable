@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="detail.d12e7518" xml:lang="en-us">
+  <title>detail</title>
+  <body>
+    <p>Add or remove detail. Higher values will increase local contrast.</p>
+  </body>
+</topic>

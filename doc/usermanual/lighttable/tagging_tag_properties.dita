@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_tag_properties" xml:lang="en-us">
+  <title>tag properties</title>
+  <body>
+    <p>Besides its name the tag can set as private or as a category. It can also be attached synonyms. These attributes help to control the information you join to exported images. These information are related to 
+    <q>XMP-dc Subject</q>and 
+    <q>XMP-lr Hierarchical Subject</q>metadata.</p>
+    <p>A tag set as 
+    <q>private</q>is by default not exported. The configuration point "force exportation of private tags" allows you to keep private tags on exported images. Both 
+    <q>XMP-dc Subject</q>and 
+    <q>XMP-lr Hierarchical Subject</q>are affected.</p>
+    <p>A tag set as 
+    <q>category</q>is not exported in 
+    <q>XMP-dc Subject</q>. However it is exported in 
+    <q>XMP-lr Hierarchical Subject</q>as this XMP metadata holds the organization of your tags.</p>
+    <p>
+    <q>synonyms</q>enriches the tag information and is mainly destined to search engines. For example 
+    <q>juvenile</q>, 
+    <q>kid</q>or 
+    <q>youth</q>can be set as synonyms of 
+    <q>child</q>. An other usage is to translate the tag in other languages. The configuration point "request exportation of synonyms", when set, makes the image exportation add synonyms to 
+    <q>XMP-dc Subject</q>metadata.</p>
+  </body>
+</topic>

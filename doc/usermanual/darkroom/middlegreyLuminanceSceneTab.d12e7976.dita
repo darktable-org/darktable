@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="middlegreyLuminanceSceneTab.d12e7976" xml:lang="en-us">
+  <title>Middle-grey luminance (
+  <uicontrol>Scene</uicontrol>tab)</title>
+  <body>
+    <p>The middle-grey luminance is the luminance in RGB space of the scene referred 18% grey. Its color picker tool reads the average luminance over the drawn area. If you happen to have a grey card or a color chart (IT8 chart or colorchecker) shot in the scene lighting conditions, then the grey color picker tool can be used to quickly sample the luminance of the grey patch on the picture. In other situations, the color picker can be used to sample the average luminance of the subject.</p>
+    <p>This setting has an effect on the picture that is analogous to a lightness correction. Values close to 100% do not compress the highlights but fail to recover shadows. Values close to 0% recover greatly the shadows but compress the highlights more harshly and result in local-contrast losses. The standard middle-grey value for linearly encoded camera RGB is 18%. Good values of grey are usually the average luminance of the whole picture or of the subject. In studio and indoors (low dynamic range scenes), proper grey values are found between 15-18%. In high dynamic range scenes (landscapes, back-lit portraits), proper grey values lie between 1.25 and 9%.</p>
+    <p>When modifying the middle-grey luminance, the white and black exposures are automatically slid accordingly, to preserve the dynamic range from clipping and to help you set the right parameter faster. If you are not happy with the auto adjustment performed by the grey slider, you can correct again the white and black exposure parameters afterwards.</p>
+  </body>
+</topic>

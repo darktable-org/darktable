@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interacting_sliders" xml:lang="en-us">
+  <title>Sliders</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>module usage
+        <indexterm>sliders</indexterm></indexterm>
+        <indexterm>sliders</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Sliders offer five different ways of interaction, depending on the level of control you need.</p>
+    <ol>
+      <li>Left-click 
+      <p>Click anywhere in the slider area to set the value. You can also click and drag to change it. You don't have to aim for the small triangle or even the line, the whole height including the label works as the active area.</p></li>
+      <li>Mouse wheel 
+      <p>Hover over any place on the slider with your mouse, then use your mouse wheel to adjust the value step by step.</p></li>
+      <li>Keyboard arrow keys 
+      <p>When the slider has keyboard focus you can hover over any place on the slider with your mouse, then use your keyboard's arrow keys (←/↓ and →/↑) to adjust the value stepwise. In order to give focus to the widget without changing the current value you can right-click, then right-click again.</p></li>
+      <li>Right-click 
+      <p>When your mouse is over a slider right-click gives you a multi-functional pop-up below the slider for fine control with your mouse or numerical entry using the keyboard.</p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">darktable's innovative input method: for both coarse and fine value adjustments in a single control element combined with keyboard input.</entry>
+              <entry colname="col2">
+                <image align="center" href="images/darkroom_bauhaus.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p>A bent line extending from the triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the coarser the control; the further away from the triangular marker the finer is your control. Left-click with your mouse to accept the new value and go back to normal control.</p>
+      <p>Alternatively you can type in a new value using your keyboard and commit by hitting the enter key. You may even supply the new value in the form of an arithmetic expressions which darktable will calculate for you – the old value is referenced as 
+      <q>x</q>.</p></li>
+      <li>
+        <p>Double-click</p>
+        <p>You can double-click on a parameter label to reset its value to default.</p>
+      </li>
+    </ol>
+    <p>Additionally, the mouse wheel and keyboard arrow keys support two input modifiers: 
+    <ul>
+      <li>You can hold down the 
+      <i>Shift</i>key increasing the stepsize by a factor of 10. You can change this multiplier: 
+      <pre xml:space="preserve">
+darkroom/ui/scale_rough_step_multiplier=10.0
+</pre></li>
+      <li>You can hold 
+      <i>Ctrl</i>key decreasing the stepsize by a factor of 10. You can change this multiplier: 
+      <pre xml:space="preserve">
+darkroom/ui/scale_precise_step_multiplier=0.1
+</pre></li>
+    </ul></p>
+  </body>
+</topic>

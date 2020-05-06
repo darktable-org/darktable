@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_text_entry" xml:lang="en-us">
+  <title>text entry</title>
+  <body>
+    <p>The text entry box, between the two lists, has multiple purposes.</p>
+    <p>First, for those who like not to leave the keyboard, when the dictionary view is in list mode, as soon as you start to enter a keyword, it opens a list of corresponding tags. When you see the one you look for, use the 
+    <q>down</q>arrow to highlight it, press twice 
+    <q>enter</q>to get the tag attached !</p>
+    <p>Those for who this procedure is not convenient can deactivate this function using the configuration "disable the entry completion".</p>
+    <p>Besides this, the entry box lets you filter the dictionary (list and tree) just below searching amongst the tag names but also the synonyms.</p>
+    <p>Pressing enter, either the tag just written does not exist in the dictionary. In such a case the new tag is added to the dictionary and attached to the selected images. Or it is already in the dictionary and it's only attached.</p>
+    <p>You can use the submenu 
+    <q>copy to entry</q>to copy an existing tag from the dictionary into the entry box. Then you can modify it to create a new tag without having to type it in completely.</p>
+  </body>
+</topic>

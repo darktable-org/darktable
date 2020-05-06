@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="theArtisticWayColorZonesModule.d12e16274" xml:lang="en-us">
+  <title>The artistic way: color zones module</title>
+  <body>
+    <p>To perform the conversion we use the 
+    <i>color zone</i>module (
+    <xref href="color_zones.dita#color_zones" type="topic">Color zones</xref>).</p>
+    <ol>
+      <li>Activate the color zones module</li>
+      <li>By default, the active tabbed control is set to 
+      <q>saturation</q>whereas the 
+      <q>select by</q>combobox is set to 
+      <q>hue</q>. This means that color are selected according to their hue (horizontal scale) and you can change for each hue its 
+      <q>saturation</q>(vertical scale). You simply need to set all points to the minimum of the vertical scale to de-saturate every hue.</li>
+      <li>But now if you want, you can keep some hues a little bit saturated, so your image will be all black and white but some hue. A classical use for portrait is to keep red hue saturated in order to make the lips standing out. 
+      <p>You can also use one of the available presets that perform black and white conversion, keeping some hues saturated.</p></li>
+    </ol>
+  </body>
+</topic>

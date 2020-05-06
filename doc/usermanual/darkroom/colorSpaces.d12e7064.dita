@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="colorSpaces.d12e7064" xml:lang="en-us">
+  <title>color spaces</title>
+  <body>
+    <p>Depending on the desired intent, you can apply the tone curve in three different color spaces: 
+    <ul>
+      <li>
+        <p>Lab, linked channels,</p>
+      </li>
+      <li>
+        <p>Lab, separated channels,</p>
+      </li>
+      <li>
+        <p>XYZ, linked channels,</p>
+      </li>
+      <li>
+        <p>RGB, linked channels.</p>
+      </li>
+    </ul></p>
+    <p>Lab is a perceptual color space that is designed to approximate the way human beings perceive colors and lightness, and representing the color information independently of the the lightness information. In 
+    <q>Lab, separated channels</q>, you get a fully independent control over the chrominance (a/b-channels) and the luminance (L-channel). In 
+    <q>Lab, linked channels</q>, only the luminance (L-channel) control is available. The color saturation correction will be automatically computed, for each pixel, from the contrast correction applied to the luminance channel. This works better in cases where a subtle contrast correction is applied, but gives increasingly inaccurate saturation correction as the contrast gets more dramatically enhanced.</p>
+    <p>XYZ is a linear technical color space designed to link the physiologic light response of human eyes to RGB spaces. As Lab, it separates the lightness from the color information, but it does so in a way that does not account for the role of the brain correction in human perception. The 
+    <q>XYZ, linked channels,</q>mode offers an alternative for 
+    <q>Lab, linked channels</q>. It works by applying the L-channel curve to all three channels in the XYZ color space. Look at blend mode 
+    <q>coloradjustment</q>if you want to tune the strength of automatic chroma scaling (see 
+    <xref href="blending_operators.dita#blending_operators" type="topic">Blending operators</xref>). This mode is known to produce a slight hue shift towards yellow.</p>
+    <p>RGB spaces are linear color spaces designed to capture and display images in additive synthesis. They are related to capture and display media and do not isolate color and lightness information. The 
+    <q>RGB, linked channels,</q>works in ProPhoto RGB and applies the L-channel curve to all three channels in the RGB color space. Adding contrast in RGB space is known to desaturate highlights and boost saturation in lowlights, but this has proven to be the most reliable way to edit contrast, and is the standard way to do it in most software. This mode makes the tone curve module behave the same way as the basecurve (see 
+    <xref href="base_curve.dita#base_curve" type="topic">Base curve</xref>), except the latter one works in camera RGB space.</p>
+    <p>Notice that the interface is controlled in Lab in all cases. This means that the middle gray coordinate is always 50% in the graph, no matter what color space is used. The same applies to the inset histogram displayed in the background of the curve. The controls are converted to the relevant color space before the corrections are applied – in RGB and XYZ, the middle-gray is therefore remapped from 50% to 18%.</p>
+  </body>
+</topic>

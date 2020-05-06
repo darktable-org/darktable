@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options_security" xml:lang="en-us">
+  <title>Security</title>
+  <body>
+    <p>
+      <b>ask before removing images from database</b>
+    </p>
+    <p>Always ask the user before any image is removed from the database (default on).</p>
+    <p>
+      <b>ask before erasing images from disk</b>
+    </p>
+    <p>Always ask the user before any image file is deleted (default on).</p>
+    <p>
+      <b>send files to trash when erasing images</b>
+    </p>
+    <p>Instead of physically deleting images from disk put them into the system's trash bin (default on).</p>
+    <p>
+      <b>ask before moving images from film roll folder</b>
+    </p>
+    <p>Always ask the user before any image file is moved (default on).</p>
+    <p>
+      <b>ask before copying images to new film roll folder</b>
+    </p>
+    <p>Always ask the user before any image file is copied (default on).</p>
+    <p>
+      <b>ask before removing empty folders</b>
+    </p>
+    <p>Always ask the user before removing any empty folder. This can happen after moving or deleting images (default off).</p>
+    <p>
+      <b>ask before deleting a tag</b>
+    </p>
+    <p>Always ask user before deleting a tag from an image (default on).</p>
+    <p>
+      <b>ask before deleting a style</b>
+    </p>
+    <p>Always ask user before deleting a style (default on).</p>
+  </body>
+</topic>

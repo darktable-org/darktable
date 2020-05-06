@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging" xml:lang="en-us">
+  <title>Tagging</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>tagging</indexterm></indexterm>
+        <indexterm>tags</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

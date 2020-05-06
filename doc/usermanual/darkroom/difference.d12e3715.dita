@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="difference.d12e3715" xml:lang="en-us">
+  <title>difference</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This set operator is depicted by the 
+            <image align="center" href="../images/masks_difference.png" placement="inline" />symbol. In the non-overlapping area the existing mask is unchanged. In the resulting mask pixels get selected only if they are selected in the existing mask but 
+            <i>not</i>in the added shape. This set operator can be chosen if you want to 
+            <q>cut out</q>a region from within an existing selection.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_maskmanager_ex5.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

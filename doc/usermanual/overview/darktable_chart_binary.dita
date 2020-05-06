@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart_binary">
+  <title>
+  <tt>darktable-chart</tt>binary</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>darktable-chart</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This binary is a dedicated utility to create styles out of pairs of images such as RAW+JPEG with in-camera processing. Details about its usage can be found in 
+    <xref href="../topics/darktable_chart.dita#darktable_chart" type="topic">Using darktable-chart</xref>.</p>
+    <p>
+    <tt>darktable-chart</tt>either starts a GUI or is used as a command-line program.</p>
+    <codeblock xml:space="preserve">
+darktable-chart
+              [--help]
+              [&lt;input Lab pfm file&gt;]
+              [&lt;cht file&gt;]
+              [&lt;reference cgats/it8 or Lab pfm file&gt;]
+</codeblock>
+    <p>All parameters are optional, however, if you want to supply the second file name you also need to supply the first one etc. Starting 
+    <tt>darktable-chart</tt>this way opens a special GUI (details can be found in 
+    <xref href="../topics/darktable_chart.dita#darktable_chart" type="topic">Using darktable-chart</xref>). 
+    <dl>
+      <dlentry>
+        <dt>--help</dt>
+        <dd>Gives usage information and terminates.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;input Lab pfm file&gt;</dt>
+        <dd>Opens the utility with the given file as source image. The input file needs to be in Lab Portable Float Map format.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;cht file&gt;</dt>
+        <dd>Specifies a chart file describing the layout of the used color reference chart.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;reference cgats/it8 or Lab pfm file&gt;</dt>
+        <dd>Specifies the reference values, either as measured values according to the CGATS standard, or as a reference image in Lab Portable Float Map format.</dd>
+      </dlentry>
+    </dl></p>
+    <p>Alternatively 
+    <tt>darktable-chart</tt>can be used as a command line program to generate darktable style files out of previously saved CSV files.</p>
+    <codeblock xml:space="preserve">
+darktable-chart
+              --csv
+              &lt;csv file&gt;
+              &lt;number patches&gt;
+              &lt;output dtstyle file&gt;
+</codeblock>
+    <p>All parameters are mandatory. 
+    <dl>
+      <dlentry>
+        <dt>&lt;csv file&gt;</dt>
+        <dd>A CSV file previously saved from within 
+        <tt>darktable-chart</tt>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;number patches&gt;</dt>
+        <dd>The number of color patches to be used in the 
+        <i>color look up table</i>settings of the created style.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>&lt;output dtstyle file&gt;</dt>
+        <dd>The name of the style file to be created.</dd>
+      </dlentry>
+    </dl></p>
+  </body>
+</topic>

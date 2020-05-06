@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage_delete" xml:lang="en-us">
+  <title>delete</title>
+  <body>
+    <p>This deletes the selected style, without further question.</p>
+  </body>
+</topic>

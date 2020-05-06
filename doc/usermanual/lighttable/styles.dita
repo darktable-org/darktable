@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles" xml:lang="en-us">
+  <title>Styles</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>styles</indexterm></indexterm>
+        <indexterm>styles</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This panel provides a powerful functionality in darktable: storing a history stack as a style, and applying it to other images. Styles are created within this panel or in the darkroom (see 
+            <xref href="../darkroom/history.dita#history" type="topic">History stack</xref>). They are managed within this lighttable panel, which allows you to create, apply, edit and delete styles.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_styles.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

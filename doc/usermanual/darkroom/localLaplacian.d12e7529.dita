@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="localLaplacian.d12e7529" xml:lang="en-us">
+  <title>Local laplacian</title>
+  <body>
+    <p>To understand the parameters of the local laplacian filter, you can think of it as applying a curve to the image, similar to this picture: 
+    <image align="center" href="modules/images/locallaplacian-curve.png" placement="break" />It will then be applied to the image in a way that works locally and avoids halo artifacts.</p>
+  </body>
+</topic>

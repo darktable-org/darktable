@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="targetMiddlegreyDisplayTab.d12e8206" xml:lang="en-us">
+  <title>Target middle-grey (
+  <uicontrol>Display</uicontrol>tab)</title>
+  <body>
+    <p>This is the middle-grey of the output medium, that is used as a target for the filmic rgb S curve central node. On gamma corrected media, the actual grey is computed with the gamma correction (middle-grey^(1/gamma)), so a middle-grey parameter of 18% with a gamma of 2.2 gives an actual middle-grey target of 45.87%.</p>
+  </body>
+</topic>

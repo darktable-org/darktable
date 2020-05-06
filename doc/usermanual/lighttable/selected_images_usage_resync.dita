@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_resync" xml:lang="en-us">
+  <title>resync local copy</title>
+  <body>
+    <p>This action will synchronize the XMP sidecars of the temporary local copy and the copy in external storage, if needed, and will remove the local copies. Note that if a local copy has been modified and the external storage is not accessible the local copy won't be deleted (see 
+    <xref href="local_copies.dita#local_copies" type="topic">Local copies</xref>).</p>
+  </body>
+</topic>

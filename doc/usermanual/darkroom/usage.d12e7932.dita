@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e7932" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The filmic rgb module aims at mapping the photographed scene (RAW image) dynamic range to the (smaller) display dynamic range. This mapping is defined in three steps, each handled in a separate tab in the interface: 
+    <ul>
+      <li>
+        <p>The 
+        <uicontrol>scene</uicontrol>tab contains the 
+        <q>input</q>settings of the scene: what constitutes middle grey, white and black in the photographed scene.</p>
+      </li>
+      <li>
+        <p>The 
+        <uicontrol>look</uicontrol>tab contains the parameters of the mapping applied to the input parameters defined in the 
+        <uicontrol>scene</uicontrol>tab. Notably, this part of the module applies an S-shaped parametric curve to enhance the contrast and remap the grey value to the middle grey of the display. This is similar to what the base curve or tone curve modules do.</p>
+      </li>
+      <li>
+        <p>The 
+        <uicontrol>display</uicontrol>tab defined the output settings to map the transformed image to the display. In typical use cases, this tab should only be used very rarely.</p>
+      </li>
+    </ul></p>
+    <p>The sliders' ranges of filmic rgb are limited to usual and safe values, but values are allowed out of these ranges by clicking on the sliders with the right button and inputting values on the keyboard. Filmic rgb has no neutral parameters resulting in a no-operation: as soon as the module is enabled, the image is always at least slightly affected.</p>
+    <p>The curves at the top of the module are read-only and serve as a guide for the operations performed on the sliders. The bright curve is the tone mapping curve, where the abscissa represents the scene exposure, and the ordinate represents the display exposure. The dark curve is the desaturation curve, representing the percentage of saturation as function of the scene exposure.</p>
+  </body>
+</topic>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_attach" xml:lang="en-us">
+  <title>attach</title>
+  <body>
+    <p>Selected tags are attached to selected images with the following actions.</p>
+    <p>Click on button 
+    <q>attach</q>attaches the selected tag in dictionary.</p>
+    <p>Click-right on a tag of dictionary view and sub-menu 
+    <q>attach tag</q></p>
+    <p>Double-click on a tag of dictionary view.</p>
+    <p>Click-right on a tag of attached view and sub-menu 
+    <q>attach tag to all</q></p>
+    <p>by typing into the text box and pressing the 
+    <q>new</q>button or enter. Note that the tag is also created if doesn't exist already.</p>
+    <p>Ctrl+T opens a small text box at the bottom of the central view for quickly tagging your selected images by typing a tag phrase and hitting return.</p>
+    <p>Hovering the images in ligthtable you can control the already attached tags either on the attached view and in image information as well.</p>
+  </body>
+</topic>

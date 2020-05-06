@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lens.d12e12086" xml:lang="en-us">
+  <title>lens</title>
+  <body>
+    <p>The lens make and model as determined by Exif data. You can override this manually and select your lens from a hierarchical menu. This is mainly needed for pure mechanical lenses, but may also be needed for off-brand / third party lenses.</p>
+  </body>
+</topic>

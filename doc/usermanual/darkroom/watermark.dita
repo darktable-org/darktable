@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="watermark" xml:lang="en-us">
+  <title>Watermark</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>watermark</indexterm></indexterm>
+        <indexterm>watermark</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

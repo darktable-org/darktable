@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="preserveChrominanceLookTab.d12e8128" xml:lang="en-us">
+  <title>Preserve chrominance (
+  <uicontrol>Look</uicontrol>tab)</title>
+  <body>
+    <p>The 
+    <uicontrol>preserve chrominance</uicontrol>setting indicates how the chrominance should be handled by filmic rgb: either not at all, or using one of the provided three norms.</p>
+    <p>When applying the S-curve transformation independently on each color, the proportions of the colors get modified, which modifies the properties of the underlying spectrum, and ultimately the chrominance of the image. This is what happens if you choose 
+    <i>no</i>in the 
+    <uicontrol>preserve chrominance</uicontrol>parameter. This value may yield seemingly 
+    <q>better</q>results than the other values, but it may negatively impact later parts of the pipeline, when it comes to global saturation for example.</p>
+    <p>The other values of this parameter all work in a similar way. Instead of applying the S-curve to the channels R, G and B independently, filmic rgb uses a norm N, divides all the three components by that norm, and applies the S-curve to N. This way, the relationship between the channels is preserved.</p>
+    <p>The different values of the 
+    <uicontrol>preserve chrominance</uicontrol>parameter indicate which norm is used (the value used for N): 
+    <ul>
+      <li>
+        <p>
+        <i>max RGB</i>is the maximum value of the three channels R, G and B. It is the behaviour of the previous version of the filmic module. It tends to darken the blue, especially skies, and to yield halos/fringes, especially if some channels are clipped.</p>
+      </li>
+      <li>
+        <p>
+        <i>luminance Y</i>is a linear combination of the three channels R, G and B. It tends to darkens the reds, and to increase the local contrast in reds.</p>
+      </li>
+      <li>
+        <p>
+        <i>RGB power norm</i>is the sum of the cubes of the three channels R, G, and B, divided by the sum of their squares - that is to say, (R³ + G³ + B³)/(R² + G² + B²). It is usally a good compromise between the max RGB and the luminance Y values.</p>
+      </li>
+    </ul></p>
+    <p>There is no "right" choice for the norm, depending on the picture to which it applies - you should experiment and decide for yourself on case by case basis.</p>
+  </body>
+</topic>

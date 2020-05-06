@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_gui_example" xml:lang="en-us">
+  <title>Building User Interface elements</title>
+  <body>
+    <p>Our previous example was a bit limited. In particular the use of a preference for the export path wasn't very nice. We can do better than that by adding elements to the user interface in the export dialog.</p>
+    <p>UI elements are created via the 
+    <codeph>darktable_new_widget</codeph>function. This function takes a type of widget as a parameter and returns a new object corresponding to that widget. You can then set various fields to that widget to set its parameters. You will then use that object as a parameter to various functions that will add it to the darktable UI. The following simple example adds a lib in the lighttable view with a simple label</p>
+    <pre xml:space="preserve">
+local my_label = darktable.new_widget("label")
+my_label.label = "Hello, world !"
+
+
+dt.register_lib("test","test",false,{
+    [dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_CENTER",20},
+    },my_label)
+    
+</pre>
+    <p>There is a nice syntactic trick to make UI element code easier to read and write. You can call these objects as functions with a table of key values as an argument. This allows the following example to work. It creates a container widget with two sub-widgets. A label and a text entry field.</p>
+    <pre xml:space="preserve">
+        local my_widget = darktable.new_widget("box"){
+                orientation = "horizontal",
+                darktable.new_widget("label"){ label = "here =&gt; " },
+                darktable.new_widget("entry"){ tooltip = "please enter text here" }
+        }
+</pre>
+    <p>Now that we know that, let's improve our script a bit.</p>
+    <pre xml:space="preserve">
+darktable = require "darktable"
+
+local scp_path = darktable.new_widget("entry"){
+  tooltip ="Complete path to copy to. Can include user and hostname",
+  text = "",
+  reset_callback = function(self) self.text = "" end
+}
+
+
+darktable.register_storage("scp_export","Export via scp",
+  function( storage, image, format, filename,
+     number, total, high_quality, extra_data)
+    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+      scp_path.text
+    ) then
+      darktable.print_error("scp failed for "..tostring(image))
+    end
+    end,
+    nil, --finalize
+    nil, --supported
+    nil, --initialize
+    darktable.new_widget("box") {
+    orientation ="horizontal",
+    darktable.new_widget("label"){label = "target SCP PATH "},
+    scp_path,
+})
+</pre>
+  </body>
+</topic>

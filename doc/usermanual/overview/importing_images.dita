@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="importing_images">
+  <title>Importing images</title>
+  <body>
+    <p>To begin with darktable, you first need to import images. The import module is in the left panel of the lighttable view (
+    <xref href="../lighttable/import.dita#import" type="topic">Import</xref>). You can either import from the filesystem or, if darktable supports your camera model, directly from camera.</p>
+    <section id="darktable_basic_workflow_importing_from_fs">
+      <title>Importing images from filesystem</title>
+      <p>When importing from disk, you can import either a single image or a folder. darktable will analyse its content, detect images that are already imported and only import new images.</p>
+    </section>
+    <section id="darktable_basic_workflow_importing_from_camera">
+      <title>Importing from camera</title>
+      <p>Connect your camera to your system. If your distribution tries to automount it, select the option to abort the mount operation. Otherwise the camera will be locked and not accessible from within darktable. If you don't see your camera in the import module, hit the 
+      <q>scan for devices</q>button. Your camera will then appear in the same module with additional choices: 
+      <i>import</i>and 
+      <i>tethering</i>.</p>
+    </section>
+  </body>
+</topic>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>Darkroom mode is for photographic development of the image that you selected from the lighttable. Numerous tools, named modules, are available for processing that image.</p>
+    <p>On the left hand side you have navigation, snapshot, history stack, color picker, tagging, image information and mask manager panels, described in 
+    <xref href="darkroom_panels.dita#darkroom_panels" type="topic">Darkroom panels</xref>. In the right hand panel you can see the histogram and a list of modules available for working with the image. At the bottom of the right hand panel you can enable/disable the view of individual modules.</p>
+    <p>You can use 
+    <i>middle-click</i>to 
+    <indexterm>zoom</indexterm>1:1. A double 
+    <i>middle-click</i>takes you to 2:1. Alternatively you can zoom in and out between 1:1 and fit-to-screen by mouse scrolling. Mouse scrolling while holding the control key pressed gives an extended zoom range between 2:1 and 1:10.</p>
+    <p>You normally export multiple images from the lighttable view but you can also export the current image directly from the darkroom by using the shortcut 
+    <i>Ctrl+E</i>. Export parameters are then those currently selected in the lighttable.</p>
+  </body>
+</topic>

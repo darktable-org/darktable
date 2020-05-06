@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_rules_exclude" xml:lang="en-us">
+  <title>exclude images</title>
+  <body>
+    <p>Adds a new rule which is combined with the previous rule(s) in a logical 
+    <i>EXCEPT</i>operation. Images which are selected by the new rule are exempted from the collection.</p>
+  </body>
+</topic>

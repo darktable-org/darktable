@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e8910" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The color balance allows you to shift colors selectively by luminance range: shadows, mid-tones, and highlights. It does so using two different methods: 
+    <ul>
+      <li>
+        <p>
+        <i>lift, gamma, gain</i>, the classic way, that allows a more separated control of shadows versus highlights,</p>
+      </li>
+      <li>
+        <p>
+        <i>slope, offset, power</i>, the new standard defined by the American Society of Cinematographers Color Decision List 
+        <i>(ASC CDL)</i>, more suited for scene-referred editing.</p>
+      </li>
+    </ul></p>
+    <p>The master settings affect the whole image. They are not available in 
+    <i>lift, gamma, gain (sRGB)</i>mode. The slider ranges are limited to usual values ([50%; 150%] for saturations, [-50%; 50%] for contrast), but higher and lower values can be defined from keyboard inputs after a right-click on the corresponding slider.</p>
+    <p>Side note: although this module acts on RGB colors its location in pixelpipe puts it into the Lab color space. Accordingly the modules converts from Lab to RGB, does its color adjustments, and then converts back to Lab.</p>
+  </body>
+</topic>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart_source_image" xml:lang="en-us">
+  <title>Source image</title>
+  <body>
+    <p>In the 
+    <q>source image</q>tab you set your source image which requires two elements. The first element is an input file in Lab Portable Float Map format (extension 
+    <i>.pfm</i>). The source file represents the largely unmodified data as the camera sees them. Details on taking photos of a color reference card and producing a 
+    <i>.pfm</i>output file are described below. The second element is a chart file that contains a formal description of the underlying color reference card's layout (extension 
+    <i>.cht</i>). Chart files are usually shipped with your color reference card or can be downloaded.</p>
+    <p>In real life the photo taken from the color reference card will show some perspective distortions relative to the layout defined in the chart file. For that reason the layout is displayed as a grid over the image and can be modified.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">You can move the corners of the grid using the mouse to reach best alignment of grid and image.</entry>
+              <entry colname="col2">
+                <image align="center" href="../images/darktable_chart_source.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>A rectangular frame is displayed for each patch and defines the area from which 
+    <filepath>darktable-chart</filepath>will actually sample the needed input data. It may be required to modify the size of these rectangles so that the sampling area is big enough but does not overlap with neighboring patches. Use the 
+    <q>size</q>slider in the upper right part of the GUI. Higher values lead to smaller sizes.</p>
+  </body>
+</topic>

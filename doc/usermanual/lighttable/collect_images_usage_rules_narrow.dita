@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_rules_narrow" xml:lang="en-us">
+  <title>narrow down search</title>
+  <body>
+    <p>Adds a new rule which is combined with the previous rule(s) in a logical 
+    <i>AND</i>operation. An image is only part of the collection if it additionally fulfills the added rule.</p>
+  </body>
+</topic>

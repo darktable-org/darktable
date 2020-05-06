@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="metadata_editor_usage_apply" xml:lang="en-us">
+  <title>apply</title>
+  <body>
+    <p>Apply new settings, as defined in the fields above, to the selected image(s).</p>
+  </body>
+</topic>

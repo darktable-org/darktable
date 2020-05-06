@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="preference.d12e6014" xml:lang="en-us">
+  <title>preference</title>
+  <body>
+    <p>This combobox defines if certain replacement colors shall take precedence over others. In its default setting 
+    <q>off</q>all pixels contribute equally. Setting it to 
+    <q>saturated colors</q>makes pixels contribute according to their chromaticity – the higher saturated a color the more it contributes. By selecting 
+    <q>hue</q>you get a choice of giving precedence to a specific hue.</p>
+  </body>
+</topic>

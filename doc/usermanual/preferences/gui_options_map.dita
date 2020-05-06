@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options_map" xml:lang="en-us">
+  <title>Map/geolocalisation</title>
+  <body>
+    <p>
+      <b>only draw images on map that are currently collected and filtered</b>
+    </p>
+    <p>Use the current filter settings to select the geotagged images drawn in the map view. This limits the images drawn to those currently shown in the filmstrip and thus reduces the time needed (default off).</p>
+    <p>
+      <b>maximum number of images drawn on map</b>
+    </p>
+    <p>The maximum number of geotagged images drawn on the map. Increasing this number can slow down the drawing of the map. Needs a restart if changed (default 100).</p>
+    <p>
+      <b>pretty print the image location</b>
+    </p>
+    <p>Show a more readable representation of the geo location in the image information module (default on).</p>
+  </body>
+</topic>

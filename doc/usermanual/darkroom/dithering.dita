@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="dithering" xml:lang="en-us">
+  <title>Dithering</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>dithering</indexterm></indexterm>
+        <indexterm>dithering</indexterm>
+        <indexterm>banding</indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>banding</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

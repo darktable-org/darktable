@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="film_rolls" xml:lang="en-us">
+  <title>Film rolls</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>film rolls</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The basic element for organizing images in darktable is called a film roll – a kind of virtual folder. Whenever you import images from disk, the images are organized in a film roll whose name is derived from the name of the disk folder. Re-importing a disk folder will add any new images to the existing film roll; images already present in the film roll are not touched.</p>
+    <p>It is important to note that importing images in darktable does not involve a physical copy step. Importing a folder into darktable is therefore 
+    <i>not</i>a backup operation of that folder.</p>
+  </body>
+</topic>

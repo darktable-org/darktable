@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_usage_tabs" xml:lang="en-us">
+  <title>Channel tabs</title>
+  <body>
+    <p>Each tab selects a data channel – real or virtual. Modules acting in Lab color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in RGB color space have data channels for g (gray), R, G, B, H (hue of HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example 
+    <xref format="html" href="http://en.wikipedia.org/wiki/Color_space" scope="external">Wikipedia's article on color spaces</xref>for a deeper look.</p>
+    <p>Each tab provides two sliders for its data channels: one for the input data that the module receives and one for the output data that the module produces prior to blending.</p>
+    <p>You can inspect the image data corresponding to an individual color channel by holding down the 
+    <i>Shift</i>key while entering the respective slider with the mouse cursor. The center image changes to display the selected color channel either in graycale values or in false colors, depending on the corresponding preference setting in 
+    <q>GUI options</q>(see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>). You may additionally hold down the 
+    <i>ctrl</i>key which lets you see the resulting mask overlaid to the image. When leaving the slider the image goes back to normal after a short delay.</p>
+  </body>
+</topic>

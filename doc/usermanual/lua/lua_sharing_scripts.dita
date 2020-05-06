@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_sharing_scripts" xml:lang="en-us">
+  <title>Sharing scripts</title>
+  <body>
+    <p>So far, our lua code was in 
+    <i>luarc</i>. That's a good way to develop your script but not very practical for distribution. We need to make this into a proper lua module. To do that, we save the code in a separate file (
+    <cmdname>scp-storage.lua</cmdname>in our case):</p>
+    <p>
+      <pre xml:space="preserve">
+--[[
+SCP STORAGE
+a simple storage to export images via scp
+
+AUTHOR
+Jérémy Rosen (jeremy.rosen@enst-bretagne.fr)
+
+INSTALLATION
+* copy this file in $CONFIGDIR/lua/ where CONFIGDIR
+is your darktable configuration directory
+* add the following line in the file $CONFIGDIR/luarc
+  require "scp-storage"
+
+USAGE
+* select "Export via SCP" in the storage selection menu
+* set the target directory 
+* export your images
+
+LICENSE
+GPLv2
+
+]]
+darktable = require "darktable"
+darktable.configuration.check_version(...,{2,0,0})
+
+local scp_path = darktable.new_widget("entry"){
+  tooltip ="Complete path to copy to. Can include user and hostname",
+  text = "",
+  reset_callback = function(self) self.text = "" end
+}
+
+
+darktable.register_storage("scp_export","Export via scp",
+  function( storage, image, format, filename,
+     number, total, high_quality, extra_data)
+    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+      scp_path.text
+    ) then
+      darktable.print_error("scp failed for "..tostring(image))
+    end
+    end,
+    nil, --finalize
+    nil, --supported
+    nil, --initialize
+    darktable.new_widget("box") {
+    orientation ="horizontal",
+    darktable.new_widget("label"){label = "target SCP PATH "},
+    scp_path,
+})
+</pre>
+    </p>
+    <p>darktable will look for scripts (following the normal lua rules) in the standard directories plus 
+    <codeph>$CONFIGDIR/lua/?.lua</codeph>. So our script can be called by simply adding 
+    <codeph>require "scp-storage"</codeph>in the 
+    <i>luarc</i>file. A couple of extra notes... 
+    <ul>
+      <li>The function 
+      <codeph>darktable.configuration.check_version</codeph>will check compatibility for you. The 
+      <codeph>...</codeph>will turn into your script's name and 
+      <codeph>{2,0,0}</codeph>is the API version you have tested your script with. You can add multiple API versions if you update your script for multiple versions of darktable.</li>
+      <li>Make sure to declare all your functions as 
+      <codeph>local</codeph>to not pollute the general namespace.</li>
+      <li>Make sure you do not leave debug prints in your code. 
+      <codeph>darktable.print_error</codeph>in particular allows you to leave debug prints in your final code without disturbing the console.</li>
+      <li>You are free to choose any license for your script but scripts that are uploaded on darktable's website need to be GPLv2.</li>
+    </ul>Once you have filled all the fields, checked your code, you can upload it to our script page 
+    <xref format="html" href="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts" scope="external">here</xref>.</p>
+  </body>
+</topic>

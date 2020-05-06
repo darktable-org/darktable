@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="percentile.d12e5705" xml:lang="en-us">
+  <title>percentile</title>
+  <body>
+    <p>Defines a location in the histogram for automatic exposure correction. A percentile of 50% denotes a position in the histogram where 50% of pixel values are below and 50% of pixel values are above. For more details see 
+    <xref format="html" href="http://en.wikipedia.org/wiki/Percentile" scope="external">
+      <i>percentile</i>
+    </xref>. Only available in 
+    <q>automatic</q>mode.</p>
+  </body>
+</topic>

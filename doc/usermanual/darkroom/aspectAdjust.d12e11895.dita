@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="aspectAdjust.d12e11895" xml:lang="en-us">
+  <title>aspect adjust</title>
+  <body>
+    <p>If the 
+    <q>specific</q>lens model has been selected this parameter allows for a free manual adjustment of the image's aspect ratio.</p>
+  </body>
+</topic>

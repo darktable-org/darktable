@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="procedure.d12e16389" xml:lang="en-us">
+  <title>Procedure</title>
+  <body>
+    <p>This procedure uses tone curve, channel mixer and split-toning modules.</p>
+    <ol>
+      <li>Image preparation 
+      <p>Prepare the image for the cross process steps by adjusting the base settings such as exposure, whitebalance etc. for a correctly looking image.</p></li>
+      <li>Boost contrast 
+      <p>Select the medium contrast curve preset for 
+      <i>tone curve</i>module (
+      <xref href="tone_curve.dita#tone_curve" type="topic">Tone curve</xref>) to boost the overall contrast in the image. You might later return here to tune the curve for better result.</p></li>
+      <li>Color cast This step changes the color cast as the base for the effect using the 
+      <i>channel mixer</i>module (
+      <xref href="channel_mixer.dita#channel_mixer" type="topic">Channel mixer</xref>). You might later again return to this and finetune the colorcast of the final result. 
+      <ol>
+        <li>Enable the channel mixer module</li>
+        <li>Select the blue channel and set the blue color value to 0.8</li>
+        <li>Select the red channel and change the blue color value to 0.1</li>
+        <li>Select the green channel and change the blue color value to 0.1</li>
+      </ol></li>
+      <li>split-toning 
+      <p>We use 
+      <i>split-toning</i>(
+      <xref href="splittoning.dita#splittoning" type="topic">split-toning</xref>) to add some more coloring to the result for cyan/blue shadows and yellow highlight.</p>
+      <ol>
+        <li>Enable the split-toning module</li>
+        <li>Select a cyan/blue tone for shadows and set saturation around 50%</li>
+        <li>Select a yellow/orange tone for highlights and set saturation around 70%</li>
+        <li>Set compression to 10%</li>
+        <li>Use the balance slider to tune the split-toning effect. This differs on every image due to it's exposure, motive etc.</li>
+      </ol></li>
+    </ol>
+  </body>
+</topic>

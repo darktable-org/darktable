@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_memory" xml:lang="en-us">
+  <title>darktable and memory</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>memory setup</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable's memory requirements are high. A simple calculation makes this clear. If you have a 20MPix image, darktable for precision reasons will store this internally as a 4 x 32-bit floating point cell for each pixel. Each full image of this size will need about 300MB of memory. As we want to process the image, we will at least need two buffers for each module  – one for input and one for output. If we have a more complex module, its algorithm might additionally require several intermediate buffers of the same size. Without further optimization, anything between 600MB and 3GB would be needed only to store and process image data. On top we have darktable's code segment, the code and data of all dynamically linked system libraries, and not to forget further buffers where darktable stores intermediate images for quick access during interactive work (mip map cache). All in all, darktable would like to see a minimum of about 4GB to run happily.</p>
+  </body>
+</topic>

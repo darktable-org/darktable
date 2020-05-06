@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="contextual_help">
+  <title>Contextual help</title>
+  <body>
+    <p>A button 
+    <image href="../images/contextual_help.png" placement="inline" />located in the upper panel allows you to open the online usermanual for various elements of darktable. Click on this button, then click on the element for which you want help. The related usermanual entry will open in your web browser.</p>
+  </body>
+</topic>

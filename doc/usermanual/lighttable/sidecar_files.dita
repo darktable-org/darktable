@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="sidecar_files" xml:lang="en-us">
+  <title>Sidecar files</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>sidecar files</indexterm>
+        <indexterm>XMP files</indexterm>
+        <indexterm>save button</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable is a non-destructive image editor. This means that darktable opens images read-only. Any newly added metadata, tags, and parameters of image operations (the 
+    <q>history stack</q>) are stored in separate 
+    <i>.xmp</i>files, so-called sidecars, allowing you to store information about the images as well as the full editing history without touching the original raw files. When you import an image into darktable for the first time, an XMP file with default settings is generated automatically.</p>
+    <p>For a given source image, multiple editing versions, called duplicates, can co-exist, sharing the same input (raw) data but each having their own metadata, tags and history stack. Each duplicate is represented by a separate XMP sidecar file with a filename constructed in the form 
+    <q>&lt;basename&gt;
+    <i>_nn</i>.&lt;extension&gt;.xmp</q>, where 
+    <i>nn</i>represents the (minimum two-digit) version number of that edit. Information for the initial edit – the 
+    <q>duplicate</q>with version number zero  – is stored in the sidecar file 
+    <q>&lt;basename&gt;.&lt;extension&gt;.xmp</q>. The version number of a duplicate is displayed in the image information panel in each of darktable's views (see an example in 
+    <xref href="image_information.dita#image_information" type="topic">Image information</xref>).</p>
+    <p>Sidecar files automatically synchronize with your work without the need to press a 
+    <q>save</q>button. When backing up your data, make sure you also keep the XMP files, as these are needed to fully reconstruct your work in case of a disaster.</p>
+    <p>In addition to the sidecar files, darktable keeps all image-related data in its database for fast access. An image can only be viewed and edited from within darktable if its data is loaded in that database. This automatically happens when you first import an image or at any later time by re-importing it (see 
+    <xref href="import.dita#import" type="topic">Import</xref>). In the latter case the database gets updated with data that darktable finds in the sidecar files belonging to that image.</p>
+    <p>Once an image has been imported into darktable the database entries take precedence over the XMP file. Subsequent changes to the XMP file by any other software are not visible to darktable – any changes get overwritten the next time darktable synchronizes the file. This behavior can be changed in the preferences dialog (see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>). On request darktable looks for updated XMP files at startup and offers a choice whether to update the database or overwrite the XMP file.</p>
+  </body>
+</topic>

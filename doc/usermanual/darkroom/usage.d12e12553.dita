@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e12553" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>For a basic use, with default parameters, add the shapes to the image like with the spot removal module (see 
+    <xref href="spot_removal.dita#spot_removal" type="topic">Spot removal</xref>). To use the wavelet decompose first select one of the scales as the current scale (see below) and then add the shapes.</p>
+    <p>The GUI is divided in three main sections: wavelet decompose, retouch tools and shapes.</p>
+  </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="frameLineSize.d12e14141" xml:lang="en-us">
+  <title>frame line size</title>
+  <body>
+    <p>The percentage of the frame line size relative to the border size at its smallest part.</p>
+  </body>
+</topic>

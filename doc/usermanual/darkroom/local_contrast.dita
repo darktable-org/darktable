@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="local_contrast" xml:lang="en-us">
+  <title>Local contrast</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>local contrast</indexterm></indexterm>
+        <indexterm>local contrast
+        <indexterm>equalizer</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

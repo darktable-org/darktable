@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interacting_comboboxes" xml:lang="en-us">
+  <title>Comboboxes</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>module usage
+        <indexterm>comboboxes</indexterm></indexterm>
+        <indexterm>comboboxes</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Clicking on a combobox will open a list of available options. Click on the item you want to select. Sometimes the selection list opens close to the bottom or top of the screen and only part of the items are visible; scroll with your mouse wheel to bring up the full list. Alternatively, you can also use the mouse wheel and keyboard arrow keys to select an option.</p>
+  </body>
+</topic>

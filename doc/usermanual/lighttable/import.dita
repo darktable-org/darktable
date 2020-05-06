@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="import" xml:lang="en-us">
+  <title>Import</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>import</indexterm></indexterm>
+        <indexterm>import</indexterm>
+        <indexterm>file import</indexterm>
+        <indexterm>camera import</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This panel is for importing images into film rolls. You can either import a complete folder, by pressing 
+            <q>folder</q>, or a single image with 
+            <q>image</q>. You can also cause darktable to search for connected cameras by pressing 
+            <q>scan for devices</q>. If a supported camera is connected you can import directly from that camera or control the camera from within darktable in tethering mode.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_import_1.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Imported images are organized as film rolls (see 
+    <xref href="film_rolls.dita#film_rolls" type="topic">Film rolls</xref>). All film rolls are accessible through the 
+    <i>collect images</i>module (see 
+    <xref href="collect_images.dita#collect_images" type="topic">Collect images</xref>). If you set the selection attribute to 
+    <q>film roll</q>you get a list of available film rolls, which can be filtered using the editbox to quickly find the one of interest. Double-click on a film roll in the list and it will open in the lighttable. You can also click the items in 
+    <i>recently used collections</i>(see 
+    <xref href="recently_used_collections.dita#recently_used_collections" type="topic">Recently used collections</xref>) to open the latest ones you have worked with.</p>
+  </body>
+</topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="edgeDetectionRadius.d12e13379" xml:lang="en-us">
+  <title>edge detection radius</title>
+  <body>
+    <p>Set the spatial extent of the gaussian blur used for an edge detection. The algorithm uses the difference of gaussian-blurred and original image as an indicator for edges (a special case of the 
+    <q>difference of gaussians</q>edge detection). Try increasing this value if you either want a stronger detection of the fringes or the thickness of the fringe edges is too high.</p>
+  </body>
+</topic>

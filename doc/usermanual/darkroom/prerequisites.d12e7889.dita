@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="prerequisites.d12e7889" xml:lang="en-us">
+  <title>Prerequisites</title>
+  <body>
+    <p>In order to get the best out of filmic rgb, images need some preparation: 
+    <ul>
+      <li>
+        <p>In-camera, expose the shot 
+        <q>to the right</q>. This implies under exposing the shot so that the highlights are at the right of the histogram, just on the verge of clipping, but not clipped. It does not matter if the picture preview is very dark on your camera screen: as long as highlights are unclipped, filmic rgb should be able to recover details from the raw data. Beware that clipped data are not recoverable. Some cameras have a clipping alert preview to help you diagnose this, and some even have an highlight-priority exposure mode.</p>
+      </li>
+      <li>
+        <p>In the 
+        <xref href="exposure.dita#exposure" type="topic">
+          <i>exposure</i>
+        </xref>module, push the exposure until the midtones are clear enough. Do not worry about losing the highlights: they will be recovered as part of the filmic rgb processing. However, it is important to avoid negative pixels in black areas: the computations done by filmic rgb will result in unpredictable results in this case. For some cameras models (Canon, mainly), rawspeed (the raw decoding library of darktable), may set an exaggerated black level, resulting in crushed blacks and negative values. If so, brighten the blacks by setting a negative black level value in the 
+        <xref href="exposure.dita#exposure" type="topic">
+          <i>exposure</i>
+        </xref>module.</p>
+      </li>
+      <li>
+        <p>If you plan on using filmic rgb's auto-tuners, use the 
+        <xref href="whitebalance.dita#whitebalance" type="topic">
+          <i>white balance</i>
+        </xref>module first to correct any color casts and get neutral colors. In RGB color spaces, luminance and chrominance are linked, and filmic rgb's luminance detection relies on accurate measures of both. If your picture is very noisy, add an initial step of denoising to help the black exposure readings, and use a high quality demosaicing.</p>
+      </li>
+      <li>
+        <p>If you plan on using filmic rgb's chrominance preservation mode, avoid using any tone mapping module as well as the base curve module. These may produce unpredictable color shifts that would make the chrominance preservation useless. Neither of these modules is usually needed if you use filmic rgb.</p>
+      </li>
+    </ul></p>
+  </body>
+</topic>

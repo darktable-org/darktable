@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="styles_usage_edit" xml:lang="en-us">
+  <title>edit</title>
+  <body>
+    <p>Styles are collections of history stack items. After pressing 
+    <q>edit</q>, you are prompted with a dialogue to include or exclude specific items from the stack. Check option 
+    <q>duplicate</q>if you want to create a new style, instead of overwriting the existing one; you need to provide a new unique style name in this case.</p>
+    <p>See 
+    <i>create</i>how to create a hierarchical view.</p>
+  </body>
+</topic>

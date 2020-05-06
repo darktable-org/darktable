@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="modules" xml:lang="en-us">
+  <title>Modules</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Modules are organized into five functional groups: basic, tone, color, correction and effect. You either view all modules in one long list or instead click on a group to just display modules belonging to that group.</p>
+  </body>
+</topic>

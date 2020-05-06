@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="horizontalPosition.d12e14116" xml:lang="en-us">
+  <title>horizontal position</title>
+  <body>
+    <p>Select from a set of pre-defined ratios where you want your underlying image be positioned on the horizontal axis. You can also right click and enter your own ratio as 
+    <q>x/y</q>.</p>
+  </body>
+</topic>

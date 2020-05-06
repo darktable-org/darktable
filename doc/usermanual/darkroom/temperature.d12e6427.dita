@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="temperature.d12e6427" xml:lang="en-us">
+  <title>temperature</title>
+  <body>
+    <p>Set the color temperature (in Kelvin). The channel sliders will be updated when you adjust this parameter. darktable derives the color temperature from the Exif data using some model assumptions. The value given is not meant to be authoritative. In the end only the updated channel values determine how the image is modified.</p>
+  </body>
+</topic>

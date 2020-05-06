@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_rotation" xml:lang="en-us">
+  <title>rotation</title>
+  <body>
+    <p>Perform a counter-clockwise or clockwise rotation on selected images. The third button resets the image rotation to the value in the Exif data. This feature is directly linked to the orientation module (see 
+    <xref href="../darkroom/orientation.dita#orientation" type="topic">Orientation</xref>) – adjustments are converted into history stack items of that module.</p>
+  </body>
+</topic>

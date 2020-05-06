@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="left_panels" xml:lang="en-us">
+  <title>Left panels</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <p>The panels on the left side we already know from lighttable mode (
+              <xref href="../lighttable/lighttable_panels.dita#lighttable_panels" type="topic">Lighttable panels</xref>).</p>
+              <p>Choose your image selection rules with the 
+              <xref href="../lighttable/collect_images.dita#collect_images" type="topic">Collect images</xref>panel. Recently used collections can be chosen with their respective names in a separate panel. You can also get an overview of the information of the image under your mouse cursor in a panel labeled 
+              <xref href="../lighttable/image_information.dita#image_information" type="topic">Image information</xref>.</p>
+            </entry>
+            <entry colname="col2">
+              <image align="center" href="images/left_panels.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

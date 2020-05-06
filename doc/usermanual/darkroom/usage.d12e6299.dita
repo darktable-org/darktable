@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e6299" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>You can choose between three methods for highlight reconstruction.</p>
+    <p>
+    <q>Clip highlights</q>just clamps all the pixels to the white level. Effectively this converts all clipped highlights to neutral grey tones. This method is most useful in cases where clipped highlights occur in non-colored areas like clouds in the sky.</p>
+    <p>
+    <q>Reconstruct in LCh</q>analyses each pixel having at least one channel clipped and transforms the information in LCh color space in an attempt to correct the clipped pixel using the values of the other (3 for Bayer or 8 for X-Trans) pixels in the affected sensor block. This method usually does a better job than 
+    <q>Clip highlights</q>as some details in the clipped areas are preserved. However it is incapable to reconstruct any color information  – the reconstructed highlights will all be monochrome, but brighter and with more detail than with 
+    <q>Clip highlights</q>. This method works fairly well with a high-contrast base curve (such as most manufacturers apply to their JPEG), which renders highlights desaturated. This method is a good option on naturally desaturated objects such as clouds.</p>
+    <p>
+    <q>Reconstruct color</q>uses an algorithm that transfers color information from the unclipped surroundings into the clipped highlights. This method works very well on areas with homogeneous colors and is especially useful on skin tones with smoothly fading highlights. It fails in certain cases where it produces maze-like artifacts at highlights behind high-contrast edges, such as fine, well-exposed structures in front of overexposed background (for instance ship masts or flags in front of the blown-out sky).</p>
+    <p>Tip: for highlight reconstruction to be effective you need to apply a negative EV correction in the exposure module (see 
+    <xref href="exposure.dita#exposure" type="topic">Exposure</xref>). If you want to avoid a general darkening of your image you can use darktable's mask feature in that module to limit the EV correction to only the highlights (see 
+    <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>and 
+    <xref href="parametric_mask.dita#parametric_mask" type="topic">Parametric mask</xref>).</p>
+  </body>
+</topic>

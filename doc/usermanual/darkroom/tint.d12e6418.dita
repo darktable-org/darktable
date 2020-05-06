@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tint.d12e6418" xml:lang="en-us">
+  <title>tint</title>
+  <body>
+    <p>Alter the color tint of the image, from magenta (value &lt; 1) to green (value &gt; 1). The channel sliders will be updated when you adjust this parameter.</p>
+  </body>
+</topic>

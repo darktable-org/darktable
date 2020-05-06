@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="import_from_camera_import" xml:lang="en-us">
+  <title>Import from camera</title>
+  <body>
+    <p>This will bring up an import dialog, showing the images on camera that can be selected for import into a film roll in darktable.</p>
+    <p>You define the base directory for storing imported images and the naming pattern of sub directories and individual images in the preferences dialog (see 
+    <xref href="../preferences/session_options.dita#session_options" type="topic">Session options</xref>).</p>
+  </body>
+</topic>

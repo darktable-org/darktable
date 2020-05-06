@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="drawn_mask_usage_manager" xml:lang="en-us">
+  <title>mask manager</title>
+  <body>
+    <p>More functionality to control the interaction of multiple shapes within a mask can be found in the mask manager panel (see 
+    <xref href="mask_manager.dita#mask_manager" type="topic">Mask manager</xref>). Here you can give individual names to your shapes which will help you to keep track of your shapes. You can also select individual shapes for editing – a helpful feature if your masks happens to contain several shapes with overlapping control elements.</p>
+  </body>
+</topic>

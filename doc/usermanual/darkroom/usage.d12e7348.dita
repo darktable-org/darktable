@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e7348" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Following the concept of Ansel Adams the lightness (based on the L channel from Lab) is divided into a number of zones ranging from pure black to pure white. These zones are displayed in a zonebar. The number of zones can be changed by mouse-scrolling on that bar (defaults to 10 zones).</p>
+    <p>The zonebar is split horizontally with the upper part showing the zones of the module's output and the lower part the according zones of the module's input. In its default state both parts are fully aligned. While the output zones are static you can left click and drag a control point in the input zones to modify the zonemapping. Shifting a control point proportionally expands the zones on one side and compresses the zones on the other side. Any already existing control point stays in place, effectively preventing changes to the zones beyond. Use right click to remove a control point.</p>
+    <p>The preview shows the image broken down in zones. When hovering above a zone on the zonebar, that zone – either from input or output – is highlighted on the preview.</p>
+  </body>
+</topic>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="patchSize.d12e10847" xml:lang="en-us">
+  <title>patch size</title>
+  <body>
+    <p>This slider is only available if mode 
+    <q>non-local means</q>is selected. It controls the size of the patches being matched when deciding which pixels to average (see also 
+    <xref href="denoise_non_local_means.dita#denoise_non_local_means" type="topic">Denoise – non local means</xref>). Set this to higher values as the noise gets higher. Beware that high values may smooth out small edges though. Processing time will stay about the same.</p>
+  </body>
+</topic>

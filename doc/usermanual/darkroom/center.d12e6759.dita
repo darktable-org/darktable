@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="center.d12e6759" xml:lang="en-us">
+  <title>center</title>
+  <body>
+    <p>Sets the median lightness impacted by the fill-light. A color picker is activated by pressing 
+    <image align="center" href="../images/darkroom_module_icon_picker.png" placement="inline" />. It shows the picked lightness value in the gradient bar, which helps find the desired center value. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+  </body>
+</topic>

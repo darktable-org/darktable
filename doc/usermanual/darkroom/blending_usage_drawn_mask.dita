@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_drawn_mask" xml:lang="en-us">
+  <title>drawn mask</title>
+  <body>
+    <p>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to draw a mask. If no mask elements are drawn all pixels have the same opacity, defined by the opacity slider. If you draw a mask element, e.g. a circle, the inner area of the circle will get maximum opacity, surrounded by a transition area or border with a gradual decay of opacity and the remaining image with an opacity of 0%. Different graphical shapes can be used. See 
+    <xref href="drawn_mask.dita#drawn_mask" type="topic">Drawn mask</xref>for further details.</p>
+  </body>
+</topic>

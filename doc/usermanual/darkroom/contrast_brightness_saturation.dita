@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="contrast_brightness_saturation" xml:lang="en-us">
+  <title>Contrast Brightness Saturation</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>contrast brightness saturation</indexterm></indexterm>
+        <indexterm>contrast
+        <index-see-also>tone curve</index-see-also>
+        <index-see-also>levels</index-see-also></indexterm>
+        <indexterm>brightness
+        <index-see-also>tone curve</index-see-also>
+        <index-see-also>levels</index-see-also></indexterm>
+        <indexterm>saturation
+        <index-see-also>tone curve</index-see-also>
+        <index-see-also>color zones</index-see-also>
+        <index-see-also>color contrast</index-see-also></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

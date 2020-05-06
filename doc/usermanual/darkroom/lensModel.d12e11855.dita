@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lensModel.d12e11855" xml:lang="en-us">
+  <title>lens model</title>
+  <body>
+    <p>This parameter controls how lens and camera specifics are taken into account. If set to 
+    <q>generic</q>a focal length of 28mm on a full-format camera is assumed. If set to 
+    <q>specific</q>, focal length and crop factor can be set manually.</p>
+  </body>
+</topic>

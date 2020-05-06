@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_cltest_binary">
+  <title>
+  <tt>darktable-cltest</tt>binary</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>darktable-cltest</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This binary checks if there is a usable OpenCL environment on your system that darktable can use. It emits some debug output that is equivalent to calling 
+    <tt>darktable -d opencl</tt>and then terminates.</p>
+    <p>
+    <tt>darktable-cltest</tt>is called without command line parameters: 
+    <tt>darktable-cltest</tt>.</p>
+  </body>
+</topic>

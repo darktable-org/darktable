@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_lib" xml:lang="en-us">
+  <title>Using darktable from a lua script</title>
+  <body>
+    <p>
+      <i>Warning: This feature is very experimental. It is known that several elements don't work in library mode yet. Careful testing is highly recommended.</i>
+    </p>
+    <p>The lua interface allows you to use darktable from any lua script. This will load darktable as a library and provide you with most of the lua API (darktable is configured headless, so the functions related to the user interface are not available).</p>
+    <p>As an example, the following program will print the list of all images in your library:</p>
+    <p>
+      <pre xml:space="preserve">
+#!/usr/bin/env lua
+package = require "package"
+package.cpath=package.cpath..";./lib/darktable/lib?.so"
+
+dt = require("darktable")(
+"--library", "./library.db",
+"--datadir", "./share/darktable",
+"--moduledir", "./lib/darktable",
+"--configdir", "./configdir",
+"--cachedir","cachedir",
+"--g-fatal-warnings")
+
+require("darktable.debug")
+
+for k,v in ipairs(dt.database) do
+        print(tostring(v))
+end
+</pre>
+    </p>
+    <p>Note the third line that points to the location of the 
+    <filepath>libdarktable.so</filepath>file.</p>
+    <p>Also note that the call to 
+    <apiname>require</apiname>returns a function that can be called only once and allows you to set darktable's command line parameter. The 
+    <apiname>:memory:</apiname>parameter to 
+    <apiname>--library</apiname>is useful here if you don't want to work on your personal library.</p>
+  </body>
+</topic>

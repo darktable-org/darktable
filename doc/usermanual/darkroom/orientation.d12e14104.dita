@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="orientation.d12e14104" xml:lang="en-us">
+  <title>orientation</title>
+  <body>
+    <p>If you select a non-square aspect ratio this combobox defines the orientation – portrait or landscape. Set to 
+    <q>auto</q>if you want darktable to select the most reasonable orientation based on the underlying image.</p>
+  </body>
+</topic>

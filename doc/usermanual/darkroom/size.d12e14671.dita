@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="size.d12e14671" xml:lang="en-us">
+  <title>size</title>
+  <body>
+    <p>Set the size of blur of the overexposed image in the process, the bigger the softer.</p>
+  </body>
+</topic>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_color_spaces" xml:lang="en-us">
+  <title>darktable's color spaces</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color spaces</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable's input images are either RGB files (like JPEGs or TIFFs) or camera raws – both represent colors by a combination of red, green and blue. Most part of our modules act in the 
+    <xref format="html" href="http://en.wikipedia.org/wiki/Lab_color_space" scope="external">CIELAB color space</xref>(often just called 
+    <q>Lab</q>) which describes color as a combination of lightness data (L) and a point in the a-b color plane. The final output of the image processing pipeline is once again in RGB, either shaped for the monitor display or the output file.</p>
+    <p>This process implies that the pixelpipe has two color conversion steps: 
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">
+      <i>input color profile</i>
+    </xref>and 
+    <xref href="output_color_profile.dita#output_color_profile" type="topic">
+      <i>output color profile</i>
+    </xref>. In addition there is the 
+    <xref href="demosaic.dita#demosaic" type="topic">
+      <i>demosaic</i>
+    </xref>step for raw images, where the colors of each pixel are reconstructed by interpolation.</p>
+    <p>Each module has a fixed position in the pixelpipe which tells you which color space the module lives in:</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="3" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="3.5*" />
+          <colspec colname="col2" colnum="2" colwidth="0.5*" />
+          <colspec colname="col3" colnum="3" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">up to 
+              <i>demosaic</i></entry>
+              <entry colname="col2" />
+              <entry colname="col3">Image is in raw data format with only latent colors. Each pixel carries lightness and color information for only one base color. Please mind that some of the modules in this part can also act on non-raw input images in RGB format with full information on all three color channels.</entry>
+            </row>
+            <row>
+              <entry colname="col1">between 
+              <i>demosaic</i>and 
+              <i>input color profile</i></entry>
+              <entry colname="col2" />
+              <entry colname="col3">Image is in RGB format within the color space of the specific camera or input file.</entry>
+            </row>
+            <row>
+              <entry colname="col1">between 
+              <i>input color profile</i>and 
+              <i>output color profile</i></entry>
+              <entry colname="col2" />
+              <entry colname="col3">Image is in Lab format. This is a very huge universal color space which covers all colors visible to the human eye (and even more). As darktable processes images in 4x32-bit floating point buffers, we can handle the Lab color space without risking banding or tonal breaks.</entry>
+            </row>
+            <row>
+              <entry colname="col1">after 
+              <i>output color profile</i></entry>
+              <entry colname="col2" />
+              <entry colname="col3">Image is in RGB format as defined by the selected display or output ICC profile.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

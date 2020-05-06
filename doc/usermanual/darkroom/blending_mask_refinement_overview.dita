@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_mask_refinement_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>When a 
+    <q>parametric masks</q>, a 
+    <q>drawn mask</q>or a combination of both is active several additional sliders are shown that allow for a meticulous refinement of the mask.</p>
+  </body>
+</topic>

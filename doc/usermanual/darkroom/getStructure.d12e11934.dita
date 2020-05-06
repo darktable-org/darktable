@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="getStructure.d12e11934" xml:lang="en-us">
+  <title>get structure</title>
+  <body>
+    <p>Clicking on the 
+    <image align="center" href="../images/darkroom_module_ashift_structure.png" placement="inline" />icon causes the image to be (re-)analyzed for suitable line segments. 
+    <i>Shift+clicking</i>applies a prior contrast enhancement step, 
+    <i>Ctrl+clicking</i>applies an edge enhancement step. Both variations can be used alone or in combination if the default is not able to detect a sufficient number of lines. Clicking on the 
+    <image align="center" href="../images/darkroom_module_ashift_clear.png" placement="inline" />icon discards all collected structural data. By clicking on the 
+    <image align="center" href="../images/darkroom_module_ashift_eye.png" placement="inline" />icon you can switch the overlay display of line segments on and off.</p>
+  </body>
+</topic>

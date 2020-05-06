@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="color_look_up_table" xml:lang="en-us">
+  <title>Color look up table</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>color look up table</indexterm></indexterm>
+        <indexterm>color look up table</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body />
+</topic>

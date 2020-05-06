@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_delete" xml:lang="en-us">
+  <title>delete</title>
+  <body>
+    <p>Delete a tag from the list and from all images. A warning will be displayed on how many images have this tag attached. Take this warning seriously as there is no way to recover or later find the affected images (except backup). A tag in dictionary view can be deleted in the following ways.</p>
+    <p>Click on button 
+    <q>delete</q>delete the selected one.</p>
+    <p>Click-right on a tag of dictionary view and sub-menu 
+    <q>delete tag</q>.</p>
+    <p>Click-right on a tag of dictionary view and sub-menu 
+    <q>delete branch</q>. In that case the tag itself and sub tags are deleted.</p>
+  </body>
+</topic>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="color_management" xml:lang="en-us">
+  <title>Color management</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>color management</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable employs a fully color managed workflow: 
+    <ul>
+      <li>
+        <p>Input color specifications are taken from embedded or user supplied ICC profiles or – in the case of raw files – from a library of camera specific color matrices.</p>
+      </li>
+      <li>
+        <p>darktable automatically reads the display profile of your monitor (if properly configured) for an accurate color rendition on screen. Multi-screen setups are fully supported as long as a system service like 
+        <i>colord</i>is in place and properly set up to inform darktable about the correct monitor profile.</p>
+      </li>
+      <li>
+        <p>Output files can be encoded in one of darktable's built-in profiles, like 
+        <xref format="html" href="http://en.wikipedia.org/wiki/SRGB" scope="external">sRGB</xref>or 
+        <xref format="html" href="http://en.wikipedia.org/wiki/Adobergb" scope="external">AdobeRGB (compatible)</xref>, or into any other output color space that the user supplies to darktable as an ICC profile.</p>
+      </li>
+    </ul></p>
+  </body>
+</topic>

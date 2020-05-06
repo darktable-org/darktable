@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="skulls" xml:lang="en-us">
+  <title>Skulls</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>skulls</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>If for some reason darktable is not able to generate a thumbnail, it displays a skull. Don't panic!</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/thumbnails_1.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>There are three main reasons for this to happen.</p>
+    <p>One possible cause is that the input image has been renamed or physically deleted from disk. darktable remembers all images ever imported, as long as they have not been removed from your database. In case darktable wants to create a thumbnail but is not able to open the input file, a skull is displayed instead. Users are advised to remove images from the database (see 
+    <xref href="selected_images.dita#selected_images" type="topic">Selected image(s)</xref>) 
+    <i>before</i>physically removing them from disk. Alternatively you may occasionally run the script 
+    <filepath>purge_non_existing_images.sh</filepath>from darktable's toolset to clean-up your database.</p>
+    <p>Another possible cause is sometimes darktable encounters an input image having an extension that seems valid for darktable but which has a file format that darktable does not support yet. darktable tries to process the image but is not able to get the job done.</p>
+    <p>The third possible cause for getting skulls is memory shortage: If darktable runs out of memory while generating a thumbnail, it will warn you and display a skull – this can happen if darktable is run with suboptimal settings, especially on a 32-bit system. Please consult 
+    <xref href="../topics/darktable_and_memory.dita#darktable_and_memory" type="topic">darktable and memory</xref>for more information.</p>
+  </body>
+</topic>

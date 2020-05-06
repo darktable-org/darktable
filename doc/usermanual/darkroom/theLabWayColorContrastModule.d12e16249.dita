@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="theLabWayColorContrastModule.d12e16249" xml:lang="en-us">
+  <title>The LAB way: color contrast module</title>
+  <body>
+    <p>To perform such conversion we use the 
+    <i>color contrast</i>module (
+    <xref href="color_contrast.dita#color_contrast" type="topic">Color contrast</xref>).</p>
+    <ol>
+      <li>Activate the color contrast module</li>
+      <li>Set both steepness sliders to zero</li>
+    </ol>
+  </body>
+</topic>

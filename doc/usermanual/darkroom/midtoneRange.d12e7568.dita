@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="midtoneRange.d12e7568" xml:lang="en-us">
+  <title>midtone range</title>
+  <body>
+    <p>This controls the extent of the S shaped part of the contrast curve. A larger value will make the S wider, and thus classify more values to be midtone range and fewer values to belong to the highlights and shadows part. In more high dynamic range settings it can be useful to reduce this value to achieve stronger range compression by lowering the contrast in the highlights and the shadows. Note however that for really strong HDR scenarios this may work best in combination with a base curve which pre-compresses the range, maybe with an approximately logarithmic base curve. Also the exposure fusion feature in the base curve module may lead to more pleasing results at times, but is more prone to producing halo effects.</p>
+    <p>This setting can cause banding artifacts in the image if pushed to extreme values. This is due to the way darktable computes the fast approximation of the local laplacian filter.</p>
+  </body>
+</topic>

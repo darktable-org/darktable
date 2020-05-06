@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="noiseThreshold.d12e12841" xml:lang="en-us">
+  <title>noise threshold</title>
+  <body>
+    <p>Set the threshold for noise detection. Higher values lead to stronger noise removal and higher loss of image detail.</p>
+  </body>
+</topic>

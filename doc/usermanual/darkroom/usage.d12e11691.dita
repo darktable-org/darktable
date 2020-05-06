@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e11691" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Clicking the 
+    <q>get structure</q>icon ( 
+    <image align="center" href="../images/darkroom_module_ashift_structure.png" placement="inline" />) causes darktable to analyze the image for structural elements. Line segments are detected and evaluated. Only lines that form a set of either vertical or horizontal lines are used for further processing steps. The line segments are displayed as overlays on the image base. A color code describes what type of line darktable has found: 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>green</i>
+            </entry>
+            <entry colname="col2">lines that are selected as relevant vertical converging lines</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>red</i>
+            </entry>
+            <entry colname="col2">lines that are vertical but are not part of the set of converging lines</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>blue</i>
+            </entry>
+            <entry colname="col2">lines that are selected as relevant horizontal converging lines</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>yellow</i>
+            </entry>
+            <entry colname="col2">lines that are horizontal but are not part of the set of converging lines</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>grey</i>
+            </entry>
+            <entry colname="col2">other lines identified but not of interest to this module</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>Lines marked in red or yellow are regarded as outliers and are not taken into account for the automatic fitting step. This outlier elimination involves a statistical process with random sampling so that each time you press the 
+    <q>get structure</q>button the color pattern of the lines will look a bit different. You can manually change the status of line segments: left-clicking on a line selects it (turns the color to green or blue) while right-clicking deselects it (turns the color to red or yellow). Keeping the mouse button pressed allows for a sweeping action to select/deselect multiple lines in a row; the size of the select/deselect brush can be changed with the mouse wheel. Holding down the 
+    <i>Shift</i>key and keeping the left or right mouse button pressed while dragging selects or deselects all lines in the chosen rectangular area.</p>
+    <p>Clicking one of the 
+    <q>automatic fit</q>icons (see below) starts an optimization process which finds the best suited parameters. The image and the overlaid lines are then displayed with perspective corrections applied.</p>
+  </body>
+</topic>

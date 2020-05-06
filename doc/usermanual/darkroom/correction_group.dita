@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="correction_group" xml:lang="en-us">
+  <title>Correction group</title>
+  <body>
+    <p>The correction group contains the modules that will correct typical problems in an photo such as hotpixels, spot removal, noise, lens correction among others. This group also includes the basic sharpening tools.</p>
+  </body>
+</topic>

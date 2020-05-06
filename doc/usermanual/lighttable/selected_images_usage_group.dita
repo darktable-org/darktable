@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="selected_images_usage_group" xml:lang="en-us">
+  <title>group</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>group images</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>Create a new group from selected images (see 
+    <xref href="image_grouping.dita#image_grouping" type="topic">Image grouping</xref>).</p>
+  </body>
+</topic>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="retouchToolsSection.d12e12643" xml:lang="en-us">
+  <title>retouch tools section</title>
+  <body>
+    <p>The shapes toolbar allows to add new shapes to the image. Shapes creation/editing behaves like in the spot removal module. In addition, by Ctrl+click on any shape button, the 
+    <i>continuous add mode</i>is activated. Once a shape is added, darktable will remain in creation mode, allowing to add another shape of the same type. To change the shape type to be added Ctrl+click on a different shape button to continue on continuous add mode or plain click to add a single shape. To leave the continuous add mode right click on any clear area of the image.</p>
+    <p>The algorithms toolbar allows to select between heal ( 
+    <image align="center" href="../images/darkroom_module_retouch_heal.png" placement="inline" />), clone ( 
+    <image align="center" href="../images/darkroom_module_retouch_clone.png" placement="inline" />), fill ( 
+    <image align="center" href="../images/darkroom_module_retouch_fill.png" placement="inline" />) and blur ( 
+    <image align="center" href="../images/darkroom_module_retouch_blur.png" placement="inline" />) algorithms. Before actually creating a shape the algorithm must be selected – once a shape is created the algorithm cannot be changed.</p>
+    <p>Any combination of shape type and algorithm can be added to the image.</p>
+  </body>
+</topic>

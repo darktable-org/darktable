@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="acquireAsSourcetarget.d12e15670" xml:lang="en-us">
+  <title>acquire as source/target</title>
+  <body>
+    <p>Press these buttons to generate color clusters for the source and target image, respectively. The processing takes a few seconds during which the GUI remains unresponsive.</p>
+  </body>
+</topic>

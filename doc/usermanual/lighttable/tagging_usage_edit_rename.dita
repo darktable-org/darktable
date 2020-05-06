@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tagging_usage_edit_rename" xml:lang="en-us">
+  <title>edit, rename</title>
+  <body>
+    <p>The maintenance of the dictionary can be done through 
+    <q>edit tag...</q>and 
+    <q>rename path...</q>submenu (right-click on dictionary view tag).</p>
+    <p>The command 
+    <q>edit tag...</q>shows the number of tags and images which are potentially impacted by a change of this tag. The edit window lets the user change the name of a node on the path but not the rest of the path of hierarchical tags (pipe symbol 
+    <q>|</q>not allowed). The command is aborted if there is at least one tag corresponding to the new name. 
+    <q>private</q>, 
+    <q>category</q>flags and 
+    <q>synonyms</q>can be change here.</p>
+    <fig>
+      <image align="center" href="images/panel_tagging-edit.png" placement="break" />
+    </fig>
+    <p>The command 
+    <q>rename path...</q>appears only on the tree view and shows the number of tags and images which are potentially impacted by a change of this tag. The rename path window lets the user change the full path of tag. You can or remove the pipe symbol 
+    <q>|</q>. This command is powerful but you must know what your doing. The command is aborted if there is at least one tag corresponding to the new path.</p>
+    <fig>
+      <image align="center" href="images/panel_tagging-renamepath.png" placement="break" />
+    </fig>
+  </body>
+</topic>

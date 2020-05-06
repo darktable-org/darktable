@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="workflow.d12e8250" xml:lang="en-us">
+  <title>Workflow</title>
+  <body>
+    <p>The filmic rgb module can seem pretty complex; here is a proposed workflow for processing an image with filmic rgb to obtain a well-exposed picture from a RAW file.</p>
+    <ol>
+      <li>Modify the exposure in the 
+      <xref href="exposure.dita#exposure" type="topic">
+        <i>exposure</i>
+      </xref>module so that the midtones are clear enough. Do not worry about losing details in the highlights: they will be recovered by the next steps of the processing.</li>
+      <li>In filmic rgb, start with 
+      <q>neutral</q>parameters: set the the middle grey luminance to 18.45% in the 
+      <uicontrol>scene</uicontrol>tab, and set the contrast to 1 in the 
+      <uicontrol>look</uicontrol>tab.</li>
+      <li>Adjust the white-relative and black-relative exposures in the 
+      <uicontrol>scene</uicontrol>tab; set the middle grey luminance as well.</li>
+      <li>In the 
+      <uicontrol>look</uicontrol>tab, experiment with the 
+      <uicontrol>contrast</uicontrol>parameter. Increase the latitude as much as you can without clipping the curve, slide it with the 
+      <uicontrol>shadows/highlights balance</uicontrol>parameter.</li>
+      <li>filmic rgb tends to compress the local contrast - you can compensate for that using the 
+      <xref href="local_contrast.dita#local_contrast" type="topic">
+        <i>local contrast</i>
+      </xref>module.</li>
+      <li>You may also want to increase the saturation in the 
+      <xref href="color_balance.dita#color_balance" type="topic">
+        <i>color balance</i>
+      </xref>module, and adjust settings in the 
+      <i>tone equalizer</i>module.</li>
+      <li>Do the last adjustments in filmic rgb, and your picture is now ready for creative processing.</li>
+    </ol>
+  </body>
+</topic>

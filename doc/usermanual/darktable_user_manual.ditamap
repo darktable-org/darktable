@@ -1,0 +1,1052 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?path2rootmap-uri ./?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN"
+"map.dtd">
+<map>
+  <title>darktable User Manual</title>
+  <topicref href="contributors.dita" type="topic"></topicref>
+  <topicref href="license.dita" type="topic"></topicref>
+  <topicref href="preface.dita" type="topic"></topicref>
+  <topicref href="overview/overview.dita" type="topic">
+    <topicref href="overview/program_invocation.dita" type="topic">
+      <topicref href="overview/darktable_binary.dita" type="topic"></topicref>
+      <topicref href="overview/darktable_cli_binary.dita" type="topic"></topicref>
+      <topicref href="overview/darktable_generate_cache_binary.dita" type="topic"></topicref>
+      <topicref href="overview/darktable_chart_binary.dita" type="topic"></topicref>
+      <topicref href="overview/darktable_cltest_binary.dita" type="topic"></topicref>
+      <topicref href="overview/darktable_cmstest_binary.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="overview/user_interface.dita" type="topic">
+      <topicref href="overview/views.dita" type="topic"></topicref>
+      <topicref href="overview/screen_layout.dita" type="topic"></topicref>
+      <topicref href="overview/filmstrip.dita" type="topic"></topicref>
+      <topicref href="overview/preferences.dita" type="topic"></topicref>
+      <topicref href="overview/contextual_help.dita" type="topic"></topicref>
+      <topicref href="overview/shortcuts_window.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="overview/darktable_basic_workflow.dita" type="topic">
+      <topicref href="overview/importing_images.dita" type="topic"></topicref>
+      <topicref href="overview/basic_development_steps.dita" type="topic"></topicref>
+      <topicref href="overview/exporting_images.dita" type="topic"></topicref>
+    </topicref>
+  </topicref>
+  <topicref href="lighttable/lighttable_chapter.dita#lighttable_chapter" type="topic">
+    <topicref href="lighttable/lighttable_overview.dita" type="topic">
+      <topicref href="lighttable/lighttable_filemanager.dita" type="topic"></topicref>
+      <topicref href="lighttable/lighttable_zoomable.dita" type="topic"></topicref>
+      <topicref href="lighttable/lighttable_culling.dita" type="topic">
+        <topicref href="lighttable/lighttable_culling_fixed.dita" type="topic"></topicref>
+        <topicref href="lighttable/lighttable_culling_dynamic.dita" type="topic"></topicref>
+        <topicref href="lighttable/lighttable_culling_zoom.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="lighttable/lighttable_fullpreview.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="lighttable/lighttable_concepts.dita" type="topic">
+      <topicref href="lighttable/film_rolls.dita" type="topic"></topicref>
+      <topicref href="lighttable/collections.dita" type="topic"></topicref>
+      <topicref href="lighttable/thumbnails.dita" type="topic">
+        <topicref href="lighttable/thumbnail_creation.dita" type="topic"></topicref>
+        <topicref href="lighttable/skulls.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="lighttable/star_ratings_and_color_labels.dita" type="topic"></topicref>
+      <topicref href="lighttable/filtering_and_sort_order.dita" type="topic"></topicref>
+      <topicref href="lighttable/image_grouping.dita" type="topic"></topicref>
+      <topicref href="lighttable/sidecar_files.dita" type="topic"></topicref>
+      <topicref href="lighttable/importing_foreign_xmp.dita" type="topic"></topicref>
+      <topicref href="lighttable/local_copies.dita" type="topic"></topicref>
+      <topicref href="lighttable/lt_undo_redo.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="lighttable/lighttable_panels.dita" type="topic">
+      <topicref href="lighttable/import.dita" type="topic">
+        <topicref href="lighttable/import_from_fs.dita" type="topic"></topicref>
+        <topicref href="lighttable/import_from_camera.dita" type="topic">
+          <topicref href="lighttable/import_from_camera_import.dita" type="topic"></topicref>
+          <topicref href="lighttable/import_from_camera_tethering.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="lighttable/supported_file_formats.dita" type="topic">
+          <topicref href="lighttable/supported_file_formats_raw.dita" type="topic"></topicref>
+          <topicref href="lighttable/supported_file_formats_ldr.dita" type="topic"></topicref>
+          <topicref href="lighttable/supported_file_formats_hdr.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/collect_images.dita" type="topic">
+        <topicref href="lighttable/collect_images_usage.dita" type="topic">
+          <topicref href="lighttable/collect_images_usage_attributes.dita" type="topic"></topicref>
+          <topicref href="lighttable/collect_images_usage_rules.dita" type="topic">
+            <topicref href="lighttable/collect_images_usage_rules_clear.dita" type="topic"></topicref>
+            <topicref href="lighttable/collect_images_usage_rules_narrow.dita" type="topic"></topicref>
+            <topicref href="lighttable/collect_images_usage_rules_more.dita" type="topic"></topicref>
+            <topicref href="lighttable/collect_images_usage_rules_exclude.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="lighttable/collect_images_usage_combining.dita" type="topic"></topicref>
+          <topicref href="lighttable/collect_images_usage_update.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/recently_used_collections.dita" type="topic"></topicref>
+      <topicref href="lighttable/timeline.dita" type="topic"></topicref>
+      <topicref href="lighttable/image_information.dita" type="topic"></topicref>
+      <topicref href="lighttable/select.dita" type="topic">
+        <topicref href="lighttable/select_usage.dita" type="topic">
+          <topicref href="lighttable/select_usage_all.dita" type="topic"></topicref>
+          <topicref href="lighttable/select_usage_none.dita" type="topic"></topicref>
+          <topicref href="lighttable/select_usage_invert.dita" type="topic"></topicref>
+          <topicref href="lighttable/select_usage_filmroll.dita" type="topic"></topicref>
+          <topicref href="lighttable/select_usage_untouched.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/selected_images.dita" type="topic">
+        <topicref href="lighttable/selected_images_usage.dita" type="topic">
+          <topicref href="lighttable/selected_images_usage_remove.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_delete.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_move.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_copy.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_hdr.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_duplicate.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_rotation.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_copy_locally.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_resync.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_group.dita" type="topic"></topicref>
+          <topicref href="lighttable/selected_images_usage_ungroup.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/history_stack.dita" type="topic">
+        <topicref href="lighttable/history_stack_usage.dita" type="topic">
+          <topicref href="lighttable/history_stack_usage_copy.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_copy_all.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_discard.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_paste.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_paste_all.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_mode.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_load_xmp.dita" type="topic"></topicref>
+          <topicref href="lighttable/history_stack_usage_write_xmp.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/styles.dita" type="topic">
+        <topicref href="lighttable/styles_usage.dita" type="topic">
+          <topicref href="lighttable/styles_usage_duplicate.dita" type="topic"></topicref>
+          <topicref href="lighttable/styles_usage_create.dita" type="topic"></topicref>
+          <topicref href="lighttable/styles_usage_edit.dita" type="topic"></topicref>
+          <topicref href="lighttable/styles_usage_delete.dita" type="topic"></topicref>
+          <topicref href="lighttable/styles_usage_import.dita" type="topic"></topicref>
+          <topicref href="lighttable/styles_usage_export.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/geotagging.dita" type="topic">
+        <topicref href="lighttable/geotagging_usage.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="lighttable/metadata_editor.dita" type="topic">
+        <topicref href="lighttable/metadata_editor_usage.dita" type="topic">
+          <topicref href="lighttable/metadata_editor_usage_clear.dita" type="topic"></topicref>
+          <topicref href="lighttable/metadata_editor_usage_apply.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/tagging.dita" type="topic">
+        <topicref href="lighttable/tagging_overview.dita" type="topic">
+          <topicref href="lighttable/tagging_tag_properties.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_displayed_information.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_view_selection.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_text_entry.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="lighttable/tagging_usage.dita" type="topic">
+          <topicref href="lighttable/tagging_usage_create.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_edit_rename.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_attach.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_detach.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_delete.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_import_export.dita" type="topic"></topicref>
+          <topicref href="lighttable/tagging_usage_navigation.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="lighttable/export_selected.dita" type="topic">
+        <topicref href="lighttable/export_selected_usage.dita" type="topic">
+          <topicref href="lighttable/export_selected_usage_storage.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_filename.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_directory.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_conflict.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_format.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_size.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_upscaling.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_profile.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_intent.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_style.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_mode.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_export.dita" type="topic"></topicref>
+          <topicref href="lighttable/export_selected_usage_metadata.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+    </topicref>
+  </topicref>
+  <topicref href="darkroom/darkroom_chapter.dita#darkroom_chapter" type="topic">
+    <topicref href="darkroom/darkroom_overview.dita" type="topic"></topicref>
+    <topicref href="darkroom/darkroom_concepts.dita" type="topic">
+      <topicref href="darkroom/pixelpipe.dita" type="topic"></topicref>
+      <topicref href="darkroom/interacting.dita" type="topic">
+        <topicref href="darkroom/interacting_sliders.dita" type="topic"></topicref>
+        <topicref href="darkroom/interacting_comboboxes.dita" type="topic"></topicref>
+        <topicref href="darkroom/interacting_curves.dita" type="topic"></topicref>
+        <topicref href="darkroom/interacting_undo_redo.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/module_presets.dita" type="topic">
+        <topicref href="darkroom/module_presets_new.dita" type="topic"></topicref>
+        <topicref href="darkroom/module_presets_managing.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/multiple_instances.dita" type="topic">
+        <topicref href="darkroom/multiple_instances_use_cases.dita" type="topic"></topicref>
+        <topicref href="darkroom/multiple_instances_managing.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/blending.dita" type="topic">
+        <topicref href="darkroom/blending_overview.dita" type="topic"></topicref>
+        <topicref href="darkroom/blending_usage.dita" type="topic">
+          <topicref href="darkroom/blending_usage_blend.dita" type="topic">
+            <topicref href="darkroom/blending_usage_off.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_uniform.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_drawn_mask.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_parametric_mask.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_drawn_parametric_mask.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/blending_examples.dita" type="topic">
+          <topicref href="darkroom/blending_examples_texturing.dita" type="topic"></topicref>
+          <topicref href="darkroom/blending_examples_gritty_details.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/blending_operators.dita" type="topic">
+          <topicref href="darkroom/blending_operators_modes.dita" type="topic">
+            <topicref href="darkroom/blending_operators_modes_normal.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_bounded.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_lightness.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_chroma.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_hue.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_color.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_lab_lightness.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_lab_color.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_hsv_lightness.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_hsv_color.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_operators_modes_color_adjustment.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/drawn_mask.dita" type="topic">
+          <topicref href="darkroom/drawn_mask_overview.dita" type="topic"></topicref>
+          <topicref href="darkroom/drawn_mask_usage.dita" type="topic">
+            <topicref href="darkroom/brush_shape.dita" type="topic"></topicref>
+            <topicref href="darkroom/circle_shape.dita" type="topic"></topicref>
+            <topicref href="darkroom/ellipse_shape.dita" type="topic"></topicref>
+            <topicref href="darkroom/path_shape.dita" type="topic"></topicref>
+            <topicref href="darkroom/gradient_shape.dita" type="topic"></topicref>
+            <topicref href="darkroom/drawn_mask_usage_drawn.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_mask_combination_inversion_invert.dita" type="topic"></topicref>
+            <topicref href="darkroom/drawn_mask_usage_manager.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/parametric_mask.dita" type="topic">
+          <topicref href="darkroom/parametric_mask_overview.dita" type="topic"></topicref>
+          <topicref href="darkroom/parametric_mask_usage.dita" type="topic">
+            <topicref href="darkroom/parametric_mask_usage_tabs.dita" type="topic"></topicref>
+            <topicref href="darkroom/parametric_mask_usage_sliders.dita" type="topic"></topicref>
+            <topicref href="darkroom/parametric_mask_usage_buttons.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_usage_mask_combination_inversion_combine.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/parametric_mask_examples.dita" type="topic">
+            <topicref href="darkroom/parametric_mask_examples_colorkey.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/raster_mask.dita" type="topic">
+          <topicref href="darkroom/raster_mask_overview.dita" type="topic"></topicref>
+          <topicref href="darkroom/raster_mask_usage.dita" type="topic">
+            <topicref href="darkroom/raster_mask_usage_dropdown.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/combined_masks.dita" type="topic">
+          <topicref href="darkroom/combined_masks_overview.dita" type="topic"></topicref>
+          <topicref href="darkroom/combined_masks_usage.dita" type="topic">
+            <topicref href="darkroom/combined_masks_usage_inclusive.dita" type="topic"></topicref>
+            <topicref href="darkroom/combined_masks_usage_exclusive.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/blending_mask_refinement.dita" type="topic">
+          <topicref href="darkroom/blending_mask_refinement_overview.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e2377.dita" type="topic">
+            <topicref href="darkroom/blending_mask_refinement_feathering_guide.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_feathering_radius.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_blur.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_mask_brightness.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_mask_contrast.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_temp_off.dita" type="topic"></topicref>
+            <topicref href="darkroom/blending_mask_refinement_display.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e2493.dita" type="topic">
+            <topicref href="darkroom/blending_examples_feathering.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/color_management.dita" type="topic">
+        <topicref href="darkroom/display_profile.dita" type="topic"></topicref>
+        <topicref href="darkroom/rendering_method.dita" type="topic"></topicref>
+        <topicref href="darkroom/rendering_intent.dita" type="topic"></topicref>
+        <topicref href="darkroom/darktable_color_spaces.dita" type="topic"></topicref>
+        <topicref href="darkroom/unbounded_colors.dita" type="topic"></topicref>
+        <topicref href="darkroom/possible_color_artifacts.dita" type="topic"></topicref>
+      </topicref>
+    </topicref>
+    <topicref href="darkroom/darkroom_panels.dita" type="topic">
+      <topicref href="darkroom/infoline.dita" type="topic"></topicref>
+      <topicref href="darkroom/navigation.dita" type="topic"></topicref>
+      <topicref href="darkroom/snapshots.dita" type="topic"></topicref>
+      <topicref href="darkroom/history.dita" type="topic"></topicref>
+      <topicref href="darkroom/duplicate.dita" type="topic"></topicref>
+      <topicref href="darkroom/global_color_picker.dita" type="topic"></topicref>
+      <topicref href="darkroom/mask_manager.dita" type="topic">
+        <topicref href="darkroom/overview.d12e3447.dita" type="topic"></topicref>
+        <topicref href="darkroom/usage.d12e3456.dita" type="topic"></topicref>
+        <topicref href="darkroom/shapes.d12e3503.dita" type="topic"></topicref>
+        <topicref href="darkroom/masks.d12e3546.dita" type="topic"></topicref>
+        <topicref href="darkroom/setOperators.d12e3594.dita" type="topic">
+          <topicref href="darkroom/union.d12e3640.dita" type="topic"></topicref>
+          <topicref href="darkroom/intersection.d12e3676.dita" type="topic"></topicref>
+          <topicref href="darkroom/difference.d12e3715.dita" type="topic"></topicref>
+          <topicref href="darkroom/exclusion.d12e3757.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/histogram.dita" type="topic"></topicref>
+      <topicref href="darkroom/module_groups.dita" type="topic"></topicref>
+      <topicref href="darkroom/more_modules.dita" type="topic"></topicref>
+      <topicref href="darkroom/darkroom_bottom_panel.dita" type="topic">
+        <topicref href="darkroom/favorite_presets.dita" type="topic"></topicref>
+        <topicref href="darkroom/darkroom_bottom_panel_styles.dita" type="topic"></topicref>
+        <topicref href="darkroom/rawoverexposed.dita" type="topic"></topicref>
+        <topicref href="darkroom/overexposed.dita" type="topic"></topicref>
+        <topicref href="darkroom/softproof.dita" type="topic"></topicref>
+        <topicref href="darkroom/gamutcheck.dita" type="topic"></topicref>
+        <topicref href="darkroom/darkroom_filmstrip.dita" type="topic"></topicref>
+      </topicref>
+    </topicref>
+    <topicref href="darkroom/modules.dita" type="topic">
+      <topicref href="darkroom/basic_group.dita" type="topic">
+        <topicref href="darkroom/crop_and_rotate.dita" type="topic">
+          <topicref href="darkroom/overview.d12e4720.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e4764.dita" type="topic">
+            <topicref href="darkroom/flip.d12e4775.dita" type="topic"></topicref>
+            <topicref href="darkroom/angle.d12e4784.dita" type="topic"></topicref>
+            <topicref href="darkroom/keystone.d12e4793.dita" type="topic"></topicref>
+            <topicref href="darkroom/automaticCropping.d12e4908.dita" type="topic"></topicref>
+            <topicref href="darkroom/aspect.d12e4917.dita" type="topic"></topicref>
+            <topicref href="darkroom/guides.d12e5017.dita" type="topic"></topicref>
+            <topicref href="darkroom/guidesFlip.d12e5026.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e5036.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/orientation.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5092.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5124.dita" type="topic">
+            <topicref href="darkroom/rotate.d12e5129.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/shadows_and_highlights.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5169.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5201.dita" type="topic">
+            <topicref href="darkroom/shadows.d12e5206.dita" type="topic"></topicref>
+            <topicref href="darkroom/highlights.d12e5215.dita" type="topic"></topicref>
+            <topicref href="darkroom/whitePointAdjustment.d12e5224.dita" type="topic"></topicref>
+            <topicref href="darkroom/softenWith.d12e5233.dita" type="topic"></topicref>
+            <topicref href="darkroom/radius.d12e5242.dita" type="topic"></topicref>
+            <topicref href="darkroom/compress.d12e5252.dita" type="topic"></topicref>
+            <topicref href="darkroom/shadowsColorAdjustment.d12e5261.dita" type="topic"></topicref>
+            <topicref href="darkroom/highlightsColorAdjustment.d12e5270.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e5281.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/base_curve.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5382.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5415.dita" type="topic">
+            <topicref href="darkroom/scale.d12e5450.dita" type="topic"></topicref>
+            <topicref href="darkroom/fusion.d12e5465.dita" type="topic"></topicref>
+            <topicref href="darkroom/exposureShift.d12e5481.dita" type="topic"></topicref>
+            <topicref href="darkroom/exposureBias.d12e5493.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/exposure.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5540.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5585.dita" type="topic">
+            <topicref href="darkroom/mode.d12e5649.dita" type="topic"></topicref>
+            <topicref href="darkroom/black.d12e5661.dita" type="topic"></topicref>
+            <topicref href="darkroom/exposure.d12e5677.dita" type="topic"></topicref>
+            <topicref href="darkroom/clippingThreshold.d12e5689.dita" type="topic"></topicref>
+            <topicref href="darkroom/percentile.d12e5705.dita" type="topic"></topicref>
+            <topicref href="darkroom/targetLevel.d12e5722.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/contrast_brightness_saturation.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5789.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5822.dita" type="topic">
+            <topicref href="darkroom/contrast.d12e5865.dita" type="topic"></topicref>
+            <topicref href="darkroom/brightness.d12e5874.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e5883.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_reconstruction.dita" type="topic">
+          <topicref href="darkroom/overview.d12e5923.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e5955.dita" type="topic">
+            <topicref href="darkroom/threshold.d12e5980.dita" type="topic"></topicref>
+            <topicref href="darkroom/spatialExtent.d12e5995.dita" type="topic"></topicref>
+            <topicref href="darkroom/rangeExtent.d12e6004.dita" type="topic"></topicref>
+            <topicref href="darkroom/preference.d12e6014.dita" type="topic"></topicref>
+            <topicref href="darkroom/hue.d12e6032.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e6046.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/demosaic.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6115.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6147.dita" type="topic">
+            <topicref href="darkroom/method.d12e6182.dita" type="topic"></topicref>
+            <topicref href="darkroom/edgeThreshold.d12e6191.dita" type="topic"></topicref>
+            <topicref href="darkroom/colorSmoothing.d12e6203.dita" type="topic"></topicref>
+            <topicref href="darkroom/matchGreens.d12e6215.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/highlight_reconstruction.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6267.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6299.dita" type="topic">
+            <topicref href="darkroom/method.d12e6341.dita" type="topic"></topicref>
+            <topicref href="darkroom/clippingThreshold.d12e6350.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/whitebalance.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6381.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6413.dita" type="topic">
+            <topicref href="darkroom/tint.d12e6418.dita" type="topic"></topicref>
+            <topicref href="darkroom/temperature.d12e6427.dita" type="topic"></topicref>
+            <topicref href="darkroom/redGreenAndBlueChannels.d12e6436.dita" type="topic"></topicref>
+            <topicref href="darkroom/preset.d12e6445.dita" type="topic"></topicref>
+            <topicref href="darkroom/finetune.d12e6515.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/invert.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6547.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6579.dita" type="topic">
+            <topicref href="darkroom/colorOfFilmMaterial.d12e6584.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/raw_black_white_point.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6619.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6651.dita" type="topic">
+            <topicref href="darkroom/blackLevel0To3.d12e6656.dita" type="topic"></topicref>
+            <topicref href="darkroom/whitePoint.d12e6665.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/tone_group.dita" type="topic">
+        <topicref href="darkroom/fill_light.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6710.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6742.dita" type="topic">
+            <topicref href="darkroom/exposure.d12e6750.dita" type="topic"></topicref>
+            <topicref href="darkroom/center.d12e6759.dita" type="topic"></topicref>
+            <topicref href="darkroom/width.d12e6780.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/levels.dita" type="topic">
+          <topicref href="darkroom/overview.d12e6829.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e6862.dita" type="topic">
+            <topicref href="darkroom/mode.d12e6929.dita" type="topic"></topicref>
+            <topicref href="darkroom/black.d12e6941.dita" type="topic"></topicref>
+            <topicref href="darkroom/gray.d12e6954.dita" type="topic"></topicref>
+            <topicref href="darkroom/white.d12e6969.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/tone_curve.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7003.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7035.dita" type="topic">
+            <topicref href="darkroom/colorSpaces.d12e7064.dita" type="topic"></topicref>
+            <topicref href="darkroom/lchannelCurve.d12e7126.dita" type="topic"></topicref>
+            <topicref href="darkroom/abchannelCurves.d12e7148.dita" type="topic"></topicref>
+            <topicref href="darkroom/interpolationMethod.d12e7166.dita" type="topic"></topicref>
+            <topicref href="darkroom/scale.d12e7193.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e7234.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/zone_system.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7316.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7348.dita" type="topic"></topicref>
+          <topicref href="darkroom/examples.d12e7363.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/local_contrast.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7440.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7472.dita" type="topic">
+            <topicref href="darkroom/mode.d12e7485.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/bilateralGrid.d12e7495.dita" type="topic">
+            <topicref href="darkroom/coarseness.d12e7500.dita" type="topic"></topicref>
+            <topicref href="darkroom/contrast.d12e7509.dita" type="topic"></topicref>
+            <topicref href="darkroom/detail.d12e7518.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/localLaplacian.d12e7529.dita" type="topic">
+            <topicref href="darkroom/detail.d12e7541.dita" type="topic"></topicref>
+            <topicref href="darkroom/highlights.d12e7550.dita" type="topic"></topicref>
+            <topicref href="darkroom/shadows.d12e7559.dita" type="topic"></topicref>
+            <topicref href="darkroom/midtoneRange.d12e7568.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/example.d12e7581.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/tonemapping.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7650.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7684.dita" type="topic">
+            <topicref href="darkroom/contrastCompression.d12e7692.dita" type="topic"></topicref>
+            <topicref href="darkroom/spatialExtent.d12e7701.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/global_tonemap.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7732.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7764.dita" type="topic">
+            <topicref href="darkroom/operator.d12e7776.dita" type="topic"></topicref>
+            <topicref href="darkroom/bias.d12e7785.dita" type="topic"></topicref>
+            <topicref href="darkroom/target.d12e7797.dita" type="topic"></topicref>
+            <topicref href="darkroom/detail.d12e7812.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/filmic.dita" type="topic">
+          <topicref href="darkroom/overview.d12e7843.dita" type="topic"></topicref>
+          <topicref href="darkroom/prerequisites.d12e7889.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e7932.dita" type="topic">
+            <topicref href="darkroom/middlegreyLuminanceSceneTab.d12e7976.dita" type="topic"></topicref>
+            <topicref href="darkroom/whiteRelativeExposureSceneTab.d12e7994.dita" type="topic"></topicref>
+            <topicref href="darkroom/blackRelativeExposureSceneTab.d12e8010.dita" type="topic"></topicref>
+            <topicref href="darkroom/dynamicRangeScalingAndAutotuneSceneTab.d12e8035.dita" type="topic"></topicref>
+            <topicref href="darkroom/filmicrgb-contrast.dita" type="topic"></topicref>
+            <topicref href="darkroom/latitudeLookTab.d12e8074.dita" type="topic"></topicref>
+            <topicref href="darkroom/shadowshighlightBalanceLookTab.d12e8100.dita" type="topic"></topicref>
+            <topicref href="darkroom/filmicrgb-saturation.dita" type="topic"></topicref>
+            <topicref href="darkroom/preserveChrominanceLookTab.d12e8128.dita" type="topic"></topicref>
+            <topicref href="darkroom/targetBlackLuminanceDisplayTab.d12e8191.dita" type="topic"></topicref>
+            <topicref href="darkroom/targetMiddlegreyDisplayTab.d12e8206.dita" type="topic"></topicref>
+            <topicref href="darkroom/targetWhiteLuminanceDisplayTab.d12e8218.dita" type="topic"></topicref>
+            <topicref href="darkroom/targetPowerFactorFunction.d12e8230.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/workflow.d12e8250.dita" type="topic"></topicref>
+          <topicref href="darkroom/filmic-rgb-for-26-users.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/color_group.dita" type="topic">
+        <topicref href="darkroom/channel_mixer.dita" type="topic">
+          <topicref href="darkroom/overview.d12e8441.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e8473.dita" type="topic"></topicref>
+          <topicref href="darkroom/examples.d12e8482.dita" type="topic">
+            <topicref href="darkroom/tableOfMixingValuesForSomeBwFilms.d12e8542.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_balance.dita" type="topic">
+          <topicref href="darkroom/overview.d12e8878.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e8910.dita" type="topic">
+            <topicref href="darkroom/mode.d12e8947.dita" type="topic"></topicref>
+            <topicref href="darkroom/colorControlSliders.d12e9001.dita" type="topic"></topicref>
+            <topicref href="darkroom/inputSaturation.d12e9040.dita" type="topic"></topicref>
+            <topicref href="darkroom/outputSaturation.d12e9049.dita" type="topic"></topicref>
+            <topicref href="darkroom/contrastAndContrastFulcrum.d12e9058.dita" type="topic"></topicref>
+            <topicref href="darkroom/shadowsMidtonesHighlights.d12e9067.dita" type="topic"></topicref>
+            <topicref href="darkroom/optimizeLuma.d12e9079.dita" type="topic"></topicref>
+            <topicref href="darkroom/neutralizeColors.d12e9106.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e9137.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/color_look_up_table.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9173.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9210.dita" type="topic">
+            <topicref href="darkroom/colorBoard.d12e9215.dita" type="topic"></topicref>
+            <topicref href="darkroom/interaction.d12e9230.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_contrast.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9278.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9310.dita" type="topic">
+            <topicref href="darkroom/greenVsMagenta.d12e9323.dita" type="topic"></topicref>
+            <topicref href="darkroom/blueVsYellow.d12e9332.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_correction.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9364.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9396.dita" type="topic">
+            <topicref href="darkroom/colorBoard.d12e9401.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e9410.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_zones.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9441.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9473.dita" type="topic">
+            <topicref href="darkroom/tabbedControls.d12e9499.dita" type="topic"></topicref>
+            <topicref href="darkroom/selectBy.d12e9518.dita" type="topic"></topicref>
+            <topicref href="darkroom/mix.d12e9536.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/input_color_profile.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9601.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9633.dita" type="topic">
+            <topicref href="darkroom/profile.d12e9641.dita" type="topic"></topicref>
+            <topicref href="darkroom/gamutClipping.d12e9664.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e9694.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/lut3d.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9766.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9816.dita" type="topic">
+            <topicref href="darkroom/fileSelection.d12e9821.dita" type="topic"></topicref>
+            <topicref href="darkroom/applicationColorSpace.d12e9836.dita" type="topic"></topicref>
+            <topicref href="darkroom/interpolation.d12e9851.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/monochrome.dita" type="topic">
+          <topicref href="darkroom/overview.d12e9909.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e9942.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/output_color_profile.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10011.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10061.dita" type="topic">
+            <topicref href="darkroom/outputIntent.d12e10071.dita" type="topic"></topicref>
+            <topicref href="darkroom/outputProfile.d12e10087.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/unbreak_input_profile.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10139.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10175.dita" type="topic">
+            <topicref href="darkroom/linear.d12e10190.dita" type="topic"></topicref>
+            <topicref href="darkroom/gamma.d12e10199.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/velvia.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10230.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10262.dita" type="topic">
+            <topicref href="darkroom/strength.d12e10267.dita" type="topic"></topicref>
+            <topicref href="darkroom/midtonesBias.d12e10276.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/vibrance.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10307.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10339.dita" type="topic">
+            <topicref href="darkroom/vibrance.d12e10347.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/correction_group.dita" type="topic">
+        <topicref href="darkroom/sharpen.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10387.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10419.dita" type="topic">
+            <topicref href="darkroom/radius.d12e10427.dita" type="topic"></topicref>
+            <topicref href="darkroom/amount.d12e10436.dita" type="topic"></topicref>
+            <topicref href="darkroom/threshold.d12e10445.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/equalizer.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10504.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10536.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/denoise_profiled.dita" type="topic">
+          <topicref href="darkroom/overview.d12e10733.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e10765.dita" type="topic">
+            <topicref href="darkroom/profile.d12e10793.dita" type="topic"></topicref>
+            <topicref href="darkroom/mode.d12e10803.dita" type="topic"></topicref>
+            <topicref href="darkroom/whitebalanceadaptiveTransform.d12e10838.dita" type="topic"></topicref>
+            <topicref href="darkroom/patchSize.d12e10847.dita" type="topic"></topicref>
+            <topicref href="darkroom/searchRadius.d12e10861.dita" type="topic"></topicref>
+            <topicref href="darkroom/scattering.d12e10873.dita" type="topic"></topicref>
+            <topicref href="darkroom/centralPixelWeight.d12e10885.dita" type="topic"></topicref>
+            <topicref href="darkroom/coarsefineCurves.d12e10901.dita" type="topic"></topicref>
+            <topicref href="darkroom/strength.d12e10942.dita" type="topic"></topicref>
+            <topicref href="darkroom/preserveShadows.d12e10951.dita" type="topic"></topicref>
+            <topicref href="darkroom/biasCorrection.d12e10966.dita" type="topic"></topicref>
+            <topicref href="darkroom/adjustAutosetParameters.d12e10981.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/denoise_non_local_means.dita" type="topic">
+          <topicref href="darkroom/overview.d12e11018.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e11050.dita" type="topic">
+            <topicref href="darkroom/patchSize.d12e11058.dita" type="topic"></topicref>
+            <topicref href="darkroom/strength.d12e11067.dita" type="topic"></topicref>
+            <topicref href="darkroom/luma.d12e11076.dita" type="topic"></topicref>
+            <topicref href="darkroom/chroma.d12e11085.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/denoise_bilateral.dita" type="topic">
+          <topicref href="darkroom/overview.d12e11120.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e11152.dita" type="topic">
+            <topicref href="darkroom/radius.d12e11160.dita" type="topic"></topicref>
+            <topicref href="darkroom/red.d12e11169.dita" type="topic"></topicref>
+            <topicref href="darkroom/green.d12e11178.dita" type="topic"></topicref>
+            <topicref href="darkroom/blue.d12e11187.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/liquify.dita" type="topic">
+          <topicref href="darkroom/overview.d12e11218.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e11256.dita" type="topic">
+            <topicref href="darkroom/warpsAndNodesCount.d12e11290.dita" type="topic"></topicref>
+            <topicref href="darkroom/pointTool.d12e11299.dita" type="topic"></topicref>
+            <topicref href="darkroom/lineTool.d12e11446.dita" type="topic"></topicref>
+            <topicref href="darkroom/curveTool.d12e11498.dita" type="topic"></topicref>
+            <topicref href="darkroom/nodeEditTool.d12e11614.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/perspective_correction.dita" type="topic">
+          <topicref href="darkroom/overview.d12e11649.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e11691.dita" type="topic">
+            <topicref href="darkroom/rotation.d12e11794.dita" type="topic"></topicref>
+            <topicref href="darkroom/lensShiftHorizontal.d12e11803.dita" type="topic"></topicref>
+            <topicref href="darkroom/lensShiftVertical.d12e11813.dita" type="topic"></topicref>
+            <topicref href="darkroom/shear.d12e11822.dita" type="topic"></topicref>
+            <topicref href="darkroom/guides.d12e11831.dita" type="topic"></topicref>
+            <topicref href="darkroom/automaticCropping.d12e11840.dita" type="topic"></topicref>
+            <topicref href="darkroom/lensModel.d12e11855.dita" type="topic"></topicref>
+            <topicref href="darkroom/focalLength.d12e11870.dita" type="topic"></topicref>
+            <topicref href="darkroom/cropFactor.d12e11883.dita" type="topic"></topicref>
+            <topicref href="darkroom/aspectAdjust.d12e11895.dita" type="topic"></topicref>
+            <topicref href="darkroom/automaticFit.d12e11907.dita" type="topic"></topicref>
+            <topicref href="darkroom/getStructure.d12e11934.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e11962.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/lens_correction.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12031.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12066.dita" type="topic">
+            <topicref href="darkroom/camera.d12e12074.dita" type="topic"></topicref>
+            <topicref href="darkroom/lens.d12e12086.dita" type="topic"></topicref>
+            <topicref href="darkroom/photometricParametersFocalLengthApertureFocalDistance.d12e12095.dita" type="topic"></topicref>
+            <topicref href="darkroom/corrections.d12e12122.dita" type="topic"></topicref>
+            <topicref href="darkroom/geometry.d12e12135.dita" type="topic"></topicref>
+            <topicref href="darkroom/scale.d12e12169.dita" type="topic"></topicref>
+            <topicref href="darkroom/mode.d12e12178.dita" type="topic"></topicref>
+            <topicref href="darkroom/tcaRed.d12e12190.dita" type="topic"></topicref>
+            <topicref href="darkroom/tcaBlue.d12e12199.dita" type="topic"></topicref>
+            <topicref href="darkroom/correctionsDone.d12e12208.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/scale_pixels.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12239.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12271.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/rotate_pixels.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12301.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12333.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/spot_removal.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12370.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12402.dita" type="topic"></topicref>
+          <topicref href="darkroom/examples.d12e12439.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/retouch.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12521.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12553.dita" type="topic">
+            <topicref href="darkroom/waveletDecomposeSection.d12e12566.dita" type="topic"></topicref>
+            <topicref href="darkroom/retouchToolsSection.d12e12643.dita" type="topic"></topicref>
+            <topicref href="darkroom/shapesSection.d12e12677.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/raw_denoise.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12800.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12836.dita" type="topic">
+            <topicref href="darkroom/noiseThreshold.d12e12841.dita" type="topic"></topicref>
+            <topicref href="darkroom/coarsefineCurves.d12e12850.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/dithering.dita" type="topic">
+          <topicref href="darkroom/overview.d12e12896.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e12951.dita" type="topic">
+            <topicref href="darkroom/method.d12e12962.dita" type="topic"></topicref>
+            <topicref href="darkroom/damping.d12e12974.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e12990.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/hotpixels.dita" type="topic">
+          <topicref href="darkroom/overview.d12e13062.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e13094.dita" type="topic">
+            <topicref href="darkroom/threshold.d12e13102.dita" type="topic"></topicref>
+            <topicref href="darkroom/strength.d12e13111.dita" type="topic"></topicref>
+            <topicref href="darkroom/detectBy3Neighbours.d12e13120.dita" type="topic"></topicref>
+            <topicref href="darkroom/markFixedPixels.d12e13129.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/chromatic_aberrations.dita" type="topic">
+          <topicref href="darkroom/overview.d12e13163.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e13195.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/haze_removal.dita" type="topic">
+          <topicref href="darkroom/overview.d12e13232.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e13267.dita" type="topic">
+            <topicref href="darkroom/strength.d12e13275.dita" type="topic"></topicref>
+            <topicref href="darkroom/distance.d12e13284.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/defringe.dita" type="topic">
+          <topicref href="darkroom/overview.d12e13321.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e13353.dita" type="topic">
+            <topicref href="darkroom/operationMode.d12e13361.dita" type="topic"></topicref>
+            <topicref href="darkroom/edgeDetectionRadius.d12e13379.dita" type="topic"></topicref>
+            <topicref href="darkroom/threshold.d12e13391.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+      </topicref>
+      <topicref href="darkroom/effect_group.dita" type="topic">
+        <topicref href="darkroom/watermark.dita" type="topic">
+          <topicref href="darkroom/overview.d12e13434.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e13907.dita" type="topic">
+            <topicref href="darkroom/marker.d12e13912.dita" type="topic"></topicref>
+            <topicref href="darkroom/text.d12e13921.dita" type="topic"></topicref>
+            <topicref href="darkroom/textColor.d12e13933.dita" type="topic"></topicref>
+            <topicref href="darkroom/textFont.d12e13942.dita" type="topic"></topicref>
+            <topicref href="darkroom/opacity.d12e13954.dita" type="topic"></topicref>
+            <topicref href="darkroom/scale.d12e13964.dita" type="topic"></topicref>
+            <topicref href="darkroom/rotate.d12e13973.dita" type="topic"></topicref>
+            <topicref href="darkroom/scaleOn.d12e13982.dita" type="topic"></topicref>
+            <topicref href="darkroom/alignment.d12e14000.dita" type="topic"></topicref>
+            <topicref href="darkroom/xOffset.d12e14009.dita" type="topic"></topicref>
+            <topicref href="darkroom/yOffset.d12e14018.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/framing.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14049.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14081.dita" type="topic">
+            <topicref href="darkroom/borderSize.d12e14086.dita" type="topic"></topicref>
+            <topicref href="darkroom/aspect.d12e14095.dita" type="topic"></topicref>
+            <topicref href="darkroom/orientation.d12e14104.dita" type="topic"></topicref>
+            <topicref href="darkroom/horizontalPosition.d12e14116.dita" type="topic"></topicref>
+            <topicref href="darkroom/verticalPosition.d12e14128.dita" type="topic"></topicref>
+            <topicref href="darkroom/frameLineSize.d12e14141.dita" type="topic"></topicref>
+            <topicref href="darkroom/frameLineOffset.d12e14150.dita" type="topic"></topicref>
+            <topicref href="darkroom/borderColor.d12e14159.dita" type="topic"></topicref>
+            <topicref href="darkroom/frameLineColor.d12e14183.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e14202.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/splittoning.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14258.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14307.dita" type="topic">
+            <topicref href="darkroom/shadowsAndHighlightsColor.d12e14312.dita" type="topic"></topicref>
+            <topicref href="darkroom/balance.d12e14321.dita" type="topic"></topicref>
+            <topicref href="darkroom/compression.d12e14330.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e14340.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/vignetting.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14418.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14450.dita" type="topic">
+            <topicref href="darkroom/scale.d12e14466.dita" type="topic"></topicref>
+            <topicref href="darkroom/falloffStrength.d12e14475.dita" type="topic"></topicref>
+            <topicref href="darkroom/brightness.d12e14484.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e14494.dita" type="topic"></topicref>
+            <topicref href="darkroom/horizontalCenter.d12e14503.dita" type="topic"></topicref>
+            <topicref href="darkroom/verticalCenter.d12e14512.dita" type="topic"></topicref>
+            <topicref href="darkroom/shape.d12e14521.dita" type="topic"></topicref>
+            <topicref href="darkroom/automaticRatio.d12e14530.dita" type="topic"></topicref>
+            <topicref href="darkroom/widthheightRatio.d12e14539.dita" type="topic"></topicref>
+            <topicref href="darkroom/dithering.d12e14549.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e14571.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/soften.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14628.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14660.dita" type="topic">
+            <topicref href="darkroom/size.d12e14671.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e14680.dita" type="topic"></topicref>
+            <topicref href="darkroom/brightness.d12e14689.dita" type="topic"></topicref>
+            <topicref href="darkroom/mix.d12e14699.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e14709.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/grain.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14791.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14823.dita" type="topic">
+            <topicref href="darkroom/coarseness.d12e14831.dita" type="topic"></topicref>
+            <topicref href="darkroom/strength.d12e14840.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/highpass.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14871.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e14916.dita" type="topic">
+            <topicref href="darkroom/sharpen.d12e14921.dita" type="topic"></topicref>
+            <topicref href="darkroom/contrastBoost.d12e14930.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/lowpass.dita" type="topic">
+          <topicref href="darkroom/overview.d12e14961.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15004.dita" type="topic">
+            <topicref href="darkroom/radius.d12e15012.dita" type="topic"></topicref>
+            <topicref href="darkroom/softenWith.d12e15021.dita" type="topic"></topicref>
+            <topicref href="darkroom/contrast.d12e15042.dita" type="topic"></topicref>
+            <topicref href="darkroom/brightness.d12e15051.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e15061.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e15071.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/low_light.dita" type="topic">
+          <topicref href="darkroom/overview.d12e15166.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15213.dita" type="topic">
+            <topicref href="darkroom/curve.d12e15221.dita" type="topic"></topicref>
+            <topicref href="darkroom/blue.d12e15230.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e15240.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/bloom.dita" type="topic">
+          <topicref href="darkroom/overview.d12e15348.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15380.dita" type="topic">
+            <topicref href="darkroom/size.d12e15388.dita" type="topic"></topicref>
+            <topicref href="darkroom/threshold.d12e15397.dita" type="topic"></topicref>
+            <topicref href="darkroom/strength.d12e15406.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e15416.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/colorize.dita" type="topic">
+          <topicref href="darkroom/overview.d12e15486.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15518.dita" type="topic">
+            <topicref href="darkroom/hue.d12e15528.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e15537.dita" type="topic"></topicref>
+            <topicref href="darkroom/lightness.d12e15546.dita" type="topic"></topicref>
+            <topicref href="darkroom/sourceMix.d12e15555.dita" type="topic"></topicref>
+          </topicref>
+        </topicref>
+        <topicref href="darkroom/color_mapping.dita" type="topic">
+          <topicref href="darkroom/overview.d12e15586.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15618.dita" type="topic">
+            <topicref href="darkroom/acquireAsSourcetarget.d12e15670.dita" type="topic"></topicref>
+            <topicref href="darkroom/numberOfClusters.d12e15680.dita" type="topic"></topicref>
+            <topicref href="darkroom/colorDominance.d12e15689.dita" type="topic"></topicref>
+            <topicref href="darkroom/histogramEqualization.d12e15698.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e15708.dita" type="topic"></topicref>
+        </topicref>
+        <topicref href="darkroom/graduated_density.dita" type="topic">
+          <topicref href="darkroom/overview.d12e15805.dita" type="topic"></topicref>
+          <topicref href="darkroom/usage.d12e15837.dita" type="topic">
+            <topicref href="darkroom/density.d12e15853.dita" type="topic"></topicref>
+            <topicref href="darkroom/compression.d12e15967.dita" type="topic"></topicref>
+            <topicref href="darkroom/hue.d12e15976.dita" type="topic"></topicref>
+            <topicref href="darkroom/saturation.d12e15986.dita" type="topic"></topicref>
+            <topicref href="darkroom/position.d12e15995.dita" type="topic"></topicref>
+          </topicref>
+          <topicref href="darkroom/examples.d12e16032.dita" type="topic"></topicref>
+        </topicref>
+      </topicref>
+    </topicref>
+    <topicref href="darkroom/examples.dita" type="topic">
+      <topicref href="darkroom/converting_to_black_and_white.dita" type="topic">
+        <topicref href="darkroom/overview.d12e16178.dita" type="topic"></topicref>
+        <topicref href="darkroom/theObviousWayMonochromeModule.d12e16210.dita" type="topic"></topicref>
+        <topicref href="darkroom/theSimpleWayColorCorrectionModule.d12e16224.dita" type="topic"></topicref>
+        <topicref href="darkroom/theLabWayColorContrastModule.d12e16249.dita" type="topic"></topicref>
+        <topicref href="darkroom/theArtisticWayColorZonesModule.d12e16274.dita" type="topic"></topicref>
+        <topicref href="darkroom/theSophisticatedWayChannelMixerModule.d12e16319.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/cross_processing.dita" type="topic">
+        <topicref href="darkroom/overview.d12e16354.dita" type="topic"></topicref>
+        <topicref href="darkroom/procedure.d12e16389.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/cyan_toned_images.dita" type="topic">
+        <topicref href="darkroom/overview.d12e16492.dita" type="topic"></topicref>
+        <topicref href="darkroom/procedure.d12e16524.dita" type="topic"></topicref>
+      </topicref>
+      <topicref href="darkroom/red_eyes.dita" type="topic">
+        <topicref href="darkroom/overview.d12e16636.dita" type="topic"></topicref>
+        <topicref href="darkroom/masking.d12e16674.dita" type="topic"></topicref>
+        <topicref href="darkroom/desaturation.d12e16771.dita" type="topic"></topicref>
+      </topicref>
+    </topicref>
+  </topicref>
+  <topicref href="tethering/tethering_chapter.dita#tethering_chapter" type="topic">
+    <topicref href="tethering/tethering_overview.dita" type="topic">
+      <topicref href="tethering/tethering_overview_tethering.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="tethering/tethering_panels.dita" type="topic">
+      <topicref href="tethering/session.dita" type="topic"></topicref>
+      <topicref href="tethering/live_view.dita" type="topic"></topicref>
+      <topicref href="tethering/camera_settings.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="tethering/tethering_examples.dita" type="topic">
+      <topicref href="tethering/tethering_examples_studio.dita" type="topic"></topicref>
+      <topicref href="tethering/tethering_examples_timelapse.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="tethering/tethering_troubleshoot.dita" type="topic">
+      <topicref href="tethering/tethering_troubleshoot_supported.dita" type="topic"></topicref>
+      <topicref href="tethering/tethering_troubleshoot_now_what.dita" type="topic"></topicref>
+    </topicref>
+  </topicref>
+  <topicref href="map/map_chapter.dita#map_chapter" type="topic">
+    <topicref href="map/map_overview.dita" type="topic">
+      <topicref href="map/map_center_map_view.dita" type="topic"></topicref>
+      <topicref href="map/map_undo_redo.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="map/map_panels.dita" type="topic">
+      <topicref href="map/left_panels.dita" type="topic"></topicref>
+      <topicref href="map/find_location.dita" type="topic"></topicref>
+      <topicref href="map/map_settings.dita" type="topic"></topicref>
+      <topicref href="map/map_tagging.dita" type="topic"></topicref>
+    </topicref>
+  </topicref>
+  <topicref href="slideshow/slideshow_chapter.dita#slideshow_chapter" type="topic">
+    <topicref href="slideshow/slideshow_overview.dita" type="topic"></topicref>
+    <topicref href="slideshow/slideshow_usage.dita" type="topic"></topicref>
+  </topicref>
+  <topicref href="print/print_chapter.dita#print_chapter" type="topic">
+    <topicref href="print/print_overview.dita" type="topic"></topicref>
+    <topicref href="print/print_usage.dita" type="topic">
+      <topicref href="print/print_printer_section.dita" type="topic"></topicref>
+      <topicref href="print/print_page_section.dita" type="topic"></topicref>
+      <topicref href="print/print_settings.dita" type="topic"></topicref>
+      <topicref href="print/print_button.dita" type="topic"></topicref>
+    </topicref>
+  </topicref>
+  <topicref href="preferences/preferences_chapter.dita#preferences_chapter" type="topic">
+    <topicref href="preferences/gui_options.dita" type="topic">
+      <topicref href="preferences/gui_options_import.dita" type="topic"></topicref>
+      <topicref href="preferences/gui_options_lighttable.dita" type="topic"></topicref>
+      <topicref href="preferences/gui_options_darkroom.dita" type="topic"></topicref>
+      <topicref href="preferences/gui_options_map.dita" type="topic"></topicref>
+      <topicref href="preferences/gui_options_security.dita" type="topic"></topicref>
+      <topicref href="preferences/gui_options_misc.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="preferences/core_options.dita" type="topic">
+      <topicref href="preferences/core_options_quality.dita" type="topic"></topicref>
+      <topicref href="preferences/core_options_xmp.dita" type="topic"></topicref>
+      <topicref href="preferences/core_options_cpu.dita" type="topic"></topicref>
+      <topicref href="preferences/core_options_misc.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="preferences/session_options.dita" type="topic"></topicref>
+    <topicref href="preferences/shortcuts.dita" type="topic"></topicref>
+    <topicref href="preferences/presets.dita" type="topic"></topicref>
+  </topicref>
+  <topicref href="lua/lua_chapter.dita#lua_chapter" type="topic">
+    <topicref href="lua/lua_usage.dita" type="topic">
+      <topicref href="lua/lua_basic_principles.dita" type="topic"></topicref>
+      <topicref href="lua/lua_hello_world.dita" type="topic"></topicref>
+      <topicref href="lua/lua_print_images.dita" type="topic"></topicref>
+      <topicref href="lua/lua_simple_shortcut.dita" type="topic"></topicref>
+      <topicref href="lua/lua_storage_example.dita" type="topic"></topicref>
+      <topicref href="lua/lua_gui_example.dita" type="topic"></topicref>
+      <topicref href="lua/lua_sharing_scripts.dita" type="topic"></topicref>
+      <topicref href="lua/lua_dbus.dita" type="topic"></topicref>
+      <topicref href="lua/lua_lib.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="lua/lua_api.dita" type="topic"></topicref>
+  </topicref>
+  <topicref href="topics/special_topics_chapter.dita#special_topics_chapter" type="topic">
+    <topicref href="topics/darktable_and_memory.dita" type="topic">
+      <topicref href="topics/darktable_and_memory_system.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_memory_space.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_memory_fragmentation.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_memory_limitations.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_memory_32bit.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_memory_64bit.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="topics/darktable_and_opencl.dita" type="topic">
+      <topicref href="topics/darktable_and_opencl_background.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_working.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_activation.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_system.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_problems_solutions.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_amd.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_optimization.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_profiling.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_multiple_devices.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_and_opencl_still_fubar.dita" type="topic"></topicref>
+    </topicref>
+    <topicref href="topics/darktable_chart.dita" type="topic">
+      <topicref href="topics/darktable_chart_overview.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_chart_usage.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_chart_source_image.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_chart_reference_values.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_chart_process.dita" type="topic"></topicref>
+      <topicref href="topics/darktable_chart_making_input_images.dita" type="topic"></topicref>
+    </topicref>
+  </topicref>
+</map>

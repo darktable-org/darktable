@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images" xml:lang="en-us">
+  <title>Collect images</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>collect images</indexterm></indexterm>
+        <indexterm>collect images</indexterm>
+        <indexterm>collections</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">The current view in lighttable is called a collection. The 
+            <i>collect images</i>panel lets you narrow down the list of visible images to just the ones you want to work with.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_collectimages.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Information about all images imported into darktable are kept in a database, with various attributes describing each image. You define a collection by applying certain filtering rules to these attributes, creating a subset of images to display in the lighttable view.</p>
+    <p>The default collection is based on the film roll attribute – it displays all images of the last imported film roll or any other film roll chosen.</p>
+  </body>
+</topic>

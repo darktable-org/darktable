@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="whitePoint.d12e6665" xml:lang="en-us">
+  <title>white point</title>
+  <body>
+    <p>The camera specific white level. All pixels with values above are likely to be clipped and handled accordingly in the 
+    <i>highlight reconstruction</i>module (see 
+    <xref href="highlight_reconstruction.dita#highlight_reconstruction" type="topic">Highlight reconstruction</xref>). Pixels with values equal to the white level are considered to be white.</p>
+  </body>
+</topic>

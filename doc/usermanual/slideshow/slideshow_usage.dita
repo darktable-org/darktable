@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="slideshow_usage" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The slideshow view is in an early stage of development with a basic set of features. 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="3*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+            <i>+</i>or 
+            <i>Up</i></entry>
+            <entry colname="col2">increase delay between each image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+            <i>-</i>or 
+            <i>Down</i></entry>
+            <entry colname="col2">decrease delay between each image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+            <i>left-click</i>or 
+            <i>right</i>or 
+            <i>Shift+right</i></entry>
+            <entry colname="col2">switch to the next image of the collection</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+            <i>right-click</i>or 
+            <i>left</i>or 
+            <i>Shift+left</i></entry>
+            <entry colname="col2">switch to the previous image of the collection</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>spacebar</i>
+            </entry>
+            <entry colname="col2">start and stop auto-advance mode which automatically switches to the next images every five seconds by default.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>ESC</i>
+            </entry>
+            <entry colname="col2">leave slideshow mode and return to lighttable view</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+    <p>Depending on the complexity of the history stack and the power of your hardware, processing an image with high resolution can take a significant amount of time. darktable prefetches the next image in the background in order to minimize latencies. If you still experience long delays when switching between images or if you intend to quickly advance in your collection consider to disable the option 
+    <q>do high quality processing for slideshow</q>which gives a much higher processing speed at the expense of a possible slight loss in quality (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>).</p>
+  </body>
+</topic>

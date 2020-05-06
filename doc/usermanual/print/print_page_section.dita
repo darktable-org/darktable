@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="print_page_section" xml:lang="en-us">
+  <title>Page section</title>
+  <body>
+    <p>
+      <b>paper size</b>
+    </p>
+    <p>The size of the paper on which to print.</p>
+    <p>
+      <b>orientation</b>
+    </p>
+    <p>Portrait or landscape (note that darktable chooses by default the best fit).</p>
+    <p>
+      <b>units</b>
+    </p>
+    <p>The unit to use for setting the margins. 
+    <q>mm</q>, 
+    <q>cm</q>, and 
+    <q>inch</q>are available options.</p>
+    <p>
+      <b>margins</b>
+    </p>
+    <p>It is possible to set each margin separately or all together by clicking on the middle 
+    <q>lock</q>button.</p>
+    <p>
+      <b>image width/height</b>
+    </p>
+    <p>This information field displays the actual image width and height (given with the selected units) on the paper.</p>
+    <p>
+      <b>scale factor</b>
+    </p>
+    <p>This information field displays the scaling of the image to fit on the paper. If this value is less than 1 the image is down-scaled otherwise it is up-scaled. This is an important factor to watch – a too large value (up-scale) may result in a low quality print. The corresponding dpi (dots per inch) is also displayed.</p>
+    <p>
+      <b>alignment</b>
+    </p>
+    <p>This option allows you to select the alignment of the image on the paper.</p>
+  </body>
+</topic>

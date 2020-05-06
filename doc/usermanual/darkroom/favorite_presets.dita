@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="favorite_presets" xml:lang="en-us">
+  <title>Quick access to favorite presets</title>
+  <body>
+    <p>Clicking the 
+    <image align="center" href="../images/darkroom_module_icon_presets.png" placement="inline" />icon opens a combobox that gives you quick access to your favorite module's presets. Click on the preset name to apply it to the image.</p>
+  </body>
+</topic>

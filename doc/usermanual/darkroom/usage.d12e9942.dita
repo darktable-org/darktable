@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e9942" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>A color picker is activated by pressing 
+    <image align="center" href="../images/darkroom_module_icon_picker.png" placement="inline" />and will automatically set the position and size of the filter. You can switch between point and area sampling mode from within the global color picker panel (see 
+    <xref href="global_color_picker.dita#global_color_picker" type="topic">Global color picker</xref>).</p>
+    <p>The default central location of the filter has a neutral effect but dragging it to an alternate position applies a filter analogously to taking a b&amp;w photograph through a conventional color filter.</p>
+    <p>As well as position you can change the filter size by scrolling with your mouse wheel. This makes the filter's range of hues more or less selective.</p>
+    <p>Tip: First reduce the filter size to concentrate its effect and move it across the hue pallet to find the best filter value for your desired image rendition. Then expand the filter to include more hues and thus more natural tonality.</p>
+    <p>Under certain conditions, especially highly saturated blue light sources in the frame, this module may produce black pixel artifacts. See the 
+    <i>gamut clipping</i>option (
+    <xref href="input_color_profile.dita#input_color_profile" type="topic">Input color profile</xref>) on how to mitigate this issue.</p>
+  </body>
+</topic>

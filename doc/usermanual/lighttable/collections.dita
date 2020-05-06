@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collections" xml:lang="en-us">
+  <title>Collections</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>collections</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable offers a versatile feature to organize your images according to various user defined selection criteria. A set of images which is defined by a specific combination of selection criteria is called a collection. The most basic kind of collection is a film roll  – covering all the images which have been imported from a specific folder on disk.</p>
+    <p>You can easily construct other kinds of collections based on various image attributes like Exif data, filename, tags etc. Multiple criteria can be logically combined to narrow or extend your collection (see 
+    <xref href="collect_images.dita#collect_images" type="topic">Collect images</xref>).</p>
+    <p>darktable keeps a list of the most recently used collections for quick access (see 
+    <xref href="recently_used_collections.dita#recently_used_collections" type="topic">Recently used collections</xref>).</p>
+  </body>
+</topic>

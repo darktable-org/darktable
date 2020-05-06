@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="infoline" xml:lang="en-us">
+  <title>Image infos line</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>image infos</indexterm></indexterm>
+        <indexterm>image infos</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">You can display a line with very important image infos.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/infoline.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>The content of this line can be set in preferences (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>). Available variables are the same as for the export module (see 
+    <xref href="../lighttable/export_selected_usage_filename.dita#export_selected_usage_filename" type="topic">filename template</xref>). You can also add new lines by using 
+    <codeph>$(NL)</codeph>variable.</p>
+    <p>Position of the infos line can also be set in preferences (see 
+    <xref href="../preferences/gui_options.dita#gui_options" type="topic">GUI options</xref>).</p>
+  </body>
+</topic>

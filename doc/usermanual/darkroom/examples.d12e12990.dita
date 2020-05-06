@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="examples.d12e12990" xml:lang="en-us">
+  <title>Examples</title>
+  <body>
+    <p>The visibility of the following examples depends on the quality of your monitor or the print quality.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="4*" />
+          <colspec colname="col2" colnum="2" colwidth="6*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/dithering_ex1.png" placement="break" />
+              </entry>
+              <entry colname="col2">Banding artifact caused by vignetting (100% crop of a 8-bit PNG; effect heavily exaggerated by strong contrast enhancement).</entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="modules/images/dithering_ex2.png" placement="break" />
+              </entry>
+              <entry colname="col2">The same image area, processed as above but with activated Floyd-Steinberg dithering.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

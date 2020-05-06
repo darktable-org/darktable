@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tethering_examples_timelapse" xml:lang="en-us">
+  <title>Capturing a timelapse</title>
+  <body>
+    <p>A timelapse is a video clip composed of images taken in a time sequence. A typical example is to take a timelapse of cityscapes where you capture clouds and traffic etc.</p>
+    <p>To setup a timelapse capture, create a new session as described previously. Now decide if you want to shoot in manual or auto mode. Only use auto in situations were the ambient light will change significantly during the time of the shoot, eg. shooting a timelapse over 24 hours might give you easier control of light in that kind of captured sequence.</p>
+    <p>The camera settings panel is where you define delay and sequence. Sequence will give you the opportunity to choose how many images you want to capture and delay will set the time in seconds between captures.</p>
+    <p>To start the capture click the capture button in the same panel and watch the filmstrip fill up with images. The latest captured image is always displayed in center view.</p>
+  </body>
+</topic>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="theSimpleWayColorCorrectionModule.d12e16224" xml:lang="en-us">
+  <title>The simple way: color correction module</title>
+  <body>
+    <p>To perform such conversion we use the 
+    <i>color correction</i>module (
+    <xref href="color_correction.dita#color_correction" type="topic">Color correction</xref>).</p>
+    <ol>
+      <li>Activate the color correction module</li>
+      <li>Use the bottom slider to set saturation to zero</li>
+    </ol>
+  </body>
+</topic>

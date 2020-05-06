@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lens_correction" xml:lang="en-us">
+  <title>Lens correction</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>lens correction</indexterm></indexterm>
+        <indexterm>lens correction</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

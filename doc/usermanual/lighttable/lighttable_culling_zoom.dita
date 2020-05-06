@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lighttable_culling_zoom" xml:lang="en-us">
+  <title>Zoom and pan</title>
+  <body>
+    <p>In culling mode, you can zoom and pan in the images to see details. Images can be zoomed until 100%.</p>
+    <p>
+    <i>Ctrl+scroll</i>to zoom in/out images. 
+    <i>left click + drag</i>to pan in zoomed images.</p>
+    <p>By default, zooming and panning are synchronized between all visible images. If you want to zoom or pan only a specific image, add 
+    <i>Shift</i>key to above actions.</p>
+    <p>To enhance performance in zoomed images loading, you can enable the disk backend for full preview cache in preferences (see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>). Keep in mind that this could take a lot of disk space...</p>
+  </body>
+</topic>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gui_options" xml:lang="en-us">
+  <title>GUI options</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>preferences and settings
+        <indexterm>GUI options</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>These options control the look and feel of darktable.</p>
+    <p>
+      <b>interface language</b>
+    </p>
+    <p>set the language of the user interface. the system default is marked with an * (needs a restart)</p>
+    <p>
+      <b>theme</b>
+    </p>
+    <p>set the theme for the user interface</p>
+  </body>
+</topic>

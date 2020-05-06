@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="waveletDecomposeSection.d12e12566" xml:lang="en-us">
+  <title>wavelet decompose section</title>
+  <body>
+    <p>The wavelet decompose toolbar controls the wavelet decompose algorithm. It has a central area divided in boxes and two sliders. The first box, scale zero, represents the original image, the second is the wavelet scale 1, and so on.</p>
+    <p>The bottom slider adjusts the number of scales, zero means no wavelet decompose is done. The maximum number of scales depends on the image size, but any number can be selected. If the image is not big enough for the selected number of scales the maximum number of scales for this image size is used and the rest of the scales are ignored.</p>
+    <p>The image is decomposed to the selected number of scales plus the residual image, so if 5 is selected as the number of scales, scale zero is the original image, scales 1 to 5 are the detail scales, and scale 6 is the residual image. As a visual aid, the original image is always represented by a black box, detail scales are light gray, residual image white and inactive scales dark gray.</p>
+    <p>The central area allows to select the current scale on which the user can then apply retouch tools by left clicking any of the boxes. The selected scale is marked by a red frame. Any scale can be selected as the current scale, even if it is greater than the number of scales. If a shape is added to a scale greater than the residual image it will be ignored, as the scale is not processed.</p>
+    <p>Only the shapes on the current scale are displayed, when the current scale is changed shapes will be displayed accordingly.</p>
+    <p>A green line on top of each box indicates that the scale has shapes associated with it.</p>
+    <p>Fine detail scales can only be seen at certain zoom level, a light gray line on top of each box will indicate that the scale is visible at current zoom level.</p>
+    <p>The top slider adjusts the 
+    <i>merge scale</i>feature. This setting allows to apply a common edit on multiple consecutive scales within a group starting from the highest scale (not including the residual image) down to the one selected by this slider. If the slider is set to 3 and the maximum scale is 5 then all edits that are added to scale 5 will be applied to scales 3 to 5. Edits added to scale 4 will be applied to scales 3 and 4, and edits added to scale 3 will be applied only to scale 3. 
+    <i>Merged scales</i>are represented by a green-yellow color. A value of zero means that the merge feature is not used.</p>
+    <p>The display wavelet scale button ( 
+    <image align="center" href="../images/darkroom_module_retouch_display_scale.png" placement="inline" />) allow to view the current wavelet scale. The module's blend feature is temporary disabled when this option is set. If blending in the module is active and the option to display masks is active this option cannot be set. When this option is active a new section, 
+    <q>preview single scale</q>, will be displayed, allowing to adjust the levels for the displayed image. This is purely a convenience feature so you can adjust wavelet scale display to your needs. It does not have an effect on the final output image. An auto levels button ( 
+    <image align="center" href="../images/darkroom_module_retouch_auto_levels.png" placement="inline" />) is also available; it works on the displayed image, so different results can be expected depending on the image displayed when zoomed in/out. Levels are only applied to detail scales, not the original or residual image.</p>
+    <p>The cut and paste buttons allow to move all the shapes from one scale to another. In order to do this first select the current scale, click the cut button ( 
+    <image align="center" href="../images/darkroom_module_retouch_cut.png" placement="inline" />), select the destination scale and click paste ( 
+    <image align="center" href="../images/darkroom_module_retouch_paste.png" placement="inline" />). This can be useful when there are edits on the residual image and one has to change the number of scales; since the residual image is changed, shapes need to be moved to the new one.</p>
+    <p>The switch off shapes button ( 
+    <image align="center" href="../images/darkroom_module_retouch_switch.png" placement="inline" />) temporarily disables the processing of all shapes for a simple before/after comparison.</p>
+    <p>The display masks button ( 
+    <image align="center" href="../images/darkroom_module_retouch_mask.png" placement="inline" />) works similar to the one on the blend module, but it will display only the shapes on the current scale. This option and display mask on the blend module cannot be set at the same time.</p>
+  </body>
+</topic>

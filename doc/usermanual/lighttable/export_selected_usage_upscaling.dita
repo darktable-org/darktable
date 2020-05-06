@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_upscaling" xml:lang="en-us">
+  <title>allow upscaling</title>
+  <body>
+    <p>If set to 
+    <q>yes</q>darktable will perform an upscaling step in case the user defined maximum width and height exceed the original dimensions. If set to 
+    <q>no</q>the exported image's dimensions will not exceed the original ones (after cropping).</p>
+  </body>
+</topic>

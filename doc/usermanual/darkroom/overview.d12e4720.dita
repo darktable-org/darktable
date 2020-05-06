@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e4720" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">This module is used to crop, rotate and correct perspective distortions of your image. You can overlay your image with various helpful guidelines that assist you using the tools.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/crop_and_rotate.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>Some of the tools of this module, namely adjustment of angle and corrections of perspective distortion, will require the original image data to be interpolated. For best sharpness results set 
+    <q>lanczos3</q>as pixel interpolator in 
+    <i>core options</i>(see 
+    <xref href="../preferences/core_options.dita#core_options" type="topic">Core options</xref>).</p>
+  </body>
+</topic>

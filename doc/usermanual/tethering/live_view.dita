@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="live_view" xml:lang="en-us">
+  <title>Live view</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>tethering view
+        <indexterm>live view</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colname="col1" colnum="1" colwidth="6*" />
+          <colspec colname="col2" colnum="2" colwidth="4*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>This panel gives you control of your camera's live view mode. Functionality such as focus setting, rotation, adding guides and overlays are supported.</p>
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="images/panel_liveview.png" placement="break" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+  </body>
+</topic>

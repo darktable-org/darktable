@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="overview.d12e13232" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">The haze removal module is designed to automatically reduce the effect of dust and haze in the air, which often reduces the color contrast in landscape photographs. In general, this module may be employed to give pictures a color boost specifically in low-contrast image regions.</entry>
+            <entry colname="col2">
+              <image align="center" href="modules/images/hazeremoval.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>The higher the haze density in the air and the longer the distance between the camera and the photographed object the less colorful the object appears in the image. Haze absorbs light approaching from the objects into the direction of the camera but it is also a source of diffusive background light. Thus the haze removal module estimates for each image region the amount of haze in the scene first and then removes the diffusive background light according to its local strength and recovers the original object light.</p>
+  </body>
+</topic>

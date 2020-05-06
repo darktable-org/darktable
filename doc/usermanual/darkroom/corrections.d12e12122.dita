@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="corrections.d12e12122" xml:lang="en-us">
+  <title>corrections</title>
+  <body>
+    <p>This combobox gives you a choice about which corrections (out of distortion, TCA and vignetting) darktable shall apply. Change this from its default 
+    <q>all</q>, if your camera has already done some internal corrections (e.g. of vignetting), or if you plan to do certain corrections with a separate program.</p>
+  </body>
+</topic>

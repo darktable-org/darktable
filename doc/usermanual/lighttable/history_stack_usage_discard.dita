@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="history_stack_usage_discard" xml:lang="en-us">
+  <title>discard</title>
+  <body>
+    <p>Physically delete the history stack of the selected images. Beware, this action can not be undone!</p>
+  </body>
+</topic>

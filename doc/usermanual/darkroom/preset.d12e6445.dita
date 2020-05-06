@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="preset.d12e6445" xml:lang="en-us">
+  <title>preset</title>
+  <body>
+    <p>Select a preset white balance. 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="4*" />
+        <colspec colname="col2" colnum="2" colwidth="6*" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <i>camera white balance (default)</i>
+            </entry>
+            <entry colname="col2">White balance reported by the camera.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>camera neutral</i>
+            </entry>
+            <entry colname="col2">Essentially sets temperature to 6502K. The actual math: it computes such white balance channel multipliers, so that pure white color in camera colorspace is converted into pure white color in sRGB D65. (pure white color here means having the same equal value for each channel = 1.0)</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>spot white balance</i>
+            </entry>
+            <entry colname="col2">Select a square area in your image containing mostly grey pixels. The white balance is calculated based on the selected area.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <i>camera presets</i>
+            </entry>
+            <entry colname="col2">Camera specific white balance presets. Examples: direct sunlight, flash, cloudy, shade and a number of indoor lighting options.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

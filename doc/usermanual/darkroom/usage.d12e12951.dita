@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e12951" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>Viewing from some distance an image dithered into a very low bit depth (like 
+    <q>floyd-steinberg 1-bit b&amp;w</q>) will give the impression of a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in the center view, in the navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. Note that as a consequence the histogram – which is derived from the navigation window – will show this increased number of levels and is no longer a full match of the output image.</p>
+  </body>
+</topic>

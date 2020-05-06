@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="tone_group" xml:lang="en-us">
+  <title>Tone group</title>
+  <body>
+    <p>This group contains modules that operate on the tonal values of an image, modulating brightness while leaving color values intact.</p>
+  </body>
+</topic>

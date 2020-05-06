@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="interpolation.d12e9851" xml:lang="en-us">
+  <title>interpolation</title>
+  <body>
+    <p>The interpolation method defines how to calculate output colors when input colors are not exactly on a node of the RGB cube (described by the 3D LUT). There are three interpolation methods available: 
+    <i>tetrahedral</i>(the default one), 
+    <i>trilinear</i>and 
+    <i>pyramid</i>. Usually you won't see any difference between the interpolation methods except with small size LUTs.</p>
+  </body>
+</topic>

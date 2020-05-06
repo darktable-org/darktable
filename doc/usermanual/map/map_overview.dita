@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="map_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>Map view will show you a world map with the currently open image, or film roll of images, pinned to their geotagged location. This requires that the image was geotagged by a camera with that feature. Some newer cameras, including smartphones, are already equipped with GPS receivers. Other cameras may need additional GPS hardware to do this.</p>
+    <p>Even if your camera doesn't support this feature, there is an alternative method. darktable can match the Exif time and date data in your image(s) to a separate GPX data tracking file created by a GPS tracker recording your movements. These can be handheld devices or a GPS tracker app on your smartphone. This is all done in the lighttable view (see 
+    <xref href="../lighttable/geotagging.dita#geotagging" type="topic">Geotagging</xref>).</p>
+  </body>
+</topic>

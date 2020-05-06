@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="biasCorrection.d12e10966" xml:lang="en-us">
+  <title>bias correction</title>
+  <body>
+    <p>This option is available in 
+    <q>wavelets</q>and 
+    <q>non local means</q>modes. It allows to correct the color cast that may appear in the shadows. Increase this value if dark shadows appear too greenish, decrease it if they appear purple-ish.</p>
+  </body>
+</topic>

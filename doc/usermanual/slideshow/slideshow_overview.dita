@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="slideshow_overview" xml:lang="en-us">
+  <title>Overview</title>
+  <body>
+    <p>Entering the slideshow view starts a slideshow of the images of the current collection with filtering rules and sort order applied. To learn more on how to define the collection, the filtering and the sort order see 
+    <xref href="../lighttable/collect_images.dita#collect_images" type="topic">Collect images</xref>and 
+    <xref href="../lighttable/filtering_and_sort_order.dita#filtering_and_sort_order" type="topic">Filtering and sort order</xref>.</p>
+    <p>The image display is optimized to take full advantage of your screen size. You should therefore put darktable into fullscreen mode which is toggled by pressing 
+    <i>F11</i>. You may press 
+    <i>Tab</i>key in order to hide all remaining panels – namely the filtering option in the top panel.</p>
+  </body>
+</topic>

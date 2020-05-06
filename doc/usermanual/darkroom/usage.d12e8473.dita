@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e8473" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>First select your output channel and then set the amount each input channel feeds into that output channel. Among its many uses, this module can be used to see the RGB channels individually: use the gray destination and put the value 1 on the input channel you want to see and 0 on the others.</p>
+  </body>
+</topic>

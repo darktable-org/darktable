@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="input_color_profile" xml:lang="en-us">
+  <title>Input color profile</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>input color profile</indexterm></indexterm>
+        <indexterm>input color profile</indexterm>
+        <indexterm>color management
+        <indexterm>input color profile</indexterm></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>blue light sources</indexterm></indexterm>
+        <indexterm>artifact mitigation
+        <indexterm>black pixels</indexterm></indexterm>
+        <indexterm>gamut clipping</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

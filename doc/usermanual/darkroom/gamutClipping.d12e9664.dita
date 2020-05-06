@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gamutClipping.d12e9664" xml:lang="en-us">
+  <title>gamut clipping</title>
+  <body>
+    <p>This combobox lets you activate a color clipping mechanism. In most cases you can leave it at its default 
+    <q>off</q>state. However, if your image shows some specific features like highly saturated blue light sources, gamut clipping might be useful to avoid black pixel artifacts. See 
+    <xref href="possible_color_artifacts.dita#possible_color_artifacts" type="topic">Possible color artifacts</xref>for more background information.</p>
+    <p>You can select from a list of RGB profiles. Input colors with a saturation that exceeds the permissible range of the selected profile get clipped to a maximum value. 
+    <q>linear Rec2020 RGB</q>and 
+    <q>Adobe RGB (compatible)</q>allow for a broader range of unclipped colors, while 
+    <q>sRGB</q>and 
+    <q>linear Rec709 RGB</q>produce a tighter clipping. You should select the profile that prevents artifacts while still maintaining highest color dynamics.</p>
+  </body>
+</topic>

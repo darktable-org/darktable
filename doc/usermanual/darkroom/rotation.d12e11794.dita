@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rotation.d12e11794" xml:lang="en-us">
+  <title>rotation</title>
+  <body>
+    <p>This parameter controls a rotation of the image around its center and can correct for a skewed horizon.</p>
+  </body>
+</topic>

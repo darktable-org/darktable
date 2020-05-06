@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_filename" xml:lang="en-us">
+  <title>filename template</title>
+  <body>
+    <p>You can define filenames that darktable generates for export. Several pre-defined variables can be used as placeholders:</p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" />
+        <colspec colname="col2" colnum="2" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <codeph>$(ROLL_NAME)</codeph>
+            </entry>
+            <entry colname="col2">roll of the input image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(FILE_FOLDER)</codeph>
+            </entry>
+            <entry colname="col2">folder containing the input image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(FILE_NAME)</codeph>
+            </entry>
+            <entry colname="col2">basename of the input image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(FILE_EXTENSION)</codeph>
+            </entry>
+            <entry colname="col2">extension of the input image</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(ID)</codeph>
+            </entry>
+            <entry colname="col2">the image id</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(VERSION)</codeph>
+            </entry>
+            <entry colname="col2">the duplicate version (see 
+            <xref href="sidecar_files.dita#sidecar_files" type="topic">Sidecar files</xref>)</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(SEQUENCE)</codeph>
+            </entry>
+            <entry colname="col2">a sequence number within export job</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MAX_WIDTH)</codeph>
+            </entry>
+            <entry colname="col2">maximum image width to limit within export session</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MAX_HEIGHT)</codeph>
+            </entry>
+            <entry colname="col2">maximum image height to limit within export session</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(YEAR)</codeph>
+            </entry>
+            <entry colname="col2">year at date of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MONTH)</codeph>
+            </entry>
+            <entry colname="col2">month at date of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(DAY)</codeph>
+            </entry>
+            <entry colname="col2">day at date of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(HOUR)</codeph>
+            </entry>
+            <entry colname="col2">hour at time of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MINUTE)</codeph>
+            </entry>
+            <entry colname="col2">minute at time of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(SECOND)</codeph>
+            </entry>
+            <entry colname="col2">second at time of export</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_YEAR)</codeph>
+            </entry>
+            <entry colname="col2">Exif year</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_MONTH)</codeph>
+            </entry>
+            <entry colname="col2">Exif month</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_DAY)</codeph>
+            </entry>
+            <entry colname="col2">Exif day</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_HOUR)</codeph>
+            </entry>
+            <entry colname="col2">Exif hour</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_MINUTE)</codeph>
+            </entry>
+            <entry colname="col2">Exif minute</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_SECOND)</codeph>
+            </entry>
+            <entry colname="col2">Exif second</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_EXPOSURE)</codeph>
+            </entry>
+            <entry colname="col2">Exif exposure</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_APERTURE)</codeph>
+            </entry>
+            <entry colname="col2">Exif aperture</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_FOCAL_LENGTH)</codeph>
+            </entry>
+            <entry colname="col2">Exif focal length</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(EXIF_FOCUS_DISTANCE)</codeph>
+            </entry>
+            <entry colname="col2">Exif focus distance</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(LONGITUDE)</codeph>
+            </entry>
+            <entry colname="col2">Longitude</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(LATITUDE)</codeph>
+            </entry>
+            <entry colname="col2">Latitude</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(ELEVATION)</codeph>
+            </entry>
+            <entry colname="col2">Elevation</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(STARS)</codeph>
+            </entry>
+            <entry colname="col2">star rating</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(LABELS)</codeph>
+            </entry>
+            <entry colname="col2">colorlabels</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MAKER)</codeph>
+            </entry>
+            <entry colname="col2">camera maker</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(MODEL)</codeph>
+            </entry>
+            <entry colname="col2">camera model</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(TITLE)</codeph>
+            </entry>
+            <entry colname="col2">title from metadata</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(DECRIPTION)</codeph>
+            </entry>
+            <entry colname="col2">description from metadata</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(CREATOR)</codeph>
+            </entry>
+            <entry colname="col2">creator from metadata</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(PUBLISHER)</codeph>
+            </entry>
+            <entry colname="col2">publisher from metadata</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(RIGHTS)</codeph>
+            </entry>
+            <entry colname="col2">rights from metadata</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(USERNAME)</codeph>
+            </entry>
+            <entry colname="col2">user name</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(PICTURES_FOLDER)</codeph>
+            </entry>
+            <entry colname="col2">pictures folder</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(HOME)</codeph>
+            </entry>
+            <entry colname="col2">home folder</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(DESKTOP)</codeph>
+            </entry>
+            <entry colname="col2">desktop folder</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(TAGS)</codeph>
+            </entry>
+            <entry colname="col2">tags list (Xmp.dc.Subject)</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(CATEGORYn$(category))</codeph>
+            </entry>
+            <entry colname="col2">tag name of level n [0,3] of selected category (or tag)</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>All of the variables support basic string substitution inspired by bash. The details differ however, for example all patterns are treated as simple string comparisons. There is no regex support. For example you can do the following: 
+    <codeph>$(ROLL_NAME/search/replace)</codeph>. This means if your roll name is e.g. 
+    <i>1970-01-01_RAW_Time-Begins</i>and you use 
+    <codeph>$(ROLL_NAME/RAW/JPG)</codeph>it will result in a roll name of: 
+    <i>1970-01-01_JPG_Time-Begins</i></p>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" />
+        <colspec colname="col2" colnum="2" />
+        <tbody>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var-default)</codeph>
+            </entry>
+            <entry colname="col2">If 
+            <codeph>var</codeph>is empty, use 
+            <codeph>default</codeph>.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var+alt_value)</codeph>
+            </entry>
+            <entry colname="col2">If 
+            <codeph>var</codeph>is set, use 
+            <codeph>alt_value</codeph>, else use empty string.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var:offset)</codeph>
+            </entry>
+            <entry colname="col2">
+            <codeph>var</codeph>starting from 
+            <codeph>offset</codeph>. If 
+            <codeph>offset</codeph>is less than zero it is counted from the back of the string.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var:offset:length)</codeph>
+            </entry>
+            <entry colname="col2">At most 
+            <codeph>length</codeph>characters of 
+            <codeph>var</codeph>, starting from 
+            <codeph>offset</codeph>. If 
+            <codeph>offset</codeph>is less than zero it is counted from the back of 
+            <codeph>var</codeph>. If 
+            <codeph>length</codeph>is less than zero it indicates the end of the result, counted from the back of 
+            <codeph>var</codeph>, and not an actual length.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var#pattern)</codeph>
+            </entry>
+            <entry colname="col2">Remove 
+            <codeph>pattern</codeph>from the start of 
+            <codeph>var</codeph>.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var%pattern)</codeph>
+            </entry>
+            <entry colname="col2">Remove 
+            <codeph>pattern</codeph>from the end of 
+            <codeph>var</codeph>.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var/pattern/replacement)</codeph>
+            </entry>
+            <entry colname="col2">Replace the first occurrence of 
+            <codeph>pattern</codeph>in 
+            <codeph>var</codeph>with 
+            <codeph>replacement</codeph>. If 
+            <codeph>replacement</codeph>is empty then 
+            <codeph>pattern</codeph>will be removed.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var//pattern/replacement)</codeph>
+            </entry>
+            <entry colname="col2">Replace all occurrences of 
+            <codeph>pattern</codeph>in 
+            <codeph>var</codeph>with 
+            <codeph>replacement</codeph>. If 
+            <codeph>replacement</codeph>is empty then 
+            <codeph>pattern</codeph>will be removed.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var/#pattern/replacement)</codeph>
+            </entry>
+            <entry colname="col2">If 
+            <codeph>var</codeph>starts with 
+            <codeph>pattern</codeph>then 
+            <codeph>pattern</codeph>is replaced with 
+            <codeph>replacement</codeph>.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var/%pattern/replacement)</codeph>
+            </entry>
+            <entry colname="col2">If 
+            <codeph>var</codeph>ends with 
+            <codeph>pattern</codeph>then 
+            <codeph>pattern</codeph>is replaced with 
+            <codeph>replacement</codeph>.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var^)</codeph>
+            </entry>
+            <entry colname="col2">Make the first character of 
+            <codeph>var</codeph>uppercase.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var^^)</codeph>
+            </entry>
+            <entry colname="col2">Make all characters of 
+            <codeph>var</codeph>uppercase.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var,)</codeph>
+            </entry>
+            <entry colname="col2">Make the first character of 
+            <codeph>var</codeph>lowercase.</entry>
+          </row>
+          <row>
+            <entry colname="col1">
+              <codeph>$(var,,)</codeph>
+            </entry>
+            <entry colname="col2">Make all characters of 
+            <codeph>var</codeph>lowercase.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </body>
+</topic>

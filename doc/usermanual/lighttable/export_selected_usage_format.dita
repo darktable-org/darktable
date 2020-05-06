@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_format" xml:lang="en-us">
+  <title>file format</title>
+  <body>
+    <p>darktable can export to various file formats. Depending on the output format you can define additional parameters. For some formats you need to decide on the desired bit depth and the compression method, respectively.</p>
+    <p>For some export formats like JPEG you can define an output quality. Higher values will lead to larger file sizes. The default quality 
+    <q>95</q>is a good setting for very high quality exports, e.g. for archiving or printing purposes. If you need a good compromise between size and quality, e.g. for online image display or uploads, you should consider a value of 
+    <q>90</q>instead.</p>
+    <p>If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable will try to store the history stack as XMP tags within the output file. This information can later be used to reconstruct your parameters and settings that have produced the exported image (see 
+    <xref href="history_stack.dita#history_stack" type="topic">History stack</xref>).</p>
+    <note type="caution">For various reasons embedding XMP tags into output files may fail without notice, eg. if certain size limits are exceeded. Users are therefore advised to not rely their backup strategy on this feature. To back up your data make sure to save your input (raw) file as well as all of darktable's XMP sidecar files.</note>
+    <p>If you don't want to distribute history stack data (or any other type of metadata) with your images your can tweak the export metadata configuration.</p>
+  </body>
+</topic>

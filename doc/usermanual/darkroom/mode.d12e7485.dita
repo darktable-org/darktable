@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="mode.d12e7485" xml:lang="en-us">
+  <title>mode</title>
+  <body>
+    <p>Choice of "local laplacian filter" or "unnormalised bilateral grid". The options for the bilateral grid are: coarseness, contrast, and detail. The local laplacian filter supports: detail, highlights, shadows, and midtone range. The local laplacian mode supports shadow lifting and highlight compression, similar to the shadows and highlights module.</p>
+  </body>
+</topic>

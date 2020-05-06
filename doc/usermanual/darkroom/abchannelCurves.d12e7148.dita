@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="abchannelCurves.d12e7148" xml:lang="en-us">
+  <title>a/b-channel curves</title>
+  <body>
+    <p>The curves in the a and b channels work on color values and are available only in 
+    <q>Lab, separated channels</q>color space. The horizontal line represents the color channel value of the input image pixels. The vertical line represents the color channel value of the output image pixels. Positive a-values correspond to more magenta colors; negative a-values correspond to more greenish colors. Positive b-values correspond to more yellowish colors; negative b-values correspond to more blueish colors.</p>
+    <p>A straight line does not change anything. Shifting the center of the curve will give the image a color tint: shifting a-channel upwards gives a magenta tint; shifting b-channel upwards gives a yellow tint; shifting a-channel downwards gives a green tint; shifting b-channel downwards gives a blue tint.</p>
+    <p>Increasing/decreasing the steepness of the curves, without shifting its center, will increase/decrease the color saturation of the respective channel. With properly defined curves you can exert fine control on color saturation, depending on the input pixel's colors.</p>
+  </body>
+</topic>

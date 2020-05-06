@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="blending_usage_uniform" xml:lang="en-us">
+  <title>uniformily</title>
+  <body>
+    <p>reprocessing takes place with the chosen blend mode and opacity value – the same for all pixels. Additional controls to select blend mode and opacity value are displayed. The default blend mode is 
+    <q>normal</q>with an opacity of 100%.</p>
+  </body>
+</topic>

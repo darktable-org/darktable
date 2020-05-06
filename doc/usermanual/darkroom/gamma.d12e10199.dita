@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="gamma.d12e10199" xml:lang="en-us">
+  <title>gamma</title>
+  <body>
+    <p>Set the gamma value to compensate your input profile. Often the required value is 0.45 (the reciprocal of 2.2 gamma used by some manufacturer's profile).</p>
+  </body>
+</topic>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="module_presets_new" xml:lang="en-us">
+  <title>Creating a new preset</title>
+  <body>
+    <p>First configure the module's parameters then click the 
+    <image align="center" href="../images/darkroom_module_icon_presets.png" placement="inline" />icon and select 
+    <q>store new preset</q>. The following dialog will be shown for configuring the preset:</p>
+    <p>
+      <image align="center" href="concepts/images/new_preset.png" placement="break" />
+    </p>
+    <p>The first two fields are used to name and describe the preset.</p>
+    <p>In the example above we have also checked the auto apply option. This brings up additional selection fields where you can define a filter used to decide if the preset should be automatically applied when opening other similar images in darkroom for the first time. The example dialog above sets up following rules: if lens name matches and aperture is greater or equal to f/8 and focal length is between 24 and 35mm the preset will be automatically applied. Also the second checkbox is clicked so this preset will only be shown in the preset list if the image matches the rule.</p>
+    <p>darktable finds this data in your image's Exif information. If you want a preset to be applied to all images from a specific camera leave all fields at default values except for the model field.</p>
+    <p>Tip: The 
+    <i>image information</i>panel for your image displays your model name, use this to ensure you have the correct spelling (see 
+    <xref href="../lighttable/image_information.dita#image_information" type="topic">Image information</xref>).</p>
+  </body>
+</topic>

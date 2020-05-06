@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="contrastCompression.d12e7692" xml:lang="en-us">
+  <title>contrast compression</title>
+  <body>
+    <p>Sets the contrast compression level of the base layer. A higher compression will make the image fit a lower dynamic range.</p>
+  </body>
+</topic>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="snapshots" xml:lang="en-us">
+  <title>Snapshots</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>snapshots</indexterm></indexterm>
+        <indexterm>snapshots</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="6*" />
+        <colspec colname="col2" colnum="2" colwidth="4*" />
+        <tbody>
+          <row>
+            <entry colname="col1">You can take snapshots of images as you process them. A snapshot is stored as a bitmap of the current center view and is kept as long as you stay in the darkroom. A snapshot can then be selected and overlaid in the current center view to help you with a side by side comparison (left: snapshot, right: active) when you are tuning parameters of a module. This can also be combined with history (see 
+            <xref href="history.dita#history" type="topic">History stack</xref>) to compare the snapshot against different stages of development.</entry>
+            <entry colname="col2">
+              <image align="center" href="images/panel_snapshots.png" placement="break" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>You can control the split view by moving the splitline back and forth. If you hover with the mouse over the splitline, a small rotation icon will appear on the center of the line. Click it to change between vertical and horizontal split view.</p>
+  </body>
+</topic>

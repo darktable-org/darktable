@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="unbreak_input_profile" xml:lang="en-us">
+  <title>Unbreak input profile</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>modules
+        <indexterm>unbreak input profile</indexterm></indexterm>
+        <indexterm>unbreak input profile</indexterm>
+        <indexterm>color management
+        <indexterm>unbreak input profile</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body />
+</topic>

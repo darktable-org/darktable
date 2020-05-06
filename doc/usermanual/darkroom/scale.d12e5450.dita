@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="scale.d12e5450" xml:lang="en-us">
+  <title>scale</title>
+  <body>
+    <p>This combobox toggles between 
+    <q>linear</q>and 
+    <q>logarithmic</q>view. In the double logarithmic view more space is given to the lower values allowing a more fine-grained adjustment of the shadows.</p>
+  </body>
+</topic>

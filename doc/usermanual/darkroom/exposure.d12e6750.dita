@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="exposure.d12e6750" xml:lang="en-us">
+  <title>exposure</title>
+  <body>
+    <p>Sets fill-light exposure in [EV].</p>
+  </body>
+</topic>

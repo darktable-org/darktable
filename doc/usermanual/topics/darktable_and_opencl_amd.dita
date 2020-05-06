@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_and_opencl_amd" xml:lang="en-us">
+  <title>Setting up OpenCL for AMD/ATI devices</title>
+  <body>
+    <p>While NVIDIA devices and most modern AMD/ATI devices will most often run out of the box, there is more to do for older AMD/ATI graphics cards, namely those prior to the HD7xxx series. This starts with the fact that those devices will only report to darktable part of their total GPU memory. For a 1GB device this typically amounts to 512MB, a value which darktable in its standard configuration will refuse as not being sufficient for its tasks. Consequence: the device will not be used.</p>
+    <p>On the web you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE to a value of 100 in this case. Indeed this will cause the AMD/ATI driver to report the full installed memory to darktable. However, there is a problem. On many (most?) cards this will cause buffers to be allocated on your computer (host) not on the video card! In this case all memory accesses will need to go through the slow PCIe bus. This will cost you a factor of 10x or more in performance and will render OpenCL useless for you, especially when exporting files.</p>
+    <p>Another environment variable which changes driver behavior is GPU_MAX_ALLOC_PERCENT. You could set this to 100 in order to allow memory allocations as high as 1GB on your AMD/ATI card. The problem is, this tends to cause darktable to crash sooner or later.</p>
+    <p>Our recommendation is to leave these settings untouched. Often your card will be recognized with 512MB memory and a maximum allocation size of 128MB. There are three configuration parameter which you set in file $HOME/.config/darktable/darktablerc to get things running. Here are the details: 
+    <dl>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_memory_requirement</systemoutput>
+        </dt>
+        <dd>
+          <p>Set this parameter to 500 so that darktable will accept your 512MB graphics memory as being sufficient in memory.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_memory_headroom</systemoutput>
+        </dt>
+        <dd>
+          <p>This parameter controls how much graphics memory (out of the reported one) darktable should leave untouched for driver and display use. As for AMD/ATI devices we anyhow only can get half of the available RAM it's safe to set this to zero. So all of the 512MB can be used by darktable.</p>
+        </dd>
+      </dlentry>
+      <dlentry>
+        <dt>
+          <systemoutput>opencl_avoid_atomics</systemoutput>
+        </dt>
+        <dd>
+          <p>Atomic operations in OpenCL are a special way of data synchronization. They are only used in a few kernels. Unfortunately, some (most?) AMD/ATI devices are extremely slow in processing atomics. It's better to process the affected modules on CPU rather than accepting an ultra-slow GPU codepath. Set this parameter to TRUE if you experience slow processing of modules like 
+          <xref href="../darkroom/shadows_and_highlights.dita#shadows_and_highlights" type="topic">Shadows and Highlights</xref>, 
+          <xref href="../darkroom/monochrome.dita#monochrome" type="topic">Monochrome</xref>, 
+          <xref href="../darkroom/local_contrast.dita#local_contrast" type="topic">Local contrast</xref>, or 
+          <xref href="../darkroom/tonemapping.dita#tonemapping" type="topic">Tonemapping</xref>or if you even get intermittent system freezes.</p>
+        </dd>
+      </dlentry>
+    </dl></p>
+    <p>These recommendations do not apply to the more recent Radeon HD7xxx series with GCN architecture. Besides being very fast in terms of GPU computing they normally run out of the box. You only might consider to try some of the performance optimization options which are described in the following section.</p>
+  </body>
+</topic>

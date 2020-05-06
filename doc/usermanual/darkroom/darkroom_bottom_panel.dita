@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darkroom_bottom_panel" xml:lang="en-us">
+  <title>Bottom panel</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darkroom panels
+        <indexterm>bottom panel</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The bottom panel provides quick access to apply presets and styles to your image and allows to activate over/underexposure warning as well as softproofing and gamut check. You can also activate a filmstrip for quick navigation within the current collection.</p>
+  </body>
+</topic>

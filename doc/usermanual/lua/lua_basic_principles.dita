@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_basic_principles" xml:lang="en-us">
+  <title>Basic principles</title>
+  <body>
+    <p>At startup, darktable will automatically run two Lua scripts:</p>
+    <ul>
+      <li>a script called 
+      <i>luarc</i>in 
+      <i>$DARKTABLE/share/darktable</i></li>
+      <li>a script called 
+      <i>luarc</i>in the user's configuration directory</li>
+    </ul>
+    <p>$DARKTABLE is used here to represent your system's darktable installation directory.</p>
+    <p>This is the only time darktable will run Lua scripts by itself. The script can register callbacks to perform actions on various darktable events. This callback mechanism is the primary way to trigger lua actions.</p>
+  </body>
+</topic>

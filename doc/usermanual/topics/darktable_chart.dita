@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="darktable_chart" xml:lang="en-us">
+  <title>Using 
+  <filepath>darktable-chart</filepath></title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>darktable-chart</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+</topic>

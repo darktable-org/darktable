@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="supported_file_formats_raw" xml:lang="en-us">
+  <title>Camera raw files</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>import
+        <indexterm>raw files</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>darktable reads raw files using the open source library 
+    <xref format="html" href="https://github.com/darktable-org/rawspeed" scope="external">RawSpeed</xref>, originally developed by Klaus Post and now maintained within the darktable project itself. The number of supported cameras and file formats is constantly increasing. It is beyond the scope of this manual to give an exhaustive list. Most modern camera models are supported, and new ones tend to get added very quickly. With the exception of Fujifilm X-Trans cameras, darktable does not decode images from cameras with non-Bayer sensors (e.g. Sigmas with the Foveon X3 sensor).</p>
+  </body>
+</topic>

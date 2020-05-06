@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="whitePointAdjustment.d12e5224" xml:lang="en-us">
+  <title>white point adjustment</title>
+  <body>
+    <p>By default the algorithm of this modules leaves black point and white point untouched. In some cases an image might contain tonal variations beyond the white point, i.e. above a luminance value of 100. A negative shift in the white point adjustment slider allows to bring these values down into the proper range so that further details in the highlights get visible.</p>
+  </body>
+</topic>

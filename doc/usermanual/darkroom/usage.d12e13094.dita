@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e13094" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>You control the detection sensitivity with the threshold parameter and the level of elimination with the strength parameter.</p>
+  </body>
+</topic>

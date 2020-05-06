@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="core_options" xml:lang="en-us">
+  <title>Core options</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>preferences and settings
+        <indexterm>core options</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>These options control some of the internals of darktable.</p>
+  </body>
+</topic>

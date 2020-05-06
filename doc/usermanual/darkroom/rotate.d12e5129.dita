@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="rotate.d12e5129" xml:lang="en-us">
+  <title>rotate</title>
+  <body>
+    <p>Clicking on one of the buttons causes a counter-clockwise or clockwise rotation in steps of 90 degrees.</p>
+  </body>
+</topic>

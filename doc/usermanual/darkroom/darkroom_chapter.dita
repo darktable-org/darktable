@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="darkroom_chapter">
+  <title>Darkroom</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>darkroom</keyword>
+        <keyword>view</keyword>
+        <indexterm>darkroom</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>The darkroom view is where you develop your image.</p>
+    <fig id="fig_lxw_kwk_2lb">
+      <title>The darkroom view</title>
+      <image href="../images/darkroom_view.png" placement="break" id="image_mxw_kwk_2lb" />
+    </fig>
+  </body>
+</topic>

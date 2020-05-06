@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="combined_masks" xml:lang="en-us">
+  <title>Combining drawn and parametric masks</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>masks
+        <indexterm>combined masks</indexterm></indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This section describes how darktable combines individual masks to form the final mask of a module. Individual masks are the drawn mask and all the single channels of the parametric mask. The topic is rather advanced – if you don't want to go through all the theoretical details just jump down where we describe two typical use cases.</p>
+  </body>
+</topic>

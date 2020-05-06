@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="collect_images_usage_attributes" xml:lang="en-us">
+  <title>image attributes</title>
+  <body>
+    <p>The left combobox lets you choose from the available attributes: 
+    <table frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colname="col1" colnum="1" colwidth="1*" />
+        <colspec colname="col2" colnum="2" colwidth="3*" />
+        <tbody>
+          <row>
+            <entry colname="col1">film roll</entry>
+            <entry colname="col2">
+              <p>the film roll to which the image belongs</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">folders</entry>
+            <entry colname="col2">
+              <p>the disk folder where the input image file is located</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">camera</entry>
+            <entry colname="col2">
+              <p>the Exif data entry describing the camera make and model</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">tag</entry>
+            <entry colname="col2">
+              <p>any tag that is attached to the image; if activated a hierarchical list of known tags is displayed for quick selection</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">date</entry>
+            <entry colname="col2">
+              <p>the date when the photo was taken, in the format 
+              <i>YYYY:MM:DD</i></p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">time</entry>
+            <entry colname="col2">
+              <p>the time (date 
+              <i>and</i>time of day) when the photo was taken, in the format 
+              <i>YYYY:MM:DD hh:mm:ss</i></p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">history</entry>
+            <entry colname="col2">
+              <p>choose images whose history stacks have been altered or not altered</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">color label</entry>
+            <entry colname="col2">
+              <p>any color label that is attached to the image: 
+              <q>red</q>, 
+              <q>yellow</q>, 
+              <q>green</q>, 
+              <q>blue</q>, 
+              <q>purple</q></p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">title</entry>
+            <entry colname="col2">
+              <p>the title, as listed in the image's metadata 
+              <q>title</q>field</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">description</entry>
+            <entry colname="col2">
+              <p>the description, as listed in the image's metadata 
+              <q>description</q>field</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">creator</entry>
+            <entry colname="col2">
+              <p>the creator, as listed in the image's metadata 
+              <q>creator</q>field</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">publisher</entry>
+            <entry colname="col2">
+              <p>the publisher, as listed in the image's metadata 
+              <q>publisher</q>field</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">rights</entry>
+            <entry colname="col2">
+              <p>the copyrights statement, as written in the image's metadata 
+              <q>rights</q>field</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">lens</entry>
+            <entry colname="col2">
+              <p>the Exif data entry describing the lens</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">focal length</entry>
+            <entry colname="col2">
+              <p>the focal length value, as derived from Exif data</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">ISO</entry>
+            <entry colname="col2">
+              <p>the ISO value, as derived from Exif data</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">aperture</entry>
+            <entry colname="col2">
+              <p>the aperture value, as derived from Exif data</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">filename</entry>
+            <entry colname="col2">
+              <p>the filename of the physical input image</p>
+            </entry>
+          </row>
+          <row>
+            <entry colname="col1">geotagging</entry>
+            <entry colname="col2">
+              <p>the geo location of the image</p>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table></p>
+  </body>
+</topic>

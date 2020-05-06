@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="usage.d12e14450" xml:lang="en-us">
+  <title>Usage</title>
+  <body>
+    <p>The vignetting module has an extensive set of parameters to precisely tune its effect. It also will display graphical controls within the image if the module is in focus. Give it a try to get a feeling of how it works. On-screen controls and parameter sliders will stay in sync.</p>
+    <p>This module is known to provoke banding artifacts under certain conditions; you should consider to activate the 
+    <i>dithering</i>module (see 
+    <xref href="dithering.dita#dithering" type="topic">Dithering</xref>).</p>
+  </body>
+</topic>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic xml:lang="en-us" id="special_topics_chapter">
+  <title>Special topics</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <keyword>topics</keyword>
+        <keyword>special</keyword>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>This chapter touches several technical topics which might help you to get darktable running on specific hardware or optimize its performance. A lot of additional technical background information and many tips and tricks are also covered in an extensive blog section that you can find on our 
+    <xref href="https://www.darktable.org" format="html" scope="external">homepage</xref>.</p>
+    <fig id="fig_zz4_ryb_flb">
+      <title>The darktable blog</title>
+      <image href="../images/darktable_blog.png" placement="break" id="image_a1p_ryb_flb" />
+    </fig>
+  </body>
+</topic>

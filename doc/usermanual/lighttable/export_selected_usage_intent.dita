@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="export_selected_usage_intent" xml:lang="en-us">
+  <title>intent</title>
+  <prolog>
+    <metadata>
+      <keywords />
+    </metadata>
+  </prolog>
+  <body>
+    <p>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See 
+    <xref href="../darkroom/rendering_intent.dita#rendering_intent" type="topic">Rendering intent</xref>for a more detailed description of the available options.</p>
+  </body>
+</topic>

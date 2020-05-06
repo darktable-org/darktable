@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lua_usage" xml:lang="en-us">
+  <title>Lua usage</title>
+  <body>
+    <p>Lua can be used to define actions which darktable will perform whenever a specified event is triggered. One example might be calling an external application during file export in order to apply additional processing steps outside of darktable.</p>
+    <p>darktable uses 
+    <xref format="html" href="http://www.lua.org/" scope="external">
+      <i>Lua</i>
+    </xref>, which is an independent project founded in 1993, providing a powerful, fast, lightweight, embeddable scripting language. Lua is widely used by many open source applications, in commercial programs, and for games programming.</p>
+    <p>darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the scope of this usermanual. For a detailed introduction see the 
+    <xref format="html" href="http://www.lua.org/manual/5.2/manual.html" scope="external">Lua reference manual</xref>.</p>
+  </body>
+</topic>

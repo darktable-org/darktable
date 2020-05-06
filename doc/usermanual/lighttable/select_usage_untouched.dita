@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="select_usage_untouched" xml:lang="en-us">
+  <title>select untouched</title>
+  <body>
+    <p>Select all images that have not yet been developed.</p>
+  </body>
+</topic>

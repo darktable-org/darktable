@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="parametric_mask_usage_sliders" xml:lang="en-us">
+  <title>Color channel sliders</title>
+  <body>
+    <p>With the color channel slider you construct a trapezoidal opacity function. For this purpose there are four markers per slider. Two triangles above the slider mark the range of values where opacity is 1. Two triangles below the slider mark the range values where opacity is zero. Intermediate points between full and zero opacities are given a proportional opacity.</p>
+    <p>The filled triangles, or inside markers, indicate the closed (mostly narrower) edge of the trapezoidal function. The open triangles, or outside markers, indicate the open (mostly wider) edge of the trapezoidal function. The sequence of the markers always remains unchanged: they can touch but they can not switch position.</p>
+    <p>A polarity button ( 
+    <image align="center" href="../images/darkroom_module_icon_polarity_plus.png" placement="inline" />and 
+    <image align="center" href="../images/darkroom_module_icon_polarity_minus.png" placement="inline" />, respectively) to the right of the slider switches between 
+    <i>range select</i>and 
+    <i>range de-select</i>function modes with visual confirmation provided by exchanging the upper and the lower triangle markers. These two types of trapezoidal functions are represented graphically in the following images.</p>
+    <p>
+      <table frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec align="center" colname="col1" colnum="1" colwidth="1*" />
+          <colspec align="center" colname="col2" colnum="2" colwidth="1*" />
+          <tbody>
+            <row>
+              <entry colname="col1">
+                <p>Range select function</p>
+              </entry>
+              <entry colname="col2">
+                <p>Range de-select function</p>
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="concepts/images/blendif_2a.png" placement="break" />
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_3a.png" placement="break" />
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <image align="center" href="concepts/images/blendif_2b.png" placement="break" />
+              </entry>
+              <entry colname="col2">
+                <image align="center" href="concepts/images/blendif_3b.png" placement="break" />
+              </entry>
+            </row>
+            <row>
+              <entry colname="col1">
+                <p>A trapezoidal function that selects a narrow range of values for blending.</p>
+              </entry>
+              <entry colname="col2">
+                <p>A trapezoidal function that de-selects a narrow range of values from blending.</p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </p>
+    <p>In their default state all markers are at their extreme positions, maximum left and maximum right, respectively. In this state a 
+    <i>range select</i>function selects the whole range of values giving an 
+    <q>all at 100%</q>mask. Starting from there one can move the sliders inwards to gradually take out more an more parts of the image except of the remaining narrow range.</p>
+    <p>A 
+    <i>range de-select</i>function per default deselects the whole range of values, giving an 
+    <q>all-zero</q>mask as a starting point. Moving the sliders inwards gradually extends the mask more and more except of the remaining narrow range.</p>
+    <p>For more information on the polarity feature read 
+    <xref href="combined_masks.dita#combined_masks" type="topic">Combining drawn and parametric masks</xref>.</p>
+  </body>
+</topic>

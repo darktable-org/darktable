@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="lchannelCurve.d12e7126" xml:lang="en-us">
+  <title>L-channel curve</title>
+  <body>
+    <p>The tone curve in L-channel works on Lightness. For a better overview a lightness histogram is displayed in the diagram. When working in 
+    <q>Lab, linked channels</q>, 
+    <q>RGB, linked channels</q>or 
+    <q>XYZ, linked channels</q>, the L-channel curve is the only one available.</p>
+    <p>The horizontal line represents the input image pixels' lightness. The vertical line represents the lightness of the output image pixels. A straight line does not change anything. A point above the default diagonal increases the lightness, whereas a point under decreases it. Shifting the center of the curve upwards will lighten the image, shifting it downwards will darken the image. An S-like curve will enhance the contrast of the image.</p>
+  </body>
+</topic>

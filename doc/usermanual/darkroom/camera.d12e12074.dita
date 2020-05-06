@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="camera.d12e12074" xml:lang="en-us">
+  <title>camera</title>
+  <body>
+    <p>The camera make and model as determined by Exif data. You can override this manually and select your camera from a hierarchical menu.</p>
+    <p>Only lenses with correction profiles matching the selected camera will be shown.</p>
+  </body>
+</topic>

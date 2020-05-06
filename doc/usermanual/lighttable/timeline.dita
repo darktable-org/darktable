@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
+"topic.dtd">
+<topic id="timeline" xml:lang="en-us">
+  <title>Timeline</title>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm>lighttable panels
+        <indexterm>timeline</indexterm></indexterm>
+        <indexterm>timeline</indexterm>
+        <indexterm>select date</indexterm>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p>
+      <image align="center" href="images/timeline.png" placement="break" />
+    </p>
+    <p>In lighttable filemanager, you can display a timeline in the bottom panel with the shortcut 
+    <i>Ctrl+F</i>This allow you to see the repartition of all your images by date-time.</p>
+    <p>Inside timeline, you can show next and previous dates with 
+    <i>mouse scroll</i>. 
+    <i>Ctrl+scroll</i>allow you to zoom in/out the timeline.</p>
+    <p>You can also use timeline to select images by date range with mouse click + pan.</p>
+  </body>
+</topic>
