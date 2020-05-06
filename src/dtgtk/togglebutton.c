@@ -67,15 +67,19 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
 
   /* update active state paint flag */
-  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(active)
-  {
     flags |= CPF_ACTIVE;
-  }
   else
-  {
-    flags &= ~(CPF_ACTIVE);
-  }
+    flags &= ~CPF_ACTIVE;
+
+  /* update focus state paint flag */
+  const gboolean hasfocus = ((DTGTK_TOGGLEBUTTON(widget)->icon_data == darktable.develop->gui_module)
+                         && darktable.develop->gui_module);
+  if(hasfocus)
+    flags |= CPF_FOCUS;
+  else
+    flags &= ~CPF_FOCUS;
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
