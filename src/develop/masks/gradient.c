@@ -330,8 +330,8 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
     const float diff = 5.0f * zoom_scale;
-    float x0, y0;
-    float rotation;
+    float x0 = 0.0f, y0 = 0.0f;
+    float rotation = 0.0f;
     if(!gui->form_dragging
        || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
            && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
@@ -483,15 +483,15 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   if(gui->creation)
   {
     const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;
+    const float ht = darktable.develop->preview_pipe->iheight;                                                            
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    const float distance = 0.1f * fminf(wd, ht);
+    const float distance = 0.1f * MIN(wd, ht);
     const float scale = sqrtf(wd * wd + ht * ht);
 
-    float xpos, ypos, xpos0, ypos0;
+    float xpos = 0.0f, ypos = 0.0f, xpos0 = 0.0f, ypos0 = 0.0f;
     const float zoom_x = dt_control_get_dev_zoom_x();
     const float zoom_y = dt_control_get_dev_zoom_y();
-    if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+    if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
     {
       xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
       ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
@@ -504,7 +504,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
     // get the rotation angle only if we are not too close from starting point
     const float diff = 5.0f * zoom_scale;
-    float rotation;
+    float rotation = 0.0f;
     if(!gui->form_dragging
        || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
            && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
@@ -536,9 +536,9 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_stroke(cr);
 
     // draw the arrow
-    float anchor_x, anchor_y;
-    float pivot_start_x, pivot_start_y;
-    float pivot_end_x, pivot_end_y;
+    float anchor_x = 0.0f, anchor_y = 0.0f;
+    float pivot_start_x = 0.0f, pivot_start_y = 0.0f;
+    float pivot_end_x = 0.0f, pivot_end_y = 0.0f;
     anchor_x = xpos0;
     anchor_y = ypos0;
     pivot_start_x = xpos0 + sinf(rotation) * distance;
@@ -645,7 +645,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     const float ht = darktable.develop->preview_pipe->iheight;
 
     int count = 0;
-    float x, y;
+    float x = 0.0f, y = 0.0f;
 
     while(count < points_count)
     {
@@ -702,7 +702,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     const float ht = darktable.develop->preview_pipe->iheight;
 
     int count = 0;
-    float x, y;
+    float x = 0.0f, y = 0.0f;
 
     while(count < border_count)
     {
@@ -751,9 +751,9 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     }
   }
 
-  float anchor_x, anchor_y;
-  float pivot_start_x, pivot_start_y;
-  float pivot_end_x, pivot_end_y;
+  float anchor_x = 0.0f, anchor_y = 0.0f;
+  float pivot_start_x = 0.0f, pivot_start_y = 0.0f;
+  float pivot_end_x = 0.0f, pivot_end_y = 0.0f;
 
   _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &anchor_x, &anchor_y);
   _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &pivot_end_x, &pivot_end_y);
@@ -1006,23 +1006,13 @@ static int dt_gradient_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 {
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
-  float points[8];
-
-  // now we set the points
-  points[0] = 0;
-  points[1] = 0;
-  points[2] = wd;
-  points[3] = 0;
-  points[4] = wd;
-  points[5] = ht;
-  points[6] = 0;
-  points[7] = ht;
+  float points[8] = { 0.0f, 0.0f, wd, 0.0f, wd, ht, 0.0f, ht };
 
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 4)) return 0;
 
   // now we search min and max
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
   for(int i = 0; i < 4; i++)
