@@ -179,6 +179,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->over_popup), vbox);
 
   d->over_label = gtk_label_new(_("overlay mode for size"));
+  gtk_widget_set_name(d->over_label, "overlays_label");
   gtk_box_pack_start(GTK_BOX(vbox), d->over_label, TRUE, TRUE, 0);
   d->over_r0 = gtk_radio_button_new_with_label(NULL, _("no overlays"));
   g_signal_connect(G_OBJECT(d->over_r0), "toggled", G_CALLBACK(_overlays_toggle_button), self);
