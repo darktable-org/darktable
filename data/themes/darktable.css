@@ -1684,7 +1684,7 @@ radiobutton
   color: transparent;
 }
 
-.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_hover_extended #thumb_image:hover #thumb_bottom_label,
 .dt_overlays_always_extended #thumb_bottom_label
 {
   color: @thumbnail_infos_color;
@@ -1692,7 +1692,7 @@ radiobutton
 
 .dt_overlays_always_extended #thumb_main:hover #thumb_bottom_label,
 .dt_overlays_always_extended #thumb_main:selected #thumb_bottom_label,
-.dt_overlays_hover_block #thumb_main:hover #thumb_bottom_label,
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom_label
 {
   color: @thumbnail_font_color;
@@ -1716,7 +1716,7 @@ radiobutton
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
-.dt_overlays_hover_block #thumb_main:hover #thumb_bottom
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom
 {
   background-image: none;
   background-color: rgba(220, 220, 220, 0.8);
@@ -1728,7 +1728,16 @@ radiobutton
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_hover .dt_thumb_btn,
 .dt_overlays_hover_extended .dt_thumb_btn,
-.dt_overlays_hover_block .dt_thumb_btn
+.dt_overlays_hover_block .dt_thumb_btn,
+.dt_overlays_hover_block #thumb_main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_block #thumb_main:hover #thumb_altered,
+.dt_overlays_hover_block #thumb_main:hover #thumb_group,
+.dt_overlays_hover_block #thumb_main:hover #thumb_audio,
+.dt_overlays_hover_block #thumb_main:hover #thumb_localcopy,
+.dt_overlays_hover_block #thumb_main:hover #thumb_group:hover,
+.dt_overlays_hover_block #thumb_main:hover #thumb_group:active,
+.dt_overlays_hover_block #thumb_main:hover #thumb_audio:hover
 {
   color: transparent;
   background-color: transparent;
@@ -1742,6 +1751,7 @@ radiobutton
 }
 
 #thumb_main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb_image:hover .dt_thumb_btn,
 .dt_overlays_always_extended #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_always #thumb_main:selected .dt_thumb_btn,
 .dt_overlays_always_extended #thumb_main:selected .dt_thumb_btn,
@@ -1752,6 +1762,7 @@ radiobutton
 
 /* reject */
 #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_block #thumb_image:hover #thumb_reject:active,
 .dt_overlays_always #thumb_reject:active,
 .dt_overlays_always #thumb_main:selected #thumb_reject:active,
 .dt_overlays_always_extended #thumb_reject:active,
@@ -1796,6 +1807,7 @@ radiobutton
   border-top: 2px solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 #thumb_main:hover #thumb_localcopy,
+.dt_overlays_hover_block #thumb_image:hover #thumb_localcopy,
 .dt_overlays_always #thumb_localcopy,
 .dt_overlays_always_extended #thumb_localcopy,
 .dt_overlays_mixed #thumb_localcopy
@@ -1808,6 +1820,9 @@ radiobutton
 #thumb_main:hover #thumb_altered,
 #thumb_main:hover #thumb_group,
 #thumb_main:hover #thumb_audio,
+.dt_overlays_hover_block #thumb_image:hover #thumb_altered,
+.dt_overlays_hover_block #thumb_image:hover #thumb_group,
+.dt_overlays_hover_block #thumb_image:hover #thumb_audio,
 .dt_overlays_always #thumb_altered,
 .dt_overlays_always #thumb_group,
 .dt_overlays_always #thumb_audio,
@@ -1823,6 +1838,9 @@ radiobutton
 #thumb_main:hover #thumb_group:hover,
 #thumb_main:hover #thumb_group:active,
 #thumb_main:hover #thumb_audio:hover,
+.dt_overlays_hover_block #thumb_image:hover #thumb_group:hover,
+.dt_overlays_hover_block #thumb_image:hover #thumb_group:active,
+.dt_overlays_hover_block #thumb_image:hover #thumb_audio:hover,
 .dt_overlays_always #thumb_group:hover,
 .dt_overlays_always #thumb_group:active,
 .dt_overlays_always #thumb_audio:hover,
@@ -1920,7 +1938,7 @@ radiobutton
   padding: 1px 6px;
 }
 
-.dt_overlays_hover_block #thumb_main:hover #thumb_zoom_label
+.dt_overlays_hover_block #thumb_image:hover #thumb_zoom_label
 {
   color: @grey90;
   background-color: rgba(0, 0, 0, 0.5);
