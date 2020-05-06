@@ -518,7 +518,7 @@ endif(BUILD_TESTING)
 
 # setup some theme specific variables
 set(THEME hicolor)
-set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
+set(THEME_DIRECTORY "${DARKTABLE_RELATIVE_DATADIR}/../icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)
