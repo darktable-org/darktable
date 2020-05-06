@@ -21,6 +21,8 @@
     || defined _SVID_SOURCE || defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__         \
     || defined __NetBSD__ || defined __OpenBSD__
 #include "config.h"
+#include "common/grealpath.h"
+
 #include <pwd.h>
 #include <sys/types.h>
 #define HAVE_GETPWNAM_R 1
