@@ -11,22 +11,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 # These defaults need to be included before the project() call.
 include(DefineCMakeDefaults)
 
-set(DARKTABLE_LIBDIR    "${CMAKE_CURRENT_BINARY_DIR}/lib/darktable")
-set(DARKTABLE_BINDIR    "${CMAKE_CURRENT_BINARY_DIR}/bin")
-set(DARKTABLE_DATADIR   "${CMAKE_CURRENT_BINARY_DIR}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
-set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}")
-set(DARKTABLE_LOCALEDIR "${DARKTABLE_DATADIR}/locale")
-
-if(NOT ${CMAKE_INSTALL_PREFIX})
-    set(CMAKE_INSTALL_PREFIX CMAKE_CURRENT_BINARY_DIR)
-endif(NOT ${CMAKE_INSTALL_PREFIX})
-
-set(DARKTABLE_RELATIVE_LIBDIR    "${CMAKE_INSTALL_LIBDIR}/darktable")
-set(DARKTABLE_RELATIVE_BINDIR    "${CMAKE_INSTALL_BINDIR}")
-set(DARKTABLE_RELATIVE_DATADIR   "${CMAKE_INSTALL_DATAROOTDIR}/darktable")
-set(DARKTABLE_RELATIVE_SHAREDIR  "${DARKTABLE_RELATIVE_DATADIR}")
-set(DARKTABLE_RELATIVE_LOCALEDIR "${DARKTABLE_RELATIVE_DATADIR}/locale")
-
 If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -59,6 +43,37 @@ include(DefineOptions.cmake)
 
 include(GNUInstallDirs)
 include(FeatureSummary)
+
+
+
+set(DARKTABLE_LIBDIR    "${CMAKE_BINARY_DIR}/lib/darktable")
+set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/bin")
+set(DARKTABLE_DATADIR   "${CMAKE_BINARY_DIR}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
+set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}")
+set(DARKTABLE_LOCALEDIR "${DARKTABLE_DATADIR}/locale")
+
+if(NOT CMAKE_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+endif()
+
+set(DARKTABLE_RELATIVE_BINDIR    "./${CMAKE_INSTALL_BINDIR}")
+set(DARKTABLE_RELATIVE_LIBDIR    "../${CMAKE_INSTALL_LIBDIR}/darktable")
+set(DARKTABLE_RELATIVE_DATADIR   "../${CMAKE_INSTALL_DATAROOTDIR}/darktable")
+set(DARKTABLE_RELATIVE_SHAREDIR  "${DARKTABLE_RELATIVE_DATADIR}")
+set(DARKTABLE_RELATIVE_LOCALEDIR "${DARKTABLE_RELATIVE_DATADIR}/locale")
+
+message("DT: Libdir: ${DARKTABLE_LIBDIR}")
+message("CM: install Libdir: ${CMAKE_INSTALL_LIBDIR}")
+message("CM: install bindir: ${CMAKE_INSTALL_BINDIR}")
+message("CM: install datdir: ${CMAKE_INSTALL_DATAROOTDIR}")
+message("CM: install sredir: ${CMAKE_INSTALL_DATADIR}")
+message("CM: install lcldir: ${CMAKE_INSTALL_LOCALEDIR}")
+message("LibDir: ${DARKTABLE_RELATIVE_LIBDIR}")
+message("BinDir: ${DARKTABLE_RELATIVE_BINDIR}")
+message("DatDir: ${DARKTABLE_RELATIVE_DATADIR}")
+message("SreDir: ${DARKTABLE_RELATIVE_SHAREDIR}")
+message("LclDir: ${DARKTABLE_RELATIVE_LOCALEDIR}")
+
 
 # https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 if(${FORCE_COLORED_OUTPUT})
