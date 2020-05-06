@@ -106,7 +106,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   else if(g_strcmp0(histogram_type, "logarithmic") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
   g_free(histogram_type);
-
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -176,7 +175,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->second_window.zoom = DT_ZOOM_FIT;
   dev->second_window.closeup = 0;
   dev->second_window.zoom_x = dev->second_window.zoom_y = 0;
-  dev->second_window.zoom_scale = 1.f;
+  dev->second_window.zoom_scale = 1.0f;
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -566,7 +565,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   }
 
   dt_dev_zoom_t zoom;
-  float zoom_x, zoom_y, scale;
+  float zoom_x = 0.0f, zoom_y = 0.0f, scale = 0.0f;
   int window_width, window_height, x, y, closeup;
   dt_dev_pixelpipe_change_t pipe_changed;
 
@@ -704,6 +703,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
+  
   return zoom_scale;
 }
 
@@ -1923,7 +1923,7 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 {
   int procw = 0, proch = 0;
   dt_dev_get_processed_size(dev, &procw, &proch);
-  float boxw = 1, boxh = 1; // viewport in normalised space
+  float boxw = 1.0f, boxh = 1.0f; // viewport in normalised space
                             //   if(zoom == DT_ZOOM_1)
                             //   {
                             //     const float imgw = (closeup ? 2 : 1)*procw;
@@ -1953,8 +1953,8 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   if(*zoom_x > .5 - boxw / 2) *zoom_x = .5 - boxw / 2;
   if(*zoom_y < boxh / 2 - .5) *zoom_y = boxh / 2 - .5;
   if(*zoom_y > .5 - boxh / 2) *zoom_y = .5 - boxh / 2;
-  if(boxw > 1.0) *zoom_x = 0.f;
-  if(boxh > 1.0) *zoom_y = 0.f;
+  if(boxw > 1.0) *zoom_x = 0.0f;
+  if(boxh > 1.0) *zoom_y = 0.0f;
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
@@ -1990,8 +1990,8 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
                                  float *zoom_y)
 {
   dt_dev_zoom_t zoom;
-  int closeup, procw = 0, proch = 0;
-  float zoom2_x, zoom2_y;
+  int closeup = 0, procw = 0, proch = 0;
+  float zoom2_x = 0.0f, zoom2_y = 0.0f;
   zoom = dt_control_get_dev_zoom();
   closeup = dt_control_get_dev_closeup();
   zoom2_x = dt_control_get_dev_zoom_x();
@@ -2402,11 +2402,11 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
+  return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
 int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
@@ -2436,6 +2436,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
+
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
@@ -2443,6 +2444,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
+  
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
@@ -2488,7 +2490,7 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt
 
 uint64_t dt_dev_hash(dt_develop_t *dev)
 {
-  return dt_dev_hash_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL);
+  return dt_dev_hash_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
 uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction)
@@ -2585,7 +2587,7 @@ int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pip
 
 uint64_t dt_dev_hash_distort(dt_develop_t *dev)
 {
-  return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL);
+  return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL);
 }
 
 uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction)
@@ -2753,7 +2755,7 @@ float dt_second_window_get_free_zoom_scale(dt_develop_t *dev)
 float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoom, const int closeup_factor,
                                       const int preview)
 {
-  float zoom_scale;
+  float zoom_scale = 0.0f;
 
   const float w = preview ? dev->preview_pipe->processed_width : dev->preview2_pipe->processed_width;
   const float h = preview ? dev->preview_pipe->processed_height : dev->preview2_pipe->processed_height;
@@ -2817,7 +2819,7 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 {
   int procw = 0, proch = 0;
   dt_second_window_get_processed_size(dev, &procw, &proch);
-  float boxw = 1, boxh = 1; // viewport in normalised space
+  float boxw = 1.0f, boxh = 1.0f; // viewport in normalised space
                             //   if(zoom == DT_ZOOM_1)
                             //   {
                             //     const float imgw = (closeup ? 2 : 1)*procw;
@@ -2847,8 +2849,8 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
   if(*zoom_x > .5 - boxw / 2) *zoom_x = .5 - boxw / 2;
   if(*zoom_y < boxh / 2 - .5) *zoom_y = boxh / 2 - .5;
   if(*zoom_y > .5 - boxh / 2) *zoom_y = .5 - boxh / 2;
-  if(boxw > 1.0) *zoom_x = 0.f;
-  if(boxh > 1.0) *zoom_y = 0.f;
+  if(boxw > 1.0) *zoom_x = 0.0f;
+  if(boxh > 1.0) *zoom_y = 0.0f;
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
