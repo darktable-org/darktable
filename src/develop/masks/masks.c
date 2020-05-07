@@ -3039,10 +3039,10 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
                                          float *py, const int adding)
 {
   float x = 0.0f, y = 0.0f;
-                                                            
-  const float iwd = darktable.develop->preview_pipe->iwidth;
-  const float iht = darktable.develop->preview_pipe->iheight;
-
+  const float pr_d = darktable.develop->preview_downsampling;                                                            
+  const float iwd = pr_d * darktable.develop->preview_pipe->iwidth;
+  const float iht = pr_d * darktable.develop->preview_pipe->iheight;
+  
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {
     x = xpos + gui->posx_source;
