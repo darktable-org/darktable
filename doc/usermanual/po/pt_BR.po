@@ -1,8 +1,12 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-05-04 07:45-0300\n"
-"PO-Revision-Date: 2020-05-07 11:55-0300\n"
+"PO-Revision-Date: 2020-05-07 16:04-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -191,12 +195,7 @@ msgid ""
 "Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, María "
 "Gracia Leandro, Pierre Metzner, Christian Kanzian, Wolfgang Arndt, Łukasz "
 "Karcz, Artur Mercik and Edgar De la Luz."
-msgstr ""
-"Traduções deste manual para linguagens locais são levadas a você por "
-"Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, María "
-"Gracia Leandro, Pierre Metzner, Christian Kanzian, Wolfgang Arndt, Łukasz "
-"Karcz, Artur Mercik, Edgar De la Luz, Guilherme Brondani Torri e Jerônimo "
-"Pellegrini."
+msgstr "Traduções deste manual para linguagens locais são levadas a você por Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, María Gracia Leandro, Pierre Metzner, Christian Kanzian, Wolfgang Arndt, Łukasz Karcz, Artur Mercik, Edgar De la Luz, Guilherme Brondani Torri, Frido Claudino e Jerônimo Pellegrini."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:155(para)
 msgid ""
@@ -3119,7 +3118,7 @@ msgid ""
 "press the grey button."
 msgstr ""
 "Para alternar etiquetas coloridas para uma ou mais imagens, selcione as "
-"imagens (veja ) e depois pressione o botão da cor correspondente no painél "
+"imagens (veja ) e depois pressione o botão da cor correspondente no painel "
 "inferior. Para remover todas as etiquetas das imagens selecionadas, "
 "pressione o botão cinza."
 
@@ -4098,7 +4097,7 @@ msgid ""
 "panel lets you narrow down the list of visible images to just the ones you "
 "want to work with."
 msgstr ""
-"A visão corrente na mesa de luz é chamada de coleção. O painél "
+"A visão corrente na mesa de luz é chamada de coleção. O painel "
 "<placeholder-1/> permite diminuir a lista de imagens visíveis para somente "
 "aquelas com as quais quer trabalhar."
 
@@ -4644,7 +4643,7 @@ msgstr "selecionar nenhuma"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3654(para)
 msgid "De-select all images."
-msgstr "De-seleciona todas as imagens."
+msgstr "desseleciona todas as imagens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3662(title)
 msgid "invert selection"
@@ -5247,7 +5246,7 @@ msgstr ""
 "Cria novos estilos de pilhas de histórico de imagens selecionadas. Para cada "
 "imagem uma janela de criação de estilo é aberta. Você precisa informar um "
 "nome único para o novo estilo e pode adicionar texto descritivo adicional. "
-"Há a opção de de-selecionar os itens da pilha de histórico que não queira "
+"Há a opção de desselecionar os itens da pilha de histórico que não queira "
 "que façam parte do estilo sendo criado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4189(para)
@@ -6102,7 +6101,7 @@ msgid ""
 "quote>. In that case the tag itself and sub tags are deleted."
 msgstr ""
 "Clique-direito em uma etiqueta na visão de dicionário e submenu "
-"<quote>remover ramo</quote>. Neste caso a etiqueta e sub-etiquetas são "
+"<quote>remover ramo</quote>. Neste caso a etiqueta e subetiquetas são "
 "removidas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4916(title)
@@ -7849,7 +7848,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6317(title)
 msgid "Creating a new preset"
-msgstr "Criando uma nova prédefinição"
+msgstr "Criando uma nova pré-definição"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6319(para)
 msgid ""
@@ -9296,7 +9295,7 @@ msgstr ""
 "\"center\"/> e <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_polarity_minus.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> , respectivamente) à direita do deslizador alterna entre modos "
-"de função <emphasis>seleção de faixa</emphasis> e <emphasis>de-seleção de "
+"de função <emphasis>seleção de faixa</emphasis> e <emphasis>desseleção de "
 "faixa</emphasis> com confirmação visual para trocar os triângulos marcadores "
 "de cima e de baixo. Estes dois tipos de função trapezoidal são representadas "
 "graficamente pelas imagens a seguir."
@@ -9307,7 +9306,7 @@ msgstr "Função de seleção de faixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7389(para)
 msgid "Range de-select function"
-msgstr "Função de de-seleção de faixa"
+msgstr "Função de desseleção de faixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7412(para)
 msgid ""
@@ -9321,7 +9320,7 @@ msgid ""
 "A trapezoidal function that de-selects a narrow range of values from "
 "blending."
 msgstr ""
-"Uma função trapezoidal que de-seleciona uma faixa estreita de valores para "
+"Uma função trapezoidal que desseleciona uma faixa estreita de valores para "
 "mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7427(para)
@@ -9347,7 +9346,7 @@ msgid ""
 "point. Moving the sliders inwards gradually extends the mask more and more "
 "except of the remaining narrow range."
 msgstr ""
-"Uma função de <emphasis>de-seleção</emphasis> por default de-seleciona toda "
+"Uma função de <emphasis>desseleção</emphasis> por default desseleciona toda "
 "a faixa de valores, resultando em uma máscara <quote>toda zero</quote> como "
 "ponto de partida. Mover os deslizadores para dentro gradualmente estende a "
 "máscara mais e mais, exceto por uma estreita faixa restante."
@@ -10214,7 +10213,7 @@ msgstr ""
 "Se a renderização com LittleCMS2 estiver ativada (veja <xref linkend="
 "\"rendering_method\"/>) você pode definir como cores fora da gama sào "
 "tratadas quando acontece a conversão entre espaços de cores. Uma caixa de "
-"seleção no painél de exportação (veja <xref linkend=\"export_selected\"/>), "
+"seleção no painel de exportação (veja <xref linkend=\"export_selected\"/>), "
 "o módulo de perfil de cores para exportação (veja <xref linkend="
 "\"output_color_profile\"/>), e a opção de prova de cores (see <xref linkend="
 "\"softproof\"/>) permutem escolher uma das intenções de renderização: "
@@ -11726,7 +11725,7 @@ msgstr ""
 "clique você pode selecionar outra figura da tira de filme sem mudar a figura "
 "sendo tratada. Com o atalho <emphasis>Ctrl-A</emphasis> você seleciona todas "
 "as figuras na tira de filme. Com o atalho <emphasis>Ctrl-Shift-A</emphasis> "
-"você de-seleciona as imagens, e com <emphasis>Ctrl-I</emphasis> você inverte "
+"você desseleciona as imagens, e com <emphasis>Ctrl-I</emphasis> você inverte "
 "a seleção atual."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9518(para)
@@ -12316,7 +12315,7 @@ msgid ""
 msgstr ""
 "Este deslizador controla o ajuste da saturação de cores feita nas sombras; "
 "valores altos causam aumento da saturação em sombras clareadas; valores "
-"baixos causam de-saturação nelas. Normalmente é seguro deixar no default de "
+"baixos causam dessaturação nelas. Normalmente é seguro deixar no default de "
 "100%. Isto dá um aumento natural de saturação  nas sombras - similar ao que "
 "você esperaria na natureza se as sombras recebessem mais luz."
 
@@ -12336,7 +12335,7 @@ msgid ""
 msgstr ""
 "Este deslizador controla o ajuste da saturação da cor feita em realces; "
 "valores altos causam aumento da saturação em realces escurecidos; valores "
-"baixos causam de-saturação neles. Usualmente, realces não contém informação "
+"baixos causam dessaturação neles. Usualmente, realces não contém informação "
 "de cor suficiente para dar cores convincentes quando escurecidos. Você pode "
 "ter que mexer um pouco neste parâmetro para encontrar o melhor valor, "
 "dependendo da sua imagem específica; mas fique avisado que algumas vezes os "
@@ -13326,8 +13325,8 @@ msgstr ""
 "serão todos monocromáticos, mas mais claros e com mais detalhes do que com o "
 "método <quote>Recortar realces</quote>. Este método funciona razoavelmente "
 "bem com uma curva base de alto contraste (como as que a maioria dos "
-"fabricantes aplica aos seus JPEGs)., que renderiza realces de-saturados. Este "
-"método é uma boa opção em objetos de-saturados, como nuvens."
+"fabricantes aplica aos seus JPEGs)., que renderiza realces dessaturados. Este "
+"método é uma boa opção em objetos dessaturados, como nuvens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10927(para)
 msgid ""
@@ -13944,7 +13943,7 @@ msgstr ""
 "exibição, e não isolam informação de cor e luminosidade. O modo <quote>RGB, "
 "canais vinculados</quote> funciona em RGB ProPhoto e aplica a curva do canal "
 "L a todos os canais do espaço RGB. Adicionar contraste em espaço RGB causa "
-"de-saturação de realces e aumenta a saturação de regiões menos iluminadas, "
+"dessaturação de realces e aumenta a saturação de regiões menos iluminadas, "
 "mas mostrou-se a maneira mais confiável de editar contraste, e é a maneira "
 "padrão de fazê-lo na maioria dos softwares. Este modo faz a curva de tons se "
 "comportar como a curva base (veja <xref linkend=\"base_curve\"/>), exceto "
@@ -14806,7 +14805,7 @@ msgstr ""
 "guia para as operações realizadas pelos deslizadores. A curva clara é a de "
 "mapeamento de tons, onde a abscissa representa a exposição da cena, e a "
 "ordenada representa a exposição do display. A curva escura é a de "
-"de-saturação, representando a porcentagem de saturação como função da "
+"dessaturação, representando a porcentagem de saturação como função da "
 "exposição da cena."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12347(title)
@@ -14891,7 +14890,7 @@ msgid ""
 "ISO pictures and with high quality demosaicing. When the color picker puts "
 "the black exposure at -16EV, it is a sign that the measure failed and you "
 "need to adjust it manually."
-msgstr ""
+msgstr "A exposição relativa de preto é o número de stops (EV) entre o preto puro e o cinza médio. É o limite esquerdo da faixa dinâmica. O seletor de cores da exposição de preto lê a luminâmcia mínima no espaço RGB na área desenhada, presume que é preto puro, e determina o parâmetro de exposição de preto para remapear a leitura mínima de 0% de luminância. Este seletor de cores é muito sensível a ruído, e não pode identificar se uma luminância é preto puro (dado real) ou somente ruído. Funciona melhor em imagens com ISO baixo e com interpolação cromática de alta qualidade. Quando o seletor posiciona a exposição de preto em -16EV, é um sinal de que a medida falhou e precisa ser ajustada manualmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12404(para)
 msgid ""
@@ -14905,7 +14904,7 @@ msgid ""
 "black exposure) should generally not be greater than the physical dynamic "
 "range of the sensor (10-14EV in most cases). Note that the dynamic range of "
 "the scene can be lower than the camera's one, especially indoors."
-msgstr ""
+msgstr "A exposição relativa de preto permite que você escolha quão longe quer recuperar detalhes em sombras. Ao contrário da exposição de branco, nem sempre é possível evitar recortes. Todo sensor de câmera tem uma faixa dinâmica física máxima para cada valor de ISO (você pode encontrá-los medidos em <ulink url=\"https://www.dxomark.com/\"><emphasis>DXOmark</emphasis></ulink> ou <ulink url=\"https://www.dpreview.com/\"><emphasis>DPreview</emphasis></ulink>), e a faixa dinâmica por software no RGB fílmico (faixa dinâmica = exposição de branco - exposição de preto) deveria em geral não ser maior que a faixa dinâmica do sensor (10-14EV na maioria dos casos). Note que a faixa dinâmica da cena pode ser menr que a da câmera, especialmente em ambientes fechados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12419(title)
 msgid ""
@@ -14943,7 +14942,7 @@ msgid ""
 "S-curve is split into three parts: a middle linear part, and two extremities "
 "that transition smoothly from the slope of the middle part to the ends of "
 "the exposure range."
-msgstr ""
+msgstr "A curva S do RGB fílmico é criada a partir de parâmetros do usuário, computando a posição virtual dos nós e interpolando, de maneira semelhante ao módulo curva de tons (mas aqui os nós não podem ser movidos manualmente). A curva do RGB fílmico é dividida em três partes: uma parte linear no meio, e duas extremidades que fazem uma transição suave da inclinação da parte média para os extremos da faixa de exposição."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12444(para)
 msgid ""
@@ -14979,14 +14978,14 @@ msgid ""
 "decreasing the latitude, shifting the latitude interval with the <guilabel "
 "moreinfo=\"none\">shadow/highlights balance</guilabel> parameter, or by "
 "decreasing the contrast."
-msgstr ""
+msgstr "A latitude é a faixa entre os dois nós que delimitam a área linear central da curva, expressada em porcentagem da faixa dinâmica definida na aba <guilabel moreinfo=\"none\">cena</guilabel> (exposição relativa de branco menos exposição relativa de preto). É a faixa de luminância que é remapeada com prioridade, e é remapeada para o intervalo de luminância definido peo parâmetro <link linkend=\"filmicrgb-contrast\">contraste</link>. É usualmente recomendado deixar a latitude tão larga quanto possível, mas evitando recortes. Se peceber recortes, você pode compensar os efeitos diminuindo a latitude, deslocando o intervalo de latitude com o parametro <guilabel moreinfo=\"none\">balanço de sombras/realces</guilabel>, ou diminuindo o contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12475(para)
 msgid ""
 "The latitude also defines the range of luminances that is not desaturated at "
 "the extremities of the luminance range (see <xref linkend=\"filmicrgb-"
 "saturation\"/>)."
-msgstr ""
+msgstr "A latitude também define a faixa de luminâncias que não é dessaturada nas extremidades da faixa de luminância (veja <xref linkend=\"filmicrgb-saturation\"/>)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12482(title)
 msgid ""
@@ -15001,7 +15000,7 @@ msgid ""
 "or towards the highlights. This allows more room to be given to one "
 "extremity of the dynamic range than to the other, if the image properties "
 "demand it."
-msgstr ""
+msgstr "Por default, a latitude é centrada no meio da faixa dinâmica. Se isto produzir recortes em uma ou outra parte da curva, o parâmetro de balanço permite deslizar a latitude na direção das sombras ou dos realces. Isto dá mais espaço para uma extremidade da faixa dinâmica do que para outra, se as propriedades da imagem o fizerem necessário."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12493(title)
 msgid ""
@@ -15018,14 +15017,14 @@ msgid ""
 "and decreases down to 0% outside of that range. One of the advantages of "
 "this operations is that, since color components do not clip at the same rate "
 "in the image, desaturating them avoids fringes around the high exposures."
-msgstr ""
+msgstr "A curva escura no gráfico mostra a dessaturação de extremidades na faixa de luminância (preto e branco): como preto e branco não tem uma cor, eles deveriam normalmente estar associados com 0% de saturação. A saturação default é configurada em 100% na faixa definida pela latitude, e diminui para 0% fora dela. Uma das vantagens desta operação é que, como os componentes de cor não recortam a imagem na mesma proporção, dessaturá-los evita halos ao redor de exposições altas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12502(para)
 msgid ""
 "If the bright colors feel too desaturated, you should check that the white-"
 "relative exposure setting does not clip the high luminance spots, and if "
 "not, increase the extreme luminance saturation parameter."
-msgstr ""
+msgstr "Se as cores claras parecem muito dessaturadas, você deveria vrificar se a exposição relativa de branco não está recortando regiões de alta luminância; se não, tente aumentar o parâmetro de saturação de luminância extrema."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12510(title)
 msgid "Preserve chrominance (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
@@ -15048,7 +15047,7 @@ msgid ""
 "seemingly <quote>better</quote> results than the other values, but it may "
 "negatively impact later parts of the pipeline, when it comes to global "
 "saturation for example."
-msgstr ""
+msgstr "Ao aplicar a transformação da curva S independentemente em cada cor, a proporção de cores é modificada - o que modifica as propriedades do espectro subjacente, e finalmente a crominância da imagem. Isto é o que acontece quando você escolhe <emphasis>não</emphasis> no parâmetro <guilabel moreinfo=\"none\">preservar crominância</guilabel>. Este valor pode dar resultados aparentemente <quote>melhores</quote> do que outros valores, mas ele pode impactar negativamente partes posteriores da pipeline, no que se refere a saturação global, por exemplo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12527(para)
 msgid ""
@@ -15057,7 +15056,7 @@ msgid ""
 "uses a norm N, divides all the three components by that norm, and applies "
 "the S-curve to N. This way, the relationship between the channels is "
 "preserved."
-msgstr ""
+msgstr "Os outros valores deste parâmetro funcionam todos de forma semelhante. Ao invés de aplicar a curva S aos canais R, G e B independentemente, o RGB fílmico usa uma norma N, divide os três componentes pela norma, e aplica a curva S em N. Desta maneira, a relação entre canais é preservada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12539(para)
 msgid ""
@@ -15065,14 +15064,14 @@ msgid ""
 "and B. It is the behaviour of the previous version of the filmic module. It "
 "tends to darken the blue, especially skies, and to yield halos/fringes, "
 "especially if some channels are clipped."
-msgstr ""
+msgstr "<emphasis>max RGB</emphasis> é o valor máximo dos três canais R, G, e B. É o comportamento da versão anterior do módulo fílmico. Ele tende a escurecer o azul, especialmente céus, e a gerar halos, particularmente se alguns canais são recortados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12546(para)
 msgid ""
 "<emphasis>luminance Y</emphasis> is a linear combination of the three "
 "channels R, G and B. It tends to darkens the reds, and to increase the local "
 "contrast in reds."
-msgstr ""
+msgstr "<emphasis>luminância Y</emphasis> é uma combinação linear dos três canais R, G e B. Tende a escurecer os vermelhos, e também a aumentar o contraste local em vermelhos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12551(para)
 msgid ""
@@ -15080,14 +15079,14 @@ msgid ""
 "channels R, G, and B, divided by the sum of their squares - that is to say, "
 "(R³ + G³ + B³)/(R² + G² + B²). It is usally a good compromise between the "
 "max RGB and the luminance Y values."
-msgstr ""
+msgstr "<emphasis>Norma potência RGB</emphasis> é a soma dos cubos dos três anais R, G e B, dividida pela soma de seus quadrados - ou seja, (R³ + G³ + B³)/(R² + G² + B²). É usualmente um bom meio-termo entre max RGB e luminância Y."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12533(para)
 msgid ""
 "The different values of the <guilabel moreinfo=\"none\">preserve "
 "chrominance</guilabel> parameter indicate which norm is used (the value used "
 "for N): <placeholder-1/>"
-msgstr ""
+msgstr "Os diferentes valores do parâmetro <guilabel moreinfo=\"none\">preservar crominância</guilabel> indicam que norma é usada (o valor usado para N): <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12560(para)
 msgid ""
@@ -15789,7 +15788,7 @@ msgid ""
 "luminance mask, to create color filters with the color balance settings, "
 "like split-toning or sepia effect (you might want to use blending modes "
 "then)."
-msgstr "A saturação de entrada é a saturação aplicada antes do balanço de cor. Pode ser usada para amortecer as cores antes do ajuste de balanço, para tornar imagens mais fáceis de processar. Quando você de-satura completamente a imagem, o resultado é uma figura monocromática baseada em luminância que pode ser usada como uma máscara de luminância, para criar filtros de cor com os ajustes do balanço de cor, como divisão de tons ou efeito sepia (você pode querer usar modos de mesclagem neste caso)."
+msgstr "A saturação de entrada é a saturação aplicada antes do balanço de cor. Pode ser usada para amortecer as cores antes do ajuste de balanço, para tornar imagens mais fáceis de processar. Quando você dessatura completamente a imagem, o resultado é uma figura monocromática baseada em luminância que pode ser usada como uma máscara de luminância, para criar filtros de cor com os ajustes do balanço de cor, como divisão de tons ou efeito sepia (você pode querer usar modos de mesclagem neste caso)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13349(title)
 msgid "Output saturation"
@@ -15819,7 +15818,7 @@ msgid ""
 "channels separately, so hues and saturations might not be preserved in case "
 "of dramatic settings (shadows might be resaturated, highlights might be "
 "desaturated, and some color shift is to be expected)."
-msgstr "O deslizador de contraste permite aumentar a separação de luminância. O valor pivô define a luminância que não será afetada pela correção de contraste, então o contraste é ajustado ao redor do pivô. Valores de luminância máxima do pivô serão amplificados quase linearmente. Valores abaixo do pivô serão comprimidos com uma função de potência (criando uma ponta). A correção vem depois que a saturação de saída é aplicada em todos os canais RGB separadamente, então matizes e saturações podem não ser preservadas em caso de ajustes dramáticos (sombras podem ser re-saturadas, realces podem ser de-saturados, e algum desvio de cor deve ser esperado)."
+msgstr "O deslizador de contraste permite aumentar a separação de luminância. O valor pivô define a luminância que não será afetada pela correção de contraste, então o contraste é ajustado ao redor do pivô. Valores de luminância máxima do pivô serão amplificados quase linearmente. Valores abaixo do pivô serão comprimidos com uma função de potência (criando uma ponta). A correção vem depois que a saturação de saída é aplicada em todos os canais RGB separadamente, então matizes e saturações podem não ser preservadas em caso de ajustes dramáticos (sombras podem ser re-saturadas, realces podem ser dessaturados, e algum desvio de cor deve ser esperado)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13374(title)
 msgid "Shadows, Mid-tones, Highlights"
@@ -15970,7 +15969,7 @@ msgstr "A pré-definição azul-petróleo/laranja é uma aparência muito popula
 msgid ""
 "Other presets provide Kodak film emulations. In the same way you can "
 "recreate any film look you like with color balance."
-msgstr "Outras prédefinições proveem emulação de filme Kodak. Da mesma forma, você pode recriar o visual de qualquer filme que goste com balanço de cores."
+msgstr "Outras predefinições proveem emulação de filme Kodak. Da mesma forma, você pode recriar o visual de qualquer filme que goste com balanço de cores."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13509(title)
 msgid "Color look up table"
@@ -17543,7 +17542,7 @@ msgid ""
 "be changed with the mouse wheel. Holding down the <emphasis>Shift</emphasis> "
 "key and keeping the left or right mouse button pressed while dragging "
 "selects or deselects all lines in the chosen rectangular area."
-msgstr "Linhas marcadas em vermelho são consideradas outliers, e não são levadas em conta para o passo de ajuste automático. Esta eliminação de outliers envolve um processo estatístico com amostragem aleatória, então cada vez que você pressionar o botão <quote>obter estrutura</quote>, o padrão de cores nas linhas será um pouco diferente. Você pode manualmente mudar o status de segmentos: clique esquerdo em uma linha irá selecioná-la (a cor ficará verde ou azul), e clique direito irá de-selecioná-la (a cor ficará vermelha ou amarela).  Manter o botão do mouse pressionado permite uma ação de varrer, para selecionar/de-selecionar vários segmentos; o tamanho do pincel para selecionar/de-selecionar pode ser mudado com o scroll do mouse. Manter o <emphasis>Shift</emphasis> e o botão do mouse pressionados enquanto arrasta seleciona ou de-seleciona segmentos em um retângulo."
+msgstr "Linhas marcadas em vermelho são consideradas outliers, e não são levadas em conta para o passo de ajuste automático. Esta eliminação de outliers envolve um processo estatístico com amostragem aleatória, então cada vez que você pressionar o botão <quote>obter estrutura</quote>, o padrão de cores nas linhas será um pouco diferente. Você pode manualmente mudar o status de segmentos: clique esquerdo em uma linha irá selecioná-la (a cor ficará verde ou azul), e clique direito irá desselecioná-la (a cor ficará vermelha ou amarela).  Manter o botão do mouse pressionado permite uma ação de varrer, para selecionar/desselecionar vários segmentos; o tamanho do pincel para selecionar/desselecionar pode ser mudado com o scroll do mouse. Manter o <emphasis>Shift</emphasis> e o botão do mouse pressionados enquanto arrasta seleciona ou desseleciona segmentos em um retângulo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15614(para)
 msgid ""
@@ -18247,7 +18246,7 @@ msgstr "seção de formas"
 msgid ""
 "The shape selected field displays the selected shape (if any). To select a "
 "shape click on it, to deselect click on a free area on the image."
-msgstr "A campo de forma selecionada mostra a forma que foi selecionada (se alguma foi). Para selecionar uma forma, clique nela, e para de-selecionar clique em uma área livre da imagem."
+msgstr "A campo de forma selecionada mostra a forma que foi selecionada (se alguma foi). Para selecionar uma forma, clique nela, e para desselecionar clique em uma área livre da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16364(para)
 msgid ""
@@ -18797,7 +18796,7 @@ msgstr ""
 "Define o limiar a partir do qual um pixel de borda é considerado "
 "<quote>halo</quote>. As cores dos pixels afetados serão reconstruídas usando "
 "pixels vizinhos. Tente baixar este valor se os halos não forem detectados, e "
-"tente aumentá-lo se pixels demais forem de-saturados. Você também pode tentar "
+"tente aumentá-lo se pixels demais forem dessaturados. Você também pode tentar "
 "modificar o raio de detecção de borda."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16999(title)
@@ -19455,7 +19454,7 @@ msgid ""
 "Controls how strong colors become when desaturated or saturated in the "
 "darkened or brightened vignetting area."
 msgstr ""
-"Controla quão fortemente as cores se tornam de-saturadas ou saturadas nas "
+"Controla quão fortemente as cores se tornam dessaturadas ou saturadas nas "
 "áreas escurecidas ou clareadas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17903(title)
@@ -19781,7 +19780,7 @@ msgid ""
 "Bilateral blur with high radius. Desaturated, inverted and with high "
 "contrast."
 msgstr ""
-"Os parâmetros; desfoque bilateral com raio grande. De-saturada, com "
+"Os parâmetros; desfoque bilateral com raio grande. Dessaturada, com "
 "contraste altamente negativo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18359(entry)
@@ -20448,7 +20447,7 @@ msgstr ""
 "Isto significa que as cores são selecionadas por sua matiz (escala "
 "horizontal) e você pode mudar para cada matiz a sua <quote>saturação</quote> "
 "(escala vertical). Você simplesmente precisa definir todos os pontos ao "
-"mínimo da escala vertical para de-saturar todas as matizes."
+"mínimo da escala vertical para dessaturar todas as matizes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19290(para)
 msgid ""
@@ -20852,7 +20851,7 @@ msgstr "Marque a segunda pupila."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19727(title)
 msgid "Desaturation"
-msgstr "De-saturação"
+msgstr "dessaturação"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19738(para)
 msgid "Approach - Modifying the output channel <quote>red</quote>."
@@ -23228,7 +23227,7 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21871(bridgehead)
 msgid "sub directory naming pattern"
-msgstr "padrão para nome de sub-pasta"
+msgstr "padrão para nome de subpasta"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21873(para)
 msgid ""
@@ -24981,7 +24980,7 @@ msgstr ""
 "Há um truque sintático interessante que torna código de elementos da "
 "interface mais fácil de ler e escrever. Você pode chamar estes objetos como "
 "funções com uma tabela de chaves como argumento. Isto permite que o exemplo "
-"a seguir funcione. Ele cria um widget container com dois sub-widgets. Um "
+"a seguir funcione. Ele cria um widget container com dois subwidgets. Um "
 "rótulo e uma entrada de texto."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23541(programlisting)
@@ -27333,7 +27332,7 @@ msgstr ""
 "a foto perto do meio dia, com a fonte de luz (sol) brilhando em ângulo sobre "
 "o cartão. Deve evitar glare na imagem. O patch branco neutro na escala de "
 "cinza (G00) deve ficar com o valor L especificado na descrição do seu "
-"cartão. Usualmente isto é L-32, e requer super-exposição de cerca de 1/3 EV. "
+"cartão. Usualmente isto é L-32, e requer superexposição de cerca de 1/3 EV. "
 "Idealmente você deve fazer várias fotos com exposições diferentes para "
 "selecionar a melhor no darktable. Certifique-se de o cartão preenche a maior "
 "parte da área da foto. Use uma lente com distância focal <quote>normal</"

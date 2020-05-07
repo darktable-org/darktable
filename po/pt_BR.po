@@ -25,7 +25,7 @@ msgstr "Mesa de Luz e Sala Escura Virtuais"
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "Organiza e revela imagens de câmeras digitais"
+msgstr "Organize e trate imagens de câmeras digitais"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
@@ -364,7 +364,7 @@ msgstr ""
 "desligado - leitura de pressão ignorada, dureza/opacidade/tamanho do pincel "
 "- atributos especificados nos controles de leitura de pressão, absoluto/"
 "relativo - leitura de pressão é definida diretamente como valor atribuído ou "
-"multiplicado com valor pré-definido."
+"multiplicado com valor predefinido."
 
 #: ../build/src/preferences_gen.h:2037
 msgid "smoothing of brush strokes"
@@ -665,7 +665,7 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
-"esta pasta (e sub-pastas) contém arquivos LUT usados pelos módulos lut3d. "
+"esta pasta (e subpastas) contém arquivos LUT usados pelos módulos lut3d. "
 "precisa reiniciar o darktable."
 
 #: ../build/src/preferences_gen.h:2714
@@ -4930,7 +4930,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1620 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
 msgstr ""
-"somente mostre esta pré-definição apenas para imagens que casam com os "
+"somente mostre esta predefinição apenas para imagens que casam com os "
 "padrões definidos"
 
 #: ../src/gui/preferences.c:1622 ../src/gui/presets.c:415
@@ -8333,7 +8333,7 @@ msgstr ""
 "comparação com média local\n"
 "-média local: mais lento, pode proteger a saturação melhor que média local "
 "usando pixels próximos como referência de cor, por isso pode permitir mais "
-"de-saturação do que o requerido\n"
+"dessaturação do que o requerido\n"
 "- estático: rápido, só usa limiar como limite estático"
 
 #: ../src/iop/defringe.c:488
@@ -8647,7 +8647,7 @@ msgid ""
 msgstr ""
 "corrige bugs na transformação de anscombe que\n"
 "resultou em pouca suavização no canal verde no modo\n"
-"wavelet, combinado com uma manipulação sub-ótima\n"
+"wavelet, combinado com uma manipulação subótima\n"
 "dos coeficientes de balanço de brancos, e um\n"
 "bug na normalização de médias não locais, que\n"
 "resulta em pouca suavização quando o tamanho do patch é aumentado.\n"
@@ -9485,7 +9485,7 @@ msgid ""
 msgstr ""
 "desaturar a saída do módulo\n"
 "especificamente em luminâncias extremas\n"
-"aumente se sombras e/ou realces estão sub-saturados."
+"aumente se sombras e/ou realces estão subsaturados."
 
 #: ../src/iop/filmicrgb.c:1576
 msgid "preserve chrominance"
