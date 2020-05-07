@@ -273,12 +273,17 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 
   cairo_set_line_width(cr, 0.1);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  if(flags & CPF_FOCUS)
+  {
+    cairo_arc(cr, 0.5, 0.5, 0.66, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
   cairo_arc(cr, 0.5, 0.5, 0.46, (-50 * 3.145 / 180), (230 * 3.145 / 180));
   cairo_move_to(cr, 0.5, 0.0);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
 
-  if((flags & CPF_ACTIVE)) // If active add some green diffuse light
+  if(flags & CPF_ACTIVE) // If active add some diffuse light
   {
     cairo_arc(cr, 0.5, 0.5, 0.45, 0.0, 2*M_PI);
     cairo_clip(cr);
@@ -295,6 +300,11 @@ void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, 0.1);
+  if(flags & CPF_FOCUS)
+  {
+    cairo_arc(cr, 0.5, 0.5, 0.7, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
   cairo_arc(cr, 0.5, 0.5, 0.35, 0, 2 * M_PI);
   cairo_fill(cr);
 
