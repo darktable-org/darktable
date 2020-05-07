@@ -521,13 +521,16 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   gchar *directory = g_path_get_dirname((const gchar *)pathname);
   dt_film_t film;
   const int filmid = dt_film_new(&film, directory);
-  dt_image_import(filmid, pathname, TRUE);
+  uint32_t imageid = dt_image_import(filmid, pathname, TRUE);
   g_free(directory);
 
 end:
   free(d.pixels);
   free(d.weight);
 
+  // refresh the thumbtable view
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(imageid)));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
