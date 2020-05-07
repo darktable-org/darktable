@@ -2097,8 +2097,10 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // in creation mode
   if(gui->creation)
   {
-    const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;
+    const float pr_d = darktable.develop->preview_downsampling;
+    const float iwd = darktable.develop->preview_pipe->iwidth;
+    const float iht = darktable.develop->preview_pipe->iheight;
+    const float min_iwd_iht= pr_d * MIN(iwd,iht);
 
     if(gui->guipoints_count == 0)
     {
@@ -2119,8 +2121,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 
-      const float radius1 = masks_border * masks_hardness * MIN(wd,ht);
-      const float radius2 = masks_border * MIN(wd,ht);
+      const float radius1 = masks_border * masks_hardness * min_iwd_iht;
+      const float radius2 = masks_border * min_iwd_iht;
 
       float xpos = 0.0f, ypos = 0.0f;
       if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
@@ -2194,7 +2196,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           break;
       }
 
-      radius = oldradius = masks_border * masks_hardness * MIN(wd,ht);
+      radius = oldradius = masks_border * masks_hardness * min_iwd_iht;
       opacity = oldopacity = masks_density;
 
       cairo_set_line_width(cr, 2 * radius);
@@ -2233,7 +2235,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
             break;
         }
 
-        radius = masks_border * masks_hardness * MIN(wd,ht);
+        radius = masks_border * masks_hardness * min_iwd_iht;
         opacity = masks_density;
 
         if(radius != oldradius || opacity != oldopacity)
@@ -2258,7 +2260,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
-                guipoints[2 * (gui->guipoints_count - 1) + 1], masks_border * MIN(wd,ht), 0,
+                guipoints[2 * (gui->guipoints_count - 1) + 1], masks_border * min_iwd_iht, 0,
                 2.0 * M_PI);
       cairo_stroke(cr);
 

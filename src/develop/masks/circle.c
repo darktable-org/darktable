@@ -495,9 +495,10 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
-    const float min_wd_ht = MIN(wd,ht);                                                           
+    const float pr_d = darktable.develop->preview_downsampling;
+    float iwd = darktable.develop->preview_pipe->iwidth;
+    float iht = darktable.develop->preview_pipe->iheight;                                           
+    const float min_iwd_iht = pr_d * MIN(iwd,iht);                                                           
     if(gui->guipoints_count == 0)
     {
       dt_masks_form_t *form = darktable.develop->form_visible;
@@ -515,8 +516,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
         radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
       }
       radius2 += radius1;
-      radius1 *= MIN(wd,ht);
-      radius2 *= MIN(wd,ht);
+      radius1 *= min_iwd_iht;
+      radius2 *= min_iwd_iht;
 
       float xpos = 0.0f, ypos = 0.0f;
       if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
