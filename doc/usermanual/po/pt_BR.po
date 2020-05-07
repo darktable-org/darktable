@@ -1,8 +1,12 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-05-04 07:45-0300\n"
-"PO-Revision-Date: 2020-05-07 15:44-0300\n"
+"PO-Revision-Date: 2020-05-07 16:04-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -2977,7 +2981,7 @@ msgstr ""
 "A terceira causa possível para as caveiras surgirem é falta de memória: se o "
 "darktable fica sem memória enquanto gera uma miniatura, ele avisa e mostra "
 "uma caveira - isto pode acontecer se o darktable roda em configuração "
-"subótima, especialmente em sistemas de 32 bits. Por favor, consulte <xref "
+"sub-ótima, especialmente em sistemas de 32 bits. Por favor, consulte <xref "
 "linkend=\"darktable_and_memory\"/> para mais informação"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2241(title)
@@ -4639,7 +4643,7 @@ msgstr "selecionar nenhuma"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3654(para)
 msgid "De-select all images."
-msgstr "De-seleciona todas as imagens."
+msgstr "desseleciona todas as imagens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3662(title)
 msgid "invert selection"
@@ -5242,7 +5246,7 @@ msgstr ""
 "Cria novos estilos de pilhas de histórico de imagens selecionadas. Para cada "
 "imagem uma janela de criação de estilo é aberta. Você precisa informar um "
 "nome único para o novo estilo e pode adicionar texto descritivo adicional. "
-"Há a opção de de-selecionar os itens da pilha de histórico que não queira "
+"Há a opção de desselecionar os itens da pilha de histórico que não queira "
 "que façam parte do estilo sendo criado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4189(para)
@@ -9291,7 +9295,7 @@ msgstr ""
 "\"center\"/> e <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_polarity_minus.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> , respectivamente) à direita do deslizador alterna entre modos "
-"de função <emphasis>seleção de faixa</emphasis> e <emphasis>de-seleção de "
+"de função <emphasis>seleção de faixa</emphasis> e <emphasis>desseleção de "
 "faixa</emphasis> com confirmação visual para trocar os triângulos marcadores "
 "de cima e de baixo. Estes dois tipos de função trapezoidal são representadas "
 "graficamente pelas imagens a seguir."
@@ -9302,7 +9306,7 @@ msgstr "Função de seleção de faixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7389(para)
 msgid "Range de-select function"
-msgstr "Função de de-seleção de faixa"
+msgstr "Função de desseleção de faixa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7412(para)
 msgid ""
@@ -9316,7 +9320,7 @@ msgid ""
 "A trapezoidal function that de-selects a narrow range of values from "
 "blending."
 msgstr ""
-"Uma função trapezoidal que de-seleciona uma faixa estreita de valores para "
+"Uma função trapezoidal que desseleciona uma faixa estreita de valores para "
 "mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7427(para)
@@ -9342,7 +9346,7 @@ msgid ""
 "point. Moving the sliders inwards gradually extends the mask more and more "
 "except of the remaining narrow range."
 msgstr ""
-"Uma função de <emphasis>de-seleção</emphasis> por default de-seleciona toda "
+"Uma função de <emphasis>desseleção</emphasis> por default desseleciona toda "
 "a faixa de valores, resultando em uma máscara <quote>toda zero</quote> como "
 "ponto de partida. Mover os deslizadores para dentro gradualmente estende a "
 "máscara mais e mais, exceto por uma estreita faixa restante."
@@ -11721,7 +11725,7 @@ msgstr ""
 "clique você pode selecionar outra figura da tira de filme sem mudar a figura "
 "sendo tratada. Com o atalho <emphasis>Ctrl-A</emphasis> você seleciona todas "
 "as figuras na tira de filme. Com o atalho <emphasis>Ctrl-Shift-A</emphasis> "
-"você de-seleciona as imagens, e com <emphasis>Ctrl-I</emphasis> você inverte "
+"você desseleciona as imagens, e com <emphasis>Ctrl-I</emphasis> você inverte "
 "a seleção atual."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9518(para)
@@ -15965,7 +15969,7 @@ msgstr "A pré-definição azul-petróleo/laranja é uma aparência muito popula
 msgid ""
 "Other presets provide Kodak film emulations. In the same way you can "
 "recreate any film look you like with color balance."
-msgstr "Outras pré-definições proveem emulação de filme Kodak. Da mesma forma, você pode recriar o visual de qualquer filme que goste com balanço de cores."
+msgstr "Outras predefinições proveem emulação de filme Kodak. Da mesma forma, você pode recriar o visual de qualquer filme que goste com balanço de cores."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13509(title)
 msgid "Color look up table"
@@ -17538,7 +17542,7 @@ msgid ""
 "be changed with the mouse wheel. Holding down the <emphasis>Shift</emphasis> "
 "key and keeping the left or right mouse button pressed while dragging "
 "selects or deselects all lines in the chosen rectangular area."
-msgstr "Linhas marcadas em vermelho são consideradas outliers, e não são levadas em conta para o passo de ajuste automático. Esta eliminação de outliers envolve um processo estatístico com amostragem aleatória, então cada vez que você pressionar o botão <quote>obter estrutura</quote>, o padrão de cores nas linhas será um pouco diferente. Você pode manualmente mudar o status de segmentos: clique esquerdo em uma linha irá selecioná-la (a cor ficará verde ou azul), e clique direito irá de-selecioná-la (a cor ficará vermelha ou amarela).  Manter o botão do mouse pressionado permite uma ação de varrer, para selecionar/de-selecionar vários segmentos; o tamanho do pincel para selecionar/de-selecionar pode ser mudado com o scroll do mouse. Manter o <emphasis>Shift</emphasis> e o botão do mouse pressionados enquanto arrasta seleciona ou de-seleciona segmentos em um retângulo."
+msgstr "Linhas marcadas em vermelho são consideradas outliers, e não são levadas em conta para o passo de ajuste automático. Esta eliminação de outliers envolve um processo estatístico com amostragem aleatória, então cada vez que você pressionar o botão <quote>obter estrutura</quote>, o padrão de cores nas linhas será um pouco diferente. Você pode manualmente mudar o status de segmentos: clique esquerdo em uma linha irá selecioná-la (a cor ficará verde ou azul), e clique direito irá desselecioná-la (a cor ficará vermelha ou amarela).  Manter o botão do mouse pressionado permite uma ação de varrer, para selecionar/desselecionar vários segmentos; o tamanho do pincel para selecionar/desselecionar pode ser mudado com o scroll do mouse. Manter o <emphasis>Shift</emphasis> e o botão do mouse pressionados enquanto arrasta seleciona ou desseleciona segmentos em um retângulo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15614(para)
 msgid ""
@@ -18242,7 +18246,7 @@ msgstr "seção de formas"
 msgid ""
 "The shape selected field displays the selected shape (if any). To select a "
 "shape click on it, to deselect click on a free area on the image."
-msgstr "A campo de forma selecionada mostra a forma que foi selecionada (se alguma foi). Para selecionar uma forma, clique nela, e para de-selecionar clique em uma área livre da imagem."
+msgstr "A campo de forma selecionada mostra a forma que foi selecionada (se alguma foi). Para selecionar uma forma, clique nela, e para desselecionar clique em uma área livre da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16364(para)
 msgid ""
