@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-03 21:23+0200\n"
-"PO-Revision-Date: 2020-05-03 22:32+0200\n"
+"PO-Revision-Date: 2020-05-10 10:27+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -101,8 +101,8 @@ msgid ""
 msgstr ""
 "Wenn die Farbverwaltung für gespeicherte Vorschaubilder aktiviert ist, "
 "werden auf dem Leuchttisch und im Filmstreifen korrekte Farben angezeigt. "
-"Andernfalls können die Bilder, sobald das Bildschirmfarbprofil geändert "
-"wurde, falsch aussehen."
+"Andernfalls können die Bilder falsch dargestellt werden, sobald das "
+"Bildschirmfarbprofil geändert wurde."
 
 #: ../build/src/preferences_gen.h:1588
 msgid "don't use embedded preview JPEG but half-size raw"
@@ -129,7 +129,7 @@ msgid ""
 msgstr ""
 "Diese Option auswählen, damit die in Raw-Dateien eingebetteten JPEG-"
 "Vorschauen nicht benutzt werden, sondern die Raw-Daten verarbeitet werden. "
-"Das ist langsamer, bringt dafür aber Farbmanagement für Vorschaubilder."
+"Das ist langsamer, ermöglicht dafür aber Farbmanagement für Vorschaubilder."
 
 #: ../build/src/preferences_gen.h:1609
 msgid "number of folder levels to show in lists"
@@ -149,23 +149,24 @@ msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
-"Die Anzahl an Verzeichnis-Ebenen, die im\n"
-"Filmrollennamen angezeigt werden sollen,\n"
-"beginnend von rechts"
+"Bestimmt die Anzahl an Verzeichnis-Ebenen, die im Filmrollennamen angezeigt "
+"werden sollen, beginnend von rechts."
 
 #: ../build/src/preferences_gen.h:1640
 msgid "sort collection recent to older"
-msgstr ""
+msgstr "Sammlung von neueren Bildern zu älteren sortieren"
 
 #: ../build/src/preferences_gen.h:1653
 msgid ""
 "changes the default collections-list order for folders, times and dates to "
 "run from recent to older"
 msgstr ""
+"Ändert die voreingestellte Sortierung von Sammlungen, so dass jüngere Bilder "
+"vor älteren gezeigt werden."
 
 #: ../build/src/preferences_gen.h:1661
 msgid "high quality thumb processing from size"
-msgstr "Hochqualitatives Entwickeln für Vorschaubilder"
+msgstr "hochqualitatives Entwickeln für Vorschaubilder"
 
 #: ../build/src/preferences_gen.h:1672 ../build/src/preferences_gen.h:3409
 msgctxt "preferences"
@@ -218,22 +219,24 @@ msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
 msgstr ""
-"wenn die Größe eines Vorschaubildes größer als dieser Wert ist, dann wird es "
+"Wenn die Größe eines Vorschaubildes größer als dieser Wert ist, dann wird es "
 "mit voller Qualität berechnet (besser aber langsamer)."
 
 #: ../build/src/preferences_gen.h:1741
 msgid "delimiters for sizes categories"
-msgstr ""
+msgstr "Grenzwerte der Größenkategorien"
 
 #: ../build/src/preferences_gen.h:1758
 msgid ""
 "sizes categories are used to be able to set different overlays and css "
 "values depending of the size of the thumbnail."
 msgstr ""
+"Größenkategorien werden benutzt, um verschiedene Bildinfos und CSS-"
+"Einszellungen in Abhängigkeit von der Größe der Vorschaubilder zu wählen."
 
 #: ../build/src/preferences_gen.h:1766
 msgid "pattern for the thumbnail extended overlay text"
-msgstr ""
+msgstr "Schema der erweiterten Bildinfos in Vorschaubildern"
 
 #: ../build/src/preferences_gen.h:1787 ../build/src/preferences_gen.h:1816
 #: ../build/src/preferences_gen.h:2153
@@ -242,20 +245,20 @@ msgstr "Siehe Handbuch, um mehr über Stichwörter zu erfahren."
 
 #: ../build/src/preferences_gen.h:1795
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
+msgstr "Schema der Kurzinfos beim Überfahren Vorschaubildern mit der Maus"
 
 #: ../build/src/preferences_gen.h:1824
 msgid "use single-click in the collect panel"
-msgstr "verwende einfach Klick im Sammel-Eingabefeld"
+msgstr "verwende Einfach-Klick im „Bilder sammeln”-Eingabefeld"
 
 #: ../build/src/preferences_gen.h:1837
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
-"Aktiviere die Option, um Elemente im Sammel-Eingabefeld mit einem einzigen "
-"Mausklick auszuwählen. Dadurch können Bereiche für Datum/Uhrzeit und "
-"numerische Werte ausgewählt werden."
+"Aktiviere die Option, um Elemente im „Bilder sammeln”-Eingabefeld mit einem "
+"einzigen Mausklick auszuwählen. Hierdurch können Bereiche für „Datum/"
+"Uhrzeit” und numerische Werte wie „ISO”, „Blende” etc. ausgewählt werden."
 
 #: ../build/src/preferences_gen.h:1845
 msgid "overlay txt sidecar over zoomed images"
@@ -269,30 +272,30 @@ msgid ""
 msgstr ""
 "Wenn es zu einem Bild eine txt-Datei gibt, dann kann diese über das "
 "eingezoomte Bild im Leuchttisch überlagert werden. Die txt-Datei muss "
-"entweder bereits beim Import des Bildes vorhanden oder der Crawler "
-"eingeschaltet sein"
+"entweder bereits beim Import des Bildes vorhanden sein oder der Crawler muss "
+"eingeschaltet sein."
 
 #: ../build/src/preferences_gen.h:1866
 msgid "expand a single lighttable module at a time"
-msgstr "Nur ein einzelnes Leuchttisch-Modul ausklappen"
+msgstr "nur ein einzelnes Leuchttisch-Modul ausklappen"
 
 #: ../build/src/preferences_gen.h:1879
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "Diese Option schaltet das Verhalten von Umschalt-Klicks im Leuchttisch-Modus "
-"um"
+"um."
 
 #: ../build/src/preferences_gen.h:1887
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr "Zu Leuchttisch-Modul scrollen, wenn es ein-/ausgeklappt wird"
+msgstr "zu Leuchttisch-Modul scrollen, wenn es ein- oder ausgeklappt wird"
 
 #: ../build/src/preferences_gen.h:1900 ../build/src/preferences_gen.h:2324
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"Wenn diese Option aktiviert ist, dann wird darktable versuchen, das "
-"entsprechende Modul nach oben in den sichtbaren Bereich der Liste zu scrollen"
+"Wenn diese Option aktiviert ist, wird darktable versuchen, das entsprechende "
+"Modul nach oben in den sichtbaren Bereich der Liste zu scrollen."
 
 #: ../build/src/preferences_gen.h:1908
 msgid "rating an image one star twice will not zero out the rating"
@@ -307,14 +310,12 @@ msgstr ""
 "doppelter Bewertung mit einem Stern nicht auf null Sterne gesetzt wird."
 
 #: ../build/src/preferences_gen.h:1929 ../build/src/preferences_gen.h:2361
-#, fuzzy
 msgid "show scrollbars for central view"
-msgstr "zeige Scrollbalken für den Hauptbereich"
+msgstr "zeige Scrollbalken für die mittlere Bildansicht"
 
 #: ../build/src/preferences_gen.h:1942 ../build/src/preferences_gen.h:2374
-#, fuzzy
 msgid "defines whether scrollbars should be displayed"
-msgstr "Definiert an welcher Stelle Scrollbalken angezeigt werden"
+msgstr "Definiert, ob Scrollbalken angezeigt werden sollen."
 
 #: ../build/src/preferences_gen.h:1969 ../src/views/darkroom.c:109
 msgid "darkroom"
@@ -474,7 +475,7 @@ msgstr "Nur ein einzelnes Dunkelkammer-Modul ausklappen"
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "Diese Option schaltet das Verhalten von Umschalt-Klicks im Dunkelkammer-"
-"Modus um"
+"Modus um."
 
 #: ../build/src/preferences_gen.h:2290
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -537,9 +538,8 @@ msgstr ""
 "als Mittelweg."
 
 #: ../build/src/preferences_gen.h:2451
-#, fuzzy
 msgid "other views"
-msgstr "Tethering-Ansicht"
+msgstr "andere Modi"
 
 #: ../build/src/preferences_gen.h:2454
 msgid "map / geolocalisation"
@@ -603,9 +603,8 @@ msgid "same option as for export, but applies to slideshow."
 msgstr "Die selbe Option wie beim Export, hier jedoch für die Diashow."
 
 #: ../build/src/preferences_gen.h:2609
-#, fuzzy
 msgid "processing"
-msgstr "Maskennachbearbeitung"
+msgstr "Bearbeitung"
 
 #: ../build/src/preferences_gen.h:2612
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -939,9 +938,8 @@ msgstr ""
 "selben GPU berechnen."
 
 #: ../build/src/preferences_gen.h:3254
-#, fuzzy
 msgid "storage"
-msgstr "Dateiname"
+msgstr "Speichern"
 
 #: ../build/src/preferences_gen.h:3257
 #, fuzzy
@@ -1051,7 +1049,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3483
 msgid "miscellaneous"
-msgstr "Verschieden"
+msgstr "Verschiedenes"
 
 #: ../build/src/preferences_gen.h:3486
 #, fuzzy
@@ -1224,7 +1222,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3797
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "Rekursiver Import von Verzeichnissen"
+msgstr "rekursiver Import von Verzeichnissen"
 
 #: ../build/src/preferences_gen.h:3817
 msgid "creator to be applied when importing"
@@ -1250,7 +1248,8 @@ msgstr "Erstbewertung beim Importieren"
 #: ../build/src/preferences_gen.h:3936
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
-"Anfängliche Anzahl Sterne für alle Bilder einer neu importierten Filmrolle"
+"initiale Bewertung (Anzahl von Sternen) aller Bilder in einer neu "
+"importierten Filmrolle"
 
 # zu frei?
 #: ../build/src/preferences_gen.h:3944
@@ -1275,7 +1274,7 @@ msgstr "Namensformat der Dateien"
 
 #: ../build/src/preferences_gen.h:4019
 msgid "file naming pattern used for a import session"
-msgstr "Das Namensformat für Dateien, welches beim Importieren benutzt wird"
+msgstr "Namensformat für Dateien beim Importieren"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -2193,7 +2192,7 @@ msgstr "veraltet"
 
 #: ../src/common/iop_order.c:60
 msgid "v3.0"
-msgstr ""
+msgstr "V3.0"
 
 #: ../src/common/iop_profile.c:82
 #, c-format
@@ -4284,7 +4283,7 @@ msgstr "Dateiname"
 #. general settings
 #: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:266
 msgid "general"
-msgstr "allgemein"
+msgstr "Allgemeines"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
@@ -4815,7 +4814,7 @@ msgstr "Setzt das Design der Benutzeroberfläche"
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:327
 msgid "modify selected theme with CSS tweaks below"
-msgstr ""
+msgstr "ausgewähltes Design durch CSS-Anweisungen anpassen"
 
 #: ../src/gui/preferences.c:335
 msgid "modify theme with CSS keyed below (saved to user.css)"
@@ -4824,7 +4823,7 @@ msgstr ""
 #: ../src/gui/preferences.c:355
 msgctxt "usercss"
 msgid "save theme tweaks"
-msgstr ""
+msgstr "Designanpassungen speichern"
 
 #: ../src/gui/preferences.c:395
 msgid "darktable preferences"
@@ -13000,7 +12999,8 @@ msgstr "Bild(er) aufnehmen"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
-msgstr "umschalten, ob Einstellung im Hauptbereich angezeigt werden soll"
+msgstr ""
+"umschalten, ob Einstellung in der mittleren Bildansicht angezeigt werden soll"
 
 #: ../src/libs/camera.c:213
 msgid "connection with camera lost, exiting tethering mode"
@@ -14884,7 +14884,7 @@ msgstr "PNG"
 
 #: ../src/libs/metadata_view.c:451
 msgid "j2k"
-msgstr "j2k"
+msgstr "J2K"
 
 #: ../src/libs/metadata_view.c:452
 msgid "jpeg"
@@ -14916,7 +14916,7 @@ msgstr "NetPNM"
 
 #: ../src/libs/metadata_view.c:459
 msgid "avif"
-msgstr ""
+msgstr "AVIF"
 
 #: ../src/libs/metadata_view.c:464
 #, c-format
