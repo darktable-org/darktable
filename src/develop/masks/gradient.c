@@ -482,11 +482,12 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   // preview gradient creation
   if(gui->creation)
   {
-    const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;                                                            
+    const float pr_dn = darktable.develop->preview_downsampling;
+    const float iwd = pr_dn * darktable.develop->preview_pipe->iwidth;
+    const float iht = pr_dn * darktable.develop->preview_pipe->iheight;                                                   
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    const float distance = 0.1f * MIN(wd, ht);
-    const float scale = sqrtf(wd * wd + ht * ht);
+    const float distance = 0.1f * MIN(iwd, iht);
+    const float scale = sqrtf(iwd * iwd + iht * iht);
 
     float xpos = 0.0f, ypos = 0.0f, xpos0 = 0.0f, ypos0 = 0.0f;
     const float zoom_x = dt_control_get_dev_zoom_x();
