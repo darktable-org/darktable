@@ -23,13 +23,14 @@
 #include "common/debug.h"
 #include "common/file_location.h"
 #include "common/focus_peaking.h"
+#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/selection.h"
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
-#include "common/history.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -714,6 +715,30 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
+  // if the previous shown image is selected and the selection is unique
+  // then we change the selected image to the new one
+  if(dev->image_storage.id > 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                "WHERE m.imgid=s.imgid",
+                                -1, &stmt, NULL);
+    gboolean follow = FALSE;
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      if(sqlite3_column_int(stmt, 0) == dev->image_storage.id && sqlite3_step(stmt) != SQLITE_ROW)
+      {
+        follow = TRUE;
+      }
+    }
+    sqlite3_finalize(stmt);
+    if(follow)
+    {
+      dt_selection_select_single(darktable.selection, imgid);
+    }
+  }
+
   // disable color picker when changing image
   if(dev->gui_module)
   {
@@ -758,7 +783,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     return;
   }
 
-  // get current plugin in focus before defocus 
+  // get current plugin in focus before defocus
   gchar *active_plugin = NULL;
   if(darktable.develop->gui_module)
   {
@@ -928,7 +953,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   */
   darktable.gui->reset = reset;
 
-  /* Now we can request focus again and write a safe plugins/darkroom/active */ 
+  /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
   {
     gboolean valid = FALSE;
@@ -944,7 +969,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       }
       modules = g_list_next(modules);
     }
-    if (!valid) 
+    if(!valid)
     {
       dt_conf_set_string("plugins/darkroom/active", "");
     }
@@ -1954,7 +1979,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
   if(darktable.gui->reset) return FALSE;
 
   dt_develop_t *dev = (dt_develop_t *)data;
-  dt_iop_module_t *mod = dev->gui_module; 
+  dt_iop_module_t *mod = dev->gui_module;
 
   //retouch and spot removal module use masks differently and have different buttons associated
   //keep the shortcuts independent
