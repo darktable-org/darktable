@@ -354,8 +354,6 @@ static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group, GObj
   gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.top_border), visible);
   gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.bottom_border), visible);
 
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-
   return TRUE;
 }
 
@@ -1093,12 +1091,6 @@ static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointe
   return TRUE;
 }
 
-static gboolean _windows_state_changed(GtkWidget *window, GdkEventWindowState *event, GtkWidget *widget)
-{
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
-  return TRUE;
-}
-
 static const char* get_source_name(int pos)
 {
   static const gchar *SOURCE_NAMES[]
@@ -1268,9 +1260,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_set_app_paintable(widget, TRUE);
-
-  g_signal_connect(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), "window-state-event",
-                   G_CALLBACK(_windows_state_changed), widget);
 
   // TODO: make this work as: libgnomeui testgnome.c
   /*  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
@@ -1963,8 +1952,6 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     gtk_widget_queue_draw(darktable.gui->widgets.left_border);
   else if(p == DT_UI_PANEL_RIGHT)
     gtk_widget_queue_draw(darktable.gui->widgets.right_border);
-
-  dt_view_lighttable_force_expose_all(darktable.view_manager);
 
   if(write)
   {

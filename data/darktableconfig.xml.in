@@ -616,6 +616,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/overlay_timeout</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription>timeout for overlay hover block in seconds</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/overlays/0/0</name>
     <type>int</type>
     <default>0</default>
@@ -2091,13 +2098,6 @@
     <default>-1.0</default>
     <shortdescription>overwrite the screen's ppd setting</shortdescription>
     <longdescription>if this value is > 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/preview/full_size_preload_count</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>preload images for full-size preview</shortdescription>
-    <longdescription>number of images to load in advance in the background when showing full-size preview</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
