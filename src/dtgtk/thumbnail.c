@@ -1216,7 +1216,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.5 * r1 + h);
+    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.75 * r1 + h);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
