@@ -185,9 +185,6 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   }
   else
     dt_control_log(_("no images selected to apply rating"));
-  /* redraw view */
-  /* dt_control_queue_redraw_center() */
-  /* needs to be called in the caller function */
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
