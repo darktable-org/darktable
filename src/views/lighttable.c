@@ -190,7 +190,6 @@ static gboolean _preview_get_state(dt_view_t *self)
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_library_t));
-  dt_library_t *lib = (dt_library_t *)self->data;
 
   darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.view = self;
