@@ -1888,7 +1888,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   if(p->exposure_boost != 0.0f)
   {
-    // Reset the contrast boost and do nothing
+    // Reset the exposure boost and do nothing
     p->exposure_boost = 0.0f;
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
