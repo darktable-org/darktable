@@ -572,13 +572,27 @@ void expose(
     const float *point = dev->gui_module->color_picker_point;
     if(darktable.lib->proxy.colorpicker.size)
     {
-      cairo_rectangle(cri, box[0] * wd, box[1] * ht, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
-      cairo_stroke(cri);
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
-      cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
-                      (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
-      cairo_stroke(cri);
+
+      double x = box[0] * wd, y = box[1] * ht;
+
+      double d = 1. / zoom_scale;
+      cairo_set_source_rgb(cri, .0, .0, .0);
+      for(int blackwhite = 2; blackwhite; blackwhite--)
+      {
+        double w = 5. / zoom_scale - d; 
+
+        cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
+
+        cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
+        cairo_stroke(cri);
+
+        d = 0;
+        cairo_set_source_rgb(cri, .8, .8, .8);
+      }
     }
     else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
