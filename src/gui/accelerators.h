@@ -95,6 +95,9 @@ dt_accel_t *dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GCl
 dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
 //connect lib as a view shortcut
 dt_accel_t *dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
+//connect lib as a global shortcut
+dt_accel_t *dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);

@@ -421,44 +421,43 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "grouping"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "preferences"), 0, 0);
+  dt_accel_register_global(NC_("accel", "grouping"), 0, 0);
+  dt_accel_register_global(NC_("accel", "preferences"), 0, 0);
 
-  dt_accel_register_lib(self, NC_("accel", "no overlays"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "overlays on mouse hover"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "extended overlays on mouse hover"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "permanent overlays"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "permanent extended overlays"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "permanent overlays extended on mouse hover"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "overlays block on mouse hover"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/no overlays"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/overlays on mouse hover"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/extended overlays on mouse hover"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent overlays"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent extended overlays"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent overlays extended on mouse hover"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays/overlays block on mouse hover"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "grouping", d->grouping_button);
-  dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
+  dt_accel_connect_button_lib_as_global(self, "grouping", d->grouping_button);
+  dt_accel_connect_button_lib_as_global(self, "preferences", d->preferences_button);
 
-  dt_accel_connect_lib(
-      self, "no overlays",
+  dt_accel_connect_lib_as_global( self, "thumbnail overlays/no overlays",
       g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_NONE), NULL));
-  dt_accel_connect_lib(self, "overlays on mouse hover",
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays on mouse hover",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL), NULL));
-  dt_accel_connect_lib(self, "extended overlays on mouse hover",
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/extended overlays on mouse hover",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED), NULL));
-  dt_accel_connect_lib(self, "permanent overlays",
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent overlays",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL), NULL));
-  dt_accel_connect_lib(self, "permanent extended overlays",
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent extended overlays",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED), NULL));
-  dt_accel_connect_lib(
-      self, "permanent overlays extended on mouse hover",
+  dt_accel_connect_lib_as_global(
+      self, "thumbnail overlays/permanent overlays extended on mouse hover",
       g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_MIXED), NULL));
-  dt_accel_connect_lib(self, "overlays block on mouse hover",
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays block on mouse hover",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK), NULL));
 }
