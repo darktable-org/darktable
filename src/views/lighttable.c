@@ -528,8 +528,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(!darktable.control->key_accelerators_on) return 0;
 
-  int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
-
   const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
   if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
@@ -647,7 +645,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  int zoom = get_zoom();
+  int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
 
   zoom--;
   if(zoom < 1) zoom = 1;
@@ -659,7 +657,7 @@ static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *accelerata
 static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  int zoom = get_zoom();
+  int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
 
   zoom++;
   if(zoom > 2 * DT_LIGHTTABLE_MAX_ZOOM) zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
