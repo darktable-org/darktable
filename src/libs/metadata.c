@@ -158,7 +158,7 @@ static void _update(dt_lib_module_t *self, gboolean early_bark_out)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   char *images = NULL;
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   while(imgs)
   {
     images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
