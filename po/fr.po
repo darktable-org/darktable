@@ -13,6 +13,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 2.3\n"
 
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Table Lumineuse et Chambre Noire virtuelles"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organiser et développer les images d'un boîtier numérique"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "graphisme;photographie;raw;"
+
 #: ../build/src/preferences_gen.h:1564 ../src/libs/tools/lighttable.c:90
 #: ../src/views/lighttable.c:83
 msgid "lighttable"
