@@ -759,16 +759,13 @@ int32_t dt_view_get_image_to_act_on()
   //   it only affects the selection.
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-  const int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row(
-      darktable.view_manager->proxy.lighttable.view);
-
-  const int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id(
-      darktable.view_manager->proxy.lighttable.view);
+  const gboolean full_preview_mode
+      = darktable.view_manager->proxy.lighttable.get_preview_state(darktable.view_manager->proxy.lighttable.view);
 
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
 
-  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(full_preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -1352,14 +1349,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   // do we need to surround the image ?
   gboolean surrounded = FALSE;
   const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
-  if(!full_preview && darktable.view_manager->proxy.lighttable.view
-     && cur_view == darktable.view_manager->proxy.lighttable.view
-     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    // in culling surrounded images are the ones shown in main view
-    surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
-  }
-  else if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
+  if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
   {
     // in darkroom, surrounded image is the one shown in main view
     surrounded = (darktable.develop->image_storage.id == imgid);
@@ -1724,7 +1714,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_save(cr);
       cairo_new_path(cr);
     }
-    else if(buf_ok && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
+    else if(buf_ok)
     {
       // border around image
       if(selected && !vals->filmstrip && darktable.gui->colors[DT_GUI_COLOR_CULLING_SELECTED_BORDER].alpha > 0.0)
@@ -2259,12 +2249,6 @@ dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_vi
     return DT_LIGHTTABLE_ZOOM_FIXED;
 }
 
-void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.view)
-    vm->proxy.lighttable.force_expose_all(vm->proxy.lighttable.view);
-}
-
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
@@ -2273,18 +2257,10 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
 }
 
-gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.culling_is_image_visible(vm->proxy.lighttable.view, imgid);
-  else
-    return FALSE;
-}
-
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
-    return (vm->proxy.lighttable.get_full_preview_id(vm->proxy.lighttable.view) != -1);
+    return vm->proxy.lighttable.get_preview_state(vm->proxy.lighttable.view);
   else
     return FALSE;
 }
