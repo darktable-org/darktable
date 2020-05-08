@@ -573,13 +573,27 @@ void expose(
     const float *point = dev->gui_module->color_picker_point;
     if(darktable.lib->proxy.colorpicker.size)
     {
-      cairo_rectangle(cri, box[0] * wd, box[1] * ht, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
-      cairo_stroke(cri);
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
-      cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
-                      (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
-      cairo_stroke(cri);
+
+      double x = box[0] * wd, y = box[1] * ht;
+
+      double d = 1. / zoom_scale;
+      cairo_set_source_rgb(cri, .0, .0, .0);
+      for(int blackwhite = 2; blackwhite; blackwhite--)
+      {
+        double w = 5. / zoom_scale - d; 
+
+        cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
+
+        cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
+        cairo_stroke(cri);
+
+        d = 0;
+        cairo_set_source_rgb(cri, .8, .8, .8);
+      }
     }
     else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
@@ -3020,16 +3034,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       float delta_x = 1 / (float) dev->pipe->processed_width;
       float delta_y = 1 / (float) dev->pipe->processed_height;
 
-      float zoom_x, zoom_y, bzoom_x, bzoom_y;
+      float zoom_x, zoom_y;
       dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
-      dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
 
       if(darktable.lib->proxy.colorpicker.size)
       {
-        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
-        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
-        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
-        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
       }
       else
       {
@@ -3129,18 +3142,47 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       // The default box will be a square with 1% of the image width
       const float delta_x = 0.01f;
       const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
+
+      zoom_x += 0.5f;
+      zoom_y += 0.5f;
+
+      dev->gui_module->color_picker_point[0] = zoom_x;
+      dev->gui_module->color_picker_point[1] = zoom_y;
+
       if(darktable.lib->proxy.colorpicker.size)
       {
-        dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
-        dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
-        dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
-        dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
+        bool onCornerPrevBox = TRUE;
+        float opposite_x, opposite_y;
+
+        if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[2];
+        else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[0];
+        else
+          onCornerPrevBox = FALSE;
+
+        if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[3];
+        else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[1];
+        else
+          onCornerPrevBox = FALSE;
+          
+        if(onCornerPrevBox)
+        {
+          dev->gui_module->color_picker_point[0] = opposite_x;
+          dev->gui_module->color_picker_point[1] = opposite_y;
+        }
+        else
+        {        
+          dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
+          dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
+          dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
+          dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
+        }
       }
       else
       {
-        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
-
         dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
     }
