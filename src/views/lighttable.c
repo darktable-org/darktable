@@ -884,6 +884,7 @@ GSList *mouse_actions(const dt_view_t *self)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
@@ -941,12 +942,14 @@ GSList *mouse_actions(const dt_view_t *self)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->key.accel_mods = GDK_SHIFT_MASK;
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom current image to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
