@@ -523,7 +523,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
+      imgs = dt_view_get_images_to_act_on(TRUE);
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -620,7 +620,7 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
+      imgs = dt_view_get_images_to_act_on(TRUE);
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -667,7 +667,7 @@ void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean g
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
+      imgs = dt_view_get_images_to_act_on(TRUE);
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)

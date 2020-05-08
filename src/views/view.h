@@ -193,7 +193,7 @@ typedef enum dt_view_image_over_t
 int32_t dt_view_get_image_to_act_on();
 
 // get images to act on for gloabals change (via libs or accels)
-GList *dt_view_get_images_to_act_on();
+GList *dt_view_get_images_to_act_on(gboolean only_visible);
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on2();
 

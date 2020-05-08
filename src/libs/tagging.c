@@ -998,7 +998,7 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
   if(tagid <= 0) return;
 
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   if(!imgs) return;
 
   GList *affected_images = dt_tag_get_images_from_list(imgs, tagid);
@@ -1184,7 +1184,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
 
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   dt_tag_attach_string_list(tag, imgs, TRUE, TRUE);
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
@@ -2868,7 +2868,7 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
 
   if(d->last_tag)
   {
-    GList *imgs = dt_view_get_images_to_act_on();
+    GList *imgs = dt_view_get_images_to_act_on(TRUE);
     dt_tag_attach_string_list(d->last_tag, imgs, TRUE, TRUE);
     dt_image_synch_xmps(imgs);
     g_list_free(imgs);
@@ -2890,7 +2890,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
     return TRUE;  // doesn't work properly with tree treeview
   }
 
-  d->floating_tag_imgs = dt_view_get_images_to_act_on();
+  d->floating_tag_imgs = dt_view_get_images_to_act_on(TRUE);
   gint x, y;
   gint px, py, w, h;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
