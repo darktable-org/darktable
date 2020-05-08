@@ -256,6 +256,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "gui_init", (gpointer) & (module->gui_init))) module->gui_init = NULL;
   if(!g_module_symbol(module->module, "gui_update", (gpointer) & (module->gui_update)))
     module->gui_update = NULL;
+  if(!g_module_symbol(module->module, "color_picker_apply", (gpointer) & (module->color_picker_apply)))
+    module->color_picker_apply = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup)))
     module->gui_cleanup = default_gui_cleanup;
 
@@ -426,6 +428,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->gui_update = so->gui_update;
   module->gui_reset = so->gui_reset;
   module->gui_init = so->gui_init;
+  module->color_picker_apply = so->color_picker_apply;
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;

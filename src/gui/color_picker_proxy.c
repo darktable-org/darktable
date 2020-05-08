@@ -229,6 +229,13 @@ static gboolean _iop_color_picker_callback(GtkWidget *button, GdkEventButton *e,
   // set module active if not yet the case
   if(self->module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->module->off), TRUE);
 
+  // When using multiple single pickers with one module; switch old one off and put new one in place
+  if (self->module->picker != self)
+  {
+    dt_iop_color_picker_reset(self->module, TRUE);
+    self->module->picker = self;
+  }
+
   // get the current color picker (a module can have multiple one)
   // should returns -1 if the same picker was already selected.
   const int clicked_colorpick = dt_iop_color_picker_get_set(self, button);
@@ -335,6 +342,29 @@ void dt_iop_color_picker_cleanup(void)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
 }
 
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
+{
+  dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
+
+  if (GTK_IS_BOX(w))
+  {
+    GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+    dt_iop_init_single_picker(color_picker, module, button, kind, module->color_picker_apply);
+    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
+    gtk_box_pack_start(GTK_BOX(w), button, TRUE, TRUE, 0);
+
+    return button;
+  }
+  else
+  {
+    dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dt_bauhaus_widget_set_quad_toggle(w, TRUE);
+    dt_iop_init_single_picker(color_picker, module, w, kind, module->color_picker_apply);
+    g_signal_connect_data(G_OBJECT(w), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
+
+    return w;
+  }
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
