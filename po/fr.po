@@ -15953,7 +15953,7 @@ msgstr "surimpressions permanentes et étendues lors du survol souris"
 #: ../src/libs/tools/global_toolbox.c:433
 msgctxt "accel"
 msgid "overlays block on mouse hover"
-msgstr "bloc de superposition au survol de la souris"
+msgstr "bloc de superposition lors du survol de la souris"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
