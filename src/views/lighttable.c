@@ -196,9 +196,6 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
 
-  lib->culling = dt_culling_new(DT_CULLING_MODE_CULLING);
-  lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
-
   // ensure the memory table is up to date
   dt_collection_memory_update();
 }
@@ -1179,6 +1176,9 @@ static void _profile_display2_changed(gpointer instance, uint8_t profile_type, g
 void gui_init(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  lib->culling = dt_culling_new(DT_CULLING_MODE_CULLING);
+  lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
 
   // add culling and preview to the center widget
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget);
