@@ -96,7 +96,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    GList *imgs = dt_view_get_images_to_act_on();
+    GList *imgs = dt_view_get_images_to_act_on(TRUE);
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
       g_list_free(imgs);
@@ -138,7 +138,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   if(g_list_length(imgs) < 1) return;
 
   const int missing = dt_history_compress_on_list(imgs);
@@ -179,7 +179,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
@@ -222,7 +222,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
@@ -233,7 +233,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
 
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
