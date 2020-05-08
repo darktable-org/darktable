@@ -815,12 +815,15 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_as_view("darkroom", NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_as_view("tethering", NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_connect_lib(self, "hide histogram",
+  dt_accel_connect_lib_as_view(self, "darkroom", "hide histogram",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
+  dt_accel_connect_lib_as_view(self, "tethering", "hide histogram",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
 }
 
