@@ -512,9 +512,10 @@ add_subdirectory(tools)
 # This contains fixup_bundle
 # And adding a separate subderectory as a last one will make sure
 # that fixup_bundle will run _after_ all files has been installed
-add_subdirectory(packaging)
-
-include(cmake/darktable-packaging.cmake)
+if("${CMAKE_BUILD_TYPE}" MATCHES "Release")
+    add_subdirectory(packaging)
+    include(cmake/darktable-packaging.cmake)
+endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 
 # uninstall target
 configure_file(
