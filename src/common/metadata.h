@@ -25,6 +25,7 @@ typedef enum dt_metadata_t
 {
   // do change the order. Must match with dt_metadata_def[] in metadata.c.
   // just add new metadata before DT_METADATA_NUMBER when needed
+  // and this must also be synchronized with the collect.c module (legacy_presets).
   DT_METADATA_XMP_DC_CREATOR,
   DT_METADATA_XMP_DC_PUBLISHER,
   DT_METADATA_XMP_DC_TITLE,
