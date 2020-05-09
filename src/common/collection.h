@@ -75,6 +75,7 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
+/* NOTE: any reordeing in this module require a legacy_preset entry in src/libs/collect.c */
 typedef enum dt_collection_properties_t
 {
   DT_COLLECTION_PROP_FILMROLL = 0,
