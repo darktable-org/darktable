@@ -928,11 +928,15 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
-      thumb->w_bottom = gtk_label_new(lb);
+      thumb->w_bottom = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
       g_free(lb);
     }
     else
-      thumb->w_bottom = gtk_label_new("");
+    {
+      thumb->w_bottom = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), "");
+    }
     gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
     gtk_widget_show(thumb->w_bottom);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
@@ -1479,7 +1483,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
     lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
 
   // we set the text
-  gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
+  gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
   g_free(lb);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
