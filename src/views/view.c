@@ -888,7 +888,7 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
 }
 
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on2()
+int dt_view_get_image_to_act_on()
 {
   /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
    *
