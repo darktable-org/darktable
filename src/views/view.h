@@ -190,7 +190,7 @@ typedef enum dt_view_image_over_t
 // get images to act on for gloabals change (via libs or accels)
 GList *dt_view_get_images_to_act_on(gboolean only_visible);
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on2();
+int dt_view_get_image_to_act_on();
 
 /** guess the image_over flag assuming that all possible controls are displayed */
 dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);

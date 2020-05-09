@@ -751,7 +751,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   if(!thumb)
   {
     // otherwise we use the classic retrieving method
-    const int id = dt_view_get_image_to_act_on2();
+    const int id = dt_view_get_image_to_act_on();
     thumb = _thumbtable_get_thumb(table, id);
     if(thumb)
     {
@@ -1842,12 +1842,12 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy(dt_view_get_image_to_act_on2());
+  return dt_history_copy(dt_view_get_image_to_act_on());
 }
 static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy_parts(dt_view_get_image_to_act_on2());
+  return dt_history_copy_parts(dt_view_get_image_to_act_on());
 }
 static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
@@ -1876,7 +1876,7 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
 static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                  GdkModifierType modifier, gpointer data)
 {
-  const int sourceid = dt_view_get_image_to_act_on2();
+  const int sourceid = dt_view_get_image_to_act_on();
   const int newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 
