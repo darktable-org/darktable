@@ -786,11 +786,16 @@ int32_t dt_view_get_image_to_act_on()
   }
 }
 
-static void _images_to_act_on_insert_in_list(GList *list, const int imgid, gboolean only_visible)
+static int _images_to_act_on_find_custom(gconstpointer a, gconstpointer b)
+{
+  return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
+}
+static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboolean only_visible)
 {
   if(only_visible)
   {
-    list = g_list_append(list, GINT_TO_POINTER(imgid));
+    if(!g_list_find_custom(*list, GINT_TO_POINTER(imgid), _images_to_act_on_find_custom))
+      *list = g_list_append(*list, GINT_TO_POINTER(imgid));
     return;
   }
 
@@ -803,7 +808,8 @@ static void _images_to_act_on_insert_in_list(GList *list, const int imgid, gbool
     if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id
        || !dt_selection_get_collection(darktable.selection))
     {
-      list = g_list_append(list, GINT_TO_POINTER(imgid));
+      if(!g_list_find_custom(*list, GINT_TO_POINTER(imgid), _images_to_act_on_find_custom))
+        *list = g_list_append(*list, GINT_TO_POINTER(imgid));
     }
     else
     {
@@ -817,7 +823,8 @@ static void _images_to_act_on_insert_in_list(GList *list, const int imgid, gbool
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        list = g_list_append(list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
       }
       sqlite3_finalize(stmt);
       g_free(query);
@@ -869,20 +876,20 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
                                     &stmt, NULL);
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
-          _images_to_act_on_insert_in_list(l, sqlite3_column_int(stmt, 0), only_visible);
+          _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
         }
         if(stmt) sqlite3_finalize(stmt);
       }
       else
       {
         // collumn 2
-        _images_to_act_on_insert_in_list(l, mouseover, only_visible);
+        _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       }
     }
     else
     {
       // collumn 3
-      _images_to_act_on_insert_in_list(l, mouseover, only_visible);
+      _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
     }
   }
   else
@@ -895,7 +902,7 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
       while(ll)
       {
         const int id = GPOINTER_TO_INT(ll->data);
-        _images_to_act_on_insert_in_list(l, id, only_visible);
+        _images_to_act_on_insert_in_list(&l, id, only_visible);
         ll = g_slist_next(ll);
       }
     }
@@ -907,7 +914,7 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
                                   &stmt, NULL);
       while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
-        _images_to_act_on_insert_in_list(l, sqlite3_column_int(stmt, 0), only_visible);
+        _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
       }
       if(stmt) sqlite3_finalize(stmt);
     }
