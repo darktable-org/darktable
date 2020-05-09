@@ -1948,6 +1948,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *temp_label_box = gtk_event_box_new();
   GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+  gtk_widget_set_tooltip_text(temp_label, _("click to cycle color mode on sliders"));
   gtk_container_add(GTK_CONTAINER(temp_label_box), temp_label);
 
   g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
@@ -1987,6 +1988,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
   gtk_grid_attach(grid, g->btn_d65, 2, 2, 1, 1);
 
+  gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
+  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance preset to as shot"));
+  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
+  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance preset to D65"));
+
   g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_user_toggled),  (gpointer)self);
@@ -2003,7 +2009,7 @@ void gui_init(struct dt_iop_module_t *self)
   // collapsible section for coeffs that are generally not to be used
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *destdisp = dt_ui_section_label_new(_("rgb coefficients"));
+  GtkWidget *destdisp = dt_ui_section_label_new(_("channels coefficients"));
 
   g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
