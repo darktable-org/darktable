@@ -1538,6 +1538,7 @@
       <enum>
         <option>1.0 (none)</option>
         <option>0.5</option>
+        <option>0.333</option>
         <option>0.25</option>
       </enum>
     </type>
