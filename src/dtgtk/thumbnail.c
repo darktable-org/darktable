@@ -1130,7 +1130,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
     // colorlabels => 3 * r1 + space r1
     // inner margins are 0.045 * width
-    const float r1 = fminf((DT_PIXEL_APPLY_DPI(16.0f) + 4.0f) / 2.0f, 0.91 * width / 22.0f);
+    const float r1 = fminf((DT_PIXEL_APPLY_DPI(16.0f) + 4.0f) / 2.0f, 0.91f * width / 22.0f);
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
