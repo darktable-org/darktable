@@ -77,26 +77,15 @@ static int hovered_cb(lua_State *L)
 
 static int act_on_cb(lua_State *L)
 {
-
-  int32_t imgid = dt_view_get_image_to_act_on();
   lua_newtable(L);
-  if(imgid != -1)
+  GList *image = dt_view_get_images_to_act_on(FALSE);
+  while(image)
   {
-    luaA_push(L, dt_lua_image_t, &imgid);
+    luaA_push(L, dt_lua_image_t, &image->data);
     luaL_ref(L, -2);
-    return 1;
+    image = g_list_delete_link(image, image);
   }
-  else
-  {
-    GList *image = dt_collection_get_selected(darktable.collection, -1);
-    while(image)
-    {
-      luaA_push(L, dt_lua_image_t, &image->data);
-      luaL_ref(L, -2);
-      image = g_list_delete_link(image, image);
-    }
-    return 1;
-  }
+  return 1;
 }
 
 
