@@ -92,7 +92,6 @@
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
-#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -229,8 +228,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   // GTK garbage, nobody cares, no SIMD here
   GtkWidget *noise, *ultra_deep_blacks, *deep_blacks, *blacks, *shadows, *midtones, *highlights, *whites, *speculars;
   GtkDrawingArea *area, *bar;
-  GtkWidget *colorpicker;
-  dt_iop_color_picker_t color_picker;
   GtkWidget *blending, *smoothing, *quantization;
   GtkWidget *method;
   GtkWidget *details, *feathering, *contrast_boost, *iterations, *exposure_boost;
