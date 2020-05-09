@@ -266,7 +266,7 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  d->imageid = dt_view_get_image_to_act_on2();
+  d->imageid = dt_view_get_image_to_act_on();
   if(d->imageid)
   {
     gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
