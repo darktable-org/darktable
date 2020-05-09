@@ -750,42 +750,6 @@ static inline void dt_view_draw_audio(cairo_t *cr, const float x, const float y,
   cairo_stroke(cr);
 }
 
-int32_t dt_view_get_image_to_act_on()
-{
-  // this works as follows:
-  // - if mouse hovers over an image, that's the one, except:
-  // - if images are selected and the mouse hovers over the selection,
-  //   in which case it affects the whole selection.
-  // - if the mouse is outside the center view (or no image hovered over otherwise)
-  //   it only affects the selection.
-  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-
-  const gboolean full_preview_mode
-      = darktable.view_manager->proxy.lighttable.get_preview_state(darktable.view_manager->proxy.lighttable.view);
-
-  const int layout = darktable.view_manager->proxy.lighttable.get_layout(
-      darktable.view_manager->proxy.lighttable.module);
-
-  if(full_preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    return mouse_over_id;
-  }
-  else
-  {
-    /* clear and reset statement */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-
-    /* setup statement and iterate over rows */
-    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
-
-    if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
-      return -1;
-    else
-      return mouse_over_id;
-  }
-}
-
 static int _images_to_act_on_find_custom(gconstpointer a, gconstpointer b)
 {
   return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
