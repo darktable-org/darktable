@@ -953,15 +953,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
        || FIND_EXIF_TAG("Exif.Canon.0x0095"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-
-      // if exif_lens is only numbers and we have a Exif.Photo.LensModel defined
-      // use it.
-      std::string lens(img->exif_lens);
-      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
-        if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
-        {
-          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-        }
     }
     else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
     {
@@ -1000,7 +991,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
+
+    // finaly the lens has only numbers and parentheses, let's try to use
+    // Exif.Photo.LensModel if defined.
+
+    std::string lens(img->exif_lens);
+    if(std::string::npos == lens.find_first_not_of(" (1234567890)")
+       && FIND_EXIF_TAG("Exif.Photo.LensModel"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
