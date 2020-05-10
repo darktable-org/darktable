@@ -196,6 +196,13 @@ static void usercss_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
+static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_float("font_size", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
 static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
 {
   //get file locations
@@ -322,6 +329,20 @@ static void init_tab_general(GtkWidget *stack)
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
+
+  //font size selector
+  label = gtk_label_new(_("font size in points"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  GtkWidget *fontsize = gtk_spin_button_new_with_range(0.0f, 30.0f, 0.2f);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(fontsize, _("font size in points (0 to use system default)"));
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
+  g_signal_connect(G_OBJECT(fontsize), "value_changed", G_CALLBACK(font_size_changed_callback), 0);
+
 
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));

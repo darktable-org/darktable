@@ -2621,6 +2621,14 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  //set font size
+  if(dt_conf_get_float("font_size") != 0.0f)
+  {
+    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %f"), dt_conf_get_float("font_size"));
+    g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
+    g_free(font_name);
+  }
+
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 }, usercsspath[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
