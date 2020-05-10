@@ -50,8 +50,20 @@ making a backup is strongly advised.
   It is important to note that this speed improvement is really
   noticeable in the zoomable lighttable view.
 
+  The culling view has also been rewritten from scratch.
+
+- A complete overhaul of the CSS has also been done. This gives darktable
+  a very professional look at this time.
+
+- The preference dialog has been fully reviewed and reorganized to propose
+  a better look and at the same time requiring less scrolling. It is also
+  possible to add some CSS rules directly into the preference dialog to
+  tweak darktable's look.
+
 - The new module negadoctor has been added to help inverting negative
   films.
+
+- A new histogram display called RGB Parade has been added.
 
 ## New Features And Changes
 
@@ -144,6 +156,9 @@ making a backup is strongly advised.
   vertically or horizontally using the <kbd>Shift</kbd> or
   <kbd>Control</kbd> respectively.
 
+- The crop & rotate module now allows format ratios to be entered as
+  a float number.
+
 - When using a snapshot view, a flag to clearly show the position of the
   snapshot has been added.
 
@@ -157,6 +172,15 @@ making a backup is strongly advised.
 - Dynamic accelerators have been added for combo-boxes making it
   possible to select next and previous values directly from the
   keyboard.
+
+- It is now possible to adjust the color picker areas just after
+  having created them. This is achieved by dragging one of the 4
+  little square handles at the corner.
+
+- New variable $(LENS) has been defined.
+
+- Four new timestamps are now supported to store the import,
+  last export, last change and last print times.
 
 ## Bug fixes
 
