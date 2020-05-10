@@ -77,7 +77,6 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *box_enabled;
   GtkWidget *label_disabled;
   GtkWidget *stack;
-  GtkWidget *colorpicker;
   int preset_cnt;
   int preset_num[50];
   double daylight_wb[4];
@@ -768,7 +767,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "enabled");
 
   dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_hide(g->colorpicker);
 
   double TempK, tint;
   mul2temp(self, p->coeffs, &TempK, &tint);
@@ -1264,7 +1262,7 @@ static void apply_preset(dt_iop_module_t *self)
 
       //reset previously stored color picker information
       for(int k = 0; k < 4; k++) old[k] = 0.0f;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), TRUE);
+      dt_iop_color_picker_callback(g->presets, &g->color_picker);
       break;
     case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
@@ -1341,7 +1339,7 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
 
@@ -1488,17 +1486,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
 
-  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_widget_show_all(g->colorpicker);
-
   dt_iop_init_single_picker(&g->color_picker,
                      self,
-                     GTK_WIDGET(g->colorpicker),
+                     GTK_WIDGET(g->presets),
                      DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
+                     color_picker_apply);
 
   self->gui_update(self);
 

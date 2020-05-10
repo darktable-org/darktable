@@ -158,15 +158,13 @@ typedef struct dt_iop_retouch_gui_data_t
 
   GtkWidget *vbox_fill;
   GtkWidget *hbox_color_pick;
-  GtkWidget *colorpick;          // select a specific color
-  GtkToggleButton *colorpicker; // pick a color from the picture
+  GtkWidget *colorpick;   // select a specific color
+  GtkWidget *colorpicker; // pick a color from the picture
 
   GtkWidget *cmb_fill_mode;
   GtkWidget *sl_fill_brightness;
 
   GtkWidget *sl_mask_opacity; // draw mask opacity
-
-  dt_iop_color_picker_t color_picker;
 } dt_iop_retouch_gui_data_t;
 
 typedef struct dt_iop_retouch_params_t dt_iop_retouch_data_t;
@@ -727,7 +725,7 @@ static void rt_reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
-  gtk_toggle_button_set_active(g->colorpicker, FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), FALSE);
 }
 
 static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
@@ -1858,7 +1856,7 @@ static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module
   return TRUE;
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
@@ -2896,32 +2894,25 @@ void gui_init(dt_iop_module_t *self)
       = (GdkRGBA){.red = p->fill_color[0], .green = p->fill_color[1], .blue = p->fill_color[2], .alpha = 1.0 };
 
   g->hbox_color_pick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
+  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
 
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), bs, bs);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
   g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color"), (char *)NULL);
-
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(rt_colorpick_color_set_callback), self);
+  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpick), TRUE, TRUE, 0);
 
-  g->colorpicker = GTK_TOGGLE_BUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
   g_object_set(G_OBJECT(g->colorpicker), "tooltip-text", _("pick fill color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), bs, bs);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-
-  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
-
+  
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
   g_object_set(g->sl_fill_brightness, "tooltip-text",
                _("adjusts color brightness to fine-tune it. works with erase as well"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
 
-  gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), GTK_WIDGET(g->cmb_fill_mode), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->sl_fill_brightness, TRUE, TRUE, 0);
@@ -3001,12 +2992,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
 
   rt_show_hide_controls(self, g, p, g);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_POINT,
-                     _iop_color_picker_apply);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
